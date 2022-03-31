@@ -50,6 +50,12 @@ class FakePersonalizationAppWallpaperProvider
 
   void FetchGooglePhotosCount(FetchGooglePhotosCountCallback callback) override;
 
+  void FetchGooglePhotosPhotos(
+      const absl::optional<std::string>& item_id,
+      const absl::optional<std::string>& album_id,
+      const absl::optional<std::string>& resume_token,
+      FetchGooglePhotosPhotosCallback callback) override;
+
   void GetLocalImages(GetLocalImagesCallback callback) override;
 
   void GetLocalImageThumbnail(const base::FilePath& path,
@@ -62,6 +68,10 @@ class FakePersonalizationAppWallpaperProvider
   void SelectWallpaper(uint64_t image_asset_id,
                        bool preview_mode,
                        SelectWallpaperCallback callback) override;
+
+  void SelectGooglePhotosPhoto(
+      const std::string& id,
+      SelectGooglePhotosPhotoCallback callback) override;
 
   void SelectLocalImage(const base::FilePath& path,
                         ash::WallpaperLayout layout,

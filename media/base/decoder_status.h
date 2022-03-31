@@ -18,6 +18,7 @@ struct DecoderStatusTraits {
     kAborted = 2,  // TODO(*) document _why_ aborted is a thing
     kInvalidArgument = 3,
     kInterrupted = 4,
+    kDisconnected = 5,  // Lost mojo connection, e.g remote crashed or teardown
 
     // Reasons for failing to decode
     kNotInitialized = 100,
@@ -39,7 +40,7 @@ struct DecoderStatusTraits {
     kCantChangeCodec = 204,
     kFailedToCreateDecoder = 205,
   };
-  static constexpr StatusGroupType Group() { return "DecoderStatusCodes"; }
+  static constexpr StatusGroupType Group() { return "DecoderStatus"; }
   static constexpr Codes DefaultEnumValue() { return Codes::kOk; }
 };
 

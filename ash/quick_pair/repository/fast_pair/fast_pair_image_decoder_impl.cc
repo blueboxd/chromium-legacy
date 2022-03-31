@@ -24,9 +24,8 @@ constexpr char kImageFetcherUmaClientName[] = "FastPair";
 // ui/message_center/views/notification_view_md.cc.
 const int kMaxNotificationHeight = 218;
 
-// TODO(b/207589416) Update policy from Nearby to Fast Pair.
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
-    net::DefineNetworkTrafficAnnotation("fast_pair", R"(
+    net::DefineNetworkTrafficAnnotation("fast_pair_image_decoder", R"(
         semantics {
           sender: "Get Fast Pair Device Image Data from Google"
           description:
@@ -42,12 +41,12 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
         policy {
           cookies_allowed: NO
           setting:
-            "This feature is only enabled for signed-in users who enable "
-            "Nearby Share"
+            "You can enable or disable this feature by toggling on/off the "
+            "Fast Pair toggle in chrome://os-settings under 'Bluetooth'. The "
+            "feature is enabled by default. "
           chrome_policy {
-            BrowserSignin {
-              policy_options {mode: MANDATORY}
-              BrowserSignin: 0
+            FastPairEnabled {
+                FastPairEnabled: true
             }
           }
         })");

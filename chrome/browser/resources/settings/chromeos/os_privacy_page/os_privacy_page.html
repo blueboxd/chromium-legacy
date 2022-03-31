@@ -37,7 +37,6 @@
         <cr-link-row id="smartPrivacySubpageTrigger"
             on-click="onSmartPrivacy_"
             label="$i18n{smartPrivacyTitle}"
-            sub-label="$i18n{smartPrivacySubtext}"
             role-description="$i18n{subpageArrowRoleDescription}">
         </cr-link-row>
         <div class="hr"></div>
@@ -49,7 +48,7 @@
         id="enable-logging"
         pref="[[metricsConsentPref_]]"
         label="$i18n{enableLogging}"
-        sub-label="$i18n{enableLoggingDesc}"
+        sub-label="[[metricsConsentDesc_]]"
         deep-link-focus-id$="[[Setting.kUsageStatsAndCrashReports]]"
         disabled$="[[!isMetricsConsentConfigurable_]]"
         on-settings-boolean-control-change="onMetricsConsentChange_"

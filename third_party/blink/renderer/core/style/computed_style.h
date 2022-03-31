@@ -143,6 +143,7 @@ class StopColor;
 class Stroke;
 class TextDecorationColor;
 class TextEmphasisColor;
+class UserSelect;
 class WebkitTapHighlightColor;
 class WebkitTextFillColor;
 class WebkitTextStrokeColor;
@@ -257,6 +258,7 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::Stroke;
   friend class css_longhand::TextDecorationColor;
   friend class css_longhand::TextEmphasisColor;
+  friend class css_longhand::UserSelect;
   friend class css_longhand::WebkitTapHighlightColor;
   friend class css_longhand::WebkitTextFillColor;
   friend class css_longhand::WebkitTextStrokeColor;
@@ -391,49 +393,45 @@ class ComputedStyle : public ComputedStyleBase,
                                IsAtShadowBoundary = kNotAtShadowBoundary);
   void CopyNonInheritedFromCached(const ComputedStyle&);
 
-  bool AncestorsAffectedByHas() const {
-    return DynamicRestyleFlagsForHas() & kAncestorsAffectedByHas;
+  bool AncestorsAffectedByHoverInSubjectHas() const {
+    return DynamicRestyleFlagsForSubjectHas() &
+           kAncestorsAffectedByHoverInSubjectHas;
   }
 
-  void SetAncestorsAffectedByHas() {
-    SetDynamicRestyleFlagsForHas(DynamicRestyleFlagsForHas() |
-                                 kAncestorsAffectedByHas);
+  void SetAncestorsAffectedByHoverInSubjectHas() {
+    SetDynamicRestyleFlagsForSubjectHas(DynamicRestyleFlagsForSubjectHas() |
+                                        kAncestorsAffectedByHoverInSubjectHas);
   }
 
-  bool AncestorsAffectedByHoverInHas() const {
-    return DynamicRestyleFlagsForHas() & kAncestorsAffectedByHoverInHas;
+  bool AncestorsAffectedByActiveInSubjectHas() const {
+    return DynamicRestyleFlagsForSubjectHas() &
+           kAncestorsAffectedByActiveInSubjectHas;
   }
 
-  void SetAncestorsAffectedByHoverInHas() {
-    SetDynamicRestyleFlagsForHas(DynamicRestyleFlagsForHas() |
-                                 kAncestorsAffectedByHoverInHas);
+  void SetAncestorsAffectedByActiveInSubjectHas() {
+    SetDynamicRestyleFlagsForSubjectHas(DynamicRestyleFlagsForSubjectHas() |
+                                        kAncestorsAffectedByActiveInSubjectHas);
   }
 
-  bool AncestorsAffectedByActiveInHas() const {
-    return DynamicRestyleFlagsForHas() & kAncestorsAffectedByActiveInHas;
+  bool AncestorsAffectedByFocusInSubjectHas() const {
+    return DynamicRestyleFlagsForSubjectHas() &
+           kAncestorsAffectedByFocusInSubjectHas;
   }
 
-  void SetAncestorsAffectedByActiveInHas() {
-    SetDynamicRestyleFlagsForHas(DynamicRestyleFlagsForHas() |
-                                 kAncestorsAffectedByActiveInHas);
+  void SetAncestorsAffectedByFocusInSubjectHas() {
+    SetDynamicRestyleFlagsForSubjectHas(DynamicRestyleFlagsForSubjectHas() |
+                                        kAncestorsAffectedByFocusInSubjectHas);
   }
 
-  bool AncestorsAffectedByFocusInHas() const {
-    return DynamicRestyleFlagsForHas() & kAncestorsAffectedByFocusInHas;
+  bool AncestorsAffectedByFocusVisibleInSubjectHas() const {
+    return DynamicRestyleFlagsForSubjectHas() &
+           kAncestorsAffectedByFocusVisibleInSubjectHas;
   }
 
-  void SetAncestorsAffectedByFocusInHas() {
-    SetDynamicRestyleFlagsForHas(DynamicRestyleFlagsForHas() |
-                                 kAncestorsAffectedByFocusInHas);
-  }
-
-  bool AncestorsAffectedByFocusVisibleInHas() const {
-    return DynamicRestyleFlagsForHas() & kAncestorsAffectedByFocusVisibleInHas;
-  }
-
-  void SetAncestorsAffectedByFocusVisibleInHas() {
-    SetDynamicRestyleFlagsForHas(DynamicRestyleFlagsForHas() |
-                                 kAncestorsAffectedByFocusVisibleInHas);
+  void SetAncestorsAffectedByFocusVisibleInSubjectHas() {
+    SetDynamicRestyleFlagsForSubjectHas(
+        DynamicRestyleFlagsForSubjectHas() |
+        kAncestorsAffectedByFocusVisibleInSubjectHas);
   }
 
   PseudoId StyleType() const {
@@ -2123,9 +2121,11 @@ class ComputedStyle : public ComputedStyleBase,
   }
   CORE_EXPORT bool ShouldApplyAnyContainment(const Element& element) const;
 
-  // Utility method which checks if legacy layout is forced for the element in
-  // addition to checking IsContainerForContainerQueries(). Query containers are
-  // not established in legacy layout.
+  // Utility method which checks if legacy layout is forced for the element, or
+  // if the element is rendered as an SVG element, in addition to checking
+  // IsContainerForContainerQueries(). Query containers are not established in
+  // legacy layout or for SVG elements apart from SVG outer roots which behave
+  // as a replaced element.
   bool IsContainerForContainerQueries(const Element& element) const;
 
   bool IsContainerForContainerQueries() const {
@@ -2243,9 +2243,25 @@ class ComputedStyle : public ComputedStyleBase,
     return PointerEventsInternal();
   }
 
+  // User select utility functions.
+  EUserSelect UsedUserSelect() const {
+    if (IsInert())
+      return EUserSelect::kNone;
+    return UserSelectInternal();
+  }
+
   bool IsSelectable() const {
-    return !IsInert() && !(UserSelect() == EUserSelect::kNone &&
+    return !IsInert() && !(UserSelectInternal() == EUserSelect::kNone &&
                            UserModify() == EUserModify::kReadOnly);
+  }
+
+  bool IsFocusable() const {
+    // TODO: Maybe `display: contents` shouldn't prevent focusability, see
+    // discussion in https://github.com/whatwg/html/issues/1837
+    // TODO: `visibility: hidden` shouldn't prevent focusability, see
+    // https://html.spec.whatwg.org/multipage/interaction.html#focusable-area
+    return !IsEnsuredInDisplayNone() && Display() != EDisplay::kContents &&
+           !IsInert() && Visibility() == EVisibility::kVisible;
   }
 
   // Text decoration utility functions.
@@ -2741,10 +2757,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   LogicalSize LogicalAspectRatio() const {
     DCHECK_NE(AspectRatio().GetType(), EAspectRatioType::kAuto);
-    gfx::SizeF ratio = AspectRatio().GetRatio();
-    if (!IsHorizontalWritingMode())
-      ratio.Transpose();
-    return LogicalSize::AspectRatioFromSizeF(ratio);
+    return AspectRatio().GetLayoutRatio().ConvertToLogical(GetWritingMode());
   }
 
   EBoxSizing BoxSizingForAspectRatio() const {
@@ -2755,11 +2768,30 @@ class ComputedStyle : public ComputedStyleBase,
 
   bool ForceDark() const { return DarkColorScheme() && ColorSchemeForced(); }
 
+  void SetHasStaticViewportUnits() {
+    SetViewportUnitFlags(ViewportUnitFlags() |
+                         static_cast<unsigned>(ViewportUnitFlag::kStatic));
+  }
+  void SetHasDynamicViewportUnits() {
+    SetViewportUnitFlags(ViewportUnitFlags() |
+                         static_cast<unsigned>(ViewportUnitFlag::kDynamic));
+  }
+  bool HasStaticViewportUnits() const {
+    return ViewportUnitFlags() &
+           static_cast<unsigned>(ViewportUnitFlag::kStatic);
+  }
+  bool HasDynamicViewportUnits() const {
+    return ViewportUnitFlags() &
+           static_cast<unsigned>(ViewportUnitFlag::kDynamic);
+  }
+  bool HasViewportUnits() const { return ViewportUnitFlags(); }
+
  private:
   EClear Clear() const { return ClearInternal(); }
   EFloat Floating() const { return FloatingInternal(); }
   EPointerEvents PointerEvents() const { return PointerEventsInternal(); }
   EResize Resize() const { return ResizeInternal(); }
+  EUserSelect UserSelect() const { return UserSelectInternal(); }
 
   bool IsInlineSizeContainer() const {
     return ContainerType() & kContainerTypeInlineSize;

@@ -447,17 +447,17 @@ void LanguagesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   AddLanguagesPageStringsV2(html_source);
   AddInputPageStringsV2(html_source);
 
-  html_source->AddBoolean("imeOptionsInSettings",
-                          base::FeatureList::IsEnabled(
-                              ::chromeos::features::kImeOptionsInSettings));
   html_source->AddBoolean("enableLanguageSettingsV2Update2",
                           IsLanguageSettingsV2Update2Enabled());
   html_source->AddBoolean("onDeviceGrammarCheckEnabled",
                           base::FeatureList::IsEnabled(
                               ::chromeos::features::kOnDeviceGrammarCheck));
-  html_source->AddBoolean("languagePacksHandwritingEnabled",
-                          base::FeatureList::IsEnabled(
-                              ::chromeos::features::kLanguagePacksHandwriting));
+  html_source->AddBoolean(
+      "languagePacksHandwritingEnabled",
+      base::FeatureList::IsEnabled(
+          ::chromeos::features::kHandwritingLegacyRecognition) ||
+          base::FeatureList::IsEnabled(
+              ::chromeos::features::kHandwritingLegacyRecognitionAllLang));
 }
 
 void LanguagesSection::AddHandlers(content::WebUI* web_ui) {

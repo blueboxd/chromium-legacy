@@ -20,7 +20,9 @@
       id="toggle-row"
       icon="[[icon]]"
       label="[[permissionLabel]]"
-      managed="[[isManaged_(app_, permissionType)]]"
-      value="[[getValue_(app_, permissionType)]]">
+      managed="[[isManaged_(app, permissionType)]]"
+      value="[[getValue_(app, permissionType)]]"
+      aria-description="Click to toggle [[permissionLabel]] permissions."
+      i18n-aria-descrirption="Label for toggle button to change [[permissionLabel]] permissions.">
   </app-management-toggle-row>
 </template>

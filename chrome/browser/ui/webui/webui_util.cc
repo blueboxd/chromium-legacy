@@ -4,10 +4,12 @@
 
 #include "chrome/browser/ui/webui/webui_util.h"
 
+#include "base/containers/cxx20_erase.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/resources/grit/webui_generated_resources.h"
 #include "ui/resources/grit/webui_resources.h"
@@ -54,6 +56,14 @@ void SetupWebUIDataSource(content::WebUIDataSource* source,
   source->AddResourcePath("", default_resource);
 }
 
+void AddLocalizedString(content::WebUIDataSource* source,
+                        const std::string& message,
+                        int id) {
+  std::u16string str = l10n_util::GetStringUTF16(id);
+  base::Erase(str, '&');
+  source->AddString(message, str);
+}
+
 bool IsEnterpriseManaged() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   policy::BrowserPolicyConnectorAsh* connector =
@@ -67,6 +77,11 @@ bool IsEnterpriseManaged() {
 }
 
 #if defined(TOOLKIT_VIEWS)
+
+namespace {
+const ui::ThemeProvider* g_theme_provider_for_testing = nullptr;
+}  // namespace
+
 ui::NativeTheme* GetNativeTheme(content::WebContents* web_contents) {
   ui::NativeTheme* native_theme = nullptr;
 
@@ -97,6 +112,20 @@ ui::NativeTheme* GetNativeTheme(content::WebContents* web_contents) {
 
   return native_theme;
 }
-#endif  // !defined(TOOLKIT_VIEWS)
+
+const ui::ThemeProvider* GetThemeProvider(content::WebContents* web_contents) {
+  if (g_theme_provider_for_testing)
+    return g_theme_provider_for_testing;
+
+  auto* browser_window =
+      BrowserWindow::FindBrowserWindowWithWebContents(web_contents);
+  return browser_window ? browser_window->GetThemeProvider() : nullptr;
+}
+
+void SetThemeProviderForTesting(const ui::ThemeProvider* theme_provider) {
+  g_theme_provider_for_testing = theme_provider;
+}
+
+#endif  // defined(TOOLKIT_VIEWS)
 
 }  // namespace webui

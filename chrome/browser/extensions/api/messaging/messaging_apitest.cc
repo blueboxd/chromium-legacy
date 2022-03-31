@@ -64,6 +64,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -94,7 +95,7 @@ class MessageSender : public ExtensionHostRegistry::Observer {
       GURL event_url) {
     auto event = std::make_unique<Event>(
         events::TEST_ON_MESSAGE, "test.onMessage",
-        std::move(*event_args).TakeList(), browser_context);
+        std::move(*event_args).TakeListDeprecated(), browser_context);
     event->event_url = std::move(event_url);
     return event;
   }
@@ -1207,6 +1208,86 @@ IN_PROC_BROWSER_TEST_F(MessagingApiTest, MessagingUserGesture) {
           "});", receiver->id().c_str())));
 }
 
+IN_PROC_BROWSER_TEST_F(MessagingApiTest, UserGestureFromContentScript) {
+  static constexpr char kBackground[] = R"(
+    chrome.runtime.onMessage.addListener(function() {
+      chrome.test.assertTrue(chrome.test.isProcessingUserGesture());
+      chrome.test.notifyPass();
+    });
+  )";
+
+  static constexpr char kContentScript[] = R"(
+    chrome.test.runWithUserGesture(function() {
+      chrome.runtime.sendMessage('');
+    });
+  )";
+
+  static constexpr char kManifest[] = R"(
+    {
+      "name": "Test user gesture from content script.",
+      "version": "1.0",
+      "manifest_version": 3,
+      "background": {
+        "service_worker": "background.js"
+      },
+      "content_scripts": [{
+        "matches": ["*://example.com/*"],
+        "js": ["content_script.js"]
+      }]
+    }
+  )";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackground);
+  test_dir.WriteFile(FILE_PATH_LITERAL("content_script.js"), kContentScript);
+  test_dir.WriteManifest(kManifest);
+
+  GURL url = embedded_test_server()->GetURL("example.com", "/simple.html");
+  ASSERT_TRUE(RunExtensionTest(test_dir.UnpackedPath(),
+                               {.page_url = url.spec().c_str()}, {}))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(MessagingApiTest, UserGestureFromExtensionPage) {
+  static constexpr char kBackground[] = R"(
+    chrome.runtime.onMessage.addListener(function() {
+      chrome.test.assertTrue(chrome.test.isProcessingUserGesture());
+      chrome.test.notifyPass();
+    });
+  )";
+
+  static constexpr char kPage[] = R"(
+    <script src='page.js'></script>
+  )";
+
+  static constexpr char kScript[] = R"(
+    chrome.test.runWithUserGesture(function() {
+      chrome.runtime.sendMessage('');
+    });
+  )";
+
+  static constexpr char kManifest[] = R"(
+    {
+      "name": "Test user gesture from extension page.",
+      "version": "1.0",
+      "manifest_version": 3,
+      "background": {
+        "service_worker": "background.js"
+      }
+    }
+  )";
+
+  TestExtensionDir test_dir;
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackground);
+  test_dir.WriteFile(FILE_PATH_LITERAL("page.html"), kPage);
+  test_dir.WriteFile(FILE_PATH_LITERAL("page.js"), kScript);
+  test_dir.WriteManifest(kManifest);
+
+  ASSERT_TRUE(RunExtensionTest(test_dir.UnpackedPath(),
+                               {.extension_url = "page.html"}, {}))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(MessagingApiTest,
                        RestrictedActivationTriggerBetweenExtensions) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -1385,6 +1466,31 @@ IN_PROC_BROWSER_TEST_F(MessagingApiTest, MessagingOnUnload) {
 IN_PROC_BROWSER_TEST_F(MessagingApiTest, LargeMessages) {
   ASSERT_TRUE(RunExtensionTest("messaging/large_messages"));
 }
+
+class MessagingApiFencedFrameTest
+    : public MessagingApiTest,
+      public testing::WithParamInterface<bool /* shadow_dom_fenced_frame */> {
+ protected:
+  MessagingApiFencedFrameTest() {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        blink::features::kFencedFrames,
+        {{"implementation_type", GetParam() ? "shadow_dom" : "mparch"}});
+  }
+  ~MessagingApiFencedFrameTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(MessagingApiFencedFrameTest, Load) {
+  ASSERT_TRUE(RunExtensionTest("messaging/connect_fenced_frames",
+                               {.custom_arg = GetParam() ? "" : "MPArch"}))
+      << message_;
+}
+
+INSTANTIATE_TEST_SUITE_P(MessagingApiFencedFrameTest,
+                         MessagingApiFencedFrameTest,
+                         testing::Bool());
 
 }  // namespace
 

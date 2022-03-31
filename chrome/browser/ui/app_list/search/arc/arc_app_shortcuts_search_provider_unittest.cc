@@ -57,13 +57,13 @@ class ArcAppShortcutsSearchProviderTest
     AppListTestBase::TearDown();
   }
 
-  arc::mojom::AppInfo CreateAppInfo(const std::string& name,
-                                    const std::string& activity,
-                                    const std::string& package_name) {
-    arc::mojom::AppInfo appinfo;
-    appinfo.name = name;
-    appinfo.package_name = package_name;
-    appinfo.activity = activity;
+  arc::mojom::AppInfoPtr CreateAppInfo(const std::string& name,
+                                       const std::string& activity,
+                                       const std::string& package_name) {
+    auto appinfo = arc::mojom::AppInfo::New();
+    appinfo->name = name;
+    appinfo->package_name = package_name;
+    appinfo->activity = activity;
     return appinfo;
   }
 
@@ -76,7 +76,7 @@ class ArcAppShortcutsSearchProviderTest
         std::string() /* intent_uri */, std::string() /* icon_resource_id */,
         false /* sticky */, true /* notifications_enabled */,
         true /* app_ready */, false /* suspended */, false /* shortcut */,
-        launchable);
+        launchable, ArcAppListPrefs::WindowLayout());
     const std::string app_id =
         ArcAppListPrefs::GetAppId(app_info.package_name, app_info.activity);
     EXPECT_TRUE(prefs->GetApp(app_id));
@@ -93,7 +93,7 @@ TEST_P(ArcAppShortcutsSearchProviderTest, Basic) {
   const bool launchable = GetParam();
 
   const std::string app_id = AddArcAppAndShortcut(
-      CreateAppInfo("FakeName", "FakeActivity", kFakeAppPackageName),
+      *CreateAppInfo("FakeName", "FakeActivity", kFakeAppPackageName),
       launchable);
 
   const size_t kMaxResults = launchable ? 4 : 0;

@@ -21,10 +21,10 @@ import org.chromium.base.LocaleUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.metrics.VariationsSession;
 import org.chromium.chrome.browser.notifications.NotificationPlatformBridge;
@@ -38,7 +38,10 @@ import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
 import org.chromium.chrome.browser.read_later.ReadingListBridge;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.translate.TranslateBridge;
+import org.chromium.components.browser_ui.accessibility.FontSizePrefs;
 import org.chromium.components.browser_ui.share.ShareImageFileUtils;
+import org.chromium.components.feature_engagement.EventConstants;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.user_prefs.UserPrefs;
 
 import java.util.HashMap;
@@ -156,7 +159,7 @@ public class ChromeActivitySessionTracker {
     private void onForegroundSessionStart() {
         UmaUtils.recordForegroundStartTime();
         updatePasswordEchoState();
-        FontSizePrefs.getInstance().onSystemFontScaleChanged();
+        FontSizePrefs.getInstance(Profile.getLastUsedRegularProfile()).onSystemFontScaleChanged();
         ChromeLocalizationUtils.recordUiLanguageStatus();
         updateAcceptLanguages();
         mVariationsSession.start();
@@ -197,6 +200,9 @@ public class ChromeActivitySessionTracker {
         }
         RecordHistogram.recordCountHistogram(
                 "Tab.TotalTabCount.BeforeLeavingApp", totalTabCount);
+
+        Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile());
+        tracker.notifyEvent(EventConstants.FOREGROUND_SESSION_DESTROYED);
     }
 
     private void onForegroundActivityDestroyed() {

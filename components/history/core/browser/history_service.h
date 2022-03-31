@@ -220,10 +220,12 @@ class HistoryService : public KeyedService {
                              const GURL& url,
                              base::Time end_ts);
 
-  // Updates the history database by setting the floc allowed bit. The page can
-  // be identified by the combination of the context id, the navigation entry id
-  // and the url. No-op if the page is not found.
-  void SetFlocAllowed(ContextID context_id, int nav_entry_id, const GURL& url);
+  // Updates the history database by setting the browsing topics allowed bit.
+  // The page can be identified by the combination of the context id, the
+  // navigation entry id and the url. No-op if the page is not found.
+  void SetBrowsingTopicsAllowed(ContextID context_id,
+                                int nav_entry_id,
+                                const GURL& url);
 
   // Updates the history database with the content model annotations for the
   // visit.
@@ -236,6 +238,12 @@ class HistoryService : public KeyedService {
   void AddRelatedSearchesForVisit(
       const std::vector<std::string>& related_searches,
       VisitID visit_id);
+
+  // Updates the history database with the search metadata for a search-like
+  // visit.
+  void AddSearchMetadataForVisit(const GURL& search_normalized_url,
+                                 const std::u16string& search_terms,
+                                 VisitID visit_id);
 
   // Querying ------------------------------------------------------------------
 
@@ -740,6 +748,13 @@ class HistoryService : public KeyedService {
   // Notify all HistoryServiceObservers registered that keyword search term is
   // deleted. `url_id` is the id of the url row.
   void NotifyKeywordSearchTermDeleted(URLID url_id);
+
+  // Notify all HistoryServiceObservers registered that content model
+  // annotations for the URL associated with `row` have changed. `row` contains
+  // the URL information for the page.
+  void NotifyContentModelAnnotationModified(
+      const URLRow& row,
+      const VisitContentModelAnnotations& model_annotations);
 
   // Favicon -------------------------------------------------------------------
 

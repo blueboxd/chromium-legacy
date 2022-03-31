@@ -17,17 +17,18 @@ _is_using_sanitizers = is_asan || is_hwasan || is_lsan || is_tsan || is_msan
 #   wrapping), and has not been validated on others.
 # - Windows: debug CRT is not compatible, see below.
 _disable_partition_alloc = is_component_build || (is_win && is_debug)
-_is_partition_alloc_platform =
-    is_android || is_win || is_linux || is_chromeos || is_fuchsia
+# - NaCl: No plans to support it.
+# - iOS: not done yet.
+_is_partition_alloc_platform = !is_nacl && !is_ios && !is_mac
 
 # Under Windows Debug the allocator shim is not compatible with CRT.
 #     NaCl in particular does seem to link some binaries statically
 #     against the debug CRT with "is_nacl=false".
 # Under Fuchsia the allocator shim is only required for PA-E.
 # For all other platforms & configurations, the shim is required, to replace
-#     the default system allocators, e.g. with tcmalloc.
+#     the default system allocators, e.g. with Partition Alloc.
 if ((is_linux || is_chromeos || is_android || is_apple ||
-     (is_fuchsia && _is_partition_alloc_platform && !is_component_build) ||
+     (is_fuchsia && !_disable_partition_alloc) ||
      (is_win && !is_component_build && !is_debug)) && !_is_using_sanitizers) {
   _default_use_allocator_shim = true
 } else {
@@ -50,18 +51,13 @@ declare_args() {
 
   # Whether PartitionAlloc should be available for use or not.
   # true makes PartitionAlloc linked to the executable or shared library and
-  # makes it available for use, but it doesn't mean that the default allocator
-  # is PartitionAlloc.  PartitionAlloc may or may not be the default allocator.
+  # makes it available for use. It doesn't mean that the default allocator
+  # is PartitionAlloc, which is governed by |use_allocator|.
   #
-  # |use_allocator = "partition"| makes PartitionAlloc the default allocator
-  # but it's effective only when |use_partition_alloc = true|.
-  #
-  # TODO(lizeb, yukishiino): Determine if |use_partition_alloc| is necessary or
-  # not, and redesign or remove the flag accordingly.  We may want to assert a
-  # possible conflict between |use_allocator = "partition"| and
-  # |use_partition_alloc = true| rather than prioritizing use_partition_alloc.
-  # TODO(crbug.com/1250788): Enable use_partition_alloc on iOS device builds.
-  use_partition_alloc = !is_ios || target_environment == "simulator"
+  # This flag is currently set to false only on Cronet bots, because Cronet
+  # doesn't use PartitionAlloc at all, and doesn't wish to incur the library
+  # size increase (crbug.com/674570).
+  use_partition_alloc = true
 }
 
 if (!use_partition_alloc && use_allocator == "partition") {
@@ -70,7 +66,6 @@ if (!use_partition_alloc && use_allocator == "partition") {
   use_allocator = "none"
 }
 
-# TODO(crbug.com/1257213): Completely remove tcmalloc and related files.
 assert(use_allocator == "none" || use_allocator == "partition")
 
 assert(
@@ -100,14 +95,19 @@ declare_args() {
   #   BRP-pool block list
   # - enable_backup_ref_ptr_slow_checks: enable additional safety checks that
   #   are too expensive to have on by default.
+  # - enable_dangling_raw_ptr_checks: enable checking raw_ptr do not become
+  #   dangling during their lifetime.
   put_ref_count_in_previous_slot = _is_brp_supported
   never_remove_from_brp_pool_blocklist = _is_brp_supported
   enable_backup_ref_ptr_slow_checks = false
+  enable_dangling_raw_ptr_checks = false
 
   # Registers the binary for a fake binary A/B experiment. The binaries built
   # with this flag have no behavior difference, except for setting a synthetic
   # Finch.
   use_fake_binary_experiment = false
+
+  use_asan_backup_ref_ptr = false
 }
 
 # Prevent using BackupRefPtr when PartitionAlloc-Everywhere isn't used.
@@ -135,3 +135,17 @@ assert(
 # is true.
 assert(use_backup_ref_ptr || !enable_backup_ref_ptr_slow_checks,
        "Can't enable additional BackupRefPtr checks if it isn't enabled at all")
+
+# enable_dangling_raw_ptr_checks can only be used if use_backup_ref_ptr
+# is true.
+assert(
+    use_backup_ref_ptr || !enable_dangling_raw_ptr_checks,
+    "Can't enable dangling raw_ptr checks if BackupRefPtr isn't enabled at all")
+
+# BackupRefPtr and AsanBackupRefPtr are mutually exclusive variants of raw_ptr.
+assert(
+    !use_backup_ref_ptr || !use_asan_backup_ref_ptr,
+    "Both BackupRefPtr and AsanBackupRefPtr can't be enabled at the same time")
+
+assert(!use_asan_backup_ref_ptr || is_asan,
+       "AsanBackupRefPtr requires AddressSanitizer")

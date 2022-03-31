@@ -42,8 +42,8 @@ void ThreatDetailsRedirectsCollector::StartHistoryCollection(
 
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
-      base::BindOnce(&ThreatDetailsRedirectsCollector::StartGetRedirects,
-                     weak_factory_.GetWeakPtr(), urls));
+      base::BindOnce(&ThreatDetailsRedirectsCollector::StartGetRedirects, this,
+                     urls));
 }
 
 bool ThreatDetailsRedirectsCollector::HasStarted() const {
@@ -79,7 +79,7 @@ void ThreatDetailsRedirectsCollector::GetRedirects(const GURL& url) {
   history_service_->QueryRedirectsTo(
       url,
       base::BindOnce(&ThreatDetailsRedirectsCollector::OnGotQueryRedirectsTo,
-                     weak_factory_.GetWeakPtr(), url),
+                     base::Unretained(this), url),
       &request_tracker_);
 }
 

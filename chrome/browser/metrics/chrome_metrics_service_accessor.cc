@@ -17,12 +17,9 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
-#include "chrome/browser/ash/settings/device_settings_service.h"
 // nogncheck needed for Lacros builds since header checker does not understand
 // preprocessor.
 #include "components/metrics/structured/neutrino_logging.h"  // nogncheck
-#include "components/metrics_services_manager/metrics_services_manager.h"
-#include "components/user_manager/user_manager.h"
 #endif
 
 namespace {
@@ -70,30 +67,17 @@ bool ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(
     return false;
   }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (base::FeatureList::IsEnabled(ash::features::kPerUserMetrics)) {
-    absl::optional<bool> user_consent =
-        metrics::PerUserStateManagerChromeOS::GetUserConsentIfApplicable(
-            g_browser_process->GetMetricsServicesManager());
-
-    // Checks if user consent should be used as the primary consent.
-    // IsMetricsReportingEnabled() is not called here since that refers to the
-    // device consent. There are times where the user consent should take
-    // precedence over device consent. See
-    // PerUserStateManagerChromeOS::GetUserConsentIfApplicable() for details.
-    if (user_consent.has_value())
-      return user_consent.value();
-  }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   return IsMetricsReportingEnabled(local_state);
 }
 
 // static
 bool ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
     base::StringPiece trial_name,
-    base::StringPiece group_name) {
+    base::StringPiece group_name,
+    variations::SyntheticTrialAnnotationMode annotation_mode) {
   return metrics::MetricsServiceAccessor::RegisterSyntheticFieldTrial(
-      g_browser_process->metrics_service(), trial_name, group_name);
+      g_browser_process->metrics_service(), trial_name, group_name,
+      annotation_mode);
 }
 
 void ChromeMetricsServiceAccessor::SetForceIsMetricsReportingEnabledPrefLookup(

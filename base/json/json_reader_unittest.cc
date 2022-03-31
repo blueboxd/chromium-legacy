@@ -45,6 +45,9 @@ TEST(JSONReaderTest, Whitespace) {
 }
 
 TEST(JSONReaderTest, InvalidString) {
+  // These are invalid because they do not represent a JSON value,
+  // see https://tools.ietf.org/rfc/rfc8259.txt
+  EXPECT_FALSE(JSONReader::Read(""));
   EXPECT_FALSE(JSONReader::Read("nu"));
 }
 
@@ -78,22 +81,20 @@ TEST(JSONReaderTest, EmbeddedComments) {
   EXPECT_TRUE(root->is_dict());
   root = JSONReader::Read("/* comment */\"sample string\"");
   ASSERT_TRUE(root);
-  EXPECT_TRUE(root->is_string());
-  std::string value;
-  EXPECT_TRUE(root->GetAsString(&value));
-  EXPECT_EQ("sample string", value);
+  ASSERT_TRUE(root->is_string());
+  EXPECT_EQ("sample string", root->GetString());
   root = JSONReader::Read("[1, /* comment, 2 ] */ \n 3]");
   ASSERT_TRUE(root);
   ASSERT_TRUE(root->is_list());
-  ASSERT_EQ(2u, root->GetList().size());
-  ASSERT_TRUE(root->GetList()[0].is_int());
-  EXPECT_EQ(1, root->GetList()[0].GetInt());
-  ASSERT_TRUE(root->GetList()[1].is_int());
-  EXPECT_EQ(3, root->GetList()[1].GetInt());
+  ASSERT_EQ(2u, root->GetListDeprecated().size());
+  ASSERT_TRUE(root->GetListDeprecated()[0].is_int());
+  EXPECT_EQ(1, root->GetListDeprecated()[0].GetInt());
+  ASSERT_TRUE(root->GetListDeprecated()[1].is_int());
+  EXPECT_EQ(3, root->GetListDeprecated()[1].GetInt());
   root = JSONReader::Read("[1, /*a*/2, 3]");
   ASSERT_TRUE(root);
   ASSERT_TRUE(root->is_list());
-  EXPECT_EQ(3u, root->GetList().size());
+  EXPECT_EQ(3u, root->GetListDeprecated().size());
   root = JSONReader::Read("/* comment **/42");
   ASSERT_TRUE(root);
   ASSERT_TRUE(root->is_int());
@@ -243,29 +244,23 @@ TEST(JSONReaderTest, InvalidNumbers) {
 TEST(JSONReaderTest, SimpleString) {
   absl::optional<Value> root = JSONReader::Read("\"hello world\"");
   ASSERT_TRUE(root);
-  EXPECT_TRUE(root->is_string());
-  std::string str_val;
-  EXPECT_TRUE(root->GetAsString(&str_val));
-  EXPECT_EQ("hello world", str_val);
+  ASSERT_TRUE(root->is_string());
+  EXPECT_EQ("hello world", root->GetString());
 }
 
 TEST(JSONReaderTest, EmptyString) {
   absl::optional<Value> root = JSONReader::Read("\"\"");
   ASSERT_TRUE(root);
-  EXPECT_TRUE(root->is_string());
-  std::string str_val;
-  EXPECT_TRUE(root->GetAsString(&str_val));
-  EXPECT_EQ("", str_val);
+  ASSERT_TRUE(root->is_string());
+  EXPECT_EQ("", root->GetString());
 }
 
 TEST(JSONReaderTest, BasicStringEscapes) {
   absl::optional<Value> root =
       JSONReader::Read("\" \\\"\\\\\\/\\b\\f\\n\\r\\t\\v\"");
   ASSERT_TRUE(root);
-  EXPECT_TRUE(root->is_string());
-  std::string str_val;
-  EXPECT_TRUE(root->GetAsString(&str_val));
-  EXPECT_EQ(" \"\\/\b\f\n\r\t\v", str_val);
+  ASSERT_TRUE(root->is_string());
+  EXPECT_EQ(" \"\\/\b\f\n\r\t\v", root->GetString());
 }
 
 TEST(JSONReaderTest, UnicodeEscapes) {
@@ -273,9 +268,8 @@ TEST(JSONReaderTest, UnicodeEscapes) {
   absl::optional<Value> root =
       JSONReader::Read("\"\\x41\\xFF\\x00\\u1234\\u0000\"");
   ASSERT_TRUE(root);
-  EXPECT_TRUE(root->is_string());
-  std::string str_val;
-  EXPECT_TRUE(root->GetAsString(&str_val));
+  ASSERT_TRUE(root->is_string());
+  const std::string& str_val = root->GetString();
   EXPECT_EQ(std::wstring(L"A\x00FF\0\x1234\0", 5), UTF8ToWide(str_val));
 
   // The contents of a Unicode escape may only be four hex chars. Previously the
@@ -299,7 +293,7 @@ TEST(JSONReaderTest, BasicArray) {
   absl::optional<Value> list = JSONReader::Read("[true, false, null]");
   ASSERT_TRUE(list);
   ASSERT_TRUE(list->is_list());
-  EXPECT_EQ(3U, list->GetList().size());
+  EXPECT_EQ(3U, list->GetListDeprecated().size());
 
   // Test with trailing comma.  Should be parsed the same as above.
   absl::optional<Value> root2 =
@@ -312,14 +306,14 @@ TEST(JSONReaderTest, EmptyArray) {
   absl::optional<Value> list = JSONReader::Read("[]");
   ASSERT_TRUE(list);
   ASSERT_TRUE(list->is_list());
-  EXPECT_TRUE(list->GetList().empty());
+  EXPECT_TRUE(list->GetListDeprecated().empty());
 }
 
 TEST(JSONReaderTest, CompleteArray) {
   absl::optional<Value> list = JSONReader::Read("[\"a\", 3, 4.56, null]");
   ASSERT_TRUE(list);
   ASSERT_TRUE(list->is_list());
-  EXPECT_EQ(4U, list->GetList().size());
+  EXPECT_EQ(4U, list->GetListDeprecated().size());
 }
 
 TEST(JSONReaderTest, NestedArrays) {
@@ -328,7 +322,7 @@ TEST(JSONReaderTest, NestedArrays) {
       "[null]], null]");
   ASSERT_TRUE(list);
   ASSERT_TRUE(list->is_list());
-  EXPECT_EQ(5U, list->GetList().size());
+  EXPECT_EQ(5U, list->GetListDeprecated().size());
 
   // Lots of trailing commas.
   absl::optional<Value> root2 = JSONReader::Read(
@@ -360,8 +354,8 @@ TEST(JSONReaderTest, ArrayTrailingComma) {
       JSONReader::Read("[true,]", JSON_ALLOW_TRAILING_COMMAS);
   ASSERT_TRUE(list);
   ASSERT_TRUE(list->is_list());
-  ASSERT_EQ(1U, list->GetList().size());
-  const Value& value1 = list->GetList()[0];
+  ASSERT_EQ(1U, list->GetListDeprecated().size());
+  const Value& value1 = list->GetListDeprecated()[0];
   ASSERT_TRUE(value1.is_bool());
   EXPECT_TRUE(value1.GetBool());
 }
@@ -446,7 +440,7 @@ TEST(JSONReaderTest, NestedDictionaries) {
   ASSERT_TRUE(inner_dict);
   const Value* inner_array = inner_dict->FindListKey("array");
   ASSERT_TRUE(inner_array);
-  EXPECT_EQ(4U, inner_array->GetList().size());
+  EXPECT_EQ(4U, inner_array->GetListDeprecated().size());
   auto bool_value = dict_val->FindBoolKey("false");
   ASSERT_TRUE(bool_value);
   EXPECT_FALSE(*bool_value);
@@ -546,15 +540,14 @@ TEST(JSONReaderTest, StackOverflow) {
   absl::optional<Value> list = JSONReader::Read(not_evil);
   ASSERT_TRUE(list);
   ASSERT_TRUE(list->is_list());
-  EXPECT_EQ(5001U, list->GetList().size());
+  EXPECT_EQ(5001U, list->GetListDeprecated().size());
 }
 
 TEST(JSONReaderTest, UTF8Input) {
   absl::optional<Value> root = JSONReader::Read("\"\xe7\xbd\x91\xe9\xa1\xb5\"");
   ASSERT_TRUE(root);
-  EXPECT_TRUE(root->is_string());
-  std::string str_val;
-  EXPECT_TRUE(root->GetAsString(&str_val));
+  ASSERT_TRUE(root->is_string());
+  const std::string& str_val = root->GetString();
   EXPECT_EQ(L"\x7f51\x9875", UTF8ToWide(str_val));
 
   root = JSONReader::Read("{\"path\": \"/tmp/\xc3\xa0\xc3\xa8\xc3\xb2.png\"}");
@@ -608,9 +601,8 @@ TEST(JSONReaderTest, UTF8Input) {
     root = JSONReader::Read(noncharacter);
     ASSERT_TRUE(root);
     ASSERT_TRUE(root->is_string());
-    std::string value;
-    EXPECT_TRUE(root->GetAsString(&value));
-    EXPECT_EQ(std::string(noncharacter + 1, strlen(noncharacter) - 2), value);
+    EXPECT_EQ(std::string(noncharacter + 1, strlen(noncharacter) - 2),
+              root->GetString());
   }
 }
 
@@ -623,20 +615,16 @@ TEST(JSONReaderTest, InvalidUTF8Input) {
 TEST(JSONReaderTest, UTF16Escapes) {
   absl::optional<Value> root = JSONReader::Read("\"\\u20ac3,14\"");
   ASSERT_TRUE(root);
-  EXPECT_TRUE(root->is_string());
-  std::string str_val;
-  EXPECT_TRUE(root->GetAsString(&str_val));
+  ASSERT_TRUE(root->is_string());
   EXPECT_EQ(
       "\xe2\x82\xac"
       "3,14",
-      str_val);
+      root->GetString());
 
   root = JSONReader::Read("\"\\ud83d\\udca9\\ud83d\\udc6c\"");
   ASSERT_TRUE(root);
-  EXPECT_TRUE(root->is_string());
-  str_val.clear();
-  EXPECT_TRUE(root->GetAsString(&str_val));
-  EXPECT_EQ("\xf0\x9f\x92\xa9\xf0\x9f\x91\xac", str_val);
+  ASSERT_TRUE(root->is_string());
+  EXPECT_EQ("\xf0\x9f\x92\xa9\xf0\x9f\x91\xac", root->GetString());
 }
 
 TEST(JSONReaderTest, InvalidUTF16Escapes) {
@@ -747,9 +735,9 @@ TEST(JSONReaderTest, StringOptimizations) {
     ASSERT_TRUE(dict->RemoveKey("baz"));
     ASSERT_TRUE(dict->RemoveKey("moo"));
 
-    ASSERT_EQ(2u, list->GetList().size());
-    list_value_0 = std::move(list->GetList()[0]);
-    list_value_1 = std::move(list->GetList()[1]);
+    ASSERT_EQ(2u, list->GetListDeprecated().size());
+    list_value_0 = std::move(list->GetListDeprecated()[0]);
+    list_value_1 = std::move(list->GetListDeprecated()[1]);
     list->ClearList();
   }
 
@@ -825,7 +813,7 @@ TEST(JSONReaderTest, Decode4ByteUtf8Char) {
   absl::optional<Value> root = JSONReader::Read(kUtf8Data, JSON_PARSE_RFC);
   ASSERT_TRUE(root);
   ASSERT_TRUE(root->is_list());
-  Value::ListView lv = root->GetList();
+  Value::ListView lv = root->GetListDeprecated();
   ASSERT_EQ(5u, lv.size());
   ASSERT_TRUE(lv[0].is_string());
   EXPECT_EQ("\xF0\x9F\x98\x87", lv[0].GetString());

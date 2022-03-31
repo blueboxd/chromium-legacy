@@ -28,6 +28,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/dns/host_resolver.h"
+#include "net/dns/public/dns_over_https_config.h"
 #include "net/dns/public/secure_dns_mode.h"
 #include "net/log/net_log.h"
 #include "net/log/trace_net_log_observer.h"
@@ -78,10 +79,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
  public:
   static const base::TimeDelta kInitialDohProbeTimeout;
 
-  NetworkService(std::unique_ptr<service_manager::BinderRegistry> registry,
-                 mojo::PendingReceiver<mojom::NetworkService> receiver =
-                     mojo::NullReceiver(),
-                 bool delay_initialization_until_set_client = false);
+  explicit NetworkService(
+      std::unique_ptr<service_manager::BinderRegistry> registry,
+      mojo::PendingReceiver<mojom::NetworkService> receiver =
+          mojo::NullReceiver(),
+      bool delay_initialization_until_set_client = false);
 
   NetworkService(const NetworkService&) = delete;
   NetworkService& operator=(const NetworkService&) = delete;
@@ -96,6 +98,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // TODO(jam): remove this once the old path is gone.
   void Initialize(mojom::NetworkServiceParamsPtr params,
                   bool mock_network_change_notifier = false);
+
+  // Pretends that the system DNS configuration just changed to a basic,
+  // single-server, localhost-only configuration. This method also effectively
+  // unsubscribes the singleton `net::SystemDnsConfigChangeNotifier` owned by
+  // `net::NetworkChangeNotifier` from future changes to the real configuration,
+  // ensuring that our fake configuration will not be clobbered by network
+  // changes that occur while tests run.
+  void ReplaceSystemDnsConfigForTesting();
+
+  void SetTestDohConfigForTesting(const net::DnsOverHttpsConfig& doh_config);
 
   // Creates a NetworkService instance on the current thread.
   static std::unique_ptr<NetworkService> Create(
@@ -136,7 +148,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void ConfigureStubHostResolver(
       bool insecure_dns_client_enabled,
       net::SecureDnsMode secure_dns_mode,
-      const std::vector<net::DnsOverHttpsServerConfig>& dns_over_https_servers,
+      const net::DnsOverHttpsConfig& dns_over_https_config,
       bool additional_dns_types_enabled) override;
   void DisableQuic() override;
   void SetUpHttpAuth(
@@ -180,13 +192,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
                     ParseHeadersCallback callback) override;
 #if BUILDFLAG(IS_CT_SUPPORTED)
   void ClearSCTAuditingCache() override;
-  void ConfigureSCTAuditing(bool enabled,
-                            double sampling_rate,
+  void ConfigureSCTAuditing(double sampling_rate,
                             const GURL& reporting_uri,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
   void UpdateCtLogList(std::vector<mojom::CTLogInfoPtr> log_list,
                        base::Time update_time) override;
+  void UpdateCtKnownPopularSCTs(
+      const std::vector<std::vector<uint8_t>>& sct_hashes) override;
   void SetCtEnforcementEnabled(bool enabled) override;
 #endif
 
@@ -288,6 +301,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void OnReadFirstPartySetsFile(const std::string& raw_sets);
 
   bool initialized_ = false;
+
+  enum class FunctionTag : uint8_t {
+    None,
+    ConfigureStubHostResolver,
+    SetTestDohConfigForTesting,
+  };
+
+  FunctionTag dns_config_overrides_set_by_ = FunctionTag::None;
 
   raw_ptr<net::NetLog> net_log_;
 

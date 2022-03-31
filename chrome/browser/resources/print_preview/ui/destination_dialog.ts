@@ -22,10 +22,9 @@ import './throbber_css.js';
 import './destination_list_item.js';
 
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {ListPropertyUpdateMixin} from 'chrome://resources/js/list_property_update_mixin.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {beforeNextRender, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Destination} from '../data/destination.js';
@@ -131,12 +130,12 @@ export class PrintPreviewDestinationDialogElement extends
 
   private onDestinationStoreSet_() {
     assert(this.destinations_.length === 0);
-    const destinationStore = assert(this.destinationStore);
     this.tracker_.add(
-        destinationStore, DestinationStoreEventType.DESTINATIONS_INSERTED,
+        this.destinationStore, DestinationStoreEventType.DESTINATIONS_INSERTED,
         this.updateDestinations_.bind(this));
     this.tracker_.add(
-        destinationStore, DestinationStoreEventType.DESTINATION_SEARCH_DONE,
+        this.destinationStore,
+        DestinationStoreEventType.DESTINATION_SEARCH_DONE,
         this.updateDestinations_.bind(this));
     this.initialized_ = true;
   }

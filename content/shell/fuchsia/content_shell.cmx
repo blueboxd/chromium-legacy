@@ -1,4 +1,7 @@
 {
+  "program": {
+    "binary": "content_shell"
+  },
   "sandbox": {
     "features": [
       "deprecated-ambient-replace-as-executable",
@@ -9,6 +12,7 @@
     ],
     "services": [
       "fuchsia.accessibility.semantics.SemanticsManager",
+      "fuchsia.buildinfo.Provider",
       "fuchsia.device.NameProvider",
       "fuchsia.fonts.Provider",
       "fuchsia.input.virtualkeyboard.ControllerCreator",
@@ -27,6 +31,8 @@
       "fuchsia.process.Launcher",
       "fuchsia.sys.Launcher",
       "fuchsia.sysmem.Allocator",
+      "fuchsia.ui.composition.Allocator",
+      "fuchsia.ui.composition.Flatland",
       "fuchsia.ui.input3.Keyboard",
       "fuchsia.ui.policy.Presenter",
       "fuchsia.ui.scenic.Scenic",

@@ -59,6 +59,8 @@ if (is_win || is_mac || is_linux) {
       "app/app.h",
       "app/app_install.cc",
       "app/app_install.h",
+      "app/app_recover.cc",
+      "app/app_recover.h",
       "app/app_server.cc",
       "app/app_server.h",
       "app/app_uninstall.cc",
@@ -114,6 +116,8 @@ if (is_win || is_mac || is_linux) {
       "prefs_impl.h",
       "registration_data.cc",
       "registration_data.h",
+      "remove_uninstalled_apps_task.cc",
+      "remove_uninstalled_apps_task.h",
       "service_proxy_factory.h",
       "setup.h",
       "splash_screen.h",
@@ -134,6 +138,8 @@ if (is_win || is_mac || is_linux) {
       "update_service_internal_impl_inactive.h",
       "update_service_internal_impl_qualifying.cc",
       "update_service_internal_impl_qualifying.h",
+      "update_usage_stats_task.cc",
+      "update_usage_stats_task.h",
       "updater.cc",
       "updater.h",
       "updater_scope.cc",
@@ -209,6 +215,7 @@ if (is_win || is_mac || is_linux) {
         "policy/mac/managed_preference_policy_manager_impl.mm",
         "prefs_mac.mm",
         "setup_mac.mm",
+        "update_usage_stats_task_mac.mm",
         "util_mac.mm",
       ]
 
@@ -247,6 +254,7 @@ if (is_win || is_mac || is_linux) {
         "prefs_win.cc",
         "setup_win.cc",
         "update_block_check_win.cc",
+        "update_usage_stats_task_win.cc",
         "util_win.cc",
         "win/action_handler.cc",
         "win/app_install_controller.cc",
@@ -336,6 +344,7 @@ if (is_win || is_mac || is_linux) {
         "linux/update_service_proxy.cc",
         "prefs_linux.cc",
         "setup_linux.cc",
+        "update_usage_stats_task_linux.cc",
       ]
     }
   }
@@ -386,31 +395,31 @@ if (is_win || is_mac || is_linux) {
   process_version("branding_header") {
     extra_args = [
       "-e",
+      "BROWSER_NAME=\"$browser_name\"",
+      "-e",
       "COMPANY_FULLNAME=\"$updater_company_full_name\"",
       "-e",
       "COMPANY_SHORTNAME=\"$updater_company_short_name\"",
       "-e",
-      "PRODUCT_FULLNAME=\"$updater_product_full_name\"",
+      "COPYRIGHT=\"updater_copyright\"",
       "-e",
       "KEYSTONE_NAME=\"$keystone_app_name\"",
       "-e",
-      "COPYRIGHT=\"updater_copyright\"",
-      "-e",
-      "MAC_BUNDLE_IDENTIFIER=\"$mac_updater_bundle_identifier\"",
-      "-e",
-      "BROWSER_NAME=\"$browser_name\"",
-      "-e",
-      "MAC_BROWSER_BUNDLE_IDENTIFIER=\"$mac_browser_bundle_identifier\"",
-      "-e",
-      "UPDATE_CHECK_URL=\"$update_check_url\"",
+      "CRASH_PRODUCT_NAME=\"$crash_product_name\"",
       "-e",
       "CRASH_UPLOAD_URL=\"$crash_upload_url\"",
-      "-e",
-      "CRASH_STAGING_UPLOAD_URL=\"$crash_staging_upload_url\"",
       "-e",
       "DEVICE_MANAGEMENT_SERVER_URL=\"$device_management_server_url\"",
       "-e",
       "PRIVILEGED_HELPER_NAME=\"$privileged_helper_name\"",
+      "-e",
+      "PRODUCT_FULLNAME=\"$updater_product_full_name\"",
+      "-e",
+      "MAC_BROWSER_BUNDLE_IDENTIFIER=\"$mac_browser_bundle_identifier\"",
+      "-e",
+      "MAC_BUNDLE_IDENTIFIER=\"$mac_updater_bundle_identifier\"",
+      "-e",
+      "UPDATE_CHECK_URL=\"$update_check_url\"",
     ]
 
     template_file = "updater_branding.h.in"
@@ -460,6 +469,7 @@ if (is_win || is_mac || is_linux) {
     if (is_win) {
       sources += [
         "//chrome/updater/lib_util_win.cc",
+        "//chrome/updater/util_win.cc",
         "//chrome/updater/win/user_info.cc",
         "//chrome/updater/win/user_info.h",
         "//chrome/updater/win/win_constants.cc",
@@ -479,6 +489,7 @@ if (is_win || is_mac || is_linux) {
         "//chrome/updater/lib_util_mac.mm",
         "//chrome/updater/mac/mac_util.h",
         "//chrome/updater/mac/mac_util.mm",
+        "//chrome/updater/mac/privileged_helper/service_protocol.h",
         "//chrome/updater/mac/xpc_service_names.h",
         "//chrome/updater/mac/xpc_service_names.mm",
         "//chrome/updater/util_mac.mm",
@@ -488,6 +499,7 @@ if (is_win || is_mac || is_linux) {
     }
 
     visibility = [
+      "//chrome/browser",
       "//chrome/browser/ui:ui",
       "//chrome/browser/updater:*",
       "//chrome/test:*",
@@ -519,11 +531,26 @@ if (is_win || is_mac || is_linux) {
           "//chrome/updater/mac:updater_bundle_test",
           "//chrome/updater/mac:updater_test_install_script",
         ]
+
+        # Mac ASAN builds have an extra dylib that must be packaged in the CRX.
+        if (is_asan) {
+          inputs += [ "$root_build_dir/${updater_product_full_name}_test.app/Contents/MacOS/libclang_rt.asan_osx_dynamic.dylib" ]
+        }
       }
 
       if (is_win) {
         inputs = [ "$root_build_dir/UpdaterSetup_test.exe" ]
         deps = [ "//chrome/updater/win/installer:installer_test" ]
+
+        if (is_component_build) {
+          inputs += [
+            "$root_build_dir/base.dll",
+            "$root_build_dir/ui_base.dll",
+          ]
+          data = [ "$root_build_dir/ucrtbased.dll" ]
+
+          deps += [ "//ui/base" ]
+        }
       }
     }
   }
@@ -561,8 +588,10 @@ if (is_win || is_mac || is_linux) {
       "test_scope.h",
       "unittest_util_unittest.cc",
       "update_service_unittest.cc",
+      "update_usage_stats_task_unittest.cc",
       "updater_scope_unittest.cc",
       "updater_unittest.cc",
+      "util_unittest.cc",
     ]
 
     deps = [
@@ -583,6 +612,7 @@ if (is_win || is_mac || is_linux) {
       "//net:test_support",
       "//testing/gmock",
       "//testing/gtest",
+      "//third_party/crashpad/crashpad/client",
       "//third_party/re2",
       "//url",
     ]
@@ -592,6 +622,7 @@ if (is_win || is_mac || is_linux) {
         "activity_impl_win_unittest.cc",
         "policy/win/group_policy_manager_unittest.cc",
         "test/integration_tests_win.cc",
+        "util_win_unittest.cc",
         "win/installer_api_unittest.cc",
         "win/net/network_unittest.cc",
         "win/setup/setup_util_unittest.cc",
@@ -624,6 +655,20 @@ if (is_win || is_mac || is_linux) {
         "test/data/updater.runtime_deps",
         "//chrome/test/data/updater/updater_qualification_app_exe.crx",
       ]
+
+      if (target_cpu == "x64") {
+        data += [
+          "//third_party/updater/chrome_win_x86_64/UpdaterSetup_test.exe",
+          "//third_party/updater/chromium_win_x86_64/UpdaterSetup_test.exe",
+        ]
+      }
+
+      if (target_cpu == "x86") {
+        data += [
+          "//third_party/updater/chrome_win_x86/UpdaterSetup_test.exe",
+          "//third_party/updater/chromium_win_x86/UpdaterSetup_test.exe",
+        ]
+      }
     }
 
     if (is_mac) {
@@ -649,6 +694,7 @@ if (is_win || is_mac || is_linux) {
 
       data = [
         "//chrome/test/data/updater/Keystone.ticketstore",
+        "//chrome/test/data/updater/Keystone.legacy.ticketstore",
         "//chrome/test/data/updater/updater_setup_test_dmg.dmg",
         "//chrome/test/data/updater/setup_test_preinstallfailure/.preinstall",
         "//chrome/test/data/updater/setup_test_preinstallfailure/.install",
@@ -665,6 +711,14 @@ if (is_win || is_mac || is_linux) {
         "//chrome/test/data/updater/setup_test_envcheck/.install",
         "//chrome/test/data/updater/setup_test_envcheck/marker.app",
         "//chrome/test/data/updater/updater_qualification_app_dmg.crx",
+        "//third_party/updater/chrome_mac_universal/GoogleUpdater_test.app/Contents/MacOS/GoogleUpdater_test",
+        "//third_party/updater/chrome_mac_universal/GoogleUpdater_test.app/Contents/Info.plist",
+        "//third_party/updater/chrome_mac_universal/GoogleUpdater_test.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/MacOS/GoogleSoftwareUpdate",
+        "//third_party/updater/chrome_mac_universal/GoogleUpdater_test.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Resources/GoogleSoftwareUpdateAgent.app/Contents/MacOS/GoogleSoftwareUpdateAgent",
+        "//third_party/updater/chrome_mac_universal/GoogleUpdater_test.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Resources/GoogleSoftwareUpdateAgent.app/Contents/Info.plist",
+        "//third_party/updater/chrome_mac_universal/GoogleUpdater_test.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Helpers/ksinstall",
+        "//third_party/updater/chrome_mac_universal/GoogleUpdater_test.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Helpers/ksadmin",
+        "//third_party/updater/chrome_mac_universal/GoogleUpdater_test.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Info.plist",
       ]
 
       data_deps = [

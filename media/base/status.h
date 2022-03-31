@@ -16,7 +16,6 @@
 #include "base/values.h"
 #include "media/base/media_export.h"
 #include "media/base/media_serializers_base.h"
-#include "media/base/status_codes.h"
 
 // Mojo namespaces for serialization friend declarations.
 namespace mojo {
@@ -70,8 +69,9 @@ struct MEDIA_EXPORT StatusData {
   // Stack frames
   std::vector<base::Value> frames;
 
-  // Causes
-  std::vector<StatusData> causes;
+  // Store a root cause. Helpful for debugging, as it can end up containing
+  // the chain of causes.
+  std::unique_ptr<StatusData> cause;
 
   // Data attached to the error
   base::Value data;
@@ -138,6 +138,18 @@ MEDIA_EXPORT std::ostream& operator<<(
     const OkStatusImplicitConstructionHelper&);
 
 }  // namespace internal
+
+// Constant names for serialized TypedStatus<T>.
+struct MEDIA_EXPORT StatusConstants {
+  static const char kCodeKey[];
+  static const char kGroupKey[];
+  static const char kMsgKey[];
+  static const char kStackKey[];
+  static const char kDataKey[];
+  static const char kCauseKey[];
+  static const char kFileKey[];
+  static const char kLineKey[];
+};
 
 // See media/base/status.md for details and instructions for using TypedStatus.
 template <typename T>
@@ -268,7 +280,9 @@ class MEDIA_EXPORT TypedStatus {
   template <typename AnyTraitsType>
   TypedStatus<T>&& AddCause(TypedStatus<AnyTraitsType>&& cause) && {
     DCHECK(data_ && cause.data_);
-    data_->causes.push_back(*cause.data_);
+    // The |cause| status is about to lose its type forever. We need to pack
+    // the group and code now to avoid losing it in the future.
+    data_->cause = std::move(cause.data_);
     return std::move(*this);
   }
 
@@ -276,7 +290,9 @@ class MEDIA_EXPORT TypedStatus {
   template <typename AnyTraitsType>
   void AddCause(TypedStatus<AnyTraitsType>&& cause) & {
     DCHECK(data_ && cause.data_);
-    data_->causes.push_back(*cause.data_);
+    // The |cause| status is about to lose its type forever. We need to pack
+    // the group and code now to avoid losing it in the future.
+    data_->cause = std::move(cause.data_);
   }
 
   inline bool operator==(Codes code) const { return code == this->code(); }
@@ -432,9 +448,6 @@ class MEDIA_EXPORT TypedStatus {
  private:
   std::unique_ptr<internal::StatusData> data_;
 
-  // Let the status sink talk about the internal data.
-  friend class StatusSink;
-
   template <typename StatusEnum, typename DataView>
   friend struct mojo::StructTraits;
 
@@ -444,10 +457,6 @@ class MEDIA_EXPORT TypedStatus {
   // Allow AddCause.
   template <typename StatusEnum>
   friend class TypedStatus;
-
-  void SetInternalData(std::unique_ptr<internal::StatusData> data) {
-    data_ = std::move(data);
-  }
 };
 
 template <typename T>
@@ -459,18 +468,6 @@ template <typename T>
 inline bool operator!=(typename T::Codes code, const TypedStatus<T>& status) {
   return status != code;
 }
-
-// Define TypedStatus<StatusCode> as Status in the media namespace for
-// backwards compatibility. Also define StatusOr as Status::Or for the
-// same reason.
-struct GeneralStatusTraits {
-  using Codes = StatusCode;
-  static constexpr StatusGroupType Group() { return "GeneralStatusCode"; }
-  static constexpr StatusCode DefaultEnumValue() { return StatusCode::kOk; }
-};
-using Status = TypedStatus<GeneralStatusTraits>;
-template <typename T>
-using StatusOr = Status::Or<T>;
 
 // Convenience function to return |kOk|.
 // OK won't have a message, trace, or data associated with them, and DCHECK

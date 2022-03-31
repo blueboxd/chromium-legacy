@@ -27,10 +27,15 @@
 #include "chrome/browser/ash/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/ash/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/ash/certificate_provider/test_certificate_provider_extension.h"
+#include "chrome/browser/ash/certificate_provider/test_certificate_provider_extension_mixin.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
+#include "chrome/browser/ash/login/saml/security_token_saml_test.h"
 #include "chrome/browser/ash/login/test/cryptohome_mixin.h"
+#include "chrome/browser/ash/login/test/js_checker.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
+#include "chrome/browser/ash/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/ash/login/test/test_predicate_waiter.h"
+#include "chrome/browser/ash/login/users/test_users.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -47,9 +52,7 @@
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/session_manager/session_manager_types.h"
-#include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/known_user.h"
-#include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/common/features/simple_feature.h"
@@ -258,11 +261,6 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
     WaitForLoginScreenWidgetShown();
   }
 
-  void TearDownOnMainThread() override {
-    certificate_provider_extension_.reset();
-    MixinBasedInProcessBrowserTest::TearDownOnMainThread();
-  }
-
   // LocalStateMixin::Delegate:
 
   void SetUpLocalState() override { RegisterChallengeResponseKey(); }
@@ -272,7 +270,7 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
   }
 
   TestCertificateProviderExtension* certificate_provider_extension() {
-    return certificate_provider_extension_.get();
+    return test_certificate_provider_extension_mixin_.extension();
   }
 
   void StartLoginAndWaitForPinDialog() {
@@ -308,17 +306,12 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
 
   // Configures and installs the login screen certificate provider extension.
   void PrepareCertificateProviderExtension() {
-    certificate_provider_extension_ =
-        std::make_unique<TestCertificateProviderExtension>(
-            GetOriginalSigninProfile());
-    certificate_provider_extension_->set_require_pin(kCorrectPin);
     extension_force_install_mixin_.InitWithMockPolicyProvider(
         GetOriginalSigninProfile(), policy_provider());
-    EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromSourceDir(
-        TestCertificateProviderExtension::GetExtensionSourcePath(),
-        TestCertificateProviderExtension::GetExtensionPemPath(),
-        ExtensionForceInstallMixin::WaitMode::kBackgroundPageFirstLoad));
-    certificate_provider_extension_->TriggerSetCertificates();
+    ASSERT_NO_FATAL_FAILURE(
+        test_certificate_provider_extension_mixin_.ForceInstall(
+            GetOriginalSigninProfile()));
+    certificate_provider_extension()->set_require_pin(kCorrectPin);
   }
 
   // Waits until the Login or Lock screen is shown.
@@ -336,13 +329,6 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
 
  private:
   void RegisterChallengeResponseKey() {
-    // The global user manager is not created until after the Local State is
-    // initialized, but in order for the user_manager::known_user:: methods to
-    // work we create a temporary instance of the user manager here.
-    auto user_manager = std::make_unique<user_manager::FakeUserManager>();
-    user_manager->set_local_state(g_browser_process->local_state());
-    user_manager::ScopedUserManager scoper(std::move(user_manager));
-
     ChallengeResponseKey challenge_response_key;
     challenge_response_key.set_public_key_spki_der(
         TestCertificateProviderExtension::GetCertificateSpki());
@@ -351,9 +337,9 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
 
     base::Value challenge_response_keys_value =
         SerializeChallengeResponseKeysForKnownUser({challenge_response_key});
-    user_manager::known_user::SetChallengeResponseKeys(
-        GetChallengeResponseAccountId(),
-        std::move(challenge_response_keys_value));
+    user_manager::KnownUser(g_browser_process->local_state())
+        .SetChallengeResponseKeys(GetChallengeResponseAccountId(),
+                                  std::move(challenge_response_keys_value));
   }
 
   // Bypass "signin_screen" feature only enabled for allowlisted extensions.
@@ -371,8 +357,9 @@ class SecurityTokenLoginTest : public MixinBasedInProcessBrowserTest,
   ExtensionForceInstallMixin extension_force_install_mixin_{&mixin_host_};
   testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
 
-  std::unique_ptr<TestCertificateProviderExtension>
-      certificate_provider_extension_;
+  TestCertificateProviderExtensionMixin
+      test_certificate_provider_extension_mixin_{
+          &mixin_host_, &extension_force_install_mixin_};
 
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -523,21 +510,17 @@ class SecurityTokenSessionBehaviorTest : public SecurityTokenLoginTest {
 
   // Configures and installs the user session certificate provider extension.
   void PrepareUserCertificateProviderExtension() {
-    user_certificate_provider_extension_ =
-        std::make_unique<TestCertificateProviderExtension>(profile());
     user_extension_mixin_.InitWithMockPolicyProvider(profile(),
                                                      policy_provider());
-    EXPECT_TRUE(user_extension_mixin_.ForceInstallFromSourceDir(
-        TestCertificateProviderExtension::GetExtensionSourcePath(),
-        TestCertificateProviderExtension::GetExtensionPemPath(),
-        ExtensionForceInstallMixin::WaitMode::kBackgroundPageFirstLoad));
+    ASSERT_NO_FATAL_FAILURE(
+        test_certificate_provider_extension_mixin_.ForceInstall(profile()));
   }
 
   // Makes the user session extension call certificateProvider.setCertificates()
   // without providing any certificates, thus simulating the removal of a
   // security token.
   void SimulateSecurityTokenRemoval() {
-    ASSERT_TRUE(user_certificate_provider_extension_);
+    ASSERT_TRUE(user_certificate_provider_extension());
     user_certificate_provider_extension()->set_should_provide_certificates(
         false);
     user_certificate_provider_extension()->TriggerSetCertificates();
@@ -566,15 +549,16 @@ class SecurityTokenSessionBehaviorTest : public SecurityTokenLoginTest {
 
   Profile* profile() const { return profile_; }
 
-  TestCertificateProviderExtension* user_certificate_provider_extension()
-      const {
-    return user_certificate_provider_extension_.get();
+  TestCertificateProviderExtension* user_certificate_provider_extension() {
+    return test_certificate_provider_extension_mixin_.extension();
   }
 
  private:
   ExtensionForceInstallMixin user_extension_mixin_{&mixin_host_};
-  std::unique_ptr<TestCertificateProviderExtension>
-      user_certificate_provider_extension_;
+  TestCertificateProviderExtensionMixin
+      test_certificate_provider_extension_mixin_{&mixin_host_,
+                                                 &user_extension_mixin_};
+
   Profile* profile_ = nullptr;
 };
 
@@ -642,6 +626,68 @@ IN_PROC_BROWSER_TEST_F(SecurityTokenSessionBehaviorTest, NotificationSeconds) {
 
   // After the notification expires, the device gets locked.
   chrome_session_observer.WaitForSessionLocked();
+}
+
+// Tests the SecurityTokenSessionBehavior policy in the initial user session
+// after that user has been created.
+class SecurityTokenSessionBehaviorSamlTest : public SecurityTokenSamlTest {
+ protected:
+  SecurityTokenSessionBehaviorSamlTest() = default;
+  SecurityTokenSessionBehaviorSamlTest(
+      const SecurityTokenSessionBehaviorSamlTest&) = delete;
+  SecurityTokenSessionBehaviorSamlTest& operator=(
+      const SecurityTokenSessionBehaviorSamlTest&) = delete;
+  ~SecurityTokenSessionBehaviorSamlTest() override = default;
+
+  // Configures and installs the user session certificate provider extension.
+  void PrepareUserCertificateProviderExtension(Profile* profile) {
+    user_extension_mixin_.InitWithMockPolicyProvider(profile,
+                                                     policy_provider());
+    ASSERT_NO_FATAL_FAILURE(
+        test_certificate_provider_extension_mixin_.ForceInstall(profile));
+  }
+
+  // Makes the user session extension call certificateProvider.setCertificates()
+  // without providing any certificates, thus simulating the removal of a
+  // security token.
+  void SimulateSecurityTokenRemoval() {
+    ASSERT_TRUE(user_certificate_provider_extension());
+    user_certificate_provider_extension()->set_should_provide_certificates(
+        false);
+    user_certificate_provider_extension()->TriggerSetCertificates();
+  }
+
+  TestCertificateProviderExtension* user_certificate_provider_extension() {
+    return test_certificate_provider_extension_mixin_.extension();
+  }
+
+ private:
+  ExtensionForceInstallMixin user_extension_mixin_{&mixin_host_};
+  TestCertificateProviderExtensionMixin
+      test_certificate_provider_extension_mixin_{&mixin_host_,
+                                                 &user_extension_mixin_};
+};
+
+// Tests the SecurityTokenSessionBehavior policy with value "LOGOUT".
+IN_PROC_BROWSER_TEST_F(SecurityTokenSessionBehaviorSamlTest, Logout) {
+  // Login
+  StartSignIn();
+  WaitForPinDialog();
+  InputPinByClickingKeypad(GetCorrectPin());
+  ClickPinDialogSubmit();
+  test::WaitForPrimaryUserSessionStart();
+
+  // Setup extension and pref.
+  Profile* profile = ProfileHelper::Get()->GetProfileByUser(
+      user_manager::UserManager::Get()->GetActiveUser());
+  PrepareUserCertificateProviderExtension(profile);
+  profile->GetPrefs()->SetString(prefs::kSecurityTokenSessionBehavior,
+                                 "LOGOUT");
+
+  // Removal of the certificate should lead to the end of the current session.
+  ChromeSessionObserver chrome_session_observer;
+  SimulateSecurityTokenRemoval();
+  chrome_session_observer.WaitForChromeTerminating();
 }
 
 }  // namespace ash

@@ -12,6 +12,8 @@
 #include "third_party/blink/public/common/font_access/font_enumeration_table.pb.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_query_options.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
@@ -54,29 +56,17 @@ void FontManager::Trace(blink::Visitor* visitor) const {
   ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
-void FontManager::DidShowFontChooser(
-    ScriptPromiseResolver* resolver,
-    FontEnumerationStatus status,
-    Vector<mojom::blink::FontMetadataPtr> fonts) {
-  if (RejectPromiseIfNecessary(status, resolver))
-    return;
-
-  auto entries = HeapVector<Member<FontMetadata>>();
-  for (const auto& font : fonts) {
-    auto entry = FontEnumerationEntry{.postscript_name = font->postscript_name,
-                                      .full_name = font->full_name,
-                                      .family = font->family,
-                                      .style = font->style};
-    entries.push_back(FontMetadata::Create(std::move(entry)));
-  }
-  resolver->Resolve(std::move(entries));
-}
-
 void FontManager::DidGetEnumerationResponse(
     ScriptPromiseResolver* resolver,
     const Vector<String>& selection,
     FontEnumerationStatus status,
     base::ReadOnlySharedMemoryRegion region) {
+  DCHECK(resolver);
+  if (!IsInParallelAlgorithmRunnable(resolver->GetExecutionContext(),
+                                     resolver->GetScriptState()))
+    return;
+
+  ScriptState::Scope script_state_scope(resolver->GetScriptState());
   if (RejectPromiseIfNecessary(status, resolver))
     return;
 
@@ -125,29 +115,35 @@ bool FontManager::RejectPromiseIfNecessary(const FontEnumerationStatus& status,
     case FontEnumerationStatus::kOk:
       break;
     case FontEnumerationStatus::kUnimplemented:
-      resolver->Reject(MakeGarbageCollected<DOMException>(
+      resolver->Reject(V8ThrowDOMException::CreateOrDie(
+          resolver->GetScriptState()->GetIsolate(),
           DOMExceptionCode::kNotSupportedError,
           "Not yet supported on this platform."));
       return true;
     case FontEnumerationStatus::kCanceled:
-      resolver->Reject(MakeGarbageCollected<DOMException>(
+      resolver->Reject(V8ThrowDOMException::CreateOrDie(
+          resolver->GetScriptState()->GetIsolate(),
           DOMExceptionCode::kAbortError, "The user canceled the operation."));
       return true;
     case FontEnumerationStatus::kNeedsUserActivation:
-      resolver->Reject(MakeGarbageCollected<DOMException>(
+      resolver->Reject(V8ThrowDOMException::CreateOrDie(
+          resolver->GetScriptState()->GetIsolate(),
           DOMExceptionCode::kSecurityError, "User activation is required."));
       return true;
     case FontEnumerationStatus::kNotVisible:
-      resolver->Reject(MakeGarbageCollected<DOMException>(
+      resolver->Reject(V8ThrowDOMException::CreateOrDie(
+          resolver->GetScriptState()->GetIsolate(),
           DOMExceptionCode::kSecurityError, "Page needs to be visible."));
       return true;
     case FontEnumerationStatus::kPermissionDenied:
-      resolver->Reject(MakeGarbageCollected<DOMException>(
+      resolver->Reject(V8ThrowDOMException::CreateOrDie(
+          resolver->GetScriptState()->GetIsolate(),
           DOMExceptionCode::kNotAllowedError, "Permission not granted."));
       return true;
     case FontEnumerationStatus::kUnexpectedError:
     default:
-      resolver->Reject(MakeGarbageCollected<DOMException>(
+      resolver->Reject(V8ThrowDOMException::CreateOrDie(
+          resolver->GetScriptState()->GetIsolate(),
           DOMExceptionCode::kUnknownError, "An unexpected error occured."));
       return true;
   }

@@ -1207,8 +1207,8 @@ Try tapping the mic to ask me anything.
       <message name="IDS_NETWORK_TYPE_VPN" desc="Label for VPN networks.">
         VPN
       </message>
-      <message name="IDS_NETWORK_TYPE_VPN_BUILTIN" desc="The built-in VPN types (Open VPN and L2TP/IPSec).">
-        OpenVPN / L2TP
+      <message name="IDS_NETWORK_TYPE_VPN_BUILTIN" desc="Label for the built-in VPN types.">
+        Built-in VPN
       </message>
       <message name="IDS_NETWORK_TYPE_WIRELESS" desc="Label for wireless networks (Cellular, Tether, and WiFi.).">
         Wireless
@@ -1305,8 +1305,23 @@ Try tapping the mic to ask me anything.
       <message name="IDS_ONC_VPN_THIRD_PARTY_VPN_PROVIDER_NAME" desc="ONC Property label for VPN.ThirdPartyVPN.ProviderName">
         Provider name
       </message>
+      <message name="IDS_ONC_VPN_OPENVPN_AUTH" desc="Settings > Network > OpenVPN Network Detail Page > label for the message digest algorithm used to authenticate data chanel packets.">
+        Authentication algorithm
+      </message>
+      <message name="IDS_ONC_VPN_OPENVPN_CIPHER" desc="Settings > Network > OpenVPN Network Detail Page > label for the cipher algorithm used to encrypt data chanel packets.">
+        Encryption algorithm
+      </message>
+      <message name="IDS_ONC_VPN_OPENVPN_COMPRESSION_ALGORITHM" desc="Settings > Network > OpenVPN Network Detail Page > label for the compression algorithm used to compress packets.">
+        Compression algorithm
+      </message>
+      <message name="IDS_ONC_VPN_OPENVPN_KEY_DIRECTION" desc="Settings > Network > OpenVPN Network Detail Page > label for the direction (server to client, or reverse) of the TLS authentication key.">
+        Key direction
+      </message>
       <message name="IDS_ONC_VPN_OPENVPN_OTP" desc="ONC Property label for VPN.OpenVPN.OTP">
         OTP
+      </message>
+      <message name="IDS_ONC_VPN_OPENVPN_TLS_AUTH_CONTENTS" desc="Settings > Network > OpenVPN Network Detail Page > label for the key used to sign TLS control channel packets.">
+        TLS authentication key
       </message>
       <message name="IDS_ONC_VPN_TYPE_L2TP_IPSEC" desc="ONC Property label for VPN.Type.L2TP-IPSec">
         L2TP/IPsec
@@ -1981,13 +1996,60 @@ Try tapping the mic to ask me anything.
       <message name="IDS_PERSONALIZATION_APP_THEME_LIGHT_COLOR_MODE" desc="Label for light color mode setting">
         Light
       </message>
+      <message name="IDS_PERSONALIZATION_APP_THEME_AUTO_COLOR_MODE" desc="Label for auto color mode setting">
+        Auto
+      </message>
       <message name="IDS_PERSONALIZATION_APP_AVATAR_LABEL" desc="Label for the Avatar page in Personalization app.">
         Avatar
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AVATAR_TAKE_PHOTO" desc="Label for the button to take a webcam photo">
+        Take a photo
       </message>
       <message name="IDS_PERSONALIZATION_APP_SCREENSAVER_LABEL" desc="Label for the Screensaver page in Personalization app.">
         Screensaver
       </message>
-
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_PAGE_DESCRIPTION" desc="Description for the ambient mode settings page.">
+        When your screen is idle, show photos, time, weather, and media info.
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_ON" desc="Label for the toggle row in ambient mode settings page when it is enabled.">
+        On
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_OFF" desc="Label for the toggle row in ambient mode settings page when it is disabled.">
+        Off
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_TITLE" desc="Label for the radio button group of ambient mode topic source, where the screen contents come from.">
+       Image source
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_GOOGLE_PHOTOS" desc="Label for the radio button to choose the topic source from Google Photos. The radio button allows the user to set Google Photos for ambient mode, which shows photos to the user when their device is idle.">
+        Google Photos
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_GOOGLE_PHOTOS_DESC" desc="Description for the radio button to choose the topic source from Google Photos. The radio button allows the user to set Google Photos for ambient mode, which shows photos to the user when their device is idle.">
+        Choose your favorite photos and albums
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_GOOGLE_PHOTOS_DESC_NO_ALBUM" desc="Description for the radio button to choose the topic source from Google Photos when there is no album. The radio button allows the user to set Google Photos for ambient mode, which shows photos to the user when their device is idle.">
+        To create albums, go to Google Photos
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_ART_GALLERY" desc="Label for the radio button to choose the topic source from art gallery. The radio button allows the user to set Art gallery for ambient mode, which shows photos to the user when their device is idle.">
+        Art gallery
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_ART_GALLERY_DESCRIPTION" desc="Description for the radio button to choose the topic source from art gallery. The radio button allows the user to set Art gallery for ambient mode, which shows photos to the user when their device is idle.">
+        Select curated artwork and images
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_SELECTED_ROW" desc="A11y label for the selected topic source row in ambient mode.">
+        <ph name="TOPIC_SOURCE">$1<ex>Google Photos</ex></ph> <ph name="TOPIC_SOURCE_DESC">$2<ex>Select your memories</ex></ph> selected, press Enter to select <ph name="TOPIC_SOURCE">$1<ex>Google Photos</ex></ph> albums
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_UNSELECTED_ROW" desc="A11y label for the unselected topic source row in ambient mode.">
+        Select <ph name="TOPIC_SOURCE">$1<ex>Google Photos</ex></ph> <ph name="TOPIC_SOURCE_DESC">$2<ex>Select your memories</ex></ph>
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_WEATHER_TITLE" desc="Label for the radio button group of ambient mode weather unit.">
+        Weather
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_WEATHER_UNIT_FAHRENHEIT" desc="Label for the radio button to choose weather unit as Fahrenheit.">
+        Fahrenheit
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_WEATHER_UNIT_CELSIUS" desc="Label for the radio button group of choose weather unit as Celsius.">
+        Celsius
+      </message>
       <!-- Traffic Counters UI -->
       <message name="IDS_TRAFFIC_COUNTERS_UNKNOWN" desc="Traffic counters related to an unknown source">
         Unknown
@@ -2035,6 +2097,32 @@ Try tapping the mic to ask me anything.
         Traffic Counters
       </message>
 
+      <!-- Traffic Counters in Settings UI -->
+      <message name="IDS_TRAFFIC_COUNTERS_DATA_USAGE_LABEL" desc="Settings > Network > Mobile data > SIM > Data usage, label to display data usage section">
+        Data usage
+      </message>
+      <message name="IDS_TRAFFIC_COUNTERS_DATA_USAGE_SINCE_LABEL" desc="Settings > Network > Mobile data > SIM > Data usage, text to display currenet data usage">
+          Data usage since <ph name="FRIENDLY_DATE">$1<ex>Wednesday, February 9, 2022</ex></ph>
+      </message>
+      <message name="IDS_TRAFFIC_COUNTERS_DATA_USAGE_RESET_BUTTON_LABEL" desc="Settings > Network > Mobile data > SIM > Data usage, label to reset data usage">
+        Reset
+      </message>
+      <message name="IDS_TRAFFIC_COUNTERS_DATA_USAGE_RESET_LABEL" desc="Settings > Network > Mobile data > SIM > Data usage, text to reset data usage">
+        Manually reset data usage
+      </message>
+      <message name="IDS_TRAFFIC_COUNTERS_DATA_USAGE_LAST_RESET_DATE_UNAVAILABLE_LABEL" desc="Settings > Network > Mobile data > SIM > Data usage, text to show missing last reset information">
+        Date of last data reset is unavailable
+      </message>
+      <message name="IDS_TRAFFIC_COUNTERS_DATA_USAGE_ENABLE_AUTO_RESET_LABEL" desc="Settings > Network > Mobile data > SIM > Data usage, text to reset data usage">
+        Enable automatic monthly reset
+      </message>
+      <message name="IDS_TRAFFIC_COUNTERS_DATA_USAGE_ENABLE_AUTO_RESET_SUBLABEL" desc="Settings > Network > Mobile data > SIM > Data usage, text to reset data usage">
+        Automatically resets data usage every month on a selected day
+      </message>
+      <message name="IDS_TRAFFIC_COUNTERS_DATA_USAGE_AUTO_RESET_DAY_OF_MONTH_LABEL" desc="Settings > Network > Mobile data > SIM > Data usage, text to reset data usage">
+        Day of month for reset
+      </message>
+
       <!-- Bluetooth -->
       <message name="IDS_BLUETOOTH_DEVICE_LIST_CURRENTLY_CONNECTED" desc="Title for list displaying paired Bluetooth devices that are currently connected.">
         Currently connected
@@ -2044,6 +2132,61 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_BLUETOOTH_DEVICE_LIST_NO_CONNECTED_DEVICES" desc="Text displayed indicating there are currently no paired Bluetooth devices.">
         No device connected
+      </message>
+      <!-- Connection statuses -->
+      <message name="IDS_BLUETOOTH_A11Y_DEVICE_CONNECTION_STATE_CONNECTED" desc="Accessibility text for the connection status of a device that is connected.">
+        Device is connected.
+      </message>
+      <message name="IDS_BLUETOOTH_A11Y_DEVICE_CONNECTION_STATE_CONNECTING" desc="Accessibility text for the connection status of a device that is connecting.">
+        Device is connecting.
+      </message>
+      <message name="IDS_BLUETOOTH_A11Y_DEVICE_CONNECTION_STATE_NOT_CONNECTED" desc="Accessibility text for the connection status of a device that is not connected.">
+        Device is not connected.
+      </message>
+      <!-- Device types -->
+      <message name="IDS_BLUETOOTH_A11Y_DEVICE_TYPE_UNKNOWN" desc="Accessibility text for the type of a device whose type is unknown.">
+        Device type is unknown.
+      </message>
+      <message name="IDS_BLUETOOTH_A11Y_DEVICE_TYPE_COMPUTER" desc="Accessibility text for the type of a device that is a computer.">
+        Device is a computer.
+      </message>
+      <message name="IDS_BLUETOOTH_A11Y_DEVICE_TYPE_PHONE" desc="Accessibility text for the type of a device that is a phone.">
+        Device is a phone.
+      </message>
+      <message name="IDS_BLUETOOTH_A11Y_DEVICE_TYPE_HEADSET" desc="Accessibility text for the type of a device that is an audio device.">
+        Device is an audio device.
+      </message>
+      <message name="IDS_BLUETOOTH_A11Y_DEVICE_TYPE_VIDEO_CAMERA" desc="Accessibility text for the type of a device that is a video camera.">
+        Device is a video camera.
+      </message>
+      <message name="IDS_BLUETOOTH_A11Y_DEVICE_TYPE_GAME_CONTROLLER" desc="Accessibility text for the type of a device that is a game controller.">
+        Device is a game controller.
+      </message>
+      <message name="IDS_BLUETOOTH_A11Y_DEVICE_TYPE_KEYBOARD" desc="Accessibility text for the type of a device that is a keyboard.">
+        Device is a keyboard.
+      </message>
+      <message name="IDS_BLUETOOTH_A11Y_DEVICE_TYPE_MOUSE" desc="Accessibility text for the type of a device that is a mouse.">
+        Device is a mouse.
+      </message>
+      <message name="IDS_BLUETOOTH_A11Y_DEVICE_TYPE_TABLET" desc="Accessibility text for the type of a device that is a tablet.">
+        Device is a tablet.
+      </message>
+      <!-- Battery information -->
+      <message name="IDS_BLUETOOTH_A11Y_DEVICE_BATTERY_INFO" desc="Accessibility text for the battery of a device.">
+        Device has <ph name="BATTERY_PERCENTAGE">$1<ex>100</ex></ph>% battery.
+      </message>
+      <message name="IDS_BLUETOOTH_A11Y_DEVICE_NAMED_BATTERY_INFO_LEFT_BUD" desc="Accessibility text for the left bud battery of a true wireless device.">
+        Device has <ph name="BATTERY_PERCENTAGE">$1<ex>100</ex></ph>% left bud battery.
+      </message>
+      <message name="IDS_BLUETOOTH_A11Y_DEVICE_NAMED_BATTERY_INFO_CASE" desc="Accessibility text for the case battery of a true wireless device.">
+        Device has <ph name="BATTERY_PERCENTAGE">$1<ex>100</ex></ph>% case battery.
+      </message>
+      <message name="IDS_BLUETOOTH_A11Y_DEVICE_NAMED_BATTERY_INFO_RIGHT_BUD" desc="Accessibility text for the right bud battery of a true wireless device.">
+        Device has <ph name="BATTERY_PERCENTAGE">$1<ex>100</ex></ph>% right bud battery.
+      </message>
+      <!-- Formattable strings -->
+      <message name="IDS_BLUETOOTH_A11Y_DEVICE_NAME" desc="Label to display the name of a device item within a device list.">
+        Device <ph name="INDEX">$1<ex>1</ex></ph> of <ph name="COUNT">$2<ex>15</ex></ph> named <ph name="NAME">$3<ex>Beats</ex></ph>.
       </message>
 
       <!-- Shimless RMA -->
@@ -2136,6 +2279,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_SHIMLESS_RMA_OK_BUTTON" desc="Default text for OK button used to acknowledge and close dialogs.">
         OK
+      </message>
+      <message name="IDS_SHIMLESS_RMA_RETRY_BUTTON" desc="Default text for Retry button used to retry an action.">
+        Retry
       </message>
       <!-- Landing page -->
       <message name="IDS_SHIMLESS_RMA_LANDING_PAGE_TITLE" translateable="false" desc="Title for the landing page at the start of RMA.">
@@ -2234,8 +2380,8 @@ Try tapping the mic to ask me anything.
         Done
       </message>
       <!-- Manual write protect disable complete page -->
-      <message name="IDS_SHIMLESS_RMA_WP_DISABLE_COMPLETE_PAGE_TITLE" translateable="false" desc="Title for the manual write protect disable complete page. Displays next steps, either reassemble device or leave wp disabled until further notice.">
-        Manual write-protect disable complete
+      <message name="IDS_SHIMLESS_RMA_WP_DISABLE_COMPLETE_PAGE_TITLE" translateable="false" desc="Title for the write protect disable complete page. Displays next steps, either reassemble device or leave wp disabled until further notice.">
+        Write Protect is turned off
       </message>
       <message name="IDS_SHIMLESS_RMA_WP_DISABLE_SKIPPED_MESSAGE" translateable="false" desc="If the device already had write protection disabled before reaching the 'choose method' page the flow skips straight to this page and informs the user they can manually re-enable if it is currently manually disabled. It is not possible for the device to determine this automatically, so the instructions must cover both cases.">
         Write protection is already disabled. If the device is disassembled you may reassemble it now.
@@ -2255,6 +2401,15 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_SHIMLESS_RMA_CALIBRATION_FAILED_RETRY_BUTTON_LABEL" translateable="false" desc="The label for the button to retry calibrating.">
         Retry calibration
+      </message>
+      <message name="IDS_SHIMLESS_RMA_CALIBRATION_FAILED_DIALOG_TITLE" translateable="false" desc="The title for the dialog warning users they have components that failed calibration.">
+        Proceed with failed calibrations?
+      </message>
+      <message name="IDS_SHIMLESS_RMA_CALIBRATION_FAILED_DIALOG_TEXT" translateable="false" desc="The text in the dialog warning users the consequences of proceeding with components that failed calibration.">
+        Components may not work correctly unless calibrated
+      </message>
+      <message name="IDS_SHIMLESS_RMA_CALIBRATION_FAILED_SKIP_CALIBRATION_LABEL" translateable="false" desc="The label for the button letting the user skip component calibration.">
+        Skip calibration
       </message>
       <!-- Setup calibration page -->
       <message name="IDS_SHIMLESS_RMA_SETUP_CALIBRATION_PAGE_TITLE" translateable="false" desc="Title for the page that displays specific instructions required for some calibration steps.">
@@ -2367,8 +2522,11 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SHIMLESS_RMA_UPDATE_OS_PAGE_TITLE" translateable="false" desc="Title of Chrome OS update page.">
         Make sure Chrome OS is up to date
       </message>
-      <message name="IDS_SHIMLESS_RMA_UPDATE_OS_INVALID_COMPONENTS" translateable="false" desc="Description when components could not be validated.">
-        An unrecognized component has been found. Unrecognized devices will not be configured correctly and may be unusable. Updating to the latest version of Chrome OS may resolve this issue.
+      <message name="IDS_SHIMLESS_RMA_UPDATE_OS_UNQUALIFIED_COMPONENTS_TOP" translateable="false" desc="Description when components not qualified for Chrome OS are detected.">
+        <ph name="LINK_BEGIN">&lt;a id="unqualifiedComponentsLink"&gt;</ph>Unqualified components<ph name="LINK_END">&lt;/a&gt;</ph> found. To make sure all qualified componets are identified, update your Chrome OS to the latest version.
+      </message>
+      <message name="IDS_SHIMLESS_RMA_UPDATE_OS_UNQUALIFIED_COMPONENTS_BOTTOM" translateable="false" desc="Description when components not qualified for Chrome OS are detected.">
+        If you still see the issue after the update, it's possible the component is newly qualified and hasn't made it to the database yet.
       </message>
       <message name="IDS_SHIMLESS_RMA_UPDATE_OS_VERY_OUT_OF_DATE" translateable="false" desc="Description when the installed OS is too many versions behind the update.">
         Chrome OS needs an additional update to get fully up to date
@@ -2463,10 +2621,10 @@ Try tapping the mic to ask me anything.
       Install firmware image
       </message>
       <message name="IDS_SHIMLESS_RMA_FIRMWARE_WAIT_FOR_USB" translateable="false" desc="The prompt to insert a thumb drive with the recovery image for this device.">
-      Insert your thumb drive with the downloaded recovery image.
+        Insert your thumb drive with the downloaded recovery image.
       </message>
       <message name="IDS_SHIMLESS_RMA_FIRMWARE_FILE_NOT_FOUND" translateable="false" desc="The message when a thumb drive is detected but it does not conatin a valid recovery image for this device.">
-      Recovery image not found. Insert your thumb drive with the downloaded recovery image.
+        No image found. Insert a valid USB thumb drive
       </message>
       <message name="IDS_SHIMLESS_RMA_FIRMWARE_UPDATING" translateable="false" desc="The message when the firmware is being installed.">
       Installing firmware...
@@ -2522,10 +2680,10 @@ Try tapping the mic to ask me anything.
         Error
       </message>
       <message name="IDS_SHIMLESS_RMA_CRITICAL_ERROR_MESSAGE" translateable="false" desc="The message for the critical error when Shimless RMA app is launched when not in RMA. This should never happen.">
-        We're running into errors. Try rebooting or recover the firmware using a USB thumbdrive.
+        We're running into errors. Try rebooting or return to the login screen.
       </message>
-      <message name="IDS_SHIMLESS_RMA_CRITICAL_RECOVER_FIRMWARE_BUTTON" translateable="false" desc="Label for the button that attempts to recover firmware.">
-        Recover firmware image
+      <message name="IDS_SHIMLESS_RMA_CRITICAL_EXIT_BUTTON" translateable="false" desc="Label for the exit button on the error page.">
+        Exit repair
       </message>
       <message name="IDS_SHIMLESS_RMA_CRITICAL_REBOOT_BUTTON" translateable="false" desc="Label for the button that attempts to cancel RMA and reboot the device.">
         Reboot
@@ -2553,42 +2711,53 @@ Try tapping the mic to ask me anything.
       <message name="IDS_FIRMWARE_UPDATE_BUTTON_TEXT" desc="Label for button to start the firmware update.">
         Update
       </message>
+      <message name="IDS_FIRMWARE_UPDATE_BUTTON_A11Y_LABEL" desc="A11y Label for button to start the firmware update.">
+        Update <ph name="DEVICE_NAME">$1<ex>Logitech keyboard</ex></ph>
+      </message>
+      <message name="IDS_FIRMWARE_OK_BUTTON_TEXT" desc="Label for button shown when an install fails.">
+        OK
+      </message>
       <message name="IDS_FIRMWARE_UPDATING_TEXT" desc="Label for showing that a device is being updated.">
-        Updating <ph name="DEVICE_NAME">$1<ex>Logitech keyboard</ex></ph>
+        Updating firmware on <ph name="DEVICE_NAME">$1<ex>Logitech keyboard</ex></ph>
       </message>
       <message name="IDS_FIRMWARE_DEVICE_UP_TO_DATE_TEXT" desc="Label for when a device is up to date.">
-        Your <ph name="DEVICE_NAME">$1<ex>Logitech keyboard</ex></ph> is up to date
+        Your <ph name="DEVICE_NAME">$1<ex>Logitech keyboard</ex></ph> is now up to date
       </message>
       <message name="IDS_FIRMWARE_HAS_BEEN_UPDATED_TEXT" desc="Label for displaying which version the device has been updated to.">
         Firmware <ph name="DEVICE_NAME">$1<ex>Logitech keyboard</ex></ph> has been updated to version <ph name="VERSION">$2<ex>2.0.12</ex></ph>
       </message>
       <message name="IDS_FIRMWARE_UPDATING_INFO_TEXT" desc="Label for communicating information about what actions a user can take during an update.">
-        While updating, you can minimize window but do not unplug your device. This may take a few minutes and your device might not work during this update
+        While the firmware is updating, do not unplug this external device or shut down your computer. You can minimize this window. This update may take a few minutes and your external device may not work during this time.
       </message>
       <message name="IDS_FIRMWARE_INSTALLING_TEXT" desc="Label that displays what percentage of the update has been installed.">
-        Installing - <ph name="PERCENTAGE_VALUE">$1<ex>94</ex></ph>%
+        Updating (<ph name="PERCENTAGE_VALUE">$1<ex>94</ex></ph>% complete)
       </message>
       <message name="IDS_FIRMWARE_UP_TO_DATE_TEXT" desc="Label shown when no firmware updates are available.">
-        All peripherals are up to date
+        All firmware is up to date
       </message>
       <message name="IDS_FIRMWARE_VERSION_TEXT" desc="Label for the update's version.">
         Version <ph name="VERSION">$1<ex>3.0.2</ex></ph>
       </message>
-      <!-- TODO(michaelcheco): Update strings after UX review. -->
-      <message translateable="false" name="IDS_FIRMWARE_RESTARTING_TITLE_TEXT" desc="Label for showing that a device is being restarted.">
+      <message name="IDS_FIRMWARE_RESTARTING_TITLE_TEXT" desc="Label for showing that a device is being restarted.">
         Restarting <ph name="DEVICE_NAME">$1<ex>Logitech keyboard</ex></ph>
       </message>
-      <message translateable="false" name="IDS_FIRMWARE_RESTARTING_BODY_TEXT" desc="Label for communicating information about what actions a user can take during a device restart.">
-        Your device is restarting, you can minimize window but do not unplug your device. This may take a few minutes.
+      <message name="IDS_FIRMWARE_RESTARTING_BODY_TEXT" desc="Label for communicating information about what actions a user can take during a device restart.">
+        While restarting, do not unplug this external device or shut down your computer. You can minimize this window. This may take a few minutes and your external device may not work during this time.
       </message>
-      <message translateable="false" name="IDS_FIRMWARE_RESTARTING_FOOTER_TEXT" desc="Label shown when a device is being restarted.">
-        Restarting ...
+      <message name="IDS_FIRMWARE_RESTARTING_FOOTER_TEXT" desc="Label shown when a device is being restarted.">
+        Restarting...
       </message>
-      <message translateable="false" name="IDS_FIRMWARE_UPDATE_FAILED_TITLE_TEXT" desc="Label shown when an update fails.">
-        Failed to update <ph name="DEVICE_NAME">$1<ex>Logitech keyboard</ex></ph>
+      <message name="IDS_FIRMWARE_UPDATE_FAILED_TITLE_TEXT" desc="Label shown when an update fails.">
+        Can't update <ph name="DEVICE_NAME">$1<ex>Logitech keyboard</ex></ph>
       </message>
-      <message translateable="false" name="IDS_FIRMWARE_UPDATE_FAILED_BODY_TEXT" desc="Label for communicating information about why an update failed.">
-        Update failed
+      <message name="IDS_FIRMWARE_UPDATE_FAILED_BODY_TEXT" desc="Label for communicating information about why an update failed.">
+        Something went wrong. Try again.
+      </message>
+      <message name="IDS_CONFIRMATION_TITLE_TEXT" desc="Label for the confirmation dialog title.">
+        Update firmware on <ph name="DEVICE_NAME">$1<ex>Logitech keyboard</ex></ph>
+      </message>
+      <message name="IDS_FIRMWARE_NUM_AVAILABLE_UPDATES_TEXT" desc="Message annouced in aria-live when we receive a list of available firmware updates.">
+        Update firmware for external devices window is open. <ph name="NUM_UPDATES">$1<ex>3</ex></ph> updates available.
       </message>
 
       <!-- Quick Answers -->

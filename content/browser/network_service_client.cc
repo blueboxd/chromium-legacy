@@ -13,7 +13,6 @@
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "content/browser/browsing_data/clear_site_data_handler.h"
-#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/browser/webrtc/webrtc_connections_observer.h"
 #include "content/public/browser/browser_context.h"
@@ -60,16 +59,6 @@ NetworkServiceClient::NetworkServiceClient()
     memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
         FROM_HERE, base::BindRepeating(&NetworkServiceClient::OnMemoryPressure,
                                        base::Unretained(this)));
-
-#if BUILDFLAG(IS_ANDROID)
-    DCHECK(!net::NetworkChangeNotifier::CreateIfNeeded());
-    GetNetworkService()->GetNetworkChangeManager(
-        network_change_manager_.BindNewPipeAndPassReceiver());
-    net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
-    net::NetworkChangeNotifier::AddMaxBandwidthObserver(this);
-    net::NetworkChangeNotifier::AddIPAddressObserver(this);
-    net::NetworkChangeNotifier::AddDNSObserver(this);
-#endif
   }
 
   webrtc_connections_observer_ =
@@ -161,6 +150,21 @@ NetworkServiceClient::BindURLLoaderNetworkServiceObserver() {
   url_loader_network_service_observers_.Add(
       this, remote.InitWithNewPipeAndPassReceiver());
   return remote;
+}
+
+void NetworkServiceClient::OnNetworkServiceInitialized(
+    network::mojom::NetworkService* service) {
+#if BUILDFLAG(IS_ANDROID)
+  if (IsOutOfProcessNetworkService()) {
+    DCHECK(!net::NetworkChangeNotifier::CreateIfNeeded());
+    service->GetNetworkChangeManager(
+        network_change_manager_.BindNewPipeAndPassReceiver());
+    net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+    net::NetworkChangeNotifier::AddMaxBandwidthObserver(this);
+    net::NetworkChangeNotifier::AddIPAddressObserver(this);
+    net::NetworkChangeNotifier::AddDNSObserver(this);
+  }
+#endif
 }
 
 void NetworkServiceClient::OnSSLCertificateError(

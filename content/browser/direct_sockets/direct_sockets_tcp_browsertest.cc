@@ -208,9 +208,6 @@ class ReadWriteWaiter {
 
 class DirectSocketsTcpBrowserTest : public ContentBrowserTest {
  public:
-  DirectSocketsTcpBrowserTest() {
-    feature_list_.InitAndEnableFeature(features::kDirectSockets);
-  }
   ~DirectSocketsTcpBrowserTest() override = default;
 
   GURL GetTestOpenPageURL() {
@@ -273,9 +270,6 @@ class DirectSocketsTcpBrowserTest : public ContentBrowserTest {
 
  protected:
   void SetUp() override {
-    DirectSocketsServiceImpl::SetConnectionDialogBypassForTesting(true);
-    DirectSocketsServiceImpl::SetEnterpriseManagedForTesting(false);
-
     embedded_test_server()->AddDefaultHandlers(GetTestDataFilePath());
     ASSERT_TRUE(embedded_test_server()->Start());
 

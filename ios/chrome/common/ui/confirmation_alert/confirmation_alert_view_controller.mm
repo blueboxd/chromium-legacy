@@ -7,6 +7,7 @@
 #include "base/check.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
+#import "ios/chrome/common/ui/elements/gradient_view.h"
 #import "ios/chrome/common/ui/util/button_util.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/common/ui/util/dynamic_type_util.h"
@@ -20,6 +21,8 @@ NSString* const kConfirmationAlertMoreInfoAccessibilityIdentifier =
     @"kConfirmationAlertMoreInfoAccessibilityIdentifier";
 NSString* const kConfirmationAlertTitleAccessibilityIdentifier =
     @"kConfirmationAlertTitleAccessibilityIdentifier";
+NSString* const kConfirmationAlertSecondaryTitleAccessibilityIdentifier =
+    @"kConfirmationAlertSecondaryTitleAccessibilityIdentifier";
 NSString* const kConfirmationAlertSubtitleAccessibilityIdentifier =
     @"kConfirmationAlertSubtitleAccessibilityIdentifier";
 NSString* const kConfirmationAlertPrimaryActionAccessibilityIdentifier =
@@ -32,6 +35,9 @@ NSString* const kConfirmationAlertBarPrimaryActionAccessibilityIdentifier =
     @"kConfirmationAlertBarPrimaryActionAccessibilityIdentifier";
 
 namespace {
+
+// Gradient height.
+const CGFloat kGradientHeight = 40.;
 
 constexpr CGFloat kScrollViewBottomInsets = 20;
 constexpr CGFloat kStackViewSpacing = 8;
@@ -76,7 +82,7 @@ constexpr CGFloat kContentMaxWidth = 500;
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+  self.view.backgroundColor = [UIColor colorNamed:kPrimaryBackgroundColor];
 
   if (self.hasTopToolbar) {
     self.topToolbar = [self createTopToolbar];
@@ -87,7 +93,16 @@ constexpr CGFloat kContentMaxWidth = 500;
   UILabel* title = [self createTitleLabel];
   UILabel* subtitle = [self createSubtitleLabel];
 
-  NSArray* stackSubviews = @[ self.imageView, title, subtitle ];
+  NSArray* stackSubviews = nil;
+  if ([self.secondaryTitleString length] != 0) {
+    UILabel* secondaryTitle = [self createSecondaryTitleLabel];
+    stackSubviews = @[ self.imageView, title, secondaryTitle, subtitle ];
+  } else {
+    stackSubviews = @[ self.imageView, title, subtitle ];
+  }
+
+  DCHECK(stackSubviews);
+
   UIStackView* stackView =
       [self createStackViewWithArrangedSubviews:stackSubviews];
 
@@ -172,6 +187,19 @@ constexpr CGFloat kContentMaxWidth = 500;
       lowPriorityWidthConstraint
     ]];
     scrollViewBottomAnchor = actionStackView.topAnchor;
+
+    GradientView* gradientView = [self createGradientView];
+    [self.view addSubview:gradientView];
+
+    [NSLayoutConstraint activateConstraints:@[
+      [gradientView.bottomAnchor
+          constraintEqualToAnchor:actionStackView.topAnchor],
+      [gradientView.leadingAnchor
+          constraintEqualToAnchor:scrollView.leadingAnchor],
+      [gradientView.trailingAnchor
+          constraintEqualToAnchor:scrollView.trailingAnchor],
+      [gradientView.heightAnchor constraintEqualToConstant:kGradientHeight],
+    ]];
   }
 
   [NSLayoutConstraint activateConstraints:@[
@@ -405,6 +433,16 @@ constexpr CGFloat kContentMaxWidth = 500;
   return imageView;
 }
 
+// Creates a label with subtitle label defaults.
+- (UILabel*)createLabel {
+  UILabel* label = [[UILabel alloc] init];
+  label.numberOfLines = 0;
+  label.textAlignment = NSTextAlignmentCenter;
+  label.translatesAutoresizingMaskIntoConstraints = NO;
+  label.adjustsFontForContentSizeCategory = YES;
+  return label;
+}
+
 // Helper to create the title label.
 - (UILabel*)createTitleLabel {
   if (!self.titleTextStyle) {
@@ -429,16 +467,24 @@ constexpr CGFloat kContentMaxWidth = 500;
   return title;
 }
 
+// Helper to create the title description label.
+- (UILabel*)createSecondaryTitleLabel {
+  UILabel* secondaryTitle = [self createLabel];
+  secondaryTitle.font =
+      [UIFont preferredFontForTextStyle:UIFontTextStyleTitle2];
+  secondaryTitle.text = self.secondaryTitleString;
+  secondaryTitle.textColor = [UIColor colorNamed:kTextPrimaryColor];
+  secondaryTitle.accessibilityIdentifier =
+      kConfirmationAlertSecondaryTitleAccessibilityIdentifier;
+  return secondaryTitle;
+}
+
 // Helper to create the subtitle label.
 - (UILabel*)createSubtitleLabel {
-  UILabel* subtitle = [[UILabel alloc] init];
+  UILabel* subtitle = [self createLabel];
   subtitle.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-  subtitle.numberOfLines = 0;
-  subtitle.textColor = [UIColor colorNamed:kTextSecondaryColor];
   subtitle.text = self.subtitleString;
-  subtitle.textAlignment = NSTextAlignmentCenter;
-  subtitle.translatesAutoresizingMaskIntoConstraints = NO;
-  subtitle.adjustsFontForContentSizeCategory = YES;
+  subtitle.textColor = [UIColor colorNamed:kTextSecondaryColor];
   subtitle.accessibilityIdentifier =
       kConfirmationAlertSubtitleAccessibilityIdentifier;
   return subtitle;
@@ -455,6 +501,13 @@ constexpr CGFloat kContentMaxWidth = 500;
   scrollView.showsHorizontalScrollIndicator = NO;
   scrollView.translatesAutoresizingMaskIntoConstraints = NO;
   return scrollView;
+}
+
+// Helper to create the gradient view.
+- (GradientView*)createGradientView {
+  GradientView* gradientView = [[GradientView alloc] init];
+  gradientView.translatesAutoresizingMaskIntoConstraints = NO;
+  return gradientView;
 }
 
 // Helper to create the stack view.

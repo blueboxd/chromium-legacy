@@ -47,16 +47,16 @@ class ExtensionOverrideTest : public ExtensionApiTest {
 
   bool CheckHistoryOverridesContainsNoDupes() {
     // There should be no duplicate entries in the preferences.
-    const base::DictionaryValue* overrides = &base::Value::AsDictionaryValue(
-        *browser()->profile()->GetPrefs()->GetDictionary(
-            ExtensionWebUI::kExtensionURLOverrides));
+    const base::Value* overrides =
+        browser()->profile()->GetPrefs()->GetDictionary(
+            ExtensionWebUI::kExtensionURLOverrides);
 
-    const base::ListValue* values = nullptr;
-    if (!overrides->GetList("history", &values))
+    const base::Value* values = overrides->FindListKey("history");
+    if (!values)
       return false;
 
     std::set<std::string> seen_overrides;
-    for (const auto& val : values->GetList()) {
+    for (const auto& val : values->GetListDeprecated()) {
       const base::DictionaryValue* dict = nullptr;
       std::string entry;
       if (!val.GetAsDictionary(&dict) || !dict->GetString("entry", &entry) ||
@@ -349,8 +349,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, ShouldCleanUpDuplicateEntries) {
   base::Value list(base::Value::Type::LIST);
   for (size_t i = 0; i < 3; ++i) {
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-    dict->SetString("entry", "http://www.google.com/");
-    dict->SetBoolean("active", true);
+    dict->SetStringKey("entry", "http://www.google.com/");
+    dict->SetBoolKey("active", true);
     list.Append(std::move(*dict));
   }
 

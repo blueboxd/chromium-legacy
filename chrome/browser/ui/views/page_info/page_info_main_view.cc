@@ -23,6 +23,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/page_info/core/features.h"
 #include "components/permissions/permission_util.h"
+#include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -116,6 +117,10 @@ PageInfoMainView::PageInfoMainView(
 
   if (base::FeatureList::IsEnabled(page_info::kPageInfoAboutThisSite)) {
     about_this_site_section_ = AddChildView(CreateContainerView());
+  }
+
+  if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings3)) {
+    ads_personalization_section_ = AddChildView(CreateContainerView());
   }
 
   presenter_->InitializeUiState(this, std::move(initialized_callback));
@@ -425,6 +430,20 @@ void PageInfoMainView::SetPageFeatureInfo(const PageFeatureInfo& info) {
 #endif
 }
 
+void PageInfoMainView::SetAdPersonalizationInfo(
+    const AdPersonalizationInfo& info) {
+  if (!ads_personalization_section_)
+    return;
+  ads_personalization_section_->RemoveAllChildViews();
+
+  if (!info.has_joined_user_to_interest_group)
+    return;
+
+  ads_personalization_section_->AddChildView(CreateAdPersonalizationSection());
+
+  PreferredSizeChanged();
+}
+
 void PageInfoMainView::OnPermissionChanged(
     const PageInfo::PermissionInfo& permission) {
   presenter_->OnSitePermissionChanged(permission.type, permission.setting,
@@ -538,4 +557,32 @@ std::unique_ptr<views::View> PageInfoMainView::CreateAboutThisSiteSection(
   about_this_site_button->SetSubtitleMultiline(false);
 
   return about_this_site_section;
+}
+
+std::unique_ptr<views::View>
+PageInfoMainView::CreateAdPersonalizationSection() {
+  auto ads_personalization_section = std::make_unique<views::View>();
+  ads_personalization_section
+      ->SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(views::LayoutOrientation::kVertical);
+  ads_personalization_section->AddChildView(
+      PageInfoViewFactory::CreateSeparator());
+  // TODO(olesiamarukhno): Use correct icon.
+  // TODO(olesiamarukhno): Use correct strings (title and tooltip).
+  auto* ads_personalization_button = ads_personalization_section->AddChildView(
+      std::make_unique<PageInfoHoverButton>(
+          base::BindRepeating(
+              [](PageInfoMainView* view) {
+                // TODO(olesiamarukhno): Open a subpage.
+                view->navigation_handler_->OpenAdPersonalizationPage();
+              },
+              this),
+          PageInfoViewFactory::GetSiteSettingsIcon(),
+          /*title_resource_id=*/0, std::u16string(),
+          PageInfoViewFactory::VIEW_ID_PAGE_INFO_AD_PERSONALIZATION_BUTTON,
+          /*tooltip_text=*/std::u16string(), std::u16string(),
+          PageInfoViewFactory::GetOpenSubpageIcon()));
+  ads_personalization_button->SetTitleText(u"Lorem ipsum dolor");
+
+  return ads_personalization_section;
 }

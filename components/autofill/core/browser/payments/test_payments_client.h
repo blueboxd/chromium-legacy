@@ -14,13 +14,13 @@
 
 #include "base/memory/raw_ptr.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
+#include "components/autofill/core/browser/payments/payments_requests/update_virtual_card_enrollment_request.h"
 
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
 
-namespace autofill {
-namespace payments {
+namespace autofill::payments {
 
 class TestPaymentsClient : public payments::PaymentsClient {
  public:
@@ -54,6 +54,7 @@ class TestPaymentsClient : public payments::PaymentsClient {
                               std::unique_ptr<base::Value>,
                               std::vector<std::pair<int, int>>)> callback,
       const int billable_service_number,
+      const int64_t billing_customer_number,
       UploadCardSource upload_card_source =
           UploadCardSource::UNKNOWN_UPLOAD_CARD_SOURCE) override;
 
@@ -72,6 +73,18 @@ class TestPaymentsClient : public payments::PaymentsClient {
       const SelectChallengeOptionRequestDetails& details,
       base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                               const std::string&)> callback) override;
+
+  void GetVirtualCardEnrollmentDetails(
+      const GetDetailsForEnrollmentRequestDetails& request_details,
+      base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
+                              const payments::PaymentsClient::
+                                  GetDetailsForEnrollmentResponseDetails&)>
+          callback) override;
+
+  void UpdateVirtualCardEnrollment(
+      const UpdateVirtualCardEnrollmentRequestDetails& request_details,
+      base::OnceCallback<void(AutofillClient::PaymentsRpcResult)> callback)
+      override;
 
   // Some metrics are affected by the latency of GetUnmaskDetails, so it is
   // useful to control whether or not GetUnmaskDetails() is responded to.
@@ -124,8 +137,21 @@ class TestPaymentsClient : public payments::PaymentsClient {
   int billable_service_number_in_request() const {
     return billable_service_number_;
   }
+  int64_t billing_customer_number_in_request() const {
+    return billing_customer_number_;
+  }
   PaymentsClient::UploadCardSource upload_card_source_in_request() const {
     return upload_card_source_;
+  }
+
+  const GetDetailsForEnrollmentRequestDetails&
+  get_details_for_enrollment_request_details() {
+    return get_details_for_enrollment_request_details_;
+  }
+
+  const UpdateVirtualCardEnrollmentRequestDetails&
+  update_virtual_card_enrollment_request_details() {
+    return update_virtual_card_enrollment_request_details_;
   }
 
  private:
@@ -145,15 +171,19 @@ class TestPaymentsClient : public payments::PaymentsClient {
   std::string pan_first_six_;
   std::vector<const char*> active_experiments_;
   int billable_service_number_;
+  int64_t billing_customer_number_;
   PaymentsClient::UploadCardSource upload_card_source_;
   std::unique_ptr<std::unordered_map<std::string, std::string>> save_result_;
   bool use_invalid_legal_message_ = false;
   std::unique_ptr<base::Value> LegalMessage();
   absl::optional<AutofillClient::PaymentsRpcResult>
       select_challenge_option_result_;
+  payments::PaymentsClient::GetDetailsForEnrollmentRequestDetails
+      get_details_for_enrollment_request_details_;
+  payments::PaymentsClient::UpdateVirtualCardEnrollmentRequestDetails
+      update_virtual_card_enrollment_request_details_;
 };
 
-}  // namespace payments
-}  // namespace autofill
+}  // namespace autofill::payments
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_PAYMENTS_TEST_PAYMENTS_CLIENT_H_

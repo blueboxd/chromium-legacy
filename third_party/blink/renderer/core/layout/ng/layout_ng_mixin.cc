@@ -355,15 +355,19 @@ void LayoutNGMixin<Base>::UpdateOutOfFlowBlockLayout() {
                         constraint_space, &container_builder,
                         initial_containing_block_fixed_size)
       .Run(/* only_layout */ this);
-  scoped_refptr<const NGLayoutResult> result =
-      container_builder.ToBoxFragment();
-  // These are the unpositioned OOF descendants of the current OOF block.
-  for (const auto& descendant :
-       result->PhysicalFragment().OutOfFlowPositionedDescendants())
-    descendant.Node().InsertIntoLegacyPositionedObjects();
+  const NGLayoutResult* result = container_builder.ToBoxFragment();
 
   const auto& fragment = result->PhysicalFragment();
   DCHECK_GT(fragment.Children().size(), 0u);
+
+  // Handle the unpositioned OOF descendants of the current OOF block.
+  if (fragment.HasOutOfFlowPositionedDescendants()) {
+    LayoutBlock* oof_container =
+        LayoutObject::FindNonAnonymousContainingBlock(container);
+    for (const auto& descendant : fragment.OutOfFlowPositionedDescendants())
+      descendant.Node().InsertIntoLegacyPositionedObjectsOf(oof_container);
+  }
+
   // Copy sizes of all child fragments to Legacy.
   // There could be multiple fragments, when this node has descendants whose
   // container is this node's container.
@@ -387,12 +391,10 @@ void LayoutNGMixin<Base>::UpdateOutOfFlowBlockLayout() {
 }
 
 template <typename Base>
-scoped_refptr<const NGLayoutResult>
-LayoutNGMixin<Base>::UpdateInFlowBlockLayout() {
+const NGLayoutResult* LayoutNGMixin<Base>::UpdateInFlowBlockLayout() {
   Base::CheckIsNotDestroyed();
 
-  scoped_refptr<const NGLayoutResult> previous_result =
-      Base::GetCachedLayoutResult();
+  const NGLayoutResult* previous_result = Base::GetCachedLayoutResult();
   bool is_layout_root = !Base::View()->GetLayoutState()->Next();
 
   // If we are a layout root, use the previous space if available. This will
@@ -404,15 +406,16 @@ LayoutNGMixin<Base>::UpdateInFlowBlockLayout() {
           ? previous_result->GetConstraintSpaceForCaching()
           : NGConstraintSpace::CreateFromLayoutObject(*this);
 
-  scoped_refptr<const NGLayoutResult> result =
-      NGBlockNode(this).Layout(constraint_space);
+  const NGLayoutResult* result = NGBlockNode(this).Layout(constraint_space);
 
   const auto& physical_fragment =
       To<NGPhysicalBoxFragment>(result->PhysicalFragment());
 
   for (const auto& descendant :
-       physical_fragment.OutOfFlowPositionedDescendants())
-    descendant.Node().InsertIntoLegacyPositionedObjects();
+       physical_fragment.OutOfFlowPositionedDescendants()) {
+    descendant.Node().InsertIntoLegacyPositionedObjectsOf(
+        descendant.box->ContainingBlock());
+  }
 
   // Even if we are a layout root, our baseline may have shifted. In this
   // (rare) case, mark our containing-block for layout.

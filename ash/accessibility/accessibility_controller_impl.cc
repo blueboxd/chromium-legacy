@@ -1360,8 +1360,6 @@ bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForSwitchAccess() {
 void AccessibilityControllerImpl::SetAccessibilityEventRewriter(
     AccessibilityEventRewriter* accessibility_event_rewriter) {
   accessibility_event_rewriter_ = accessibility_event_rewriter;
-  if (accessibility_event_rewriter_)
-    UpdateKeyCodesAfterSwitchAccessEnabled();
 }
 
 void AccessibilityControllerImpl::HideSwitchAccessBackButton() {
@@ -2027,7 +2025,7 @@ void AccessibilityControllerImpl::UpdateSwitchAccessKeyCodesFromPref(
 
     key_codes[key_code] = std::set<std::string>();
 
-    for (const base::Value& device_type : v.second.GetList())
+    for (const base::Value& device_type : v.second.GetListDeprecated())
       key_codes[key_code].insert(device_type.GetString());
 
     DCHECK(!key_codes[key_code].empty());
@@ -2097,6 +2095,7 @@ void AccessibilityControllerImpl::SwitchAccessDisableDialogClosed(
   // could interact with the dialog.
   DeactivateSwitchAccess();
   if (disable_dialog_accepted) {
+    RemoveAccessibilityNotification();
     NotifyAccessibilityStatusChanged();
     SyncSwitchAccessPrefsToSignInProfile();
   } else {
@@ -2286,11 +2285,13 @@ AccessibilityControllerImpl::A11yNotificationWrapper::A11yNotificationWrapper(
 
 void AccessibilityControllerImpl::UpdateFeatureFromPref(FeatureType feature) {
   bool enabled = features_[feature]->enabled();
+  bool is_managed =
+      active_user_prefs_->IsManagedPreference(features_[feature]->pref_name());
 
   switch (feature) {
     case FeatureType::kAutoclick:
       Shell::Get()->autoclick_controller()->SetEnabled(
-          enabled, true /* show confirmation dialog */);
+          enabled, !is_managed /* show confirmation dialog */);
       break;
     case FeatureType::kCaretHighlight:
       UpdateAccessibilityHighlightingFromPrefs();
@@ -2366,7 +2367,6 @@ void AccessibilityControllerImpl::UpdateFeatureFromPref(FeatureType feature) {
       break;
     case FeatureType::kSwitchAccess:
       if (!enabled) {
-        RemoveAccessibilityNotification();
         if (no_switch_access_disable_confirmation_dialog_for_testing_) {
           SwitchAccessDisableDialogClosed(true);
         } else {
@@ -2405,11 +2405,12 @@ void AccessibilityControllerImpl::UpdateFeatureFromPref(FeatureType feature) {
 void AccessibilityControllerImpl::UpdateDictationBubble(
     bool visible,
     DictationBubbleIconType icon,
-    const absl::optional<std::u16string>& text) {
+    const absl::optional<std::u16string>& text,
+    const absl::optional<std::vector<DictationBubbleHintType>>& hints) {
   DCHECK(dictation().enabled());
   DCHECK(dictation_bubble_controller_);
 
-  dictation_bubble_controller_->UpdateBubble(visible, icon, text);
+  dictation_bubble_controller_->UpdateBubble(visible, icon, text, hints);
 }
 
 }  // namespace ash

@@ -7,11 +7,16 @@
 
 #include <memory>
 
+#include "base/callback.h"
+#include "base/callback_forward.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/queue.h"
 #include "base/memory/raw_ptr.h"
 #include "base/values.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "remoting/host/chromoting_host_services_provider.h"
 #include "remoting/host/mojom/webauthn_proxy.mojom.h"
 
@@ -45,12 +50,17 @@ class RemoteWebAuthnNativeMessagingHost final
   void ProcessGetRemoteState(base::Value response);
   void ProcessIsUvpaa(const base::Value& request, base::Value response);
   void ProcessCreate(const base::Value& request, base::Value response);
+  void ProcessGet(const base::Value& request, base::Value response);
+  void ProcessCancel(const base::Value& request, base::Value response);
 
   void OnQueryVersionResult(uint32_t version);
   void OnIpcDisconnected();
   void OnIsUvpaaResponse(base::Value response, bool is_available);
   void OnCreateResponse(base::Value response,
                         mojom::WebAuthnCreateResponsePtr remote_response);
+  void OnGetResponse(base::Value response,
+                     mojom::WebAuthnGetResponsePtr remote_response);
+  void OnCancelResponse(base::Value response, bool was_canceled);
 
   void QueryNextRemoteState();
   void SendNextRemoteState(bool is_remoted);
@@ -61,10 +71,40 @@ class RemoteWebAuthnNativeMessagingHost final
   bool EnsureIpcConnection();
   void SendMessageToClient(base::Value message);
 
+  // Attempts to connect IPC. If it succeeds, |response| will not be touched and
+  // `true` will be returned; if it fails, |response| will be attached with a
+  // WebAuthn error dict and sent to the NMH client, and `false` will be
+  // returned.
+  bool ConnectIpcOrSendError(base::Value& response);
+
+  // Finds and returns the message ID from |response|. If message ID is not
+  // found, |response| will be attached with a WebAuthn error dict and sent to
+  // the NMH client, and `nullptr` will be returned.
+  const base::Value* FindMessageIdOrSendError(base::Value& response);
+
+  // Finds and returns request[request_data_key]. If request_data_key is not
+  // found, |response| will be attached with a WebAuthn error dict and sent to
+  // the NMH client, and `nullptr` will be returned.
+  const std::string* FindRequestDataOrSendError(
+      const base::Value& request,
+      const std::string& request_data_key,
+      base::Value& response);
+
+  mojo::PendingReceiver<mojom::WebAuthnRequestCanceller> AddRequestCanceller(
+      base::Value message_id);
+  void RemoveRequestCancellerByMessageId(const base::Value& message_id);
+  void OnRequestCancellerDisconnected(
+      mojo::RemoteSetElementId disconnecting_canceller);
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   raw_ptr<extensions::NativeMessageHost::Client> client_ = nullptr;
   std::unique_ptr<ChromotingHostServicesProvider> host_service_api_client_;
   mojo::Remote<mojom::WebAuthnProxy> remote_;
+  mojo::RemoteSet<mojom::WebAuthnRequestCanceller> request_cancellers_;
+  base::flat_map<base::Value, mojo::RemoteSetElementId>
+      id_to_request_canceller_;
+
+  base::RepeatingClosure on_request_canceller_disconnected_for_testing_;
 
   // Pending getRemoteStateResponses to be sent.
   base::queue<base::Value> get_remote_state_responses_;

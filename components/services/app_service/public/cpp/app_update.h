@@ -13,6 +13,7 @@
 #include "base/memory/raw_ptr.h"
 #include "components/account_id/account_id.h"
 #include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/intent_filter.h"
 #include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -20,6 +21,7 @@
 namespace apps {
 
 struct IconKey;
+struct RunOnOsLogin;
 
 // Wraps two apps::mojom::AppPtr's, a prior state and a delta on top of that
 // state. The state is conceptually the "sum" of all of the previous deltas,
@@ -145,46 +147,64 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   apps::mojom::OptionalBool InstalledInternally() const;
 
   apps::mojom::OptionalBool IsPlatformApp() const;
+  absl::optional<bool> GetIsPlatformApp() const;
   bool IsPlatformAppChanged() const;
 
   apps::mojom::OptionalBool Recommendable() const;
+  absl::optional<bool> GetRecommendable() const;
   bool RecommendableChanged() const;
 
   apps::mojom::OptionalBool Searchable() const;
+  absl::optional<bool> GetSearchable() const;
   bool SearchableChanged() const;
 
   apps::mojom::OptionalBool ShowInLauncher() const;
+  absl::optional<bool> GetShowInLauncher() const;
   bool ShowInLauncherChanged() const;
 
   apps::mojom::OptionalBool ShowInShelf() const;
+  absl::optional<bool> GetShowInShelf() const;
   bool ShowInShelfChanged() const;
 
   apps::mojom::OptionalBool ShowInSearch() const;
+  absl::optional<bool> GetShowInSearch() const;
   bool ShowInSearchChanged() const;
 
   apps::mojom::OptionalBool ShowInManagement() const;
+  absl::optional<bool> GetShowInManagement() const;
   bool ShowInManagementChanged() const;
 
   apps::mojom::OptionalBool HandlesIntents() const;
+  absl::optional<bool> GetHandlesIntents() const;
   bool HandlesIntentsChanged() const;
 
   apps::mojom::OptionalBool AllowUninstall() const;
+  absl::optional<bool> GetAllowUninstall() const;
   bool AllowUninstallChanged() const;
 
   apps::mojom::OptionalBool HasBadge() const;
+  absl::optional<bool> GetHasBadge() const;
   bool HasBadgeChanged() const;
 
   apps::mojom::OptionalBool Paused() const;
+  absl::optional<bool> GetPaused() const;
   bool PausedChanged() const;
 
   std::vector<apps::mojom::IntentFilterPtr> IntentFilters() const;
+  apps::IntentFilters GetIntentFilters() const;
   bool IntentFiltersChanged() const;
 
   apps::mojom::OptionalBool ResizeLocked() const;
+  absl::optional<bool> GetResizeLocked() const;
   bool ResizeLockedChanged() const;
 
   apps::mojom::WindowMode WindowMode() const;
+  apps::WindowMode GetWindowMode() const;
   bool WindowModeChanged() const;
+
+  apps::mojom::RunOnOsLoginPtr RunOnOsLogin() const;
+  absl::optional<apps::RunOnOsLogin> GetRunOnOsLogin() const;
+  bool RunOnOsLoginChanged() const;
 
   const ::AccountId& AccountId() const;
 

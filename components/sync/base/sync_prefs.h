@@ -104,18 +104,6 @@ class SyncPrefs {
   // Maps |type| to its corresponding preference name.
   static const char* GetPrefNameForType(UserSelectableType type);
 
-#if BUILDFLAG(IS_ANDROID)
-  // Sets a boolean pref representing that Sync should no longer respect whether
-  // Android master sync is enabled/disabled. It is set per-device and never
-  // gets cleared.
-  void SetDecoupledFromAndroidMasterSync();
-
-  // Gets the value for the boolean pref representing whether Sync should no
-  // longer respect if Android master sync is enabled/disabled. Returns false
-  // until |SetDecoupledFromAndroidMasterSync()| is called.
-  bool GetDecoupledFromAndroidMasterSync();
-#endif  // BUILDFLAG(IS_ANDROID)
-
   // For testing.
   void SetManagedForTest(bool is_managed);
 
@@ -159,7 +147,9 @@ class SyncPrefs {
   SEQUENCE_CHECKER(sequence_checker_);
 };
 
-void ClearObsoletePassphrasePromptPrefs(PrefService* pref_service);
+#if BUILDFLAG(IS_ANDROID)
+void ClearObsoleteSyncDecoupledFromAndroidMasterSync(PrefService* pref_service);
+#endif  // BUILDFLAG(IS_ANDROID)
 void MigrateSyncSuppressedPref(PrefService* pref_service);
 
 }  // namespace syncer

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "build/build_config.h"
+#include "chrome/browser/prefetch/prefetch_headers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -81,17 +82,29 @@ class CheckForCancelledOrPausedDelegate
   bool cancelled_or_paused_ = false;
 };
 
+bool DoesHeaderContainClientHint(
+    const net::HttpRequestHeaders& headers,
+    const network::mojom::WebClientHintsType hint) {
+  const std::string& header = network::GetClientHintToNameMap().at(hint);
+  std::string value;
+  return headers.GetHeader(header, &value) && value == "?1";
+}
+
 // Computes the user agent value that should set for the User-Agent header.
 std::string GetUserAgentValue(const net::HttpRequestHeaders& headers) {
-  // If Sec-CH-UA-Reduced is set on the headers, it means that the token for the
-  // UserAgentReduction Origin Trial has been validated and we should send a
-  // reduced UA string on the request.
-  std::string header = network::GetClientHintToNameMap().at(
-      network::mojom::WebClientHintsType::kUAReduced);
-  std::string value;
-  return headers.GetHeader(header, &value) && value == "?1"
-             ? embedder_support::GetReducedUserAgent()
-             : embedder_support::GetUserAgent();
+  // If Sec-CH-UA-Full is set on the headers, it means that the token for the
+  // SendFullUserAgentAfterReduction Origin Trial has been validated and we
+  // should send a reduced UA string on the request.  Then check if
+  // Sec-CH-UA-Reduced is set on the headers, it means that the token for the
+  // UserAgentReduction Origin Trial has been validated and we
+  // should send a reduced UA string on the request.
+  const bool ua_reduced = DoesHeaderContainClientHint(
+      headers, network::mojom::WebClientHintsType::kUAReduced);
+  const bool ua_full = DoesHeaderContainClientHint(
+      headers, network::mojom::WebClientHintsType::kFullUserAgent);
+  return ua_full ? embedder_support::GetUserAgent()
+                 : (ua_reduced ? embedder_support::GetReducedUserAgent()
+                               : embedder_support::GetUserAgent());
 }
 
 }  // namespace
@@ -188,6 +201,9 @@ bool BaseSearchPrefetchRequest::StartPrefetchRequest(Profile* profile) {
       GetUserAgentValue(resource_request->headers));
   resource_request->headers.SetHeader(content::kCorsExemptPurposeHeaderName,
                                       "prefetch");
+  resource_request->headers.SetHeader(
+      prefetch::headers::kSecPurposeHeaderName,
+      prefetch::headers::kSecPurposePrefetchHeaderValue);
   resource_request->headers.SetHeader(
       net::HttpRequestHeaders::kAccept,
       content::FrameAcceptHeaderValue(/*allow_sxg_responses=*/true, profile));

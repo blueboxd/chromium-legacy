@@ -86,15 +86,39 @@ function waitUntil(func, message, intervalMs = 50, timeoutMs = 1001) {
 this[PersonalizationAppBrowserTest.name] = PersonalizationAppBrowserTest;
 
 // Tests that chrome://personalization loads the page without javascript errors
-// or a 404 or crash. Should display some text.
+// or a 404 or crash. Displays user preview, wallpaper preview, and ambient
+// preview
 TEST_F('PersonalizationAppBrowserTest', 'HasRootPageUrl', () => {
   assertEquals(document.location.href, ROOT_PAGE);
-  assertEquals(
-      'Personalization',
+  const userPreview = document.querySelector('personalization-router')
+                          .shadowRoot.querySelector('personalization-main')
+                          .shadowRoot.querySelector('user-preview');
+  const wallpaperPreview = document.querySelector('personalization-router')
+                               .shadowRoot.querySelector('personalization-main')
+                               .shadowRoot.querySelector('wallpaper-preview');
+  const ambientPreview = document.querySelector('personalization-router')
+                             .shadowRoot.querySelector('personalization-main')
+                             .shadowRoot.querySelector('ambient-preview');
+  assertTrue(!!userPreview);
+  assertTrue(!!wallpaperPreview);
+  assertTrue(!!ambientPreview);
+  testDone();
+});
+
+TEST_F('PersonalizationAppBrowserTest', 'ShowsAmbientPreview', () => {
+  const preview = document.querySelector('personalization-router')
+                      .shadowRoot.querySelector('personalization-main')
+                      .shadowRoot.querySelector('ambient-preview');
+  assertTrue(!!preview);
+  testDone();
+});
+
+TEST_F('PersonalizationAppBrowserTest', 'ShowsAmbientSubpageLink', () => {
+  const ambientSubpageLink =
       document.querySelector('personalization-router')
           .shadowRoot.querySelector('personalization-main')
-          .shadowRoot.querySelector('h1')
-          .innerText);
+          .shadowRoot.querySelector('#ambientSubpageLink');
+  assertTrue(!!ambientSubpageLink);
   testDone();
 });
 
@@ -142,7 +166,7 @@ this[WallpaperSubpageBrowserTest.name] = WallpaperSubpageBrowserTest;
 // somewhere instead of 404ing or crashing.
 TEST_F('WallpaperSubpageBrowserTest', 'HasWallpaperSubpageUrl', () => {
   assertEquals(document.location.href, WALLPAPER_SUBPAGE);
-  
+
   const title = document.querySelector('head > title');
   assertEquals('Wallpaper', title.innerText);
   testDone();
@@ -150,13 +174,22 @@ TEST_F('WallpaperSubpageBrowserTest', 'HasWallpaperSubpageUrl', () => {
 
 TEST_F('WallpaperSubpageBrowserTest', 'LoadsCollectionsUntrustedIframe', () => {
   const router = document.querySelector('personalization-router');
-  assertTrue(!!router);
+  assertTrue(!!router, 'personalization-router should be top level element');
 
-  const collections = router.shadowRoot.querySelector('wallpaper-collections');
-  assertTrue(!!collections);
+  const wallpaperSubpage = router.shadowRoot.querySelector('wallpaper-subpage');
+  assertTrue(
+      !!wallpaperSubpage,
+      'wallpaper-subpage should be found under personalization-router');
+
+  const collections =
+      wallpaperSubpage.shadowRoot.querySelector('wallpaper-collections');
+  assertTrue(
+      !!collections,
+      'wallpaper-collections should be found under wallpaper-subpage');
+
 
   const iframe = collections.shadowRoot.getElementById('collections-iframe');
-  assertTrue(!!iframe);
+  assertTrue(!!iframe, 'iframe with id collections-iframe should be visible');
 
   assertEquals(
       'chrome-untrusted://personalization/untrusted/collections.html',

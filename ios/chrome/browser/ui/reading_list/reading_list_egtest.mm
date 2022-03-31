@@ -320,7 +320,7 @@ void AddCurrentPageToReadingList() {
   [ChromeEarlGrey watchForButtonsWithLabels:@[ snackBarLabel ]
                                     timeout:kSnackbarAppearanceTimeout];
   [ChromeEarlGreyUI
-      tapToolsMenuButton:chrome_test_util::ButtonWithAccessibilityLabelId(
+      tapToolsMenuAction:chrome_test_util::ButtonWithAccessibilityLabelId(
                              IDS_IOS_SHARE_MENU_READING_LIST_ACTION)];
 
   // Wait for the snackbar to appear.
@@ -680,8 +680,10 @@ void AssertIsShowingDistillablePage(bool online, const GURL& distillable_url) {
   GREYAssertFalse(self.serverServedRedImage,
                   @"Offline page accessed online resource.");
 
-  id checkImage = [ChromeEarlGrey executeJavaScript:kCheckImagesJS];
-  GREYAssert([checkImage isEqual:@YES], @"Incorrect image loading.");
+  auto checkImage = [ChromeEarlGrey evaluateJavaScript:kCheckImagesJS];
+
+  GREYAssertTrue(checkImage.is_bool(), @"CheckImage is not a boolean.");
+  GREYAssert(checkImage.GetBool(), @"Incorrect image loading.");
 
   // Verify that the webState's title is correct.
   GREYAssertEqualObjects([ChromeEarlGreyAppInterface currentTabTitle],

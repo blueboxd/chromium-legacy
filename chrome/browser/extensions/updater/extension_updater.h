@@ -13,7 +13,7 @@
 #include <string>
 
 #include "base/auto_reset.h"
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -159,6 +159,9 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // Always fetch updates via update service, not the extension downloader.
   static base::AutoReset<bool> GetScopedUseUpdateServiceForTesting();
 
+  // Set a callback to invoke when updating has started.
+  void SetUpdatingStartedCallbackForTesting(base::RepeatingClosure callback);
+
  private:
   friend class ExtensionUpdaterTest;
   friend class ExtensionUpdaterFileHandler;
@@ -211,7 +214,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // Add fetch records for extensions that are installed to the downloader,
   // ignoring |pending_ids| so the extension isn't fetched again.
   void AddToDownloader(const ExtensionSet* extensions,
-                       const std::list<ExtensionId>& pending_ids,
+                       const std::set<ExtensionId>& pending_ids,
                        int request_id,
                        ManifestFetchData::FetchPriority fetch_priority,
                        ExtensionUpdateCheckParams* update_check_params);
@@ -330,6 +333,8 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   std::map<CrxInstaller*, FetchedCRXFile> running_crx_installs_;
 
   raw_ptr<ExtensionCache> extension_cache_ = nullptr;
+
+  base::RepeatingClosure updating_started_callback_;
 
   base::WeakPtrFactory<ExtensionUpdater> weak_ptr_factory_{this};
 };

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/app_list/app_list_model_provider.h"
+#include "ash/app_list/views/app_list_nudge_controller.h"
 #include "ash/app_list/views/apps_grid_view_focus_delegate.h"
 #include "ash/app_list/views/recent_apps_view.h"
 #include "ash/ash_export.h"
@@ -17,12 +18,17 @@
 #include "ui/views/view.h"
 #include "ui/views/view_observer.h"
 
+namespace base {
+class TimeDelta;
+}  // namespace base
+
 namespace ui {
 class Layer;
 }  // namespace ui
 
 namespace views {
 class Separator;
+class AnimationAbortHandle;
 }  // namespace views
 
 namespace ash {
@@ -31,12 +37,13 @@ class AppListConfig;
 class ApplicationDragAndDropHost;
 class AppListA11yAnnouncer;
 class AppListFolderController;
+class AppListNudgeController;
+class AppListToastContainerView;
 class AppListViewDelegate;
 class ContinueSectionView;
 class RecentAppsView;
 class ScrollableAppsGridView;
 class ScrollViewGradientHelper;
-class AppListReorderUndoContainerView;
 
 // The default page for the app list bubble / clamshell launcher. Contains a
 // scroll view with:
@@ -64,7 +71,7 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View,
   void UpdateSuggestions();
 
   // Starts the launcher show animation.
-  void AnimateShowLauncher();
+  void AnimateShowLauncher(bool is_side_shelf);
 
   // Starts the launcher hide animation. None of the child views animate, but
   // this disables the scroll view gradient mask to improve performance.
@@ -92,6 +99,10 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View,
       const absl::optional<AppListSortOrder>& new_order,
       bool animate,
       base::OnceClosure update_position_closure);
+
+  // Scrolls to fully show the toast if the toast is partially shown or hidden
+  // from the scroll view's perspective. Returns true if scrolling is performed.
+  bool MaybeScrollToShowToast();
 
   // views::View:
   void Layout() override;
@@ -122,8 +133,12 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View,
 
   RecentAppsView* recent_apps_for_test() { return recent_apps_; }
   views::Separator* separator_for_test() { return separator_; }
-  AppListReorderUndoContainerView* reorder_undo_container_for_test() {
-    return reorder_undo_container_;
+  AppListToastContainerView* toast_container_for_test() {
+    return toast_container_;
+  }
+
+  AppListNudgeController* app_list_nudge_controller() {
+    return app_list_nudge_controller_.get();
   }
 
   ScrollViewGradientHelper* gradient_helper_for_test() {
@@ -149,22 +164,35 @@ class ASH_EXPORT AppListBubbleAppsPage : public views::View,
       bool aborted);
 
   // Called when the animation to fade in app list items is completed.
-  void OnAppsGridViewFadeInAnimationEnded(bool is_aborted);
+  // `aborted` indicates whether the fade in animation is aborted.
+  void OnAppsGridViewFadeInAnimationEnded(bool aborted);
+
+  // Called when the animation to fade in the reorder undo toast is completed.
+  // `aborted` is true if the animation is aborted; `clean_layer` is true if the
+  // undo toast's layer should be cleaned after animation.
+  void OnReorderUndoToastFadeInAnimationEnded(bool aborted, bool clean_layer);
 
   // Animates `view` using a layer animation. Creates the layer if needed. The
   // layer is pushed down by `vertical_offset` at the start of the animation and
-  // animates back to its original position.
-  void SlideViewIntoPosition(views::View* view, int vertical_offset);
+  // animates back to its original position with `duration`.
+  void SlideViewIntoPosition(views::View* view,
+                             int vertical_offset,
+                             base::TimeDelta duration);
 
   views::ScrollView* scroll_view_ = nullptr;
   ContinueSectionView* continue_section_ = nullptr;
   RecentAppsView* recent_apps_ = nullptr;
   views::Separator* separator_ = nullptr;
-  AppListReorderUndoContainerView* reorder_undo_container_ = nullptr;
+  AppListToastContainerView* toast_container_ = nullptr;
   ScrollableAppsGridView* scrollable_apps_grid_view_ = nullptr;
+
+  std::unique_ptr<AppListNudgeController> app_list_nudge_controller_;
 
   // Adds fade in/out gradients to `scroll_view_`.
   std::unique_ptr<ScrollViewGradientHelper> gradient_helper_;
+
+  // The handle to abort the undo toast fade in animation.
+  std::unique_ptr<views::AnimationAbortHandle> toast_fade_in_abort_handle_;
 
   // A closure to update item positions. It should run at the end of the fade
   // out animation when items are reordered.

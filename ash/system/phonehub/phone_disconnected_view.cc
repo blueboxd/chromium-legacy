@@ -35,12 +35,9 @@ PhoneDisconnectedView::PhoneDisconnectedView(
   SetLayoutManager(std::make_unique<views::FillLayout>());
   content_view_ = AddChildView(std::make_unique<PhoneHubInterstitialView>(
       /*show_progress=*/false));
-
-  gfx::ImageSkia* image =
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_PHONE_HUB_ERROR_STATE_IMAGE);
-  content_view_->SetImage(*image);
-
+  content_view_->SetImage(
+      ui::ResourceBundle::GetSharedInstance().GetThemedLottieImageNamed(
+          IDR_PHONE_HUB_ERROR_STATE_IMAGE));
   content_view_->SetTitle(l10n_util::GetStringUTF16(
       IDS_ASH_PHONE_HUB_PHONE_DISCONNECTED_DIALOG_TITLE));
   content_view_->SetDescription(l10n_util::GetStringUTF16(
@@ -51,10 +48,11 @@ PhoneDisconnectedView::PhoneDisconnectedView(
       base::BindRepeating(
           &PhoneDisconnectedView::ButtonPressed, base::Unretained(this),
           InterstitialScreenEvent::kLearnMore,
-          base::BindRepeating(&NewWindowDelegate::OpenUrl,
-                              base::Unretained(NewWindowDelegate::GetPrimary()),
-                              GURL(phonehub::kPhoneHubLearnMoreLink),
-                              /*from_user_interaction=*/true)),
+          base::BindRepeating(
+              &NewWindowDelegate::OpenUrl,
+              base::Unretained(NewWindowDelegate::GetPrimary()),
+              GURL(phonehub::kPhoneHubLearnMoreLink),
+              NewWindowDelegate::OpenUrlFrom::kUserInteraction)),
       l10n_util::GetStringUTF16(
           IDS_ASH_PHONE_HUB_PHONE_DISCONNECTED_DIALOG_LEARN_MORE_BUTTON),
       PillButton::Type::kIconlessFloating, /*icon=*/nullptr);

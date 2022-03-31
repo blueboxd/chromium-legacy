@@ -7,12 +7,23 @@
 
 #include <string>
 
-#include "base/files/file_path.h"
 #include "base/strings/string_split.h"
+#include "base/time/time.h"
 #include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/proto/common_types.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+#define OPTIMIZATION_GUIDE_LOG(optimization_guide_logger, message) \
+  do {                                                             \
+    if (optimization_guide_logger &&                               \
+        optimization_guide_logger->ShouldEnableDebugLogs()) {      \
+      optimization_guide_logger->OnLogMessageAdded(                \
+          base::Time::Now(), __FILE__, __LINE__, message);         \
+    }                                                              \
+    if (optimization_guide::switches::IsDebugLogsEnabled())        \
+      DVLOG(0) << message;                                         \
+  } while (0)
 
 namespace optimization_guide {
 
@@ -26,10 +37,6 @@ bool IsHostValidToFetchFromRemoteOptimizationGuide(const std::string& host);
 // remote Optimization Guide Service.
 google::protobuf::RepeatedPtrField<proto::FieldTrial>
 GetActiveFieldTrialsAllowedForFetch();
-
-// Returns a string representation of the given |file_path|, handling platform
-// differences in the conversion.
-std::string FilePathToString(const base::FilePath& file_path);
 
 // Validates that the metadata stored in |any_metadata_| is of the same type
 // and is parseable as |T|. Will return metadata if all checks pass.

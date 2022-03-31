@@ -14,6 +14,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
@@ -234,6 +235,10 @@ class PrefetchProxyTabHelper
   // Used in the SetUp() method in prefetch_proxy_tab_helper_unittest.cc.
   static void SetServiceWorkerContextForTest(
       content::ServiceWorkerContext* context);
+
+  // Overrides the logic for determining which hostnames should not be proxied.
+  static void SetHostNonUniqueFilterForTest(bool (*filter)(base::StringPiece));
+  static void ResetHostNonUniqueFilterForTest();
 
  protected:
   // Exposed for testing.

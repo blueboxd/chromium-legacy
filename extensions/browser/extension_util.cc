@@ -210,7 +210,7 @@ bool CanWithholdPermissionsFromExtension(const ExtensionId& extension_id,
   // Some extensions must retain privilege to all requested host permissions.
   // Specifically, extensions that don't show up in chrome:extensions (where
   // withheld permissions couldn't be granted), extensions that are part of
-  // chrome or corporate policy, and extensions that are whitelisted to script
+  // chrome or corporate policy, and extensions that are allowlisted to script
   // everywhere must always have permission to run on a page.
   return ui_util::ShouldDisplayInExtensionSettings(type, location) &&
          !Manifest::IsPolicyLocation(location) &&
@@ -234,6 +234,7 @@ int GetBrowserContextId(content::BrowserContext* context) {
     iter =
         context_map->insert(std::make_pair(original_context, next_id++)).first;
   }
+  DCHECK(iter->second != kUnspecifiedContextId);
   return iter->second;
 }
 

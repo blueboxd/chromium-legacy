@@ -39,23 +39,18 @@ static void AssertValidPropertyTreeIndices(
 static void AssertValidPropertyTreeIndices(const LayerImpl* layer,
                                            const PropertyTrees&) {
   DCHECK(layer);
-  DCHECK_NE(layer->transform_tree_index(), TransformTree::kInvalidNodeId);
-  DCHECK_NE(layer->effect_tree_index(), EffectTree::kInvalidNodeId);
-  DCHECK_NE(layer->clip_tree_index(), ClipTree::kInvalidNodeId);
-  DCHECK_NE(layer->scroll_tree_index(), ScrollTree::kInvalidNodeId);
+  DCHECK_NE(layer->transform_tree_index(), kInvalidPropertyNodeId);
+  DCHECK_NE(layer->effect_tree_index(), kInvalidPropertyNodeId);
+  DCHECK_NE(layer->clip_tree_index(), kInvalidPropertyNodeId);
+  DCHECK_NE(layer->scroll_tree_index(), kInvalidPropertyNodeId);
 }
 
 static bool LayerHasValidPropertyTreeIndices(const LayerImpl* layer) {
   DCHECK(layer);
-  return layer->transform_tree_index() != TransformTree::kInvalidNodeId &&
-         layer->effect_tree_index() != EffectTree::kInvalidNodeId &&
-         layer->clip_tree_index() != ClipTree::kInvalidNodeId &&
-         layer->scroll_tree_index() != ScrollTree::kInvalidNodeId;
-}
-
-static bool LayerWillPushProperties(const ThreadUnsafeCommitState* unsafe_state,
-                                    const Layer* layer) {
-  return unsafe_state->layers_that_should_push_properties.contains(layer);
+  return layer->transform_tree_index() != kInvalidPropertyNodeId &&
+         layer->effect_tree_index() != kInvalidPropertyNodeId &&
+         layer->clip_tree_index() != kInvalidPropertyNodeId &&
+         layer->scroll_tree_index() != kInvalidPropertyNodeId;
 }
 
 static bool LayerWillPushProperties(const LayerTreeImpl* tree,
@@ -69,7 +64,7 @@ static bool LayerWillPushProperties(const LayerTreeImpl* tree,
 
 template <typename LayerType>
 std::unique_ptr<LayerImpl> ReuseOrCreateLayerImpl(OwnedLayerImplMap* old_layers,
-                                                  LayerType* layer,
+                                                  const LayerType* layer,
                                                   LayerTreeImpl* tree_impl) {
   if (!layer)
     return nullptr;
@@ -79,13 +74,37 @@ std::unique_ptr<LayerImpl> ReuseOrCreateLayerImpl(OwnedLayerImplMap* old_layers,
   return layer_impl;
 }
 
-template <typename LayerTreeType>
 void PushLayerList(OwnedLayerImplMap* old_layers,
-                   LayerTreeType* host,
+                   const CommitState& commit_state,
+                   const ThreadUnsafeCommitState& unsafe_state,
+                   LayerTreeImpl* tree_impl) {
+  DCHECK(tree_impl->LayerListIsEmpty());
+  for (const auto* layer : unsafe_state) {
+    std::unique_ptr<LayerImpl> layer_impl(
+        ReuseOrCreateLayerImpl(old_layers, layer, tree_impl));
+    // TODO(crbug.com/1229805): remove diagnostic CHECK
+    CHECK(layer_impl);
+
+#if DCHECK_IS_ON()
+    // Every layer should have valid property tree indices
+    AssertValidPropertyTreeIndices(layer, unsafe_state.property_trees);
+    // Every layer_impl should either have valid property tree indices already
+    // or the corresponding layer should push them onto layer_impl.
+    DCHECK(LayerHasValidPropertyTreeIndices(layer_impl.get()) ||
+           commit_state.layers_that_should_push_properties.contains(layer));
+#endif
+
+    tree_impl->AddLayer(std::move(layer_impl));
+  }
+  tree_impl->OnCanDrawStateChangedForTree();
+}
+
+void PushLayerList(OwnedLayerImplMap* old_layers,
+                   LayerTreeImpl* host,
                    LayerTreeImpl* tree_impl,
                    const PropertyTrees& property_trees) {
   DCHECK(tree_impl->LayerListIsEmpty());
-  for (auto* layer : *host) {
+  for (const auto* layer : *host) {
     std::unique_ptr<LayerImpl> layer_impl(
         ReuseOrCreateLayerImpl(old_layers, layer, tree_impl));
     // TODO(crbug.com/1229805): remove diagnostic CHECK
@@ -105,8 +124,24 @@ void PushLayerList(OwnedLayerImplMap* old_layers,
   tree_impl->OnCanDrawStateChangedForTree();
 }
 
-template <typename LayerTreeType>
-void SynchronizeTreesInternal(LayerTreeType* source_tree,
+void SynchronizeTreesInternal(const CommitState& commit_state,
+                              const ThreadUnsafeCommitState& unsafe_state,
+                              LayerTreeImpl* tree_impl) {
+  DCHECK(tree_impl);
+
+  TRACE_EVENT0("cc", "TreeSynchronizer::SynchronizeTrees");
+  OwnedLayerImplList old_layers = tree_impl->DetachLayers();
+
+  OwnedLayerImplMap old_layer_map;
+  for (auto& it : old_layers) {
+    DCHECK(it);
+    old_layer_map[it->id()] = std::move(it);
+  }
+
+  PushLayerList(&old_layer_map, commit_state, unsafe_state, tree_impl);
+}
+
+void SynchronizeTreesInternal(LayerTreeImpl* source_tree,
                               LayerTreeImpl* tree_impl,
                               const PropertyTrees& property_trees) {
   DCHECK(tree_impl);
@@ -126,13 +161,13 @@ void SynchronizeTreesInternal(LayerTreeType* source_tree,
 }  // namespace
 
 void TreeSynchronizer::SynchronizeTrees(
+    const CommitState& commit_state,
     const ThreadUnsafeCommitState& unsafe_state,
     LayerTreeImpl* tree_impl) {
   if (!unsafe_state.root_layer) {
     tree_impl->DetachLayers();
   } else {
-    SynchronizeTreesInternal(&unsafe_state, tree_impl,
-                             unsafe_state.property_trees);
+    SynchronizeTreesInternal(commit_state, unsafe_state, tree_impl);
   }
 }
 
@@ -173,22 +208,21 @@ void TreeSynchronizer::PushLayerProperties(LayerTreeImpl* pending_tree,
 
 void TreeSynchronizer::PushLayerProperties(
     const CommitState& commit_state,
-    ThreadUnsafeCommitState& unsafe_state,
+    const ThreadUnsafeCommitState& unsafe_state,
     LayerTreeImpl* impl_tree) {
   TRACE_EVENT1("cc", "TreeSynchronizer::PushLayerPropertiesTo.Main",
                "layer_count",
-               unsafe_state.layers_that_should_push_properties.size());
+               commit_state.layers_that_should_push_properties.size());
   auto source_layers_begin =
-      unsafe_state.layers_that_should_push_properties.begin();
+      commit_state.layers_that_should_push_properties.begin();
   auto source_layers_end =
-      unsafe_state.layers_that_should_push_properties.end();
+      commit_state.layers_that_should_push_properties.end();
   for (auto it = source_layers_begin; it != source_layers_end; ++it) {
     auto* source_layer = *it;
     LayerImpl* target_layer = impl_tree->LayerById(source_layer->id());
     DCHECK(target_layer);
     source_layer->PushPropertiesTo(target_layer, commit_state, unsafe_state);
   }
-  unsafe_state.layers_that_should_push_properties.clear();
 }
 
 }  // namespace cc

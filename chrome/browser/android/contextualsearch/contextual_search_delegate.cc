@@ -472,8 +472,8 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
         dict->FindListKey(kContextualSearchMentionsKey);
     // Note that because we've deserialized the json and it's not used later, we
     // can just take the list without worrying about putting it back.
-    if (mentions_list && mentions_list->GetList().size() >= 2)
-      ExtractMentionsStartEnd(std::move(*mentions_list).TakeList(),
+    if (mentions_list && mentions_list->GetListDeprecated().size() >= 2)
+      ExtractMentionsStartEnd(std::move(*mentions_list).TakeListDeprecated(),
                               mention_start, mention_end);
   }
 
@@ -552,12 +552,9 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
   // Extract an arbitrary Related Searches payload as JSON and return to Java
   // for decoding.
   // TODO(donnd): remove soon (once the server is updated);
-  if (dict->HasKey(kRelatedSearchesSuggestions)) {
-    base::Value* rsearches_json_value = nullptr;
-    dict->Get(kRelatedSearchesSuggestions, &rsearches_json_value);
-    DCHECK(rsearches_json_value);
+  if (base::Value* rsearches_json_value =
+          dict->FindKey(kRelatedSearchesSuggestions))
     base::JSONWriter::Write(*rsearches_json_value, related_searches_json);
-  }
 }
 
 // Extract the Start/End of the mentions in the surrounding text

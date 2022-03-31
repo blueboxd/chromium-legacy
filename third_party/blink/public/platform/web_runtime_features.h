@@ -80,8 +80,6 @@ class WebRuntimeFeatures {
   EnableAccessibilityUseAXPositionForDocumentMarkers(bool);
   BLINK_PLATFORM_EXPORT static void EnableAdTagging(bool);
   BLINK_PLATFORM_EXPORT static void EnableAllowActivationDelegationAttr(bool);
-  BLINK_PLATFORM_EXPORT static void EnableAutomaticLazyFrameLoading(bool);
-  BLINK_PLATFORM_EXPORT static void EnableAutomaticLazyImageLoading(bool);
   BLINK_PLATFORM_EXPORT static void EnableBackgroundFetch(bool);
   BLINK_PLATFORM_EXPORT static void EnableBrowserVerifiedUserActivationKeyboard(
       bool);
@@ -129,6 +127,8 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnablePaymentApp(bool);
   BLINK_PLATFORM_EXPORT static void EnablePaymentRequest(bool);
   BLINK_PLATFORM_EXPORT static void EnablePaymentRequestBasicCard(bool);
+  BLINK_PLATFORM_EXPORT static void EnablePaymentRequestRequiresUserActivation(
+      bool);
   BLINK_PLATFORM_EXPORT static void EnablePercentBasedScrolling(bool);
   BLINK_PLATFORM_EXPORT static void EnablePerformanceManagerInstrumentation(
       bool);
@@ -148,10 +148,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnablePushSubscriptionChangeEvent(bool);
   BLINK_PLATFORM_EXPORT static void EnableDirectSockets(bool);
   BLINK_PLATFORM_EXPORT static void EnableRemotePlaybackAPI(bool);
-  BLINK_PLATFORM_EXPORT static void
-  EnableRestrictAutomaticLazyFrameLoadingToDataSaver(bool);
-  BLINK_PLATFORM_EXPORT static void
-  EnableRestrictAutomaticLazyImageLoadingToDataSaver(bool);
   BLINK_PLATFORM_EXPORT static void EnableSecurePaymentConfirmation(bool);
   BLINK_PLATFORM_EXPORT static void EnableSecurePaymentConfirmationDebug(bool);
   BLINK_PLATFORM_EXPORT static void EnableScriptedSpeechRecognition(bool);
@@ -163,6 +159,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableSharedWorker(bool);
   BLINK_PLATFORM_EXPORT static void EnableTextFragmentAnchor(bool);
   BLINK_PLATFORM_EXPORT static void EnableCSSSelectorFragmentAnchor(bool);
+  BLINK_PLATFORM_EXPORT static void EnableTouchDragAndContextMenu(bool enable);
   BLINK_PLATFORM_EXPORT static void EnableTouchEventFeatureDetection(bool);
   BLINK_PLATFORM_EXPORT static void EnableScrollUnification(bool);
   BLINK_PLATFORM_EXPORT static void EnableUserActivationSameOriginVisibility(
@@ -172,10 +169,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableWebAuth(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebBluetooth(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebBluetoothGetDevices(bool);
-  BLINK_PLATFORM_EXPORT static void EnableWebBluetoothManufacturerDataFilter(
-      bool);
-  BLINK_PLATFORM_EXPORT static void
-  EnableWebBluetoothRemoteCharacteristicNewWriteValue(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebBluetoothWatchAdvertisements(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebGLDeveloperExtensions(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebGLDraftExtensions(bool);

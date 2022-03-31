@@ -9,6 +9,10 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/view_targeter_delegate.h"
 
+namespace gfx {
+struct VectorIcon;
+}  // namespace gfx
+
 namespace ash {
 
 // A circular ImageButton with kCloseButtonIcon inside. It has small, medium and
@@ -23,6 +27,9 @@ class CloseButton : public views::ImageButton,
     kSmall,
     kMedium,
     kLarge,
+    kSmallFloating,
+    kMediumFloating,
+    kLargeFloating,
   };
 
   CloseButton(PressedCallback callback,
@@ -37,6 +44,20 @@ class CloseButton : public views::ImageButton,
   // Note, only necessary for `kSmall` type of CloseButton.
   bool DoesIntersectScreenRect(const gfx::Rect& screen_rect) const;
 
+  // Resets the listener so that the listener can go out of scope.
+  void ResetListener();
+
+  // Sets the vector icon of the button. Note, doing this only when the button
+  // wants to have different icons as the default close icon. E.g, the delete
+  // button inside desks template wants to have trash icon instead of close
+  // icon.
+  void SetVectorIcon(const gfx::VectorIcon& icon);
+
+  // Sets the button's background color or icon's color. Note, do this only when
+  // the button wants to have different colors from the default ones.
+  void SetBackgroundColor(const SkColor background_color);
+  void SetIconColor(const SkColor icon_color);
+
  private:
   // views::ImageButton:
   void OnThemeChanged() override;
@@ -46,11 +67,18 @@ class CloseButton : public views::ImageButton,
   bool DoesIntersectRect(const views::View* target,
                          const gfx::Rect& rect) const override;
 
+  void UpdateVectorIcon();
+
   const Type type_;
+  const gfx::VectorIcon* icon_;
 
   // True if the button wants to use light colors when the D/L mode feature is
   // not enabled. Note, can be removed when D/L mode feature is fully launched.
   const bool use_light_colors_;
+
+  // Customized value for the button's background color and icon's color.
+  absl::optional<SkColor> background_color_;
+  absl::optional<SkColor> icon_color_;
 };
 
 }  // namespace ash

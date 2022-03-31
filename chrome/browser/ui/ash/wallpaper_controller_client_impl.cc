@@ -6,11 +6,13 @@
 
 #include <utility>
 
+#include "ash/components/cryptohome/system_salt_getter.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/wallpaper/online_wallpaper_params.h"
 #include "ash/public/cpp/wallpaper/online_wallpaper_variant.h"
+#include "ash/public/cpp/wallpaper/wallpaper_controller.h"
 #include "ash/webui/personalization_app/personalization_app_url_constants.h"
 #include "ash/webui/personalization_app/proto/backdrop_wallpaper.pb.h"
 #include "base/bind.h"
@@ -45,7 +47,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/cryptohome/system_salt_getter.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/sync/base/pref_names.h"
@@ -131,10 +132,10 @@ void GetFilesIdSaltReady(
     const AccountId& account_id,
     base::OnceCallback<void(const std::string&)> files_id_callback) {
   DCHECK(CanGetFilesId());
-  std::string stored_value;
-  if (user_manager::known_user::GetStringPref(account_id, kWallpaperFilesId,
-                                              &stored_value)) {
-    std::move(files_id_callback).Run(stored_value);
+  user_manager::KnownUser known_user(g_browser_process->local_state());
+  if (const std::string* stored_value =
+          known_user.FindStringPath(account_id, kWallpaperFilesId)) {
+    std::move(files_id_callback).Run(*stored_value);
     return;
   }
 
@@ -357,6 +358,15 @@ void WallpaperControllerClientImpl::SetOnlineWallpaper(
     return;
 
   wallpaper_controller_->SetOnlineWallpaper(params, std::move(callback));
+}
+
+void WallpaperControllerClientImpl::SetGooglePhotosWallpaper(
+    const ash::GooglePhotosWallpaperParams& params,
+    ash::WallpaperController::SetGooglePhotosWallpaperCallback callback) {
+  if (!IsKnownUser(params.account_id))
+    return;
+
+  wallpaper_controller_->SetGooglePhotosWallpaper(params, std::move(callback));
 }
 
 void WallpaperControllerClientImpl::SetOnlineWallpaperIfExists(

@@ -54,7 +54,7 @@ namespace {
 FontFallbackMap& GetFontFallbackMap(FontSelector* font_selector) {
   if (font_selector)
     return font_selector->GetFontFallbackMap();
-  return FontCache::GetFontCache()->GetFontFallbackMap();
+  return FontCache::Get().GetFontFallbackMap();
 }
 
 scoped_refptr<FontFallbackList> GetOrCreateFontFallbackList(
@@ -117,7 +117,7 @@ void Font::RevalidateFontFallbackList() const {
 }
 
 FontFallbackList* Font::EnsureFontFallbackList() const {
-  if (!font_fallback_list_) {
+  if (!font_fallback_list_ || !font_fallback_list_->HasFontFallbackMap()) {
     font_fallback_list_ =
         GetOrCreateFontFallbackList(font_description_, nullptr);
   }
@@ -136,8 +136,11 @@ bool Font::operator==(const Font& other) const {
   }
 
   FontSelector* first =
-      font_fallback_list_ ? font_fallback_list_->GetFontSelector() : nullptr;
-  FontSelector* second = other.font_fallback_list_
+      font_fallback_list_ && font_fallback_list_->HasFontFallbackMap()
+          ? font_fallback_list_->GetFontSelector()
+          : nullptr;
+  FontSelector* second = other.font_fallback_list_ &&
+                                 other.font_fallback_list_->HasFontFallbackMap()
                              ? other.font_fallback_list_->GetFontSelector()
                              : nullptr;
 

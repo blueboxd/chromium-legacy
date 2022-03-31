@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEB_APPLICATIONS_WEB_APP_CONTROLLER_BROWSERTEST_H_
 
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -44,6 +44,8 @@ class WebAppControllerBrowserTest : public InProcessBrowserTest {
   AppId InstallPWA(const GURL& app_url);
 
   AppId InstallWebApp(std::unique_ptr<WebAppInstallInfo> web_app_info);
+
+  void UninstallWebApp(const AppId& app_id);
 
   // Launches the app as a window and returns the browser.
   Browser* LaunchWebAppBrowser(const AppId&);

@@ -118,6 +118,7 @@
 <translation id="6550675742724504774">Opciones</translation>
 <translation id="6572309429103589720">Gramática no válida</translation>
 <translation id="658823671542763450">ingresar a pantalla completa</translation>
+<translation id="6606094904835912297">Colores del sistema</translation>
 <translation id="6643016212128521049">Borrar</translation>
 <translation id="668171684555832681">Otro...</translation>
 <translation id="6709093583001123835">El valor debe ser <ph name="VALUE" />.</translation>
@@ -146,7 +147,7 @@
 <translation id="7789962463072032349">pausa</translation>
 <translation id="7852167693871241274">Control deslizante de matiz</translation>
 <translation id="7888071071722539607">Incluye un signo "<ph name="ATSIGN" />" en la dirección de correo electrónico. La dirección "<ph name="INVALIDADDRESS" />" no incluye el signo "<ph name="ATSIGN" />".</translation>
-<translation id="795667975304826397">Sin archivos seleccionados</translation>
+<translation id="795667975304826397">No se eligió archivo</translation>
 <translation id="7962328325860248200">No se seleccionó <ph name="ACCNAME" /></translation>
 <translation id="8117451130807776954">Esta semana</translation>
 <translation id="8131955114056917397">0.25</translation>

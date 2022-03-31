@@ -195,6 +195,7 @@ void Install(UpdaterScope scope) {
   ASSERT_FALSE(path.empty());
   base::CommandLine command_line(path);
   command_line.AppendSwitch(kInstallSwitch);
+  command_line.AppendSwitchASCII(kTagSwitch, "usagestats=1");
   int exit_code = -1;
   ASSERT_TRUE(Run(scope, command_line, &exit_code));
   EXPECT_EQ(exit_code, 0);
@@ -578,6 +579,31 @@ void CallServiceUpdate(UpdaterScope updater_scope,
       }));
 
   loop.Run();
+}
+
+void RunRecoveryComponent(UpdaterScope scope,
+                          const std::string& app_id,
+                          const base::Version& version) {
+  base::CommandLine command(GetSetupExecutablePath());
+  command.AppendSwitchASCII(kBrowserVersionSwitch, version.GetString());
+  command.AppendSwitchASCII(kAppGuidSwitch, app_id);
+  int exit_code = -1;
+  EXPECT_TRUE(Run(scope, command, &exit_code));
+  EXPECT_EQ(exit_code, kErrorOk);
+}
+
+void ExpectLastChecked(UpdaterScope updater_scope) {
+  EXPECT_FALSE(base::MakeRefCounted<PersistedData>(
+                   CreateGlobalPrefs(updater_scope)->GetPrefService())
+                   ->GetLastChecked()
+                   .is_null());
+}
+
+void ExpectLastStarted(UpdaterScope updater_scope) {
+  EXPECT_FALSE(base::MakeRefCounted<PersistedData>(
+                   CreateGlobalPrefs(updater_scope)->GetPrefService())
+                   ->GetLastStarted()
+                   .is_null());
 }
 
 }  // namespace test

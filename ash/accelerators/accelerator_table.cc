@@ -176,6 +176,7 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
     SWITCH_TO_LAST_USED_IME,
     SWITCH_TO_NEXT_IME,
     TAKE_SCREENSHOT,
+    TOGGLE_CALENDAR,
     TOGGLE_CAPS_LOCK,
     TOGGLE_DICTATION,
     TOGGLE_DOCKED_MAGNIFIER,

@@ -136,7 +136,21 @@ const char kPDFURL[] = "http://ios/testing/data/http_server_files/testpage.pdf";
 // Tests that the menu is opened and closed correctly, whatever the current
 // device type is.
 - (void)testOpenAndCloseToolsMenu {
+  // TODO(crbug.com/1289776): This test only fails on ipad bots with
+  // multitasking enabled (e.g. compact width).
+  if ([ChromeEarlGrey isNewOverflowMenuEnabled] &&
+      [ChromeEarlGrey isIPadIdiom] && [ChromeEarlGrey isCompactWidth]) {
+    EARL_GREY_TEST_DISABLED(@"Disabled for iPad multitasking.");
+  }
   [ChromeEarlGreyUI openToolsMenu];
+
+  // If using the new overflow menu, swipe up to expand the menu to the full
+  // height to make sure that |closeToolsMenu| still closes it.
+  if ([ChromeEarlGrey isNewOverflowMenuEnabled] &&
+      [ChromeEarlGrey isCompactWidth]) {
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuView()]
+        performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
+  }
 
   [ChromeEarlGreyUI closeToolsMenu];
 
@@ -160,10 +174,15 @@ const char kPDFURL[] = "http://ios/testing/data/http_server_files/testpage.pdf";
 // Navigates to a pdf page and verifies that the "Find in Page..." tool
 // is not enabled
 - (void)testNoSearchForPDF {
-// TODO(crbug.com/1209346): test failing on ipad device
 #if !TARGET_IPHONE_SIMULATOR
+  // TODO(crbug.com/1209346): test failing on ipad device
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"This test doesn't pass on iPad device.");
+  }
+#else
+  // TODO(crbug.com/1293132): Test is flaky on iphone simulator.
+  if (![ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"This test is flaky on iPhone simulator.");
   }
 #endif
   const GURL URL = web::test::HttpServer::MakeUrl(kPDFURL);

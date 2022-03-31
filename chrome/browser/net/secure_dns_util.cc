@@ -6,11 +6,12 @@
 
 #include <algorithm>
 #include <string>
-#include <utility>
 
+#include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_features.h"
@@ -19,11 +20,8 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "net/dns/public/dns_config_overrides.h"
-#include "net/dns/public/dns_over_https_server_config.h"
+#include "net/dns/public/dns_over_https_config.h"
 #include "net/dns/public/doh_provider_entry.h"
-#include "net/dns/public/util.h"
-#include "net/third_party/uri_template/uri_template.h"
-#include "url/gurl.h"
 
 namespace chrome_browser_net {
 
@@ -110,7 +108,7 @@ std::vector<std::string> GetDisabledProviders() {
 
 net::DohProviderEntry::List RemoveDisabledProviders(
     const net::DohProviderEntry::List& providers,
-    const std::vector<string>& disabled_providers) {
+    const std::vector<std::string>& disabled_providers) {
   net::DohProviderEntry::List filtered_providers;
   std::copy_if(providers.begin(), providers.end(),
                std::back_inserter(filtered_providers),
@@ -118,21 +116,6 @@ net::DohProviderEntry::List RemoveDisabledProviders(
                  return !base::Contains(disabled_providers, entry->provider);
                });
   return filtered_providers;
-}
-
-std::vector<base::StringPiece> SplitGroup(base::StringPiece group) {
-  // Templates in a group are whitespace-separated.
-  return SplitStringPiece(group, " ", base::TRIM_WHITESPACE,
-                          base::SPLIT_WANT_NONEMPTY);
-}
-
-bool IsValidGroup(base::StringPiece group) {
-  // All templates must be valid for the group to be considered valid.
-  std::vector<base::StringPiece> templates = SplitGroup(group);
-  return std::all_of(templates.begin(), templates.end(), [](auto t) {
-    return net::DnsOverHttpsServerConfig::FromString(std::string(t))
-        .has_value();
-  });
 }
 
 void UpdateDropdownHistograms(
@@ -157,13 +140,11 @@ void UpdateProbeHistogram(bool success) {
   UMA_HISTOGRAM_BOOLEAN("Net.DNS.UI.ProbeAttemptSuccess", success);
 }
 
-void ApplyTemplate(net::DnsConfigOverrides* overrides,
-                   std::string server_template) {
-  // We only allow use of templates that have already passed a format
-  // validation check.
-  auto config =
-      net::DnsOverHttpsServerConfig::FromString(std::move(server_template));
-  overrides->dns_over_https_servers.emplace({std::move(*config)});
+void ApplyConfig(net::DnsConfigOverrides* overrides,
+                 base::StringPiece doh_config) {
+  overrides->dns_over_https_config =
+      net::DnsOverHttpsConfig::FromString(doh_config);
+  CHECK(overrides->dns_over_https_config);  // `doh_config` must be valid.
 }
 
 }  // namespace secure_dns

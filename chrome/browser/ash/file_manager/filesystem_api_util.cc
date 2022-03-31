@@ -131,6 +131,7 @@ bool IsNonNativeFileSystemType(storage::FileSystemType type) {
     case storage::kFileSystemTypeRestrictedLocal:
     case storage::kFileSystemTypeDriveFs:
     case storage::kFileSystemTypeSmbFs:
+    case storage::kFileSystemTypeFuseBox:
       return false;
     default:
       // The path indeed corresponds to a mount point not associated with a
@@ -156,6 +157,24 @@ bool IsUnderNonNativeLocalPath(Profile* profile,
     return false;
 
   return IsNonNativeFileSystemType(filesystem_url.type());
+}
+
+bool IsDriveLocalPath(Profile* profile, const base::FilePath& path) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  GURL url;
+  if (!util::ConvertAbsoluteFilePathToFileSystemUrl(
+          profile, path, util::GetFileManagerURL(), &url)) {
+    return false;
+  }
+
+  storage::FileSystemURL filesystem_url =
+      GetFileSystemContextForSourceURL(profile, GetFileManagerURL())
+          ->CrackURLInFirstPartyContext(url);
+  if (!filesystem_url.is_valid())
+    return false;
+
+  return filesystem_url.type() == storage::kFileSystemTypeDriveFs;
 }
 
 bool HasNonNativeMimeTypeProvider(Profile* profile,

@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_GPU_GBM_SURFACELESS_WAYLAND_H_
 #define UI_OZONE_PLATFORM_WAYLAND_GPU_GBM_SURFACELESS_WAYLAND_H_
 
+#include <map>
 #include <memory>
 
 #include "base/containers/small_map.h"
@@ -140,11 +141,6 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
 
     bool ready = false;
 
-    // A region of the updated content in a corresponding frame. It's used to
-    // advise Wayland which part of a buffer is going to be updated. The absence
-    // of a value results in a whole buffer update on the Wayland compositor
-    // side.
-    absl::optional<gfx::Rect> damage_region_;
     // TODO(fangzhoug): This should be changed to support Vulkan.
     std::vector<gl::GLSurfaceOverlay> overlays;
     std::vector<gfx::OverlayPlaneData> non_backed_overlays;
@@ -154,9 +150,9 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
     // fences for a particular OnSubmission.
     bool schedule_planes_succeeded = false;
 
-    // Maps |buffer_id| to an OverlayPlane, used for committing overlays and
-    // wait for OnSubmission's.
-    base::small_map<std::map<BufferId, OverlayPlane>> planes;
+    // Maps |buffer_id| to one or more OverlayPlanes, used for committing
+    // overlays and wait for OnSubmission's.
+    std::multimap<BufferId, OverlayPlane> planes;
     BufferId pending_presentation_buffer;
   };
 

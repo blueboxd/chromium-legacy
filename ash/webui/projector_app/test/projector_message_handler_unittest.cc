@@ -21,9 +21,6 @@
 namespace {
 
 const char kTestUserEmail[] = "testuser1@gmail.com";
-const char kTestScreencastName[] = "test_pending_screecast";
-const char kTestScreencastPath[] =
-    "/root/projector_data/test_pending_screecast";
 
 const char kTestXhrUrl[] = "https://www.googleapis.com/drive/v3/files/fileID";
 const char kTestXhrUnsupportedUrl[] = "https://www.example.com";
@@ -139,7 +136,7 @@ TEST_F(ProjectorMessageHandlerUnitTest, GetAccounts) {
   EXPECT_TRUE(call_data.arg2()->GetBool());
   ASSERT_TRUE(call_data.arg3()->is_list());
 
-  const auto& list_view = call_data.arg3()->GetList();
+  const auto& list_view = call_data.arg3()->GetListDeprecated();
   // There is only one account in the identity manager.
   EXPECT_EQ(list_view.size(), 1u);
 
@@ -347,10 +344,13 @@ TEST_F(ProjectorMessageHandlerUnitTest, InstallSoda) {
 }
 
 TEST_F(ProjectorMessageHandlerUnitTest, GetPendingScreencasts) {
+  const std::string name = "test_pending_screecast";
+  const std::string path = "/root/projector_data/test_pending_screecast";
+  const base::Time created_time;
   const PendingScreencastSet expectedScreencasts{ash::PendingScreencast{
-      /*container_dir=*/base::FilePath(kTestScreencastPath),
-      /*name=*/kTestScreencastName, /*total_size_in_bytes=*/1,
-      /*bytes_untransferred=*/0}};
+      /*container_dir=*/base::FilePath(path),
+      /*name=*/name, /*total_size_in_bytes=*/1,
+      /*bytes_untransferred=*/0, /*created_time=*/created_time}};
   ON_CALL(mock_app_client(), GetPendingScreencasts())
       .WillByDefault(testing::ReturnRef(expectedScreencasts));
 
@@ -371,12 +371,13 @@ TEST_F(ProjectorMessageHandlerUnitTest, GetPendingScreencasts) {
   EXPECT_TRUE(call_data.arg2()->GetBool());
   ASSERT_TRUE(call_data.arg3()->is_list());
 
-  const auto& list_view = call_data.arg3()->GetList();
+  const auto& list_view = call_data.arg3()->GetListDeprecated();
   // There is only one screencast.
   EXPECT_EQ(list_view.size(), 1u);
 
   const auto& screencast = list_view[0];
-  EXPECT_EQ(*(screencast.FindStringPath("name")), kTestScreencastName);
+  EXPECT_EQ(*(screencast.FindStringPath("name")), name);
+  EXPECT_EQ(*(screencast.FindDoublePath("createdTime")), 0);
 }
 
 TEST_F(ProjectorMessageHandlerUnitTest, OnScreencastsStateChange) {
@@ -488,6 +489,55 @@ TEST_F(ProjectorMessageHandlerUnitTest, SetCreationFlowEnabledUnsupportedPref) {
   EXPECT_EQ(*(rejected_args->FindPath(kRejectedRequestArgsKey)), func_args);
 }
 
+class ProjectorStorageDirNameValidationTest
+    : public ::testing::WithParamInterface<
+          ::testing::tuple<::std::string, bool>>,
+      public ProjectorMessageHandlerUnitTest {
+ public:
+  ProjectorStorageDirNameValidationTest() = default;
+  ProjectorStorageDirNameValidationTest(
+      const ProjectorStorageDirNameValidationTest&) = delete;
+  ProjectorStorageDirNameValidationTest& operator=(
+      const ProjectorStorageDirNameValidationTest&) = delete;
+  ~ProjectorStorageDirNameValidationTest() override = default;
+};
+
+TEST_P(ProjectorStorageDirNameValidationTest, StorageDirNameBackSlash) {
+  bool success = std::get<1>(GetParam());
+  if (success) {
+    EXPECT_CALL(controller(), GetNewScreencastPrecondition());
+    ON_CALL(controller(), GetNewScreencastPrecondition)
+        .WillByDefault(testing::Return(NewScreencastPrecondition(
+            NewScreencastPreconditionState::kEnabled, {})));
+  }
+
+  base::ListValue list_args;
+  list_args.Append(kStartProjectorSessionCallback);
+  base::ListValue args;
+  args.Append(std::get<0>(GetParam()));
+  list_args.Append(std::move(args));
+
+  web_ui().HandleReceivedMessage("startProjectorSession", &list_args);
+  base::RunLoop().RunUntilIdle();
+
+  // We expect that there was only one callback to the WebUI.
+  EXPECT_EQ(web_ui().call_data().size(), 1u);
+  const content::TestWebUI::CallData& call_data = FetchCallData(0);
+
+  EXPECT_EQ(call_data.function_name(), kWebUIResponse);
+  EXPECT_EQ(call_data.arg1()->GetString(), kStartProjectorSessionCallback);
+  EXPECT_TRUE(call_data.arg2()->GetBool());
+
+  EXPECT_EQ(success, call_data.arg3()->GetBool());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    StorageDirNameBackSlash,
+    ProjectorStorageDirNameValidationTest,
+    ::testing::Values(std::make_tuple("Projector recordings", true),
+                      std::make_tuple("..\folderId", false),
+                      std::make_tuple("../folderId", false)));
+
 class ProjectorSessionStartUnitTest
     : public ::testing::WithParamInterface<NewScreencastPrecondition>,
       public ProjectorMessageHandlerUnitTest {
@@ -529,7 +579,7 @@ TEST_P(ProjectorSessionStartUnitTest, ProjectorSessionTest) {
   EXPECT_EQ(call_data.arg3()->GetBool(), success);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SessionStartSuccessFailTest,
     ProjectorSessionStartUnitTest,
     ::testing::Values(
@@ -589,7 +639,7 @@ TEST_P(ProjectorOnboardingFlowPrefTest, OnboardingFlowPrefTest) {
   EXPECT_EQ(get_call_data.arg3()->GetInt(), 5);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     OnboardingPrefsTest,
     ProjectorOnboardingFlowPrefTest,
     ::testing::Values(ash::prefs::kProjectorGalleryOnboardingShowCount,

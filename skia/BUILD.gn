@@ -528,11 +528,11 @@ component("skia") {
     ":skia_core_and_effects",
   ]
   if (skia_use_dawn) {
-    public_deps += [ "//third_party/dawn/src/dawn:dawncpp_headers" ]
+    public_deps += [ "//third_party/dawn/include/dawn:cpp_headers" ]
     deps += [
-      "//third_party/dawn/src/dawn:dawn_proc",
-      "//third_party/dawn/src/dawn:dawncpp",
-      "//third_party/dawn/src/dawn_native",
+      "//third_party/dawn/src/dawn:cpp",
+      "//third_party/dawn/src/dawn:proc",
+      "//third_party/dawn/src/dawn/native",
     ]
   }
 
@@ -675,7 +675,7 @@ skia_source_set("skia_core_and_effects") {
     deps = [ "//gpu/config:workaround_list" ]
   }
   if (skia_use_dawn) {
-    deps += [ "//third_party/dawn/src/dawn:dawncpp_headers" ]
+    deps += [ "//third_party/dawn/include/dawn:cpp_headers" ]
   }
 
   visibility = [ ":skia" ]
@@ -832,7 +832,7 @@ if (is_mac) {
     ]
     deps = [ "//gpu/config:workaround_list" ]
     if (skia_use_dawn) {
-      deps += [ "//third_party/dawn/src/dawn:dawncpp_headers" ]
+      deps += [ "//third_party/dawn/include/dawn:cpp_headers" ]
     }
   }
 }
@@ -933,6 +933,8 @@ test("skia_unittests") {
     "//ui/gfx/geometry",
   ]
 
+  data_deps = [ "//testing/buildbot/filters:skia_unittests_filters" ]
+
   if (!is_ios) {
     sources += [ "public/mojom/test/mojom_traits_unittest.cc" ]
     deps += [
@@ -943,12 +945,16 @@ test("skia_unittests") {
   }
 
   if (is_fuchsia) {
+    # TODO(https://crbug.com/1287051): fuchsia.sys.Launcher is used to launch
+    # fuchsia-pkg://fuchsia.com/fonts#meta/fonts.cmx with specific test
+    # args.
+    use_cfv2 = false
     sources += [ "ext/fontmgr_fuchsia_unittest.cc" ]
     deps += [
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.fonts",
       "//third_party/test_fonts",
     ]
-    data_deps = [ "//third_party/test_fonts" ]
+    data_deps += [ "//third_party/test_fonts" ]
   }
 
   if (skia_support_skottie) {

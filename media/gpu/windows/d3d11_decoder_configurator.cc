@@ -11,7 +11,6 @@
 #include "base/feature_list.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
-#include "media/base/status_codes.h"
 #include "media/base/win/mf_helpers.h"
 #include "media/gpu/windows/av1_guids.h"
 #include "media/gpu/windows/d3d11_copying_texture_wrapper.h"
@@ -64,7 +63,15 @@ std::unique_ptr<D3D11DecoderConfigurator> D3D11DecoderConfigurator::Create(
     decoder_guid = DXVA_ModeAV1_VLD_Profile1;
   } else if (config.profile() == AV1PROFILE_PROFILE_PRO) {
     decoder_guid = DXVA_ModeAV1_VLD_Profile2;
-  } else {
+  }
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC_DECODING)
+  else if (config.profile() == HEVCPROFILE_MAIN) {
+    decoder_guid = D3D11_DECODER_PROFILE_HEVC_VLD_MAIN;
+  } else if (config.profile() == HEVCPROFILE_MAIN10) {
+    decoder_guid = D3D11_DECODER_PROFILE_HEVC_VLD_MAIN10;
+  }
+#endif
+  else {
     MEDIA_LOG(INFO, media_log)
         << "D3D11VideoDecoder does not support codec " << config.codec();
     return nullptr;

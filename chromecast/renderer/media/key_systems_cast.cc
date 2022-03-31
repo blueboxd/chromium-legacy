@@ -141,6 +141,10 @@ SupportedCodecs GetCastEmeSupportedCodecs() {
   codecs |= ::media::EME_CODEC_AC3 | ::media::EME_CODEC_EAC3;
 #endif  // BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
 
+#if BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
+  codecs |= ::media::EME_CODEC_DTS | ::media::EME_CODEC_DTSXP2;
+#endif  // BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
+
 #if BUILDFLAG(ENABLE_PLATFORM_MPEG_H_AUDIO)
   codecs |= ::media::EME_CODEC_MPEG_H_AUDIO;
 #endif  // BUILDFLAG(ENABLE_PLATFORM_MPEG_H_AUDIO)
@@ -153,10 +157,8 @@ void AddCmaKeySystems(
         key_systems_properties,
     bool enable_persistent_license_support,
     bool enable_playready) {
-  SupportedCodecs codecs = GetCastEmeSupportedCodecs();
-
   // |codecs| may not be used if Widevine and Playready aren't supported.
-  ANALYZER_ALLOW_UNUSED(codecs);
+  [[maybe_unused]] SupportedCodecs codecs = GetCastEmeSupportedCodecs();
 
 #if BUILDFLAG(ENABLE_PLAYREADY)
   if (enable_playready) {

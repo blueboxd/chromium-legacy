@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/raw_ptr.h"
+#include "chrome/browser/ui/user_education/help_bubble_params.h"
 #include "chrome/browser/ui/user_education/tutorial/tutorial_identifier.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -56,25 +57,6 @@ class FeaturePromoSpecification {
     kLegacy,
   };
 
-  // Mirrors most values of views::BubbleBorder::Arrow.
-  // All values except kNone show a visible arrow between the bubble and the
-  // anchor element.
-  enum class BubbleArrow {
-    kNone,  // Positions the bubble directly beneath the anchor with no arrow.
-    kTopLeft,
-    kTopRight,
-    kBottomLeft,
-    kBottomRight,
-    kLeftTop,
-    kRightTop,
-    kLeftBottom,
-    kRightBottom,
-    kTopCenter,
-    kBottomCenter,
-    kLeftCenter,
-    kRightCenter,
-  };
-
   // Represents a command or command accelerator. Can be valueless (falsy) if
   // neither a command ID nor an explicit accelerator is specified.
   class AcceleratorInfo {
@@ -99,6 +81,20 @@ class FeaturePromoSpecification {
 
    private:
     ValueType value_;
+  };
+
+  struct DemoPageInfo {
+    std::string display_title;
+    std::string display_description;
+    base::RepeatingClosure setup_for_feature_promo_callback;
+
+    explicit DemoPageInfo(
+        std::string display_title_ = std::string(),
+        std::string display_description_ = std::string(),
+        base::RepeatingClosure setup_for_feature_promo_callback_ =
+            base::DoNothing());
+    ~DemoPageInfo();
+    DemoPageInfo(const DemoPageInfo& other);
   };
 
   FeaturePromoSpecification();
@@ -147,7 +143,7 @@ class FeaturePromoSpecification {
   FeaturePromoSpecification& SetBubbleIcon(const gfx::VectorIcon* bubble_icon);
 
   // Set the bubble arrow. Default is top-left.
-  FeaturePromoSpecification& SetBubbleArrow(BubbleArrow bubble_arrow);
+  FeaturePromoSpecification& SetBubbleArrow(HelpBubbleArrow bubble_arrow);
 
   // Set the anchor element filter.
   FeaturePromoSpecification& SetAnchorElementFilter(
@@ -166,15 +162,18 @@ class FeaturePromoSpecification {
   int bubble_body_string_id() const { return bubble_body_string_id_; }
   const std::u16string& bubble_title_text() const { return bubble_title_text_; }
   const gfx::VectorIcon* bubble_icon() const { return bubble_icon_; }
-  BubbleArrow bubble_arrow() const { return bubble_arrow_; }
+  HelpBubbleArrow bubble_arrow() const { return bubble_arrow_; }
   int screen_reader_string_id() const { return screen_reader_string_id_; }
   const AcceleratorInfo& screen_reader_accelerator() const {
     return screen_reader_accelerator_;
   }
+  const DemoPageInfo& demo_page_info() const { return demo_page_info_; }
+  FeaturePromoSpecification& SetDemoPageInfo(DemoPageInfo demo_page_info);
   const TutorialIdentifier& tutorial_id() const { return tutorial_id_; }
 
  private:
-  static constexpr BubbleArrow kDefaultBubbleArrow = BubbleArrow::kTopRight;
+  static constexpr HelpBubbleArrow kDefaultBubbleArrow =
+      HelpBubbleArrow::kTopRight;
 
   FeaturePromoSpecification(const base::Feature* feature,
                             PromoType promo_type,
@@ -207,7 +206,7 @@ class FeaturePromoSpecification {
   raw_ptr<const gfx::VectorIcon> bubble_icon_ = nullptr;
 
   // Optional arrow pointing to the promo'd element. Defaults to top left.
-  BubbleArrow bubble_arrow_ = kDefaultBubbleArrow;
+  HelpBubbleArrow bubble_arrow_ = kDefaultBubbleArrow;
 
   // Optional screen reader announcement that replaces bubble text when the
   // bubble is first announced.
@@ -216,6 +215,9 @@ class FeaturePromoSpecification {
   // Accelerator that is used to fill in a parametric field in
   // screen_reader_string_id_.
   AcceleratorInfo screen_reader_accelerator_;
+
+  // Information to be displayed on the demo page
+  DemoPageInfo demo_page_info_;
 
   // Tutorial identifier if the user decides to view a tutorial.
   TutorialIdentifier tutorial_id_;

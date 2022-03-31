@@ -28,10 +28,13 @@ source_set("browser_sources") {
   sources = [
     "allow_service_worker_result.cc",
     "allow_service_worker_result.h",
+    "attribution_reporting.h",
     "audio_service.h",
     "audio_service_info.cc",
     "audio_service_info.h",
     "authenticator_environment.h",
+    "authenticator_request_client_delegate.cc",
+    "authenticator_request_client_delegate.h",
     "ax_event_notification_details.cc",
     "ax_event_notification_details.h",
     "ax_inspect_factory.cc",
@@ -139,6 +142,7 @@ source_set("browser_sources") {
     "devtools_permission_overrides.h",
     "devtools_socket_factory.h",
     "disallow_activation_reason.h",
+    "document_picture_in_picture_window_controller.h",
     "document_ref.cc",
     "document_ref.h",
     "document_service.h",
@@ -199,6 +203,7 @@ source_set("browser_sources") {
     "installability_error.cc",
     "installability_error.h",
     "installed_payment_apps_finder.h",
+    "interest_group_manager.h",
     "invalidate_type.h",
     "jank_monitor.h",
     "javascript_dialog_manager.cc",
@@ -333,6 +338,7 @@ source_set("browser_sources") {
     "service_worker_context.h",
     "service_worker_context_observer.h",
     "service_worker_external_request_result.h",
+    "service_worker_external_request_timeout_type.h",
     "service_worker_running_info.cc",
     "service_worker_running_info.h",
     "service_worker_version_base_info.h",
@@ -387,6 +393,7 @@ source_set("browser_sources") {
     "video_capture_device_launcher.cc",
     "video_capture_device_launcher.h",
     "video_capture_service.h",
+    "video_picture_in_picture_window_controller.h",
     "visibility.h",
     "vpn_service_proxy.h",
     "weak_document_ptr.cc",
@@ -580,8 +587,6 @@ source_set("browser_sources") {
     sources += [
       # Some Web Authentication related targets only apply to desktop because
       # Android provides its own native implementation of that API.
-      "authenticator_request_client_delegate.cc",
-      "authenticator_request_client_delegate.h",
       "web_authentication_request_proxy.h",
     ]
   }

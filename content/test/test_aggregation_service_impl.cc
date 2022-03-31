@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/check.h"
+#include "base/guid.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
@@ -129,17 +130,21 @@ void TestAggregationServiceImpl::AssembleReport(
     base::OnceCallback<void(base::Value::DictStorage)> callback) {
   AggregationServicePayloadContents payload_contents(
       ConvertToOperation(request.operation), request.bucket, request.value,
-      ConvertToProcessingType(request.processing_type),
-      std::move(request.reporting_origin));
+      ConvertToProcessingType(request.processing_type));
 
   AggregatableReportSharedInfo shared_info(
       /*scheduled_report_time=*/base::Time::Now() + base::Seconds(30),
-      std::move(request.privacy_budget_key));
+      std::move(request.privacy_budget_key),
+      /*report_id=*/base::GUID::GenerateRandomV4(),
+      std::move(request.reporting_origin),
+      request.is_debug_mode_enabled
+          ? AggregatableReportSharedInfo::DebugMode::kEnabled
+          : AggregatableReportSharedInfo::DebugMode::kDisabled);
 
   absl::optional<AggregatableReportRequest> report_request =
-      AggregatableReportRequest::Create(std::move(request.processing_origins),
-                                        std::move(payload_contents),
-                                        std::move(shared_info));
+      AggregatableReportRequest::CreateForTesting(
+          std::move(request.processing_origins), std::move(payload_contents),
+          std::move(shared_info));
   if (!report_request.has_value()) {
     std::move(callback).Run(base::Value::DictStorage());
     return;

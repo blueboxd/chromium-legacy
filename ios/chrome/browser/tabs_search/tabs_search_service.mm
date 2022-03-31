@@ -15,11 +15,13 @@
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync_sessions/session_sync_service.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/history_utils.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_list.h"
+#import "ios/chrome/browser/main/browser_list_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/session_sync_service_factory.h"
@@ -35,11 +37,9 @@
 
 using base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents;
 
-TabsSearchService::TabsSearchService(ChromeBrowserState* browser_state,
-                                     BrowserList* browser_list)
-    : browser_state_(browser_state), browser_list_(browser_list) {
+TabsSearchService::TabsSearchService(ChromeBrowserState* browser_state)
+    : browser_state_(browser_state) {
   DCHECK(browser_state_);
-  DCHECK(browser_list_);
 }
 
 TabsSearchService::~TabsSearchService() = default;
@@ -47,30 +47,29 @@ TabsSearchService::~TabsSearchService() = default;
 void TabsSearchService::Search(
     const std::u16string& term,
     base::OnceCallback<void(std::vector<web::WebState*>)> completion) {
-  SearchWithinBrowsers(browser_list_->AllRegularBrowsers(), term,
-                       std::move(completion));
-}
-
-void TabsSearchService::SearchIncognito(
-    const std::u16string& term,
-    base::OnceCallback<void(std::vector<web::WebState*>)> completion) {
-  SearchWithinBrowsers(browser_list_->AllIncognitoBrowsers(), term,
-                       std::move(completion));
+  BrowserList* browser_list =
+      BrowserListFactory::GetForBrowserState(browser_state_);
+  std::set<Browser*> browsers = browser_state_->IsOffTheRecord()
+                                    ? browser_list->AllIncognitoBrowsers()
+                                    : browser_list->AllRegularBrowsers();
+  SearchWithinBrowsers(browsers, term, std::move(completion));
 }
 
 void TabsSearchService::SearchRecentlyClosed(
     const std::u16string& term,
-    base::OnceCallback<void(
-        std::vector<const sessions::SerializedNavigationEntry>)> completion) {
+    base::OnceCallback<void(std::vector<RecentlyClosedItemPair>)> completion) {
+  DCHECK(!browser_state_->IsOffTheRecord());
   FixedPatternStringSearchIgnoringCaseAndAccents query_search(term);
 
-  std::vector<const sessions::SerializedNavigationEntry> results;
+  std::vector<RecentlyClosedItemPair> results;
   sessions::TabRestoreService* restore_service =
       IOSChromeTabRestoreServiceFactory::GetForBrowserState(browser_state_);
   for (auto iter = restore_service->entries().begin();
        iter != restore_service->entries().end(); ++iter) {
     const sessions::TabRestoreService::Entry* entry = iter->get();
     DCHECK(entry);
+    // Only TAB type is handled.
+    // TODO(crbug.com/1056596) : Support WINDOW restoration under multi-window.
     DCHECK_EQ(sessions::TabRestoreService::TAB, entry->type);
     const sessions::TabRestoreService::Tab* tab =
         static_cast<const sessions::TabRestoreService::Tab*>(entry);
@@ -82,7 +81,8 @@ void TabsSearchService::SearchRecentlyClosed(
         query_search.Search(
             base::UTF8ToUTF16(navigationEntry.virtual_url().spec()),
             /*match_index=*/nullptr, nullptr)) {
-      results.push_back(navigationEntry);
+      RecentlyClosedItemPair matching_item = {entry->id, navigationEntry};
+      results.push_back(matching_item);
     }
   }
 
@@ -91,43 +91,58 @@ void TabsSearchService::SearchRecentlyClosed(
 
 void TabsSearchService::SearchRemoteTabs(
     const std::u16string& term,
-    base::OnceCallback<void(std::vector<synced_sessions::DistantTab*>)>
+    base::OnceCallback<void(std::unique_ptr<synced_sessions::SyncedSessions>,
+                            std::vector<synced_sessions::DistantTabsSet>)>
         completion) {
-  std::vector<synced_sessions::DistantTab*> results;
+  DCHECK(!browser_state_->IsOffTheRecord());
+  std::vector<synced_sessions::DistantTabsSet> results;
 
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForBrowserState(browser_state_);
   if (!identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
     // There must be a primary account for synced sessions to be available.
-    std::move(completion).Run(results);
+    std::move(completion).Run(nullptr, results);
     return;
   }
 
   FixedPatternStringSearchIgnoringCaseAndAccents query_search(term);
   sync_sessions::SessionSyncService* sync_service =
       SessionSyncServiceFactory::GetForBrowserState(browser_state_);
-  synced_sessions::SyncedSessions synced_sessions(sync_service);
 
-  for (size_t s = 0; s < synced_sessions.GetSessionCount(); s++) {
+  auto synced_sessions =
+      std::make_unique<synced_sessions::SyncedSessions>(sync_service);
+
+  for (size_t s = 0; s < synced_sessions->GetSessionCount(); s++) {
     const synced_sessions::DistantSession* session =
-        synced_sessions.GetSession(s);
+        synced_sessions->GetSession(s);
+
+    synced_sessions::DistantTabsSet distant_tabs;
+    distant_tabs.session_tag = session->tag;
+
+    std::vector<synced_sessions::DistantTab*> tabs;
     for (auto&& distant_tab : session->tabs) {
       if (query_search.Search(distant_tab->title, /*match_index=*/nullptr,
                               /*match_length=*/nullptr) ||
           query_search.Search(
               base::UTF8ToUTF16(distant_tab->virtual_url.spec()),
               /*match_index=*/nullptr, nullptr)) {
-        results.push_back(distant_tab.get());
+        tabs.push_back(distant_tab.get());
       }
+    }
+    distant_tabs.filtered_tabs = tabs;
+
+    if (tabs.size() > 0) {
+      results.push_back(distant_tabs);
     }
   }
 
-  std::move(completion).Run(results);
+  std::move(completion).Run(std::move(synced_sessions), results);
 }
 
 void TabsSearchService::SearchHistory(
     const std::u16string& term,
     base::OnceCallback<void(size_t result_count)> completion) {
+  DCHECK(!browser_state_->IsOffTheRecord());
   DCHECK(completion);
 
   ongoing_history_search_term_ = term;
@@ -159,7 +174,7 @@ void TabsSearchService::SearchWithinBrowsers(
 
   std::vector<web::WebState*> results;
 
-  for (const Browser* browser : browsers) {
+  for (Browser* browser : browsers) {
     WebStateList* webStateList = browser->GetWebStateList();
     for (int index = 0; index < webStateList->count(); ++index) {
       web::WebState* web_state = webStateList->GetWebStateAt(index);
@@ -193,6 +208,6 @@ void TabsSearchService::HistoryQueryCompleted(
 
   std::move(history_search_callback_).Run(results.size());
 
-  ongoing_history_search_term_ = nullptr;
+  ongoing_history_search_term_ = std::u16string();
   history_service_.reset();
 }

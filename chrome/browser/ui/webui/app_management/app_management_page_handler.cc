@@ -17,6 +17,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/app_constants/constants.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/intent_constants.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
@@ -49,8 +50,8 @@ const char* kAppIdsWithHiddenMoreSettings[] = {
 };
 
 const char* kAppIdsWithHiddenPinToShelf[] = {
-    extension_misc::kChromeAppId,
-    extension_misc::kLacrosAppId,
+    app_constants::kChromeAppId,
+    app_constants::kLacrosAppId,
 };
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -126,15 +127,15 @@ std::vector<std::string> GetSupportedLinks(Profile* profile,
 AppManagementPageHandler::AppManagementPageHandler(
     mojo::PendingReceiver<app_management::mojom::PageHandler> receiver,
     mojo::PendingRemote<app_management::mojom::Page> page,
-    Profile* profile)
+    Profile* profile,
+    Delegate& delegate)
     : receiver_(this, std::move(receiver)),
       page_(std::move(page)),
-      profile_(profile)
+      profile_(profile),
+      delegate_(delegate),
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-      ,
-      shelf_delegate_(this, profile)
+      shelf_delegate_(this, profile),
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-      ,
       preferred_apps_list_handle_(
           apps::AppServiceProxyFactory::GetForProfile(profile)
               ->PreferredApps()) {
@@ -178,6 +179,20 @@ void AppManagementPageHandler::GetApps(GetAppsCallback callback) {
       });
 
   std::move(callback).Run(std::move(apps));
+}
+
+void AppManagementPageHandler::GetApp(const std::string& app_id,
+                                      GetAppCallback callback) {
+  app_management::mojom::AppPtr app;
+
+  apps::AppServiceProxyFactory::GetForProfile(profile_)
+      ->AppRegistryCache()
+      .ForOneApp(app_id, [this, &app](const apps::AppUpdate& update) {
+        if (update.Readiness() == apps::mojom::Readiness::kReady)
+          app = CreateUIAppPtr(update);
+      });
+
+  std::move(callback).Run(std::move(app));
 }
 
 void AppManagementPageHandler::GetExtensionAppPermissionMessages(
@@ -228,7 +243,7 @@ void AppManagementPageHandler::SetResizeLocked(const std::string& app_id,
 void AppManagementPageHandler::Uninstall(const std::string& app_id) {
   apps::AppServiceProxyFactory::GetForProfile(profile_)->Uninstall(
       app_id, apps::mojom::UninstallSource::kAppManagement,
-      nullptr /* parent_window */);
+      delegate_.GetUninstallAnchorWindow());
 }
 
 void AppManagementPageHandler::OpenNativeSettings(const std::string& app_id) {
@@ -266,11 +281,24 @@ void AppManagementPageHandler::GetOverlappingPreferredApps(
 void AppManagementPageHandler::SetWindowMode(
     const std::string& app_id,
     apps::mojom::WindowMode window_mode) {
+  // On ChromeOS, apps should always open in a new window,
+  // hence window mode changes are not allowed.
 #if BUILDFLAG(IS_CHROMEOS)
   NOTREACHED();
 #else
   apps::AppServiceProxyFactory::GetForProfile(profile_)->SetWindowMode(
-      app_id, std::move(window_mode));
+      app_id, window_mode);
+#endif
+}
+
+void AppManagementPageHandler::SetRunOnOsLoginMode(
+    const std::string& app_id,
+    apps::mojom::RunOnOsLoginMode run_on_os_login_mode) {
+#if BUILDFLAG(IS_CHROMEOS)
+  NOTREACHED();
+#else
+  apps::AppServiceProxyFactory::GetForProfile(profile_)->SetRunOnOsLoginMode(
+      app_id, run_on_os_login_mode);
 #endif
 }
 
@@ -317,6 +345,7 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
       ShouldHidePinToShelf(app->id);
   app->window_mode = update.WindowMode();
   app->supported_links = GetSupportedLinks(profile_, app->id);
+  app->run_on_os_login = update.RunOnOsLogin();
 
   return app;
 }

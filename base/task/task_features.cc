@@ -49,4 +49,13 @@ const Feature kUseFiveMinutesThreadReclaimTime = {
 const BASE_EXPORT Feature kRemoveCanceledTasksInTaskQueue = {
     "RemoveCanceledTasksInTaskQueue2", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const BASE_EXPORT Feature kAddTaskLeewayFeature = {
+    "AddTaskLeeway", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::FeatureParam<TimeDelta> kTaskLeewayParam{&kAddTaskLeewayFeature,
+                                                     "leeway", Milliseconds(8)};
+
+const BASE_EXPORT Feature kAlignWakeUps = {"AlignWakeUps",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace base

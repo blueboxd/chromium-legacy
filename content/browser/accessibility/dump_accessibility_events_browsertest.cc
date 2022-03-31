@@ -111,12 +111,9 @@ std::vector<std::string> DumpAccessibilityEventsTest::Dump() {
   bool run_go_again = false;
   std::vector<std::string> result;
   do {
-    base::Value go_results;
-    std::vector<std::string> event_logs;
-
     // Dump the event logs, running them through any filters specified
     // in the HTML file.
-    std::tie(go_results, event_logs) = CaptureEvents(base::BindOnce(
+    auto [go_results, event_logs] = CaptureEvents(base::BindOnce(
         &ExecuteScriptAndGetValue, web_contents->GetMainFrame(), "go()"));
     run_go_again = go_results.is_bool() && go_results.GetBool();
     // Save a copy of the final accessibility tree (as a text dump); we'll
@@ -328,8 +325,16 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("aria-textbox-children-change.html"));
 }
 
+// Test is flaky on Mac: crbug.com/1295914
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_AccessibilityEventsAriaTextboxEditabilityChanges \
+  DISABLED_AccessibilityEventsAriaTextboxEditabilityChanges
+#else
+#define MAYBE_AccessibilityEventsAriaTextboxEditabilityChanges \
+  AccessibilityEventsAriaTextboxEditabilityChanges
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsAriaTextboxEditabilityChanges) {
+                       MAYBE_AccessibilityEventsAriaTextboxEditabilityChanges) {
   RunEventTest(FILE_PATH_LITERAL("aria-textbox-editability-changes.html"));
 }
 
@@ -424,6 +429,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsAddAlertWithRoleChange) {
   RunEventTest(FILE_PATH_LITERAL("add-alert-with-role-change.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAddAlertContent) {
+  RunEventTest(FILE_PATH_LITERAL("add-alert-content.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
@@ -1032,6 +1042,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest, ValueValueChanged) {
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsMenuOpenedClosed) {
   RunEventTest(FILE_PATH_LITERAL("menu-opened-closed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsMenuOpenedClosedViaInnerText) {
+  RunEventTest(FILE_PATH_LITERAL("menu-opened-closed-via-inner-text.html"));
 }
 
 #if BUILDFLAG(IS_WIN) && defined(ADDRESS_SANITIZER)

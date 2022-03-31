@@ -4,6 +4,7 @@
 
 #include "ash/app_list/test/app_list_test_helper.h"
 
+#include <tuple>
 #include <utility>
 
 #include "ash/app_list/app_list_bubble_presenter.h"
@@ -17,9 +18,11 @@
 #include "ash/app_list/views/app_list_bubble_search_page.h"
 #include "ash/app_list/views/app_list_bubble_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
+#include "ash/app_list/views/app_list_toast_container_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/apps_container_view.h"
 #include "ash/app_list/views/contents_view.h"
+#include "ash/app_list/views/continue_section_view.h"
 #include "ash/app_list/views/productivity_launcher_search_view.h"
 #include "ash/app_list/views/search_result_page_dialog_controller.h"
 #include "ash/app_list/views/search_result_page_view.h"
@@ -28,6 +31,8 @@
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/test/test_utils.h"
 
 namespace ash {
 
@@ -41,6 +46,9 @@ AppListTestHelper::AppListTestHelper() {
   app_list_controller_->SetClient(app_list_client_.get());
   app_list_controller_->SetActiveModel(/*profile_id=*/1, &model_,
                                        &search_model_);
+  // Disable app list nudge as default.
+  DisableAppListNudge(true);
+  ContinueSectionView::SetPrivacyNoticeAcceptedForTest(true);
 }
 
 AppListTestHelper::~AppListTestHelper() {
@@ -90,10 +98,23 @@ void AppListTestHelper::ToggleAndRunLoop(uint64_t display_id,
   WaitUntilIdle();
 }
 
+void AppListTestHelper::WaitForLayerAnimation(ui::Layer* layer) {
+  auto* compositor = layer->GetCompositor();
+  while (layer->GetAnimator()->is_animating()) {
+    EXPECT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
+  }
+
+  // Ensure there is one more frame presented after animation finishes
+  // to allow animation throughput data is passed from cc to ui.
+  std::ignore =
+      ui::WaitForNextFrameToBePresented(compositor, base::Milliseconds(200));
+}
+
 void AppListTestHelper::StartSlideAnimationOnBubbleAppsPage(
     views::View* view,
-    int vertical_offset) {
-  GetBubbleAppsPage()->SlideViewIntoPosition(view, vertical_offset);
+    int vertical_offset,
+    base::TimeDelta duration) {
+  GetBubbleAppsPage()->SlideViewIntoPosition(view, vertical_offset, duration);
 }
 
 void AppListTestHelper::CheckVisibility(bool visible) {
@@ -152,6 +173,10 @@ bool AppListTestHelper::IsInFolderView() {
       ->contents_view()
       ->apps_container_view()
       ->IsInFolderView();
+}
+
+void AppListTestHelper::DisableAppListNudge(bool disable) {
+  AppListNudgeController::SetNudgeDisabledForTest(disable);
 }
 
 AppListView* AppListTestHelper::GetAppListView() {

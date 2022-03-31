@@ -23,7 +23,6 @@
 #include "chromeos/network/shill_property_handler.h"
 
 namespace base {
-class ListValue;
 class Location;
 class Value;
 }  // namespace base
@@ -695,6 +694,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
   // |UpdateBlockedNetworksInternal(NetworkTypePattern::Wifi())| if the
   // availability changed.
   void UpdateManagedWifiNetworkAvailable();
+
+  // Check if the cellular device has received update and calls
+  // |UpdateBlockedNetworksInternal(NetworkTypePattern::Cellular())|
+  void UpdateBlockedCellularNetworks();
 
   // Calls |UpdateBlockedByPolicy()| for each given |network_type| network.
   void UpdateBlockedNetworksInternal(const NetworkTypePattern& network_type);

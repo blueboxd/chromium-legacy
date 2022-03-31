@@ -186,6 +186,9 @@ public class AutocompleteMediatorUnitTest {
     @Mock
     Profile mProfile;
 
+    @Mock
+    OmniboxPedalDelegate mPedalDelegate;
+
     private ImmediatePostingHandler mHandler;
     private PropertyModel mListModel;
     private AutocompleteMediator mMediator;
@@ -212,7 +215,7 @@ public class AutocompleteMediatorUnitTest {
                     mAutocompleteDelegate, mTextStateProvider, mListModel,
                     mHandler, () -> mModalDialogManager, null, null,
                     mLocationBarDataProvider, tab -> {}, null, url -> false, new DummyJankTracker(),
-                    (pixelSize, callback) -> {});
+                    (pixelSize, callback) -> {}, mPedalDelegate);
             mMediator.setAutocompleteProfile(mProfile);
         });
         // clang-format on
@@ -238,6 +241,8 @@ public class AutocompleteMediatorUnitTest {
 
         mSuggestionsList = buildDummySuggestionsList(10, "Suggestion");
         doReturn(true).when(mAutocompleteDelegate).isKeyboardActive();
+        setUpLocationBarDataProvider(
+                "chrome-native://newtab", "New Tab Page", PageClassification.NTP_VALUE);
     }
 
     /**

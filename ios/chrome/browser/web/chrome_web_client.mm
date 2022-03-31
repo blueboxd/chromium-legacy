@@ -10,10 +10,10 @@
 #import "base/ios/ios_util.h"
 #import "base/ios/ns_error_util.h"
 #include "base/mac/bundle_locations.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/version.h"
 #import "components/autofill/ios/browser/autofill_java_script_feature.h"
 #import "components/autofill/ios/browser/suggestion_controller_java_script_feature.h"
 #import "components/autofill/ios/form_util/form_handlers_java_script_feature.h"
@@ -30,7 +30,7 @@
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
-#import "ios/chrome/browser/follow/rss_link_java_script_feature.h"
+#import "ios/chrome/browser/follow/follow_java_script_feature.h"
 #include "ios/chrome/browser/ios_chrome_main_parts.h"
 #import "ios/chrome/browser/link_to_text/link_to_text_java_script_feature.h"
 #include "ios/chrome/browser/ntp/browser_policy_new_tab_page_rewriter.h"
@@ -85,8 +85,6 @@
 namespace {
 // The tag describing the product name with a placeholder for the version.
 const char kProductTagWithPlaceholder[] = "CriOS/%s";
-
-constexpr char kMajorVersion100[] = "100";
 
 // Returns an autoreleased string containing the JavaScript loaded from a
 // bundled resource file with the given name (excluding extension).
@@ -154,30 +152,9 @@ NSString* GetLookalikeUrlErrorPageHtml(web::WebState* web_state,
   return base::SysUTF8ToNSString(error_page_content);
 }
 
-// Returns a version string that matches the current version number except that
-// the major version is 100.
-const std::string& GetM100VersionNumber() {
-  static const base::NoDestructor<std::string> m100_version_number([] {
-    base::Version version(version_info::GetVersionNumber());
-    std::string version_str(kMajorVersion100);
-    const std::vector<uint32_t>& components = version.components();
-    // Rest of the version string remains the same.
-    for (size_t i = 1; i < components.size(); ++i) {
-      version_str.append(".");
-      version_str.append(base::NumberToString(components[i]));
-    }
-    return version_str;
-  }());
-  return *m100_version_number;
-}
-
 // Returns a string describing the product name and version, of the
 // form "productname/version". Used as part of the user agent string.
 std::string GetMobileProduct() {
-  if (base::FeatureList::IsEnabled(web::kForceMajorVersion100InUserAgent)) {
-    return base::StringPrintf(kProductTagWithPlaceholder,
-                              GetM100VersionNumber().c_str());
-  }
   return base::StringPrintf(kProductTagWithPlaceholder,
                             version_info::GetVersionNumber().c_str());
 }
@@ -188,10 +165,6 @@ std::string GetMobileProduct() {
 // for fingerprinting. The Mobile one is using the full version for legacy
 // reasons.
 std::string GetDesktopProduct() {
-  if (base::FeatureList::IsEnabled(web::kForceMajorVersion100InUserAgent)) {
-    return base::StringPrintf(kProductTagWithPlaceholder, kMajorVersion100);
-  }
-
   return base::StringPrintf(kProductTagWithPlaceholder,
                             version_info::GetMajorVersionNumber().c_str());
 }
@@ -315,7 +288,7 @@ std::vector<web::JavaScriptFeature*> ChromeWebClient::GetJavaScriptFeatures(
       SearchEngineTabHelperFactory::GetInstance());
   features.push_back(SearchEngineJavaScriptFeature::GetInstance());
   features.push_back(WebPerformanceMetricsJavaScriptFeature::GetInstance());
-  features.push_back(RSSLinkJavaScriptFeature::GetInstance());
+  features.push_back(FollowJavaScriptFeature::GetInstance());
   return features;
 }
 
@@ -416,8 +389,11 @@ web::UserAgentType ChromeWebClient::GetDefaultUserAgent(
       ios::HostContentSettingsMapFactory::GetForBrowserState(browser_state);
   ContentSetting setting = settings_map->GetContentSetting(
       url, url, ContentSettingsType::REQUEST_DESKTOP_SITE);
-  return (setting == CONTENT_SETTING_ALLOW) ? web::UserAgentType::DESKTOP
-                                            : web::UserAgentType::MOBILE;
+  bool use_desktop_agent = setting == CONTENT_SETTING_ALLOW;
+  base::UmaHistogramBoolean("IOS.PageLoad.DefaultModeMobile",
+                            !use_desktop_agent);
+  return use_desktop_agent ? web::UserAgentType::DESKTOP
+                           : web::UserAgentType::MOBILE;
 }
 
 bool ChromeWebClient::RestoreSessionFromCache(web::WebState* web_state) const {
@@ -427,7 +403,7 @@ bool ChromeWebClient::RestoreSessionFromCache(web::WebState* web_state) const {
 
 void ChromeWebClient::CleanupNativeRestoreURLs(web::WebState* web_state) const {
   web::NavigationManager* navigationManager = web_state->GetNavigationManager();
-  for (int i = 0; i < navigationManager->GetItemCount(); i++) {
+  for (int i = 0; i < web_state->GetNavigationItemCount(); i++) {
     // The WKWebView URL underneath the NTP is about://newtab, which has no
     // title. When restoring the NTP, be sure to re-add the title below.
     web::NavigationItem* item = navigationManager->GetItemAtIndex(i);

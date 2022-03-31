@@ -4,7 +4,6 @@
 
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
-import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -23,25 +22,35 @@ enum ErrorMessage {
 export class ErrorMessageElement extends PolymerElement {
   private static readonly ADD_RESULT_MESSAGE_CODES:
       [ErrorMessage, AddSinkResultCode[]][] = [
-    [ErrorMessage.NO_ERROR, [AddSinkResultCode.OK]],
-    [ErrorMessage.GENERIC, [
-      AddSinkResultCode.UNKNOWN_ERROR,
-      AddSinkResultCode.SINK_CREATION_ERROR
-    ]],
-    [ErrorMessage.ACCESS_CODE, [
-      AddSinkResultCode.INVALID_ACCESS_CODE,
-      AddSinkResultCode.ACCESS_CODE_NOT_FOUND
-    ]],
-    [ErrorMessage.NETWORK, [
-      AddSinkResultCode.HTTP_RESPONSE_CODE_ERROR,
-      AddSinkResultCode.RESPONSE_MALFORMED,
-      AddSinkResultCode.EMPTY_RESPONSE,
-      AddSinkResultCode.SERVICE_NOT_PRESENT,
-      AddSinkResultCode.SERVER_ERROR
-    ]],
-    [ErrorMessage.PERMISSION, [AddSinkResultCode.AUTH_ERROR]],
-    [ErrorMessage.TOO_MANY_REQUESTS, [AddSinkResultCode.TOO_MANY_REQUESTS]],
-  ];
+        [ErrorMessage.NO_ERROR, [AddSinkResultCode.OK]],
+        [
+          ErrorMessage.GENERIC,
+          [
+            AddSinkResultCode.UNKNOWN_ERROR,
+            AddSinkResultCode.SINK_CREATION_ERROR,
+            AddSinkResultCode.CHANNEL_OPEN_ERROR
+          ]
+        ],
+        [
+          ErrorMessage.ACCESS_CODE,
+          [
+            AddSinkResultCode.INVALID_ACCESS_CODE,
+            AddSinkResultCode.ACCESS_CODE_NOT_FOUND
+          ]
+        ],
+        [
+          ErrorMessage.NETWORK,
+          [
+            AddSinkResultCode.HTTP_RESPONSE_CODE_ERROR,
+            AddSinkResultCode.RESPONSE_MALFORMED,
+            AddSinkResultCode.EMPTY_RESPONSE,
+            AddSinkResultCode.SERVICE_NOT_PRESENT,
+            AddSinkResultCode.SERVER_ERROR
+          ]
+        ],
+        [ErrorMessage.PERMISSION, [AddSinkResultCode.AUTH_ERROR]],
+        [ErrorMessage.TOO_MANY_REQUESTS, [AddSinkResultCode.TOO_MANY_REQUESTS]],
+      ];
 
   private static readonly CAST_RESULT_MESSAGE_CODES:
       [ErrorMessage, RouteRequestResultCode[]][] = [

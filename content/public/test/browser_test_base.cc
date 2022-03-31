@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -77,6 +78,7 @@
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/dns/public/dns_over_https_server_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
@@ -131,6 +133,7 @@
 #endif
 
 #if BUILDFLAG(IS_FUCHSIA)
+#include "base/fuchsia/build_info.h"
 #include "ui/platform_window/fuchsia/initialize_presenter_api_view.h"
 #endif  // BUILDFLAG(IS_FUCHSIA)
 
@@ -146,8 +149,8 @@ bool g_instance_already_created = false;
 // (to make debugging easier) and also exit with a known error code (so that
 // the test framework considers this a failure -- http://crbug.com/57578).
 // Note: We only want to do this in the browser process, and not forked
-// processes. That might lead to hangs because of locks inside tcmalloc or the
-// OS. See http://crbug.com/141302.
+// processes. That might lead to hangs because of locks inside the OS.
+// See http://crbug.com/141302.
 int g_browser_process_pid;
 
 void DumpStackTraceSignalHandler(int signal) {
@@ -272,7 +275,7 @@ BrowserTestBase::BrowserTestBase() {
 }
 
 BrowserTestBase::~BrowserTestBase() {
-  CHECK(set_up_called_ || IsSkipped())
+  CHECK(set_up_called_ || IsSkipped() || HasFatalFailure())
       << "SetUp was not called. This probably means that the "
          "developer has overridden the method and not called "
          "the superclass version. In this case, the test "
@@ -397,6 +400,13 @@ void BrowserTestBase::SetUp() {
   command_line->AppendSwitch(switches::kDisableGpu);
 
   ui::fuchsia::IgnorePresentCallsForTest();
+
+  // Clear the per-process cached BuildInfo, which was initialized by
+  // TestSuite::Initialize(), to prevent a DCHECK for multiple calls during
+  // in-process browser tests. There is not a single TestSuite for all browser
+  // tests and some use the cached values, so skipping the earlier
+  // initialization is not an option.
+  base::ClearCachedBuildInfoForTesting();
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -903,6 +913,15 @@ void BrowserTestBase::SetAllowNetworkAccessToHostResolutions() {
   allow_network_access_to_host_resolutions_ = true;
 }
 
+void BrowserTestBase::SetReplaceSystemDnsConfig() {
+  replace_system_dns_config_ = true;
+}
+
+void BrowserTestBase::SetTestDohConfig(net::DnsOverHttpsConfig config) {
+  DCHECK(!test_doh_config_.has_value());
+  test_doh_config_ = std::move(config);
+}
+
 void BrowserTestBase::CreateTestServer(const base::FilePath& test_server_base) {
   embedded_test_server()->AddDefaultHandlers(test_server_base);
 }
@@ -943,15 +962,21 @@ void BrowserTestBase::InitializeNetworkProcess() {
 
   initialized_network_process_ = true;
 
-  // Test host resolver may not be initiatized if host resolutions are allowed
+  // Test host resolver may not be initialized if host resolutions are allowed
   // to reach the network.
   if (host_resolver()) {
     host_resolver()->DisableModifications();
   }
 
-  // Send the host resolver rules to the network service if it's in use. No need
-  // to do this if it's running in the browser process though.
-  if (!IsOutOfProcessNetworkService()) {
+  // Send the host resolver rules and other DNS settings to the network service.
+  // If the network service is in the browser process, it will automatically
+  // pick up the host resolver rules, but it will not automatically see
+  // `replace_system_dns_config_` and `test_doh_config_`.
+  //
+  // TODO(https://crbug.com/1295732) Always send `replace_system_dns_config_`
+  // and `test_doh_config_` to the network process, regardless of where it's
+  // running.
+  if (IsInProcessNetworkService()) {
     return;
   }
 
@@ -965,6 +990,16 @@ void BrowserTestBase::InitializeNetworkProcess() {
     mojo::ScopedAllowSyncCallForTesting allow_sync_call;
     network_service_test->SetAllowNetworkAccessToHostResolutions();
     return;
+  }
+
+  if (replace_system_dns_config_) {
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    network_service_test->ReplaceSystemDnsConfig();
+  }
+
+  if (test_doh_config_.has_value()) {
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    network_service_test->SetTestDohConfig(*test_doh_config_);
   }
 
   std::vector<network::mojom::RulePtr> mojo_rules;
@@ -998,9 +1033,7 @@ void BrowserTestBase::InitializeNetworkProcess() {
       if ((rule.resolver_type !=
                net::RuleBasedHostResolverProc::Rule::kResolverTypeSystem &&
            rule.resolver_type !=
-               net::RuleBasedHostResolverProc::Rule::kResolverTypeIPLiteral &&
-           rule.resolver_type != net::RuleBasedHostResolverProc::Rule::
-                                     kResolverTypeFailHTTPSServiceFormRecord) ||
+               net::RuleBasedHostResolverProc::Rule::kResolverTypeIPLiteral) ||
           rule.address_family !=
               net::AddressFamily::ADDRESS_FAMILY_UNSPECIFIED ||
           !!rule.latency_ms) {
@@ -1013,11 +1046,6 @@ void BrowserTestBase::InitializeNetworkProcess() {
             rule.replacement.empty()
                 ? network::mojom::ResolverType::kResolverTypeDirectLookup
                 : network::mojom::ResolverType::kResolverTypeSystem;
-      } else if (rule.resolver_type ==
-                 net::RuleBasedHostResolverProc::Rule::
-                     kResolverTypeFailHTTPSServiceFormRecord) {
-        mojo_rule->resolver_type = network::mojom::ResolverType::
-            kResolverTypeFailHTTPSServiceFormRecord;
       } else {
         mojo_rule->resolver_type =
             network::mojom::ResolverType::kResolverTypeIPLiteral;

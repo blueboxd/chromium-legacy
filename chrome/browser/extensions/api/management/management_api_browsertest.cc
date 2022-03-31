@@ -280,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
       test_utils::RunFunctionAndReturnSingleResult(function.get(), "[]",
                                                    browser()));
   ASSERT_TRUE(result->is_list());
-  EXPECT_EQ(1U, result->GetList().size());
+  EXPECT_EQ(1U, result->GetListDeprecated().size());
 
   // And it should continue to do so even after it crashes.
   ASSERT_TRUE(CrashEnabledExtension(extension->id()));
@@ -289,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
   result = test_utils::RunFunctionAndReturnSingleResult(function.get(), "[]",
                                                         browser());
   ASSERT_TRUE(result->is_list());
-  EXPECT_EQ(1U, result->GetList().size());
+  EXPECT_EQ(1U, result->GetListDeprecated().size());
 }
 
 class ExtensionManagementApiEscalationTest :
@@ -359,15 +359,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
                        DisabledReason) {
   scoped_refptr<ManagementGetFunction> function =
       new ManagementGetFunction();
-  std::unique_ptr<base::Value> result(
-      test_utils::RunFunctionAndReturnSingleResult(
+  base::Value::DictStorage dict =
+      test_utils::ToDictionary(test_utils::RunFunctionAndReturnSingleResult(
           function.get(), base::StringPrintf("[\"%s\"]", kId), browser()));
-  ASSERT_TRUE(result.get() != NULL);
-  ASSERT_TRUE(result->is_dict());
-  base::DictionaryValue* dict =
-      static_cast<base::DictionaryValue*>(result.get());
-  std::string reason;
-  EXPECT_TRUE(dict->GetStringASCII(keys::kDisabledReasonKey, &reason));
+  std::string reason =
+      api_test_utils::GetString(dict, keys::kDisabledReasonKey);
+  EXPECT_TRUE(base::IsStringASCII(reason));
   EXPECT_EQ(reason, std::string(keys::kDisabledReasonPermissionsIncrease));
 }
 

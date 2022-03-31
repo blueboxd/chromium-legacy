@@ -23,8 +23,9 @@
 #include "chrome/browser/ui/views/profiles/profile_customization_bubble_sync_controller.h"
 #include "chrome/browser/ui/views/profiles/profile_customization_bubble_view.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_turn_sync_on_delegate.h"
-#include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
+#include "chrome/browser/ui/webui/signin/signin_url_utils.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
+#include "chrome/browser/ui/webui/signin/turn_sync_on_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -73,9 +74,14 @@ void MaybeShowProfileSwitchIPH(Browser* browser) {
   browser_view->MaybeShowProfileSwitchIPH();
 }
 
-GURL GetSyncConfirmationLoadingURL() {
-  return GURL(chrome::kChromeUISyncConfirmationURL)
-      .Resolve(chrome::kChromeUISyncConfirmationLoadingPath);
+// `profile_color` should be set now because the sync confirmation webUI is not
+// re-initialized when loading a URL for the same host but with another path.
+GURL GetSyncConfirmationLoadingURL(absl::optional<SkColor> profile_color) {
+  GURL url = GURL(chrome::kChromeUISyncConfirmationURL)
+                 .Resolve(chrome::kChromeUISyncConfirmationLoadingPath);
+  return AppendSyncConfirmationQueryParams(
+      url, {/*is_modal=*/false, SyncConfirmationUI::DesignVersion::kColored,
+            profile_color});
 }
 
 void ContinueSAMLSignin(std::unique_ptr<content::WebContents> saml_wc,
@@ -137,7 +143,7 @@ void ProfilePickerSignedInFlowController::FinishAndOpenBrowser(
   // Do nothing if the sign-in flow is aborted or if this has already been
   // called. Note that this can get called first time from a special case
   // handling (such as the Settings link) and than second time when the
-  // DiceTurnSyncOnHelper finishes.
+  // TurnSyncOnHelper finishes.
   if (is_finished_)
     return;
   is_finished_ = true;
@@ -154,7 +160,11 @@ void ProfilePickerSignedInFlowController::FinishAndOpenBrowser(
 
 void ProfilePickerSignedInFlowController::SwitchToSyncConfirmation() {
   DCHECK(IsInitialized());
-  host_->ShowScreen(contents(), GURL(chrome::kChromeUISyncConfirmationURL),
+  GURL sync_confirmation_url = AppendSyncConfirmationQueryParams(
+      GURL(chrome::kChromeUISyncConfirmationURL),
+      {/*is_modal=*/false, SyncConfirmationUI::DesignVersion::kColored,
+       GetProfileColor()});
+  host_->ShowScreen(contents(), sync_confirmation_url,
                     /*navigation_finished_closure=*/
                     base::BindOnce(&ProfilePickerSignedInFlowController::
                                        SwitchToSyncConfirmationFinished,
@@ -223,10 +233,16 @@ void ProfilePickerSignedInFlowController::Init(bool is_saml) {
                      weak_ptr_factory_.GetWeakPtr(), BrowserOpenedCallback());
 
   // Stop with the sign-in navigation and show a spinner instead. The spinner
-  // will be shown until DiceTurnSyncOnHelper (below) figures out whether it's a
+  // will be shown until TurnSyncOnHelper (below) figures out whether it's a
   // managed account and whether sync is disabled by policies (which in some
   // cases involves fetching policies and can take a couple of seconds).
-  host_->ShowScreen(contents(), GetSyncConfirmationLoadingURL());
+  //
+  // It's fine to pass `profile_color_` here even though a policy can still
+  // overwrite its value later when polices become available. If policies get
+  // applied, we'll show the enterprise welcome screen in between the loading
+  // URL and the sync confirmation URL and thus the sync confirmation webUI will
+  // get recreated with the right color.
+  host_->ShowScreen(contents(), GetSyncConfirmationLoadingURL(profile_color_));
 
   // Set up a timeout for extended account info (which cancels any existing
   // timeout closure).
@@ -237,12 +253,12 @@ void ProfilePickerSignedInFlowController::Init(bool is_saml) {
       FROM_HERE, extended_account_info_timeout_closure_.callback(),
       extended_account_info_timeout_);
 
-  // DiceTurnSyncOnHelper deletes itself once done.
-  new DiceTurnSyncOnHelper(
+  // TurnSyncOnHelper deletes itself once done.
+  new TurnSyncOnHelper(
       profile_, signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER,
       signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO,
       signin_metrics::Reason::kSigninPrimaryAccount, account_info.account_id,
-      DiceTurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT,
+      TurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT,
       std::make_unique<ProfilePickerTurnSyncOnDelegate>(
           weak_ptr_factory_.GetWeakPtr(), profile_),
       std::move(sync_consent_completed_closure));
@@ -285,8 +301,7 @@ void ProfilePickerSignedInFlowController::SwitchToSyncConfirmationFinished() {
   SyncConfirmationUI* sync_confirmation_ui =
       static_cast<SyncConfirmationUI*>(contents()->GetWebUI()->GetController());
 
-  sync_confirmation_ui->InitializeMessageHandlerForCreationFlow(
-      GetProfileColor());
+  sync_confirmation_ui->InitializeMessageHandlerWithBrowser(nullptr);
 }
 
 void ProfilePickerSignedInFlowController::

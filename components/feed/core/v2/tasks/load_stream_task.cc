@@ -287,7 +287,7 @@ void LoadStreamTask::UploadActionsComplete(UploadActionsTask::Result result) {
     else if (options_.stream_type.IsWebFeed())
       network_request_id_ = launch_reliability_logger_.LogWebFeedRequestStart();
   }
-  const feed::RequestMetadata request_metadata =
+  RequestMetadata request_metadata =
       stream_.GetRequestMetadata(options_.stream_type,
                                  /*is_for_next_page=*/false);
 
@@ -308,7 +308,7 @@ void LoadStreamTask::UploadActionsComplete(UploadActionsTask::Result result) {
     // Special case: web feed that is not using Feed Query requests go to
     // WebFeedListContentsDiscoverApi.
     network.SendApiRequest<WebFeedListContentsDiscoverApi>(
-        std::move(request), account_info,
+        std::move(request), account_info, std::move(request_metadata),
         base::BindOnce(&LoadStreamTask::QueryApiRequestComplete, GetWeakPtr()));
   } else if (options_.stream_type.IsForYou() &&
              base::FeatureList::IsEnabled(kDiscoFeedEndpoint)) {
@@ -318,13 +318,13 @@ void LoadStreamTask::UploadActionsComplete(UploadActionsTask::Result result) {
       case LoadType::kInitialLoad:
       case LoadType::kManualRefresh:
         network.SendApiRequest<QueryInteractiveFeedDiscoverApi>(
-            request, account_info,
+            request, account_info, std::move(request_metadata),
             base::BindOnce(&LoadStreamTask::QueryApiRequestComplete,
                            GetWeakPtr()));
         break;
       case LoadType::kBackgroundRefresh:
         network.SendApiRequest<QueryBackgroundFeedDiscoverApi>(
-            request, account_info,
+            request, account_info, std::move(request_metadata),
             base::BindOnce(&LoadStreamTask::QueryApiRequestComplete,
                            GetWeakPtr()));
         break;
@@ -400,8 +400,12 @@ void LoadStreamTask::ProcessNetworkResponse(
                                          fetched_content_has_notice_card);
   MetricsReporter::NoticeCardFulfilled(fetched_content_has_notice_card);
 
-  auto updated_metadata = stream_.GetMetadata();
+  feedstore::Metadata updated_metadata = stream_.GetMetadata();
   SetLastFetchTime(updated_metadata, options_.stream_type, base::Time::Now());
+  updated_metadata.set_web_and_app_activity_enabled(
+      response_data.web_and_app_activity_enabled);
+  updated_metadata.set_discover_personalization_enabled(
+      response_data.discover_personalization_enabled);
   feedstore::MaybeUpdateSessionId(updated_metadata, response_data.session_id);
   if (response_data.content_lifetime) {
     feedstore::SetContentLifetime(updated_metadata, options_.stream_type,

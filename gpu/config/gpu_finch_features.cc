@@ -121,12 +121,12 @@ const base::FeatureParam<std::string>
 
 // Enable GPU Rasterization by default. This can still be overridden by
 // --enable-gpu-rasterization or --disable-gpu-rasterization.
-// DefaultEnableGpuRasterization has launched on Mac, Windows, ChromeOS, and
-// Android.
+// DefaultEnableGpuRasterization has launched on Mac, Windows, ChromeOS,
+// Android and Linux.
 const base::Feature kDefaultEnableGpuRasterization{
   "DefaultEnableGpuRasterization",
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH) || \
-    BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS) || \
+    BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_LINUX)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -323,10 +323,6 @@ bool IsDrDcEnabled() {
     return false;
   }
 
-  // Currently not supported for vulkan.
-  if (IsUsingVulkan())
-    return false;
-
   // DrDc is supported on android MediaPlayer and MCVD path only when
   // AImageReader is enabled.
   if (!IsAImageReaderEnabled())
@@ -351,10 +347,6 @@ bool IsUsingThreadSafeMediaForWebView() {
 
   // Not yet compatible with Vulkan.
   if (IsUsingVulkan())
-    return false;
-
-  // Not yet compatible with SurfaceControl.
-  if (IsAndroidSurfaceControlEnabled())
     return false;
 
   return base::FeatureList::IsEnabled(kWebViewThreadSafeMedia);
@@ -401,8 +393,9 @@ bool IsAndroidSurfaceControlEnabled() {
   if (LimitAImageReaderMaxSizeToOne())
     return false;
 
-  // On WebView we also require zero copy to use SurfaceControl
-  if (IsWebViewZeroCopyVideoEnabled() &&
+  // On WebView we also require zero copy or thread-safe media to use
+  // SurfaceControl
+  if ((IsWebViewZeroCopyVideoEnabled() || IsUsingThreadSafeMediaForWebView()) &&
       base::FeatureList::IsEnabled(kWebViewSurfaceControl))
     return true;
 

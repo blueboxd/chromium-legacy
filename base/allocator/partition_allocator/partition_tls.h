@@ -20,12 +20,15 @@
 // Barebones TLS implementation for use in PartitionAlloc. This doesn't use the
 // general chromium TLS handling to avoid dependencies, but more importantly
 // because it allocates memory.
-namespace base {
-namespace internal {
+namespace partition_alloc::internal {
 
 #if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
-typedef pthread_key_t PartitionTlsKey;
+using PartitionTlsKey = pthread_key_t;
 
+// Only on x86_64, the implementation is not stable on ARM64. For instance, in
+// macOS 11, the TPIDRRO_EL0 registers holds the CPU index in the low bits,
+// which is not the case in macOS 12. See libsyscall/os/tsd.h in XNU
+// (_os_tsd_get_direct() is used by pthread_getspecific() internally).
 #if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_X86_64)
 namespace {
 
@@ -60,6 +63,7 @@ ALWAYS_INLINE bool PartitionTlsCreate(PartitionTlsKey* key,
                                       void (*destructor)(void*)) {
   return !pthread_key_create(key, destructor);
 }
+
 ALWAYS_INLINE void* PartitionTlsGet(PartitionTlsKey key) {
 #if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_X86_64)
   PA_DCHECK(pthread_getspecific(key) == FastTlsGet(key));
@@ -68,14 +72,16 @@ ALWAYS_INLINE void* PartitionTlsGet(PartitionTlsKey key) {
   return pthread_getspecific(key);
 #endif
 }
+
 ALWAYS_INLINE void PartitionTlsSet(PartitionTlsKey key, void* value) {
   int ret = pthread_setspecific(key, value);
   PA_DCHECK(!ret);
 }
+
 #elif BUILDFLAG(IS_WIN)
 // Note: supports only a single TLS key on Windows. Not a hard constraint, may
 // be lifted.
-typedef unsigned long PartitionTlsKey;
+using PartitionTlsKey = unsigned long;
 
 BASE_EXPORT bool PartitionTlsCreate(PartitionTlsKey* key,
                                     void (*destructor)(void*));
@@ -112,21 +118,38 @@ void PartitionTlsSetOnDllProcessDetach(void (*callback)());
 
 #else
 // Not supported.
-typedef int PartitionTlsKey;
+using PartitionTlsKey = int;
+
 ALWAYS_INLINE bool PartitionTlsCreate(PartitionTlsKey* key,
                                       void (*destructor)(void*)) {
   // NOTIMPLEMENTED() may allocate, crash instead.
   IMMEDIATE_CRASH();
 }
+
 ALWAYS_INLINE void* PartitionTlsGet(PartitionTlsKey key) {
   IMMEDIATE_CRASH();
 }
+
 ALWAYS_INLINE void PartitionTlsSet(PartitionTlsKey key, void* value) {
   IMMEDIATE_CRASH();
 }
+
 #endif  // BUILDFLAG(IS_WIN)
 
-}  // namespace internal
-}  // namespace base
+}  // namespace partition_alloc::internal
+
+namespace base::internal {
+
+// TODO(https://crbug.com/1288247): Remove these 'using' declarations once
+// the migration to the new namespaces gets done.
+using ::partition_alloc::internal::PartitionTlsCreate;
+using ::partition_alloc::internal::PartitionTlsGet;
+using ::partition_alloc::internal::PartitionTlsKey;
+using ::partition_alloc::internal::PartitionTlsSet;
+#if BUILDFLAG(IS_WIN)
+using ::partition_alloc::internal::PartitionTlsSetOnDllProcessDetach;
+#endif  // BUILDFLAG(IS_WIN)
+
+}  // namespace base::internal
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_TLS_H_

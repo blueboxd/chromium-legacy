@@ -22,8 +22,12 @@
 
 namespace ash {
 namespace {
-constexpr char kUserActionCancel[] = "cancel";
+constexpr char kUserActionSkip[] = "skip";
 constexpr base::TimeDelta kShowSkipButtonDuration = base::Seconds(20);
+
+// If the battery percent is lower than this ratio, and the charger is not
+// connected, then the low-battery warning will be displayed.
+constexpr double kInsufficientBatteryPercent = 50;
 }  // namespace
 
 LacrosDataMigrationScreen::LacrosDataMigrationScreen(
@@ -50,6 +54,10 @@ void LacrosDataMigrationScreen::OnViewDestroyed(
 void LacrosDataMigrationScreen::ShowImpl() {
   if (!view_)
     return;
+
+  if (!power_manager_subscription_.IsObserving())
+    power_manager_subscription_.Observe(PowerManagerClient::Get());
+  PowerManagerClient::Get()->RequestStatusUpdate();
 
   if (!migrator_) {
     const std::string user_id_hash =
@@ -84,18 +92,21 @@ void LacrosDataMigrationScreen::ShowImpl() {
 
     migrator_ = std::make_unique<BrowserDataMigratorImpl>(
         profile_data_dir, user_id_hash, progress_callback,
-        base::BindOnce(&chrome::AttemptRestart),
         g_browser_process->local_state());
 
-    migrator_->Migrate();
+    migrator_->Migrate(base::BindOnce([](BrowserDataMigrator::Result result) {
+      // TODO(crbug.com/1296174): support page transition on failure.
+      chrome::AttemptRestart();
+    }));
   }
 
   // Show the screen.
   view_->Show();
 
   GetWakeLock()->RequestWakeLock();
+  UpdateLowBatteryStatus();
 
-  // If set, do not post `SHowSkipButton()`.
+  // If set, do not post `ShowSkipButton()`.
   if (skip_post_show_button_for_testing_)
     return;
 
@@ -117,9 +128,12 @@ void LacrosDataMigrationScreen::ShowSkipButton() {
 }
 
 void LacrosDataMigrationScreen::OnUserAction(const std::string& action_id) {
-  if (action_id == kUserActionCancel) {
+  if (action_id == kUserActionSkip) {
+    LOG(WARNING) << "User has skipped the migration.";
     if (migrator_) {
-      LOG(WARNING) << "User has cancelled the migration.";
+      // Here migrator should be running. Trigger to cancel, then the migrator
+      // will report completion (actual completion or cancel) some time soon,
+      // which triggers Chrome to restart.
       migrator_->Cancel();
     }
   } else {
@@ -129,6 +143,23 @@ void LacrosDataMigrationScreen::OnUserAction(const std::string& action_id) {
 
 void LacrosDataMigrationScreen::HideImpl() {
   GetWakeLock()->CancelWakeLock();
+  power_manager_subscription_.Reset();
+}
+
+void LacrosDataMigrationScreen::PowerChanged(
+    const power_manager::PowerSupplyProperties& proto) {
+  UpdateLowBatteryStatus();
+}
+
+void LacrosDataMigrationScreen::UpdateLowBatteryStatus() {
+  const absl::optional<power_manager::PowerSupplyProperties>& proto =
+      PowerManagerClient::Get()->GetLastStatus();
+  if (!proto.has_value())
+    return;
+  view_->SetLowBatteryStatus(
+      proto->battery_state() ==
+          power_manager::PowerSupplyProperties_BatteryState_DISCHARGING &&
+      proto->battery_percent() < kInsufficientBatteryPercent);
 }
 
 device::mojom::WakeLock* LacrosDataMigrationScreen::GetWakeLock() {

@@ -133,7 +133,7 @@ void AppendProxyServerForScheme(const base::Value& onc_manual,
 net::ProxyBypassRules ConvertOncExcludeDomainsToBypassRules(
     const base::Value& onc_exclude_domains) {
   net::ProxyBypassRules rules;
-  for (const base::Value& value : onc_exclude_domains.GetList()) {
+  for (const base::Value& value : onc_exclude_domains.GetListDeprecated()) {
     if (!value.is_string()) {
       LOG(ERROR) << "Badly formatted ONC exclude domains";
       continue;
@@ -200,7 +200,7 @@ void SetProxyForScheme(const net::ProxyConfig::ProxyRules& proxy_rules,
 // nullptr if no such NetworkConfiguration is found.
 const base::Value* GetNetworkConfigByGUID(const base::Value& network_configs,
                                           const std::string& guid) {
-  for (const auto& network : network_configs.GetList()) {
+  for (const auto& network : network_configs.GetListDeprecated()) {
     DCHECK(network.is_dict());
 
     std::string current_guid = GetString(network, ::onc::network_config::kGUID);
@@ -215,7 +215,7 @@ const base::Value* GetNetworkConfigByGUID(const base::Value& network_configs,
 const base::Value* GetNetworkConfigForEthernetWithoutEAP(
     const base::Value& network_configs) {
   VLOG(2) << "Search for ethernet policy without EAP.";
-  for (const auto& network : network_configs.GetList()) {
+  for (const auto& network : network_configs.GetListDeprecated()) {
     DCHECK(network.is_dict());
 
     std::string type = GetString(network, ::onc::network_config::kType);
@@ -450,7 +450,7 @@ base::Value ConvertProxyConfigToOncProxySettings(
         base::Value exclude_domains(base::Value::Type::LIST);
         for (const auto& rule : bypass_rules.rules())
           exclude_domains.Append(rule->ToString());
-        if (!exclude_domains.GetList().empty()) {
+        if (!exclude_domains.GetListDeprecated().empty()) {
           proxy_settings.SetKey(::onc::proxy::kExcludeDomains,
                                 std::move(exclude_domains));
         }
@@ -503,32 +503,24 @@ int ImportNetworksForUser(const user_manager::User* user,
 
   bool ethernet_not_found = false;
   int networks_created = 0;
-  for (const auto& entry : expanded_networks.GetList()) {
-    // TODO(crbug.com/1226202): Remove DictionaryValue conversion once
-    // onc::Normalizer is converted.
-    const base::DictionaryValue* network = nullptr;
-    entry.GetAsDictionary(&network);
-    DCHECK(network);
-
+  for (const auto& network : expanded_networks.GetListDeprecated()) {
     // Remove irrelevant fields.
     onc::Normalizer normalizer(true /* remove recommended fields */);
-    std::unique_ptr<base::DictionaryValue> normalized_network =
-        normalizer.NormalizeObject(&onc::kNetworkConfigurationSignature,
-                                   *network);
+    base::Value normalized_network = normalizer.NormalizeObject(
+        &onc::kNetworkConfigurationSignature, network);
 
     // TODO(pneubeck): Use ONC and ManagedNetworkConfigurationHandler instead.
     // crbug.com/457936
-    std::unique_ptr<base::DictionaryValue> shill_dict =
-        onc::TranslateONCObjectToShill(&onc::kNetworkConfigurationSignature,
-                                       *normalized_network);
+    base::Value shill_dict = onc::TranslateONCObjectToShill(
+        &onc::kNetworkConfigurationSignature, normalized_network);
 
     std::unique_ptr<NetworkUIData> ui_data(
         NetworkUIData::CreateFromONC(::onc::ONC_SOURCE_USER_IMPORT));
-    shill_dict->SetKey(shill::kUIDataProperty,
-                       base::Value(ui_data->GetAsJson()));
-    shill_dict->SetKey(shill::kProfileProperty, base::Value(profile->path));
+    shill_dict.SetKey(shill::kUIDataProperty,
+                      base::Value(ui_data->GetAsJson()));
+    shill_dict.SetKey(shill::kProfileProperty, base::Value(profile->path));
 
-    std::string type = GetString(*shill_dict, shill::kTypeProperty);
+    std::string type = GetString(shill_dict, shill::kTypeProperty);
     NetworkConfigurationHandler* config_handler =
         NetworkHandler::Get()->network_configuration_handler();
     if (NetworkTypePattern::Ethernet().MatchesType(type)) {
@@ -537,7 +529,7 @@ int ImportNetworksForUser(const user_manager::User* user,
           NetworkHandler::Get()->network_state_handler()->FirstNetworkByType(
               NetworkTypePattern::Ethernet());
       if (ethernet) {
-        config_handler->SetShillProperties(ethernet->path(), *shill_dict,
+        config_handler->SetShillProperties(ethernet->path(), shill_dict,
                                            base::OnceClosure(),
                                            network_handler::ErrorCallback());
       } else {
@@ -546,7 +538,7 @@ int ImportNetworksForUser(const user_manager::User* user,
 
     } else {
       config_handler->CreateShillConfiguration(
-          *shill_dict, network_handler::ServiceResultCallback(),
+          shill_dict, network_handler::ServiceResultCallback(),
           network_handler::ErrorCallback());
       ++networks_created;
     }
@@ -604,10 +596,10 @@ bool HasPolicyForNetwork(const PrefService* profile_prefs,
 }
 
 bool HasUserPasswordSubsitutionVariable(const OncValueSignature& signature,
-                                        base::Value* onc_object) {
+                                        const base::Value* onc_object) {
   DCHECK(onc_object->is_dict());
   if (&signature == &kEAPSignature) {
-    std::string* password_field =
+    const std::string* password_field =
         onc_object->FindStringKey(::onc::eap::kPassword);
     if (!password_field)
       return false;
@@ -634,8 +626,8 @@ bool HasUserPasswordSubsitutionVariable(const OncValueSignature& signature,
   return false;
 }
 
-bool HasUserPasswordSubsitutionVariable(base::Value* network_configs) {
-  for (auto& network : network_configs->GetList()) {
+bool HasUserPasswordSubsitutionVariable(const base::Value* network_configs) {
+  for (auto& network : network_configs->GetListDeprecated()) {
     DCHECK(network.is_dict());
     bool result = HasUserPasswordSubsitutionVariable(
         kNetworkConfigurationSignature, &network);

@@ -30,8 +30,10 @@
 namespace ui {
 
 // Definition of static class members.
-constexpr char16_t AXNode::kEmbeddedCharacter[];
-constexpr int AXNode::kEmbeddedCharacterLength;
+constexpr char AXNode::kEmbeddedObjectCharacterUTF8[];
+constexpr char16_t AXNode::kEmbeddedObjectCharacterUTF16[];
+constexpr int AXNode::kEmbeddedObjectCharacterLengthUTF8;
+constexpr int AXNode::kEmbeddedObjectCharacterLengthUTF16;
 
 AXNode::AXNode(AXNode::OwnerTree* tree,
                AXNode* parent,
@@ -885,7 +887,7 @@ const std::u16string& AXNode::GetHypertext() const {
     // Note that the word "hypertext" comes from the IAccessible2 Standard and
     // has nothing to do with HTML.
     static const base::NoDestructor<std::u16string> embedded_character_str(
-        AXNode::kEmbeddedCharacter);
+        AXNode::kEmbeddedObjectCharacterUTF16);
     auto first = UnignoredChildrenCrossingTreeBoundaryBegin();
     for (auto iter = first; iter != UnignoredChildrenCrossingTreeBoundaryEnd();
          ++iter) {
@@ -1403,10 +1405,23 @@ absl::optional<int> AXNode::GetHierarchicalLevel() const {
 }
 
 bool AXNode::IsOrderedSetItem() const {
+  // Tree grid rows should be treated as ordered set items. Since we don't have
+  // a separate row role for tree grid rows, we can't just add the Role::kRow to
+  // IsItemLike. We need to validate that the row is indeed part of a tree grid.
+  if (IsRowInTreeGrid(GetOrderedSet()))
+    return true;
+
   return ui::IsItemLike(GetRole());
 }
 
 bool AXNode::IsOrderedSet() const {
+  // Tree grid rows should be considered like ordered set items and a tree grid
+  // like an ordered set. Continuing that logic, in order to compute the right
+  // PosInSet and SetSize, row groups inside of a tree grid should also be
+  // ordered sets.
+  if (IsRowGroupInTreeGrid())
+    return true;
+
   return ui::IsSetLike(GetRole());
 }
 
@@ -1424,6 +1439,11 @@ absl::optional<int> AXNode::GetSetSize() {
 // Returns false otherwise.
 bool AXNode::SetRoleMatchesItemRole(const AXNode* ordered_set) const {
   ax::mojom::Role item_role = GetRole();
+
+  // Tree grid rows should be treated as ordered set items.
+  if (IsRowInTreeGrid(ordered_set))
+    return true;
+
   // Switch on role of ordered set
   switch (ordered_set->GetRole()) {
     case ax::mojom::Role::kFeed:
@@ -1477,6 +1497,35 @@ bool AXNode::IsIgnoredContainerForOrderedSet() const {
          GetRole() == ax::mojom::Role::kListItem ||
          GetRole() == ax::mojom::Role::kGenericContainer ||
          GetRole() == ax::mojom::Role::kUnknown;
+}
+
+bool AXNode::IsRowInTreeGrid(const AXNode* ordered_set) const {
+  // Tree grid rows have the requirement of being focusable, so we use it to
+  // avoid iterating over rows that clearly aren't part of a tree grid.
+  if (GetRole() != ax::mojom::Role::kRow ||
+      !HasState(ax::mojom::State::kFocusable) || !ordered_set) {
+    return false;
+  }
+
+  if (ordered_set->GetRole() == ax::mojom::Role::kTreeGrid)
+    return true;
+
+  return ordered_set->IsRowGroupInTreeGrid();
+}
+
+bool AXNode::IsRowGroupInTreeGrid() const {
+  // To the best of our understanding, row groups can't be nested.
+  //
+  // According to https://www.w3.org/TR/wai-aria-1.1/#rowgroup, a row group is a
+  // "structural equivalent to the thead, tfoot, and tbody elements in an HTML
+  // table". It is specified in the spec of the thead, tfoot and tbody elements
+  // that they need to be children of a table element, meaning that there can
+  // only be one level of such elements. We assume the same for row groups.
+  if (GetRole() != ax::mojom::Role::kRowGroup)
+    return false;
+
+  AXNode* ordered_set = GetOrderedSet();
+  return ordered_set && ordered_set->GetRole() == ax::mojom::Role::kTreeGrid;
 }
 
 int AXNode::UpdateUnignoredCachedValuesRecursive(int startIndex) {
@@ -1578,13 +1627,16 @@ bool AXNode::IsIgnored() const {
 }
 
 bool AXNode::IsIgnoredForTextNavigation() const {
+  // Splitters do not contribute anything to the tree's text representation, so
+  // stopping on a splitter would erroniously appear to a screen reader user
+  // that the cursor has stopped on the next unignored object.
   if (GetRole() == ax::mojom::Role::kSplitter)
     return true;
 
   // A generic container without any unignored children that is not editable
   // should not be used for text-based navigation. Such nodes don't make sense
-  // for screen readers to land on, since no text will be announced and no
-  // action is possible.
+  // for screen readers to land on, since no role / text will be announced and
+  // no action is possible.
   if (GetRole() == ax::mojom::Role::kGenericContainer &&
       !GetUnignoredChildCount() && !HasState(ax::mojom::State::kEditable)) {
     return true;
@@ -1625,7 +1677,8 @@ bool AXNode::IsLeaf() const {
   // Ignored nodes with any kind of descendants, (ignored or unignored), cannot
   // be leaves because: A) If some of their descendants are unignored then those
   // descendants need to be exposed to the platform layer, and B) If all of
-  // their descendants are ignored they are still not at the bottom of the tree.
+  // their descendants are ignored they cannot be at the bottom of the platform
+  // tree since that tree does not expose any ignored objects.
   if (IsIgnored())
     return false;
 
@@ -1671,9 +1724,12 @@ bool AXNode::IsLeaf() const {
     case ax::mojom::Role::kButton:
       return false;
     case ax::mojom::Role::kImage: {
-      // Images are not leaves when they are image maps. Therefore, do not
-      // truncate descendants except in the case where ARIA role=img.
-      std::string role = GetStringAttribute(ax::mojom::StringAttribute::kRole);
+      // HTML images (i.e. <img> elements) are not leaves when they are image
+      // maps. Therefore, do not truncate descendants except in the case where
+      // ARIA role=img or role=image because that's how we want to treat
+      // ARIA-based images.
+      const std::string role =
+          GetStringAttribute(ax::mojom::StringAttribute::kRole);
       return role == "img" || role == "image";
     }
     case ax::mojom::Role::kDocCover:
@@ -1716,11 +1772,11 @@ bool AXNode::IsLeaf() const {
       // Allow up to 2 text nodes so that list items with bullets are leaves.
       if (child_count > 2 || HasState(ax::mojom::State::kEditable))
         return false;
-      AXNode* child1 = GetFirstUnignoredChildCrossingTreeBoundary();
-      if (!child1 || child1->GetRole() != ax::mojom::Role::kStaticText)
+      const AXNode* child1 = GetFirstUnignoredChildCrossingTreeBoundary();
+      if (!child1 || !child1->IsText())
         return false;
-      AXNode* child2 = child1->GetNextSibling();
-      return !child2 || child2->GetRole() == ax::mojom::Role::kStaticText;
+      const AXNode* child2 = child1->GetNextSibling();
+      return !child2 || child2->IsText();
     }
     default:
       return false;
@@ -1822,10 +1878,11 @@ AXNode* AXNode::GetTextFieldAncestor() const {
   // ancestor, its immediate descendant can have Role::kGenericContainer without
   // State::kEditable. Same with inline text boxes and placeholder text.
   // TODO(nektar): Fix all such inconsistencies in Blink.
-  for (AXNode* ancestor = const_cast<AXNode*>(this);
-       ancestor && (ancestor->HasState(ax::mojom::State::kEditable) ||
-                    ancestor->GetRole() == ax::mojom::Role::kGenericContainer ||
-                    ancestor->IsText());
+  //
+  // Also, ARIA text and search boxes may not have the contenteditable attribute
+  // set, but they should still be treated the same as all other text fields.
+  // (See `AXNodeData::IsAtomicTextField()` for more details.)
+  for (AXNode* ancestor = const_cast<AXNode*>(this); ancestor;
        ancestor = ancestor->GetUnignoredParent()) {
     if (ancestor->data().IsTextField())
       return ancestor;

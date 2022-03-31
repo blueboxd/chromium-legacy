@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+const AutomationNode = chrome.automation.AutomationNode;
+const AutomationEvent = chrome.automation.AutomationEvent;
+const EventType = chrome.automation.EventType;
 const IconType = chrome.accessibilityPrivate.DictationBubbleIconType;
 
 /**
@@ -31,6 +34,15 @@ export class InputController {
     /** @private {?function():void} */
     this.onConnectCallback_ = null;
 
+    /**
+     * The currently focused editable node.
+     * @private {?AutomationNode}
+     */
+    this.editableNode_ = null;
+
+    /** @private {?EventHandler} */
+    this.focusHandler_ = null;
+
     this.initialize_();
   }
 
@@ -44,6 +56,16 @@ export class InputController {
         (context) => this.onImeFocus_(context));
     chrome.input.ime.onBlur.addListener(
         (contextId) => this.onImeBlur_(contextId));
+
+    // IME focus and blur listeners do not tell us which AutomationNode is
+    // currently focused. Register a focus event handler that will give us this
+    // information.
+    this.focusHandler_ = new EventHandler(
+        [], EventType.FOCUS, event => this.onFocusChanged_(event));
+    chrome.automation.getDesktop((desktop) => {
+      this.focusHandler_.setNodes(desktop);
+      this.focusHandler_.start();
+    });
   }
 
   /**
@@ -75,7 +97,7 @@ export class InputController {
    */
   saveCurrentInputMethodAndStart_(method) {
     this.previousImeEngineId_ = method;
-    // Add AccessibilityCommon as an input method and active it.
+    // Add AccessibilityCommon as an input method and activate it.
     chrome.languageSettingsPrivate.addInputMethod(
         InputController.IME_ENGINE_ID);
     chrome.inputMethodPrivate.setCurrentInputMethod(
@@ -105,7 +127,11 @@ export class InputController {
     return this.currentComposition_.length > 0;
   }
 
-  /** Displays current composition text for the current IME context. */
+  /**
+   * TODO(crbug.com/1247299): Remove this unused method once Dictation commands
+   * are successfully launched.
+   * Displays current composition text for the current IME context.
+   */
   displayCurrentComposition() {
     if (!this.isActive()) {
       return;
@@ -130,24 +156,10 @@ export class InputController {
     if (!this.isActive()) {
       return;
     }
+
+    text = this.adjustCommitText_(text);
     chrome.input.ime.commitText({contextID: this.activeImeContextId_, text});
     this.setCurrentComposition('');
-  }
-
-  /**
-   * Shows the bubble UI with the given text.
-   * @param {!IconType} icon
-   * @param {string=} text
-   */
-  showBubble(icon, text) {
-    chrome.accessibilityPrivate.updateDictationBubble(
-        {visible: true, icon, text});
-  }
-
-  /** Hides the bubble UI. */
-  hideBubble() {
-    chrome.accessibilityPrivate.updateDictationBubble(
-        {visible: false, icon: IconType.HIDDEN});
   }
 
   /**
@@ -180,9 +192,52 @@ export class InputController {
     }
   }
 
+  /**
+   * @param {!AutomationEvent} event
+   * @private
+   */
+  onFocusChanged_(event) {
+    const node = event.target;
+    if (!node || !AutomationPredicate.editText(node)) {
+      this.editableNode_ = null;
+      return;
+    }
+
+    this.editableNode_ = node;
+  }
+
   /** @param {string} text */
   setCurrentComposition(text) {
     this.currentComposition_ = text;
+  }
+
+  /**
+   * @param {string} text
+   * @return {string}
+   */
+  adjustCommitText_(text) {
+    // There is currently a bug in SODA (b/213934503) where final speech results
+    // do not start with a space. This results in a Dictation bug
+    // (crbug.com/1294050), where final speech results are not separated by a
+    // space when committed to a text field. This is a temporary workaround
+    // until the blocking SODA bug can be fixed. Note, a similar strategy
+    // already exists in Dictation::OnSpeechResult().
+    if (!this.editableNode_ ||
+        InputController.BEGINS_WITH_WHITESPACE_REGEX_.test(text)) {
+      return text;
+    }
+
+    const value = this.editableNode_.value;
+    const selStart = this.editableNode_.textSelStart;
+    const selEnd = this.editableNode_.textSelEnd;
+    // Prepend a space to `text` if there is text directly left of the cursor.
+    if (!selStart || selStart !== selEnd || !value ||
+        InputController.BEGINS_WITH_WHITESPACE_REGEX_.test(
+            value[selStart - 1])) {
+      return text;
+    }
+
+    return ' ' + text;
   }
 }
 
@@ -198,3 +253,9 @@ InputController.IME_ENGINE_ID =
  * @const
  */
 InputController.NO_ACTIVE_IME_CONTEXT_ID_ = -1;
+
+/**
+ * @private {!RegExp}
+ * @const
+ */
+InputController.BEGINS_WITH_WHITESPACE_REGEX_ = /^\s/;

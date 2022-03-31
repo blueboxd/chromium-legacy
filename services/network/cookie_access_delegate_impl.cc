@@ -8,6 +8,7 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "net/base/schemeful_site.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_util.h"
@@ -20,7 +21,7 @@ namespace network {
 
 CookieAccessDelegateImpl::CookieAccessDelegateImpl(
     mojom::CookieAccessDelegateType type,
-    const FirstPartySets* first_party_sets,
+    FirstPartySets* const first_party_sets,
     const CookieSettings* cookie_settings)
     : type_(type),
       cookie_settings_(cookie_settings),
@@ -60,35 +61,41 @@ bool CookieAccessDelegateImpl::ShouldIgnoreSameSiteRestrictions(
   return false;
 }
 
-void CookieAccessDelegateImpl::ComputeFirstPartySetMetadataMaybeAsync(
+absl::optional<net::FirstPartySetMetadata>
+CookieAccessDelegateImpl::ComputeFirstPartySetMetadataMaybeAsync(
     const net::SchemefulSite& site,
     const net::SchemefulSite* top_frame_site,
     const std::set<net::SchemefulSite>& party_context,
     base::OnceCallback<void(net::FirstPartySetMetadata)> callback) const {
-  if (!first_party_sets_) {
-    std::move(callback).Run(net::FirstPartySetMetadata());
-    return;
-  }
-  first_party_sets_->ComputeMetadata(site, top_frame_site, party_context,
-                                     std::move(callback));
-}
-
-absl::optional<net::SchemefulSite>
-CookieAccessDelegateImpl::FindFirstPartySetOwner(
-    const net::SchemefulSite& site) const {
   if (!first_party_sets_)
-    return absl::nullopt;
-  return first_party_sets_->FindOwner(site);
+    return {net::FirstPartySetMetadata()};
+  return first_party_sets_->ComputeMetadata(site, top_frame_site, party_context,
+                                            std::move(callback));
 }
 
-void CookieAccessDelegateImpl::RetrieveFirstPartySets(
-    base::OnceCallback<
-        void(base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>)>
-        callback) const {
-  if (!first_party_sets_) {
-    std::move(callback).Run({});
-    return;
-  }
+absl::optional<FirstPartySets::OwnerResult>
+CookieAccessDelegateImpl::FindFirstPartySetOwner(
+    const net::SchemefulSite& site,
+    base::OnceCallback<void(FirstPartySets::OwnerResult)> callback) const {
+  if (!first_party_sets_)
+    return {absl::nullopt};
+  return first_party_sets_->FindOwner(site, std::move(callback));
+}
+
+absl::optional<FirstPartySets::OwnersResult>
+CookieAccessDelegateImpl::FindFirstPartySetOwners(
+    const base::flat_set<net::SchemefulSite>& sites,
+    base::OnceCallback<void(FirstPartySets::OwnersResult)> callback) const {
+  if (!first_party_sets_)
+    return {{}};
+  return first_party_sets_->FindOwners(sites, std::move(callback));
+}
+
+absl::optional<FirstPartySets::SetsByOwner>
+CookieAccessDelegateImpl::RetrieveFirstPartySets(
+    base::OnceCallback<void(FirstPartySets::SetsByOwner)> callback) const {
+  if (!first_party_sets_)
+    return {{}};
   return first_party_sets_->Sets(std::move(callback));
 }
 

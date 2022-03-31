@@ -10,6 +10,8 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/insets.h"
 
+#include <set>
+
 namespace views {
 
 class TableLayout;
@@ -25,8 +27,8 @@ constexpr int kDateInOneWeek = 7;
 
 // The padding in each date cell view.
 constexpr int kDateVerticalPadding = 13;
-constexpr int kDateHorizontalPadding = 12;
-constexpr int kColumnSetPadding = 3;
+constexpr int kDateHorizontalPadding = 14;
+constexpr int kColumnSetPadding = 5;
 
 // The insets within a Date cell.
 constexpr gfx::Insets kDateCellInsets{kDateVerticalPadding,
@@ -36,15 +38,25 @@ constexpr gfx::Insets kDateCellInsets{kDateVerticalPadding,
 constexpr base::TimeDelta kAnimationDurationForVisibility =
     base::Milliseconds(100);
 
+// Fade-out and fade-in duration for resetting to today animation.
+constexpr base::TimeDelta kResetToTodayFadeAnimationDuration =
+    base::Milliseconds(100);
+
 // Duration of moving animation.
 constexpr base::TimeDelta kAnimationDurationForMoving = base::Milliseconds(300);
 
 // Checks if the `selected_date` is local time today.
-bool IsToday(const base::Time::Exploded& selected_date);
+bool IsToday(const base::Time selected_date);
 
 // Checks if the two exploded are in the same day.
-bool IsTheSameDay(absl::optional<base::Time::Exploded> date_a,
-                  absl::optional<base::Time::Exploded> date_b);
+bool IsTheSameDay(absl::optional<base::Time> date_a,
+                  absl::optional<base::Time> date_b);
+
+// Returns the set of months that includes |selected_date| and
+// |num_months_out| before and after.
+void GetSurroundingMonthsUTC(const base::Time& selected_date,
+                             unsigned int num_months_out,
+                             std::set<base::Time>& months_);
 
 // Gets the given `date`'s `Exploded` instance, in local time.
 base::Time::Exploded GetExplodedLocal(const base::Time& date);
@@ -62,15 +74,13 @@ void SetUpWeekColumns(views::TableLayout* layout);
 SkColor GetPrimaryTextColor();
 SkColor GetSecondaryTextColor();
 
-// Get local midnight on the first day of the month that includes |date|.
-base::Time GetStartOfMonthLocal(const base::Time& date);
+// Get the first day of the month that includes |date|.
+base::Time GetFirstDayOfMonth(const base::Time& date);
 
-// Get local midnight on the first day of the month before the one that includes
-// |date|.
+// Get the first day of the month before the one that includes |date|.
 base::Time GetStartOfPreviousMonthLocal(base::Time date);
 
-// Get local midnight on the first day of the month after the one that includes
-// |date|.
+// Get the first day of the month after the one that includes |date|.
 base::Time GetStartOfNextMonthLocal(base::Time date);
 
 // Get UTC midnight on the first day of the month that includes |date|.
@@ -83,6 +93,9 @@ base::Time GetStartOfPreviousMonthUTC(base::Time date);
 // Get UTC midnight on the first day of the month after the one that includes
 // |date|.
 base::Time GetStartOfNextMonthUTC(base::Time date);
+
+// Returns true if it's a regular user or the user session is not blocked.
+bool IsActiveUser();
 
 }  // namespace calendar_utils
 

@@ -15,10 +15,11 @@ import '../settings_shared_css.js';
 import '../site_favicon.js';
 import './passwords_shared_css.js';
 
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
 
+import {getTemplate} from './password_list_item.html.js';
 import {ShowPasswordMixin, ShowPasswordMixinInterface} from './show_password_mixin.js';
 
 export type PasswordMoreActionsClickedEvent = CustomEvent<{
@@ -29,6 +30,8 @@ export type PasswordMoreActionsClickedEvent = CustomEvent<{
 export interface PasswordListItemElement {
   $: {
     moreActionsButton: HTMLElement,
+    originUrl: HTMLAnchorElement,
+    username: HTMLInputElement,
   };
 }
 
@@ -41,7 +44,7 @@ export class PasswordListItemElement extends PasswordListItemElementBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {

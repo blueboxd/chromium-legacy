@@ -11,6 +11,10 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/view.h"
 
+namespace ui {
+class Event;
+}  // namespace ui
+
 namespace ash {
 
 // Renders a Calendar date cell. Pass in `true` as `is_grayed_out_date` if
@@ -21,7 +25,7 @@ class CalendarDateCellView : public CalendarViewController::Observer,
   METADATA_HEADER(CalendarDateCellView);
 
   CalendarDateCellView(CalendarViewController* calendar_view_controller,
-                       base::Time::Exploded& date,
+                       base::Time date,
                        bool is_grayed_out_date,
                        int row_index);
   CalendarDateCellView(const CalendarDateCellView& other) = delete;
@@ -45,8 +49,15 @@ class CalendarDateCellView : public CalendarViewController::Observer,
   // Disables focus behavior of this cell.
   void DisableFocus();
 
+  // Sets the tooltip label and a11y label based on the `event_number_`.
+  void SetTooltipAndAccessibleName();
+
   // Schedule paint the cell to show the event dot.
   void MaybeSchedulePaint();
+
+  // When focusing on the date cell for the first time, it shows "Use arrow keys
+  // to navigate between dates" as instructions.
+  void SetFirstOnFocusedAccessibilityLabel();
 
   // The row index in the date's month view.
   int row_index() const { return row_index_; }
@@ -59,14 +70,20 @@ class CalendarDateCellView : public CalendarViewController::Observer,
   // For unit tests.
   friend class CalendarMonthViewTest;
 
+  // Callback called when this view is activated.
+  void OnDateCellActivated(const ui::Event& event);
+
   // Computes the position of the indicator that our day has events.
   gfx::Point GetEventsPresentIndicatorCenterPosition();
 
   // Draw the indicator if our day has events.
   void MaybeDrawEventsIndicator(gfx::Canvas* canvas);
 
+  // Gets the most recent number of events from the model.
+  int GetEventNumber();
+
   // The date used to render this cell view.
-  const base::Time::Exploded date_;
+  const base::Time date_;
 
   const bool grayed_out_;
 
@@ -75,6 +92,13 @@ class CalendarDateCellView : public CalendarViewController::Observer,
 
   // If the current cell is selected.
   bool is_selected_ = false;
+
+  // The number of event for `date_`.
+  int event_number_ = 0;
+
+  // The tool tip for this view. Before events data is back, only show date.
+  // After the events date is back, show date and event numbers.
+  std::u16string tool_tip_;
 
   // Owned by UnifiedCalendarViewController.
   CalendarViewController* const calendar_view_controller_;
@@ -114,11 +138,10 @@ class ASH_EXPORT CalendarMonthView : public views::View {
  private:
   // Adds the `current_date`'s `CalendarDateCellView` to the table layout and
   // returns it.
-  CalendarDateCellView* AddDateCellToLayout(
-      base::Time::Exploded current_date_exploded,
-      int column,
-      bool is_in_current_month,
-      int row_index);
+  CalendarDateCellView* AddDateCellToLayout(base::Time current_date,
+                                            int column,
+                                            bool is_in_current_month,
+                                            int row_index);
 
   // Owned by `CalendarView`.
   CalendarViewController* const calendar_view_controller_;

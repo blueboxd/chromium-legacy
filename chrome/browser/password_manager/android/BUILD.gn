@@ -37,6 +37,8 @@ source_set("backend") {
     "password_store_android_backend_bridge_impl.cc",
     "password_store_android_backend_bridge_impl.h",
     "password_store_operation_target.h",
+    "password_sync_controller_delegate_android.cc",
+    "password_sync_controller_delegate_android.h",
   ]
 
   public_deps = [ "//base" ]
@@ -65,6 +67,7 @@ android_library("java") {
     "//chrome/browser/signin/services/android:java",
     "//chrome/browser/sync/android:java",
     "//components/browser_ui/settings/android:java",
+    "//components/browser_ui/widget/android:java_resources",
     "//components/device_reauth:device_reauth_java_enums",
     "//components/password_manager/core/browser:password_manager_java_enums",
     "//components/signin/public/android:java",
@@ -162,6 +165,7 @@ android_library("settings_interface_java") {
   deps = [
     "//base:base_java",
     "//components/password_manager/core/browser:password_manager_java_enums",
+    "//third_party/android_deps:guava_android_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
   ]
 
@@ -169,22 +173,35 @@ android_library("settings_interface_java") {
     "java/src/org/chromium/chrome/browser/password_manager/CredentialManagerLauncher.java",
     "java/src/org/chromium/chrome/browser/password_manager/CredentialManagerLauncherFactory.java",
     "java/src/org/chromium/chrome/browser/password_manager/CredentialManagerLauncherFactoryImpl.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordCheckReferrer.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordCheckupClientHelper.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordCheckupClientHelperFactory.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordSettingsAccessor.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordSettingsAccessorFactory.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordSettingsAccessorFactoryImpl.java",
   ]
 
   # Add the actual implementation where necessary so that downstream targets
   # can provide their own implementations.
-  jar_excluded_patterns = [ "*/CredentialManagerLauncherFactoryImpl.class" ]
+  jar_excluded_patterns = [
+    "*/CredentialManagerLauncherFactoryImpl.class",
+    "*/PasswordSettingsAccessorFactoryImpl.class",
+  ]
 }
 
 android_library("settings_interface_public_impl_java") {
   deps = [ ":settings_interface_java" ]
-  sources = [ "java/src/org/chromium/chrome/browser/password_manager/CredentialManagerLauncherFactoryImpl.java" ]
+  sources = [
+    "java/src/org/chromium/chrome/browser/password_manager/CredentialManagerLauncherFactoryImpl.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordSettingsAccessorFactoryImpl.java",
+  ]
 }
 
 android_library("backend_interface_java") {
   deps = [
     ":android_backend_java_enums",
     "//base:base_java",
+    "//third_party/android_deps:guava_android_java",
   ]
   sources = [
     "java/src/org/chromium/chrome/browser/password_manager/PasswordStoreAndroidBackend.java",

@@ -592,6 +592,7 @@ field **VPN** must be set to an object of type [VPN](#VPN-type).
     * (required) - **string**
     * Allowed values are:
         * *ARCVPN*
+        * *IPsec*
         * *L2TP-IPsec*
         * *OpenVPN*
         * *ThirdPartyVPN*
@@ -605,9 +606,11 @@ field **VPN** must be set to an object of type [VPN](#VPN-type).
     * (required) - **string**
     * Allowed values are:
         * *Cert*
+        * *EAP*
         * *PSK*
     * If *Cert* is used, **ClientCertType** and *ServerCARefs* (or the
       deprecated *ServerCARef*) must be set.
+    * *EAP* is only valid if **IKEVersion** is 2.
 
 * **ClientCertProvisioningProfileId**
     * (required if **ClientCertType** is *ProvisioningProfileId*, otherwise
@@ -655,12 +658,20 @@ field **VPN** must be set to an object of type [VPN](#VPN-type).
     * (required) - **integer**
     * Version of IKE protocol to use.
 
+* **LocalIdentity**
+    * (optional if **IKEVersion** is 2, otherwise ignored) - **string**
+    * The local identity used in IKE authentication.
+
 * **PSK**
     * (optional if **AuthenticationType** is *PSK*, otherwise ignored)
       - **string**
     * Pre-Shared Key. If not specified, the user is prompted when connecting.
       If the value is saved but not known, this may be set to an empty value,
       indicating that the UI does not need to provide it.
+
+* **RemoteIdentity**
+    * (optional if **IKEVersion** is 2, otherwise ignored) - **string**
+    * The remote identity used in IKE authentication.
 
 * **SaveCredentials**
     * (optional if **AuthenticationType**
@@ -1299,6 +1310,7 @@ type exists to configure the authentication.
         * *EAP-TTLS*
         * *EAP-SIM*
         * *PEAP*
+        * *MSCHAPv2* (only valid for IPsec-IKEv2 VPNs)
 
 * **Password**
     * (optional) - **string**

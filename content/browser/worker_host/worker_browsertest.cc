@@ -38,6 +38,7 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/base/escape.h"
+#include "net/base/features.h"
 #include "net/base/filename_util.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_access_result.h"
@@ -50,7 +51,6 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/common/features.h"
@@ -85,51 +85,31 @@ bool SupportsSharedWorker() {
 // These tests are parameterized on following options:
 // 0 => Base
 // 1 => kPlzDedicatedWorker enabled
-// 2 => kCOEPForSharedWorker enabled
-// 3 => kPrivateNetworkAccessForWorkers enabled
+// 2 => kPrivateNetworkAccessForWorkers enabled
 class WorkerTest : public ContentBrowserTest,
                    public testing::WithParamInterface<int> {
  public:
   WorkerTest() : select_certificate_count_(0) {
     switch (GetParam()) {
       case 0:  // Base case.
-        feature_list_.InitWithFeatures(
-            {
-                network::features::kCrossOriginEmbedderPolicyCredentialless,
-            },
-            {
-                blink::features::kPlzDedicatedWorker,
-                blink::features::kCOEPForSharedWorker,
-            });
+        feature_list_.InitWithFeatures({},
+                                       {
+                                           blink::features::kPlzDedicatedWorker,
+                                       });
         break;
       case 1:  // PlzDedicatedWorker
         feature_list_.InitWithFeatures(
             {
-                network::features::kCrossOriginEmbedderPolicyCredentialless,
                 blink::features::kPlzDedicatedWorker,
-                features::kPrivateNetworkAccessForWorkers,
             },
             {
-                blink::features::kCOEPForSharedWorker,
-            });
-        break;
-      case 2:  // CoepForSharedWorker
-        feature_list_.InitWithFeatures(
-            {
-                network::features::kCrossOriginEmbedderPolicyCredentialless,
-                blink::features::kCOEPForSharedWorker,
                 features::kPrivateNetworkAccessForWorkers,
-            },
-            {
-                blink::features::kPlzDedicatedWorker,
             });
         break;
-      case 3:  // PrivateNetworkAccessForWorkers
+      case 2:  // PrivateNetworkAccessForWorkers
         feature_list_.InitWithFeatures(
             {
-                network::features::kCrossOriginEmbedderPolicyCredentialless,
                 blink::features::kPlzDedicatedWorker,
-                blink::features::kCOEPForSharedWorker,
                 features::kPrivateNetworkAccessForWorkers,
             },
             {});
@@ -338,7 +318,7 @@ class WorkerTest : public ContentBrowserTest,
   base::test::ScopedFeatureList feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All, WorkerTest, testing::Range(0, 4));
+INSTANTIATE_TEST_SUITE_P(All, WorkerTest, testing::Range(0, 3));
 
 IN_PROC_BROWSER_TEST_P(WorkerTest, SingleWorker) {
   RunTest(GetTestURL("single_worker.html", std::string()));
@@ -358,7 +338,7 @@ class WorkerTestWithAllowFileAccessFromFiles : public WorkerTest {
 
 INSTANTIATE_TEST_SUITE_P(All,
                          WorkerTestWithAllowFileAccessFromFiles,
-                         testing::Range(0, 4));
+                         testing::Range(0, 3));
 
 IN_PROC_BROWSER_TEST_P(WorkerTestWithAllowFileAccessFromFiles,
                        SingleWorkerFromFile) {
@@ -939,7 +919,7 @@ class WorkerFromAnonymousIframeNikBrowserTest : public WorkerTest {
 
 INSTANTIATE_TEST_SUITE_P(All,
                          WorkerFromAnonymousIframeNikBrowserTest,
-                         testing::Range(0, 4));
+                         testing::Range(0, 3));
 
 IN_PROC_BROWSER_TEST_P(WorkerFromAnonymousIframeNikBrowserTest,
                        SharedWorkerRequestIsDoneWithPartitionedNetworkState) {

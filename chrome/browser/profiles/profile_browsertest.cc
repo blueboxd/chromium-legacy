@@ -52,6 +52,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/keep_alive_registry/keep_alive_types.h"
+#include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/prefs/pref_service.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/version_info/version_info.h"
@@ -481,7 +483,13 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, MAYBE_CreateOldProfileAsynchronous) {
 }
 
 // Test that a README file is created for profiles that didn't have it.
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ProfileReadmeCreated) {
+// TODO(https://crbug.com/1289754): Flaky on ChromeOS-Ash.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#define MAYBE_ProfileReadmeCreated DISABLED_ProfileReadmeCreated
+#else
+#define MAYBE_ProfileReadmeCreated ProfileReadmeCreated
+#endif
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, MAYBE_ProfileReadmeCreated) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -852,18 +860,16 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTestWithDestroyProfile,
                        OTRProfileKeepsRegularProfileAlive) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
-#if BUILDFLAG(IS_MAC)
-  // On macOS, deleting the OTR profile is not enough. Because Chrome doesn't
-  // exit when you close all windows, Chrome always keeps the last Profile*
-  // alive. See ProfileKeepAliveOrigin::kAppControllerMac.
+  // Closing all windows (as we're about to do) triggers BrowserProcess
+  // shutdown, which makes ~ScopedProfileKeepAlive() a no-op. We don't want that
+  // for this test, because we check HasKeepAliveForTesting().
   //
-  // By creating a second Profile*, we allow the first one to get deleted
-  // earlier.
+  // Instantiate a second Profile, just so the KeepAliveRegistry refcount stays
+  // above 0.
   base::ScopedAllowBlockingForTesting allow_blocking;
   Profile* profile2 = profile_manager->GetProfile(
       profile_manager->user_data_dir().AppendASCII("Profile 2"));
   CreateBrowser(profile2);
-#endif  // BUILDFLAG(IS_MAC)
 
   Profile* regular_profile = browser()->profile();
   EXPECT_FALSE(profile_manager->HasKeepAliveForTesting(
@@ -975,10 +981,15 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, TestProfileTypes) {
             profile_metrics::GetBrowserProfileType(otr_profile));
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+  base::HistogramTester tester;
   Browser* guest_browser = CreateGuestBrowser();
 
   EXPECT_EQ(profile_metrics::BrowserProfileType::kGuest,
             profile_metrics::GetBrowserProfileType(guest_browser->profile()));
+
+  // Verify that both a parent and a child profile creation are recorded
+  EXPECT_THAT(tester.GetAllSamples("Profile.Guest.TypeCreated"),
+              ::testing::ElementsAre(base::Bucket(0, 1), base::Bucket(1, 1)));
 #endif
 }
 

@@ -116,6 +116,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeOnDeviceEncryptionOptInDescription,
   ItemTypeOnDeviceEncryptionSetUp,
   ItemTypeOnDeviceEncryptionOptedInDescription,
+  ItemTypeOnDeviceEncryptionOptedInLearnMore,
 };
 
 // State of on-device encryption used for
@@ -250,11 +251,13 @@ void RemoveFormsToBeDeleted(
   TableViewTextItem* _checkForProblemsItem;
   // The item related to the button for exporting passwords.
   TableViewTextItem* _exportPasswordsItem;
+  // The text explaining why the user should opt-in on device encryption.
+  TableViewImageItem* _onDeviceEncryptionOptInDescriptionItem;
   // The text explaining on-device encryption was opted-in and offering to know
   // more.
-  TableViewImageItem* _onDeviceEncryptionOptInDescriptionItem;
-  // The text explaining why the user should opt-in on device encryption.
   TableViewImageItem* _onDeviceEncryptionOptedInDescription;
+  // Learn-more button, to know more about trusted vault.
+  TableViewTextItem* _onDeviceEncryptionOptedInLearnMore;
   // The link to set up on device encryption.
   TableViewTextItem* _setUpOnDeviceEncryptionItem;
   // The list of the user's saved passwords.
@@ -312,6 +315,9 @@ void RemoveFormsToBeDeleted(
 // Stores the PasswordFormContentItem which has form attribute's username and
 // site equivalent to that of |mostRecentlyUpdatedPassword|.
 @property(nonatomic, weak) PasswordFormContentItem* mostRecentlyUpdatedItem;
+
+// YES, if the user has tapped on the "Check Now" button.
+@property(nonatomic, assign) BOOL shouldFocusAccessibilityOnPasswordCheckStatus;
 
 @end
 
@@ -590,7 +596,13 @@ void RemoveFormsToBeDeleted(
         _onDeviceEncryptionOptedInDescription =
             [self onDeviceEncryptionOptedInDescription];
       }
+      if (!_onDeviceEncryptionOptedInLearnMore) {
+        _onDeviceEncryptionOptedInLearnMore =
+            [self onDeviceEncryptionOptedInLearnMore];
+      }
       [model addItem:_onDeviceEncryptionOptedInDescription
+          toSectionWithIdentifier:SectionIdentifierOnDeviceEncryption];
+      [model addItem:_onDeviceEncryptionOptedInLearnMore
           toSectionWithIdentifier:SectionIdentifierOnDeviceEncryption];
       break;
     case OnDeviceEncryptionStateNotShown:
@@ -698,6 +710,7 @@ void RemoveFormsToBeDeleted(
   if (self.navigationItem.searchController.active == YES) {
     self.navigationItem.searchController.active = NO;
   }
+  _accountManagerServiceObserver.reset();
 }
 
 #pragma mark - Items
@@ -796,6 +809,7 @@ void RemoveFormsToBeDeleted(
   passwordProblemsItem.text = l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS);
   passwordProblemsItem.detailText =
       l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_DESCRIPTION);
+  passwordProblemsItem.accessibilityTraits = UIAccessibilityTraitHeader;
   return passwordProblemsItem;
 }
 
@@ -835,6 +849,17 @@ void RemoveFormsToBeDeleted(
       l10n_util::GetNSString(IDS_IOS_PASSWORD_SETTINGS_ON_DEVICE_ENCRYPTION);
   item.detailText = l10n_util::GetNSString(
       IDS_IOS_PASSWORD_SETTINGS_ON_DEVICE_ENCRYPTION_LEARN_MORE);
+  item.enabled = NO;
+  return item;
+}
+
+- (TableViewTextItem*)onDeviceEncryptionOptedInLearnMore {
+  TableViewTextItem* item = [[TableViewTextItem alloc]
+      initWithType:ItemTypeOnDeviceEncryptionOptedInLearnMore];
+  item.text = l10n_util::GetNSString(
+      IDS_IOS_PASSWORD_SETTINGS_ON_DEVICE_ENCRYPTION_OPTED_IN_LEARN_MORE);
+  item.textColor = [UIColor colorNamed:kBlueColor];
+  item.accessibilityTraits = UIAccessibilityTraitButton;
   return item;
 }
 
@@ -978,7 +1003,7 @@ void RemoveFormsToBeDeleted(
 #pragma mark - PasswordsConsumer
 
 - (void)setPasswordCheckUIState:(PasswordCheckUIState)state
-      compromisedPasswordsCount:(NSInteger)count {
+    unmutedCompromisedPasswordsCount:(NSInteger)count {
   self.compromisedPasswordsCount = count;
   // Update password check status and check button with new state.
   [self updatePasswordCheckButtonWithState:state];
@@ -1504,6 +1529,16 @@ void RemoveFormsToBeDeleted(
       break;
     }
   }
+
+  // Notify the accessibility to focus on the password check status cell when
+  // the status changed to unsafe, safe or error. (Only do it after the user tap
+  // on the "Check Now" button.)
+  if (self.shouldFocusAccessibilityOnPasswordCheckStatus &&
+      (state == PasswordCheckStateUnSafe || state == PasswordCheckStateSafe ||
+       state == PasswordCheckStateError)) {
+    [self focusAccessibilityOnPasswordCheckStatus];
+    self.shouldFocusAccessibilityOnPasswordCheckStatus = NO;
+  }
 }
 
 - (void)updateExportPasswordsButton {
@@ -1687,6 +1722,20 @@ void RemoveFormsToBeDeleted(
   return OnDeviceEncryptionStateNotShown;
 }
 
+// Notifies accessibility to focus on the Password Check Status cell when its
+// layout changed.
+- (void)focusAccessibilityOnPasswordCheckStatus {
+  if ([self.tableViewModel hasItemForItemType:ItemTypePasswordCheckStatus
+                            sectionIdentifier:SectionIdentifierPasswordCheck]) {
+    NSIndexPath* indexPath = [self.tableViewModel
+        indexPathForItemType:ItemTypePasswordCheckStatus
+           sectionIdentifier:SectionIdentifierPasswordCheck];
+    UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
+    UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
+                                    cell);
+  }
+}
+
 #pragma mark - UITableViewDelegate
 
 - (void)tableView:(UITableView*)tableView
@@ -1703,11 +1752,6 @@ void RemoveFormsToBeDeleted(
   ItemType itemType =
       static_cast<ItemType>([model itemTypeForIndexPath:indexPath]);
   switch (itemType) {
-    case ItemTypeLinkHeader:
-    case ItemTypeHeader:
-    case ItemTypeSavePasswordsSwitch:
-    case ItemTypeManagedSavePasswords:
-      break;
     case ItemTypePasswordsInOtherApps:
       [self.handler showPasswordsInOtherAppsPromo];
       break;
@@ -1742,6 +1786,7 @@ void RemoveFormsToBeDeleted(
     case ItemTypeCheckForProblemsButton:
       if (self.passwordCheckState != PasswordCheckStateRunning) {
         [self.delegate startPasswordCheck];
+        self.shouldFocusAccessibilityOnPasswordCheckStatus = YES;
         UmaHistogramEnumeration("PasswordManager.BulkCheck.UserAction",
                                 PasswordCheckInteraction::kManualPasswordCheck);
       }
@@ -1753,16 +1798,18 @@ void RemoveFormsToBeDeleted(
       BlockToOpenURL(self, self.dispatcher)(url);
       break;
     }
-    case ItemTypeOnDeviceEncryptionOptedInDescription: {
-      GURL url = google_util::AppendGoogleLocaleParam(
-          GURL(kOnDeviceEncryptionLearnMoreURL),
-          GetApplicationContext()->GetApplicationLocale());
-      // TODO(crbug.com/1202088): Check whether local is necessary.
+    case ItemTypeOnDeviceEncryptionOptedInLearnMore: {
+      GURL url = GURL(kOnDeviceEncryptionLearnMoreURL);
       BlockToOpenURL(self, self.dispatcher)(url);
       break;
     }
-    case ItemTypeOnDeviceEncryptionOptInDescription:
+    case ItemTypeOnDeviceEncryptionOptedInDescription:
     case ItemTypeLastCheckTimestampFooter:
+    case ItemTypeOnDeviceEncryptionOptInDescription:
+    case ItemTypeLinkHeader:
+    case ItemTypeHeader:
+    case ItemTypeSavePasswordsSwitch:
+    case ItemTypeManagedSavePasswords:
       NOTREACHED();
   }
   [tableView deselectRowAtIndexPath:indexPath animated:YES];

@@ -11,21 +11,20 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "ipc/ipc_channel_handle.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/desktop_session_connector.h"
 #include "remoting/host/file_transfer/ipc_file_operations.h"
+#include "remoting/host/mojom/desktop_session.mojom.h"
+#include "remoting/host/mojom/remoting_host.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 }  // base
-
-namespace IPC {
-class Sender;
-}  // namespace IPC
 
 namespace remoting {
 
@@ -90,7 +89,7 @@ class IpcDesktopEnvironmentFactory
       scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      IPC::Sender* daemon_channel);
+      mojo::AssociatedRemote<mojom::DesktopSessionManager> remote);
 
   IpcDesktopEnvironmentFactory(const IpcDesktopEnvironmentFactory&) = delete;
   IpcDesktopEnvironmentFactory& operator=(const IpcDesktopEnvironmentFactory&) =
@@ -112,10 +111,12 @@ class IpcDesktopEnvironmentFactory
   void DisconnectTerminal(DesktopSessionProxy* desktop_session_proxy) override;
   void SetScreenResolution(DesktopSessionProxy* desktop_session_proxy,
                            const ScreenResolution& resolution) override;
+  bool BindConnectionEventsReceiver(
+      mojo::ScopedInterfaceEndpointHandle handle) override;
   void OnDesktopSessionAgentAttached(
       int terminal_id,
       int session_id,
-      const IPC::ChannelHandle& desktop_pipe) override;
+      mojo::ScopedMessagePipeHandle desktop_pipe) override;
   void OnTerminalDisconnected(int terminal_id) override;
 
  private:
@@ -129,9 +130,6 @@ class IpcDesktopEnvironmentFactory
   // Task runner used for running background I/O.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
-  // IPC channel connected to the daemon process.
-  raw_ptr<IPC::Sender> daemon_channel_;
-
   // List of DesktopEnvironment instances we've told the daemon process about.
   typedef std::map<int, DesktopSessionProxy*> ActiveConnectionsList;
   ActiveConnectionsList active_connections_;
@@ -140,6 +138,11 @@ class IpcDesktopEnvironmentFactory
   // This gives us more than 67 years of unique IDs assuming a new ID is
   // allocated every second.
   int next_id_ = 0;
+
+  mojo::AssociatedRemote<mojom::DesktopSessionManager> desktop_session_manager_;
+
+  mojo::AssociatedReceiver<mojom::DesktopSessionConnectionEvents>
+      desktop_session_connection_events_{this};
 
   // Factory for weak pointers to DesktopSessionConnector interface.
   base::WeakPtrFactory<DesktopSessionConnector> connector_factory_{this};

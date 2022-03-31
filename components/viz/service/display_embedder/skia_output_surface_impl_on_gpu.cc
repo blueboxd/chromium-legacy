@@ -9,6 +9,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/debug/crash_logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/task/bind_post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -64,7 +65,6 @@
 #include "gpu/vulkan/vulkan_util.h"
 #if BUILDFLAG(IS_ANDROID)
 #include "components/viz/service/display_embedder/skia_output_device_vulkan_secondary_cb.h"
-#include "components/viz/service/display_embedder/skia_output_device_vulkan_secondary_cb_offscreen.h"
 #endif
 #endif
 
@@ -115,6 +115,13 @@ base::RepeatingCallback<void(Args...)> CreateSafeRepeatingCallback(
     const base::RepeatingCallback<void(Args...)>& callback) {
   return base::BindRepeating(&PostAsyncTaskRepeatedly<Args...>, impl_on_gpu,
                              callback);
+}
+
+void FailedSkiaFlush(base::StringPiece msg) {
+  static auto* kCrashKey = base::debug::AllocateCrashKeyString(
+      "sk_flush_failed", base::debug::CrashKeySize::Size64);
+  base::debug::SetCrashKeyString(kCrashKey, msg);
+  LOG(ERROR) << msg;
 }
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -465,7 +472,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     if (result != GrSemaphoresSubmitted::kYes &&
         !(begin_semaphores.empty() && end_semaphores_empty)) {
       // TODO(penghuang): handle vulkan device lost.
-      DLOG(ERROR) << "output_sk_surface()->flush() failed.";
+      FailedSkiaFlush("output_sk_surface()->flush() failed.");
       return;
     }
   }
@@ -586,7 +593,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     if (result != GrSemaphoresSubmitted::kYes &&
         !(begin_semaphores.empty() && end_semaphores.empty())) {
       // TODO(penghuang): handle vulkan device lost.
-      DLOG(ERROR) << "offscreen.surface()->flush() failed.";
+      FailedSkiaFlush("offscreen.surface()->flush() failed.");
       return;
     }
     bool sync_cpu =
@@ -769,7 +776,7 @@ bool SkiaOutputSurfaceImplOnGpu::RenderSurface(
   if (flush_result != GrSemaphoresSubmitted::kYes &&
       !(begin_semaphores.empty() && end_semaphores.empty())) {
     // TODO(penghuang): handle vulkan device lost.
-    DLOG(ERROR) << "dest_surface->flush() failed.";
+    FailedSkiaFlush("dest_surface->flush() failed.");
     return false;
   }
 
@@ -1024,7 +1031,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
     if (flush_result != GrSemaphoresSubmitted::kYes &&
         !(begin_semaphores.empty() && end_semaphores.empty())) {
       // TODO(penghuang): handle vulkan device lost.
-      DLOG(ERROR) << "plane_surfaces[i]->flush() failed for i=" << i;
+      FailedSkiaFlush("plane_surfaces[i]->flush()");
       return;
     }
   }
@@ -1253,7 +1260,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     if (flush_result != GrSemaphoresSubmitted::kYes &&
         !(begin_semaphores.empty() && end_semaphores.empty())) {
       // TODO(penghuang): handle vulkan device lost.
-      DLOG(ERROR) << "surface->flush() failed.";
+      FailedSkiaFlush("surface->flush() failed.");
       return;
     }
   }
@@ -1575,17 +1582,9 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
 
 #if BUILDFLAG(IS_ANDROID)
   if (vulkan_context_provider_->GetGrSecondaryCBDrawContext()) {
-    if (base::FeatureList::IsEnabled(
-            features::kWebViewVulkanIntermediateBuffer)) {
-      output_device_ =
-          std::make_unique<SkiaOutputDeviceVulkanSecondaryCBOffscreen>(
-              context_state_, shared_gpu_deps_->memory_tracker(),
-              GetDidSwapBuffersCompleteCallback());
-    } else {
-      output_device_ = std::make_unique<SkiaOutputDeviceVulkanSecondaryCB>(
-          vulkan_context_provider_, shared_gpu_deps_->memory_tracker(),
-          GetDidSwapBuffersCompleteCallback());
-    }
+    output_device_ = std::make_unique<SkiaOutputDeviceVulkanSecondaryCB>(
+        vulkan_context_provider_, shared_gpu_deps_->memory_tracker(),
+        GetDidSwapBuffersCompleteCallback());
     return true;
   }
 #endif
@@ -1799,8 +1798,6 @@ void SkiaOutputSurfaceImplOnGpu::PostSubmit(
 
     if (output_surface_plane_)
       DCHECK(output_device_->IsPrimaryPlaneOverlay());
-    output_device_->SchedulePrimaryPlane(output_surface_plane_);
-    output_surface_plane_.reset();
 
     if (frame->sub_buffer_rect) {
       if (capabilities().supports_post_sub_buffer) {
@@ -1810,6 +1807,17 @@ void SkiaOutputSurfaceImplOnGpu::PostSubmit(
                                         frame->sub_buffer_rect->y() -
                                         frame->sub_buffer_rect->height());
         }
+      }
+
+      if (output_surface_plane_)
+        output_surface_plane_->damage_rect = frame->sub_buffer_rect;
+    }
+
+    output_device_->SchedulePrimaryPlane(output_surface_plane_);
+    output_surface_plane_.reset();
+
+    if (frame->sub_buffer_rect) {
+      if (capabilities().supports_post_sub_buffer) {
         output_device_->PostSubBuffer(*frame->sub_buffer_rect,
                                       buffer_presented_callback_,
                                       std::move(*frame));

@@ -99,6 +99,10 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsForcedColorsEnabled();
 COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kEyeDropper;
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsEyeDropperEnabled();
 
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kSystemCursorSizeSupported;
+COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsSystemCursorSizeSupported();
+
 // Used to enable the common select popup.
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kUseCommonSelectPopup;
@@ -188,6 +192,13 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsSwipeToMoveCursorEnabled();
 // Enables Raw Draw.
 COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kRawDraw;
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsUsingRawDraw();
+COMPONENT_EXPORT(UI_BASE_FEATURES) double RawDrawTileSizeFactor();
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kUiCompositorReleaseTileResourcesForHiddenLayers;
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kUiCompositorRequiredTilesOnly;
 
 }  // namespace features
 

@@ -95,6 +95,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
@@ -109,10 +110,6 @@
 #include "ui/base/page_transition_types.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/color_palette.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "components/app_restore/features.h"
-#endif
 
 #if BUILDFLAG(IS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -532,10 +529,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NoSessionRestoreNewWindowChromeOS) {
   // page for this test, to verify that session restore does not occur.
   Profile* profile = browser()->profile();
   SessionStartupPref current_pref = SessionStartupPref::GetStartupPref(profile);
-  if (full_restore::features::IsFullRestoreEnabled()) {
-    SessionStartupPref pref(SessionStartupPref::DEFAULT);
-    SessionStartupPref::SetStartupPref(profile, pref);
-  }
+  SessionStartupPref pref(SessionStartupPref::DEFAULT);
+  SessionStartupPref::SetStartupPref(profile, pref);
 
   GURL url(ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
@@ -958,6 +953,7 @@ namespace {
 // Groups the tabs in |model| according to |specified_groups|.
 void CreateTabGroups(TabStripModel* model,
                      base::span<const absl::optional<int>> specified_groups) {
+  ASSERT_TRUE(model->SupportsTabGroups());
   ASSERT_EQ(model->count(), static_cast<int>(specified_groups.size()));
 
   // Maps |specified_groups| IDs to actual group IDs in |model|.
@@ -1054,6 +1050,8 @@ class SessionRestoreTabGroupsTest : public SessionRestoreTest,
 }  // namespace
 
 IN_PROC_BROWSER_TEST_P(SessionRestoreTabGroupsTest, TabsWithGroups) {
+  ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
+
   constexpr int kNumTabs = 6;
   const std::array<absl::optional<int>, kNumTabs> group_spec = {
       0, 0, absl::nullopt, absl::nullopt, 1, 1};
@@ -1079,6 +1077,8 @@ IN_PROC_BROWSER_TEST_P(SessionRestoreTabGroupsTest, TabsWithGroups) {
 }
 
 IN_PROC_BROWSER_TEST_P(SessionRestoreTabGroupsTest, GroupMetadataRestored) {
+  ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
+
   // Open up 4 more tabs, making 5 including the initial tab.
   for (int i = 0; i < 4; ++i) {
     ui_test_utils::NavigateToURLWithDisposition(
@@ -1130,6 +1130,8 @@ IN_PROC_BROWSER_TEST_P(SessionRestoreTabGroupsTest, GroupMetadataRestored) {
 
 IN_PROC_BROWSER_TEST_P(SessionRestoreTabGroupsTest,
                        TabGroupIDsRelabeledOnRestore) {
+  ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
+
   constexpr int kNumTabs = 3;
   const std::array<absl::optional<int>, kNumTabs> group_spec = {0, 0, 1};
 
@@ -1160,6 +1162,8 @@ IN_PROC_BROWSER_TEST_P(SessionRestoreTabGroupsTest,
 }
 
 IN_PROC_BROWSER_TEST_P(SessionRestoreTabGroupsTest, RecentlyClosedGroup) {
+  ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
+
   constexpr int kNumTabs = 2;
   const std::array<absl::optional<int>, kNumTabs> group_spec = {0, 0};
 
@@ -2369,6 +2373,34 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreWithURLInCommandLineTest,
   EXPECT_EQ(GetUrl2(), tab_strip_model->GetWebContentsAt(1)->GetURL());
   EXPECT_EQ(GetUrl3(), tab_strip_model->GetWebContentsAt(2)->GetURL());
 }
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+// This test does not apply to ChromeOS as ChromeOS does not consider command
+// line urls while determining startup tabs.
+IN_PROC_BROWSER_TEST_F(SessionRestoreWithURLInCommandLineTest,
+                       PRE_StartupPrefSetAsLastAndURLs) {
+  SessionStartupPref pref(SessionStartupPref::LAST_AND_URLS);
+  pref.urls = {GetUrl1()};
+  SessionStartupPref::SetStartupPref(browser()->profile(), pref);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GetUrl2(), WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+}
+
+// The startup pref urls shouldn't be opened if a command line url is supplied.
+IN_PROC_BROWSER_TEST_F(SessionRestoreWithURLInCommandLineTest,
+                       StartupPrefSetAsLastAndURLs) {
+  EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  EXPECT_EQ(2, tab_strip_model->count());
+  // The first tab is restored from the last session.
+  EXPECT_EQ(GetUrl2(), tab_strip_model->GetWebContentsAt(0)->GetURL());
+  // The second tab is opened from the command line url.
+  EXPECT_EQ(command_line_url_, tab_strip_model->GetWebContentsAt(1)->GetURL());
+  EXPECT_EQ(1, tab_strip_model->active_index());
+}
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 class MultiOriginSessionRestoreTest : public SessionRestoreTest {
  public:
@@ -3826,4 +3858,89 @@ IN_PROC_BROWSER_TEST_F(AppSessionRestoreTest, InvokeTwoAppsThenRestore) {
 
   keep_alive.reset();
   profile_keep_alive.reset();
+}
+
+class SessionRestoreAppHistoryTest : public SessionRestoreTest {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(SessionRestoreAppHistoryTest,
+                       ReferrerPolicyUrlCensored) {
+  // Tests start with one browser window; navigate it to url 1.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GetUrl1(), WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  EXPECT_EQ(GetUrl1(), contents->GetLastCommittedURL());
+
+  // Navigate the tab to url 2.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GetUrl2(), WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+  EXPECT_EQ(GetUrl2(), contents->GetLastCommittedURL());
+
+  // Apply a referrer policy of "no-referrer" for url 2.
+  const char kNoReferrerJS[] =
+      "let meta = document.createElement('meta');"
+      "meta.name = 'referrer';"
+      "meta.content = 'no-referrer';"
+      "document.head.appendChild(meta)";
+  EXPECT_TRUE(content::ExecuteScript(contents, kNoReferrerJS));
+
+  // Navigate the tab to url 3.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GetUrl3(), WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+  EXPECT_EQ(GetUrl3(), contents->GetLastCommittedURL());
+
+  // Ensure that url2 is censored in appHistory due to the no-referrer policy,
+  // but url1 isn't.
+  bool url1_is_censored = false;
+  bool url2_is_censored = false;
+  const char kCheckEntry1Js[] =
+      "window.domAutomationController.send("
+      "appHistory.entries()[0].url == null);";
+  const char kCheckEntry2Js[] =
+      "window.domAutomationController.send("
+      "appHistory.entries()[1].url == null);";
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(contents, kCheckEntry1Js,
+                                                   &url1_is_censored));
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(contents, kCheckEntry2Js,
+                                                   &url2_is_censored));
+  EXPECT_FALSE(url1_is_censored);
+  EXPECT_TRUE(url2_is_censored);
+
+  // Simulate an exit by shutting down the session service. If we don't do this
+  // the first window close is treated as though the user closed the window
+  // and won't be restored.
+  SessionServiceFactory::ShutdownForProfile(browser()->profile());
+
+  // Then close all the browsers and "restart" Chromium.
+  QuitBrowserAndRestore(browser());
+
+  // url2 should still be censored in appHistory after restore, url1 should not.
+  ASSERT_EQ(1u, active_browser_list_->size());
+  content::WebContents* restored_contents =
+      active_browser_list_->get(0)->tab_strip_model()->GetWebContentsAt(0);
+  EXPECT_EQ(GetUrl3(), restored_contents->GetLastCommittedURL());
+  int entries_length = 0;
+  const char kCheckEntriesLength[] =
+      "window.domAutomationController.send("
+      "appHistory.entries().length);";
+  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
+      restored_contents, kCheckEntriesLength, &entries_length));
+  EXPECT_EQ(entries_length, 3);
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      restored_contents, kCheckEntry1Js, &url1_is_censored));
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      restored_contents, kCheckEntry2Js, &url2_is_censored));
+  EXPECT_FALSE(url1_is_censored);
+  EXPECT_TRUE(url2_is_censored);
 }

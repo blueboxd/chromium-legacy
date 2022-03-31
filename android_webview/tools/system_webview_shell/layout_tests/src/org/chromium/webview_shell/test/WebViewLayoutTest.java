@@ -154,6 +154,8 @@ public class WebViewLayoutTest {
                 + "webexposed/global-interface-listing.html", mTestActivity);
         String blinkExpected = readFile(PATH_BLINK_PREFIX
                 + "webexposed/global-interface-listing-expected.txt");
+        String blinkPlatformSpecificExpected = readFile(PATH_BLINK_PREFIX
+                + "webexposed/global-interface-listing-platform-specific-expected.txt");
         String webviewExcluded = readFile(PATH_WEBVIEW_PREFIX
                 + "webexposed/not-webview-exposed.txt");
         mTestActivity.waitForFinish(TIMEOUT_SECONDS, TimeUnit.SECONDS);
@@ -163,6 +165,8 @@ public class WebViewLayoutTest {
                 buildHashMap(webviewExcluded);
         HashMap<String, HashSet<String>> webviewInterfacesMap = buildHashMap(result);
         HashMap<String, HashSet<String>> blinkInterfacesMap = buildHashMap(blinkExpected);
+        blinkInterfacesMap = buildHashMap(blinkPlatformSpecificExpected, blinkInterfacesMap);
+
         StringBuilder unexpected = new StringBuilder();
 
         // Check that each excluded interface and its properties are present in blinkInterfaceMap
@@ -436,10 +440,16 @@ public class WebViewLayoutTest {
     }
 
     private HashMap<String, HashSet<String>> buildHashMap(String contents) {
+        HashMap<String, HashSet<String>> interfaces = new HashMap<String, HashSet<String>>();
+
+        return buildHashMap(contents, interfaces);
+    }
+
+    private HashMap<String, HashSet<String>> buildHashMap(
+            String contents, HashMap<String, HashSet<String>> interfaces) {
         String[] lineByLine = contents.split("\\n");
 
         HashSet<String> subset = null;
-        HashMap<String, HashSet<String>> interfaces = new HashMap<String, HashSet<String>>();
         for (String line : lineByLine) {
             String s = trimAndRemoveComments(line);
             if (isInterfaceOrGlobalObject(s)) {

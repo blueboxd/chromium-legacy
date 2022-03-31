@@ -11,7 +11,9 @@
 #include "base/no_destructor.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "components/app_constants/constants.h"
 #include "components/app_restore/app_launch_info.h"
+#include "components/app_restore/app_restore_utils.h"
 #include "components/app_restore/features.h"
 #include "components/app_restore/full_restore_file_handler.h"
 #include "components/app_restore/full_restore_info.h"
@@ -22,7 +24,6 @@
 #include "components/app_restore/window_properties.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/sessions/core/session_id.h"
-#include "extensions/common/constants.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 
@@ -54,11 +55,9 @@ FullRestoreSaveHandler::~FullRestoreSaveHandler() = default;
 
 void FullRestoreSaveHandler::SetPrimaryProfilePath(
     const base::FilePath& profile_path) {
-  primary_profile_path_ = profile_path;
-  arc_save_handler_ = std::make_unique<ArcSaveHandler>(primary_profile_path_);
+  arc_save_handler_ = std::make_unique<ArcSaveHandler>(profile_path);
   if (::full_restore::features::IsFullRestoreForLacrosEnabled()) {
-    lacros_save_handler_ =
-        std::make_unique<LacrosSaveHandler>(primary_profile_path_);
+    lacros_save_handler_ = std::make_unique<LacrosSaveHandler>(profile_path);
   }
 }
 
@@ -96,8 +95,7 @@ void FullRestoreSaveHandler::SetShutDown() {
 }
 
 void FullRestoreSaveHandler::OnWindowInitialized(aura::Window* window) {
-  if (window->GetProperty(aura::client::kAppType) ==
-      static_cast<int>(ash::AppType::ARC_APP)) {
+  if (app_restore::IsArcWindow(window)) {
     observed_windows_.AddObservation(window);
 
     if (arc_save_handler_)
@@ -106,8 +104,7 @@ void FullRestoreSaveHandler::OnWindowInitialized(aura::Window* window) {
     return;
   }
 
-  if (window->GetProperty(aura::client::kAppType) ==
-      static_cast<int>(ash::AppType::LACROS)) {
+  if (app_restore::IsLacrosWindow(window)) {
     observed_windows_.AddObservation(window);
 
     if (lacros_save_handler_)
@@ -135,7 +132,7 @@ void FullRestoreSaveHandler::OnWindowInitialized(aura::Window* window) {
     app_launch_info->window_id = window_id;
   } else {
     app_launch_info = std::make_unique<app_restore::AppLaunchInfo>(
-        extension_misc::kChromeAppId, window_id);
+        app_constants::kChromeAppId, window_id);
 
     // If the window is an app type browser window, set `app_type_browser` as
     // true, to call the browser session restore to restore apps for the next
@@ -170,22 +167,19 @@ void FullRestoreSaveHandler::OnWindowDestroyed(aura::Window* window) {
   DCHECK(observed_windows_.IsObservingSource(window));
   observed_windows_.RemoveObservation(window);
 
-  int32_t window_id = window->GetProperty(app_restore::kWindowIdKey);
-
-  if (window->GetProperty(aura::client::kAppType) ==
-      static_cast<int>(ash::AppType::ARC_APP)) {
+  if (app_restore::IsArcWindow(window)) {
     if (arc_save_handler_)
       arc_save_handler_->OnWindowDestroyed(window);
     return;
   }
 
-  if (window->GetProperty(aura::client::kAppType) ==
-      static_cast<int>(ash::AppType::LACROS)) {
+  if (app_restore::IsLacrosWindow(window)) {
     if (lacros_save_handler_)
       lacros_save_handler_->OnWindowDestroyed(window);
     return;
   }
 
+  int32_t window_id = window->GetProperty(app_restore::kWindowIdKey);
   DCHECK(SessionID::IsValidValue(window_id));
 
   RemoveAppRestoreData(window_id);
@@ -282,13 +276,13 @@ void FullRestoreSaveHandler::SaveAppLaunchInfo(
   const int window_id = app_launch_info->window_id.value();
   std::unique_ptr<app_restore::WindowInfo> window_info;
 
-  if (app_id != extension_misc::kChromeAppId) {
+  if (app_id != app_constants::kChromeAppId) {
     // For browser windows, it could have been saved as
-    // extension_misc::kChromeAppId in OnWindowInitialized. However, for the
+    // app_constants::kChromeAppId in OnWindowInitialized. However, for the
     // system web apps, we need to save as the system web app app id and the
     // launch parameter, because system web apps can't be restored by the
     // browser session restore. So remove the record in
-    // extension_misc::kChromeAppId, save the launch info as the system web
+    // app_constants::kChromeAppId, save the launch info as the system web
     // app id, and move window info to the record of the system web app id.
     auto it = window_id_to_app_restore_info_.find(window_id);
     if (it != window_id_to_app_restore_info_.end()) {
@@ -310,15 +304,13 @@ void FullRestoreSaveHandler::SaveWindowInfo(
   if (!window_info.window)
     return;
 
-  if (window_info.window->GetProperty(aura::client::kAppType) ==
-      static_cast<int>(ash::AppType::ARC_APP)) {
+  if (app_restore::IsArcWindow(window_info.window)) {
     if (arc_save_handler_)
       arc_save_handler_->ModifyWindowInfo(window_info);
     return;
   }
 
-  if (window_info.window->GetProperty(aura::client::kAppType) ==
-      static_cast<int>(ash::AppType::LACROS)) {
+  if (app_restore::IsLacrosWindow(window_info.window)) {
     if (lacros_save_handler_)
       lacros_save_handler_->ModifyWindowInfo(window_info);
     return;
@@ -524,12 +516,10 @@ const app_restore::RestoreData* FullRestoreSaveHandler::GetRestoreData(
 
 std::string FullRestoreSaveHandler::GetAppId(aura::Window* window) {
   DCHECK(window);
-  if (window->GetProperty(aura::client::kAppType) ==
-      static_cast<int>(ash::AppType::ARC_APP)) {
+  if (app_restore::IsArcWindow(window)) {
     return arc_save_handler_ ? arc_save_handler_->GetAppId(window)
                              : std::string();
-  } else if (window->GetProperty(aura::client::kAppType) ==
-             static_cast<int>(ash::AppType::LACROS)) {
+  } else if (app_restore::IsLacrosWindow(window)) {
     return lacros_save_handler_ ? lacros_save_handler_->GetAppId(window)
                                 : std::string();
   } else {
@@ -575,7 +565,6 @@ void FullRestoreSaveHandler::ClearForTesting() {
   profile_path_to_file_handler_.clear();
   profile_path_to_restore_data_.clear();
   app_id_to_app_launch_infos_.clear();
-  primary_profile_path_.clear();
   save_running_.clear();
   pending_save_profile_paths_.clear();
   window_id_to_app_restore_info_.clear();

@@ -4,7 +4,10 @@
 
 #include "content/browser/accessibility/browser_accessibility_manager_fuchsia.h"
 
+#include <lib/sys/inspect/cpp/component.h>
+
 #include "content/browser/accessibility/browser_accessibility_fuchsia.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/accessibility/platform/fuchsia/accessibility_bridge_fuchsia_registry.h"
 
 namespace content {
@@ -28,6 +31,20 @@ BrowserAccessibilityManagerFuchsia::BrowserAccessibilityManagerFuchsia(
     BrowserAccessibilityDelegate* delegate)
     : BrowserAccessibilityManager(delegate) {
   Initialize(initial_tree);
+
+  ui::AccessibilityBridgeFuchsia* accessibility_bridge =
+      GetAccessibilityBridge();
+  if (accessibility_bridge) {
+    inspect_node_ = accessibility_bridge->GetInspectNode();
+    tree_dump_node_ = inspect_node_.CreateLazyNode("tree-data", [this]() {
+      inspect::Inspector inspector;
+
+      inspector.GetRoot().CreateString(ax_tree_id().ToString(),
+                                       ax_tree()->ToString(), &inspector);
+
+      return fit::make_ok_promise(inspector);
+    });
+  }
 }
 
 BrowserAccessibilityManagerFuchsia::~BrowserAccessibilityManagerFuchsia() =
@@ -35,11 +52,27 @@ BrowserAccessibilityManagerFuchsia::~BrowserAccessibilityManagerFuchsia() =
 
 ui::AccessibilityBridgeFuchsia*
 BrowserAccessibilityManagerFuchsia::GetAccessibilityBridge() const {
+  if (accessibility_bridge_for_test_)
+    return accessibility_bridge_for_test_;
+
   ui::AccessibilityBridgeFuchsiaRegistry* accessibility_bridge_registry =
       ui::AccessibilityBridgeFuchsiaRegistry::GetInstance();
   DCHECK(accessibility_bridge_registry);
 
-  return accessibility_bridge_registry->GetAccessibilityBridge(ax_tree_id());
+  WebContents* web_contents = this->web_contents();
+  if (!web_contents)
+    return nullptr;
+
+  gfx::NativeWindow top_level_native_window =
+      web_contents->GetTopLevelNativeWindow();
+  if (!top_level_native_window)
+    return nullptr;
+
+  aura::Window* root_window = top_level_native_window->GetRootWindow();
+  if (!root_window)
+    return nullptr;
+
+  return accessibility_bridge_registry->GetAccessibilityBridge(root_window);
 }
 
 void BrowserAccessibilityManagerFuchsia::FireFocusEvent(
@@ -55,14 +88,11 @@ void BrowserAccessibilityManagerFuchsia::FireFocusEvent(
   BrowserAccessibilityFuchsia* old_focus_fuchsia =
       ToBrowserAccessibilityFuchsia(GetLastFocusedNode());
 
-  if (old_focus_fuchsia) {
-    GetAccessibilityBridge()->UnfocusNode(
-        old_focus_fuchsia->GetFuchsiaNodeID());
-  }
+  if (old_focus_fuchsia)
+    old_focus_fuchsia->OnDataChanged();
 
-  if (new_focus_fuchsia) {
-    GetAccessibilityBridge()->FocusNode(new_focus_fuchsia->GetFuchsiaNodeID());
-  }
+  if (new_focus_fuchsia)
+    new_focus_fuchsia->OnDataChanged();
 }
 
 // static
@@ -116,6 +146,11 @@ void BrowserAccessibilityManagerFuchsia::UpdateDeviceScaleFactor() {
     device_scale_factor_ = accessibility_bridge->GetDeviceScaleFactor();
   else
     BrowserAccessibilityManager::UpdateDeviceScaleFactor();
+}
+
+void BrowserAccessibilityManagerFuchsia::SetAccessibilityBridgeForTest(
+    ui::AccessibilityBridgeFuchsia* accessibility_bridge_for_test) {
+  accessibility_bridge_for_test_ = accessibility_bridge_for_test;
 }
 
 }  // namespace content

@@ -484,6 +484,16 @@ AST_POLYMORPHIC_MATCHER(isInMacroLocation,
   return Node.getBeginLoc().isMacroID();
 }
 
+static bool IsAnnotated(const clang::Decl* decl,
+                        const std::string& expected_annotation) {
+  clang::AnnotateAttr* attr = decl->getAttr<clang::AnnotateAttr>();
+  return attr && (attr->getAnnotation() == expected_annotation);
+}
+
+AST_MATCHER(clang::Decl, IsExclusionAnnotated) {
+  return IsAnnotated(&Node, "raw_ptr_exclusion");
+}
+
 // If |field_decl| declares a field in an implicit template specialization, then
 // finds and returns the corresponding FieldDecl from the template definition.
 // Otherwise, just returns the original |field_decl| argument.
@@ -709,6 +719,9 @@ AST_MATCHER(clang::FieldDecl, overlapsOtherDeclsWithinRecordDecl) {
       Finder->getASTContext().getSourceManager();
 
   const clang::RecordDecl* record_decl = self.getParent();
+  if (!record_decl)
+    return false;
+
   clang::SourceRange self_range(self.getBeginLoc(), self.getEndLoc());
 
   auto is_overlapping_sibling = [&](const clang::Decl* other_decl) {
@@ -780,8 +793,8 @@ AST_MATCHER_P2(clang::InitListExpr,
 
   bool is_matching = false;
   clang::ast_matchers::internal::BoundNodesTreeBuilder result;
-  const std::vector<const clang::FieldDecl*> field_decls(
-      record_decl->field_begin(), record_decl->field_end());
+  const llvm::SmallVector<const clang::FieldDecl*> field_decls(
+      record_decl->fields());
   for (unsigned i = 0; i < init_list_expr.getNumInits(); i++) {
     const clang::Expr* expr = init_list_expr.getInit(i);
 
@@ -1029,6 +1042,7 @@ int main(int argc, const char* argv[]) {
                              isInThirdPartyLocation(), isInGeneratedLocation(),
                              isInLocationListedInFilterFile(&paths_to_exclude),
                              isFieldDeclListedInFilterFile(&fields_to_exclude),
+                             IsExclusionAnnotated(),
                              implicit_field_decl_matcher))))
           .bind("affectedFieldDecl");
   FieldDeclRewriter field_decl_rewriter(&output_helper);

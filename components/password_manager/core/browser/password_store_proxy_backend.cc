@@ -26,11 +26,6 @@ namespace password_manager {
 
 namespace {
 
-bool ShouldExecuteReadOperationsOnShadowBackend(bool is_syncing) {
-  return is_syncing && base::FeatureList::IsEnabled(
-                           features::kUnifiedPasswordManagerShadowAndroid);
-}
-
 bool ShouldExecuteModifyOperationsOnShadowBackend(PrefService* prefs,
                                                   bool is_syncing) {
   if (!base::FeatureList::IsEnabled(
@@ -47,6 +42,17 @@ bool ShouldExecuteModifyOperationsOnShadowBackend(PrefService* prefs,
     return false;
   }
   return true;
+}
+
+bool ShouldExecuteReadOperationsOnShadowBackend(PrefService* prefs,
+                                                bool is_syncing) {
+  if (ShouldExecuteModifyOperationsOnShadowBackend(prefs, is_syncing)) {
+    // Read operations are always allowed whenever modifications are allowed.
+    // i.e. necessary migrations have happened and appropriate flags are set.
+    return true;
+  }
+  return is_syncing && base::FeatureList::IsEnabled(
+                           features::kUnifiedPasswordManagerShadowAndroid);
 }
 
 using MethodName = base::StrongAlias<struct MethodNameTag, std::string>;
@@ -267,18 +273,13 @@ PasswordStoreProxyBackend::PasswordStoreProxyBackend(
     PasswordStoreBackend* main_backend,
     PasswordStoreBackend* shadow_backend,
     PrefService* prefs,
-    base::RepeatingCallback<bool()> is_syncing_passwords_callback)
+    SyncDelegate* sync_delegate)
     : main_backend_(main_backend),
       shadow_backend_(shadow_backend),
       prefs_(prefs),
-      is_syncing_passwords_callback_(std::move(is_syncing_passwords_callback)) {
-}
+      sync_delegate_(sync_delegate) {}
 
 PasswordStoreProxyBackend::~PasswordStoreProxyBackend() = default;
-
-base::WeakPtr<PasswordStoreBackend> PasswordStoreProxyBackend::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
-}
 
 void PasswordStoreProxyBackend::InitBackend(
     RemoteChangesReceived remote_form_changes_received,
@@ -292,8 +293,6 @@ void PasswordStoreProxyBackend::InitBackend(
   main_backend_->InitBackend(std::move(remote_form_changes_received),
                              std::move(sync_enabled_or_disabled_cb),
                              base::BindOnce(pending_initialization_calls));
-  // TODO(crbug.com/1279335): instead of DoNothing, the shadow_backend should
-  // record a metric that a list call could have happened.
   shadow_backend_->InitBackend(base::DoNothing(), base::DoNothing(),
                                base::BindOnce(pending_initialization_calls));
 }
@@ -316,7 +315,7 @@ void PasswordStoreProxyBackend::GetAllLoginsAsync(LoginsOrErrorReply callback) {
           .Then(std::move(callback)));
 
   if (ShouldExecuteReadOperationsOnShadowBackend(
-          is_syncing_passwords_callback_.Run())) {
+          prefs_, sync_delegate_->IsSyncingPasswordsEnabled())) {
     shadow_backend_->GetAllLoginsAsync(
         base::BindOnce(&ShadowTrafficMetricsRecorder<
                            LoginsResultOrErrorImpl>::RecordShadowResult,
@@ -336,7 +335,7 @@ void PasswordStoreProxyBackend::GetAutofillableLoginsAsync(
           .Then(std::move(callback)));
 
   if (ShouldExecuteReadOperationsOnShadowBackend(
-          is_syncing_passwords_callback_.Run())) {
+          prefs_, sync_delegate_->IsSyncingPasswordsEnabled())) {
     shadow_backend_->GetAutofillableLoginsAsync(
         base::BindOnce(&ShadowTrafficMetricsRecorder<
                            LoginsResultOrErrorImpl>::RecordShadowResult,
@@ -359,7 +358,7 @@ void PasswordStoreProxyBackend::FillMatchingLoginsAsync(
       include_psl, forms);
 
   if (ShouldExecuteReadOperationsOnShadowBackend(
-          is_syncing_passwords_callback_.Run())) {
+          prefs_, sync_delegate_->IsSyncingPasswordsEnabled())) {
     shadow_backend_->FillMatchingLoginsAsync(
         base::BindOnce(
             &ShadowTrafficMetricsRecorder<LoginsResultImpl>::RecordShadowResult,
@@ -381,7 +380,7 @@ void PasswordStoreProxyBackend::AddLoginAsync(
                            handler)
                 .Then(std::move(callback)));
   if (ShouldExecuteModifyOperationsOnShadowBackend(
-          prefs_, is_syncing_passwords_callback_.Run())) {
+          prefs_, sync_delegate_->IsSyncingPasswordsEnabled())) {
     shadow_backend_->AddLoginAsync(
         form,
         base::BindOnce(&ShadowTrafficMetricsRecorder<
@@ -403,7 +402,7 @@ void PasswordStoreProxyBackend::UpdateLoginAsync(
                            handler)
                 .Then(std::move(callback)));
   if (ShouldExecuteModifyOperationsOnShadowBackend(
-          prefs_, is_syncing_passwords_callback_.Run())) {
+          prefs_, sync_delegate_->IsSyncingPasswordsEnabled())) {
     shadow_backend_->UpdateLoginAsync(
         form,
         base::BindOnce(&ShadowTrafficMetricsRecorder<
@@ -425,7 +424,7 @@ void PasswordStoreProxyBackend::RemoveLoginAsync(
                            handler)
                 .Then(std::move(callback)));
   if (ShouldExecuteModifyOperationsOnShadowBackend(
-          prefs_, is_syncing_passwords_callback_.Run())) {
+          prefs_, sync_delegate_->IsSyncingPasswordsEnabled())) {
     shadow_backend_->RemoveLoginAsync(
         form,
         base::BindOnce(&ShadowTrafficMetricsRecorder<
@@ -451,7 +450,7 @@ void PasswordStoreProxyBackend::RemoveLoginsByURLAndTimeAsync(
                      handler)
           .Then(std::move(callback)));
   if (ShouldExecuteModifyOperationsOnShadowBackend(
-          prefs_, is_syncing_passwords_callback_.Run())) {
+          prefs_, sync_delegate_->IsSyncingPasswordsEnabled())) {
     shadow_backend_->RemoveLoginsByURLAndTimeAsync(
         url_filter, std::move(delete_begin), std::move(delete_end),
         base::OnceCallback<void(bool)>(),
@@ -476,7 +475,7 @@ void PasswordStoreProxyBackend::RemoveLoginsCreatedBetweenAsync(
                      handler)
           .Then(std::move(callback)));
   if (ShouldExecuteModifyOperationsOnShadowBackend(
-          prefs_, is_syncing_passwords_callback_.Run())) {
+          prefs_, sync_delegate_->IsSyncingPasswordsEnabled())) {
     shadow_backend_->RemoveLoginsCreatedBetweenAsync(
         std::move(delete_begin), std::move(delete_end),
         base::BindOnce(&ShadowTrafficMetricsRecorder<
@@ -491,7 +490,7 @@ void PasswordStoreProxyBackend::DisableAutoSignInForOriginsAsync(
   main_backend_->DisableAutoSignInForOriginsAsync(origin_filter,
                                                   std::move(completion));
   if (ShouldExecuteModifyOperationsOnShadowBackend(
-          prefs_, is_syncing_passwords_callback_.Run())) {
+          prefs_, sync_delegate_->IsSyncingPasswordsEnabled())) {
     shadow_backend_->DisableAutoSignInForOriginsAsync(
         origin_filter,
         /*completion=*/base::DoNothing());

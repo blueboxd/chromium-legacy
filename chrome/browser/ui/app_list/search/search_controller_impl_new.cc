@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
@@ -14,6 +15,7 @@
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/sequence_token.h"
 #include "base/strings/strcat.h"
@@ -63,8 +65,12 @@ SearchControllerImplNew::SearchControllerImplNew(
     Profile* profile)
     : profile_(profile),
       ranker_(std::make_unique<RankerDelegate>(profile, this)),
-      burnin_period_(::search_features::QuerySearchBurnInPeriodDuration()),
-      metrics_observer_(std::make_unique<SearchMetricsObserver>(notifier)),
+      burnin_period_(base::Milliseconds(base::GetFieldTrialParamByFeatureAsInt(
+          ash::features::kProductivityLauncher,
+          "burnin_length_ms",
+          200))),
+      metrics_observer_(
+          std::make_unique<SearchMetricsObserver>(profile, notifier)),
       model_updater_(model_updater),
       list_controller_(list_controller) {
   DCHECK(app_list_features::IsCategoricalSearchEnabled());
@@ -215,6 +221,10 @@ void SearchControllerImplNew::InvokeResultAction(
   // non-zero state results.
   if (action == ash::SearchResultActionType::kRemove) {
     ranker_->Remove(result);
+    // We need to update the currently published results to not include the
+    // just-removed result. Manually set the result as filtered and re-publish.
+    result->scoring().filter = true;
+    Publish();
   } else if (result->result_type() == ash::AppListSearchResultType::kOmnibox) {
     result->InvokeAction(action);
   }
@@ -231,6 +241,9 @@ void SearchControllerImplNew::AddProvider(
   if (provider->ShouldBlockZeroState())
     ++total_zero_state_blockers_;
   provider->set_controller(this);
+  provider->set_result_changed_callback(
+      base::BindRepeating(&SearchControllerImplNew::OnResultsChangedWithType,
+                          base::Unretained(this), provider->ResultType()));
   providers_.emplace_back(std::move(provider));
 }
 
@@ -316,7 +329,7 @@ void SearchControllerImplNew::SetZeroStateResults(
   }
 }
 
-void SearchControllerImplNew::Rank(ash::AppListSearchResultType provider_type) {
+void SearchControllerImplNew::Rank(ProviderType provider_type) {
   DCHECK(ranker_);
   if (results_.empty()) {
     // Happens if the burn-in period has elapsed without any results having been
@@ -339,7 +352,12 @@ void SearchControllerImplNew::Publish() {
             [](const auto& a, const auto& b) {
               const int a_burnin = a.burnin_iteration;
               const int b_burnin = b.burnin_iteration;
-              if (a_burnin != b_burnin) {
+              if (a.category == Category::kSearchAndAssistant ||
+                  b.category == Category::kSearchAndAssistant) {
+                // Special-case the search and assistant category, which should
+                // always be sorted last.
+                return b.category == Category::kSearchAndAssistant;
+              } else if (a_burnin != b_burnin) {
                 // Sort order: 0, 1, 2, 3, ... then -1.
                 // The effect of this is to sort by arrival order, with unseen
                 // categories ranked last.
@@ -382,6 +400,8 @@ void SearchControllerImplNew::Publish() {
     }
   }
 
+  // TODO(crbug.com/1258415): Refactor this lambda to be a method on the Scoring
+  // struct.
   std::sort(
       all_results.begin(), all_results.end(),
       [&](const ChromeSearchResult* a, const ChromeSearchResult* b) {
@@ -421,6 +441,8 @@ void SearchControllerImplNew::Publish() {
           // This happens before sorting on display_score, as a trade-off
           // between ranking accuracy and UX pop-in mitigation.
           return a->scoring().burnin_iteration < b->scoring().burnin_iteration;
+        } else if (a->scoring().continue_rank != b->scoring().continue_rank) {
+          return a->scoring().continue_rank > b->scoring().continue_rank;
         } else {
           // Lastly, sort by display score.
           return a->display_score() > b->display_score();
@@ -538,6 +560,12 @@ void SearchControllerImplNew::ViewClosing() {
     provider->ViewClosing();
 }
 
+void SearchControllerImplNew::OnResultsChangedWithType(
+    ash::AppListSearchResultType result_type) {
+  if (results_changed_callback_)
+    results_changed_callback_.Run(result_type);
+}
+
 void SearchControllerImplNew::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -556,7 +584,7 @@ base::Time SearchControllerImplNew::session_start() {
 
 void SearchControllerImplNew::set_results_changed_callback_for_test(
     ResultsChangedCallback callback) {
-  // Unused.
+  results_changed_callback_ = std::move(callback);
 }
 
 void SearchControllerImplNew::disable_ranking_for_test() {

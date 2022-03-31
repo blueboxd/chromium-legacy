@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "jingle/glue/thread_wrapper.h"
+#include "components/webrtc/thread_wrapper.h"
 #include "net/base/io_buffer.h"
 #include "remoting/codec/video_encoder.h"
 #include "remoting/codec/webrtc_video_encoder_vpx.h"
@@ -55,7 +55,7 @@ WebrtcConnectionToClient::WebrtcConnectionToClient(
   auto video_encoder_factory = std::make_unique<WebrtcVideoEncoderFactory>();
   video_encoder_factory_ = video_encoder_factory.get();
   transport_ = std::make_unique<WebrtcTransport>(
-      jingle_glue::JingleThreadWrapper::current(), transport_context,
+      webrtc::ThreadWrapper::current(), transport_context,
       std::move(video_encoder_factory), this);
   session_->SetEventHandler(this);
   session_->SetTransport(transport_.get());
@@ -85,11 +85,13 @@ void WebrtcConnectionToClient::Disconnect(ErrorCode error) {
 }
 
 std::unique_ptr<VideoStream> WebrtcConnectionToClient::StartVideoStream(
+    const std::string& stream_name,
     std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(transport_);
 
-  auto stream = std::make_unique<WebrtcVideoStream>(session_options_);
+  auto stream =
+      std::make_unique<WebrtcVideoStream>(stream_name, session_options_);
   stream->set_video_stats_dispatcher(video_stats_dispatcher_.GetWeakPtr());
   stream->Start(std::move(desktop_capturer), transport_.get(),
                 video_encoder_factory_);

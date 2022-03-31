@@ -845,11 +845,12 @@ class NativeWinEventWaiter {
   NativeWinEventWaiter(BrowserAccessibilityManager* manager,
                        const std::string& match_pattern,
                        ui::AXApiType::Type type = ui::AXApiType::kWinIA2)
-      : event_recorder_(
-            AXInspectFactory::CreateRecorder(type,
-                                             manager,
-                                             base::GetCurrentProcId(),
-                                             {})),
+      : event_recorder_(AXInspectFactory::CreateRecorder(
+            type,
+            manager,
+            base::GetCurrentProcId(),
+            ui::AXTreeSelector(
+                manager->GetRoot()->GetTargetForNativeAccessibilityEvent()))),
         match_pattern_(match_pattern),
         browser_accessibility_manager_(manager) {
     event_recorder_->ListenToEvents(base::BindRepeating(
@@ -952,16 +953,18 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   EXPECT_EQ(CHILDID_SELF, V_I4(focus.ptr()));
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestBusyAccessibilityTree) {
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestLoadingAccessibilityTree) {
   ASSERT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
-  // The initial accessible returned should have state STATE_SYSTEM_BUSY while
-  // the accessibility tree is being requested from the renderer.
+  // Exposing state STATE_SYSTEM_BUSY while the accessibility tree is being
+  // requested from the renderer can prevent NVDA from creating its virtual
+  // buffer. In order to ensure users can start navigating pages immediately,
+  // we don't expose that state.
   AccessibleChecker document1_checker(std::wstring(), ROLE_SYSTEM_DOCUMENT,
                                       std::wstring());
-  document1_checker.SetExpectedState(STATE_SYSTEM_READONLY |
-                                     STATE_SYSTEM_FOCUSABLE |
-                                     STATE_SYSTEM_FOCUSED | STATE_SYSTEM_BUSY);
+  document1_checker.SetExpectedState(
+      STATE_SYSTEM_READONLY | STATE_SYSTEM_FOCUSABLE | STATE_SYSTEM_FOCUSED);
   document1_checker.CheckAccessible(GetRendererAccessible());
 }
 
@@ -4470,8 +4473,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestTreegridIsIATable) {
   Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
   std::vector<base::win::ScopedVariant> document_children =
       GetAllAccessibleChildren(document.Get());
-  // There are two treegrids in this test file. Use only the first one.
-  ASSERT_EQ(2u, document_children.size());
+  // There are three treegrids in this test file. Use only the first one.
+  ASSERT_EQ(3u, document_children.size());
 
   Microsoft::WRL::ComPtr<IAccessible2> table;
   ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(

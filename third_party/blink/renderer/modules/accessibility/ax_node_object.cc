@@ -40,6 +40,7 @@
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap_options.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
+#include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -85,7 +86,6 @@
 #include "third_party/blink/renderer/core/html/html_map_element.h"
 #include "third_party/blink/renderer/core/html/html_meter_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
-#include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html/html_table_caption_element.h"
 #include "third_party/blink/renderer/core/html/html_table_cell_element.h"
 #include "third_party/blink/renderer/core/html/html_table_element.h"
@@ -139,6 +139,7 @@
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/gfx/geometry/transform.h"
 
 namespace {
 
@@ -804,8 +805,8 @@ static ax::mojom::blink::Role DecideRoleFromSiblings(Element* cell) {
       IsNonEmptyNonHeaderCell(previous_cell))
     return ax::mojom::blink::Role::kRowHeader;
 
-  const auto* row = To<Element>(cell->parentNode());
-  if (!row || !row->HasTagName(html_names::kTrTag))
+  const auto* row = DynamicTo<HTMLTableRowElement>(cell->parentNode());
+  if (!row)
     return ax::mojom::blink::Role::kColumnHeader;
 
   // If this row's first or last cell is a non-empty td, this is a row header.
@@ -965,7 +966,7 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
 
   if (IsA<HTMLSummaryElement>(*GetNode())) {
     ContainerNode* parent = LayoutTreeBuilderTraversal::Parent(*GetNode());
-    if (ToHTMLSlotElementIfSupportsAssignmentOrNull(parent))
+    if (IsA<HTMLSlotElement>(parent))
       parent = LayoutTreeBuilderTraversal::Parent(*parent);
     if (parent && IsA<HTMLDetailsElement>(parent))
       return ax::mojom::blink::Role::kDisclosureTriangle;
@@ -1259,7 +1260,7 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (GetNode()->HasTagName(html_names::kBlockquoteTag))
     return ax::mojom::blink::Role::kBlockquote;
 
-  if (GetNode()->HasTagName(html_names::kCaptionTag))
+  if (IsA<HTMLTableCaptionElement>(GetNode()))
     return ax::mojom::blink::Role::kCaption;
 
   if (GetNode()->HasTagName(html_names::kFigcaptionTag))
@@ -1268,7 +1269,7 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (GetNode()->HasTagName(html_names::kFigureTag))
     return ax::mojom::blink::Role::kFigure;
 
-  if (GetNode()->HasTagName(html_names::kTimeTag))
+  if (IsA<HTMLTimeElement>(GetNode()))
     return ax::mojom::blink::Role::kTime;
 
   if (IsA<HTMLPlugInElement>(GetNode())) {
@@ -2353,34 +2354,36 @@ float AXNodeObject::GetTextIndent() const {
   return text_indent / kCssPixelsPerMillimeter;
 }
 
-String AXNodeObject::ImageDataUrl(const gfx::Size& max_size) const {
-  Node* node = GetNode();
-  if (!node)
-    return String();
-
+// Tries to extract a bitmap from an Image, a Canvas, or a Video element.
+// If |max_size| is not empty, the bitmap's size is capped at |max_size|.
+// Returns a boolean indicating whether the operation has succeeded.
+bool GetBitmapFromMediaSource(Node& node,
+                              const gfx::Size& max_size,
+                              SkBitmap& out_bitmap) {
   ImageBitmapOptions* options = ImageBitmapOptions::Create();
   ImageBitmap* image_bitmap = nullptr;
-  if (auto* image = DynamicTo<HTMLImageElement>(node)) {
-    image_bitmap =
-        MakeGarbageCollected<ImageBitmap>(image, absl::nullopt, options);
-  } else if (auto* canvas = DynamicTo<HTMLCanvasElement>(node)) {
-    image_bitmap =
-        MakeGarbageCollected<ImageBitmap>(canvas, absl::nullopt, options);
-  } else if (auto* video = DynamicTo<HTMLVideoElement>(node)) {
-    image_bitmap =
-        MakeGarbageCollected<ImageBitmap>(video, absl::nullopt, options);
+  // TODO(https://crbug.com/1285202): Consider covering OffscreenCanvas.
+  if (auto* image = DynamicTo<HTMLImageElement>(&node)) {
+    image_bitmap = MakeGarbageCollected<ImageBitmap>(
+        image, /* crop_rect */ absl::nullopt, options);
+  } else if (auto* canvas = DynamicTo<HTMLCanvasElement>(&node)) {
+    image_bitmap = MakeGarbageCollected<ImageBitmap>(
+        canvas, /* crop_rect */ absl::nullopt, options);
+  } else if (auto* video = DynamicTo<HTMLVideoElement>(&node)) {
+    image_bitmap = MakeGarbageCollected<ImageBitmap>(
+        video, /*crop_rect=*/absl::nullopt, options);
   }
   if (!image_bitmap)
-    return String();
+    return false;
 
   scoped_refptr<StaticBitmapImage> bitmap_image = image_bitmap->BitmapImage();
   if (!bitmap_image)
-    return String();
+    return false;
 
   sk_sp<SkImage> image =
       bitmap_image->PaintImageForCurrentFrame().GetSwSkImage();
   if (!image || image->width() <= 0 || image->height() <= 0)
-    return String();
+    return false;
 
   // Determine the width and height of the output image, using a proportional
   // scale factor such that it's no larger than |maxSize|, if |maxSize| is not
@@ -2397,23 +2400,33 @@ String AXNodeObject::ImageDataUrl(const gfx::Size& max_size) const {
   int height = std::round(image->height() * scale);
 
   // Draw the image into a bitmap in native format.
+  out_bitmap.allocPixels(
+      SkImageInfo::MakeN32(width, height, kPremul_SkAlphaType));
+  SkCanvas canvas(out_bitmap, SkSurfaceProps{});
+  canvas.clear(SK_ColorTRANSPARENT);
+  canvas.drawImageRect(image, SkRect::MakeIWH(width, height),
+                       SkSamplingOptions());
+  return true;
+}
+
+String AXNodeObject::ImageDataUrl(const gfx::Size& max_size) const {
+  Node* node = GetNode();
+  if (!node)
+    return String();
+
   SkBitmap bitmap;
-  SkPixmap unscaled_pixmap;
-  if (scale == 1.0 && image->peekPixels(&unscaled_pixmap)) {
-    bitmap.installPixels(unscaled_pixmap);
-  } else {
-    bitmap.allocPixels(
-        SkImageInfo::MakeN32(width, height, kPremul_SkAlphaType));
-    SkCanvas canvas(bitmap, SkSurfaceProps{});
-    canvas.clear(SK_ColorTRANSPARENT);
-    canvas.drawImageRect(image, SkRect::MakeIWH(width, height),
-                         SkSamplingOptions());
+  if (!GetBitmapFromMediaSource(*node, max_size, bitmap) &&
+      !DataTransfer::CreateBitmapFromNode(&DocumentFrameView()->GetFrame(),
+                                          node, max_size, bitmap)) {
+    return String();
   }
 
   // Copy the bits into a buffer in RGBA_8888 unpremultiplied format
   // for encoding.
-  SkImageInfo info = SkImageInfo::Make(width, height, kRGBA_8888_SkColorType,
-                                       kUnpremul_SkAlphaType);
+  SkImageInfo info =
+      SkImageInfo::Make(bitmap.width(), bitmap.height(), kRGBA_8888_SkColorType,
+                        kUnpremul_SkAlphaType);
+
   size_t row_bytes = info.minRowBytes();
   Vector<char> pixel_storage(
       SafeCast<wtf_size_t>(info.computeByteSize(row_bytes)));
@@ -3376,8 +3389,9 @@ static bool ShouldInsertSpaceBetweenObjectsIfNeeded(
   //      LayoutBlockFlow (anonymous)
   //        LayoutText "def" <= next
   // See accessibility/name-calc-aria-hidden.html
+  const auto* next_layout_object = next->GetLayoutObject();
   for (auto* layout_object = previous->GetLayoutObject();
-       layout_object != next->GetLayoutObject();
+       layout_object && layout_object != next_layout_object;
        layout_object = layout_object->NextInPreOrder()) {
     if (layout_object->IsBlockInInline())
       return true;
@@ -3495,6 +3509,10 @@ bool AXNodeObject::IsRedundantLabel(HTMLLabelElement* label) {
   if (!input)
     return false;
 
+  if (!input->GetLayoutObject() ||
+      input->GetLayoutObject()->Style()->Visibility() != EVisibility::kVisible)
+    return false;
+
   if (!input->IsCheckable())
     return false;
 
@@ -3519,7 +3537,7 @@ bool AXNodeObject::IsRedundantLabel(HTMLLabelElement* label) {
 
 void AXNodeObject::GetRelativeBounds(AXObject** out_container,
                                      gfx::RectF& out_bounds_in_container,
-                                     skia::Matrix44& out_container_transform,
+                                     gfx::Transform& out_container_transform,
                                      bool* clips_children) const {
   if (GetLayoutObject()) {
     AXObject::GetRelativeBounds(out_container, out_bounds_in_container,
@@ -3534,7 +3552,7 @@ void AXNodeObject::GetRelativeBounds(AXObject** out_container,
 
   *out_container = nullptr;
   out_bounds_in_container = gfx::RectF();
-  out_container_transform.setIdentity();
+  out_container_transform.MakeIdentity();
 
   // First check if it has explicit bounds, for example if this element is tied
   // to a canvas path. When explicit coordinates are provided, the ID of the
@@ -5451,8 +5469,7 @@ String AXNodeObject::Description(
     AXObject* ruby_annotation_ax_object = nullptr;
     for (const auto& child : children_) {
       if (child->RoleValue() == ax::mojom::blink::Role::kRubyAnnotation &&
-          child->GetNode() &&
-          child->GetNode()->HasTagName(html_names::kRtTag)) {
+          child->GetNode() && IsA<HTMLRTElement>(child->GetNode())) {
         ruby_annotation_ax_object = child;
         break;
       }

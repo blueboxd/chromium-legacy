@@ -71,8 +71,7 @@ The following arguments are supported:
                         "h264main, "h264high", "vp8" and "vp9".
                         H264 Baseline is selected if unspecified.
   --num_temporal_layers the number of temporal layers of the encoded
-                        bitstream. Only used in --codec=vp9 and
-                        h264(baseline)|h264main|h264high currently.
+                        bitstream. A default value is 1.
   --num_spatial_layers  the number of spatial layers of the encoded
                         bitstream. Only used in --codec=vp9 currently.
                         Spatial SVC encoding is applied only in
@@ -271,7 +270,8 @@ class VideoEncoderTest : public ::testing::Test {
             config.output_profile, visible_rect, config.num_temporal_layers));
         break;
       case VideoCodec::kVP8:
-        bitstream_processors.emplace_back(new VP8Validator(visible_rect));
+        bitstream_processors.emplace_back(
+            new VP8Validator(visible_rect, config.num_temporal_layers));
         break;
       case VideoCodec::kVP9:
         bitstream_processors.emplace_back(new VP9Validator(
@@ -756,7 +756,7 @@ TEST_F(VideoEncoderTest, DeactivateAndActivateSpatialLayers) {
       [](VideoBitrateAllocation bitrate_allocation,
          size_t deactivate_sid) -> VideoBitrateAllocation {
     for (size_t i = 0; i < VideoBitrateAllocation::kMaxTemporalLayers; ++i)
-      bitrate_allocation.SetBitrate(deactivate_sid, i, 0);
+      bitrate_allocation.SetBitrate(deactivate_sid, i, 0u);
     return bitrate_allocation;
   };
 

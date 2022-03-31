@@ -26,22 +26,17 @@ import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SettingsToggleButtonElement} from '../controls/settings_toggle_button.js';
 
 import {AutofillManagerImpl, AutofillManagerProxy, PersonalDataChangedListener} from './autofill_manager_proxy.js';
+import {getTemplate} from './autofill_section.html.js';
 
 declare global {
   interface HTMLElementEventMap {
     'save-address': CustomEvent<chrome.autofillPrivate.AddressEntry>;
   }
-}
-
-interface RepeaterEvent extends CustomEvent {
-  model: {
-    item: chrome.autofillPrivate.AddressEntry,
-  };
 }
 
 export interface SettingsAutofillSectionElement {
@@ -64,7 +59,7 @@ export class SettingsAutofillSectionElement extends
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -144,7 +139,8 @@ export class SettingsAutofillSectionElement extends
   /**
    * Open the address action menu.
    */
-  private onAddressMenuTap_(e: RepeaterEvent) {
+  private onAddressMenuTap_(
+      e: DomRepeatEvent<chrome.autofillPrivate.AddressEntry>) {
     const item = e.model.item;
 
     // Copy item so dialog won't update model on cancel.

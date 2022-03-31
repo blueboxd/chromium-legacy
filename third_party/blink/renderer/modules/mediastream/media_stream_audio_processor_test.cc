@@ -147,7 +147,6 @@ class MediaStreamAudioProcessorTest : public ::testing::Test {
     EXPECT_TRUE(config.high_pass_filter.enabled);
     EXPECT_TRUE(config.noise_suppression.enabled);
     EXPECT_EQ(config.noise_suppression.level, config.noise_suppression.kHigh);
-    EXPECT_FALSE(config.voice_detection.enabled);
     EXPECT_FALSE(config.gain_controller1.analog_gain_controller
                      .clipping_predictor.enabled);
 #if BUILDFLAG(IS_ANDROID)
@@ -441,9 +440,9 @@ TEST_F(MediaStreamAudioProcessorTest, DiscreteChannelLayout) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(MediaStreamAudioProcessorMultichannelAffectedTests,
-                        MediaStreamAudioProcessorTestMultichannel,
-                        ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(MediaStreamAudioProcessorMultichannelAffectedTests,
+                         MediaStreamAudioProcessorTestMultichannel,
+                         ::testing::Values(false, true));
 
 // When audio processing is performed, processed audio should be delivered as
 // soon as 10 ms of audio has been received.

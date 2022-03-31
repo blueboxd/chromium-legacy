@@ -82,6 +82,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_features.h"
@@ -101,6 +102,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "extensions/browser/api/declarative/rules_cache_delegate.h"
 #include "extensions/browser/api/declarative/rules_registry.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"
@@ -2938,9 +2940,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccessDeny) {
 // the tests become flaky.
 //
 // GeolocationAPI* test 1 of 3.
-// Currently disabled until crbug.com/526788 is fixed.
-IN_PROC_BROWSER_TEST_F(WebViewTest,
-                       DISABLED_GeolocationAPIEmbedderHasAccessAllow) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccessAllow) {
   TestHelper("testAllow",
              "web_view/geolocation/embedder_has_permission",
              NEEDS_TEST_SERVER);
@@ -2955,9 +2955,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccessDeny) {
 
 // GeolocationAPI* test 3 of 3.
 // Currently disabled until crbug.com/526788 is fixed.
-IN_PROC_BROWSER_TEST_F(
-    WebViewTest,
-    DISABLED_GeolocationAPIEmbedderHasAccessMultipleBridgeIdAllow) {
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       GeolocationAPIEmbedderHasAccessMultipleBridgeIdAllow) {
   TestHelper("testMultipleBridgeIdAllow",
              "web_view/geolocation/embedder_has_permission",
              NEEDS_TEST_SERVER);
@@ -3434,10 +3433,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
     downloads.push_back(download_manager->CreateDownloadItem(
         base::GenerateGUID(), download->GetId() + 2, download->GetFullPath(),
         download->GetTargetFilePath(), url_chain, download->GetReferrerUrl(),
-        download->GetSiteUrl(), download->GetTabUrl(),
-        download->GetTabReferrerUrl(), download->GetRequestInitiator(),
-        download->GetMimeType(), download->GetOriginalMimeType(),
-        download->GetStartTime(), download->GetEndTime(), download->GetETag(),
+        download_manager
+            ->SerializedEmbedderDownloadDataToStoragePartitionConfig(
+                download->GetSerializedEmbedderDownloadData()),
+        download->GetTabUrl(), download->GetTabReferrerUrl(),
+        download->GetRequestInitiator(), download->GetMimeType(),
+        download->GetOriginalMimeType(), download->GetStartTime(),
+        download->GetEndTime(), download->GetETag(),
         download->GetLastModifiedTime(), download->GetReceivedBytes(),
         download->GetTotalBytes(), download->GetHash(), download->GetState(),
         download->GetDangerType(), download->GetLastReason(),
@@ -4661,8 +4663,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSignInWebViewTest,
                        ClosingChromeSignInShouldNotCrash) {
   GURL signin_url{"chrome://chrome-signin/?reason=5"};
 
-  AddTabAtIndex(0, signin_url, ui::PAGE_TRANSITION_TYPED);
-  AddTabAtIndex(1, signin_url, ui::PAGE_TRANSITION_TYPED);
+  ASSERT_TRUE(AddTabAtIndex(0, signin_url, ui::PAGE_TRANSITION_TYPED));
+  ASSERT_TRUE(AddTabAtIndex(1, signin_url, ui::PAGE_TRANSITION_TYPED));
   WaitForWebViewInDom();
 
   chrome::CloseTab(browser());
@@ -4781,7 +4783,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginWebViewTest, IsolatedOriginInWebview) {
             guest->GetMainFrame()->GetSiteInstance());
 
   // Load a page with subframe in a regular tab.
-  AddTabAtIndex(0, foo_url, ui::PAGE_TRANSITION_TYPED);
+  ASSERT_TRUE(AddTabAtIndex(0, foo_url, ui::PAGE_TRANSITION_TYPED));
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -4819,7 +4821,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginWebViewTest,
 
   // Load a page with subframe in a regular tab.
   GURL foo_url(embedded_test_server()->GetURL("foo.com", "/iframe.html"));
-  AddTabAtIndex(0, foo_url, ui::PAGE_TRANSITION_TYPED);
+  ASSERT_TRUE(AddTabAtIndex(0, foo_url, ui::PAGE_TRANSITION_TYPED));
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -5074,6 +5076,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, LoadDisallowedExtensionURLInSubframe) {
             entry->metrics.begin()->second);
 }
 
+#if BUILDFLAG(ENABLE_PLUGINS)
 class WebViewPPAPITest : public WebViewTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -5089,6 +5092,7 @@ IN_PROC_BROWSER_TEST_F(WebViewPPAPITest, Shim_TestPlugin) {
 IN_PROC_BROWSER_TEST_F(WebViewPPAPITest, Shim_TestPluginLoadPermission) {
   TestHelper("testPluginLoadPermission", "web_view/shim", NO_TEST_SERVER);
 }
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 // Helper class to set up a fake Chrome Web Store URL which can be loaded in
 // tests.
@@ -5169,4 +5173,280 @@ IN_PROC_BROWSER_TEST_F(WebstoreWebViewTest, NoRendererKillWithChromeWebStore) {
           .empty());
   EXPECT_EQ(false, content::EvalJs(guest, "!!chrome.webstorePrivate"));
   EXPECT_EQ(false, content::EvalJs(guest, "!!chrome.dashboardPrivate"));
+}
+
+// This is a base class for tests that enable site isolation in <webview>
+// guests.
+class SitePerProcessWebViewTest : public WebViewTest {
+ public:
+  SitePerProcessWebViewTest() = default;
+  ~SitePerProcessWebViewTest() override = default;
+  SitePerProcessWebViewTest(const SitePerProcessWebViewTest&) = delete;
+  SitePerProcessWebViewTest& operator=(const SitePerProcessWebViewTest&) =
+      delete;
+
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(features::kSiteIsolationForGuests);
+    WebViewTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Checks basic site isolation properties when a <webview> main frame and
+// subframe navigate cross-site.
+IN_PROC_BROWSER_TEST_F(SitePerProcessWebViewTest, SimpleNavigations) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  // Load an app with a <webview> guest that starts at a data: URL.
+  LoadAppWithGuest("web_view/simple");
+  content::WebContents* guest = GetGuestWebContents();
+  ASSERT_TRUE(guest);
+
+  // Ensure the <webview>'s SiteInstance is for a guest.
+  content::RenderFrameHost* main_frame = guest->GetMainFrame();
+  auto original_id = main_frame->GetGlobalId();
+  scoped_refptr<content::SiteInstance> starting_instance =
+      main_frame->GetSiteInstance();
+  EXPECT_TRUE(starting_instance->IsGuest());
+  EXPECT_TRUE(starting_instance->GetProcess()->IsForGuestsOnly());
+  EXPECT_FALSE(starting_instance->GetStoragePartitionConfig().is_default());
+
+  // Navigate <webview> to a cross-site page with a same-site iframe.
+  const GURL start_url =
+      embedded_test_server()->GetURL("a.test", "/iframe.html");
+  {
+    content::TestNavigationObserver load_observer(guest);
+    EXPECT_TRUE(
+        ExecuteScript(guest, "location.href = '" + start_url.spec() + "';"));
+    load_observer.Wait();
+  }
+
+  // Expect that the main frame swapped SiteInstances and RenderFrameHosts but
+  // stayed in the same BrowsingInstance and StoragePartition.
+  main_frame = guest->GetMainFrame();
+  EXPECT_TRUE(main_frame->GetSiteInstance()->IsGuest());
+  EXPECT_TRUE(main_frame->GetProcess()->IsForGuestsOnly());
+  EXPECT_NE(main_frame->GetGlobalId(), original_id);
+  EXPECT_NE(starting_instance, main_frame->GetSiteInstance());
+  EXPECT_TRUE(
+      starting_instance->IsRelatedSiteInstance(main_frame->GetSiteInstance()));
+  EXPECT_EQ(starting_instance->GetStoragePartitionConfig(),
+            main_frame->GetSiteInstance()->GetStoragePartitionConfig());
+  EXPECT_EQ(starting_instance->GetProcess()->GetStoragePartition(),
+            main_frame->GetProcess()->GetStoragePartition());
+
+  // Ensure the guest SiteInstance reflects the proper site and actually uses
+  // site isolation.
+  EXPECT_EQ("http://a.test/",
+            main_frame->GetSiteInstance()->GetSiteURL().spec());
+  EXPECT_TRUE(main_frame->GetSiteInstance()->RequiresDedicatedProcess());
+  EXPECT_TRUE(main_frame->GetProcess()->IsProcessLockedToSiteForTesting());
+
+  // Navigate <webview> subframe cross-site.  Check that it ends up in a
+  // separate guest SiteInstance and process, but same StoragePartition.
+  const GURL frame_url =
+      embedded_test_server()->GetURL("b.test", "/title1.html");
+  EXPECT_TRUE(NavigateIframeToURL(guest, "test", frame_url));
+  content::RenderFrameHost* subframe = content::ChildFrameAt(main_frame, 0);
+
+  EXPECT_NE(main_frame->GetSiteInstance(), subframe->GetSiteInstance());
+  EXPECT_NE(main_frame->GetProcess(), subframe->GetProcess());
+  EXPECT_TRUE(subframe->GetSiteInstance()->IsGuest());
+  EXPECT_TRUE(subframe->GetProcess()->IsForGuestsOnly());
+  EXPECT_TRUE(main_frame->GetSiteInstance()->IsRelatedSiteInstance(
+      subframe->GetSiteInstance()));
+  EXPECT_EQ(subframe->GetSiteInstance()->GetStoragePartitionConfig(),
+            main_frame->GetSiteInstance()->GetStoragePartitionConfig());
+  EXPECT_EQ(subframe->GetProcess()->GetStoragePartition(),
+            main_frame->GetProcess()->GetStoragePartition());
+  EXPECT_EQ("http://b.test/", subframe->GetSiteInstance()->GetSiteURL().spec());
+  EXPECT_TRUE(subframe->GetSiteInstance()->RequiresDedicatedProcess());
+  EXPECT_TRUE(subframe->GetProcess()->IsProcessLockedToSiteForTesting());
+}
+
+// Check that site-isolated guests can navigate to error pages.  Due to error
+// page isolation, error pages in guests should end up in a new error
+// SiteInstance, which should still be a guest SiteInstance in the guest's
+// StoragePartition.
+IN_PROC_BROWSER_TEST_F(SitePerProcessWebViewTest, ErrorPageIsolation) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(content::SiteIsolationPolicy::IsErrorPageIsolationEnabled(
+      /*in_main_frame=*/true));
+
+  // Load an app with a <webview> guest that starts at a data: URL.
+  LoadAppWithGuest("web_view/simple");
+  content::WebContents* guest = GetGuestWebContents();
+  ASSERT_TRUE(guest);
+
+  scoped_refptr<content::SiteInstance> first_instance =
+      guest->GetMainFrame()->GetSiteInstance();
+  EXPECT_TRUE(first_instance->IsGuest());
+
+  // Navigate <webview> to an error page.
+  const GURL error_url =
+      embedded_test_server()->GetURL("a.test", "/iframe.html");
+  auto interceptor = content::URLLoaderInterceptor::SetupRequestFailForURL(
+      error_url, net::ERR_NAME_NOT_RESOLVED);
+  content::TestNavigationObserver load_observer(guest);
+  EXPECT_TRUE(
+      ExecuteScript(guest, "location.href = '" + error_url.spec() + "';"));
+  load_observer.Wait();
+  EXPECT_FALSE(load_observer.last_navigation_succeeded());
+  EXPECT_TRUE(guest->GetMainFrame()->IsErrorDocument());
+
+  // The error page's SiteInstance should require a dedicated process due to
+  // error page isolation, but it should still be considered a guest and should
+  // stay in the guest's StoragePartition.
+  scoped_refptr<content::SiteInstance> error_instance =
+      guest->GetMainFrame()->GetSiteInstance();
+  EXPECT_TRUE(error_instance->RequiresDedicatedProcess());
+  EXPECT_NE(error_instance, first_instance);
+  EXPECT_TRUE(error_instance->IsGuest());
+  EXPECT_EQ(first_instance->GetStoragePartitionConfig(),
+            error_instance->GetStoragePartitionConfig());
+
+  // Navigate to a normal page and then repeat the above with an
+  // embedder-initiated navigation to an error page.
+  EXPECT_TRUE(NavigateToURL(
+      guest, embedded_test_server()->GetURL("b.test", "/iframe.html")));
+  EXPECT_FALSE(guest->GetMainFrame()->IsErrorDocument());
+  EXPECT_NE(guest->GetMainFrame()->GetSiteInstance(), error_instance);
+
+  content::WebContents* embedder = GetEmbedderWebContents();
+  {
+    content::TestNavigationObserver load_observer(guest);
+    EXPECT_TRUE(ExecuteScript(
+        embedder,
+        "document.querySelector('webview').src = '" + error_url.spec() + "';"));
+    load_observer.Wait();
+    EXPECT_FALSE(load_observer.last_navigation_succeeded());
+    EXPECT_TRUE(guest->GetMainFrame()->IsErrorDocument());
+  }
+
+  scoped_refptr<content::SiteInstance> second_error_instance =
+      guest->GetMainFrame()->GetSiteInstance();
+  EXPECT_TRUE(second_error_instance->RequiresDedicatedProcess());
+  EXPECT_TRUE(second_error_instance->IsGuest());
+  EXPECT_EQ(first_instance->GetStoragePartitionConfig(),
+            second_error_instance->GetStoragePartitionConfig());
+
+  // Because we swapped BrowsingInstances above, this error page SiteInstance
+  // should be different from the first error page SiteInstance, but it should
+  // be in the same StoragePartition.
+  EXPECT_NE(error_instance, second_error_instance);
+  EXPECT_EQ(error_instance->GetStoragePartitionConfig(),
+            second_error_instance->GetStoragePartitionConfig());
+}
+
+// Checks that a main frame navigation in a <webview> can swap
+// BrowsingInstances while staying in the same StoragePartition.
+IN_PROC_BROWSER_TEST_F(SitePerProcessWebViewTest, BrowsingInstanceSwap) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  // Load an app with a <webview> guest that starts at a data: URL.
+  LoadAppWithGuest("web_view/simple");
+  content::WebContents* guest = GetGuestWebContents();
+  ASSERT_TRUE(guest);
+
+  // Navigate <webview> to a page on a.test.
+  const GURL first_url =
+      embedded_test_server()->GetURL("a.test", "/iframe.html");
+  {
+    content::TestNavigationObserver load_observer(guest);
+    EXPECT_TRUE(
+        ExecuteScript(guest, "location.href = '" + first_url.spec() + "';"));
+    load_observer.Wait();
+  }
+  scoped_refptr<content::SiteInstance> first_instance =
+      guest->GetMainFrame()->GetSiteInstance();
+  EXPECT_TRUE(first_instance->IsGuest());
+  EXPECT_TRUE(first_instance->GetProcess()->IsForGuestsOnly());
+
+  // Navigate <webview> to a cross-site page and use a browser-initiated
+  // navigation to force a BrowsingInstance swap.
+  const GURL second_url =
+      embedded_test_server()->GetURL("b.test", "/title1.html");
+  EXPECT_TRUE(NavigateToURL(guest, second_url));
+  scoped_refptr<content::SiteInstance> second_instance =
+      guest->GetMainFrame()->GetSiteInstance();
+
+  // Ensure that a new unrelated guest SiteInstance was created, and that the
+  // StoragePartition didn't change.
+  EXPECT_TRUE(second_instance->IsGuest());
+  EXPECT_TRUE(second_instance->GetProcess()->IsForGuestsOnly());
+  EXPECT_NE(first_instance, second_instance);
+  EXPECT_FALSE(first_instance->IsRelatedSiteInstance(second_instance.get()));
+  EXPECT_EQ(first_instance->GetStoragePartitionConfig(),
+            second_instance->GetStoragePartitionConfig());
+  EXPECT_EQ(first_instance->GetProcess()->GetStoragePartition(),
+            second_instance->GetProcess()->GetStoragePartition());
+}
+
+// Test that both webview-initiated and embedder-initiated navigations to
+// about:blank behave sanely.
+IN_PROC_BROWSER_TEST_F(SitePerProcessWebViewTest, NavigateToAboutBlank) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  // Load an app with a <webview> guest that starts at a data: URL.
+  LoadAppWithGuest("web_view/simple");
+  content::WebContents* guest = GetGuestWebContents();
+  ASSERT_TRUE(guest);
+  scoped_refptr<content::SiteInstance> first_instance =
+      guest->GetMainFrame()->GetSiteInstance();
+  EXPECT_TRUE(first_instance->IsGuest());
+  EXPECT_TRUE(first_instance->GetProcess()->IsForGuestsOnly());
+
+  // Ask <webview> to navigate itself to about:blank.  This should stay in the
+  // same SiteInstance.
+  const GURL blank_url(url::kAboutBlankURL);
+  EXPECT_TRUE(content::NavigateToURLFromRenderer(guest, blank_url));
+  scoped_refptr<content::SiteInstance> second_instance =
+      guest->GetMainFrame()->GetSiteInstance();
+  EXPECT_EQ(first_instance, second_instance);
+
+  // Navigate <webview> away to another page.  This should swap
+  // BrowsingInstances as it's a cross-site browser-initiated navigation.
+  const GURL second_url =
+      embedded_test_server()->GetURL("b.test", "/title1.html");
+  EXPECT_TRUE(NavigateToURL(guest, second_url));
+  scoped_refptr<content::SiteInstance> third_instance =
+      guest->GetMainFrame()->GetSiteInstance();
+  EXPECT_TRUE(third_instance->IsGuest());
+  EXPECT_TRUE(third_instance->GetProcess()->IsForGuestsOnly());
+  EXPECT_NE(first_instance, third_instance);
+  EXPECT_FALSE(first_instance->IsRelatedSiteInstance(third_instance.get()));
+  EXPECT_EQ(first_instance->GetStoragePartitionConfig(),
+            third_instance->GetStoragePartitionConfig());
+  EXPECT_EQ(first_instance->GetProcess()->GetStoragePartition(),
+            third_instance->GetProcess()->GetStoragePartition());
+
+  // Ask embedder to navigate the webview back to about:blank.  This should
+  // stay in the same SiteInstance.
+  content::WebContents* embedder = GetEmbedderWebContents();
+  {
+    content::TestNavigationObserver load_observer(guest);
+    EXPECT_TRUE(ExecuteScript(
+        embedder,
+        "document.querySelector('webview').src = '" + blank_url.spec() + "';"));
+    load_observer.Wait();
+  }
+  scoped_refptr<content::SiteInstance> fourth_instance =
+      guest->GetMainFrame()->GetSiteInstance();
+  EXPECT_EQ(fourth_instance, third_instance);
+}
+
+// Test that site-isolated <webview> doesn't crash when its initial navigation
+// is to an about:blank URL.
+IN_PROC_BROWSER_TEST_F(SitePerProcessWebViewTest, Shim_BlankWebview) {
+  TestHelper("testBlankWebview", "web_view/shim", NO_TEST_SERVER);
+
+  content::WebContents* guest =
+      GetGuestViewManager()->WaitForSingleGuestCreated();
+  ASSERT_TRUE(guest);
+  scoped_refptr<content::SiteInstance> site_instance =
+      guest->GetMainFrame()->GetSiteInstance();
+  EXPECT_TRUE(site_instance->IsGuest());
+  EXPECT_TRUE(site_instance->GetProcess()->IsForGuestsOnly());
 }

@@ -125,6 +125,7 @@ android_library("java") {
     "//third_party/androidx:androidx_recyclerview_recyclerview_java",
     "//third_party/androidx:androidx_vectordrawable_vectordrawable_animated_java",
     "//ui/android:ui_java",
+    "//url:gurl_java",
   ]
 
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -137,9 +138,7 @@ generate_jni("jni_headers") {
 
 android_resources("java_resources") {
   sources = [
-    "java/res/drawable-v24/circular_progress_bar_background_small.xml",
     "java/res/drawable/circular_progress_bar_background_large.xml",
-    "java/res/drawable/circular_progress_bar_background_small.xml",
     "java/res/drawable/circular_progress_bar_determinate_large.xml",
     "java/res/drawable/circular_progress_bar_determinate_small.xml",
     "java/res/drawable/circular_progress_bar_indeterminate_large.xml",
@@ -179,6 +178,7 @@ android_resources("java_resources") {
     "java/res/values-v17/dimens.xml",
     "java/res/values-v17/ids.xml",
     "java/res/values-v17/styles.xml",
+    "java/res/values/drawables.xml",
   ]
 
   deps = [
@@ -236,6 +236,8 @@ android_library("javatests") {
     "//third_party/mockito:mockito_java",
     "//ui/android:ui_java",
     "//ui/android:ui_java_test_support",
+    "//url:gurl_java",
+    "//url:gurl_junit_test_support",
   ]
 
   resources_package = "org.chromium.chrome.browser.download.internal"
@@ -272,6 +274,8 @@ android_library("junit") {
     "//third_party/junit:junit",
     "//third_party/mockito:mockito_java",
     "//ui/android:ui_full_java",
+    "//url:gurl_java",
+    "//url:gurl_junit_test_support",
   ]
 
   resources_package = "org.chromium.chrome.browser.download.internal"

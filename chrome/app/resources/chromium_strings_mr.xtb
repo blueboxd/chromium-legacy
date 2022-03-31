@@ -202,6 +202,7 @@
 <translation id="6734291798041940871">तुमच्या कॉंप्युटरवर सर्व वापरकर्त्यांसाठी आधीच Chromium इंस्टॉल केले आहे.</translation>
 <translation id="673636774878526923">तुमचा Chromium आशय तुमच्या सर्व डिव्हाइसवर अ‍ॅक्सेस करण्यासाठी साइन इन करा, त्यानंतर सिंक सुरू करा.</translation>
 <translation id="6774082503108938489">तुमच्या पालकांनी Chromium साठी "साइट, अ‍ॅप्स आणि एक्स्टेंशनकरिता परवानग्या" सुरू केल्या आहेत. हे <ph name="EXTENSION_TYPE_PARAMETER" /> सुरू करण्यास अनुमती नाही.</translation>
+<translation id="6808964260981102146">तुम्ही वेबसाइट आणि अ‍ॅप्सना आधीपासून दिलेल्या परवानग्या या खात्याला लागू होऊ शकतात. वेबसाइट किंवा ॲप्सनी तुमची खाते माहिती ॲक्सेस करू नये असे तुम्हाला वाटत असल्यास, Chromium ब्राउझरमध्ये <ph name="LINK_BEGIN" />अतिथी मोड<ph name="LINK_END" /> वापरा. तुम्ही तुमची Google खाती <ph name="LINK_2_BEGIN" />सेटिंग्ज<ph name="LINK_2_END" /> मध्येदेखील व्यवस्थापित करू शकता.</translation>
 <translation id="6847869444787758381">तुमचे पासवर्ड कधीही धोक्यात असल्यास, Chromium तुम्हाला कळवते</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium वर कॉपी केले)</translation>
@@ -225,6 +226,7 @@
 Chromium तुमची सेटिंग्ज रिकव्हर करू शकत नाही.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">नवीन विंडो</translation>
+<translation id="7342713658732509484">तुम्ही वेबसाइट आणि अ‍ॅप्सना आधीपासून दिलेल्या परवानग्या या खात्याला लागू होऊ शकतात. वेबसाइट किंवा ॲप्सनी तुमची खाते माहिती ॲक्सेस करू नये असे तुम्हाला वाटत असल्यास, Chromium ब्राउझरमध्ये अतिथी मोड वापरा. तुम्ही तुमची Google खाती <ph name="LINK_2_BEGIN" />सेटिंग्ज<ph name="LINK_2_END" /> मध्येदेखील व्यवस्थापित करू शकता.</translation>
 <translation id="734373864078049451">तुमचे वेब, बुकमार्क आणि अन्य Chromium आशय येथे थेट आहे.</translation>
 <translation id="7349591376906416160">तुमच्या सिस्टम अ‍ॅडमिनिस्ट्रेटरने <ph name="TARGET_URL_HOSTNAME" /> अ‍ॅक्सेस करण्यासाठी <ph name="ALTERNATIVE_BROWSER_NAME" /> उघडण्याकरिता Chromium कॉंफिगर केले आहे.</translation>
 <translation id="7398989605938454041">Chromium प्रोफाइल वापरून तुम्ही तुमच्या Chromium शी संबंधित सर्व गोष्टींची विभागणी करू शकता. ती काम आणि मनोरंजन यामध्ये विभागणी करणे सोपे करते.</translation>

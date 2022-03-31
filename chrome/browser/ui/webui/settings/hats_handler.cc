@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/hats/hats_service_factory.h"
@@ -17,6 +18,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/privacy_sandbox/privacy_sandbox_prefs.h"
+#include "components/privacy_sandbox/privacy_sandbox_settings.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents.h"
 
@@ -30,7 +32,8 @@ SurveyBitsData GetPrivacySettingsProductSpecificBitsData(Profile* profile) {
           profile->GetPrefs()->GetInteger(prefs::kCookieControlsMode)) ==
       content_settings::CookieControlsMode::kBlockThirdParty;
   const bool privacy_sandbox_enabled =
-      profile->GetPrefs()->GetBoolean(prefs::kPrivacySandboxApisEnabled);
+      PrivacySandboxSettingsFactory::GetForProfile(profile)
+          ->IsPrivacySandboxEnabled();
 
   return {{"3P cookies blocked", third_party_cookies_blocked},
           {"Privacy Sandbox enabled", privacy_sandbox_enabled}};
@@ -45,19 +48,18 @@ HatsHandler::HatsHandler() = default;
 HatsHandler::~HatsHandler() = default;
 
 void HatsHandler::RegisterMessages() {
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "trustSafetyInteractionOccurred",
       base::BindRepeating(&HatsHandler::HandleTrustSafetyInteractionOccurred,
                           base::Unretained(this)));
 }
 
 void HatsHandler::HandleTrustSafetyInteractionOccurred(
-    const base::ListValue* args) {
+    base::Value::ConstListView args) {
   AllowJavascript();
 
-  CHECK_EQ(1U, args->GetList().size());
-  auto interaction =
-      static_cast<TrustSafetyInteraction>(args->GetList()[0].GetInt());
+  CHECK_EQ(1U, args.size());
+  auto interaction = static_cast<TrustSafetyInteraction>(args[0].GetInt());
 
   // Both the HaTS service, and the T&S sentiment service (which is another
   // wrapper on the HaTS service), may decide to launch surveys based on this
@@ -91,7 +93,7 @@ void HatsHandler::RequestHatsSurvey(TrustSafetyInteraction interaction) {
     // The control group for the Privacy guide HaTS experiment will need to see
     // either safety check or the privacy page to be eligible and have never
     // seen privacy guide.
-    if (features::kHappinessTrackingSurveysForDesktopSettingsPrivacyNoReview
+    if (features::kHappinessTrackingSurveysForDesktopSettingsPrivacyNoGuide
             .Get() &&
         Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
             prefs::kPrivacyGuideViewed)) {
@@ -115,8 +117,8 @@ void HatsHandler::RequestHatsSurvey(TrustSafetyInteraction interaction) {
         /*require_same_origin=*/true);
   } else if (interaction == TrustSafetyInteraction::COMPLETED_PRIVACY_GUIDE) {
     hats_service->LaunchDelayedSurveyForWebContents(
-        kHatsSurveyTriggerPrivacyReview, web_ui()->GetWebContents(),
-        features::kHappinessTrackingSurveysForDesktopPrivacyReviewTime.Get()
+        kHatsSurveyTriggerPrivacyGuide, web_ui()->GetWebContents(),
+        features::kHappinessTrackingSurveysForDesktopPrivacyGuideTime.Get()
             .InMilliseconds(),
         /*product_specific_bits_data=*/{},
         /*product_specific_string_data=*/{},

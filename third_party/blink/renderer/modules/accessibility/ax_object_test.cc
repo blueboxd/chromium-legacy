@@ -1397,10 +1397,60 @@ TEST_F(AccessibilityTest, ComputeIsInertReason) {
   AssertInertReasons(p2_text, kAXInertSubtree);
 }
 
+TEST_F(AccessibilityTest, ComputeIsInertWithNonHTMLElements) {
+  ScopedInertAttributeForTest enabled_scope(true);
+  SetBodyInnerHTML(R"HTML(
+    <main inert>
+      main
+      <foo inert>
+        foo
+        <svg inert>
+          foo
+          <foreignObject inert>
+            foo
+            <div inert>
+              div
+              <math inert>
+                div
+                <mi inert>
+                  div
+                  <span inert>
+                    span
+                  </span>
+                </mi>
+              </math>
+            </div>
+          </foreignObject>
+        </svg>
+      </foo>
+    </main>
+  )HTML");
+
+  Document& document = GetDocument();
+  Element* element = document.QuerySelector("main");
+  while (element) {
+    Node* node = element->firstChild();
+    AXObject* ax_node = GetAXObjectCache().GetOrCreate(node);
+
+    // The text indicates the expected inert root, which is the nearest HTML
+    // element ancestor with the 'inert' attribute.
+    AtomicString selector(node->textContent().Impl());
+    Element* inert_root = document.QuerySelector(selector);
+    AXObject* ax_inert_root = GetAXObjectCache().GetOrCreate(inert_root);
+
+    AXObject::IgnoredReasons reasons;
+    ASSERT_TRUE(ax_node->ComputeIsInert(&reasons));
+    ASSERT_EQ(reasons.size(), 1u);
+    ASSERT_EQ(reasons[0].reason, kAXInertSubtree);
+    ASSERT_EQ(reasons[0].related_object.Get(), ax_inert_root);
+
+    element = ElementTraversal::FirstChild(*element);
+  }
+}
+
 TEST_F(AccessibilityTest, IsInertInDisplayNone) {
   const Document& document = GetDocument();
   ScopedInertAttributeForTest enabled_scope(true);
-  NonThrowableExceptionState exception_state;
   SetBodyInnerHTML(R"HTML(
     <div hidden>
       foo
@@ -1449,48 +1499,53 @@ TEST_F(AccessibilityTest, IsInertInDisplayNone) {
 
 TEST_F(AccessibilityTest, CanSetFocusInCanvasFallbackContent) {
   ScopedInertAttributeForTest enabled_scope(true);
-  NonThrowableExceptionState exception_state;
   SetBodyInnerHTML(R"HTML(
     <canvas>
-      <section style="display: none">
+      <section>
         <div tabindex="-1" id="div"></div>
         <span tabindex="-1" id="span"></div>
         <a tabindex="-1" id="a"></a>
       </section>
-      <section style="display: none" inert>
+      <section hidden>
+        <div tabindex="-1" id="div-hidden"></div>
+        <span tabindex="-1" id="span-hidden"></div>
+        <a tabindex="-1" id="a-hidden"></a>
+      </section>
+      <section inert>
         <div tabindex="-1" id="div-inert"></div>
         <span tabindex="-1" id="span-inert"></div>
         <a tabindex="-1" id="a-inert"></a>
       </section>
+      <section hidden inert>
+        <div tabindex="-1" id="div-hidden-inert"></div>
+        <span tabindex="-1" id="span-hidden-inert"></div>
+        <a tabindex="-1" id="a-hidden-inert"></a>
+      </section>
     </div>
   )HTML");
 
-  // Elements being used as relevant canvas fallback content can be focusable,
-  // even in a display:none subtree.
-  AXObject* div = GetAXObjectByElementId("div");
-  ASSERT_NE(div, nullptr);
-  ASSERT_TRUE(div->CanSetFocusAttribute());
+  // Elements being used as relevant canvas fallback content can be focusable.
+  ASSERT_TRUE(GetAXObjectByElementId("div")->CanSetFocusAttribute());
+  ASSERT_TRUE(GetAXObjectByElementId("span")->CanSetFocusAttribute());
+  ASSERT_TRUE(GetAXObjectByElementId("a")->CanSetFocusAttribute());
 
-  AXObject* span = GetAXObjectByElementId("span");
-  ASSERT_NE(span, nullptr);
-  ASSERT_TRUE(span->CanSetFocusAttribute());
+  // But they are not focusable if in a display:none subtree...
+  ASSERT_FALSE(GetAXObjectByElementId("div-hidden")->CanSetFocusAttribute());
+  ASSERT_FALSE(GetAXObjectByElementId("span-hidden")->CanSetFocusAttribute());
+  ASSERT_FALSE(GetAXObjectByElementId("a-hidden")->CanSetFocusAttribute());
 
-  AXObject* a = GetAXObjectByElementId("a");
-  ASSERT_NE(a, nullptr);
-  ASSERT_TRUE(a->CanSetFocusAttribute());
+  // ...nor if inert...
+  ASSERT_FALSE(GetAXObjectByElementId("div-inert")->CanSetFocusAttribute());
+  ASSERT_FALSE(GetAXObjectByElementId("span-inert")->CanSetFocusAttribute());
+  ASSERT_FALSE(GetAXObjectByElementId("a-inert")->CanSetFocusAttribute());
 
-  // But they are not focusable if expressly inert.
-  AXObject* div_inert = GetAXObjectByElementId("div-inert");
-  ASSERT_NE(div_inert, nullptr);
-  ASSERT_FALSE(div_inert->CanSetFocusAttribute());
-
-  AXObject* span_inert = GetAXObjectByElementId("span-inert");
-  ASSERT_NE(span_inert, nullptr);
-  ASSERT_FALSE(span_inert->CanSetFocusAttribute());
-
-  AXObject* a_inert = GetAXObjectByElementId("a-inert");
-  ASSERT_NE(a_inert, nullptr);
-  ASSERT_FALSE(a_inert->CanSetFocusAttribute());
+  // ...nor a combination of both.
+  ASSERT_FALSE(
+      GetAXObjectByElementId("div-hidden-inert")->CanSetFocusAttribute());
+  ASSERT_FALSE(
+      GetAXObjectByElementId("span-hidden-inert")->CanSetFocusAttribute());
+  ASSERT_FALSE(
+      GetAXObjectByElementId("a-hidden-inert")->CanSetFocusAttribute());
 }
 
 }  // namespace test

@@ -419,7 +419,6 @@ class PrivateNetworkAccessBrowserTestNoBlocking
             {
                 features::kBlockInsecurePrivateNetworkRequests,
                 features::kBlockInsecurePrivateNetworkRequestsFromPrivate,
-                features::kWarnAboutSecurePrivateNetworkRequests,
                 features::kBlockInsecurePrivateNetworkRequestsForNavigations,
             }) {}
 };
@@ -2919,7 +2918,7 @@ IN_PROC_BROWSER_TEST_F(
 // TODO(https://crbug.com/1124340): Decide whether this is bad and either change
 // this test or delete this todo.
 IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
-                       FromInsecurePublicToCachedLocalIsBlocked) {
+                       FromInsecurePublicToCachedLocalIsNotBlocked) {
   GURL cached_url = SecureLocalURL(kCacheablePath);
 
   // Cache the resource first, by fetching it from a document in the same IP

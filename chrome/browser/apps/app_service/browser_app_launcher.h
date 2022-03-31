@@ -48,8 +48,23 @@ class BrowserAppLauncher {
   BrowserAppLauncher(const BrowserAppLauncher&) = delete;
   BrowserAppLauncher& operator=(const BrowserAppLauncher&) = delete;
 
+#if !BUILDFLAG(IS_CHROMEOS)
   // Launches an app for the given `app_id` in a way specified by `params`.
-  content::WebContents* LaunchAppWithParams(AppLaunchParams&& params);
+  //
+  // This interface is deprecated, please use
+  // AppServiceProxy::LaunchAppWithParams() in the future.
+  // TODO(crbug.com/1244506): Remove this interface in non-chrome OS platform.
+  content::WebContents* LaunchAppWithParams(AppLaunchParams params);
+#endif  // !BUILDFLAG(IS_CHROMEOS)
+
+  // Launches an app for the given `app_id` in a way specified by `params`. This
+  // interface should only be used in testing code where reqired a sync launch
+  // for browser apps. Please try to use AppServiceProxy::LaunchAppWithParams()
+  // interface where possible. This interface is deprecated in the production
+  // code, using this interface might cause behaviour difference between the
+  // production code and testing code.
+  // TODO(crbug.com/1289100): Remove this interface if all usages are removed.
+  content::WebContents* LaunchAppWithParamsForTesting(AppLaunchParams params);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Launches Play Store with Extensions. ARC and Extensions share the same app

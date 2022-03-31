@@ -260,14 +260,6 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
       wcax->AnnounceLiveRegionText(text);
       break;
     }
-    case ui::AXEventGenerator::Event::LOAD_COMPLETE:
-      if (node->manager() == GetRootManager()) {
-        auto* android_focused =
-            static_cast<BrowserAccessibilityAndroid*>(GetFocus());
-        if (android_focused)
-          wcax->HandlePageLoaded(android_focused->unique_id());
-      }
-      break;
     case ui::AXEventGenerator::Event::RANGE_VALUE_CHANGED:
       DCHECK(android_node->GetData().IsRangeValueSupported());
       if (android_node->IsSlider())
@@ -287,8 +279,12 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
       break;
     }
     case ui::AXEventGenerator::Event::VALUE_IN_TEXT_FIELD_CHANGED:
-      DCHECK(android_node->IsTextField());
-      if (GetFocus() == node)
+      // Sometimes `RetargetForEvents` will walk up to the lowest platform leaf
+      // and fire the same event on that node. However, in some rare cases the
+      // leaf node might not be a text field. For example, in the unusual case
+      // when the text field is inside a button, the leaf node is the button not
+      // the text field.
+      if (android_node->IsTextField() && GetFocus() == node)
         wcax->HandleEditableTextChanged(android_node->unique_id());
       break;
 
@@ -330,6 +326,7 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::LIVE_REGION_CREATED:
     case ui::AXEventGenerator::Event::LIVE_RELEVANT_CHANGED:
     case ui::AXEventGenerator::Event::LIVE_STATUS_CHANGED:
+    case ui::AXEventGenerator::Event::LOAD_COMPLETE:
     case ui::AXEventGenerator::Event::LOAD_START:
     case ui::AXEventGenerator::Event::MENU_POPUP_END:
     case ui::AXEventGenerator::Event::MENU_POPUP_START:

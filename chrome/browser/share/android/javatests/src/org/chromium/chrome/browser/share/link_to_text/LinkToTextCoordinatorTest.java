@@ -81,13 +81,6 @@ public class LinkToTextCoordinatorTest {
 
     private static final String SELECTED_TEXT = "selection";
     private static final String VISIBLE_URL = JUnitTestGURLs.EXAMPLE_URL;
-    private static final String AMP_URL = JUnitTestGURLs.AMP_URL;
-    private static final String MOBILE_URL = "https://mobile.foo.com";
-    private static final String AMP_MOBILE_URL =
-            "https://mobile.google.com/amp/www.nyt.com/ampthml/blogs.html";
-    private static final String MOBILE_SUBDOMAIN_URL = "https://m.foo.com";
-    private static final String AMP_MOBILE_SUBDOMAIN_URL =
-            "https://m.google.com/amp/www.nyt.com/ampthml/blogs.html";
     private static final String BLOCKLIST_URL = JUnitTestGURLs.URL_1;
     private static final String SELECTED_TEXT_LONG =
             "This textbook has more freedom than most (but see some exceptions).";
@@ -158,7 +151,7 @@ public class LinkToTextCoordinatorTest {
             void reshareHighlightedText() {
                 mLinkToTextCoordinator.mRemoteRequestStatus = RemoteRequestStatus.REQUESTED;
                 if (mIsRemoteRequestResultSet) {
-                    mLinkToTextCoordinator.onReshareSelectorsRemoteRequestCompleted(mSelector);
+                    mLinkToTextCoordinator.reshareRequestCompleted(mSelector);
                 }
             }
         });
@@ -204,19 +197,6 @@ public class LinkToTextCoordinatorTest {
 
     @Test
     @SmallTest
-    public void isAmpUrlTest() {
-        Assert.assertEquals(true, mLinkToTextCoordinator.isAmpUrl(AMP_URL));
-        Assert.assertEquals(false, mLinkToTextCoordinator.isAmpUrl(VISIBLE_URL));
-
-        Assert.assertEquals(true, mLinkToTextCoordinator.isAmpUrl(AMP_MOBILE_URL));
-        Assert.assertEquals(false, mLinkToTextCoordinator.isAmpUrl(MOBILE_URL));
-
-        Assert.assertEquals(true, mLinkToTextCoordinator.isAmpUrl(AMP_MOBILE_SUBDOMAIN_URL));
-        Assert.assertEquals(false, mLinkToTextCoordinator.isAmpUrl(MOBILE_SUBDOMAIN_URL));
-    }
-
-    @Test
-    @SmallTest
     public void getPreviewTextLongTest() {
         mLinkToTextCoordinator.initLinkToTextCoordinator(mTab, mShareCallback, mChromeShareExtras,
                 SHARE_START_TIME, VISIBLE_URL, SELECTED_TEXT_LONG);
@@ -243,7 +223,8 @@ public class LinkToTextCoordinatorTest {
         checkShowsShareSheetWithNoLink();
 
         // Check that histogram will be recorded correctly.
-        verify(mLinkToTextBridge, times(1)).logFailureMetrics(LinkGenerationError.BLOCK_LIST);
+        verify(mLinkToTextBridge, times(1))
+                .logFailureMetrics(any(), eq(LinkGenerationError.BLOCK_LIST));
     }
 
     @Test
@@ -259,7 +240,8 @@ public class LinkToTextCoordinatorTest {
         checkShowsShareSheetWithNoLink();
 
         // Check that histogram will be recorded correctly.
-        verify(mLinkToTextBridge, times(1)).logFailureMetrics(LinkGenerationError.EMPTY_SELECTION);
+        verify(mLinkToTextBridge, times(1))
+                .logFailureMetrics(any(), eq(LinkGenerationError.EMPTY_SELECTION));
     }
 
     @Test
@@ -274,7 +256,8 @@ public class LinkToTextCoordinatorTest {
         checkShowsShareSheetWithNoLink();
 
         // Check that histogram will be recorded correctly.
-        verify(mLinkToTextBridge, times(1)).logFailureMetrics(LinkGenerationError.TIMEOUT);
+        verify(mLinkToTextBridge, times(1))
+                .logFailureMetrics(any(), eq(LinkGenerationError.TIMEOUT));
 
         // Receiving generation result after timeout, should not trigger another sharesheet.
         mLinkToTextCoordinator.onRemoteRequestCompleted("",
@@ -283,8 +266,8 @@ public class LinkToTextCoordinatorTest {
         verify(mShareCallback, times(1)).showShareSheet(any(), any(), anyLong());
 
         // No new histogram is recorded.
-        verify(mLinkToTextBridge, times(1)).logFailureMetrics(anyInt());
-        verify(mLinkToTextBridge, times(0)).logSuccessMetrics();
+        verify(mLinkToTextBridge, times(1)).logFailureMetrics(any(), anyInt());
+        verify(mLinkToTextBridge, times(0)).logSuccessMetrics(any());
     }
 
     @Test
@@ -298,15 +281,15 @@ public class LinkToTextCoordinatorTest {
 
         // Check that shows share sheet without link to text
         checkShowsShareSheetWithLink(VISIBLE_URL + "#:~:text=selector");
-        verify(mLinkToTextBridge, times(1)).logSuccessMetrics();
+        verify(mLinkToTextBridge, times(1)).logSuccessMetrics(any());
 
         // Timeout after remote request was completed should not trigger another sharesheet.
         mLinkToTextCoordinator.timeout();
         verify(mShareCallback, times(1)).showShareSheet(any(), any(), anyLong());
 
         // No new histogram is recorded.
-        verify(mLinkToTextBridge, times(0)).logFailureMetrics(anyInt());
-        verify(mLinkToTextBridge, times(1)).logSuccessMetrics();
+        verify(mLinkToTextBridge, times(0)).logFailureMetrics(any(), anyInt());
+        verify(mLinkToTextBridge, times(1)).logSuccessMetrics(any());
     }
 
     @Test
@@ -322,7 +305,7 @@ public class LinkToTextCoordinatorTest {
 
         // Check that histogram will be recorded correctly.
         verify(mLinkToTextBridge, times(1))
-                .logFailureMetrics(LinkGenerationError.OMNIBOX_NAVIGATION);
+                .logFailureMetrics(any(), eq(LinkGenerationError.OMNIBOX_NAVIGATION));
 
         // Receiving generation result should not trigger another sharesheet.
         mLinkToTextCoordinator.onRemoteRequestCompleted("",
@@ -331,8 +314,8 @@ public class LinkToTextCoordinatorTest {
         verify(mShareCallback, times(0)).showShareSheet(any(), any(), anyLong());
 
         // No new histogram is recorded.
-        verify(mLinkToTextBridge, times(1)).logFailureMetrics(anyInt());
-        verify(mLinkToTextBridge, times(0)).logSuccessMetrics();
+        verify(mLinkToTextBridge, times(1)).logFailureMetrics(any(), anyInt());
+        verify(mLinkToTextBridge, times(0)).logSuccessMetrics(any());
     }
 
     @Test

@@ -30,11 +30,11 @@ MetricsReportingHandler::MetricsReportingHandler() {}
 MetricsReportingHandler::~MetricsReportingHandler() {}
 
 void MetricsReportingHandler::RegisterMessages() {
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "getMetricsReporting",
       base::BindRepeating(&MetricsReportingHandler::HandleGetMetricsReporting,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "setMetricsReportingEnabled",
       base::BindRepeating(
           &MetricsReportingHandler::HandleSetMetricsReportingEnabled,
@@ -55,18 +55,18 @@ void MetricsReportingHandler::OnJavascriptDisallowed() {
 }
 
 void MetricsReportingHandler::HandleGetMetricsReporting(
-    const base::ListValue* args) {
+    base::Value::ConstListView args) {
   AllowJavascript();
-  const base::Value* callback_id;
-  CHECK(args->Get(0, &callback_id));
-  ResolveJavascriptCallback(*callback_id, *CreateMetricsReportingDict());
+  CHECK_GT(args.size(), 0u);
+  const base::Value& callback_id = args[0];
+  ResolveJavascriptCallback(callback_id, *CreateMetricsReportingDict());
 }
 
 std::unique_ptr<base::DictionaryValue>
     MetricsReportingHandler::CreateMetricsReportingDict() {
   std::unique_ptr<base::DictionaryValue> dict(
       std::make_unique<base::DictionaryValue>());
-  dict->SetBoolean(
+  dict->SetBoolKey(
       "enabled",
       ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -77,15 +77,15 @@ std::unique_ptr<base::DictionaryValue>
   bool managed = lacros_chrome_service &&
                  lacros_chrome_service->init_params()->ash_metrics_managed ==
                      crosapi::mojom::MetricsReportingManaged::kManaged;
-  dict->SetBoolean("managed", managed);
+  dict->SetBoolKey("managed", managed);
 #else
-  dict->SetBoolean("managed", IsMetricsReportingPolicyManaged());
+  dict->SetBoolKey("managed", IsMetricsReportingPolicyManaged());
 #endif
   return dict;
 }
 
 void MetricsReportingHandler::HandleSetMetricsReportingEnabled(
-    const base::ListValue* args) {
+    base::Value::ConstListView args) {
   if (IsMetricsReportingPolicyManaged()) {
     NOTREACHED();
     // NOTE: ChangeMetricsReportingState() already checks whether metrics
@@ -96,8 +96,9 @@ void MetricsReportingHandler::HandleSetMetricsReportingEnabled(
     return;
   }
 
-  bool enabled = args->GetList()[0].GetBool();
-  ChangeMetricsReportingState(enabled);
+  bool enabled = args[0].GetBool();
+  ChangeMetricsReportingState(
+      enabled, ChangeMetricsReportingStateCalledFrom::kUiSettings);
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // To match the pre-Lacros settings UX, the metrics reporting toggle in Lacros

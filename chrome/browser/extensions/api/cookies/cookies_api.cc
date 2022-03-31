@@ -225,7 +225,8 @@ void CookiesEventRouter::DispatchEvent(
   if (!router)
     return;
   auto event = std::make_unique<Event>(
-      histogram_value, event_name, std::move(*event_args).TakeList(), context);
+      histogram_value, event_name, std::move(*event_args).TakeListDeprecated(),
+      context);
   event->event_url = cookie_domain;
   router->BroadcastEvent(std::move(event));
 }
@@ -577,12 +578,12 @@ ExtensionFunction::ResponseAction CookiesGetAllCookieStoresFunction::Run() {
   }
   // Return a list of all cookie stores with at least one open tab.
   std::vector<api::cookies::CookieStore> cookie_stores;
-  if (original_tab_ids->GetList().size() > 0) {
+  if (original_tab_ids->GetListDeprecated().size() > 0) {
     cookie_stores.push_back(cookies_helpers::CreateCookieStore(
         original_profile, std::move(original_tab_ids)));
   }
-  if (incognito_tab_ids.get() && incognito_tab_ids->GetList().size() > 0 &&
-      incognito_profile) {
+  if (incognito_tab_ids.get() &&
+      incognito_tab_ids->GetListDeprecated().size() > 0 && incognito_profile) {
     cookie_stores.push_back(cookies_helpers::CreateCookieStore(
         incognito_profile, std::move(incognito_tab_ids)));
   }

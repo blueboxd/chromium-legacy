@@ -26,6 +26,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
+#include "components/media_router/browser/presentation/start_presentation_context.h"
 #include "components/media_router/common/mojom/media_router.mojom.h"
 #include "components/prefs/pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -88,6 +89,8 @@ class MockCastDialogController : public CastDialogController {
   MOCK_METHOD1(StopCasting, void(const std::string& route_id));
   MOCK_METHOD1(ClearIssue, void(const Issue::Id& issue_id));
   MOCK_METHOD0(GetInitiator, content::WebContents*());
+  MOCK_METHOD0(TakeStartPresentationContext,
+               std::unique_ptr<StartPresentationContext>());
 };
 
 class CastDialogViewTest : public ChromeViewsTestBase {
@@ -334,6 +337,26 @@ TEST_F(CastDialogViewTest, ShowAccessCodeCastButtonEnabled) {
   InitializeDialogWithModel(model);
 
   EXPECT_TRUE(access_code_cast_button());
+}
+
+// This test demonstrates that when the access code casting feature is
+// available to the user, that the sources button is available even if no
+// sinks are available.
+TEST_F(CastDialogViewTest, AccessCodeEmptySinksSourcesAvailable) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kAccessCodeCastUI);
+  profile_.GetPrefs()->SetBoolean(prefs::kAccessCodeCastEnabled, false);
+
+  CastDialogModel model;
+  InitializeDialogWithModel(model);
+
+  // With policy disabled, button is still disabled even with feature enabled.
+  EXPECT_FALSE(sources_button()->GetEnabled());
+
+  // But with policy enabled, button is now enabled even with no sinks.
+  profile_.GetPrefs()->SetBoolean(prefs::kAccessCodeCastEnabled, true);
+  dialog_->OnModelUpdated(model);
+  EXPECT_TRUE(sources_button()->GetEnabled());
 }
 
 }  // namespace media_router

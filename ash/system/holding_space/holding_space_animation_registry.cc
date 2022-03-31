@@ -13,8 +13,8 @@
 #include "ash/public/cpp/holding_space/holding_space_controller_observer.h"
 #include "ash/public/cpp/holding_space/holding_space_model.h"
 #include "ash/public/cpp/holding_space/holding_space_model_observer.h"
-#include "ash/system/holding_space/holding_space_progress_icon_animation.h"
-#include "ash/system/holding_space/holding_space_progress_ring_animation.h"
+#include "ash/system/progress_indicator/progress_icon_animation.h"
+#include "ash/system/progress_indicator/progress_ring_animation.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase_map.h"
 #include "base/memory/ptr_util.h"
@@ -42,9 +42,10 @@ class HoldingSpaceAnimationRegistry::ProgressIndicatorAnimationDelegate
     : public HoldingSpaceControllerObserver,
       public HoldingSpaceModelObserver {
  public:
-  explicit ProgressIndicatorAnimationDelegate(
+  ProgressIndicatorAnimationDelegate(
+      ProgressIndicatorAnimationRegistry* registry,
       HoldingSpaceController* controller)
-      : controller_(controller) {
+      : registry_(registry), controller_(controller) {
     controller_observation_.Observe(controller_);
     if (controller_->model())
       OnHoldingSpaceModelAttached(controller_->model());
@@ -55,73 +56,6 @@ class HoldingSpaceAnimationRegistry::ProgressIndicatorAnimationDelegate
   ProgressIndicatorAnimationDelegate& operator=(
       const ProgressIndicatorAnimationDelegate&) = delete;
   ~ProgressIndicatorAnimationDelegate() override = default;
-
-  // Adds the specified `callback` to be notified of changes to the icon
-  // animation associated with the specified `key`. The `callback` will continue
-  // to receive events so long as both `this` and the returned subscription
-  // exist.
-  base::CallbackListSubscription AddIconAnimationChangedCallbackForKey(
-      const void* key,
-      ProgressIconAnimationChangedCallbackList::CallbackType callback) {
-    auto it = icon_animation_changed_callback_lists_by_key_.find(key);
-
-    // If this is the first time that an icon animation changed callback is
-    // being registered for the specified `key`, set a callback to destroy the
-    // created callback list when it becomes empty.
-    if (it == icon_animation_changed_callback_lists_by_key_.end()) {
-      it = icon_animation_changed_callback_lists_by_key_
-               .emplace(std::piecewise_construct, std::forward_as_tuple(key),
-                        std::forward_as_tuple())
-               .first;
-      it->second.set_removal_callback(base::BindRepeating(
-          &ProgressIndicatorAnimationDelegate::
-              EraseIconAnimationChangedCallbackListForKeyIfEmpty,
-          base::Unretained(this), base::Unretained(key)));
-    }
-
-    return it->second.Add(std::move(callback));
-  }
-
-  // Adds the specified `callback` to be notified of changes to the ring
-  // animation associated with the specified `key`. The `callback` will continue
-  // to receive events so long as both `this` and the returned subscription
-  // exist.
-  base::CallbackListSubscription AddRingAnimationChangedCallbackForKey(
-      const void* key,
-      ProgressRingAnimationChangedCallbackList::CallbackType callback) {
-    auto it = ring_animation_changed_callback_lists_by_key_.find(key);
-
-    // If this is the first time that a ring animation changed callback is being
-    // registered for the specified `key`, set a callback to destroy the
-    // created callback list when it becomes empty.
-    if (it == ring_animation_changed_callback_lists_by_key_.end()) {
-      it = ring_animation_changed_callback_lists_by_key_
-               .emplace(std::piecewise_construct, std::forward_as_tuple(key),
-                        std::forward_as_tuple())
-               .first;
-      it->second.set_removal_callback(base::BindRepeating(
-          &ProgressIndicatorAnimationDelegate::
-              EraseRingAnimationChangedCallbackListForKeyIfEmpty,
-          base::Unretained(this), base::Unretained(key)));
-    }
-
-    return it->second.Add(std::move(callback));
-  }
-
-  // Returns the registered icon animation for the specified `key`.
-  // NOTE: This may return `nullptr` if no such animation is registered.
-  HoldingSpaceProgressIconAnimation* GetIconAnimationForKey(const void* key) {
-    auto it = icon_animations_by_key_.find(key);
-    return it != icon_animations_by_key_.end() ? it->second.get() : nullptr;
-  }
-
-  // Returns the registered ring animation for the specified `key`.
-  // NOTE: This may return `nullptr` if no such animation is registered.
-  HoldingSpaceProgressRingAnimation* GetRingAnimationForKey(const void* key) {
-    auto it = ring_animations_by_key_.find(key);
-    return it != ring_animations_by_key_.end() ? it->second.animation.get()
-                                               : nullptr;
-  }
 
  private:
   // HoldingSpaceControllerObserver:
@@ -167,93 +101,20 @@ class HoldingSpaceAnimationRegistry::ProgressIndicatorAnimationDelegate
     // If `item` has just progressed to completion, ensure that a pulse
     // animation is created and started.
     if (item->progress().IsComplete()) {
-      EnsureRingAnimationOfTypeForKey(
-          item, HoldingSpaceProgressRingAnimation::Type::kPulse);
+      EnsureRingAnimationOfTypeForKey(item,
+                                      ProgressRingAnimation::Type::kPulse);
     }
 
     UpdateAnimations(/*for_removal=*/false);
   }
 
-  // Erases all animations, notifying any animation changed callbacks.
-  void EraseAllAnimations() {
-    EraseAllAnimationsForKeyIf(
-        base::BindRepeating([](const void* key) { return true; }));
-  }
-
-  // Erases all animations for the specified `key`, notifying any animation
-  // changed callbacks.
-  void EraseAllAnimationsForKey(const void* key) {
-    EraseIconAnimationForKey(key);
-    EraseRingAnimationForKey(key);
-  }
-
-  // Erases all animations for keys for which `predicate` returns `true`,
-  // notifying any animation changed callbacks.
-  void EraseAllAnimationsForKeyIf(
-      base::RepeatingCallback<bool(const void* key)> predicate) {
-    std::set<const void*> keys_to_erase;
-    for (const auto& icon_animation_by_key : icon_animations_by_key_) {
-      const void* key = icon_animation_by_key.first;
-      if (predicate.Run(key))
-        keys_to_erase.insert(key);
-    }
-    for (const auto& ring_animation_by_key : ring_animations_by_key_) {
-      const void* key = ring_animation_by_key.first;
-      if (predicate.Run(key))
-        keys_to_erase.insert(key);
-    }
-    for (const void* key : keys_to_erase)
-      EraseAllAnimationsForKey(key);
-  }
-
-  // Erases the icon animation callback list for the specified `key` if empty.
-  void EraseIconAnimationChangedCallbackListForKeyIfEmpty(const void* key) {
-    auto it = icon_animation_changed_callback_lists_by_key_.find(key);
-    if (it == icon_animation_changed_callback_lists_by_key_.end())
-      return;
-    if (it->second.empty())
-      icon_animation_changed_callback_lists_by_key_.erase(it);
-  }
-
-  // Erases the icon animation for the specified `key`, notifying any animation
-  // changed callbacks.
-  void EraseIconAnimationForKey(const void* key) {
-    auto it = icon_animations_by_key_.find(key);
-    if (it == icon_animations_by_key_.end())
-      return;
-    icon_animations_by_key_.erase(it);
-    NotifyIconAnimationChangedForKey(key);
-  }
-
-  // Erases the ring animation for the specified `key`, notifying any animation
-  // changed callbacks.
-  void EraseRingAnimationForKey(const void* key) {
-    auto it = ring_animations_by_key_.find(key);
-    if (it == ring_animations_by_key_.end())
-      return;
-    ring_animations_by_key_.erase(it);
-    NotifyRingAnimationChangedForKey(key);
-  }
-
   // Erases the ring animation for the specified `key` if it is not of the
   // desired `type`, notifying any animation changed callbacks.
-  void EraseRingAnimationIfNotOfTypeForKey(
-      const void* key,
-      HoldingSpaceProgressRingAnimation::Type type) {
-    auto it = ring_animations_by_key_.find(key);
-    if (it != ring_animations_by_key_.end() &&
-        it->second.animation->type() != type) {
-      EraseRingAnimationForKey(key);
-    }
-  }
-
-  // Erases the ring animation callback list for the specified `key` if empty.
-  void EraseRingAnimationChangedCallbackListForKeyIfEmpty(const void* key) {
-    auto it = ring_animation_changed_callback_lists_by_key_.find(key);
-    if (it == ring_animation_changed_callback_lists_by_key_.end())
-      return;
-    if (it->second.empty())
-      ring_animation_changed_callback_lists_by_key_.erase(it);
+  void EraseRingAnimationIfNotOfTypeForKey(const void* key,
+                                           ProgressRingAnimation::Type type) {
+    auto* ring_animation = registry_->GetProgressRingAnimationForKey(key);
+    if (ring_animation && ring_animation->type() != type)
+      registry_->SetProgressRingAnimationForKey(key, nullptr);
   }
 
   // Ensures that the icon animation for the specified `key` exists. If
@@ -264,73 +125,31 @@ class HoldingSpaceAnimationRegistry::ProgressIndicatorAnimationDelegate
     if (!features::IsHoldingSpaceInProgressAnimationV2Enabled())
       return;
 
-    auto it = icon_animations_by_key_.find(key);
-    if (it != icon_animations_by_key_.end())
+    if (registry_->GetProgressIconAnimationForKey(key))
       return;
 
-    icon_animations_by_key_
-        .emplace(key, std::make_unique<HoldingSpaceProgressIconAnimation>())
-        .first->second->Start();
-
-    NotifyIconAnimationChangedForKey(key);
+    registry_
+        ->SetProgressIconAnimationForKey(
+            key, std::make_unique<ProgressIconAnimation>())
+        ->Start();
   }
 
   // Ensures that the ring animation for the specified `key` is of the desired
   // `type`. If necessary, a new animation is created and started, notifying any
   // animation changed callbacks.
-  void EnsureRingAnimationOfTypeForKey(
-      const void* key,
-      HoldingSpaceProgressRingAnimation::Type type) {
-    auto it = ring_animations_by_key_.find(key);
-    if (it != ring_animations_by_key_.end() &&
-        it->second.animation->type() == type) {
+  void EnsureRingAnimationOfTypeForKey(const void* key,
+                                       ProgressRingAnimation::Type type) {
+    auto* ring_animation = registry_->GetProgressRingAnimationForKey(key);
+    if (ring_animation && ring_animation->type() == type)
       return;
-    }
 
-    auto animation = HoldingSpaceProgressRingAnimation::CreateOfType(type);
+    auto animation = ProgressRingAnimation::CreateOfType(type);
+    animation->AddUnsafeAnimationUpdatedCallback(base::BindRepeating(
+        &ProgressIndicatorAnimationDelegate::OnRingAnimationUpdatedForKey,
+        base::Unretained(this), key, animation.get()));
 
-    auto subscription =
-        animation->AddAnimationUpdatedCallback(base::BindRepeating(
-            &ProgressIndicatorAnimationDelegate::OnRingAnimationUpdatedForKey,
-            base::Unretained(this), key, animation.get()));
-
-    auto subscribed_animation = SubscribedProgressRingAnimation{
-        .animation = std::move(animation),
-        .subscription = std::move(subscription)};
-
-    if (it == ring_animations_by_key_.end()) {
-      ring_animations_by_key_.emplace(key, std::move(subscribed_animation))
-          .first->second.animation->Start();
-    } else {
-      it->second = std::move(subscribed_animation);
-      it->second.animation->Start();
-    }
-
-    NotifyRingAnimationChangedForKey(key);
-  }
-
-  // Notifies any icon animation changed callbacks registered for the specified
-  // `key` that the associated animation has changed.
-  void NotifyIconAnimationChangedForKey(const void* key) {
-    auto it = icon_animation_changed_callback_lists_by_key_.find(key);
-    if (it == icon_animation_changed_callback_lists_by_key_.end())
-      return;
-    auto animation_it = icon_animations_by_key_.find(key);
-    it->second.Notify(animation_it != icon_animations_by_key_.end()
-                          ? animation_it->second.get()
-                          : nullptr);
-  }
-
-  // Notifies any ring animation changed callbacks registered for the specified
-  // `key` that the associated animation has changed.
-  void NotifyRingAnimationChangedForKey(const void* key) {
-    auto it = ring_animation_changed_callback_lists_by_key_.find(key);
-    if (it == ring_animation_changed_callback_lists_by_key_.end())
-      return;
-    auto animation_it = ring_animations_by_key_.find(key);
-    it->second.Notify(animation_it != ring_animations_by_key_.end()
-                          ? animation_it->second.animation.get()
-                          : nullptr);
+    registry_->SetProgressRingAnimationForKey(key, std::move(animation))
+        ->Start();
   }
 
   // Updates animation state for the current `model_` state. If `for_removal` is
@@ -340,13 +159,13 @@ class HoldingSpaceAnimationRegistry::ProgressIndicatorAnimationDelegate
     // Animations will be updated if and when a `model_` is attached.
     if (model_ == nullptr) {
       cumulative_progress_ = HoldingSpaceProgress();
-      EraseAllAnimations();
+      registry_->EraseAllAnimations();
       return;
     }
 
     // Clean up all animations associated with holding space items that are no
     // longer present in the attached `model_`.
-    EraseAllAnimationsForKeyIf(base::BindRepeating(
+    registry_->EraseAllAnimationsForKeyIf(base::BindRepeating(
         [](const std::vector<std::unique_ptr<HoldingSpaceItem>>& items,
            const void* controller, const void* key) {
           return key != controller &&
@@ -363,7 +182,7 @@ class HoldingSpaceAnimationRegistry::ProgressIndicatorAnimationDelegate
       // If an `item` is not initialized or is not visibly in-progress, it
       // shouldn't contribute to `cumulative_progress_` nor have an animation.
       if (!item->IsInitialized() || item->progress().IsHidden()) {
-        EraseAllAnimationsForKey(item.get());
+        registry_->EraseAllAnimationsForKey(item.get());
         continue;
       }
 
@@ -374,9 +193,9 @@ class HoldingSpaceAnimationRegistry::ProgressIndicatorAnimationDelegate
       // animated. Any other type of animation should be cleared. Note that a
       // completed `item` does not contribute to `cumulative_progress_`.
       if (item->progress().IsComplete()) {
-        EraseIconAnimationForKey(item.get());
+        registry_->SetProgressIconAnimationForKey(item.get(), nullptr);
         EraseRingAnimationIfNotOfTypeForKey(
-            item.get(), HoldingSpaceProgressRingAnimation::Type::kPulse);
+            item.get(), ProgressRingAnimation::Type::kPulse);
         continue;
       }
 
@@ -390,40 +209,39 @@ class HoldingSpaceAnimationRegistry::ProgressIndicatorAnimationDelegate
       // should be associated with it (if one does not already exist).
       if (item->progress().IsIndeterminate()) {
         EnsureRingAnimationOfTypeForKey(
-            item.get(),
-            HoldingSpaceProgressRingAnimation::Type::kIndeterminate);
+            item.get(), ProgressRingAnimation::Type::kIndeterminate);
         continue;
       }
 
       // If `item` is not in an indeterminate state, it should not have an
       // associated ring animation.
-      EraseRingAnimationForKey(item.get());
+      registry_->SetProgressRingAnimationForKey(item.get(), nullptr);
     }
 
     if (cumulative_progress_.IsComplete()) {
       // Because `cumulative_progress_` is complete, the `controller_` should
       // not have an associated icon animation.
-      EraseIconAnimationForKey(controller_);
+      registry_->SetProgressIconAnimationForKey(controller_, nullptr);
 
       if (!last_cumulative_progress.IsComplete()) {
         if (for_removal) {
           // If `cumulative_progress_` has just become complete as a result of
           // one or more holding space items being removed, the `controller_`
           // should not have an associated ring animation.
-          EraseRingAnimationForKey(controller_);
+          registry_->SetProgressRingAnimationForKey(controller_, nullptr);
         } else {
           // If `cumulative_progress_` has just become complete and is *not* due
           // to the removal of one or more holding space items, ensure that a
           // pulse animation is created and started.
-          EnsureRingAnimationOfTypeForKey(
-              controller_, HoldingSpaceProgressRingAnimation::Type::kPulse);
+          EnsureRingAnimationOfTypeForKey(controller_,
+                                          ProgressRingAnimation::Type::kPulse);
         }
       } else {
         // If `cumulative_progress_` was already complete, it should be allowed
         // to continue a pulse animation if one was previously created and
         // started. Any other type of ring animation should be cleared.
         EraseRingAnimationIfNotOfTypeForKey(
-            controller_, HoldingSpaceProgressRingAnimation::Type::kPulse);
+            controller_, ProgressRingAnimation::Type::kPulse);
       }
       return;
     }
@@ -437,20 +255,19 @@ class HoldingSpaceAnimationRegistry::ProgressIndicatorAnimationDelegate
     // already exist).
     if (cumulative_progress_.IsIndeterminate()) {
       EnsureRingAnimationOfTypeForKey(
-          controller_, HoldingSpaceProgressRingAnimation::Type::kIndeterminate);
+          controller_, ProgressRingAnimation::Type::kIndeterminate);
       return;
     }
 
     // If `cumulative_progress_` is not in an indeterminate state, the
     // `controller_` should not have an associated ring animation.
-    EraseRingAnimationForKey(controller_);
+    registry_->SetProgressRingAnimationForKey(controller_, nullptr);
   }
 
   // Invoked when the specified ring `animation` for the specified `key` has
   // been updated. This is used to clean up finished animations.
-  void OnRingAnimationUpdatedForKey(
-      const void* key,
-      HoldingSpaceProgressRingAnimation* animation) {
+  void OnRingAnimationUpdatedForKey(const void* key,
+                                    ProgressRingAnimation* animation) {
     if (animation->IsAnimating())
       return;
     // Once `animation` has finished, it can be removed from the registry. Note
@@ -461,15 +278,17 @@ class HoldingSpaceAnimationRegistry::ProgressIndicatorAnimationDelegate
         base::BindOnce(
             [](const base::WeakPtr<ProgressIndicatorAnimationDelegate>&
                    delegate,
-               const void* key, HoldingSpaceProgressRingAnimation* animation) {
-              if (delegate &&
-                  delegate->GetRingAnimationForKey(key) == animation) {
-                delegate->EraseRingAnimationForKey(key);
-              }
+               const void* key, ProgressRingAnimation* animation) {
+              if (!delegate)
+                return;
+              auto* registry = delegate->registry_;
+              if (registry->GetProgressRingAnimationForKey(key) == animation)
+                registry->SetProgressRingAnimationForKey(key, nullptr);
             },
             weak_factory_.GetWeakPtr(), key, animation));
   }
 
+  ProgressIndicatorAnimationRegistry* const registry_;
   HoldingSpaceController* const controller_;
   HoldingSpaceModel* model_ = nullptr;
 
@@ -478,37 +297,6 @@ class HoldingSpaceAnimationRegistry::ProgressIndicatorAnimationDelegate
   // cumulative progress changes from an incomplete to a completed state, at
   // which time a pulse animation is created and started.
   HoldingSpaceProgress cumulative_progress_;
-
-  // Mapping of keys to their associated progress icon animations. For
-  // cumulative progress, the animation is keyed on a pointer to the holding
-  // space `controller_`. For individual item progress, the animation is keyed
-  // on a pointer to the holding space item itself.
-  std::map<const void*, std::unique_ptr<HoldingSpaceProgressIconAnimation>>
-      icon_animations_by_key_;
-
-  // Mapping of keys to their associated icon animation changed callback lists.
-  // Whenever an animation for a given key is changed, the callback list for
-  // that key will be notified.
-  std::map<const void*, ProgressIconAnimationChangedCallbackList>
-      icon_animation_changed_callback_lists_by_key_;
-
-  struct SubscribedProgressRingAnimation {
-    std::unique_ptr<HoldingSpaceProgressRingAnimation> animation;
-    base::CallbackListSubscription subscription;
-  };
-
-  // Mapping of keys to their associated progress ring animations. For
-  // cumulative progress, the animation is keyed on a pointer to the holding
-  // space `controller_`. For individual item progress, the animation is keyed
-  // on a pointer to the holding space item itself.
-  std::map<const void*, SubscribedProgressRingAnimation>
-      ring_animations_by_key_;
-
-  // Mapping of keys to their associated ring animation changed callback lists.
-  // Whenever an animation for a given key is changed, the callback list for
-  // that key will be notified.
-  std::map<const void*, ProgressRingAnimationChangedCallbackList>
-      ring_animation_changed_callback_lists_by_key_;
 
   base::ScopedObservation<HoldingSpaceController,
                           HoldingSpaceControllerObserver>
@@ -525,7 +313,7 @@ class HoldingSpaceAnimationRegistry::ProgressIndicatorAnimationDelegate
 HoldingSpaceAnimationRegistry::HoldingSpaceAnimationRegistry() {
   progress_indicator_animation_delegate_ =
       std::make_unique<ProgressIndicatorAnimationDelegate>(
-          HoldingSpaceController::Get());
+          this, HoldingSpaceController::Get());
 
   shell_observation_.Observe(Shell::Get());
 }
@@ -538,32 +326,6 @@ HoldingSpaceAnimationRegistry* HoldingSpaceAnimationRegistry::GetInstance() {
   if (!instance_owner.get() && Shell::HasInstance())
     instance_owner.reset(new HoldingSpaceAnimationRegistry());
   return instance_owner.get();
-}
-
-base::CallbackListSubscription
-HoldingSpaceAnimationRegistry::AddProgressIconAnimationChangedCallbackForKey(
-    const void* key,
-    ProgressIconAnimationChangedCallbackList::CallbackType callback) {
-  return progress_indicator_animation_delegate_
-      ->AddIconAnimationChangedCallbackForKey(key, std::move(callback));
-}
-
-base::CallbackListSubscription
-HoldingSpaceAnimationRegistry::AddProgressRingAnimationChangedCallbackForKey(
-    const void* key,
-    ProgressRingAnimationChangedCallbackList::CallbackType callback) {
-  return progress_indicator_animation_delegate_
-      ->AddRingAnimationChangedCallbackForKey(key, std::move(callback));
-}
-
-HoldingSpaceProgressIconAnimation*
-HoldingSpaceAnimationRegistry::GetProgressIconAnimationForKey(const void* key) {
-  return progress_indicator_animation_delegate_->GetIconAnimationForKey(key);
-}
-
-HoldingSpaceProgressRingAnimation*
-HoldingSpaceAnimationRegistry::GetProgressRingAnimationForKey(const void* key) {
-  return progress_indicator_animation_delegate_->GetRingAnimationForKey(key);
 }
 
 void HoldingSpaceAnimationRegistry::OnShellDestroying() {

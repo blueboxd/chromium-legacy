@@ -12,6 +12,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/sharesheet/sharesheet_controller.h"
 #include "chrome/browser/sharesheet/sharesheet_types.h"
+#include "chromeos/components/sharesheet/constants.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
@@ -41,8 +42,9 @@ void DriveShareAction::LaunchAction(
   if (!ash::NewWindowDelegate::GetPrimary()) {
     return;
   }
-  ash::NewWindowDelegate::GetPrimary()->OpenUrl(intent->drive_share_url.value(),
-                                                /*from_user_interaction=*/true);
+  ash::NewWindowDelegate::GetPrimary()->OpenUrl(
+      intent->drive_share_url.value(),
+      ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction);
   controller_->CloseBubble(::sharesheet::SharesheetResult::kSuccess);
 }
 

@@ -161,8 +161,8 @@ class ThemeProperties {
     COLOR_TAB_FOREGROUND_ACTIVE_FRAME_INACTIVE_INCOGNITO,
 
     // The throbber colors for tabs or anything on a toolbar (currently, only
-    // the download shelf). If you're adding a throbber elsewhere, such as in
-    // a dialog or bubble, you likely want ui::kColorThrobber.
+    // the download shelf). Do not use directly; only for use inside
+    // browser_theme_pack.cc.
     COLOR_TAB_THROBBER_SPINNING,
     COLOR_TAB_THROBBER_WAITING,
 
@@ -282,6 +282,19 @@ class ThemeProperties {
     COLOR_OMNIBOX_SECURITY_CHIP_DEFAULT,
     COLOR_OMNIBOX_SECURITY_CHIP_SECURE,
     COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS,
+
+    // The colors used for thumbnail tab visualizations,
+    COLOR_THUMBNAIL_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE,
+    COLOR_THUMBNAIL_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE,
+
+    // Colors used for the Bookmark bar
+    COLOR_BOOKMARK_BAR_BACKGROUND,
+    COLOR_BOOKMARK_BUTTON_ICON,
+    // If COLOR_TOOLBAR_BUTTON_ICON is defined in the custom theme, that color
+    // will be returned, otherwise it will be transparent so the default
+    // favicon color is retained.
+    COLOR_BOOKMARK_FAVICON,
+    COLOR_BOOKMARK_SEPARATOR,
 
     // /!\ If you make any changes to this enum, you must also increment
     // kThemePackVersion in browser_theme_pack.cc, or else themes will display

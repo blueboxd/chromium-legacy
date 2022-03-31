@@ -10,6 +10,7 @@
 #include "components/exo/buffer.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/sub_surface.h"
+#include "components/exo/surface_test_util.h"
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -82,25 +83,6 @@ std::string TransformToString(Transform transform) {
   }
   return prefix + name;
 }
-
-class SurfaceObserverForTest : public SurfaceObserver {
- public:
-  SurfaceObserverForTest() = default;
-
-  SurfaceObserverForTest(const SurfaceObserverForTest&) = delete;
-  SurfaceObserverForTest& operator=(const SurfaceObserverForTest&) = delete;
-
-  void OnSurfaceDestroying(Surface* surface) override {}
-
-  void OnWindowOcclusionChanged(Surface* surface) override {
-    num_occlusion_changes_++;
-  }
-
-  int num_occlusion_changes() const { return num_occlusion_changes_; }
-
- private:
-  int num_occlusion_changes_ = 0;
-};
 
 class SurfaceTest : public test::ExoTestBase,
                     public ::testing::WithParamInterface<float> {
@@ -1425,7 +1407,15 @@ TEST_P(SurfaceTest, HasPendingPerCommitBufferReleaseCallback) {
   EXPECT_FALSE(surface->HasPendingPerCommitBufferReleaseCallback());
 }
 
-TEST_P(SurfaceTest, PerCommitBufferReleaseCallbackForSameSurface) {
+// TODO(crbug.com/1292674): Flaky on ChromeOS.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_PerCommitBufferReleaseCallbackForSameSurface \
+  DISABLED_PerCommitBufferReleaseCallbackForSameSurface
+#else
+#define MAYBE_PerCommitBufferReleaseCallbackForSameSurface \
+  PerCommitBufferReleaseCallbackForSameSurface
+#endif
+TEST_P(SurfaceTest, MAYBE_PerCommitBufferReleaseCallbackForSameSurface) {
   gfx::Size buffer_size(1, 1);
   auto buffer1 = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
@@ -1466,7 +1456,15 @@ TEST_P(SurfaceTest, PerCommitBufferReleaseCallbackForSameSurface) {
   EXPECT_EQ(buffer_release_count, 1);
 }
 
-TEST_P(SurfaceTest, PerCommitBufferReleaseCallbackForDifferentSurfaces) {
+// TODO(crbug.com/1292674): Flaky on ChromeOS.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_PerCommitBufferReleaseCallbackForDifferentSurfaces \
+  DISABLED_PerCommitBufferReleaseCallbackForDifferentSurfaces
+#else
+#define MAYBE_PerCommitBufferReleaseCallbackForDifferentSurfaces \
+  PerCommitBufferReleaseCallbackForDifferentSurfaces
+#endif
+TEST_P(SurfaceTest, MAYBE_PerCommitBufferReleaseCallbackForDifferentSurfaces) {
   gfx::Size buffer_size(1, 1);
   auto buffer1 = std::make_unique<Buffer>(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));

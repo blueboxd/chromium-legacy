@@ -5,7 +5,6 @@
 import base64
 import json
 import os
-import subprocess
 import sys
 import time
 
@@ -113,22 +112,12 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
             self._process_wpt_report(self.wptreport)
 
     def get_wpt_revision(self):
-        """Find upstream commit id from subject of imported CLs
-
-        An example subject as below:
-            8fe6ed3939371 Import wpt@5f97bc75226f65d50f57938297a2a86d0c38cdb0
-        """
-        path_to_base_manifest = os.path.join(
-            common.SRC_DIR, "third_party", "blink", "web_tests",
-            "external", "WPT_BASE_MANIFEST_8.json")
-        command = ['git', 'log', '--oneline', '-1',
-                   '--author=wpt-autoroller', path_to_base_manifest]
-        output = subprocess.check_output(command)
-        for line in output.decode('utf-8').splitlines():
-            if "Import wpt@" in line:
-                pos = line.find("Import wpt@")
-                rev = line[pos + len("Import wpt@"):].strip()
-                return rev
+        path_to_version = os.path.join(WEB_TESTS_DIR, 'external', 'Version')
+        with open(path_to_version) as f:
+            for line in f.readlines():
+                if line.startswith("Version:"):
+                    rev = line[len("Version:"):].strip()
+                    return rev
         return None
 
     def _process_wpt_report(self, wptreport):
@@ -265,6 +254,9 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
             if "artifacts" not in root_node:
                 return
 
+            root_node["artifacts"].pop("wpt_actual_status", None)
+            root_node["artifacts"].pop("wpt_subtest_failure", None)
+
             actual_metadata = root_node["artifacts"].pop(
                 "wpt_actual_metadata", None)
             if actual_metadata:
@@ -332,8 +324,6 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
         unexpected = result_node['actual'] not in result_node['expected']
 
         for artifact_name, paths in result_node.get('artifacts', {}).items():
-            if artifact_name in ["wpt_actual_status", "wpt_subtest_failure"]:
-                continue
             for path in paths:
                 artifacts.AddArtifact(artifact_name, path)
 

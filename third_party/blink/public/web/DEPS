@@ -26,6 +26,7 @@ include_rules = [
     "+components/viz/common/surfaces/frame_sink_id.h",
     "+components/viz/common/surfaces/surface_id.h",
     "+media/base",
+    "+media/mojo/mojom/audio_processing.mojom-shared.h",
     "+mojo/public",
     "+net/cookies/site_for_cookies.h",
     "+printing/mojom/print.mojom-shared.h",
@@ -49,6 +50,7 @@ include_rules = [
     "+ui/base/ime/ime_text_span.h",
     "+ui/display/mojom",
     "+ui/events/types",
+    "+ui/gfx/ca_layer_result.h",
     "+ui/gfx/geometry",
     "+ui/gfx/range/range.h",
     # Enforce to use mojom-shared.h in blink/public so that it can compile

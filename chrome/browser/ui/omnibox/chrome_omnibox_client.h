@@ -63,6 +63,7 @@ class ChromeOmniboxClient : public OmniboxClient {
                       OmniboxFocusChangeReason reason) override;
   void OnResultChanged(const AutocompleteResult& result,
                        bool default_match_changed,
+                       bool should_prerender,
                        const BitmapFetchedCallback& on_bitmap_fetched) override;
   gfx::Image GetFaviconForPageUrl(
       const GURL& page_url,
@@ -82,14 +83,12 @@ class ChromeOmniboxClient : public OmniboxClient {
   void OnBookmarkLaunched() override;
   void DiscardNonCommittedNavigations() override;
   void OpenUpdateChromeDialog() override;
+  void FocusWebContents() override;
 
   // Update shortcuts when a navigation succeeds.
   static void OnSuccessfulNavigation(Profile* profile,
                                      const std::u16string& text,
                                      const AutocompleteMatch& match);
-
-  // Called when a navigation finishes.
-  static void OnFinishedNavigation(Profile* profile);
 
  private:
   // Performs prerendering for |match|.

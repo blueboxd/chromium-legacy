@@ -115,10 +115,6 @@ class CORE_EXPORT MediaQueryEvaluator final
   bool Eval(const MediaQueryExp&) const;
   bool Eval(const MediaQueryExp&, Results) const;
 
-  // Returns true if any of the expressions in the results lists changed its
-  // evaluation.
-  bool DidResultsChange(const MediaQueryResultList& results) const;
-
   // Returns true if any of the media queries in the results lists changed its
   // evaluation.
   bool DidResultsChange(const Vector<MediaQuerySetResult>& results) const;
@@ -139,10 +135,6 @@ class CORE_EXPORT MediaQueryEvaluator final
 
   String media_type_;
   Member<const MediaValues> media_values_;
-
-  // Even if UKM reporting is enabled, do not report any media query evaluation
-  // results if this is set to true.
-  mutable bool skip_ukm_reporting_{false};
 };
 
 }  // namespace blink

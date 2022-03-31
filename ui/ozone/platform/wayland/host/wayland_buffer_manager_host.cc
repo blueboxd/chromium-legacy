@@ -16,6 +16,7 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/linux/drm_util_linux.h"
+#include "ui/ozone/platform/wayland/host/surface_augmenter.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_backing.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_backing_dmabuf.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_backing_shm.h"
@@ -98,6 +99,11 @@ bool WaylandBufferManagerHost::SupportsViewporter() const {
 
 bool WaylandBufferManagerHost::SupportsNonBackedSolidColorBuffers() const {
   return !!connection_->surface_augmenter();
+}
+
+bool WaylandBufferManagerHost::SupportsSubpixelAccuratePosition() const {
+  return connection_->surface_augmenter() &&
+         connection_->surface_augmenter()->SupportsSubpixelAccuratePosition();
 }
 
 void WaylandBufferManagerHost::SetWaylandBufferManagerGpu(
@@ -270,7 +276,7 @@ void WaylandBufferManagerHost::CommitOverlays(
     return;
 
   for (auto& overlay : overlays) {
-    if (!ValidateBufferExistence(overlay->buffer_id)) {
+    if (!ValidateOverlayData(*overlay)) {
       TerminateGpuProcess();
       return;
     }
@@ -399,6 +405,27 @@ bool WaylandBufferManagerHost::ValidateBufferExistence(uint32_t buffer_id) {
   }
 
   return error_message_.empty();
+}
+
+bool WaylandBufferManagerHost::ValidateOverlayData(
+    const ui::ozone::mojom::WaylandOverlayConfig& overlay_data) {
+  if (!ValidateBufferExistence(overlay_data.buffer_id))
+    return false;
+
+  std::string reason;
+  if (std::isnan(overlay_data.bounds_rect.x()) ||
+      std::isnan(overlay_data.bounds_rect.y()) ||
+      std::isnan(overlay_data.bounds_rect.width()) ||
+      std::isnan(overlay_data.bounds_rect.height()) ||
+      std::isinf(overlay_data.bounds_rect.x()) ||
+      std::isinf(overlay_data.bounds_rect.y()) ||
+      std::isinf(overlay_data.bounds_rect.width()) ||
+      std::isinf(overlay_data.bounds_rect.height())) {
+    error_message_ = "Overlay bounds_rect is invalid (NaN or infinity).";
+    return false;
+  }
+
+  return true;
 }
 
 void WaylandBufferManagerHost::OnSubmission(gfx::AcceleratedWidget widget,

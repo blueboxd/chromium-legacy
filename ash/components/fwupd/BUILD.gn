@@ -21,6 +21,8 @@ component("fwupd") {
   sources = [
     "firmware_update_manager.cc",
     "firmware_update_manager.h",
+    "histogram_util.cc",
+    "histogram_util.h",
   ]
 }
 
@@ -29,6 +31,8 @@ source_set("unit_tests") {
 
   deps = [
     ":fwupd",
+    "//ash",
+    "//ash:test_support",
     "//ash/constants",
     "//ash/public/cpp",
     "//ash/public/mojom",
@@ -40,6 +44,7 @@ source_set("unit_tests") {
     "//services/network/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/message_center:test_support",
   ]
 
   sources = [

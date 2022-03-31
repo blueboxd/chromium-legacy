@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './shimless_rma_fonts_css.js';
 import './shimless_rma_shared_css.js';
 import './base_page.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
@@ -19,6 +20,9 @@ const QR_CODE_TILE_SIZE = 5;
 const QR_CODE_PADDING = 4 * QR_CODE_TILE_SIZE;
 // Styling for filled tiles in the QR code.
 const QR_CODE_FILL_STYLE = '#000000';
+
+// The number of characters in an RSU code.
+const RSU_CODE_EXPECTED_LENGTH = 8;
 
 /**
  * @fileoverview
@@ -79,6 +83,13 @@ export class OnboardingEnterRsuWpDisableCodePage extends
       },
 
       /** @protected */
+      rsuCodeExpectedLength_: {
+        type: Number,
+        value: RSU_CODE_EXPECTED_LENGTH,
+        readOnly: true,
+      },
+
+      /** @protected */
       rsuInstructionsText_: {
         type: String,
         value: '',
@@ -104,12 +115,6 @@ export class OnboardingEnterRsuWpDisableCodePage extends
         value: false,
         reflectToAttribute: true,
       },
-
-      /** @protected */
-      rsuCodeLengthLabel_: {
-        type: String,
-        computed: 'computeRsuCodeLengthLabel_(rsuCode_)',
-      },
     };
   }
 
@@ -124,6 +129,10 @@ export class OnboardingEnterRsuWpDisableCodePage extends
     super.ready();
     this.getRsuChallengeAndHwid_();
     this.setRsuInstructionsText_();
+    this.dispatchEvent(new CustomEvent(
+        'disable-next-button',
+        {bubbles: true, composed: true, detail: false},
+        ));
   }
 
   /** @private */
@@ -170,7 +179,7 @@ export class OnboardingEnterRsuWpDisableCodePage extends
    * @private
    */
   rsuCodeIsPlausible_() {
-    return !!this.rsuCode_ && this.rsuCode_.length == 8;
+    return !!this.rsuCode_ && this.rsuCode_.length === RSU_CODE_EXPECTED_LENGTH;
   }
 
   /**
@@ -178,10 +187,9 @@ export class OnboardingEnterRsuWpDisableCodePage extends
    * @param {!Event} event
    */
   onRsuCodeChanged_(event) {
-    this.dispatchEvent(new CustomEvent(
-        'disable-next-button',
-        {bubbles: true, composed: true, detail: !this.rsuCodeIsPlausible_()},
-        ));
+    // Set to false whenever the user changes the code to remove the red invalid
+    // warning.
+    this.rsuCodeInvalid_ = false;
   }
 
   /**
@@ -194,12 +202,13 @@ export class OnboardingEnterRsuWpDisableCodePage extends
 
   /** @return {!Promise<!StateResult>} */
   onNextButtonClick() {
-    if (this.rsuCode_) {
-      return this.shimlessRmaService_.setRsuDisableWriteProtectCode(
-          this.rsuCode_);
-    } else {
+    if (this.rsuCode_.length !== this.rsuCodeExpectedLength_) {
+      this.rsuCodeInvalid_ = true;
       return Promise.reject(new Error('No RSU code set'));
     }
+
+    return this.shimlessRmaService_.setRsuDisableWriteProtectCode(
+        this.rsuCode_);
   }
 
   /** @private */
@@ -230,14 +239,6 @@ export class OnboardingEnterRsuWpDisableCodePage extends
   /** @private */
   closeDialog_() {
     this.shadowRoot.querySelector('#rsuChallengeDialog').close();
-  }
-
-  /**
-   * @return {string}
-   * @private
-   */
-  computeRsuCodeLengthLabel_() {
-    return this.rsuCode_.length + '/8';
   }
 }
 

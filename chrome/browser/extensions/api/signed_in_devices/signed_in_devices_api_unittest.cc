@@ -123,13 +123,13 @@ void VerifyDictionaryWithDeviceInfo(const base::Value* actual_value,
   device_info->set_public_id(public_id);
 
   std::unique_ptr<base::DictionaryValue> expected_value(device_info->ToValue());
-  EXPECT_TRUE(expected_value->Equals(actual_value));
+  EXPECT_EQ(*expected_value, *actual_value);
 }
 
 const base::Value* GetDictionaryFromList(int index, base::Value* value) {
   const base::Value* dictionary = nullptr;
   int cur_index = 0;
-  for (const auto& item : value->GetList()) {
+  for (const auto& item : value->GetListDeprecated()) {
     if (cur_index++ != index)
       continue;
     if (!item.is_dict()) {

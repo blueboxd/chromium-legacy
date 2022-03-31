@@ -146,6 +146,15 @@ class ASH_EXPORT CaptureModeSession
   // as the save folder.
   void OnDefaultCaptureFolderSelectionChanged();
 
+  // Returns the current parent window for
+  // `CaptureModeCameraController::camera_preview_widget_` when capture mode
+  // session is active.
+  aura::Window* GetCameraPreviewParentWindow() const;
+
+  // Returns the confine bounds for the camera preview when capture session is
+  // active.
+  gfx::Rect GetCameraPreviewConfineBounds() const;
+
   // ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override;
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
@@ -181,6 +190,10 @@ class ASH_EXPORT CaptureModeSession
   // Highlights the give |window| for keyboard navigation
   // events (tabbing through windows in capture window mode).
   void HighlightWindowForTab(aura::Window* window);
+
+  // Called when the settings view has been updated, its bounds may need to be
+  // updated correspondingly.
+  void MaybeUpdateSettingsBounds();
 
  private:
   friend class CaptureModeSettingsTestApi;

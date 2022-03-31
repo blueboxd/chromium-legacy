@@ -58,10 +58,10 @@ std::unique_ptr<base::DictionaryValue> CreateInputMethodsEntry(
   const std::string& ime_id = method.id();
   std::unique_ptr<base::DictionaryValue> input_method(
       new base::DictionaryValue);
-  input_method->SetString("value", ime_id);
-  input_method->SetString(
-      "title", util->GetInputMethodLongNameStripped(method));
-  input_method->SetBoolean("selected", ime_id == selected);
+  input_method->SetStringKey("value", ime_id);
+  input_method->SetStringKey("title",
+                             util->GetInputMethodLongNameStripped(method));
+  input_method->SetBoolKey("selected", ime_id == selected);
   return input_method;
 }
 
@@ -74,7 +74,7 @@ bool InsertString(const std::string& str, std::set<std::string>* to) {
 
 void AddOptgroupOtherLayouts(base::ListValue* input_methods_list) {
   std::unique_ptr<base::DictionaryValue> optgroup(new base::DictionaryValue);
-  optgroup->SetString(
+  optgroup->SetStringKey(
       "optionGroupName",
       l10n_util::GetStringUTF16(IDS_OOBE_OTHER_KEYBOARD_LAYOUTS));
   input_methods_list->Append(std::move(optgroup));
@@ -94,10 +94,10 @@ std::unique_ptr<base::DictionaryValue> CreateLanguageEntry(
   const std::string directionality = has_rtl_chars ? "rtl" : "ltr";
 
   auto dictionary = std::make_unique<base::DictionaryValue>();
-  dictionary->SetString("code", language_code);
-  dictionary->SetString("displayName", language_display_name);
-  dictionary->SetString("textDirection", directionality);
-  dictionary->SetString("nativeDisplayName", language_native_display_name);
+  dictionary->SetStringKey("code", language_code);
+  dictionary->SetStringKey("displayName", language_display_name);
+  dictionary->SetStringKey("textDirection", directionality);
+  dictionary->SetStringKey("nativeDisplayName", language_native_display_name);
   return dictionary;
 }
 
@@ -270,7 +270,7 @@ std::unique_ptr<base::ListValue> GetLanguageList(
     if (insert_divider && display_name == divider16) {
       // Insert divider.
       auto dictionary = std::make_unique<base::DictionaryValue>();
-      dictionary->SetString("code", kMostRelevantLanguagesDivider);
+      dictionary->SetStringKey("code", kMostRelevantLanguagesDivider);
       language_list->Append(std::move(dictionary));
       continue;
     }
@@ -393,34 +393,37 @@ void ResolveLanguageListInThreadPool(
 
 void AdjustUILanguageList(const std::string& selected,
                           base::ListValue* languages_list) {
-  for (size_t i = 0; i < languages_list->GetList().size(); ++i) {
-    base::DictionaryValue* language_info = NULL;
-    if (!languages_list->GetDictionary(i, &language_info))
+  for (size_t i = 0; i < languages_list->GetListDeprecated().size(); ++i) {
+    base::Value& language_info = languages_list->GetListDeprecated()[i];
+    if (!language_info.is_dict())
       NOTREACHED();
 
-    std::string value;
-    language_info->GetString("code", &value);
-    std::string display_name;
-    language_info->GetString("displayName", &display_name);
-    std::string native_name;
-    language_info->GetString("nativeDisplayName", &native_name);
+    std::string value = language_info.FindStringKey("code")
+                            ? *language_info.FindStringKey("code")
+                            : "";
+    std::string display_name = language_info.FindStringKey("displayName")
+                                   ? *language_info.FindStringKey("displayName")
+                                   : "";
+    std::string native_name =
+        language_info.FindStringKey("nativeDisplayName")
+            ? *language_info.FindStringKey("nativeDisplayName")
+            : "";
 
     // If it's an option group divider, add field name.
     if (value == kMostRelevantLanguagesDivider) {
-      language_info->SetString(
+      language_info.SetStringKey(
           "optionGroupName",
           l10n_util::GetStringUTF16(IDS_OOBE_OTHER_LANGUAGES));
     }
     if (display_name != native_name) {
-      display_name = base::StringPrintf("%s - %s",
-                                        display_name.c_str(),
+      display_name = base::StringPrintf("%s - %s", display_name.c_str(),
                                         native_name.c_str());
     }
 
-    language_info->SetString("value", value);
-    language_info->SetString("title", display_name);
+    language_info.SetStringKey("value", value);
+    language_info.SetStringKey("title", display_name);
     if (value == selected)
-      language_info->SetBoolean("selected", true);
+      language_info.SetBoolKey("selected", true);
   }
 }
 
@@ -480,7 +483,7 @@ std::string FindMostRelevantLocale(
     const base::ListValue& available_locales,
     const std::string& fallback_locale) {
   for (const auto& most_relevant : most_relevant_language_codes) {
-    for (const auto& entry : available_locales.GetList()) {
+    for (const auto& entry : available_locales.GetListDeprecated()) {
       const std::string* available_locale = nullptr;
       if (entry.is_dict())
         available_locale = entry.FindStringKey("value");

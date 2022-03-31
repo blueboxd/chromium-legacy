@@ -163,8 +163,6 @@ void WebEngineContentRendererClient::RenderFrameCreated(
 std::unique_ptr<blink::URLLoaderThrottleProvider>
 WebEngineContentRendererClient::CreateURLLoaderThrottleProvider(
     blink::URLLoaderThrottleProviderType type) {
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
-
   // TODO(crbug.com/976975): Add support for service workers.
   if (type == blink::URLLoaderThrottleProviderType::kWorker)
     return nullptr;
@@ -172,8 +170,9 @@ WebEngineContentRendererClient::CreateURLLoaderThrottleProvider(
   return std::make_unique<WebEngineURLLoaderThrottleProvider>(this);
 }
 
-void WebEngineContentRendererClient::AddSupportedKeySystems(
-    std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems) {
+void WebEngineContentRendererClient::GetSupportedKeySystems(
+    media::GetSupportedKeySystemsCB cb) {
+  media::KeySystemPropertiesVector key_systems;
   media::SupportedCodecs supported_video_codecs = 0;
   constexpr uint8_t kUnknownCodecLevel = 0;
   if (IsSupportedHardwareVideoCodec(media::VideoType{
@@ -209,7 +208,7 @@ void WebEngineContentRendererClient::AddSupportedKeySystems(
     // video codecs.
     // TODO(crbug.com/1013412): Replace these hardcoded values with a query to
     // the fuchsia.mediacodec FIDL service.
-    key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
+    key_systems.emplace_back(new cdm::WidevineKeySystemProperties(
         supported_codecs,    // codecs
         encryption_schemes,  // encryption schemes
         supported_codecs,    // hw secure codecs
@@ -227,9 +226,11 @@ void WebEngineContentRendererClient::AddSupportedKeySystems(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kPlayreadyKeySystem);
   if (!playready_key_system.empty()) {
-    key_systems->emplace_back(new PlayreadyKeySystemProperties(
+    key_systems.emplace_back(new PlayreadyKeySystemProperties(
         playready_key_system, supported_codecs));
   }
+
+  std::move(cb).Run(std::move(key_systems));
 }
 
 bool WebEngineContentRendererClient::IsSupportedVideoType(

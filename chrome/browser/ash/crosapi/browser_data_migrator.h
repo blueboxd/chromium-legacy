@@ -5,167 +5,24 @@
 #ifndef CHROME_BROWSER_ASH_CROSAPI_BROWSER_DATA_MIGRATOR_H_
 #define CHROME_BROWSER_ASH_CROSAPI_BROWSER_DATA_MIGRATOR_H_
 
-#include <atomic>
 #include <memory>
-#include <vector>
 
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
-#include "base/strings/string_piece.h"
-#include "base/synchronization/atomic_flag.h"
-#include "base/timer/elapsed_timer.h"
-#include "base/version.h"
+#include "chrome/browser/ash/crosapi/browser_data_migrator_util.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crosapi/migration_progress_tracker.h"
 #include "components/account_id/account_id.h"
-#include "components/prefs/pref_registry_simple.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefService;
+class PrefRegistrySimple;
 
 namespace ash {
-
-// User data directory name for lacros.
-constexpr char kLacrosDir[] = "lacros";
-
-// Profile data directory name for lacros.
-constexpr char kLacrosProfilePath[] = "Default";
-
-// The name of temporary directory that will store copies of files from the
-// original user data directory. At the end of the migration, it will be moved
-// to the appropriate destination.
-constexpr char kTmpDir[] = "browser_data_migrator";
-
-// The following are UMA names.
-constexpr char kFinalStatus[] = "Ash.BrowserDataMigrator.FinalStatus";
-constexpr char kCopiedDataSize[] = "Ash.BrowserDataMigrator.CopiedDataSizeMB";
-constexpr char kNoCopyDataSize[] = "Ash.BrowserDataMigrator.NoCopyDataSizeMB";
-constexpr char kAshDataSize[] = "Ash.BrowserDataMigrator.AshDataSizeMB";
-constexpr char kLacrosDataSize[] = "Ash.BrowserDataMigrator.LacrosDataSizeMB";
-constexpr char kCommonDataSize[] = "Ash.BrowserDataMigrator.CommonDataSizeMB";
-constexpr char kTotalTime[] = "Ash.BrowserDataMigrator.TotalTimeTakenMS";
-constexpr char kLacrosDataTime[] =
-    "Ash.BrowserDataMigrator.LacrosDataTimeTakenMS";
-constexpr char kCommonDataTime[] =
-    "Ash.BrowserDataMigrator.CommonDataTimeTakenMS";
-constexpr char kCreateDirectoryFail[] =
-    "Ash.BrowserDataMigrator.CreateDirectoryFailure";
-
-// The following UMAs are recorded from
-// `BrowserDataMigratorImpl::DryRunToCollectUMA()`.
-constexpr char kDryRunNoCopyDataSize[] =
-    "Ash.BrowserDataMigrator.DryRunNoCopyDataSizeMB";
-constexpr char kDryRunAshDataSize[] =
-    "Ash.BrowserDataMigrator.DryRunAshDataSizeMB";
-constexpr char kDryRunLacrosDataSize[] =
-    "Ash.BrowserDataMigrator.DryRunLacrosDataSizeMB";
-constexpr char kDryRunCommonDataSize[] =
-    "Ash.BrowserDataMigrator.DryRunCommonDataSizeMB";
-
-constexpr char kDryRunCopyMigrationHasEnoughDiskSpace[] =
-    "Ash.BrowserDataMigrator.DryRunHasEnoughDiskSpace.Copy";
-constexpr char kDryRunMoveMigrationHasEnoughDiskSpace[] =
-    "Ash.BrowserDataMigrator.DryRunHasEnoughDiskSpace.Move";
-constexpr char kDryRunDeleteAndCopyMigrationHasEnoughDiskSpace[] =
-    "Ash.BrowserDataMigrator.DryRunHasEnoughDiskSpace.DeleteAndCopy";
-constexpr char kDryRunDeleteAndMoveMigrationHasEnoughDiskSpace[] =
-    "Ash.BrowserDataMigrator.DryRunHasEnoughDiskSpace.DeleteAndMove";
-
-// The base names of files/dirs directly under the original profile
-// data directory that can be deleted if needed because they are temporary
-// storages.
-constexpr const char* const kDeletablePaths[] = {
-    kTmpDir,
-    "blob_storage",
-    "Cache",
-    "Code Cache",
-    "crash",
-    "data_reduction_proxy_leveldb",
-    "Download Service",
-    "GCache",
-    "heavy_ad_intervention_opt_out.db",
-    "Network Action Predictor",
-    "Network Persistent State",
-    "optimization_guide_hint_cache_store",
-    "previews_opt_out.db",
-    "Reporting and NEL",
-    "Site Characteristics Database",
-    "TransportSecurity"};
-
-// The base names of files/dirs that should remain in ash data
-// directory.
-constexpr const char* const kRemainInAshDataPaths[] = {
-    "AccountManagerTokens.bin",
-    "Accounts",
-    "app_ranker.pb",
-    "arc.apps",
-    "autobrightness",
-    "BudgetDatabase",
-    "crostini.icons",
-    "Downloads",
-    "extension_install_log",
-    "FullRestoreData",
-    "GCM Store",
-    "google-assistant-library",
-    "GPUCache",
-    "login-times",
-    "logout-times",
-    "MyFiles",
-    "NearbySharePublicCertificateDatabase",
-    "PPDCache",
-    "PreferredApps",
-    "PreferredApps",
-    "PrintJobDatabase",
-    "README",
-    "RLZ Data",
-    "smartcharging",
-    "structured_metrics",
-    "Translate Ranker Model",
-    "Trusted Vault",
-    "WebRTC Logs",
-    "webrtc_event_logs",
-    "zero_state_group_ranker.pb",
-    "zero_state_local_files.pb"};
-
-// The base names of files/dirs that are required for browsing and should be
-// moved to lacros data dir.
-constexpr const char* const kLacrosDataPaths[]{"AutofillStrikeDatabase",
-                                               "Bookmarks",
-                                               "Cookies",
-                                               "databases",
-                                               "DNR Extension Rules",
-                                               "Extension Cookies",
-                                               "Extension Rules",
-                                               "Extension State",
-                                               "Extensions",
-                                               "Favicons",
-                                               "File System",
-                                               "History",
-                                               "IndexedDB",
-                                               "Local App Settings",
-                                               "Local Extension Settings",
-                                               "Managed Extension Settings",
-                                               "QuotaManager",
-                                               "Service Worker",
-                                               "Session Storage",
-                                               "Sessions",
-                                               "Shortcuts",
-                                               "Sync App Settings",
-                                               "Top Sites",
-                                               "Visited Links",
-                                               "Web Applications",
-                                               "Web Data"};
-
-// The base names of files/dirs that are required by both ash and lacros and
-// thus should be copied to lacros while keeping the original files/dirs in ash
-// data dir.
-constexpr const char* const kCommonDataPaths[]{"Affiliation Database",
-                                               "Login Data",
-                                               "Platform Notifications",
-                                               "Policy",
-                                               "Preferences",
-                                               "shared_proto_db"};
 
 // Local state pref name, which is used to keep track of what step migration is
 // at. This ensures that ash does not get repeatedly for migration.
@@ -185,103 +42,59 @@ constexpr char kMigrationAttemptCountPref[] =
 // after
 constexpr int kMaxMigrationAttemptCount = 3;
 
-// CancelFlag
-class CancelFlag : public base::RefCountedThreadSafe<CancelFlag> {
- public:
-  CancelFlag();
-  CancelFlag(const CancelFlag&) = delete;
-  CancelFlag& operator=(const CancelFlag&) = delete;
-
-  void Set() { cancelled_ = true; }
-  bool IsSet() const { return cancelled_; }
-
- private:
-  friend base::RefCountedThreadSafe<CancelFlag>;
-
-  ~CancelFlag();
-  std::atomic_bool cancelled_;
-};
+// If enabled, use `MoveMigrator` instead of `CopyMigrator` to migrate data.
+// `MoveMigrator` moves data from ash to lacros instead of copying them.
+const base::Feature kLacrosMoveProfileMigration{
+    "LacrosMoveProfileMigration", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // The interface is exposed to be inherited by fakes in tests.
 class BrowserDataMigrator {
  public:
+  // Represents a kind of the result status.
+  enum class ResultKind {
+    kSkipped,
+    kSucceeded,
+    kFailed,
+    kCancelled,
+  };
+
+  // Represents a result status.
+  struct Result {
+    ResultKind kind;
+
+    // If the migration is failed (kind must be kFailed) due to
+    // out-of-diskspace, this field will be filled with the size of the disk
+    // in bytes where the user required to free up.
+    absl::optional<uint64_t> required_size;
+  };
+
+  // TODO(crbug.com/1296174): Currently, dependency around callback is not
+  // clean enough. Clean it up.
+  using MigrateCallback = base::OnceCallback<void(Result)>;
+
   virtual ~BrowserDataMigrator() = default;
+
   // Carries out the migration. It needs to be called on UI thread.
-  virtual void Migrate() = 0;
-  // Cancels the migration.
+  // |callback| will be called on the end of the migration procedure.
+  virtual void Migrate(MigrateCallback callback) = 0;
+
+  // Cancels the migration. This should be called on UI thread.
+  // If this is called during the migration, it is expected that |callback|
+  // passed to Migrate() will be called with kCancelled *in most cases*.
+  // Note that, there's timing issue, so the migration may be completed
+  // just before the notification to cancel, and in the case |callback|
+  // may be called with other ResultKind.
   virtual void Cancel() = 0;
 };
 
 // BrowserDataMigratorImpl is responsible for one time browser data migration
-// from ash-chrome to lacros-chrome.
+// from ash-chrome to lacros-chrome. It is responsible for coordination the
+// overrall flow of the migration from checking whether migration is required to
+// marking migration as completed. The actual task of migration (i.e. setting up
+// the profile directories for ash and lacros) is delegated to
+// `MigratorDelegate`.
 class BrowserDataMigratorImpl : public BrowserDataMigrator {
  public:
-  // Used to describe a file/dir that has to be migrated.
-  struct TargetItem {
-    enum class ItemType { kFile, kDirectory };
-    TargetItem(base::FilePath path, int64_t size, ItemType item_type);
-    ~TargetItem() = default;
-    bool operator==(const TargetItem& rhs) const;
-
-    base::FilePath path;
-    // The size of the TargetItem. If TargetItem is a directory, it is the sum
-    // of all files under the directory.
-    int64_t size;
-    bool is_directory;
-  };
-
-  // Used to describe what files/dirs have to be migrated to the new location
-  // and the total byte size of those files.
-  struct TargetInfo {
-    TargetInfo();
-    ~TargetInfo();
-    TargetInfo(TargetInfo&&);
-
-    // Items that should stay in ash data dir.
-    std::vector<TargetItem> remain_in_ash_items;
-    // Items that should be moved to lacros data dir.
-    std::vector<TargetItem> lacros_data_items;
-    // Items that will be duplicated in both ash and lacros data dir.
-    std::vector<TargetItem> common_data_items;
-    // Items that can be deleted from both ash and lacros data dir.
-    std::vector<TargetItem> deletable_items;
-    // The total size of `remain_in_ash_items`.
-    int64_t remain_in_ash_data_size;
-    // The total size of items that can be deleted during the migration.
-    int64_t deletable_data_size;
-    // The total size of `lacros_data_items`.
-    int64_t lacros_data_size;
-    // The total size of `common_data_items`.
-    int64_t common_data_size;
-    // The size of data that are duplicated. Equivalent to the extra space
-    // needed for the migration. Currently this is equal to `lacros_data_size +
-    // common_data_size` since we are copying lacros data rather than moving
-    // them.
-    int64_t TotalCopySize() const;
-    // The total size of the profile data directory. It is the sum of ash,
-    // no_copy, lacros and common sizes.
-    int64_t TotalDirSize() const;
-  };
-
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  //
-  // This enum corresponds to BrowserDataMigratorFinalStatus in hisograms.xml
-  // and enums.xml.
-  enum class FinalStatus {
-    kSkipped = 0,  // No longer in use.
-    kSuccess = 1,
-    kGetPathFailed = 2,
-    kDeleteTmpDirFailed = 3,
-    kNotEnoughSpace = 4,
-    kCopyFailed = 5,
-    kMoveFailed = 6,
-    kDataWipeFailed = 7,
-    kSizeLimitExceeded = 8,  // No longer in use.
-    kCancelled = 9,
-    kMaxValue = kCancelled
-  };
-
   // The value for `kMigrationStep`.
   enum class MigrationStep {
     kCheckStep = 0,      // Migration check should run.
@@ -290,14 +103,15 @@ class BrowserDataMigratorImpl : public BrowserDataMigrator {
     kEnded = 3  // Migration ended. It was either skipped, failed or succeeded.
   };
 
-  enum class ResultValue { kSkipped, kSucceeded, kFailed, kCancelled };
+  enum class DataWipeResult { kSkipped, kSucceeded, kFailed };
 
+  // TODO(ythjkt): Move this struct to browser_data_migrator_util.h.
   // Return value of `MigrateInternal()`.
   struct MigrationResult {
     // Describes the end result of user data wipe.
-    ResultValue data_wipe;
+    DataWipeResult data_wipe_result;
     // Describes the end result of data migration.
-    ResultValue data_migration;
+    Result data_migration_result;
   };
 
   // Specifies the mode of migration.
@@ -311,6 +125,15 @@ class BrowserDataMigratorImpl : public BrowserDataMigrator {
                          // TargetInfo::no_copy_items to make extra space.
   };
 
+  // Delegate interface which is responsible for the actual task of setting up
+  // the profile directories for ash and lacros. The class should call
+  // `MigrateInternalFinishedUIThread()` once migration is completed.
+  class MigratorDelegate {
+   public:
+    virtual ~MigratorDelegate() = default;
+    virtual void Migrate() = 0;
+  };
+
   // `BrowserDataMigratorImpl` migrates browser data from `original_profile_dir`
   // to a new profile location for lacros chrome. `progress_callback` is called
   // to update the progress bar on the screen. `completion_callback` passed as
@@ -319,7 +142,6 @@ class BrowserDataMigratorImpl : public BrowserDataMigrator {
   BrowserDataMigratorImpl(const base::FilePath& original_profile_dir,
                           const std::string& user_id_hash,
                           const ProgressCallback& progress_callback,
-                          base::OnceClosure completion_callback,
                           PrefService* local_state);
   BrowserDataMigratorImpl(const BrowserDataMigratorImpl&) = delete;
   BrowserDataMigratorImpl& operator=(const BrowserDataMigratorImpl&) = delete;
@@ -336,7 +158,7 @@ class BrowserDataMigratorImpl : public BrowserDataMigrator {
       crosapi::browser_util::PolicyInitState policy_init_state);
 
   // `BrowserDataMigrator` methods.
-  void Migrate() override;
+  void Migrate(MigrateCallback callback) override;
   void Cancel() override;
 
   // Registers boolean pref `kCheckForMigrationOnRestart` with default as false.
@@ -345,23 +167,15 @@ class BrowserDataMigratorImpl : public BrowserDataMigrator {
   // Clears the value of `kMigrationStep` in Local State.
   static void ClearMigrationStep(PrefService* local_state);
 
-  ResultValue GetFinalStatus();
-
-  // Collects migration specific UMAs without actually running the migration. It
-  // does not check if lacros is enabled.
-  static void DryRunToCollectUMA(const base::FilePath& profile_data_dir);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorImplTest,
                            ManipulateMigrationAttemptCount);
-  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorImplTest, GetTargetInfo);
-  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorImplTest, CopyDirectory);
-  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorImplTest, SetupTmpDir);
-  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorImplTest, CancelSetupTmpDir);
-  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorImplTest, RecordStatus);
-  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorImplTest, MigrateInternal);
   FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorImplTest, Migrate);
   FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorImplTest, MigrateCancelled);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorImplTest,
+                           MigrateOutOfDiskForCopy);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorImplTest,
+                           MigrateOutOfDiskForMove);
 
   // Sets the value of `kMigrationStep` in Local State.
   static void SetMigrationStep(PrefService* local_state, MigrationStep step);
@@ -387,14 +201,6 @@ class BrowserDataMigratorImpl : public BrowserDataMigrator {
       PrefService* local_state,
       const std::string& user_id_hash);
 
-  // Handles the migration on a worker thread. Returns the end status of data
-  // wipe and migration. `progress_callback` gets posted on UI thread whenever
-  // an update to the UI is required
-  static MigrationResult MigrateInternal(
-      const base::FilePath& original_user_dir,
-      std::unique_ptr<MigrationProgressTracker> progress_tracker,
-      scoped_refptr<CancelFlag> cancel_flag);
-
   // Called from `MaybeRestartToMigrate()` to proceed with restarting to start
   // the migration. It returns true if D-Bus call was successful.
   static bool RestartToMigrate(const AccountId& account_id,
@@ -402,55 +208,6 @@ class BrowserDataMigratorImpl : public BrowserDataMigrator {
 
   // Called on UI thread once migration is finished.
   void MigrateInternalFinishedUIThread(MigrationResult result);
-
-  // Records to UMA histograms. Note that if `target_info` is nullptr, timer
-  // will be ignored.
-  static void RecordStatus(const FinalStatus& final_status,
-                           const TargetInfo* target_info = nullptr,
-                           const base::ElapsedTimer* timer = nullptr);
-
-  // Create `TargetInfo` from `original_user_dir`. `TargetInfo` will include
-  // paths of files/dirs that needs to be migrated.
-  static TargetInfo GetTargetInfo(const base::FilePath& original_user_dir);
-
-  // Compares space available for `to_dir` against total byte size that
-  // needs to be copied.
-  static bool HasEnoughDiskSpace(const TargetInfo& target_info,
-                                 const base::FilePath& original_user_dir,
-                                 Mode mode);
-
-  // Set up the temporary directory `tmp_dir` by copying items into it.
-  static bool SetupTmpDir(const TargetInfo& target_info,
-                          const base::FilePath& from_dir,
-                          const base::FilePath& tmp_dir,
-                          CancelFlag* cancel_flag,
-                          MigrationProgressTracker* progress_tracker);
-
-  // Copies `items` to `to_dir`. `items_size` and `category_name` are used for
-  // logging.
-  static bool CopyTargetItems(const base::FilePath& to_dir,
-                              const std::vector<TargetItem>& items,
-                              CancelFlag* cancel_flag,
-                              int64_t items_size,
-                              base::StringPiece category_name,
-                              MigrationProgressTracker* progress_tracker);
-
-  // Copies `item` to location pointed by `dest`. Returns true on success and
-  // false on failure.
-  static bool CopyTargetItem(const BrowserDataMigratorImpl::TargetItem& item,
-                             const base::FilePath& dest,
-                             CancelFlag* cancel_flag,
-                             MigrationProgressTracker* progress_tracker);
-
-  // Copies the contents of `from_path` to `to_path` recursively. Unlike
-  // `base::CopyDirectory()` it skips symlinks.
-  static bool CopyDirectory(const base::FilePath& from_path,
-                            const base::FilePath& to_path,
-                            CancelFlag* cancel_flag,
-                            MigrationProgressTracker* progress_tracker);
-
-  // Records the sizes of `TargetItem`s.
-  static void RecordTargetItemSizes(const std::vector<TargetItem>& items);
 
   // Path to the original profile data directory, which is directly under the
   // user data directory.
@@ -461,14 +218,13 @@ class BrowserDataMigratorImpl : public BrowserDataMigrator {
   std::unique_ptr<MigrationProgressTracker> progress_tracker_;
   // Callback to be called once migration is done. It is called regardless of
   // whether migration succeeded or not.
-  base::OnceClosure completion_callback_;
+  MigrateCallback completion_callback_;
   // `cancel_flag_` gets set by `Cancel()` and tasks posted to worker threads
   // can check if migration is cancelled or not.
-  scoped_refptr<CancelFlag> cancel_flag_;
+  scoped_refptr<browser_data_migrator_util::CancelFlag> cancel_flag_;
   // Local state prefs, not owned.
   PrefService* local_state_ = nullptr;
-  // Final status of the migration.
-  ResultValue final_status_;
+  std::unique_ptr<MigratorDelegate> migrator_delegate_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

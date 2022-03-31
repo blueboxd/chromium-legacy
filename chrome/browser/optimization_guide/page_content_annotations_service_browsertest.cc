@@ -142,6 +142,25 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceDisabledBrowserTest,
                          browser()->profile()));
 }
 
+class PageContentAnnotationsServiceValidationBrowserTest
+    : public InProcessBrowserTest {
+ public:
+  PageContentAnnotationsServiceValidationBrowserTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {features::kOptimizationHints, features::kBatchAnnotationsValidation},
+        {features::kPageContentAnnotations});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceValidationBrowserTest,
+                       ValidationEnablesService) {
+  EXPECT_NE(nullptr, PageContentAnnotationsServiceFactory::GetForProfile(
+                         browser()->profile()));
+}
+
 class PageContentAnnotationsServiceBrowserTest : public InProcessBrowserTest {
  public:
   PageContentAnnotationsServiceBrowserTest() {
@@ -150,7 +169,8 @@ class PageContentAnnotationsServiceBrowserTest : public InProcessBrowserTest {
          {features::kPageContentAnnotations,
           {
               {"write_to_history_service", "true"},
-          }}},
+          }},
+         {features::kPageVisibilityPageContentAnnotations, {}}},
         /*disabled_features=*/{});
   }
   ~PageContentAnnotationsServiceBrowserTest() override = default;
@@ -452,7 +472,8 @@ class PageContentAnnotationsServiceNoHistoryTest
          {features::kPageContentAnnotations,
           {
               {"write_to_history_service", "false"},
-          }}},
+          }},
+         {features::kPageVisibilityPageContentAnnotations, {}}},
         /*disabled_features=*/{});
   }
   ~PageContentAnnotationsServiceNoHistoryTest() override = default;
@@ -534,7 +555,8 @@ class PageContentAnnotationsServiceBatchVisitTest
               {"write_to_history_service", "false"},
               {"annotate_visit_batch_size", "2"},
               {"annotate_title_instead_of_page_content", "true"},
-          }}},
+          }},
+         {features::kPageVisibilityPageContentAnnotations, {}}},
         /*disabled_features=*/{});
   }
   ~PageContentAnnotationsServiceBatchVisitTest() override = default;
@@ -594,7 +616,8 @@ class PageContentAnnotationsServiceBatchVisitNoAnnotateTest
               {"write_to_history_service", "false"},
               {"annotate_visit_batch_size", "2"},
               {"annotate_title_instead_of_page_content", "true"},
-          }}},
+          }},
+         {features::kPageVisibilityPageContentAnnotations, {}}},
         /*disabled_features=*/{});
   }
   ~PageContentAnnotationsServiceBatchVisitNoAnnotateTest() override = default;
@@ -610,8 +633,14 @@ class PageContentAnnotationsServiceBatchVisitNoAnnotateTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+// TODO(crbug/1291486): Disabled due to flakiness on Mac and Windows.
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#define MAYBE_QueueFullAndVisitBatchActive DISABLED_QueueFullAndVisitBatchActive
+#else
+#define MAYBE_QueueFullAndVisitBatchActive QueueFullAndVisitBatchActive
+#endif
 IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBatchVisitNoAnnotateTest,
-                       QueueFullAndVisitBatchActive) {
+                       MAYBE_QueueFullAndVisitBatchActive) {
   base::HistogramTester histogram_tester;
   HistoryVisit history_visit(base::Time::Now(),
                              GURL("https://probablynotarealurl.com/"), 0);
@@ -680,7 +709,8 @@ class PageContentAnnotationsServiceModelNotLoadedOnStartupTest
   PageContentAnnotationsServiceModelNotLoadedOnStartupTest() {
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/{features::kOptimizationHints,
-                              features::kPageContentAnnotations},
+                              features::kPageContentAnnotations,
+                              features::kPageVisibilityPageContentAnnotations},
         /*disabled_features=*/{});
     set_load_model_on_startup(false);
   }

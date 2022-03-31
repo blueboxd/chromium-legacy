@@ -49,6 +49,8 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
     kNone,
     // Add an extra render pass only if readback is needed.
     kAddPassForReadback,
+    // Always add an extra pass. Useful for debugging.
+    kAlwaysAddPass,
   };
 
   // Interface that can modify the aggregated CompositorFrame to annotate it.
@@ -212,10 +214,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   //    render pass to be walked.
   //  - |render_pass_map| is a map that contains all render passes and their
   //    entry data.
-  //  - |will_draw| indicates that the surface can be aggregated into the final
-  //    frame and might be drawn (based on damage/occlusion/etc.) if it is set
-  //    to true. Or the surface isn't in the aggregated frame and is only
-  //    needed for CopyOutputRequests if set to false.
   //  - |damage_from_parent| is the damage rect passed along from parent or
   //    a chain of ancestor render passes, transformed into the local space of
   //    the current render pass. This happens when the root render
@@ -234,7 +232,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   //    render pass.
   gfx::Rect PrewalkRenderPass(ResolvedFrameData& resolved_frame,
                               ResolvedPassData& resolved_pass,
-                              bool will_draw,
                               const gfx::Rect& damage_from_parent,
                               const gfx::Transform& target_to_root_transform,
                               const ResolvedPassData* parent_pass,
@@ -245,7 +242,6 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // and return the combined damage rect.
   gfx::Rect PrewalkSurface(ResolvedFrameData& resolved_frame,
                            ResolvedPassData* parent_pass,
-                           bool will_draw,
                            const gfx::Rect& damage_from_parent,
                            PrewalkResult& result);
 
@@ -301,14 +297,15 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
       const gfx::Rect& default_damage_rect,
       const gfx::Transform& parent_target_transform,
       const absl::optional<gfx::Rect>& dest_root_target_clip_rect,
-      AggregatedRenderPass* dest_pass,
+      const gfx::Transform& dest_transform_to_root_target,
       const ResolvedFrameData* resolved_frame);
 
   void AddRenderPassFilterDamageToDamageList(
+      const ResolvedFrameData& resolved_frame,
+      const CompositorRenderPassDrawQuad* render_pass_quad,
       const gfx::Transform& parent_target_transform,
       const absl::optional<gfx::Rect>& dest_root_target_clip_rect,
-      const CompositorRenderPass* source_pass,
-      AggregatedRenderPass* dest_pass);
+      const gfx::Transform& dest_transform_to_root_target);
 
   // Determine the overlay damage and location in the surface damage list.
   const DrawQuad* FindQuadWithOverlayDamage(

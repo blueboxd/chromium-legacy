@@ -114,7 +114,7 @@ class OzonePlatformScenic : public OzonePlatform,
       auto view_tokens = scenic::ViewTokenPair::New();
       properties.view_token = std::move(view_tokens.view_token);
       properties.view_ref_pair = scenic::ViewRefPair::New();
-      ::ui::fuchsia::GetScenicViewPresenter().Run(
+      properties.view_controller = ::ui::fuchsia::GetScenicViewPresenter().Run(
           std::move(view_tokens.view_holder_token),
           CloneViewRef(properties.view_ref_pair.view_ref));
     }
@@ -199,6 +199,17 @@ class OzonePlatformScenic : public OzonePlatform,
     }
 
     overlay_manager_ = std::make_unique<OverlayManagerScenic>();
+  }
+
+  const PlatformRuntimeProperties& GetPlatformRuntimeProperties() override {
+    static OzonePlatform::PlatformRuntimeProperties properties;
+
+    // This property is set when the GetPlatformRuntimeProperties is
+    // called on the gpu process side.
+    if (has_initialized_gpu())
+      properties.supports_native_pixmaps = true;
+
+    return properties;
   }
 
   void AddInterfaces(mojo::BinderMap* binders) override {

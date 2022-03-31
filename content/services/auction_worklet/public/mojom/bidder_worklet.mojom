@@ -123,6 +123,24 @@ interface BidderWorklet {
   // `bid` If the worklet is successfully loaded and chooses to bid in the
   //  auction, contains information about the bid. Null otherwise.
   //
+  // `debug_loss_report_url` The URL to request if the auction runs to
+  // completion and this bid does not win. All bidders are allowed to send loss
+  // report, including those who does not bid. This field has the debug prefix
+  // because it's part of an interim reporting API that will be replaced with
+  // standardized reporting APIs once available. It must be a valid HTTPS URL.
+  //
+  // `bidding_signals_data_version` The value of the Data-Version header served
+  //  with the trusted bidding signals.
+  //
+  // `has_bidding_signals_data_version` True to indicate Data-Version header
+  //  was present in the HTTP response for the trusted bidding signals.
+  //  TODO(https://crbug.com/657632): Update when optional integers supported.
+  //
+  // `debug_win_report_url` The URL to request if the auction runs to completion
+  // and this bid wins. This field has the debug prefix because it's part of an
+  // interim reporting API that will be replaced with standardized reporting
+  // APIs once available. It must be a valid HTTPS URL.
+  //
   // `errors` The various error messages to be used for debugging. These are too
   //  sensitive for the renderer to see. There may be errors even when a bid
   //  is offered, and there may be no errors when there's no bid. Includes
@@ -135,6 +153,10 @@ interface BidderWorklet {
       BiddingBrowserSignals bidding_browser_signals,
       mojo_base.mojom.Time auction_start_time) => (
           BidderWorkletBid? bid,
+          uint32 bidding_signals_data_version,
+          bool has_bidding_signals_data_version,
+          url.mojom.Url? debug_loss_report_url,
+          url.mojom.Url? debug_win_report_url,
           array<string> errors);
 
   // Sends pending bidding signals URL requests, if any. Unlike with
@@ -174,6 +196,13 @@ interface BidderWorklet {
   // `browser_signal_seller_origin` The origin of the seller script running
   //  the auction. Typically a valid, non-opaque HTTPS origin.
   //
+  // `bidding_signals_data_version` The value of the Data-Version header served
+  //  with the trusted bidding signals.
+  //
+  // `has_bidding_signals_data_version` True to indicate Data-Version header
+  //  was present in the HTTP response for the trusted bidding signals.
+  //  TODO(https://crbug.com/657632): Update when optional integers supported.
+  //
   // Returns:
   // `report_url` is the URL to request to report the result of the auction
   //  to the bidder. It will be null if no reports are requested, or the
@@ -190,10 +219,13 @@ interface BidderWorklet {
             string seller_signals_json,
             url.mojom.Url browser_signal_render_url,
             double browser_signal_bid,
-            url.mojom.Origin browser_signal_seller_origin) => (
+            url.mojom.Origin browser_signal_seller_origin,
+            uint32 bidding_signals_data_version,
+            bool has_bidding_signals_data_version) => (
                 url.mojom.Url? report_url,
                 array<string> errors);
 
   // Establishes a debugger connection to the worklet.
-  ConnectDevToolsAgent(pending_receiver<blink.mojom.DevToolsAgent> agent);
+  ConnectDevToolsAgent(
+      pending_associated_receiver<blink.mojom.DevToolsAgent> agent);
 };

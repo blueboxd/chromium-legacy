@@ -56,6 +56,7 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
+#include "chrome/browser/ui/views/location_bar/intent_chip_button.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_layout.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/permission_quiet_chip.h"
@@ -272,6 +273,11 @@ void LocationBarView::Init() {
   selected_keyword_view_ = AddChildView(std::make_unique<SelectedKeywordView>(
       this, TemplateURLServiceFactory::GetForProfile(profile_), font_list));
 
+  if (base::FeatureList::IsEnabled(features::kLinkCapturingUiUpdate)) {
+    intent_chip_ =
+        AddChildView(std::make_unique<IntentChipButton>(browser_, this));
+  }
+
   SkColor icon_color = GetColor(OmniboxPart::RESULTS_ICON);
 
   std::vector<std::unique_ptr<ContentSettingImageModel>> models =
@@ -301,7 +307,8 @@ void LocationBarView::Init() {
             autofill::features::kAutofillEnableToolbarStatusChip)) {
       params.types_enabled.push_back(PageActionIconType::kManagePasswords);
     }
-    params.types_enabled.push_back(PageActionIconType::kIntentPicker);
+    if (!base::FeatureList::IsEnabled(features::kLinkCapturingUiUpdate))
+      params.types_enabled.push_back(PageActionIconType::kIntentPicker);
     params.types_enabled.push_back(PageActionIconType::kPwaInstall);
     params.types_enabled.push_back(PageActionIconType::kFind);
     params.types_enabled.push_back(PageActionIconType::kTranslate);
@@ -326,6 +333,8 @@ void LocationBarView::Init() {
     params.types_enabled.push_back(PageActionIconType::kLocalCardMigration);
     params.types_enabled.push_back(
         PageActionIconType::kVirtualCardManualFallback);
+    params.types_enabled.push_back(PageActionIconType::kVirtualCardEnroll);
+
     if (base::FeatureList::IsEnabled(
             autofill::features::kAutofillAddressProfileSavePrompt)) {
       // TODO(crbug.com/1167060): Place this in the proper order upon having
@@ -335,9 +344,7 @@ void LocationBarView::Init() {
   }
   if (browser_) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    if (base::FeatureList::IsEnabled(features::kChromeOSSharingHub)) {
-      params.types_enabled.push_back(PageActionIconType::kSharingHub);
-    }
+    params.types_enabled.push_back(PageActionIconType::kSharingHub);
 #else
     if (sharing_hub::SharingHubOmniboxEnabled(profile_) && !is_popup_mode_)
       params.types_enabled.push_back(PageActionIconType::kSharingHub);
@@ -659,6 +666,10 @@ void LocationBarView::Layout() {
   for (ContentSettingImageView* view : base::Reversed(content_setting_views_)) {
     add_trailing_decoration(view);
   }
+
+  if (intent_chip_)
+    add_trailing_decoration(intent_chip_);
+
   add_trailing_decoration(clear_all_button_);
 
   // Perform layout.
@@ -778,6 +789,8 @@ void LocationBarView::Update(WebContents* contents) {
 
   RefreshPageActionIconViews();
   location_icon_view_->Update(/*suppress_animations=*/contents);
+  if (intent_chip_)
+    intent_chip_->Update();
 
   if (contents)
     omnibox_view_->OnTabChanged(contents);

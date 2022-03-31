@@ -21,11 +21,11 @@
 #include "base/allocator/partition_allocator/partition_freelist_entry.h"
 #include "base/allocator/partition_allocator/reservation_offset_table.h"
 #include "base/allocator/partition_allocator/starscan/state_bitmap.h"
+#include "base/allocator/partition_allocator/tagging.h"
 #include "base/base_export.h"
 #include "base/bits.h"
 #include "base/compiler_specific.h"
 #include "base/dcheck_is_on.h"
-#include "base/memory/tagging.h"
 #include "base/thread_annotations.h"
 #include "build/build_config.h"
 
@@ -33,8 +33,7 @@
 #include "base/allocator/partition_allocator/partition_ref_count.h"
 #endif
 
-namespace base {
-namespace internal {
+namespace partition_alloc::internal {
 
 // An "extent" is a span of consecutive superpages. We link the partition's next
 // extent (if there is one) to the very start of a superpage's metadata area.
@@ -84,7 +83,7 @@ SuperPagesEndFromExtent(PartitionSuperPageExtentEntry<thread_safe>* extent) {
          (extent->number_of_consecutive_super_pages * kSuperPageSize);
 }
 
-using AllocationStateMap =
+using AllocationStateMap = ::base::internal::
     StateBitmap<kSuperPageSize, kSuperPageAlignment, kAlignment>;
 
 // Metadata of the slot span.
@@ -195,8 +194,11 @@ struct __attribute__((packed)) SlotSpanMetadata {
   // sanitize this input.
   ALWAYS_INLINE static uintptr_t ToSlotSpanStart(
       const SlotSpanMetadata* slot_span);
+  ALWAYS_INLINE static SlotSpanMetadata* FromAddr(uintptr_t address);
   ALWAYS_INLINE static SlotSpanMetadata* FromSlotStart(uintptr_t slot_start);
-  ALWAYS_INLINE static SlotSpanMetadata* FromSlotInnerPtr(void* ptr);
+  ALWAYS_INLINE static SlotSpanMetadata* FromObject(void* object);
+  ALWAYS_INLINE static SlotSpanMetadata* FromObjectInnerAddr(uintptr_t address);
+  ALWAYS_INLINE static SlotSpanMetadata* FromObjectInnerPtr(void* ptr);
 
   ALWAYS_INLINE PartitionSuperPageExtentEntry<thread_safe>* ToSuperPageExtent()
       const;
@@ -355,7 +357,7 @@ struct __attribute__((packed)) PartitionPage {
   bool has_valid_span_after_this : 1;
   uint8_t unused;
 
-  ALWAYS_INLINE static PartitionPage* FromPtr(void* slot_start);
+  ALWAYS_INLINE static PartitionPage* FromAddr(uintptr_t address);
 };
 
 static_assert(sizeof(PartitionPage<ThreadSafe>) == kPageMetadataSize,
@@ -394,14 +396,14 @@ PartitionSuperPageToExtent(uintptr_t super_page) {
 // size is a multiple of partition page size.
 PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
 ReservedStateBitmapSize() {
-  return bits::AlignUp(sizeof(AllocationStateMap), PartitionPageSize());
+  return base::bits::AlignUp(sizeof(AllocationStateMap), PartitionPageSize());
 }
 
 // Size that should be committed for state bitmap (if present) inside a super
 // page. It is a multiple of system page size.
 PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
 CommittedStateBitmapSize() {
-  return bits::AlignUp(sizeof(AllocationStateMap), SystemPageSize());
+  return base::bits::AlignUp(sizeof(AllocationStateMap), SystemPageSize());
 }
 
 // Returns the address/pointer to the state bitmap in the super page. It's the
@@ -452,53 +454,55 @@ ALWAYS_INLINE void PartitionSuperPageExtentEntry<
   --number_of_nonempty_slot_spans;
 }
 
-// Returns whether the pointer lies within a normal-bucket super page's payload
-// area (i.e. area devoted to slot spans). It doesn't check whether it's within
-// a valid slot span. It merely ensures it doesn't fall in a meta-data region
-// that would surely never contain user data.
+template <bool thread_safe>
+ALWAYS_INLINE PartitionSuperPageExtentEntry<thread_safe>*
+SlotSpanMetadata<thread_safe>::ToSuperPageExtent() const {
+  uintptr_t super_page = reinterpret_cast<uintptr_t>(this) & kSuperPageBaseMask;
+  return PartitionSuperPageToExtent<thread_safe>(super_page);
+}
+
+// Returns whether the pointer lies within the super page's payload area (i.e.
+// area devoted to slot spans). It doesn't check whether it's within a valid
+// slot span. It merely ensures it doesn't fall in a meta-data region that would
+// surely never contain user data.
 ALWAYS_INLINE bool IsWithinSuperPagePayload(uintptr_t address,
                                             bool with_quarantine) {
-  address = memory::UnmaskPtr(address);
-  PA_DCHECK(IsManagedByNormalBuckets(address));
+  address = ::partition_alloc::internal::UnmaskPtr(address);
+  // Quarantine can only be enabled for normal buckets in the current code.
+  PA_DCHECK(!with_quarantine || IsManagedByNormalBuckets(address));
   uintptr_t super_page = address & kSuperPageBaseMask;
   uintptr_t payload_start = SuperPagePayloadBegin(super_page, with_quarantine);
   uintptr_t payload_end = SuperPagePayloadEnd(super_page);
   return address >= payload_start && address < payload_end;
 }
 
-// Converts from a pointer inside a super page into a pointer to the
+// Converts from an address inside a super page into a pointer to the
 // PartitionPage object (within super pages's metadata) that describes the
-// partition page where |ptr| is located. |ptr| doesn't have to be located
-// within a valid (i.e. allocated) slot span, but must be within the super
-// page's payload area (i.e. area devoted to slot spans).
+// partition page where |address| is located. |address| doesn't have to be
+// located within a valid (i.e. allocated) slot span, but must be within the
+// super page's payload area (i.e. area devoted to slot spans).
 //
 // While it is generally valid for |ptr| to be in the middle of an allocation,
 // care has to be taken with direct maps that span multiple super pages. This
 // function's behavior is undefined if |ptr| lies in a subsequent super page.
-//
-// TODO(bartekn): Consider void* -> uintptr_t, Ptr -> Addr
 template <bool thread_safe>
-ALWAYS_INLINE PartitionPage<thread_safe>* PartitionPage<thread_safe>::FromPtr(
-    void* ptr) {
-  uintptr_t address = reinterpret_cast<uintptr_t>(ptr);
+ALWAYS_INLINE PartitionPage<thread_safe>* PartitionPage<thread_safe>::FromAddr(
+    uintptr_t address) {
   uintptr_t super_page = address & kSuperPageBaseMask;
 
 #if DCHECK_IS_ON()
   PA_DCHECK(IsReservationStart(super_page));
-  if (IsManagedByNormalBuckets(address)) {
-    auto* extent = PartitionSuperPageToExtent<thread_safe>(super_page);
-    PA_DCHECK(
-        IsWithinSuperPagePayload(address, extent->root->IsQuarantineAllowed()));
-  } else {
-    PA_CHECK(address >= super_page + PartitionPageSize());
-  }
+  auto* extent = PartitionSuperPageToExtent<thread_safe>(super_page);
+  PA_DCHECK(IsWithinSuperPagePayload(address,
+                                     IsManagedByNormalBuckets(address) &&
+                                         extent->root->IsQuarantineAllowed()));
 #endif
 
   uintptr_t partition_page_index =
       (address & kSuperPageOffsetMask) >> PartitionPageShift();
   // Index 0 is invalid because it is the super page extent metadata and the
   // last index is invalid because the whole PartitionPage is set as guard
-  // pages. This repeats part of the payload PA_DCHECK above, which may check
+  // pages. This repeats part of the payload PA_DCHECK above, which also checks
   // for other exclusions.
   PA_DCHECK(partition_page_index);
   PA_DCHECK(partition_page_index < NumPartitionPagesPerSuperPage() - 1);
@@ -533,55 +537,101 @@ ALWAYS_INLINE uintptr_t SlotSpanMetadata<thread_safe>::ToSlotSpanStart(
   return super_page_base + (partition_page_index << PartitionPageShift());
 }
 
-// Converts from a pointer inside a slot into a pointer to the SlotSpanMetadata
+// Converts an address inside a slot span into a pointer to the SlotSpanMetadata
 // object (within super pages's metadata) that describes the slot span
 // containing that slot.
 //
-// CAUTION! For direct-mapped allocation, |ptr| has to be within the first
+// CAUTION! For direct-mapped allocation, |address| has to be within the first
 // partition page.
-//
-// TODO(bartekn): Consider void* -> uintptr_t, Ptr -> Addr
 template <bool thread_safe>
 ALWAYS_INLINE SlotSpanMetadata<thread_safe>*
-SlotSpanMetadata<thread_safe>::FromSlotInnerPtr(void* ptr) {
-  ptr = memory::UnmaskPtr(ptr);
-  auto* page = PartitionPage<thread_safe>::FromPtr(ptr);
+SlotSpanMetadata<thread_safe>::FromAddr(uintptr_t address) {
+  address = ::partition_alloc::internal::UnmaskPtr(address);
+  auto* page = PartitionPage<thread_safe>::FromAddr(address);
   PA_DCHECK(page->is_valid);
-  // Partition pages in the same slot span share the same slot span metadata
+  // Partition pages in the same slot span share the same SlotSpanMetadata
   // object (located in the first PartitionPage object of that span). Adjust
   // for that.
   page -= page->slot_span_metadata_offset;
   PA_DCHECK(page->is_valid);
   PA_DCHECK(!page->slot_span_metadata_offset);
   auto* slot_span = &page->slot_span_metadata;
-  // For direct map, if |ptr| doesn't point within the first partition page,
+  // TODO(crbug.com/1257655): See if we can afford to make this a CHECK.
+  PA_DCHECK(PartitionRoot<thread_safe>::IsValidSlotSpan(slot_span));
+  // For direct map, if |address| doesn't point within the first partition page,
   // |slot_span_metadata_offset| will be 0, |page| won't get shifted, leaving
   // |slot_size| at 0.
   PA_DCHECK(slot_span->bucket->slot_size);
   return slot_span;
 }
 
-template <bool thread_safe>
-ALWAYS_INLINE PartitionSuperPageExtentEntry<thread_safe>*
-SlotSpanMetadata<thread_safe>::ToSuperPageExtent() const {
-  uintptr_t super_page = reinterpret_cast<uintptr_t>(this) & kSuperPageBaseMask;
-  return PartitionSuperPageToExtent<thread_safe>(super_page);
-}
-
-// Like |FromSlotInnerPtr|, but asserts that pointer points to the beginning of
-// the slot. This works on direct maps too.
+// Like |FromAddr|, but asserts that |slot_start| indeed points to the
+// beginning of a slot. It doesn't check if the slot is actually allocated.
+//
+// This works on direct maps too.
 template <bool thread_safe>
 ALWAYS_INLINE SlotSpanMetadata<thread_safe>*
 SlotSpanMetadata<thread_safe>::FromSlotStart(uintptr_t slot_start) {
-  auto* slot_span = FromSlotInnerPtr(reinterpret_cast<void*>(slot_start));
+  auto* slot_span = FromAddr(slot_start);
 #if DCHECK_IS_ON()
   // Checks that the pointer is a multiple of slot size.
   uintptr_t slot_span_start = ToSlotSpanStart(slot_span);
-  PA_DCHECK(
-      !((memory::UnmaskPtr(slot_start) - memory::UnmaskPtr(slot_span_start)) %
-        slot_span->bucket->slot_size));
+  PA_DCHECK(!((::partition_alloc::internal::UnmaskPtr(slot_start) -
+               ::partition_alloc::internal::UnmaskPtr(slot_span_start)) %
+              slot_span->bucket->slot_size));
 #endif  // DCHECK_IS_ON()
   return slot_span;
+}
+
+// Like |FromAddr|, but asserts that |object| indeed points to the beginning of
+// an object. It doesn't check if the object is actually allocated.
+//
+// This works on direct maps too.
+template <bool thread_safe>
+ALWAYS_INLINE SlotSpanMetadata<thread_safe>*
+SlotSpanMetadata<thread_safe>::FromObject(void* object) {
+  uintptr_t object_addr = PartitionRoot<thread_safe>::ObjectPtr2Addr(object);
+  auto* slot_span = FromAddr(object_addr);
+#if DCHECK_IS_ON()
+  // Checks that the object is exactly |extras_offset| away from a multiple of
+  // slot size (i.e. from a slot start).
+  uintptr_t slot_span_start = ToSlotSpanStart(slot_span);
+  auto* root = PartitionRoot<thread_safe>::FromSlotSpan(slot_span);
+  PA_DCHECK((::partition_alloc::internal::UnmaskPtr(object_addr) -
+             ::partition_alloc::internal::UnmaskPtr(slot_span_start)) %
+                slot_span->bucket->slot_size ==
+            root->extras_offset);
+#endif  // DCHECK_IS_ON()
+  return slot_span;
+}
+
+// Like |FromAddr|, but asserts that |address| indeed points within an object.
+// It doesn't check if the object is actually allocated.
+//
+// CAUTION! For direct-mapped allocation, |address| has to be within the first
+// partition page.
+template <bool thread_safe>
+ALWAYS_INLINE SlotSpanMetadata<thread_safe>*
+SlotSpanMetadata<thread_safe>::FromObjectInnerAddr(uintptr_t address) {
+  auto* slot_span = FromAddr(address);
+#if DCHECK_IS_ON()
+  // Checks that the address is within the expected object boundaries.
+  uintptr_t slot_span_start = ToSlotSpanStart(slot_span);
+  auto* root = PartitionRoot<thread_safe>::FromSlotSpan(slot_span);
+  uintptr_t shift_from_slot_start =
+      (address - slot_span_start) % slot_span->bucket->slot_size;
+  PA_DCHECK(shift_from_slot_start >= root->extras_offset);
+  // Use <= to allow an address immediately past the object.
+  PA_DCHECK(shift_from_slot_start <=
+            root->extras_offset + slot_span->GetUsableSize(root));
+#endif  // DCHECK_IS_ON()
+  return slot_span;
+}
+template <bool thread_safe>
+ALWAYS_INLINE SlotSpanMetadata<thread_safe>*
+SlotSpanMetadata<thread_safe>::FromObjectInnerPtr(void* ptr) {
+  return FromObjectInnerAddr(
+      PartitionRoot<thread_safe>::ObjectInnerPtr2Addr(ptr));
 }
 
 template <bool thread_safe>
@@ -676,8 +726,8 @@ ALWAYS_INLINE void SlotSpanMetadata<thread_safe>::AppendFreeList(
     size_t number_of_entries = 0;
     for (auto* entry = head; entry;
          entry = entry->GetNext(bucket->slot_size), ++number_of_entries) {
-      uintptr_t unmasked_entry =
-          memory::UnmaskPtr(reinterpret_cast<uintptr_t>(entry));
+      uintptr_t unmasked_entry = ::partition_alloc::internal::UnmaskPtr(
+          reinterpret_cast<uintptr_t>(entry));
       // Check that all entries belong to this slot span.
       PA_DCHECK(ToSlotSpanStart(this) <= unmasked_entry);
       PA_DCHECK(unmasked_entry <
@@ -782,10 +832,10 @@ void IterateSlotSpans(uintptr_t super_page,
 
   using Page = PartitionPage<thread_safe>;
   using SlotSpan = SlotSpanMetadata<thread_safe>;
-  auto* const first_page = Page::FromPtr(reinterpret_cast<void*>(
-      SuperPagePayloadBegin(super_page, with_quarantine)));
-  auto* const last_page = Page::FromPtr(reinterpret_cast<void*>(
-      SuperPagePayloadEnd(super_page) - PartitionPageSize()));
+  auto* const first_page =
+      Page::FromAddr(SuperPagePayloadBegin(super_page, with_quarantine));
+  auto* const last_page =
+      Page::FromAddr(SuperPagePayloadEnd(super_page) - PartitionPageSize());
   Page* page;
   SlotSpan* slot_span;
   for (page = first_page; page <= last_page;) {
@@ -814,7 +864,25 @@ void IterateSlotSpans(uintptr_t super_page,
                         slot_span->bucket->get_pages_per_slot_span());
 }
 
-}  // namespace internal
-}  // namespace base
+}  // namespace partition_alloc::internal
+
+namespace base::internal {
+
+// TODO(https://crbug.com/1288247): Remove these 'using' declarations once
+// the migration to the new namespaces gets done.
+using ::partition_alloc::internal::AllocationStateMap;
+using ::partition_alloc::internal::CommittedStateBitmapSize;
+using ::partition_alloc::internal::IterateSlotSpans;
+using ::partition_alloc::internal::PartitionPage;
+using ::partition_alloc::internal::PartitionSuperPageExtentEntry;
+using ::partition_alloc::internal::PartitionSuperPageToExtent;
+using ::partition_alloc::internal::PartitionSuperPageToMetadataArea;
+using ::partition_alloc::internal::ReservedStateBitmapSize;
+using ::partition_alloc::internal::SlotSpanMetadata;
+using ::partition_alloc::internal::StateBitmapFromAddr;
+using ::partition_alloc::internal::SuperPageStateBitmap;
+using ::partition_alloc::internal::SuperPageStateBitmapAddr;
+
+}  // namespace base::internal
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_PAGE_H_

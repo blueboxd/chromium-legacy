@@ -24,23 +24,23 @@ JSONFileValueSerializer::JSONFileValueSerializer(
 
 JSONFileValueSerializer::~JSONFileValueSerializer() = default;
 
-bool JSONFileValueSerializer::Serialize(const base::Value& root) {
+bool JSONFileValueSerializer::Serialize(base::ValueView root) {
   return SerializeInternal(root, false);
 }
 
 bool JSONFileValueSerializer::SerializeAndOmitBinaryValues(
-    const base::Value& root) {
+    base::ValueView root) {
   return SerializeInternal(root, true);
 }
 
-bool JSONFileValueSerializer::SerializeInternal(const base::Value& root,
+bool JSONFileValueSerializer::SerializeInternal(base::ValueView root,
                                                 bool omit_binary_values) {
   std::string json_string;
   JSONStringValueSerializer serializer(&json_string);
   serializer.set_pretty_print(true);
-  bool result = omit_binary_values ?
-      serializer.SerializeAndOmitBinaryValues(root) :
-      serializer.Serialize(root);
+  bool result = omit_binary_values
+                    ? serializer.SerializeAndOmitBinaryValues(root)
+                    : serializer.Serialize(root);
   if (!result)
     return false;
 

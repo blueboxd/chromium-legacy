@@ -64,6 +64,7 @@ export class FirmwareUpdateDialogElement extends
       installationProgress: {
         type: Object,
         value: {percentage: 0, state: UpdateState.kIdle},
+        observer: 'progressChanged_',
       },
 
       /** @private {boolean} */
@@ -116,7 +117,35 @@ export class FirmwareUpdateDialogElement extends
    * @param {!InstallationProgress} update
    */
   onStatusChanged(update) {
+    if (update.state === UpdateState.kSuccess ||
+        update.state === UpdateState.kFailed) {
+      // Install is completed, reset inflight state.
+      this.isInitiallyInflight_ = false;
+    }
     this.installationProgress = update;
+    if (this.isUpdateInProgress_() && this.isDialogOpen_()) {
+      // 'aria-hidden' is used to prevent ChromeVox from announcing
+      // the body text automatically. Setting 'aria-hidden' to false
+      // here allows ChromeVox to announce the body text when a user
+      // navigates to it.
+      this.shadowRoot.querySelector('#updateDialogBody')
+          .setAttribute('aria-hidden', 'false');
+    }
+  }
+
+  /**
+   * @param {!InstallationProgress} prevProgress
+   * @param {?InstallationProgress} currProgress
+   */
+  progressChanged_(prevProgress, currProgress) {
+    if (!currProgress || prevProgress.state == currProgress.state) {
+      return;
+    }
+    // Focus the dialog title if the update state has changed.
+    const dialogTitle = this.shadowRoot.querySelector('#updateDialogTitle');
+    if (dialogTitle) {
+      dialogTitle.focus();
+    }
   }
 
   /** @protected */
@@ -225,7 +254,18 @@ export class FirmwareUpdateDialogElement extends
    * @return {boolean}
    */
   shouldShowProgressBar_() {
-    return this.isUpdateInProgress_() || this.isDeviceRestarting_();
+    const res = this.isUpdateInProgress_() || this.isDeviceRestarting_() ||
+        this.isInitiallyInflight_;
+    const progressIsActiveEl = this.shadowRoot.activeElement ==
+        this.shadowRoot.querySelector('#progress');
+    // Move focus to the dialog title if the progress label is currently
+    // active and set to be hidden. This case is reached when the dialog state
+    // moves from restarting to completed.
+    const dialogTitle = this.shadowRoot.querySelector('#updateDialogTitle');
+    if (progressIsActiveEl && !res && dialogTitle) {
+      dialogTitle.focus();
+    }
+    return res;
   }
   /**
    * @protected
@@ -297,6 +337,40 @@ export class FirmwareUpdateDialogElement extends
       return this.createDialogContentObj_(this.installationProgress.state);
     }
     return initialDialogContent;
+  }
+
+  /**
+   * @protected
+   * @return {boolean}
+   */
+  isInIndeterminateState_() {
+    if (this.installationProgress) {
+      return inactiveDialogStates.includes(this.installationProgress.state) ||
+          this.isDeviceRestarting_();
+    }
+
+    return false;
+  }
+
+  /**
+   * @protected
+   * @return {string}
+   */
+  computeButtonText_() {
+    if (!this.isUpdateDone_()) {
+      return '';
+    }
+
+    return this.installationProgress.state === UpdateState.kSuccess ?
+        this.i18n('doneButton') :
+        this.i18n('okButton');
+  }
+  /**
+   * @protected
+   * @return {boolean}
+   */
+  isDialogOpen_() {
+    return !!this.shadowRoot.querySelector('#updateDialog');
   }
 }
 

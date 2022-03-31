@@ -321,4 +321,41 @@ void OsDiagnosticsRunMemoryRoutineFunction::RunIfAllowed() {
   remote_diagnostics_service_->RunMemoryRoutine(std::move(cb));
 }
 
+// OsDiagnosticsRunNvmeWearLevelRoutineFunction --------------------------------
+
+OsDiagnosticsRunNvmeWearLevelRoutineFunction::
+    OsDiagnosticsRunNvmeWearLevelRoutineFunction() = default;
+OsDiagnosticsRunNvmeWearLevelRoutineFunction::
+    ~OsDiagnosticsRunNvmeWearLevelRoutineFunction() = default;
+
+void OsDiagnosticsRunNvmeWearLevelRoutineFunction::RunIfAllowed() {
+  std::unique_ptr<api::os_diagnostics::RunNvmeWearLevelRoutine::Params> params(
+      api::os_diagnostics::RunNvmeWearLevelRoutine::Params::Create(args()));
+  if (!params) {
+    SetBadMessage();
+    Respond(BadMessage());
+    return;
+  }
+
+  auto cb =
+      base::BindOnce(&DiagnosticsApiRunRoutineFunctionBase::OnResult, this);
+
+  remote_diagnostics_service_->RunNvmeWearLevelRoutine(
+      params->request.wear_level_threshold, std::move(cb));
+}
+
+// OsDiagnosticsRunSmartctlCheckRoutineFunction --------------------------------
+
+OsDiagnosticsRunSmartctlCheckRoutineFunction::
+    OsDiagnosticsRunSmartctlCheckRoutineFunction() = default;
+OsDiagnosticsRunSmartctlCheckRoutineFunction::
+    ~OsDiagnosticsRunSmartctlCheckRoutineFunction() = default;
+
+void OsDiagnosticsRunSmartctlCheckRoutineFunction::RunIfAllowed() {
+  auto cb =
+      base::BindOnce(&DiagnosticsApiRunRoutineFunctionBase::OnResult, this);
+
+  remote_diagnostics_service_->RunSmartctlCheckRoutine(std::move(cb));
+}
+
 }  // namespace chromeos

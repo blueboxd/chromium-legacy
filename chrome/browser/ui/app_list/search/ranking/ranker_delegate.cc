@@ -4,8 +4,11 @@
 
 #include "chrome/browser/ui/app_list/search/ranking/ranker_delegate.h"
 
+#include "ash/constants/ash_features.h"
+#include "base/metrics/field_trial_params.h"
 #include "chrome/browser/ui/app_list/search/ranking/answer_ranker.h"
 #include "chrome/browser/ui/app_list/search/ranking/best_match_ranker.h"
+#include "chrome/browser/ui/app_list/search/ranking/continue_ranker.h"
 #include "chrome/browser/ui/app_list/search/ranking/filtering_ranker.h"
 #include "chrome/browser/ui/app_list/search/ranking/ftrl_ranker.h"
 #include "chrome/browser/ui/app_list/search/ranking/query_highlighter.h"
@@ -58,16 +61,16 @@ RankerDelegate::RankerDelegate(Profile* profile, SearchController* controller) {
   ftrl_category_params.num_experts = 2u;
 
   MrfuCache::Params mrfu_category_params;
-  mrfu_category_params.half_life = 10.0f;
-  mrfu_category_params.boost_factor = 5.0f;
-  mrfu_category_params.max_items = 200u;
+  mrfu_category_params.half_life = 20.0f;
+  mrfu_category_params.boost_factor = 7.0f;
+  mrfu_category_params.max_items = 20u;
 
   const auto state_dir = RankerStateDirectory(profile);
 
   // 1. Result pre-processing. These filter or modify search results but don't
   // change their scores.
   AddRanker(std::make_unique<QueryHighlighter>());
-  AddRanker(std::make_unique<AnswerRanker>());
+  AddRanker(std::make_unique<ContinueRanker>());
   AddRanker(std::make_unique<FilteringRanker>());
   AddRanker(std::make_unique<RemovedResultsRanker>(
       PersistentProto<RemovedResultsProto>(
@@ -92,20 +95,34 @@ RankerDelegate::RankerDelegate(Profile* profile, SearchController* controller) {
   AddRanker(std::move(result_ranker));
 
   // 4. Ranking for categories.
-  auto category_ranker = std::make_unique<FtrlRanker>(
-      FtrlRanker::RankingKind::kCategories, ftrl_category_params,
-      PersistentProto<FtrlOptimizerProto>(
-          state_dir.AppendASCII("ftrl_categories.pb"), kStandardWriteDelay));
-  category_ranker->AddExpert(std::make_unique<MrfuCategoryRanker>(
-      mrfu_category_params,
-      PersistentProto<MrfuCacheProto>(
-          state_dir.AppendASCII("mrfu_categories.pb"), kStandardWriteDelay)));
-  category_ranker->AddExpert(std::make_unique<BestResultCategoryRanker>());
-  AddRanker(std::move(category_ranker));
+  std::string category_ranking = base::GetFieldTrialParamValueByFeature(
+      ash::features::kProductivityLauncher, "category_ranking");
+  if (category_ranking == "ftrl") {
+    auto category_ranker = std::make_unique<FtrlRanker>(
+        FtrlRanker::RankingKind::kCategories, ftrl_category_params,
+        PersistentProto<FtrlOptimizerProto>(
+            state_dir.AppendASCII("ftrl_categories.pb"), kStandardWriteDelay));
+    category_ranker->AddExpert(std::make_unique<MrfuCategoryRanker>(
+        mrfu_category_params,
+        PersistentProto<MrfuCacheProto>(
+            state_dir.AppendASCII("mrfu_categories.pb"), kStandardWriteDelay)));
+    category_ranker->AddExpert(std::make_unique<BestResultCategoryRanker>());
+    AddRanker(std::move(category_ranker));
+  } else if (category_ranking == "score") {
+    AddRanker(std::make_unique<BestResultCategoryRanker>());
+  } else {
+    // == "usage" and any other mis-set value.
+    AddRanker(std::make_unique<MrfuCategoryRanker>(
+        mrfu_category_params,
+        PersistentProto<MrfuCacheProto>(
+            state_dir.AppendASCII("mrfu_categories.pb"), kStandardWriteDelay)));
+  }
 
   // 5. Result post-processing.
-  // Nb. the top-match ranker relies on score normalization.
+  // Nb. the best match ranker relies on score normalization, and the answer
+  // ranker relies on the best match ranker.
   AddRanker(std::make_unique<BestMatchRanker>());
+  AddRanker(std::make_unique<AnswerRanker>());
 }
 
 RankerDelegate::~RankerDelegate() {}
@@ -142,6 +159,11 @@ void RankerDelegate::Remove(ChromeSearchResult* result) {
 
 void RankerDelegate::AddRanker(std::unique_ptr<Ranker> ranker) {
   rankers_.emplace_back(std::move(ranker));
+}
+
+void RankerDelegate::OnBurnInPeriodElapsed() {
+  for (auto& ranker : rankers_)
+    ranker->OnBurnInPeriodElapsed();
 }
 
 }  // namespace app_list

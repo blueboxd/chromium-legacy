@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/containers/flat_set.h"
+#include "chromeos/components/sharesheet/constants.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 
 namespace sharesheet {
@@ -24,6 +25,7 @@ extern const char kSharesheetIsDriveFolderResultHistogram[];
 extern const char kSharesheetIsImagePressedResultHistogram[];
 extern const char kSharesheetMimeTypeResultHistogram[];
 extern const char kSharesheetCopyToClipboardMimeTypeResultHistogram[];
+extern const char kSharesheetCopyToClipboardFormFactorResultHistogram[];
 
 class SharesheetMetrics {
  public:
@@ -48,18 +50,6 @@ class SharesheetMetrics {
     kTablet = 0,
     kClamshell,
     kMaxValue = kClamshell,
-  };
-
-  // The source from which the sharesheet was launched from.
-  // This enum is for recording histograms and must be treated as append-only.
-  enum class LaunchSource {
-    kUnknown = 0,
-    kFilesAppShareButton = 1,
-    kFilesAppContextMenu = 2,
-    kWebShare = 3,
-    kArcNearbyShare = 4,
-    kOmniboxShare = 5,
-    kMaxValue = kOmniboxShare,
   };
 
   // The mime type that is being shared.
@@ -100,11 +90,14 @@ class SharesheetMetrics {
   static void RecordSharesheetMimeType(const MimeType mime_type);
   static void RecordCopyToClipboardShareActionMimeType(
       const MimeType mime_type);
+  static void RecordCopyToClipboardShareActionFormFactor(
+      const FormFactor form_factor);
 
   // Utility Functions
   static MimeType ConvertMimeTypeForMetrics(std::string mime_type);
   static base::flat_set<MimeType> GetMimeTypesFromIntentForMetrics(
       const apps::mojom::IntentPtr& intent);
+  static FormFactor GetFormFactorForMetrics();
 };
 
 }  // namespace sharesheet

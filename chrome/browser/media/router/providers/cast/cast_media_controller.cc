@@ -200,7 +200,8 @@ void CastMediaController::UpdateMediaStatus(const base::Value& message_value) {
   const base::Value* status_list_value = message_value.FindKey("status");
   if (!status_list_value || !status_list_value->is_list())
     return;
-  base::Value::ConstListView status_list = status_list_value->GetList();
+  base::Value::ConstListView status_list =
+      status_list_value->GetListDeprecated();
   if (status_list.empty())
     return;
   const base::Value& status_value = status_list[0];
@@ -219,7 +220,7 @@ void CastMediaController::UpdateMediaStatus(const base::Value& message_value) {
   const base::Value* images = status_value.FindPath("media.metadata.images");
   if (images && images->is_list()) {
     media_status_.images.clear();
-    for (const base::Value& image_value : images->GetList()) {
+    for (const base::Value& image_value : images->GetListDeprecated()) {
       if (!image_value.is_dict())
         continue;
       const std::string* url_string = image_value.FindStringKey("url");
@@ -238,13 +239,13 @@ void CastMediaController::UpdateMediaStatus(const base::Value& message_value) {
     // |can_set_volume| and |can_mute| are not used, because the receiver volume
     // info obtained in SetSession() is used instead.
     media_status_.can_play_pause = base::Contains(
-        commands_list.GetList(), base::Value(kMediaCommandPause));
-    media_status_.can_seek =
-        base::Contains(commands_list.GetList(), base::Value(kMediaCommandSeek));
+        commands_list.GetListDeprecated(), base::Value(kMediaCommandPause));
+    media_status_.can_seek = base::Contains(commands_list.GetListDeprecated(),
+                                            base::Value(kMediaCommandSeek));
     media_status_.can_skip_to_next_track = base::Contains(
-        commands_list.GetList(), base::Value(kMediaCommandQueueNext));
+        commands_list.GetListDeprecated(), base::Value(kMediaCommandQueueNext));
     media_status_.can_skip_to_previous_track = base::Contains(
-        commands_list.GetList(), base::Value(kMediaCommandQueuePrev));
+        commands_list.GetListDeprecated(), base::Value(kMediaCommandQueuePrev));
   }
 
   const base::Value* player_state = status_value.FindKey("playerState");

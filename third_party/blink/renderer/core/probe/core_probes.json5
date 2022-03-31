@@ -112,10 +112,10 @@
         "ApplyAcceptLanguageOverride",
         "ApplyUserAgentOverride",
         "ApplyUserAgentMetadataOverride",
-        "FrameStartedLoading",
         "PrepareRequest",
         "GetDisabledImageTypes",
         "WillCommitLoad",
+        "WillCreateDocumentParser",
       ]
     },
     InspectorLayerTreeAgent: {

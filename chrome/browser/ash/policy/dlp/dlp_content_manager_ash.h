@@ -25,8 +25,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
-struct ScreenshotArea;
-
 namespace aura {
 class Window;
 }  // namespace aura
@@ -36,10 +34,6 @@ class WebContents;
 }  // namespace content
 
 namespace policy {
-
-class DlpReportingManager;
-
-class DlpWarnNotifier;
 
 // System-wide class that tracks the set of currently known confidential
 // WebContents and whether any of them are currently visible.
@@ -59,17 +53,9 @@ class DlpContentManagerAsh : public DlpContentManager,
   void OnWindowOcclusionChanged(aura::Window* window) override;
   void OnWindowDestroying(aura::Window* window) override;
 
-  // Returns which restrictions are applied to the |web_contents| according to
-  // the policy.
-  DlpContentRestrictionSet GetConfidentialRestrictions(
-      content::WebContents* web_contents) const;
-
   // Returns which restrictions are applied to the WebContents which are
   // currently visible.
   DlpContentRestrictionSet GetOnScreenPresentRestrictions() const;
-
-  // Returns whether screenshots should be restricted for extensions API.
-  virtual bool IsScreenshotApiRestricted(const ScreenshotArea& area);
 
   // Checks whether screenshots of |area| are restricted or not advised.
   // Depending on the result, calls |callback| and passes an indicator whether
@@ -77,20 +63,6 @@ class DlpContentManagerAsh : public DlpContentManager,
   void CheckScreenshotRestriction(
       const ScreenshotArea& area,
       ash::OnCaptureModeDlpRestrictionChecked callback);
-
-  // Returns whether screen capture of the defined content should be restricted.
-  // TODO(crbug.com/1257493): Remove when it won't be used anymore.
-  virtual bool IsScreenCaptureRestricted(
-      const content::DesktopMediaID& media_id);
-
-  // Checks whether screen sharing of content from the |media_id| source with
-  // application |application_name| is restricted or not advised. Depending on
-  // the result, calls |callback| and passes an indicator whether to proceed or
-  // not.
-  void CheckScreenShareRestriction(
-      const content::DesktopMediaID& media_id,
-      const std::u16string& application_title,
-      OnDlpRestrictionCheckedCallback callback) override;
 
   // Called when video capturing for |area| is started.
   void OnVideoCaptureStarted(const ScreenshotArea& area);
@@ -110,19 +82,20 @@ class DlpContentManagerAsh : public DlpContentManager,
   void CheckCaptureModeInitRestriction(
       ash::OnCaptureModeDlpRestrictionChecked callback);
 
-  // Called when screen capture is started.
-  // |state_change_callback| will be called when restricted content will appear
-  // or disappear in the captured area.
-  void OnScreenCaptureStarted(
+  // DlpContentManager overrides:
+  void CheckScreenShareRestriction(
+      const content::DesktopMediaID& media_id,
+      const std::u16string& application_title,
+      OnDlpRestrictionCheckedCallback callback) override;
+  void OnScreenShareStarted(
       const std::string& label,
-      std::vector<content::DesktopMediaID> screen_capture_ids,
+      std::vector<content::DesktopMediaID> screen_share_ids,
       const std::u16string& application_title,
       base::RepeatingClosure stop_callback,
-      content::MediaStreamUI::StateChangeCallback state_change_callback);
-
-  // Called when screen capture is stopped.
-  void OnScreenCaptureStopped(const std::string& label,
-                              const content::DesktopMediaID& media_id);
+      content::MediaStreamUI::StateChangeCallback state_change_callback,
+      content::MediaStreamUI::SourceCallback source_callback) override;
+  void OnScreenShareStopped(const std::string& label,
+                            const content::DesktopMediaID& media_id) override;
 
   // Called when an updated restrictions are received for Lacros window.
   void OnWindowRestrictionChanged(aura::Window* window,
@@ -136,85 +109,12 @@ class DlpContentManagerAsh : public DlpContentManager,
       DlpContentManagerAsh* dlp_content_manager);
   static void ResetDlpContentManagerAshForTesting();
 
- protected:
-  void SetReportingManagerForTesting(DlpReportingManager* manager);
-
-  void SetWarnNotifierForTesting(
-      std::unique_ptr<DlpWarnNotifier> warn_notifier);
-  void ResetWarnNotifierForTesting();
-
  private:
   friend class DlpContentManagerAshTestHelper;
+  friend class DlpContentManagerTestHelper;
+  friend class DlpContentObserver;
   friend class DlpContentTabHelper;
   friend class MockDlpContentManagerAsh;
-
-  // Used to keep track of running screen shares.
-  class ScreenShareInfo {
-   public:
-    ScreenShareInfo(
-        const std::string& label,
-        const content::DesktopMediaID& media_id,
-        const std::u16string& application_title,
-        base::OnceClosure stop_callback,
-        content::MediaStreamUI::StateChangeCallback state_change_callback);
-    ~ScreenShareInfo();
-
-    bool operator==(const ScreenShareInfo& other) const;
-    bool operator!=(const ScreenShareInfo& other) const;
-
-    const content::DesktopMediaID& GetMediaId() const;
-    const std::string& GetLabel() const;
-    const std::u16string& GetApplicationTitle() const;
-    bool IsRunning() const;
-
-    // Pauses a running screen share.
-    // No-op if the screen share is already paused.
-    void Pause();
-    // Resumes a paused screen share.
-    // No-op if the screen share is already running.
-    void Resume();
-    // Stops the screen share. Can only be called once.
-    void Stop();
-
-    // If necessary, hides or shows the paused/resumed notification for this
-    // screen share. The notification should be updated after changing the state
-    // from running to paused, or paused to running.
-    void MaybeUpdateNotifications();
-
-    // If shown, hides both the paused and resumed notification for this screen
-    // share.
-    void HideNotifications();
-
-    base::WeakPtr<ScreenShareInfo> GetWeakPtr();
-
-   private:
-    enum class NotificationState {
-      kNotShowingNotification,
-      kShowingPausedNotification,
-      kShowingResumedNotification
-    };
-    enum class State { kRunning, kPaused, kStopped };
-    // Shows (if |show| is true) or hides (if |show| is false) paused
-    // notification for this screen share. Does nothing if the notification is
-    // already in the required state.
-    void UpdatePausedNotification(bool show);
-    // Shows (if |show| is true) or hides (if |show| is false) resumed
-    // notification for this screen share. Does nothing if the notification is
-    // already in the required state.
-    void UpdateResumedNotification(bool show);
-
-    std::string label_;
-    content::DesktopMediaID media_id_;
-    // TODO(crbug.com/1264793): Don't cache the application name.
-    std::u16string application_title_;
-    base::OnceClosure stop_callback_;
-    content::MediaStreamUI::StateChangeCallback state_change_callback_;
-    State state_ = State::kRunning;
-    NotificationState notification_state_ =
-        NotificationState::kNotShowingNotification;
-
-    base::WeakPtrFactory<ScreenShareInfo> weak_factory_{this};
-  };
 
   // Structure to keep track of a running video capture.
   struct VideoCaptureInfo {
@@ -225,6 +125,10 @@ class DlpContentManagerAsh : public DlpContentManager,
     // For a single video capture there should be sent at most one reporting
     // event. This flag informs if we already sent an event for the report mode.
     bool was_reported = false;
+    // Analogous to `was_reported` flag. `was_reported_warning_proceeded` flag
+    // informs if we already sent a warning proceeded event for the warning
+    // mode.
+    bool was_reported_warning_proceeded = false;
   };
 
   DlpContentManagerAsh();
@@ -236,6 +140,10 @@ class DlpContentManagerAsh : public DlpContentManager,
       const DlpContentRestrictionSet& restriction_set) override;
   void OnVisibilityChanged(content::WebContents* web_contents) override;
   void RemoveFromConfidential(content::WebContents* web_contents) override;
+  ConfidentialContentsInfo GetScreenShareConfidentialContentsInfo(
+      const content::DesktopMediaID& media_id,
+      content::WebContents* web_contents) const override;
+  void TabLocationMaybeChanged(content::WebContents* web_contents) override;
 
   // Updates |on_screen_restrictions_| and calls
   // OnScreenRestrictionsChanged() if needed.
@@ -260,23 +168,9 @@ class DlpContentManagerAsh : public DlpContentManager,
       const ScreenshotArea& area,
       DlpContentRestriction restriction) const;
 
-  // Returns which level, url, and information about visible confidential
-  // contents of screen share restriction that is currently enforced for
-  // |media_id|.
-  ConfidentialContentsInfo GetScreenShareConfidentialContentsInfo(
-      const content::DesktopMediaID& media_id) const;
-
   // Checks and stops the running video capture if restricted content appeared
   // in the corresponding areas.
   void CheckRunningVideoCapture();
-
-  // Removes screen share from |running_screen_shares_|.
-  void RemoveScreenShare(const std::string& label,
-                         const content::DesktopMediaID& media_id);
-
-  // Checks and stops the running screen shares if restricted content appeared
-  // in the corresponding areas.
-  void CheckRunningScreenShares();
 
   // Get the delay before switching privacy screen off.
   static base::TimeDelta GetPrivacyScreenOffDelayForTesting();
@@ -286,17 +180,6 @@ class DlpContentManagerAsh : public DlpContentManager,
   void CheckScreenCaptureRestriction(
       ConfidentialContentsInfo info,
       ash::OnCaptureModeDlpRestrictionChecked callback);
-
-  // Called back from Screen Share warning dialogs that are shown during the
-  // screen share. Passes along the user's response, reflected in the value of
-  // |should_proceed| along to |callback| which handles continuing or cancelling
-  // the action based on this response. In case that |should_proceed| is true,
-  // also saves the |confidential_contents| that were allowed to be shared by
-  // the user to avoid future warnings.
-  void OnDlpScreenShareWarnDialogReply(
-      const DlpConfidentialContents& confidential_contents,
-      base::WeakPtr<ScreenShareInfo> screen_share,
-      bool should_proceed);
 
   // Map of window observers for the current confidential WebContents.
   base::flat_map<content::WebContents*, std::unique_ptr<DlpWindowObserver>>
@@ -314,9 +197,6 @@ class DlpContentManagerAsh : public DlpContentManager,
 
   // Information about the currently running video capture area if any.
   absl::optional<VideoCaptureInfo> running_video_capture_info_;
-
-  // List of the currently running screen shares.
-  std::vector<std::unique_ptr<ScreenShareInfo>> running_screen_shares_;
 };
 
 // Helper class to call SetDlpContentManagerAshForTesting and

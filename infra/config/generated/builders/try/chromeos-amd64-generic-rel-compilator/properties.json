@@ -7,11 +7,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "chromeos-amd64-generic-rel",
-<<<<<<< HEAD
-              "project": "chromium-m98"
-=======
               "project": "chromium"
->>>>>>> 99.0.4844.51
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-chromiumos-archive",
@@ -44,11 +40,7 @@
         {
           "bucket": "ci",
           "builder": "chromeos-amd64-generic-rel",
-<<<<<<< HEAD
-          "project": "chromium-m98"
-=======
           "project": "chromium"
->>>>>>> 99.0.4844.51
         }
       ]
     }

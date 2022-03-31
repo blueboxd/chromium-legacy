@@ -24,6 +24,7 @@
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -42,6 +43,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -763,8 +765,9 @@ TEST_F(ChromeContentBrowserClientCaptivePortalBrowserTest,
 class ChromeContentBrowserClientStoragePartitionTest
     : public ChromeContentBrowserClientTest {
  public:
-  ChromeContentBrowserClientStoragePartitionTest()
-      : scoped_feature_list_(blink::features::kWebAppEnableIsolatedStorage) {}
+  void SetUp() override {
+    content::SiteIsolationPolicy::DisableFlagCachingForTesting();
+  }
 
  protected:
   static constexpr char kAppId[] = "appid";
@@ -774,7 +777,14 @@ class ChromeContentBrowserClientStoragePartitionTest
     return content::StoragePartitionConfig::CreateDefault(&profile_);
   }
 
-  base::test::ScopedFeatureList scoped_feature_list_;
+  void RegisterAppIsolationState(const std::string& app_id,
+                                 const std::string& scope,
+                                 bool isolated) {
+    web_app::WebApp app(app_id);
+    app.SetScope(GURL(scope));
+    app.SetStorageIsolated(isolated);
+    web_app::RecordOrRemoveAppIsolationState(profile_.GetPrefs(), app);
+  }
 };
 // static
 constexpr char ChromeContentBrowserClientStoragePartitionTest::kAppId[];
@@ -789,13 +799,8 @@ TEST_F(ChromeContentBrowserClientStoragePartitionTest, DefaultPartition) {
   EXPECT_EQ(CreateDefaultStoragePartitionConfig(), config);
 }
 
-TEST_F(ChromeContentBrowserClientStoragePartitionTest, FeatureDisabled) {
-  scoped_feature_list_.Reset();
-
-  web_app::WebApp app(kAppId);
-  app.SetScope(GURL(kScope));
-  app.SetStorageIsolated(true);
-  web_app::RecordOrRemoveAppIsolationState(profile_.GetPrefs(), app);
+TEST_F(ChromeContentBrowserClientStoragePartitionTest, IsolationDisabled) {
+  RegisterAppIsolationState(kAppId, kScope, /*isolated=*/true);
 
   TestChromeContentBrowserClient test_content_browser_client;
   content::StoragePartitionConfig config =
@@ -803,13 +808,13 @@ TEST_F(ChromeContentBrowserClientStoragePartitionTest, FeatureDisabled) {
           &profile_, GURL(kScope));
 
   EXPECT_EQ(CreateDefaultStoragePartitionConfig(), config);
+  EXPECT_FALSE(
+      test_content_browser_client.ShouldUrlUseApplicationIsolationLevel(
+          &profile_, GURL(kScope)));
 }
 
 TEST_F(ChromeContentBrowserClientStoragePartitionTest, NonIsolatedPWA) {
-  web_app::WebApp app(kAppId);
-  app.SetScope(GURL(kScope));
-  app.SetStorageIsolated(false);
-  web_app::RecordOrRemoveAppIsolationState(profile_.GetPrefs(), app);
+  RegisterAppIsolationState(kAppId, kScope, /*isolated=*/false);
 
   TestChromeContentBrowserClient test_content_browser_client;
   content::StoragePartitionConfig config =
@@ -817,13 +822,15 @@ TEST_F(ChromeContentBrowserClientStoragePartitionTest, NonIsolatedPWA) {
           &profile_, GURL(kScope));
 
   EXPECT_EQ(CreateDefaultStoragePartitionConfig(), config);
+  EXPECT_FALSE(
+      test_content_browser_client.ShouldUrlUseApplicationIsolationLevel(
+          &profile_, GURL(kScope)));
 }
 
-TEST_F(ChromeContentBrowserClientStoragePartitionTest, FeatureEnabled) {
-  web_app::WebApp app(kAppId);
-  app.SetScope(GURL(kScope));
-  app.SetStorageIsolated(true);
-  web_app::RecordOrRemoveAppIsolationState(profile_.GetPrefs(), app);
+TEST_F(ChromeContentBrowserClientStoragePartitionTest, IsolationEnabled) {
+  RegisterAppIsolationState(kAppId, kScope, /*isolated=*/true);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kRestrictedApiOrigins, kScope);
 
   TestChromeContentBrowserClient test_content_browser_client;
   content::StoragePartitionConfig config =
@@ -834,29 +841,8 @@ TEST_F(ChromeContentBrowserClientStoragePartitionTest, FeatureEnabled) {
       &profile_, /*partition_domain=*/kAppId, /*partition_name=*/"",
       /*in_memory=*/false);
   EXPECT_EQ(expected_config, config);
-}
-
-TEST_F(ChromeContentBrowserClientStoragePartitionTest, IsolationLevel_App) {
-  web_app::WebApp app(kAppId);
-  app.SetScope(GURL(kScope));
-  app.SetStorageIsolated(true);
-  web_app::RecordOrRemoveAppIsolationState(profile_.GetPrefs(), app);
-
-  TestChromeContentBrowserClient test_content_browser_client;
-  bool isolated =
-      test_content_browser_client.ShouldUrlUseApplicationIsolationLevel(
-          &profile_, GURL(kScope));
-
-  EXPECT_TRUE(isolated);
-}
-
-TEST_F(ChromeContentBrowserClientStoragePartitionTest, IsolationLevel_NonApp) {
-  TestChromeContentBrowserClient test_content_browser_client;
-  bool isolated =
-      test_content_browser_client.ShouldUrlUseApplicationIsolationLevel(
-          &profile_, GURL(kScope));
-
-  EXPECT_FALSE(isolated);
+  EXPECT_TRUE(test_content_browser_client.ShouldUrlUseApplicationIsolationLevel(
+      &profile_, GURL(kScope)));
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 

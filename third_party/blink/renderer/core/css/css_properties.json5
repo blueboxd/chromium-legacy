@@ -2135,8 +2135,8 @@
     {
       name: "container-name",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      type_name: "AtomicString",
-      default_value: "AtomicString()",
+      type_name: "Vector<AtomicString>",
+      default_value: "Vector<AtomicString>()",
       field_group: "*",
       field_template: "external",
       converter: "ConvertContainerName",
@@ -2541,9 +2541,9 @@
       layout_dependent: true,
       field_group: "*",
       field_template: "external",
-      include_paths: ["third_party/blink/renderer/core/style/grid_track_list.h"],
-      default_value: "GridTrackList()",
-      type_name: "GridTrackList",
+      include_paths: ["third_party/blink/renderer/core/style/computed_grid_track_list.h"],
+      default_value: "ComputedGridTrackList()",
+      type_name: "ComputedGridTrackList",
       style_builder_template: "grid",
       style_builder_template_args: {
         type: "Column",
@@ -2557,9 +2557,9 @@
       layout_dependent: true,
       field_group: "*",
       field_template: "external",
-      include_paths: ["third_party/blink/renderer/core/style/grid_track_list.h"],
-      default_value: "GridTrackList()",
-      type_name: "GridTrackList",
+      include_paths: ["third_party/blink/renderer/core/style/computed_grid_track_list.h"],
+      default_value: "ComputedGridTrackList()",
+      type_name: "ComputedGridTrackList",
       style_builder_template: "grid",
       style_builder_template_args: {
         type: "Row",
@@ -5137,6 +5137,7 @@
     {
       name: "user-select",
       property_methods: ["CSSValueFromComputedStyleInternal"],
+      computed_style_custom_functions: ["getter"],
       inherited: true,
       field_group: "*",
       field_template: "keyword",
@@ -5838,6 +5839,18 @@
       is_descriptor: true,
       is_property: false,
       runtime_flag: "CSSFontFaceSizeAdjust",
+    },
+    {
+      name: "base-palette",
+      is_descriptor: true,
+      is_property: false,
+      runtime_flag: "FontPalette",
+    },
+    {
+      name: "override-colors",
+      is_descriptor: true,
+      is_property: false,
+      runtime_flag: "FontPalette",
     },
 
     // Shorthands

@@ -154,6 +154,11 @@ public class StartSurfaceConfiguration {
             new IntCachedFieldTrialParameter(ChromeFeatureList.START_SURFACE_ANDROID,
                     SIGNIN_PROMO_NTP_RESET_AFTER_HOURS_PARAM, -1);
 
+    private static final String IS_DOODLE_SUPPORTED_PARAM = "is_doodle_supported";
+    public static final BooleanCachedFieldTrialParameter IS_DOODLE_SUPPORTED =
+            new BooleanCachedFieldTrialParameter(
+                    ChromeFeatureList.START_SURFACE_ANDROID, IS_DOODLE_SUPPORTED_PARAM, false);
+
     private static final String HIDE_START_WHEN_LAST_VISITED_TAB_IS_SRP_PARAM =
             "hide_start_when_last_visited_tab_is_srp";
     public static final BooleanCachedFieldTrialParameter HIDE_START_WHEN_LAST_VISITED_TAB_IS_SRP =

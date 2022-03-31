@@ -85,12 +85,6 @@ void StabilityMetricsHelper::ProvideStabilityMetrics(
     local_state_->SetInteger(prefs::kStabilityPageLoadCount, 0);
   }
 
-  count = local_state_->GetInteger(prefs::kStabilityChildProcessCrashCount);
-  if (count) {
-    stability_proto->set_child_process_crash_count(count);
-    local_state_->SetInteger(prefs::kStabilityChildProcessCrashCount, 0);
-  }
-
   count = local_state_->GetInteger(prefs::kStabilityGpuCrashCount);
   if (count) {
     stability_proto->set_gpu_crash_count(count);
@@ -140,7 +134,6 @@ void StabilityMetricsHelper::ProvideStabilityMetrics(
 
 void StabilityMetricsHelper::ClearSavedStabilityMetrics() {
   // Clear all the prefs used in this class in UMA reports.
-  local_state_->SetInteger(prefs::kStabilityChildProcessCrashCount, 0);
   local_state_->SetInteger(prefs::kStabilityExtensionRendererCrashCount, 0);
   local_state_->SetInteger(prefs::kStabilityExtensionRendererFailedLaunchCount,
                            0);
@@ -154,7 +147,6 @@ void StabilityMetricsHelper::ClearSavedStabilityMetrics() {
 
 // static
 void StabilityMetricsHelper::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterIntegerPref(prefs::kStabilityChildProcessCrashCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityExtensionRendererCrashCount,
                                 0);
   registry->RegisterIntegerPref(
@@ -182,6 +174,7 @@ void StabilityMetricsHelper::BrowserUtilityProcessLaunched(
     const std::string& metrics_name) {
   uint32_t hash = variations::HashName(metrics_name);
   base::UmaHistogramSparse("ChildProcess.Launched.UtilityProcessHash", hash);
+  RecordStabilityEvent(StabilityEventType::kUtilityLaunch);
 }
 
 void StabilityMetricsHelper::BrowserUtilityProcessCrashed(
@@ -215,11 +208,6 @@ void StabilityMetricsHelper::BrowserUtilityProcessLaunchFailed(
   // trigger a Stability Event.
 }
 
-void StabilityMetricsHelper::BrowserChildProcessCrashed() {
-  IncrementPrefValue(prefs::kStabilityChildProcessCrashCount);
-  RecordStabilityEvent(StabilityEventType::kChildProcessCrash);
-}
-
 void StabilityMetricsHelper::LogLoadStarted() {
   IncrementPrefValue(prefs::kStabilityPageLoadCount);
   RecordStabilityEvent(StabilityEventType::kPageLoad);
@@ -242,11 +230,6 @@ void StabilityMetricsHelper::LogRendererCrash(bool was_extension_process,
         NOTREACHED();
 #endif
         IncrementPrefValue(prefs::kStabilityExtensionRendererCrashCount);
-#if BUILDFLAG(IS_WIN)
-        // TODO(crbug/1291000): Remove the scheduled Local State write if it
-        // doesn't help to resolve the extension renderer crash discrepancy.
-        local_state_->CommitPendingWrite();
-#endif
         RecordStabilityEvent(StabilityEventType::kExtensionCrash);
 
         base::UmaHistogramSparse("CrashExitCodes.Extension",
@@ -316,12 +299,6 @@ void StabilityMetricsHelper::LogRendererLaunched(bool was_extension_process) {
                    : prefs::kStabilityRendererLaunchCount;
   RecordStabilityEvent(metric);
   IncrementPrefValue(pref);
-
-  // TODO(crbug/1283745): Remove the scheduled write if it does not improve the
-  // renderer launch ratio on Android WebView.
-#if BUILDFLAG(IS_ANDROID)
-  local_state_->CommitPendingWrite();
-#endif
 }
 
 void StabilityMetricsHelper::LogRendererLaunchFailed(

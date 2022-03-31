@@ -269,12 +269,12 @@ Status GetVisibleCookies(Session* for_session,
       GetUrl(web_view, for_session->GetCurrentFrameId(), &current_page_url);
   if (status.IsError())
     return status;
-  std::unique_ptr<base::ListValue> internal_cookies;
+  base::Value internal_cookies;
   status = web_view->GetCookies(&internal_cookies, current_page_url);
   if (status.IsError())
     return status;
   std::list<Cookie> cookies_tmp;
-  for (const base::Value& cookie_value : internal_cookies->GetList()) {
+  for (const base::Value& cookie_value : internal_cookies.GetListDeprecated()) {
     if (!cookie_value.is_dict())
       return Status(kUnknownError, "DevTools returns a non-dictionary cookie");
 
@@ -454,7 +454,7 @@ int GetMouseClickCount(int last_click_count,
   if (last_button_id != button_id)
     return 1;
 
-#if !defined(OS_MAC) && !defined(OS_WIN)
+#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_WIN)
   // On Mac and Windows, we keep increasing the click count, but on the other
   // platforms, we reset the count to 1 when it is greater than 3.
   if (last_click_count >= 3)
@@ -612,7 +612,7 @@ Status ParsePageRanges(const base::DictionaryValue& params,
   }
 
   std::vector<std::string> ranges;
-  for (const base::Value& page_range : page_range_list->GetList()) {
+  for (const base::Value& page_range : page_range_list->GetListDeprecated()) {
     if (page_range.is_int()) {
       if (page_range.GetInt() < 0) {
         return Status(kInvalidArgument,
@@ -1289,7 +1289,7 @@ Status ProcessInputActionSequence(
 
   bool found = false;
   for (const base::Value& source_value :
-       session->active_input_sources.GetList()) {
+       session->active_input_sources.GetListDeprecated()) {
     DCHECK(source_value.is_dict());
     const base::DictionaryValue& source =
         base::Value::AsDictionaryValue(source_value);
@@ -1354,7 +1354,7 @@ Status ProcessInputActionSequence(
     return Status(kInvalidArgument, "'actions' must be an array");
 
   std::unique_ptr<base::ListValue> actions_result(new base::ListValue);
-  for (const base::Value& action_item_value : actions->GetList()) {
+  for (const base::Value& action_item_value : actions->GetListDeprecated()) {
     std::unique_ptr<base::DictionaryValue> action(new base::DictionaryValue());
 
     if (!action_item_value.is_dict()) {
@@ -1577,7 +1577,8 @@ Status ExecutePerformActions(Session* session,
 
   // the processed actions
   std::vector<std::vector<std::unique_ptr<base::DictionaryValue>>> actions_list;
-  for (const base::Value& action_sequence : actions_input->GetList()) {
+  for (const base::Value& action_sequence :
+       actions_input->GetListDeprecated()) {
     // process input action sequence
     if (!action_sequence.is_dict())
       return Status(kInvalidArgument, "each argument must be a dictionary");

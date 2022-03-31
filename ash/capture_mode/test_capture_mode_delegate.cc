@@ -5,6 +5,7 @@
 #include "ash/capture_mode/test_capture_mode_delegate.h"
 
 #include "ash/capture_mode/capture_mode_types.h"
+#include "ash/capture_mode/fake_video_source_provider.h"
 #include "ash/public/cpp/capture_mode/recording_overlay_view.h"
 #include "ash/services/recording/public/mojom/recording_service.mojom.h"
 #include "ash/services/recording/recording_service_test_api.h"
@@ -27,10 +28,10 @@ class TestRecordingOverlayView : public RecordingOverlayView {
 
 }  // namespace
 
-TestCaptureModeDelegate::TestCaptureModeDelegate() {
+TestCaptureModeDelegate::TestCaptureModeDelegate()
+    : video_source_provider_(std::make_unique<FakeVideoSourceProvider>()) {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  bool created_dir =
-      base::CreateNewTempDirectory(/*prefix=*/"", &fake_downloads_dir_);
+  bool created_dir = fake_downloads_dir_.CreateUniqueTempDir();
   DCHECK(created_dir);
   created_dir = fake_drive_fs_mount_path_.CreateUniqueTempDir();
   DCHECK(created_dir);
@@ -75,7 +76,7 @@ void TestCaptureModeDelegate::RequestAndWaitForVideoFrame() {
 base::FilePath TestCaptureModeDelegate::GetUserDefaultDownloadsFolder() const {
   DCHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
 
-  return fake_downloads_dir_;
+  return fake_downloads_dir_.GetPath();
 }
 
 void TestCaptureModeDelegate::ShowScreenCaptureItemInFolder(
@@ -159,6 +160,16 @@ base::FilePath TestCaptureModeDelegate::GetAndroidFilesPath() const {
 std::unique_ptr<RecordingOverlayView>
 TestCaptureModeDelegate::CreateRecordingOverlayView() const {
   return std::make_unique<TestRecordingOverlayView>();
+}
+
+void TestCaptureModeDelegate::ConnectToVideoSourceProvider(
+    mojo::PendingReceiver<video_capture::mojom::VideoSourceProvider> receiver) {
+  video_source_provider_->Bind(std::move(receiver));
+}
+
+void TestCaptureModeDelegate::GetDriveFsFreeSpaceBytes(
+    OnGotDriveFsFreeSpace callback) {
+  std::move(callback).Run(fake_drive_fs_free_bytes_);
 }
 
 }  // namespace ash

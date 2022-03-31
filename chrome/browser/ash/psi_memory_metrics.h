@@ -5,15 +5,16 @@
 #ifndef CHROME_BROWSER_ASH_PSI_MEMORY_METRICS_H_
 #define CHROME_BROWSER_ASH_PSI_MEMORY_METRICS_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/synchronization/atomic_flag.h"
-#include "base/task/delayed_task_handle.h"
+#include "base/sequence_checker.h"
 #include "base/task/task_runner.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "components/metrics/psi_memory_parser.h"
 
 namespace ash {
@@ -64,10 +65,7 @@ class PSIMemoryMetrics : public base::RefCountedThreadSafe<PSIMemoryMetrics> {
 
   void CollectEvents();
 
-  // Calls CollectEvents and reschedules a future collection.
-  void CollectEventsAndReschedule();
-
-  // Schedules a metrics event collection in the future.
+  // Schedules a repeating timer to drive metric collection in the future.
   void ScheduleCollector();
 
   // Cancels the running timer from the same sequence the timer runs in.
@@ -78,10 +76,14 @@ class PSIMemoryMetrics : public base::RefCountedThreadSafe<PSIMemoryMetrics> {
   metrics::PSIMemoryParser parser_;
   base::TimeDelta collection_interval_;
 
-  // Task controllers/monitors.
+  // The background task runner where the collection takes place.
   scoped_refptr<base::SequencedTaskRunner> runner_;
-  base::AtomicFlag stopped_;
-  base::DelayedTaskHandle last_timer_;
+
+  // The timer that schedules the collection on a regular interval.
+  std::unique_ptr<base::RepeatingTimer> timer_
+      GUARDED_BY_CONTEXT(background_sequence_checker_);
+
+  SEQUENCE_CHECKER(background_sequence_checker_);
 };
 
 }  // namespace ash

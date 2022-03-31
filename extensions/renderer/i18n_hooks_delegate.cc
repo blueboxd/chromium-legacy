@@ -14,12 +14,13 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_messages.h"
 #include "extensions/common/message_bundle.h"
 #include "extensions/renderer/bindings/api_binding_types.h"
 #include "extensions/renderer/bindings/js_runner.h"
 #include "extensions/renderer/get_script_context.h"
 #include "extensions/renderer/script_context.h"
+#include "extensions/renderer/shared_l10n_map.h"
+#include "extensions/renderer/worker_thread_dispatcher.h"
 #include "gin/converter.h"
 #include "gin/data_object_builder.h"
 #include "third_party/cld_3/src/src/nnet_language_identifier.h"
@@ -149,33 +150,12 @@ v8::Local<v8::Value> GetI18nMessage(const std::string& message_name,
                                     const std::string& extension_id,
                                     v8::Local<v8::Value> v8_substitutions,
                                     v8::Local<v8::Value> v8_options,
-                                    content::RenderFrame* render_frame,
+                                    IPC::Sender* message_sender,
                                     v8::Local<v8::Context> context) {
   v8::Isolate* isolate = context->GetIsolate();
-  L10nMessagesMap* l10n_messages = nullptr;
-  {
-    ExtensionToL10nMessagesMap& messages_map = *GetExtensionToL10nMessagesMap();
-    auto iter = messages_map.find(extension_id);
-    if (iter != messages_map.end()) {
-      l10n_messages = &iter->second;
-    } else {
-      if (!render_frame)
-        return v8::Undefined(isolate);
 
-      l10n_messages = &messages_map[extension_id];
-      // A sync call to load message catalogs for current extension.
-      // TODO(devlin): Wait, what?! A synchronous call to the browser to perform
-      // potentially blocking work reading files from disk? That's Bad.
-      {
-        SCOPED_UMA_HISTOGRAM_TIMER("Extensions.SyncGetMessageBundle");
-        render_frame->Send(
-            new ExtensionHostMsg_GetMessageBundle(extension_id, l10n_messages));
-      }
-    }
-  }
-
-  std::string message =
-      MessageBundle::GetL10nMessage(message_name, *l10n_messages);
+  std::string message = SharedL10nMap::GetInstance().GetMessage(
+      extension_id, message_name, message_sender);
 
   std::vector<std::string> substitutions;
   // For now, we just suppress all errors, but that's really not the best.
@@ -305,10 +285,18 @@ RequestResult I18nHooksDelegate::HandleGetMessage(
   DCHECK_EQ(binding::AsyncResponseType::kNone, parse_result.async_type);
   DCHECK(script_context->extension());
   DCHECK(arguments[0]->IsString());
+
+  IPC::Sender* message_sender = nullptr;
+  if (script_context->IsForServiceWorker()) {
+    message_sender = WorkerThreadDispatcher::Get();
+  } else {
+    message_sender = script_context->GetRenderFrame();
+  }
+
   v8::Local<v8::Value> message = GetI18nMessage(
       gin::V8ToString(script_context->isolate(), arguments[0]),
       script_context->extension()->id(), arguments[1], arguments[2],
-      script_context->GetRenderFrame(), script_context->v8_context());
+      message_sender, script_context->v8_context());
 
   RequestResult result(RequestResult::HANDLED);
   result.return_value = message;

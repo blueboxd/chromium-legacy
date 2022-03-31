@@ -7,12 +7,15 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/time/time.h"
+#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/event_target_names.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
@@ -76,6 +79,7 @@ AbortSignal* AbortSignal::abort(ScriptState* script_state) {
   return abort(script_state, reason);
 }
 
+// static
 AbortSignal* AbortSignal::abort(ScriptState* script_state, ScriptValue reason) {
   DCHECK(!reason.IsEmpty());
   AbortSignal* signal =
@@ -84,13 +88,55 @@ AbortSignal* AbortSignal::abort(ScriptState* script_state, ScriptValue reason) {
   return signal;
 }
 
-ScriptValue AbortSignal::reason(ScriptState* script_state) {
+// static
+AbortSignal* AbortSignal::timeout(ScriptState* script_state,
+                                  uint64_t milliseconds) {
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  AbortSignal* signal = MakeGarbageCollected<AbortSignal>(context);
+  // The spec requires us to use the timer task source, but there are a few
+  // timer task sources due to our throttling implementation. We match
+  // setTimeout for immediate timeouts, but use the high-nesting task type for
+  // all positive timeouts so they are eligible for throttling (i.e. no
+  // nesting-level exception).
+  TaskType task_type = milliseconds == 0
+                           ? TaskType::kJavascriptTimerImmediate
+                           : TaskType::kJavascriptTimerDelayedHighNesting;
+  // `signal` needs to be held with a strong reference to keep it alive in case
+  // there are or will be event handlers attached.
+  context->GetTaskRunner(task_type)->PostDelayedTask(
+      FROM_HERE,
+      WTF::Bind(&AbortSignal::AbortTimeoutFired, WrapPersistent(signal),
+                WrapPersistent(script_state)),
+      base::Milliseconds(milliseconds));
+  return signal;
+}
+
+void AbortSignal::AbortTimeoutFired(ScriptState* script_state) {
+  if (GetExecutionContext()->IsContextDestroyed() ||
+      !script_state->ContextIsValid()) {
+    return;
+  }
+  ScriptState::Scope scope(script_state);
+  auto* isolate = script_state->GetIsolate();
+  v8::Local<v8::Value> reason = V8ThrowDOMException::CreateOrEmpty(
+      isolate, DOMExceptionCode::kTimeoutError, "signal timed out");
+  SignalAbort(script_state, ScriptValue(isolate, reason));
+}
+
+ScriptValue AbortSignal::reason(ScriptState* script_state) const {
   DCHECK(script_state->GetIsolate()->InContext());
   if (abort_reason_.IsEmpty()) {
     return ScriptValue(script_state->GetIsolate(),
                        v8::Undefined(script_state->GetIsolate()));
   }
   return abort_reason_;
+}
+
+void AbortSignal::throwIfAborted(ScriptState* script_state,
+                                 ExceptionState& exception_state) const {
+  if (!aborted())
+    return;
+  exception_state.RethrowV8Exception(reason(script_state).V8Value());
 }
 
 const AtomicString& AbortSignal::InterfaceName() const {

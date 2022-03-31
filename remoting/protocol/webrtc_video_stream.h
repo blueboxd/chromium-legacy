@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -37,7 +38,8 @@ class WebrtcVideoStream : public VideoStream,
                           public webrtc::DesktopCapturer::Callback,
                           public VideoChannelStateObserver {
  public:
-  explicit WebrtcVideoStream(const SessionOptions& options);
+  WebrtcVideoStream(const std::string& stream_name,
+                    const SessionOptions& options);
 
   WebrtcVideoStream(const WebrtcVideoStream&) = delete;
   WebrtcVideoStream& operator=(const WebrtcVideoStream&) = delete;
@@ -60,7 +62,7 @@ class WebrtcVideoStream : public VideoStream,
   void SetLosslessEncode(bool want_lossless) override;
   void SetLosslessColor(bool want_lossless) override;
   void SetObserver(Observer* observer) override;
-  void SelectSource(int id) override;
+  void SelectSource(webrtc::ScreenId id) override;
 
   // VideoChannelStateObserver interface.
   void OnKeyFrameRequested() override;
@@ -83,6 +85,9 @@ class WebrtcVideoStream : public VideoStream,
 
   // Called by |video_track_source_|.
   void OnSinkAddedOrUpdated(const rtc::VideoSinkWants& wants);
+
+  // Label of the associated WebRTC video-stream.
+  std::string stream_name_;
 
   // Capturer used to capture the screen.
   std::unique_ptr<webrtc::DesktopCapturer> capturer_;

@@ -7,6 +7,8 @@
 #include <presentation-time-client-protocol.h>
 #include <sync/sync.h>
 
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_handle.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
@@ -58,7 +60,7 @@ WaylandFrameManager::WaylandFrameManager(WaylandWindow* window,
     : window_(window), connection_(connection), weak_factory_(this) {}
 
 WaylandFrameManager::~WaylandFrameManager() {
-  ClearStates();
+  ClearStates(true /* closing */);
 }
 
 void WaylandFrameManager::RecordFrame(std::unique_ptr<WaylandFrame> frame) {
@@ -171,8 +173,9 @@ void WaylandFrameManager::PlayBackFrame(std::unique_ptr<WaylandFrame> frame) {
   bool empty_frame = !root_config || !root_config->buffer_id;
 
   if (!empty_frame) {
-    window_->UpdateVisualSize(root_config->bounds_rect.size(),
-                              root_config->surface_scale_factor);
+    window_->UpdateVisualSize(
+        gfx::ToRoundedSize(root_config->bounds_rect.size()),
+        root_config->surface_scale_factor);
   }
 
   // Configure subsurfaces. Traverse the deque backwards s.t. we can set
@@ -202,8 +205,7 @@ void WaylandFrameManager::PlayBackFrame(std::unique_ptr<WaylandFrame> frame) {
     } else {
       subsurface->ConfigureAndShowSurface(
           config->bounds_rect, root_config->bounds_rect,
-          root_config->surface_scale_factor,
-          reference_above ? nullptr : root_surface, reference_above);
+          root_config->surface_scale_factor, nullptr, reference_above);
       ApplySurfaceConfigure(frame.get(), surface, config, true);
       reference_above = surface;
       surface->Commit(false);
@@ -211,8 +213,8 @@ void WaylandFrameManager::PlayBackFrame(std::unique_ptr<WaylandFrame> frame) {
   }
 
   if (empty_frame) {
-    root_surface->AttachBuffer(nullptr);
-    root_surface->ApplyPendingState();
+    // GPU channel has been destroyed. Do nothing for empty frames except that
+    // the frame should be marked as failed if it hasn't been presented yet.
     if (!frame->presentation_acked)
       frame->feedback = gfx::PresentationFeedback::Failure();
   } else {
@@ -261,7 +263,8 @@ void WaylandFrameManager::ApplySurfaceConfigure(
   surface->SetRoundedClipBounds(config->rounded_clip_bounds);
   surface->SetOverlayPriority(config->priority_hint);
   if (set_opaque_region) {
-    std::vector<gfx::Rect> region_px = {gfx::Rect(config->bounds_rect.size())};
+    std::vector<gfx::Rect> region_px = {
+        gfx::Rect(gfx::ToRoundedSize(config->bounds_rect.size()))};
     surface->SetOpaqueRegion(config->enable_blend ? nullptr : &region_px);
   }
 
@@ -605,11 +608,12 @@ void WaylandFrameManager::Hide() {
   MaybeProcessSubmittedFrames();
 }
 
-void WaylandFrameManager::ClearStates() {
+void WaylandFrameManager::ClearStates(bool closing) {
   for (auto& frame : submitted_frames_) {
     frame->wl_frame_callback.reset();
     for (auto& submitted : frame->submitted_buffers)
       submitted.second->OnExplicitRelease();
+    frame->submission_acked = true;
     frame->submitted_buffers.clear();
     if (!frame->feedback.has_value())
       frame->feedback = gfx::PresentationFeedback::Failure();
@@ -622,6 +626,9 @@ void WaylandFrameManager::ClearStates() {
     submitted_frames_.push_back(std::move(frame));
   }
   pending_frames_.clear();
+
+  if (closing)
+    return;
 
   MaybeProcessSubmittedFrames();
 

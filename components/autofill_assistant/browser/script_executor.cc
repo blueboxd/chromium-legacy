@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/containers/flat_map.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -243,8 +244,9 @@ void ScriptExecutor::ShortWaitForElement(
   current_action_data_.wait_for_dom = std::make_unique<WaitForDomOperation>(
       this, delegate_, ui_delegate_,
       delegate_->GetSettings().short_wait_for_element_deadline,
+      /* allow_observer_mode */ true,
       /* allow_interrupt= */ false, /* observer= */ nullptr,
-      base::BindRepeating(&ScriptExecutor::CheckElementMatches,
+      base::BindRepeating(&ScriptExecutor::CheckElementConditionMatches,
                           weak_ptr_factory_.GetWeakPtr(), selector),
       base::BindOnce(&ScriptExecutor::OnShortWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -257,8 +259,9 @@ void ScriptExecutor::ShortWaitForElementWithSlowWarning(
   current_action_data_.wait_for_dom = std::make_unique<WaitForDomOperation>(
       this, delegate_, ui_delegate_,
       delegate_->GetSettings().short_wait_for_element_deadline,
+      /* allow_observer_mode */ true,
       /* allow_interrupt= */ false, /* observer= */ nullptr,
-      base::BindRepeating(&ScriptExecutor::CheckElementMatches,
+      base::BindRepeating(&ScriptExecutor::CheckElementConditionMatches,
                           weak_ptr_factory_.GetWeakPtr(), selector),
       base::BindOnce(&ScriptExecutor::OnShortWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -270,6 +273,7 @@ void ScriptExecutor::ShortWaitForElementWithSlowWarning(
 
 void ScriptExecutor::WaitForDom(
     base::TimeDelta max_wait_time,
+    bool allow_observer_mode,
     bool allow_interrupt,
     WaitForDomObserver* observer,
     base::RepeatingCallback<void(BatchElementChecker*,
@@ -277,8 +281,8 @@ void ScriptExecutor::WaitForDom(
         check_elements,
     base::OnceCallback<void(const ClientStatus&, base::TimeDelta)> callback) {
   current_action_data_.wait_for_dom = std::make_unique<WaitForDomOperation>(
-      this, delegate_, ui_delegate_, max_wait_time, allow_interrupt, observer,
-      check_elements,
+      this, delegate_, ui_delegate_, max_wait_time, allow_observer_mode,
+      allow_interrupt, observer, check_elements,
       base::BindOnce(&ScriptExecutor::OnWaitForElementVisibleWithInterrupts,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   current_action_data_.wait_for_dom->Run();
@@ -293,7 +297,8 @@ void ScriptExecutor::WaitForDomWithSlowWarning(
         check_elements,
     base::OnceCallback<void(const ClientStatus&, base::TimeDelta)> callback) {
   current_action_data_.wait_for_dom = std::make_unique<WaitForDomOperation>(
-      this, delegate_, ui_delegate_, max_wait_time, allow_interrupt, observer,
+      this, delegate_, ui_delegate_, max_wait_time,
+      /* allow_observer_mode= */ true, allow_interrupt, observer,
       check_elements,
       base::BindOnce(&ScriptExecutor::OnWaitForElementVisibleWithInterrupts,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -1010,12 +1015,15 @@ void ScriptExecutor::OnProcessedAction(
   ProcessNextAction();
 }
 
-void ScriptExecutor::CheckElementMatches(
+void ScriptExecutor::CheckElementConditionMatches(
     const Selector& selector,
     BatchElementChecker* checker,
     base::OnceCallback<void(const ClientStatus&)> callback) {
-  checker->AddElementCheck(
-      selector, /* strict= */ false,
+  ElementConditionProto condition;
+  *condition.mutable_match() = selector.proto;
+  condition.set_require_unique_element(false);
+  checker->AddElementConditionCheck(
+      condition,
       base::BindOnce(&ScriptExecutor::CheckElementMatchesCallback,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -1023,7 +1031,9 @@ void ScriptExecutor::CheckElementMatches(
 void ScriptExecutor::CheckElementMatchesCallback(
     base::OnceCallback<void(const ClientStatus&)> callback,
     const ClientStatus& status,
-    const ElementFinder::Result& ignored_element) {
+    const std::vector<std::string>& ignored_payloads,
+    const std::vector<std::string>& ignored_tags,
+    const base::flat_map<std::string, DomObjectFrameStack>& ignored_elements) {
   std::move(callback).Run(status);
 }
 
@@ -1063,6 +1073,7 @@ ScriptExecutor::WaitForDomOperation::WaitForDomOperation(
     ScriptExecutorDelegate* delegate,
     ScriptExecutorUiDelegate* ui_delegate,
     base::TimeDelta max_wait_time,
+    bool allow_observers,
     bool allow_interrupt,
     WaitForDomObserver* observer,
     base::RepeatingCallback<void(BatchElementChecker*,
@@ -1074,6 +1085,10 @@ ScriptExecutor::WaitForDomOperation::WaitForDomOperation(
       ui_delegate_(ui_delegate),
       max_wait_time_(max_wait_time),
       allow_interrupt_(allow_interrupt),
+      use_observers_(allow_observers && delegate->GetTriggerContext()
+                                            ->GetScriptParameters()
+                                            .GetEnableObserverWaitForDom()
+                                            .value_or(false)),
       observer_(observer),
       check_elements_(std::move(check_elements)),
       callback_(std::move(callback)),
@@ -1168,16 +1183,22 @@ void ScriptExecutor::WaitForDomOperation::RunChecks(
       FROM_HERE, timeout_warning_delay_,
       base::BindOnce(&ScriptExecutor::WaitForDomOperation::TimeoutWarning,
                      weak_ptr_factory_.GetWeakPtr()));
-  wait_time_total_ =
-      (wait_time_stopwatch_.TotalElapsed() < retry_timer_.period())
-          // It's the first run of the checks, set the total time waited to 0.
-          ? base::Seconds(0)
-          // If this is not the first run of the checks, in order to estimate
-          // the real cost of periodic checks, half the duration of the retry
-          // timer period is removed from the total wait time. This is to
-          // account for the fact that the conditions could have been satisfied
-          // at any point between the two consecutive checks.
-          : wait_time_stopwatch_.TotalElapsed() - retry_timer_.period() / 2;
+
+  if (use_observers_) {
+    // Observers should stop soon after the elements are in the page.
+    wait_time_total_ = wait_time_stopwatch_.TotalElapsed();
+  } else if (wait_time_stopwatch_.TotalElapsed() < retry_timer_.period()) {
+    // It's the first run of the checks, set the total time waited to 0.
+    wait_time_total_ = base::Seconds(0);
+  } else {
+    // If this is not the first run of the checks, in order to estimate
+    // the real cost of periodic checks, half the duration of the retry
+    // timer period is removed from the total wait time. This is to
+    // account for the fact that the conditions could have been satisfied
+    // at any point between the two consecutive checks.
+    wait_time_total_ =
+        wait_time_stopwatch_.TotalElapsed() - retry_timer_.period() / 2;
+  }
   // Reset state possibly left over from previous runs.
   element_check_result_ = ClientStatus();
   runnable_interrupts_.clear();
@@ -1205,6 +1226,15 @@ void ScriptExecutor::WaitForDomOperation::RunChecks(
   batch_element_checker_->AddAllDoneCallback(
       base::BindOnce(&WaitForDomOperation::OnAllChecksDone,
                      base::Unretained(this), std::move(report_attempt_result)));
+  if (use_observers_) {
+    batch_element_checker_->EnableObserver(
+        /* max_wait_time= */ max_wait_time_ -
+            wait_time_stopwatch_.TotalElapsed(),
+        /* periodic_check_interval= */
+        main_script_->delegate_->GetSettings().periodic_element_check_interval,
+        /* extra_timeout= */
+        main_script_->delegate_->GetSettings().selector_observer_extra_timeout);
+  }
   batch_element_checker_->Run(delegate_->GetWebController());
 }
 

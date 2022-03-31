@@ -59,7 +59,7 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob> {
 #if BUILDFLAG(IS_CHROMEOS)
   // An enumeration of components where print jobs can come from. The order of
   // these enums must match that of
-  // chrome/browser/chromeos/printing/history/print_job_info.proto.
+  // chrome/browser/ash/printing/history/print_job_info.proto.
   using Source = crosapi::mojom::PrintJob::Source;
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
@@ -93,7 +93,7 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob> {
   // selected pages should be sent to the printer. See https://crbug.com/823876.
   void ResetPageMapping();
 
-  // Called when |page| is done printing.
+  // Called when `page` is done printing.
   void OnPageDone(PrintedPage* page);
 #endif
 
@@ -148,6 +148,10 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob> {
   // Posts the given task to be run.
   bool PostTask(const base::Location& from_here, base::OnceClosure task);
 
+  const base::ObserverList<Observer>& GetObserversForTesting() {
+    return observers_;
+  }
+
   // Adds and removes observers for `PrintJob` events. The order in
   // which notifications are sent to observers is undefined. Observers must be
   // sure to remove the observer before they go away.
@@ -163,7 +167,7 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob> {
   // The functions below are used for tests only.
   void set_job_pending(bool pending);
 
-  // Updates |document_| to a new instance. Protected so that tests can access
+  // Updates `document_` to a new instance. Protected so that tests can access
   // it.
   void UpdatePrintedDocument(scoped_refptr<PrintedDocument> new_document);
 
@@ -172,11 +176,11 @@ class PrintJob : public base::RefCountedThreadSafe<PrintJob> {
   FRIEND_TEST_ALL_PREFIXES(PrintJobTest, PageRangeMapping);
 #endif
 
-  // Clears reference to |document_|.
+  // Clears reference to `document_`.
   void ClearPrintedDocument();
 
   // Helper method for UpdatePrintedDocument() and ClearPrintedDocument() to
-  // sync |document_| updates with |worker_|.
+  // sync `document_` updates with `worker_`.
   void SyncPrintedDocumentToWorker();
 
   // Releases the worker thread by calling Stop(), then broadcasts a JOB_DONE

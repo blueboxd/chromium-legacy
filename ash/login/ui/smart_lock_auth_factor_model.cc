@@ -14,9 +14,33 @@
 
 namespace ash {
 
+// static
+SmartLockAuthFactorModel::Factory*
+    SmartLockAuthFactorModel::Factory::factory_instance_ = nullptr;
+
+// static
+std::unique_ptr<SmartLockAuthFactorModel>
+SmartLockAuthFactorModel::Factory::Create(
+    SmartLockState initial_state,
+    base::RepeatingCallback<void()> arrow_button_tap_callback) {
+  if (factory_instance_)
+    return factory_instance_->CreateInstance(initial_state,
+                                             arrow_button_tap_callback);
+  return std::make_unique<SmartLockAuthFactorModel>(initial_state,
+                                                    arrow_button_tap_callback);
+}
+
+// static
+void SmartLockAuthFactorModel::Factory::SetFactoryForTesting(
+    SmartLockAuthFactorModel::Factory* factory) {
+  factory_instance_ = factory;
+}
+
 SmartLockAuthFactorModel::SmartLockAuthFactorModel(
+    SmartLockState initial_state,
     base::RepeatingCallback<void()> arrow_button_tap_callback)
-    : arrow_button_tap_callback_(arrow_button_tap_callback) {}
+    : state_(initial_state),
+      arrow_button_tap_callback_(arrow_button_tap_callback) {}
 
 SmartLockAuthFactorModel::~SmartLockAuthFactorModel() = default;
 
@@ -87,8 +111,15 @@ AuthFactorType SmartLockAuthFactorModel::GetType() const {
 
 int SmartLockAuthFactorModel::GetLabelId() const {
   if (auth_result_.has_value()) {
-    return auth_result_.value() ? IDS_SMART_LOCK_LABEL_PHONE_LOCKED
-                                : IDS_AUTH_FACTOR_LABEL_CANNOT_UNLOCK;
+    if (auth_result_.value()) {
+      return IDS_SMART_LOCK_LABEL_PHONE_LOCKED;
+    }
+
+    // Once the Smart Lock error message has timed out, prompt the
+    // user to enter their password (since Smart Lock has permanently failed).
+    return has_permanent_error_display_timed_out_
+               ? IDS_AUTH_FACTOR_LABEL_PASSWORD_REQUIRED
+               : IDS_AUTH_FACTOR_LABEL_CANNOT_UNLOCK;
   }
 
   switch (state_) {

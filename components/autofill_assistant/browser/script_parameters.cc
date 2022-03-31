@@ -9,6 +9,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "components/autofill_assistant/browser/user_data.h"
@@ -91,6 +92,9 @@ const char kIntent[] = "INTENT";
 
 // Parameter that allows enabling Text-to-Speech functionality.
 const char kEnableTtsParameterName[] = "ENABLE_TTS";
+
+// Allows enabling observer-based WaitForDOM.
+const char kEnableObserversParameter[] = "ENABLE_OBSERVER_WAIT_FOR_DOM";
 
 // Parameter name of the CALLER script parameter. Note that the corresponding
 // values are integers, corresponding to the caller proto in the backend.
@@ -197,6 +201,10 @@ absl::optional<std::string> ScriptParameters::GetParameter(
   return iter->second.strings().values(0);
 }
 
+bool ScriptParameters::HasExperimentId(const std::string& experiment_id) const {
+  return base::ranges::count(GetExperiments(), experiment_id) > 0;
+}
+
 absl::optional<std::string> ScriptParameters::GetOverlayColors() const {
   return GetParameter(kOverlayColorParameterName);
 }
@@ -243,6 +251,10 @@ absl::optional<std::string> ScriptParameters::GetCallerEmail() const {
 
 absl::optional<bool> ScriptParameters::GetEnableTts() const {
   return GetTypedParameter<bool>(parameters_, kEnableTtsParameterName);
+}
+
+absl::optional<bool> ScriptParameters::GetEnableObserverWaitForDom() const {
+  return GetTypedParameter<bool>(parameters_, kEnableObserversParameter);
 }
 
 absl::optional<int> ScriptParameters::GetCaller() const {

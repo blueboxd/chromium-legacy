@@ -119,7 +119,7 @@ namespace tunnelserver {
 
 // kAssignedDomains is the list of defined tunnel server domains. These map
 // to values 0..256.
-static const char* kAssignedDomains[] = {"cable.ua5v.com"};
+static const char* kAssignedDomains[] = {"cable.ua5v.com", "cable.auth.com"};
 
 absl::optional<KnownDomainID> ToKnownDomainID(uint16_t domain) {
   if (domain >= 256 || domain < base::size(kAssignedDomains)) {
@@ -406,8 +406,18 @@ absl::optional<Components> Parse(const std::string& qr_url) {
     FIDO_LOG(ERROR) << "Invalid compressed public key in QR data";
     return absl::nullopt;
   }
-
   ret.peer_identity = *peer_identity;
+
+  const auto it = qr_contents_map.find(cbor::Value(2));
+  if (it != qr_contents_map.end()) {
+    if (!it->second.is_integer()) {
+      return absl::nullopt;
+    }
+    ret.num_known_domains = it->second.GetInteger();
+  } else {
+    ret.num_known_domains = 0;
+  }
+
   return ret;
 }
 
@@ -796,6 +806,10 @@ bool Crypter::Decrypt(base::span<const uint8_t> ciphertext,
   return true;
 }
 
+void Crypter::UseNewConstruction() {
+  new_construction_ = true;
+}
+
 bool Crypter::IsCounterpartyOfForTesting(const Crypter& other) const {
   return read_key_ == other.write_key_ && write_key_ == other.read_key_;
 }
@@ -921,8 +935,7 @@ HandshakeResult HandshakeInitiator::ProcessResponse(
     return absl::nullopt;
   }
 
-  std::array<uint8_t, 32> read_key, write_key;
-  std::tie(write_key, read_key) = noise_.traffic_keys();
+  auto [write_key, read_key] = noise_.traffic_keys();
   return std::make_pair(std::make_unique<cablev2::Crypter>(read_key, write_key),
                         noise_.handshake_hash());
 }
@@ -1028,8 +1041,7 @@ HandshakeResult RespondToHandshake(
   out_response->insert(out_response->end(), my_ciphertext.begin(),
                        my_ciphertext.end());
 
-  std::array<uint8_t, 32> read_key, write_key;
-  std::tie(read_key, write_key) = noise.traffic_keys();
+  auto [read_key, write_key] = noise.traffic_keys();
   return std::make_pair(std::make_unique<cablev2::Crypter>(read_key, write_key),
                         noise.handshake_hash());
 }

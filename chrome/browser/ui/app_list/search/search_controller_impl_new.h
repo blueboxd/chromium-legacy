@@ -66,6 +66,7 @@ class SearchControllerImplNew : public SearchController {
   void AddProvider(size_t group_id,
                    std::unique_ptr<SearchProvider> provider) override;
   void SetResults(const SearchProvider* provider, Results results) override;
+  void Publish() override;
   ChromeSearchResult* FindSearchResult(const std::string& result_id) override;
   ChromeSearchResult* GetResultByTitleForTest(
       const std::string& title) override;
@@ -96,9 +97,6 @@ class SearchControllerImplNew : public SearchController {
   // Rank the results of |provider_type|.
   void Rank(ash::AppListSearchResultType provider_type);
 
-  // Publish results to ash.
-  void Publish();
-
   void SetSearchResults(const SearchProvider* provider);
 
   void SetZeroStateResults(const SearchProvider* provider);
@@ -106,6 +104,8 @@ class SearchControllerImplNew : public SearchController {
   void OnZeroStateTimedOut();
 
   void OnBurnInPeriodElapsed();
+
+  void OnResultsChangedWithType(ash::AppListSearchResultType result_type);
 
   Profile* profile_;
 
@@ -178,6 +178,9 @@ class SearchControllerImplNew : public SearchController {
   // meta-information we wish to persist across multiple calls to SetResults
   // must therefore be stored separately.
   base::flat_map<std::string, int> ids_to_burnin_iteration_;
+
+  // If set, called when results set by a provider change.
+  ResultsChangedCallback results_changed_callback_;
 
   std::unique_ptr<SearchMetricsObserver> metrics_observer_;
   using Providers = std::vector<std::unique_ptr<SearchProvider>>;

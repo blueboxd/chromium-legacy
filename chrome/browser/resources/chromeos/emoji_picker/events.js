@@ -41,6 +41,13 @@ export const EMOJI_DATA_LOADED = 'emoji-data-loaded';
 /**
  * @typedef {!CustomEvent}
  */
+export let EmojiRemainingDataLoadedEvent;
+
+export const EMOJI_REMAINING_DATA_LOADED = 'emoji-data-remaining-loaded';
+
+/**
+ * @typedef {!CustomEvent}
+ */
 export let EmojiClearRecentClickEvent;
 
 export const EMOJI_CLEAR_RECENTS_CLICK = 'emoji-clear-recents-click';

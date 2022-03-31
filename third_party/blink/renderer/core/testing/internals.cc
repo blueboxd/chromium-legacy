@@ -951,8 +951,8 @@ uint16_t Internals::compareTreeScopePosition(
       IsA<Document>(node2)
           ? static_cast<const TreeScope*>(To<Document>(node2))
           : IsA<ShadowRoot>(node2)
-                ? static_cast<const TreeScope*>(To<ShadowRoot>(node2))
-                : nullptr;
+          ? static_cast<const TreeScope*>(To<ShadowRoot>(node2))
+          : nullptr;
   if (!tree_scope1 || !tree_scope2) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
@@ -2422,8 +2422,8 @@ unsigned Internals::numberOfScrollableAreas(Document* document) {
 
   unsigned count = 0;
   LocalFrame* frame = document->GetFrame();
-  if (frame->View()->ScrollableAreas()) {
-    for (const auto& scrollable_area : *frame->View()->ScrollableAreas()) {
+  if (frame->View()->UserScrollableAreas()) {
+    for (const auto& scrollable_area : *frame->View()->UserScrollableAreas()) {
       if (scrollable_area->ScrollsOverflow())
         count++;
     }
@@ -2433,9 +2433,9 @@ unsigned Internals::numberOfScrollableAreas(Document* document) {
        child = child->Tree().NextSibling()) {
     auto* child_local_frame = DynamicTo<LocalFrame>(child);
     if (child_local_frame && child_local_frame->View() &&
-        child_local_frame->View()->ScrollableAreas()) {
+        child_local_frame->View()->UserScrollableAreas()) {
       for (const auto& scrollable_area :
-           *child_local_frame->View()->ScrollableAreas()) {
+           *child_local_frame->View()->UserScrollableAreas()) {
         if (scrollable_area->ScrollsOverflow())
           count++;
       }
@@ -2516,7 +2516,7 @@ DOMRectList* Internals::nonFastScrollableRects(
       // Map |layer_rect| into screen space.
       layer_rect.Offset(layer->offset_to_transform_parent());
       auto& transform_tree =
-          layer->layer_tree_host()->property_trees()->transform_tree;
+          layer->layer_tree_host()->property_trees()->transform_tree_mutable();
       transform_tree.UpdateTransforms(layer->transform_tree_index());
       const gfx::Transform& to_screen =
           transform_tree.ToScreen(layer->transform_tree_index());
@@ -3302,6 +3302,12 @@ void Internals::setForcedColorsAndDarkPreferredColorScheme(Document* document) {
       mojom::blink::PreferredColorScheme::kDark);
   color_scheme_helper.SetForcedColors(*document, ForcedColors::kActive);
   document->GetFrame()->View()->UpdateAllLifecyclePhasesForTest();
+}
+
+void Internals::setDarkPreferredColorScheme(Document* document) {
+  DCHECK(document);
+  Settings* settings = document->GetSettings();
+  settings->SetPreferredColorScheme(mojom::blink::PreferredColorScheme::kDark);
 }
 
 void Internals::setShouldRevealPassword(Element* element,

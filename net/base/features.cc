@@ -25,7 +25,7 @@ const base::Feature kCapReferrerToOriginOnCrossOrigin{
     "CapReferrerToOriginOnCrossOrigin", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCookieDomainAttributeEmptyString{
-    "CookieDomainAttributeEmptyString", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CookieDomainAttributeEmptyString", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDnsTransactionDynamicTimeouts{
     "DnsTransactionDynamicTimeouts", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -254,17 +254,8 @@ const base::Feature kExtraCookieValidityChecks{
 const base::Feature kRecordRadioWakeupTrigger{
     "RecordRadioWakeupTrigger", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kSwitchWebSocketReadBufferSize{
-    "SwitchWebSocketReadBufferSize", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::FeatureParam<int> kSmallReadBufferSize{
-    &kSwitchWebSocketReadBufferSize, "SmallReadBufferSize", 1000};
-
-const base::Feature kSwitchWebSocketThroughputWindow{
-    "SwitchWebSocketThroughputWindow", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::FeatureParam<int> kRollingAverageWindow{
-    &kSwitchWebSocketThroughputWindow, "RollingAverageWindow", 100};
+const base::Feature kSandboxHttpCache("SandboxHttpCache",
+                                      base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features
 }  // namespace net

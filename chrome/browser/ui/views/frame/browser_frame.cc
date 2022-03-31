@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/headless/headless_mode_util.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -92,6 +93,7 @@ void BrowserFrame::InitBrowserFrame() {
   views::Widget::InitParams params = native_browser_frame_->GetWidgetParams();
   params.name = "BrowserFrame";
   params.delegate = browser_view_;
+  params.headless_mode = headless::IsChromeNativeHeadless();
 
   if (native_browser_frame_->ShouldRestorePreviousBrowserWidgetState()) {
     Browser* browser = browser_view_->browser();
@@ -245,6 +247,9 @@ const ui::ThemeProvider* BrowserFrame::GetThemeProvider() const {
 ui::ColorProviderManager::InitializerSupplier* BrowserFrame::GetCustomTheme()
     const {
   Browser* browser = browser_view_->browser();
+  // If this is an incognito profile, there should never be a custom theme.
+  if (browser->profile()->IsIncognitoProfile())
+    return nullptr;
   auto* app_controller = browser->app_controller();
   // Ignore GTK+ for web apps with window-controls-overlay as the
   // display_override so the web contents can blend with the overlay by using
@@ -370,20 +375,10 @@ void BrowserFrame::SelectNativeTheme() {
   ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
 
   if (browser_view_->browser()->profile()->IsIncognitoProfile()) {
-    // If the flag is enabled, then no matter if we are using the default theme
-    // or not we always use the dark ui instance.
-    if (base::FeatureList::IsEnabled(
-            features::kIncognitoBrandConsistencyForDesktop)) {
-      SetNativeTheme(ui::NativeTheme::GetInstanceForDarkUI());
-      return;
-    }
-
-    // Flag is disabled, fallback to using dark theme only if the incognito
-    // profile is using a default theme.
-    if (ThemeServiceFactory::GetForProfile(browser_view_->browser()->profile())
-            ->UsingDefaultTheme()) {
-      native_theme = ui::NativeTheme::GetInstanceForDarkUI();
-    }
+    // No matter if we are using the default theme or not we always use the dark
+    // ui instance.
+    SetNativeTheme(ui::NativeTheme::GetInstanceForDarkUI());
+    return;
   }
 
 #if BUILDFLAG(IS_LINUX)

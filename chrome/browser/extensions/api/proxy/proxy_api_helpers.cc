@@ -70,8 +70,11 @@ bool GetProxyModeFromExtensionPref(const base::DictionaryValue* proxy_config,
 
   // We can safely assume that this is ASCII due to the allowed enumeration
   // values specified in the extension API JSON.
-  proxy_config->GetStringASCII(proxy_api_constants::kProxyConfigMode,
-                               &proxy_mode);
+  if (const std::string* proxy_mode_ptr =
+          proxy_config->FindStringKey(proxy_api_constants::kProxyConfigMode)) {
+    proxy_mode = *proxy_mode_ptr;
+    DCHECK(base::IsStringASCII(proxy_mode));
+  }
   if (!ProxyPrefs::StringToProxyMode(proxy_mode, out)) {
     LOG(ERROR) << "Invalid mode for proxy settings: " << proxy_mode;
     *bad_message = true;
@@ -173,8 +176,11 @@ bool GetProxyServer(const base::DictionaryValue* proxy_server,
 
   // We can safely assume that this is ASCII due to the allowed enumeration
   // values specified in the extension API JSON.
-  proxy_server->GetStringASCII(proxy_api_constants::kProxyConfigRuleScheme,
-                               &scheme_string);
+  if (const std::string* scheme_string_ptr = proxy_server->FindStringKey(
+          proxy_api_constants::kProxyConfigRuleScheme)) {
+    scheme_string = *scheme_string_ptr;
+    DCHECK(base::IsStringASCII(scheme_string));
+  }
 
   net::ProxyServer::Scheme scheme = net::GetSchemeFromUriScheme(scheme_string);
   if (scheme == net::ProxyServer::SCHEME_INVALID)
@@ -182,8 +188,10 @@ bool GetProxyServer(const base::DictionaryValue* proxy_server,
 
   // TODO(battre): handle UTF-8 in hostnames (http://crbug.com/72692).
   std::u16string host16;
-  if (!proxy_server->GetString(proxy_api_constants::kProxyConfigRuleHost,
-                               &host16)) {
+  if (const std::string* ptr = proxy_server->FindStringKey(
+          proxy_api_constants::kProxyConfigRuleHost)) {
+    host16 = base::UTF8ToUTF16(*ptr);
+  } else {
     LOG(ERROR) << "Could not parse a 'rules.*.host' entry.";
     *bad_message = true;
     return false;
@@ -328,7 +336,8 @@ bool GetBypassListFromExtensionPref(const base::DictionaryValue* proxy_config,
     return false;
   }
 
-  return JoinUrlList(bypass_list->GetList(), ",", out, error, bad_message);
+  return JoinUrlList(bypass_list->GetListDeprecated(), ",", out, error,
+                     bad_message);
 }
 
 std::unique_ptr<base::Value> CreateProxyConfigDict(
@@ -458,29 +467,29 @@ std::unique_ptr<base::DictionaryValue> CreateProxyServerDict(
   auto out = std::make_unique<base::DictionaryValue>();
   switch (proxy.scheme()) {
     case net::ProxyServer::SCHEME_HTTP:
-      out->SetString(proxy_api_constants::kProxyConfigRuleScheme, "http");
+      out->SetStringKey(proxy_api_constants::kProxyConfigRuleScheme, "http");
       break;
     case net::ProxyServer::SCHEME_HTTPS:
-      out->SetString(proxy_api_constants::kProxyConfigRuleScheme, "https");
+      out->SetStringKey(proxy_api_constants::kProxyConfigRuleScheme, "https");
       break;
     case net::ProxyServer::SCHEME_QUIC:
-      out->SetString(proxy_api_constants::kProxyConfigRuleScheme, "quic");
+      out->SetStringKey(proxy_api_constants::kProxyConfigRuleScheme, "quic");
       break;
     case net::ProxyServer::SCHEME_SOCKS4:
-      out->SetString(proxy_api_constants::kProxyConfigRuleScheme, "socks4");
+      out->SetStringKey(proxy_api_constants::kProxyConfigRuleScheme, "socks4");
       break;
     case net::ProxyServer::SCHEME_SOCKS5:
-      out->SetString(proxy_api_constants::kProxyConfigRuleScheme, "socks5");
+      out->SetStringKey(proxy_api_constants::kProxyConfigRuleScheme, "socks5");
       break;
     case net::ProxyServer::SCHEME_DIRECT:
     case net::ProxyServer::SCHEME_INVALID:
       NOTREACHED();
       return NULL;
   }
-  out->SetString(proxy_api_constants::kProxyConfigRuleHost,
-                 proxy.host_port_pair().host());
-  out->SetInteger(proxy_api_constants::kProxyConfigRulePort,
-                  proxy.host_port_pair().port());
+  out->SetStringKey(proxy_api_constants::kProxyConfigRuleHost,
+                    proxy.host_port_pair().host());
+  out->SetIntKey(proxy_api_constants::kProxyConfigRulePort,
+                 proxy.host_port_pair().port());
   return out;
 }
 
@@ -507,13 +516,13 @@ std::unique_ptr<base::DictionaryValue> CreatePacScriptDict(
       LOG(ERROR) << "Cannot decode base64-encoded PAC data URL: " << pac_url;
       return NULL;
     }
-    pac_script_dict->SetString(proxy_api_constants::kProxyConfigPacScriptData,
-                               pac_data);
+    pac_script_dict->SetStringKey(
+        proxy_api_constants::kProxyConfigPacScriptData, pac_data);
   } else {
-    pac_script_dict->SetString(proxy_api_constants::kProxyConfigPacScriptUrl,
-                               pac_url);
+    pac_script_dict->SetStringKey(proxy_api_constants::kProxyConfigPacScriptUrl,
+                                  pac_url);
   }
-  pac_script_dict->SetBoolean(
+  pac_script_dict->SetBoolKey(
       proxy_api_constants::kProxyConfigPacScriptMandatory, pac_mandatory);
   return pac_script_dict;
 }

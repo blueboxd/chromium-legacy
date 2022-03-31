@@ -5,10 +5,11 @@
 #ifndef ASH_SYSTEM_ACCESSIBILITY_DICTATION_BUBBLE_VIEW_H_
 #define ASH_SYSTEM_ACCESSIBILITY_DICTATION_BUBBLE_VIEW_H_
 
-#include <memory>
 #include <string>
+#include <vector>
 
 #include "ash/ash_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/metadata/view_factory.h"
 #include "ui/views/view.h"
@@ -18,13 +19,14 @@ namespace ui {
 struct AXNodeData;
 }  // namespace ui
 
-namespace views {
-class ImageView;
-class Label;
-}  // namespace views
-
 namespace ash {
 
+namespace {
+class HintView;
+class TopRowView;
+}  // namespace
+
+enum class DictationBubbleHintType;
 enum class DictationBubbleIconType;
 
 // View for the Dictation bubble.
@@ -36,10 +38,14 @@ class ASH_EXPORT DictationBubbleView : public views::BubbleDialogDelegateView {
   DictationBubbleView& operator=(const DictationBubbleView&) = delete;
   ~DictationBubbleView() override;
 
-  // Updates the visibility of all child views. Also updates the text content
-  // of `label_` and updates the size of this view.
-  void Update(DictationBubbleIconType icon,
-              const absl::optional<std::u16string>& text);
+  // Updates the visibility of all child views, displays the icon/animation
+  // specified by `icon`, and updates text content and size of this view.
+  void Update(
+      DictationBubbleIconType icon,
+      const absl::optional<std::u16string>& text,
+      const absl::optional<std::vector<DictationBubbleHintType>>& hints);
+
+  void OnColorModeChanged(bool dark_mode_enabled);
 
   // views::BubbleDialogDelegateView:
   void Init() override;
@@ -50,22 +56,18 @@ class ASH_EXPORT DictationBubbleView : public views::BubbleDialogDelegateView {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   std::u16string GetTextForTesting();
-  bool IsStandbyImageVisibleForTesting();
+  bool IsStandbyViewVisibleForTesting();
   bool IsMacroSucceededImageVisibleForTesting();
   bool IsMacroFailedImageVisibleForTesting();
+  SkColor GetLabelBackgroundColorForTesting();
+  SkColor GetLabelTextColorForTesting();
+  std::vector<std::u16string> GetVisibleHintsForTesting();
 
  private:
-  std::unique_ptr<views::Label> CreateLabel(const std::u16string& text);
+  friend class DictationBubbleControllerTest;
 
-  // Owned by the views hierarchy.
-  // An image that is shown when Dictation is standing by.
-  views::ImageView* standby_image_ = nullptr;
-  // An image that is shown when a macro is successfully run.
-  views::ImageView* macro_succeeded_image_ = nullptr;
-  // An image that is shown when a macro fails to run.
-  views::ImageView* macro_failed_image_ = nullptr;
-  // A label that displays non-final speech results.
-  views::Label* label_ = nullptr;
+  TopRowView* top_row_view_ = nullptr;
+  HintView* hint_view_ = nullptr;
 };
 
 BEGIN_VIEW_BUILDER(/* no export */,

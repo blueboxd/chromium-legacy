@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/containers/contains.h"
 #include "base/i18n/time_formatting.h"
+#include "base/observer_list.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -581,7 +582,7 @@ void MediaGalleriesPreferences::InitFromPrefs() {
   const base::Value* list =
       prefs->GetList(prefs::kMediaGalleriesRememberedGalleries);
   if (list) {
-    for (const auto& gallery_value : list->GetList()) {
+    for (const auto& gallery_value : list->GetListDeprecated()) {
       if (!gallery_value.is_dict())
         continue;
 
@@ -802,7 +803,7 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddOrUpdateGalleryInternal(
         prefs, prefs::kMediaGalleriesRememberedGalleries);
     base::Value* list = update->Get();
 
-    for (auto& gallery_value : list->GetList()) {
+    for (auto& gallery_value : list->GetListDeprecated()) {
       MediaGalleryPrefId iter_id;
       if (gallery_value.is_dict() && GetPrefId(gallery_value, &iter_id) &&
           *pref_id_it == iter_id) {
@@ -900,7 +901,7 @@ void MediaGalleriesPreferences::UpdateDefaultGalleriesPaths() {
 
   std::vector<MediaGalleryPrefId> pref_ids;
 
-  for (auto& gallery_value : list->GetList()) {
+  for (auto& gallery_value : list->GetListDeprecated()) {
     MediaGalleryPrefId pref_id;
 
     if (!(gallery_value.is_dict() && GetPrefId(gallery_value, &pref_id)))
@@ -995,8 +996,8 @@ void MediaGalleriesPreferences::EraseOrBlocklistGalleryById(
   if (!base::Contains(known_galleries_, id))
     return;
 
-  for (auto iter = list->GetList().begin(); iter != list->GetList().end();
-       ++iter) {
+  for (auto iter = list->GetListDeprecated().begin();
+       iter != list->GetListDeprecated().end(); ++iter) {
     MediaGalleryPrefId iter_id;
     if (iter->is_dict() && GetPrefId(*iter, &iter_id) && id == iter_id) {
       RemoveGalleryPermissionsFromPrefs(id);
@@ -1173,7 +1174,7 @@ bool MediaGalleriesPreferences::SetGalleryPermissionInPrefs(
     permissions = update.Create();
   } else {
     // If the gallery is already in the list, update the permission...
-    for (auto& permission : permissions->GetList()) {
+    for (auto& permission : permissions->GetListDeprecated()) {
       if (!permission.is_dict())
         continue;
       MediaGalleryPermission perm;
@@ -1209,8 +1210,8 @@ bool MediaGalleriesPreferences::UnsetGalleryPermissionInPrefs(
   if (!permissions)
     return false;
 
-  for (auto iter = permissions->GetList().begin();
-       iter != permissions->GetList().end(); ++iter) {
+  for (auto iter = permissions->GetListDeprecated().begin();
+       iter != permissions->GetListDeprecated().end(); ++iter) {
     if (!iter->is_dict())
       continue;
     MediaGalleryPermission perm;
@@ -1237,7 +1238,7 @@ MediaGalleriesPreferences::GetGalleryPermissionsFromPrefs(
     return result;
   }
 
-  for (const auto& permission : permissions->GetList()) {
+  for (const auto& permission : permissions->GetListDeprecated()) {
     if (!permission.is_dict())
       continue;
     MediaGalleryPermission perm;

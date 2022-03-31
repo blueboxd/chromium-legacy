@@ -32,7 +32,10 @@ import "chromeos/crosapi/mojom/identity_manager.mojom";
 import "chromeos/crosapi/mojom/idle_service.mojom";
 import "chromeos/crosapi/mojom/image_writer.mojom";
 import "chromeos/crosapi/mojom/keystore_service.mojom";
+import "chromeos/crosapi/mojom/launcher_search.mojom";
 import "chromeos/crosapi/mojom/local_printer.mojom";
+import "chromeos/crosapi/mojom/login.mojom";
+import "chromeos/crosapi/mojom/login_screen_storage.mojom";
 import "chromeos/crosapi/mojom/login_state.mojom";
 import "chromeos/crosapi/mojom/policy_service.mojom";
 import "chromeos/crosapi/mojom/message_center.mojom";
@@ -46,7 +49,9 @@ import "chromeos/crosapi/mojom/remoting.mojom";
 import "chromeos/crosapi/mojom/resource_manager.mojom";
 import "chromeos/crosapi/mojom/screen_manager.mojom";
 import "chromeos/crosapi/mojom/select_file.mojom";
+import "chromeos/crosapi/mojom/sharesheet.mojom";
 import "chromeos/crosapi/mojom/structured_metrics_service.mojom";
+import "chromeos/crosapi/mojom/sync.mojom";
 import "chromeos/crosapi/mojom/system_display.mojom";
 import "chromeos/crosapi/mojom/task_manager.mojom";
 import "chromeos/crosapi/mojom/test_controller.mojom";
@@ -93,8 +98,8 @@ struct BrowserInfo {
 // please note the milestone when you added it, to help us reason about
 // compatibility between the client applications and older ash-chrome binaries.
 //
-// Next version: 62
-// Next method id: 66
+// Next version: 67
+// Next method id: 71
 [Stable, Uuid="8b79c34f-2bf8-4499-979a-b17cac522c1e",
  RenamedFrom="crosapi.mojom.AshChromeService"]
 interface Crosapi {
@@ -273,6 +278,14 @@ interface Crosapi {
   // Added in M91.
   [MinVersion=25] BindLocalPrinter@30(pending_receiver<LocalPrinter> receiver);
 
+  // Binds the login service.
+  // Added in M99.
+  [MinVersion=63] BindLogin@67(pending_receiver<Login> receiver);
+
+  // Binds the login screen storage service.
+  [MinVersion=64] BindLoginScreenStorage@68(
+      pending_receiver<LoginScreenStorage> receiver);
+
   // Binds the login state service.
   [MinVersion=57] BindLoginState@61(pending_receiver<LoginState> receiver);
 
@@ -329,6 +342,12 @@ interface Crosapi {
   BindSensorHalClient@19(
       pending_remote<chromeos.sensors.mojom.SensorHalClient> receiver);
 
+  // Binds the Sharesheet interface.
+  // Added in M99.
+  [MinVersion=66]
+  BindSharesheet@70(
+      pending_receiver<Sharesheet> receiver);
+
   // Binds the StableVideoDecoderFactory, which allows lacros-chrome to request
   // hardware accelerated video decoding. We need to use a
   // GenericPendingReceiver to avoid dependency circularities.
@@ -384,6 +403,18 @@ interface Crosapi {
   // Added in M93.
   [MinVersion=36] BindResourceManager@41(
       pending_receiver<ResourceManager> receiver);
+
+  // Binds the search controller which send queries from ash to lacros.
+  // Added in M99.
+  [MinVersion=62] BindSearchControllerRegistry@66(
+      pending_receiver<SearchControllerRegistry> receiver);
+
+  // Binds the Sync Service interface to enable communication between Ash and
+  // Lacros Sync. Ash Sync Service is not always available (e.g. Sync can be
+  // disabled via command line flags or after/during profile destruction), in
+  // this case call fails and caller notified via disconnection of |receiver|.
+  // Added in M100.
+  [MinVersion=65] BindSyncService@69(pending_receiver<SyncService> receiver);
 
   // Binds the System Display interface for querying display info.
   // Added in M92.
@@ -574,6 +605,10 @@ enum InitialBrowserAction {
   // The URLs should be set with BrowserInitParams::startup_urls.
   // Added in M96.
   [MinVersion=3] kOpenWindowWithUrls = 5,
+
+  // Opens a new Guest mode window.
+  // Added in M100.
+  [MinVersion=4] kOpenGuestWindow = 6,
 };
 
 // Whether / how mlservice on-device handwriting is supported.
@@ -607,6 +642,17 @@ enum CreationResult {
   [MinVersion=1] kBrowserWindowUnavailable = 6,
 };
 
+// Represents the source of this OpenUrl request.
+[Stable, Extensible]
+enum OpenUrlFrom {
+  // From is not specified or unknown.
+  [Default] kUnspecified = 0,
+
+  // ARC app made a request of this OpenUrl.
+  kArc = 1,
+};
+
+
 // BrowserInitParams is a set of parameters for initialization of browsers
 // (such as lacros-chrome), which is passed from ash-chrome to a browser.
 // Since ash-chrome and browsers may have different versions, the browsers must
@@ -624,8 +670,8 @@ enum CreationResult {
 // If ash-chrome is newer than the browser, then some fields may not be
 // processed by the browser.
 //
-// Next version: 36
-// Next id: 36
+// Next version: 37
+// Next id: 37
 [Stable, RenamedFrom="crosapi.mojom.LacrosInitParams"]
 struct BrowserInitParams {
   // This is ash-chrome's version of the Crosapi interface. This is used by
@@ -767,6 +813,12 @@ struct BrowserInitParams {
   // enforce at run-time in lacros-chrome.
   array<BuildFlag>? build_flags@23;
 
+  // Specifies what requests the startup_urls.
+  // This can be effective only when startup_urls is specified.
+  // Added in M100.
+  [MinVersion=36]
+  OpenUrlFrom startup_urls_from@36;
+
   // URLs to be opened at the beginning. This works only when
   // initial_browser_action == OpenWindowWithUrls.
   // Added in M96.
@@ -854,6 +906,31 @@ struct BrowserInitParams {
   bool is_device_enterprised_managed@35;
 };
 
+// Parameters to specify OpenUrl behavior.
+[Stable]
+struct OpenUrlParams {
+  // Decides the disposition of the opening page.
+  [Stable, Extensible]
+  enum WindowOpenDisposition {
+    // DEPRECATED. OpenUrl used to check the URL to decide the disposition
+    // of the page. This is kept just for the compatibility. New callers
+    // should not use this value.
+    [Default] kLegacyAutoDetection = 0,
+
+    // Opens a new tab and navigate to the given URL.
+    kNewForegroundTab = 1,
+
+    // If there's an existing tab showing the given URL, activate it.
+    // If not, if the tab is NTP and does not have history, navigate it
+    // to the given URL. Otherwise, opens a new tab and navigate it to
+    // the given URL.
+    kSwitchToTab = 2,
+  };
+  WindowOpenDisposition disposition@0;
+
+  [MinVersion=1] OpenUrlFrom from@1;
+};
+
 // BrowserService defines the APIs that live in a browser (such as
 // lacros-chrome) and are accessed from ash-chrome.
 // IMPORTANT NOTE: If you are exposing a new capability from Lacros to Ash,
@@ -861,8 +938,8 @@ struct BrowserInitParams {
 // has accidentally become a kitchen sink for different features. This was not
 // intentional.
 //
-// Next MinVersion: 62.
-// Next ID: 14
+// Next MinVersion: 64.
+// Next ID: 15
 //
 [Stable, Uuid="4e04dc16-b34c-40fd-9e3f-3c55c2c6cf91",
  RenamedFrom="crosapi.mojom.LacrosChromeService"]
@@ -899,6 +976,12 @@ interface BrowserService {
       mojo_base.mojom.String16 tab_id, mojo_base.mojom.String16 group_id)
           => (CreationResult result, string app_id);
 
+  // Opens a new window in the browser with the Guest profile if the Guest mode
+  // is enabled.
+  // Added in M100.
+  [MinVersion=63]
+  NewGuestWindow@14() => ();
+
   // Opens a new tab in the browser with, currently, the last used profile.
   // This may open a new window, if there's no window. Please see also
   // the Chrome's NewTab command for details.
@@ -915,7 +998,8 @@ interface BrowserService {
   // such as web-page opening request from ash features, or Crostini/ARC apps.
   // Added in M96.
   [MinVersion=12]
-  OpenUrl@10(url.mojom.Url url) => ();
+  OpenUrl@10(url.mojom.Url url,
+             [MinVersion=62] OpenUrlParams? params) => ();
 
   // Restores a tab (or a window) recently closed in the browser with,
   // currently, the last used profile. Please see also RestoreTab command

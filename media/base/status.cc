@@ -30,8 +30,8 @@ std::unique_ptr<StatusData> StatusData::copy() const {
   auto result = std::make_unique<StatusData>(group, code, message);
   for (const auto& frame : frames)
     result->frames.push_back(frame.Clone());
-  for (const auto& cause : causes)
-    result->causes.push_back(cause);
+  if (cause)
+    result->cause = cause->copy();
   result->data = data.Clone();
   return result;
 }
@@ -44,8 +44,8 @@ StatusData& StatusData::operator=(const StatusData& copy) {
   message = copy.message;
   for (const auto& frame : copy.frames)
     frames.push_back(frame.Clone());
-  for (const auto& cause : copy.causes)
-    causes.push_back(cause);
+  if (copy.cause)
+    cause = copy.cause->copy();
   data = copy.data.Clone();
   return *this;
 }
@@ -61,6 +61,15 @@ std::ostream& operator<<(std::ostream& stream,
 }
 
 }  // namespace internal
+
+const char StatusConstants::kCodeKey[] = "code";
+const char StatusConstants::kGroupKey[] = "group";
+const char StatusConstants::kMsgKey[] = "message";
+const char StatusConstants::kStackKey[] = "stack";
+const char StatusConstants::kDataKey[] = "data";
+const char StatusConstants::kCauseKey[] = "cause";
+const char StatusConstants::kFileKey[] = "file";
+const char StatusConstants::kLineKey[] = "line";
 
 internal::OkStatusImplicitConstructionHelper OkStatus() {
   return {};

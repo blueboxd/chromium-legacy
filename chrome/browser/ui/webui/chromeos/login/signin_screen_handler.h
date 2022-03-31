@@ -28,10 +28,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui.h"
 #include "net/base/net_errors.h"
-#include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/events/event_handler.h"
-
-class AccountId;
 
 namespace ash {
 class LoginDisplayHostMojo;
@@ -71,17 +68,11 @@ class SigninScreenHandlerDelegate {
   virtual bool IsSigninInProgress() const = 0;
 
   // --------------- Shared with login display methods.
-  // Notify the delegate when the sign-in UI is finished loading.
-  virtual void OnSigninScreenReady() = 0;
-
   // Shows Enterprise Enrollment screen.
   virtual void ShowEnterpriseEnrollmentScreen() = 0;
 
   // Shows Reset screen.
   virtual void ShowKioskAutolaunchScreen() = 0;
-
-  // Show wrong hwid screen.
-  virtual void ShowWrongHWIDScreen() = 0;
 
   // --------------- Rest of the methods.
 
@@ -118,10 +109,8 @@ class SigninScreenHandler
 
   ~SigninScreenHandler() override;
 
-  static std::string GetUserLastInputMethod(const std::string& username);
-
   // Shows the sign in screen.
-  void Show(bool oobe_ui);
+  void Show();
 
   // Sets delegate to be used by the handler. It is guaranteed that valid
   // delegate is set before Show() method will be called.
@@ -185,9 +174,6 @@ class SigninScreenHandler
                const content::NotificationDetails& details) override;
 
   // WebUI message handlers.
-  void HandleAuthenticateUser(const AccountId& account_id,
-                              const std::string& password,
-                              bool authenticated_by_pin);
   void HandleLaunchIncognito();
   void HandleLaunchSAMLPublicSession(const std::string& email);
   void HandleOfflineLogin();
@@ -195,21 +181,9 @@ class SigninScreenHandler
   void HandleToggleResetScreen();
   void HandleToggleKioskAutolaunchScreen();
 
-  void HandleOpenInternetDetailDialog();
   void HandleLoginVisible(const std::string& source);
   void HandleLoginUIStateChanged(const std::string& source, bool active);
-  void HandleLoginScreenUpdate();
   void HandleShowLoadingTimeoutError();
-  void HandleNoPodFocused();
-  void HandleHardlockPod(const std::string& user_id);
-  void HandleLaunchKioskApp(const AccountId& app_account_id,
-                            bool diagnostic_mode);
-  void HandleLaunchArcKioskApp(const AccountId& app_account_id);
-
-  // Implements user sign-in.
-  void AuthenticateExistingUser(const AccountId& account_id,
-                                const std::string& password,
-                                bool authenticated_by_pin);
 
   // Returns true if current visible screen is the Gaia sign-in page.
   bool IsGaiaVisible();
@@ -237,9 +211,6 @@ class SigninScreenHandler
 
   // Whether screen should be shown right after initialization.
   bool show_on_init_ = false;
-
-  // Keeps whether screen should be shown for OOBE.
-  bool oobe_ui_ = false;
 
   // Network state informer used to keep signin screen up.
   scoped_refptr<NetworkStateInformer> network_state_informer_;
@@ -282,17 +253,10 @@ class SigninScreenHandler
   // TODO(antrim@): remove this dependency.
   GaiaScreenHandler* gaia_screen_handler_ = nullptr;
 
-  // Input Method Engine state used at signin screen.
-  scoped_refptr<input_method::InputMethodManager::State> ime_state_;
-
   bool is_offline_timeout_for_test_set_ = false;
   base::TimeDelta offline_timeout_for_test_;
 
   std::unique_ptr<ErrorScreensHistogramHelper> histogram_helper_;
-
-  // TODO (crbug.com/1168114): Only needed for GetKeyboardRemappedPrefValue that
-  // should be migrated.
-  std::unique_ptr<AccountId> focused_pod_account_id_;
 
   base::WeakPtrFactory<SigninScreenHandler> weak_factory_{this};
 };

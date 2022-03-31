@@ -28,29 +28,9 @@ chromium-metrics-reviews@google.com.
 <variants name="TextFragmentSource">
 <!-- Should be synced with TextFragmentLinkOpenSource in enums.xml. -->
 
-  <variant name="" summary="all sources">
-    <obsolete>
-      Replaced by split out versions below.
-    </obsolete>
-  </variant>
   <variant name=".SearchEngine" summary="the default search engine."/>
   <variant name=".Unknown" summary="unknown but not the default search engine"/>
 </variants>
-
-<histogram name="LightweightReactions.AssetsFetchDuration" units="ms"
-    expires_after="2022-07-31">
-  <obsolete>
-    Removed 12/2021 in favor of
-    LightweightReactions.AssetsFetchDuration.{Outcome}, which is more useful
-    because it includes whether the fetch was a success or not.
-  </obsolete>
-  <owner>gujen@google.com</owner>
-  <owner>chrome-creation@google.com</owner>
-  <summary>
-    Records the amount of time taken to download all assets during dialog
-    initialization.
-  </summary>
-</histogram>
 
 <histogram name="LightweightReactions.AssetsFetchDuration.{Outcome}" units="ms"
     expires_after="2022-07-31">
@@ -242,7 +222,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NoteCreation.CreationStatus" enum="BooleanCreated"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>sebsg@chromium.org</owner>
   <owner>chrome-creation@google.com</owner>
   <summary>
@@ -252,7 +232,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NoteCreation.Funnel" enum="NoteCreationFunnel"
-    expires_after="2022-06-05">
+    expires_after="2022-08-07">
   <owner>sebsg@chromium.org</owner>
   <owner>chrome-creation@google.com</owner>
   <summary>
@@ -269,7 +249,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NoteCreation.NumberOfTemplateChanges"
-    units="Number of changes" expires_after="2022-06-12">
+    units="Number of changes" expires_after="2022-08-14">
   <owner>sebsg@chromium.org</owner>
   <owner>chrome-creation@google.com</owner>
   <summary>
@@ -318,7 +298,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SharedHighlights.AndroidShareSheet.SharedState"
-    enum="LinkGenerationSharedStatus" expires_after="2022-06-05">
+    enum="LinkGenerationSharedStatus" expires_after="2022-08-07">
   <owner>sebsg@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -350,7 +330,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SharedHighlights.Desktop.CopiedLinkType"
-    enum="LinkGenerationCopiedLinkType" expires_after="2022-06-05">
+    enum="LinkGenerationCopiedLinkType" expires_after="2022-08-07">
   <owner>sebsg@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -359,7 +339,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SharedHighlights.LinkGenerated.Error"
-    enum="LinkGenerationError" expires_after="2022-06-05">
+    enum="LinkGenerationError" expires_after="2022-08-07">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -380,7 +360,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SharedHighlights.LinkGenerated.Error.Requested"
-    enum="LinkGenerationError" expires_after="2022-06-12">
+    enum="LinkGenerationError" expires_after="2022-08-14">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -390,7 +370,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SharedHighlights.LinkGenerated.Error.TimeToGenerate"
-    units="ms" expires_after="2022-06-12">
+    units="ms" expires_after="2022-08-14">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -410,7 +390,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SharedHighlights.LinkGenerated.ParamLength" units="characters"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -442,7 +422,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SharedHighlights.LinkGenerated.StateAtRequest"
-    enum="LinkGenerationState" expires_after="2022-06-12">
+    enum="LinkGenerationState" expires_after="2022-08-14">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -452,7 +432,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SharedHighlights.LinkGenerated.TimeToGenerate" units="ms"
-    expires_after="2022-06-05">
+    expires_after="2022-08-07">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -491,7 +471,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SharedHighlights.ObtainReshareLink.Status"
-    units="LinkToTextReshareStatus" expires_after="2022-06-05">
+    units="LinkToTextReshareStatus" expires_after="2022-08-07">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>
@@ -512,7 +492,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="TextFragmentAnchor.LinkOpenSource"
-    enum="TextFragmentLinkOpenSource" expires_after="2022-06-05">
+    enum="TextFragmentLinkOpenSource" expires_after="2022-08-07">
   <owner>gayane@chromium.org</owner>
   <owner>chrome-shared-highlighting@google.com</owner>
   <summary>

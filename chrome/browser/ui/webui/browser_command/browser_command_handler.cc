@@ -71,8 +71,8 @@ void BrowserCommandHandler::CanExecuteCommand(
     case Command::kOpenFeedbackForm:
       can_execute = true;
       break;
-    case Command::kOpenPrivacyReview:
-      can_execute = base::FeatureList::IsEnabled(features::kPrivacyReview) &&
+    case Command::kOpenPrivacyGuide:
+      can_execute = base::FeatureList::IsEnabled(features::kPrivacyGuide) &&
                     !chrome::enterprise_util::IsBrowserManaged(profile_) &&
                     !profile_->IsChild();
       break;
@@ -126,8 +126,8 @@ void BrowserCommandHandler::ExecuteCommandWithDisposition(
     case Command::kOpenFeedbackForm:
       OpenFeedbackForm();
       break;
-    case Command::kOpenPrivacyReview:
-      NavigateToURL(GURL(chrome::GetSettingsUrl(chrome::kPrivacyReviewSubPage)),
+    case Command::kOpenPrivacyGuide:
+      NavigateToURL(GURL(chrome::GetSettingsUrl(chrome::kPrivacyGuideSubPage)),
                     disposition);
       base::RecordAction(
           base::UserMetricsAction("NewTabPage_Promos_PrivacyGuide"));

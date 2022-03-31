@@ -17,13 +17,13 @@ source_set("color_headers") {
     "color_provider.h",
     "color_provider_manager.h",
     "color_provider_utils.h",
-    "color_set.h",
   ]
 
   public_deps = [
     ":mojom",
     "//base",
     "//skia",
+    "//ui/gfx:color_utils",
   ]
 }
 
@@ -50,7 +50,6 @@ component("color") {
     "color_provider_utils.h",
     "color_recipe.cc",
     "color_recipe.h",
-    "color_set.cc",
     "color_transform.cc",
     "color_transform.h",
   ]
@@ -151,7 +150,11 @@ component("mixers") {
 
   public_deps = [ "//base" ]
 
-  if (is_mac) {
+  if (is_chromeos) {
+    sources += [ "chromeos/native_color_mixers_chromeos.cc" ]
+  } else if (is_linux) {
+    sources += [ "linux/native_color_mixers_linux.cc" ]
+  } else if (is_mac) {
     frameworks = [ "AppKit.framework" ]
     sources += [
       "mac/native_color_mixers_mac.mm",

@@ -6,7 +6,9 @@
 #define ASH_WM_DESKS_TEMPLATES_DESKS_TEMPLATES_ITEM_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/desk_template.h"
 #include "ash/wm/overview/overview_highlightable_view.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/button.h"
@@ -24,11 +26,40 @@ namespace ash {
 class CloseButton;
 class DesksTemplatesIconContainer;
 class DesksTemplatesNameView;
-class DeskTemplate;
 class PillButton;
 
 // A view that represents each individual template item in the desks templates
-// grid.
+// grid. The view has different shown contents depending on whether the mouse is
+// hovered over it.
+//   _________________________          _________________________
+//   |  _______________  _   |          |                    _  |
+//   |  |_____________| |_|  |          |                   |_| |
+//   |  |_______|            |          |     ______________    |
+//   |   _________________   |          |     |            |    |
+//   |  |                 |  |          |     |____________|    |
+//   |  |_________________|  |          |                       |
+//   |_______________________|          |_______________________|
+//            regular                             hover
+//
+// In the regular view we have the:
+// `name_view_`: top-left: DesksTemplatesNameView: It's an editable textbox that
+// contains the name of the template.
+// `time_view_`: middle-left: Label: A label that lets the user know when the
+// template was created.
+// `icon_container_view_`: bottom-center: DesksTemplatesIconContainer: A
+// container that houses a couple icons/text that give an indication of which
+// apps are part of the template.
+// `managed_status_indicator`: top-right: ImageView: A icon that is visible if
+// the template was created by an admin.
+//
+// In the hover view we have the:
+// `delete_button_`: top-right: Button: Shows a confirmation for deleting the
+// template when clicked.
+// `launch_button_`: bottom-center: Button: Launches the apps associated with
+// the template when clicked.
+//
+// The whole view is also a button which does the same thing as `launch_button_`
+// when clicked.
 class ASH_EXPORT DesksTemplatesItemView : public views::Button,
                                           public OverviewHighlightableView,
                                           public views::ViewTargeterDelegate,
@@ -36,13 +67,14 @@ class ASH_EXPORT DesksTemplatesItemView : public views::Button,
  public:
   METADATA_HEADER(DesksTemplatesItemView);
 
-  explicit DesksTemplatesItemView(DeskTemplate* desk_template);
+  explicit DesksTemplatesItemView(const DeskTemplate* desk_template);
   DesksTemplatesItemView(const DesksTemplatesItemView&) = delete;
   DesksTemplatesItemView& operator=(const DesksTemplatesItemView&) = delete;
   ~DesksTemplatesItemView() override;
 
-  DeskTemplate* desk_template() const { return desk_template_; }
+  DeskTemplate* desk_template() const { return desk_template_.get(); }
   DesksTemplatesNameView* name_view() const { return name_view_; }
+  const base::GUID uuid() const { return desk_template_->uuid(); }
 
   // Updates the visibility state of the delete and launch buttons depending on
   // the current mouse or touch event location, or if switch access is enabled.
@@ -52,6 +84,18 @@ class ASH_EXPORT DesksTemplatesItemView : public views::Button,
   // Returns true if the template's name is being modified (i.e. the
   // `DesksTemplatesNameView` has the focus).
   bool IsTemplateNameBeingModified() const;
+
+  // Rename current template with new name, delete old template with same name
+  // by uuid. Used for callback functions for Replace Dialog.
+  void ReplaceTemplate(const std::string& uuid);
+  void RevertTemplateName();
+
+  // This allows us to update an existing template view. Currently, this
+  // function will only update the name. We will need to update this once we
+  // allow the user to make more changes to a template. If the text field is
+  // blurred when there is an update, we intentionally leave it blurred in order
+  // to align this behavior with other similar cases.
+  void UpdateTemplate(const DeskTemplate& updated_template);
 
   // views::Button:
   void Layout() override;
@@ -88,6 +132,9 @@ class ASH_EXPORT DesksTemplatesItemView : public views::Button,
   // changes.
   void OnTemplateNameChanged(const std::u16string& new_name);
 
+  // Update template name based on `name_view_` string.
+  void UpdateTemplateName();
+
   // OverviewHighlightableView:
   views::View* GetView() override;
   void MaybeActivateHighlightedView() override;
@@ -96,11 +143,13 @@ class ASH_EXPORT DesksTemplatesItemView : public views::Button,
   void OnViewHighlighted() override;
   void OnViewUnhighlighted() override;
 
-  // A pointer to the associated desk template.
-  DeskTemplate* desk_template_ = nullptr;
+  // A copy of the associated desk template.
+  std::unique_ptr<DeskTemplate> desk_template_;
 
   // Owned by the views hierarchy.
   DesksTemplatesNameView* name_view_ = nullptr;
+  // When template is managed by admin, `time_view_` will display management
+  // description instead.
   views::Label* time_view_ = nullptr;
   DesksTemplatesIconContainer* icon_container_view_ = nullptr;
   CloseButton* delete_button_ = nullptr;
@@ -127,6 +176,8 @@ class ASH_EXPORT DesksTemplatesItemView : public views::Button,
 
   base::ScopedObservation<views::View, views::ViewObserver>
       name_view_observation_{this};
+
+  base::WeakPtrFactory<DesksTemplatesItemView> weak_ptr_factory_{this};
 };
 
 BEGIN_VIEW_BUILDER(/* no export */, DesksTemplatesItemView, views::Button)

@@ -5,7 +5,6 @@
 package org.chromium.components.external_intents;
 
 import android.Manifest.permission;
-import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
@@ -63,8 +62,8 @@ import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.base.PageTransition;
-import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.permissions.PermissionCallback;
 import org.chromium.url.GURL;
 
 import java.lang.annotation.Retention;
@@ -147,7 +146,7 @@ public class ExternalNavigationHandler {
     }
 
     // A Supplier that only evaluates when needed then caches the value.
-    private abstract static class LazySupplier<T> implements Supplier<T> {
+    protected abstract static class LazySupplier<T> implements Supplier<T> {
         private T mValue;
         private Supplier<T> mInnerSupplier;
 
@@ -176,13 +175,13 @@ public class ExternalNavigationHandler {
     }
 
     // Used to ensure we only call queryIntentActivities when we really need to.
-    private class QueryIntentActivitiesSupplier extends LazySupplier<List<ResolveInfo>> {
+    protected class QueryIntentActivitiesSupplier extends LazySupplier<List<ResolveInfo>> {
         public QueryIntentActivitiesSupplier(Intent intent) {
             super(() -> queryIntentActivities(intent));
         }
     }
 
-    private static class ResolveActivitySupplier extends LazySupplier<ResolveInfo> {
+    protected static class ResolveActivitySupplier extends LazySupplier<ResolveInfo> {
         public ResolveActivitySupplier(Intent intent) {
             super(()
                             -> PackageManagerUtils.resolveActivity(
@@ -1446,8 +1445,8 @@ public class ExternalNavigationHandler {
             return OverrideUrlLoadingResult.forNoOverride();
         }
 
-        return startActivityIfNeeded(targetIntent, shouldProxyForInstantApps, resolvingInfos.get(),
-                resolveActivity, requiresIntentChooser, browserFallbackUrl, intentDataUrl,
+        return startActivity(targetIntent, shouldProxyForInstantApps, requiresIntentChooser,
+                resolvingInfos.get(), resolveActivity, browserFallbackUrl, intentDataUrl,
                 params.getReferrerUrl());
     }
 
@@ -1768,26 +1767,7 @@ public class ExternalNavigationHandler {
      *              used by Instant Apps intents).
      */
     private void startActivity(Intent intent, boolean proxy) {
-        try {
-            forcePdfViewerAsIntentHandlerIfNeeded(intent);
-            if (proxy) {
-                mDelegate.dispatchAuthenticatedIntent(intent);
-            } else {
-                // Start the activity via the current activity if possible, and otherwise as a new
-                // task from the application context.
-                Context context = ContextUtils.activityFromContext(mDelegate.getContext());
-                if (context == null) {
-                    context = ContextUtils.getApplicationContext();
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                }
-                context.startActivity(intent);
-            }
-            recordExternalNavigationDispatched(intent);
-        } catch (RuntimeException e) {
-            Log.e(TAG, "Could not start Activity for intent " + intent.toString(), e);
-        }
-
-        mDelegate.didStartActivity(intent);
+        startActivity(intent, proxy, false, null, null, null, null, null);
     }
 
     /**
@@ -1796,41 +1776,41 @@ public class ExternalNavigationHandler {
      * @param intent The intent we want to send.
      * @param proxy Whether we need to proxy the intent through AuthenticatedProxyActivity (this is
      *              used by Instant Apps intents).
-     * @param resolvingInfos The resolvingInfos |intent| matches against.
      * @param requiresIntentChooser Whether, for security reasons, the Intent Chooser is required to
      *                              be shown.
+     *
+     * Below parameters are only used if |requiresIntentChooser| is true.
+     *
+     * @param resolvingInfos The queryIntentActivities |intent| matches against.
+     * @param resolveActivity The resolving Activity |intent| matches against.
      * @param browserFallbackUrl The fallback URL if the user chooses not to leave this app.
      * @param intentDataUrl The URL |intent| is targeting.
      * @param referrerUrl The referrer for the navigation.
      * @returns The OverrideUrlLoadingResult for starting (or not starting) the Activity.
      */
-    private OverrideUrlLoadingResult startActivityIfNeeded(Intent intent, boolean proxy,
-            List<ResolveInfo> resolvingInfos, ResolveActivitySupplier resolveActivity,
-            boolean requiresIntentChooser, GURL browserFallbackUrl, GURL intentDataUrl,
+    protected OverrideUrlLoadingResult startActivity(Intent intent, boolean proxy,
+            boolean requiresIntentChooser, List<ResolveInfo> resolvingInfos,
+            ResolveActivitySupplier resolveActivity, GURL browserFallbackUrl, GURL intentDataUrl,
             GURL referrerUrl) {
         // Only touches disk on Kitkat. See http://crbug.com/617725 for more context.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
-            boolean withoutPackage = TextUtils.isEmpty(intent.getPackage());
-
-            // TODO(https://crbug.com/1251722): Rename this delegate function and require
-            // the delegate to defer to the code below to actually launch the Activity.
-            @ExternalNavigationDelegate.StartActivityIfNeededResult
-            int delegateResult = mDelegate.maybeHandleStartActivityIfNeeded(intent, proxy);
-
-            switch (delegateResult) {
-                case ExternalNavigationDelegate.StartActivityIfNeededResult
-                        .HANDLED_WITH_ACTIVITY_START:
-                    return OverrideUrlLoadingResult.forExternalIntent();
-                case ExternalNavigationDelegate.StartActivityIfNeededResult
-                        .HANDLED_WITHOUT_ACTIVITY_START:
-                    return OverrideUrlLoadingResult.forNoOverride();
-                case ExternalNavigationDelegate.StartActivityIfNeededResult.DID_NOT_HANDLE:
-                    return startActivityIfNeededInternal(intent, proxy, resolvingInfos,
-                            resolveActivity, requiresIntentChooser, browserFallbackUrl,
-                            intentDataUrl, referrerUrl);
-                default:
-                    assert false;
+            forcePdfViewerAsIntentHandlerIfNeeded(intent);
+            if (proxy) {
+                mDelegate.dispatchAuthenticatedIntent(intent);
+                recordExternalNavigationDispatched(intent);
+                return OverrideUrlLoadingResult.forExternalIntent();
+            } else {
+                Context context = ContextUtils.activityFromContext(mDelegate.getContext());
+                if (context == null) {
+                    context = ContextUtils.getApplicationContext();
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                }
+                if (requiresIntentChooser) {
+                    return startActivityWithChooser(intent, resolvingInfos, resolveActivity,
+                            browserFallbackUrl, intentDataUrl, referrerUrl, context);
+                }
+                return doStartActivity(intent, context);
             }
         } catch (SecurityException e) {
             // https://crbug.com/808494: Handle the URL internally if dispatching to another
@@ -1852,37 +1832,9 @@ public class ExternalNavigationHandler {
         return OverrideUrlLoadingResult.forNoOverride();
     }
 
-    /**
-     * Implementation of startActivityIfNeeded() that is used when the delegate does not handle the
-     * event.
-     */
-    private OverrideUrlLoadingResult startActivityIfNeededInternal(Intent intent, boolean proxy,
-            List<ResolveInfo> resolvingInfos, ResolveActivitySupplier resolveActivity,
-            boolean requiresIntentChooser, GURL browserFallbackUrl, GURL intentDataUrl,
-            GURL referrerUrl) {
-        forcePdfViewerAsIntentHandlerIfNeeded(intent);
-        if (proxy) {
-            mDelegate.dispatchAuthenticatedIntent(intent);
-            recordExternalNavigationDispatched(intent);
-            return OverrideUrlLoadingResult.forExternalIntent();
-        } else {
-            Activity activity = ContextUtils.activityFromContext(mDelegate.getContext());
-            if (activity == null) return OverrideUrlLoadingResult.forNoOverride();
-
-            if (requiresIntentChooser) {
-                return startActivityWithChooser(intent, resolvingInfos, resolveActivity,
-                        browserFallbackUrl, intentDataUrl, referrerUrl, activity);
-            }
-            return doStartActivityIfNeeded(intent, activity);
-        }
-    }
-
-    // TODO(https://crbug.com/1287233): Rename this function since we're no longer calling
-    // startActivityIfNeeded.
-    private OverrideUrlLoadingResult doStartActivityIfNeeded(Intent intent, Activity activity) {
+    private OverrideUrlLoadingResult doStartActivity(Intent intent, Context context) {
         if (DEBUG) Log.i(TAG, "startActivity");
-        activity.startActivity(intent);
-        mDelegate.didStartActivity(intent);
+        context.startActivity(intent);
         recordExternalNavigationDispatched(intent);
         return OverrideUrlLoadingResult.forExternalIntent();
     }
@@ -1890,7 +1842,7 @@ public class ExternalNavigationHandler {
     @SuppressWarnings("UseCompatLoadingForDrawables")
     private OverrideUrlLoadingResult startActivityWithChooser(final Intent intent,
             List<ResolveInfo> resolvingInfos, ResolveActivitySupplier resolveActivity,
-            GURL browserFallbackUrl, GURL intentDataUrl, GURL referrerUrl, Activity activity) {
+            GURL browserFallbackUrl, GURL intentDataUrl, GURL referrerUrl, Context context) {
         ResolveInfo intentResolveInfo = resolveActivity.get();
         // If this is null, then the intent was only previously matching
         // non-default filters, so just drop it.
@@ -1902,7 +1854,7 @@ public class ExternalNavigationHandler {
         // and we don't need to do anything. Otherwise we have to make a fake option in the chooser
         // dialog that loads the URL in the embedding app.
         if (!resolversSubsetOf(Arrays.asList(intentResolveInfo), resolvingInfos)) {
-            return doStartActivityIfNeeded(intent, activity);
+            return doStartActivity(intent, context);
         }
 
         Intent pickerIntent = new Intent(Intent.ACTION_PICK_ACTIVITY);
@@ -1910,10 +1862,10 @@ public class ExternalNavigationHandler {
 
         // Add the fake entry for the embedding app. This behavior is not well documented but works
         // consistently across Android since L (and at least up to S).
-        PackageManager pm = activity.getPackageManager();
+        PackageManager pm = context.getPackageManager();
         ArrayList<ShortcutIconResource> icons = new ArrayList<>();
         ArrayList<String> labels = new ArrayList<>();
-        String packageName = activity.getPackageName();
+        String packageName = context.getPackageName();
         String label = "";
         ShortcutIconResource resource = new ShortcutIconResource();
         try {

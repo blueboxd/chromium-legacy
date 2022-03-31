@@ -25,6 +25,11 @@ bool AppsGridContextMenu::IsMenuShowing() const {
   return menu_runner_ && menu_runner_->IsRunning();
 }
 
+void AppsGridContextMenu::Cancel() {
+  if (IsMenuShowing())
+    menu_runner_->Cancel();
+}
+
 void AppsGridContextMenu::ExecuteCommand(int command_id, int event_flags) {
   switch (command_id) {
     case AppsGridCommandId::kReorderByNameAlphabetical:
@@ -55,9 +60,12 @@ void AppsGridContextMenu::ShowContextMenuForViewImpl(
                           base::Unretained(this)));
   root_menu_item_view_ = menu_model_adapter_->CreateMenu();
 
-  int run_types = views::MenuRunner::USE_TOUCHABLE_LAYOUT |
+  int run_types = views::MenuRunner::USE_ASH_SYS_UI_LAYOUT |
                   views::MenuRunner::CONTEXT_MENU |
                   views::MenuRunner::FIXED_ANCHOR;
+  if (source_type == ui::MENU_SOURCE_TOUCH && owner_touch_dragging_)
+    run_types |= views::MenuRunner::SEND_GESTURE_EVENTS_TO_OWNER;
+
   menu_runner_ =
       std::make_unique<views::MenuRunner>(root_menu_item_view_, run_types);
   menu_runner_->RunMenuAt(
@@ -74,12 +82,14 @@ void AppsGridContextMenu::BuildMenuModel() {
       AppsGridCommandId::kReorderByNameAlphabetical,
       l10n_util::GetStringUTF16(
           IDS_ASH_LAUNCHER_APPS_GRID_CONTEXT_MENU_REORDER_BY_NAME),
-      ui::ImageModel::FromVectorIcon(kSortAlphabeticalIcon));
+      ui::ImageModel::FromVectorIcon(kSortAlphabeticalIcon,
+                                     ui::kColorAshSystemUIMenuIcon));
   context_menu_model_->AddItemWithIcon(
       AppsGridCommandId::kReorderByColor,
       l10n_util::GetStringUTF16(
           IDS_ASH_LAUNCHER_APPS_GRID_CONTEXT_MENU_REORDER_BY_COLOR),
-      ui::ImageModel::FromVectorIcon(kSortColorIcon));
+      ui::ImageModel::FromVectorIcon(kSortColorIcon,
+                                     ui::kColorAshSystemUIMenuIcon));
 }
 
 void AppsGridContextMenu::OnMenuClosed() {

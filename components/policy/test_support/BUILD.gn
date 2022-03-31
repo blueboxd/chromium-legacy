@@ -5,8 +5,6 @@
 static_library("test_support") {
   testonly = true
 
-  data = [ "policy_testserver.py" ]
-
   sources = [
     "client_storage.cc",
     "client_storage.h",
@@ -46,18 +44,13 @@ static_library("test_support") {
     "request_handler_for_remote_commands.h",
     "request_handler_for_status_upload.cc",
     "request_handler_for_status_upload.h",
+    "request_handler_for_unregister.cc",
+    "request_handler_for_unregister.h",
     "signature_provider.cc",
     "signature_provider.h",
     "test_server_helpers.cc",
     "test_server_helpers.h",
   ]
-
-  if (!is_android) {
-    sources += [
-      "local_policy_test_server.cc",
-      "local_policy_test_server.h",
-    ]
-  }
 
   public_deps = [ "//net:test_support" ]
   deps = [
@@ -98,6 +91,7 @@ source_set("unittests") {
     "request_handler_for_register_device_and_user_unittest.cc",
     "request_handler_for_remote_commands_unittest.cc",
     "request_handler_for_status_upload_unittest.cc",
+    "request_handler_for_unregister_unittest.cc",
     "signature_provider_unittest.cc",
   ]
 

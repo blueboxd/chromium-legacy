@@ -1329,6 +1329,10 @@ component("platform") {
     "peerconnection/rtc_void_request.h",
     "peerconnection/stats_collecting_decoder.cc",
     "peerconnection/stats_collecting_decoder.h",
+    "peerconnection/stats_collecting_encoder.cc",
+    "peerconnection/stats_collecting_encoder.h",
+    "peerconnection/stats_collector.cc",
+    "peerconnection/stats_collector.h",
     "peerconnection/two_keys_adapter_map.h",
     "peerconnection/video_codec_factory.cc",
     "peerconnection/video_codec_factory.h",
@@ -1535,7 +1539,6 @@ component("platform") {
     "widget/input/prediction/predictor_factory.h",
     "widget/input/scroll_predictor.cc",
     "widget/input/scroll_predictor.h",
-    "widget/input/synchronous_input_handler_proxy.h",
     "widget/input/widget_base_input_handler.cc",
     "widget/input/widget_base_input_handler.h",
     "widget/input/widget_input_handler_impl.cc",
@@ -1665,12 +1668,12 @@ component("platform") {
     "//components/search_engines:search_engine_utils",
     "//components/viz/client",
     "//components/viz/common",
+    "//components/webrtc:net_address_utils",
     "//crypto",
     "//device/vr/public/mojom:vr_service_blink",
     "//gin",
     "//gpu:gpu",
     "//gpu/command_buffer/client:webgpu_interface",
-    "//jingle:webrtc_glue",
     "//media",
     "//media/capture:capture_switches",
     "//media/capture/mojom:video_capture",
@@ -1817,7 +1820,7 @@ component("platform") {
   }
 
   if (skia_use_dawn) {
-    deps += [ "//third_party/dawn/src/dawn:dawncpp" ]
+    deps += [ "//third_party/dawn/src/dawn:cpp" ]
   }
 
   if (!is_debug && !optimize_for_size) {
@@ -1957,6 +1960,7 @@ test("blink_platform_unittests") {
   if (is_fuchsia) {
     # Oilpan reuses V8's v8::PageAllocator which generally requires JIT
     # permissions.
+    use_cfv2 = false
     additional_manifest_fragments =
         [ "//build/config/fuchsia/test/jit_capabilities.test-cmx" ]
   }
@@ -2123,6 +2127,7 @@ source_set("blink_platform_unittests_sources") {
     "mojo/string16_mojom_traits_test.cc",
     "p2p/filtering_network_manager_test.cc",
     "p2p/ipc_network_manager_test.cc",
+    "peerconnection/coalesced_tasks_test.cc",
     "peerconnection/linear_histogram_test.cc",
     "peerconnection/metronome_source_test.cc",
     "peerconnection/metronome_task_queue_factory_test.cc",
@@ -2135,6 +2140,8 @@ source_set("blink_platform_unittests_sources") {
     "peerconnection/rtc_video_encoder_factory_test.cc",
     "peerconnection/rtc_video_encoder_test.cc",
     "peerconnection/stats_collecting_decoder_test.cc",
+    "peerconnection/stats_collecting_encoder_test.cc",
+    "peerconnection/stats_collector_test.cc",
     "peerconnection/task_queue_factory_test.cc",
     "peerconnection/two_keys_adapter_map_unittest.cc",
     "peerconnection/webrtc_audio_sink_test.cc",
@@ -2264,6 +2271,7 @@ source_set("blink_platform_unittests_sources") {
     "//third_party/libjxl:libjxl",
     "//third_party/libyuv",
     "//third_party/webrtc/api/task_queue:task_queue_test",
+    "//third_party/webrtc_overrides:metronome_like_task_queue_test",
     "//third_party/webrtc_overrides:webrtc_component",
     "//ui/base:features",
     "//ui/base/prediction",

@@ -229,13 +229,6 @@ Page::Page(base::PassKey<Page>,
   DCHECK(!AllPages().Contains(this));
   AllPages().insert(this);
 
-  // Try to dereference the scrollbar theme. This is here to ensure tests are
-  // correctly setting up their platform theme or mocking scrollbars. On
-  // Android, unit tests run without a ThemeEngine and thus must set a mock
-  // ScrollbarTheme, if they don't this call will crash. To set a mock theme,
-  // see ScopedMockOverlayScrollbars or WebScopedMockScrollbars.
-  DCHECK(&GetScrollbarTheme());
-
   page_scheduler_ =
       agent_group_scheduler.AsAgentGroupScheduler().CreatePageScheduler(this);
   // The scheduler should be set before the main frame.
@@ -373,7 +366,7 @@ SpatialNavigationController& Page::GetSpatialNavigationController() {
 }
 
 void Page::PlatformColorsChanged() {
-  for (const Page* page : AllPages())
+  for (const Page* page : AllPages()) {
     for (Frame* frame = page->MainFrame(); frame;
          frame = frame->Tree().TraverseNext()) {
       if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
@@ -382,6 +375,7 @@ void Page::PlatformColorsChanged() {
           view->InvalidatePaintForViewAndDescendants();
       }
     }
+  }
 }
 
 void Page::ColorSchemeChanged() {
@@ -408,14 +402,11 @@ void Page::InitialStyleChanged() {
   }
 }
 
-PluginData* Page::GetPluginData(const SecurityOrigin* main_frame_origin) {
+PluginData* Page::GetPluginData() {
   if (!plugin_data_)
     plugin_data_ = MakeGarbageCollected<PluginData>();
 
-  if (!plugin_data_->Origin() ||
-      !main_frame_origin->IsSameOriginWith(plugin_data_->Origin()))
-    plugin_data_->UpdatePluginList(main_frame_origin);
-
+  plugin_data_->UpdatePluginList();
   return plugin_data_.Get();
 }
 
@@ -795,7 +786,7 @@ void Page::SettingsChanged(ChangeType change_type) {
         // Iterate through all of the scrollable areas and mark their layout
         // objects for layout.
         if (LocalFrameView* view = local_frame->View()) {
-          if (const auto* scrollable_areas = view->ScrollableAreas()) {
+          if (const auto* scrollable_areas = view->UserScrollableAreas()) {
             for (const auto& scrollable_area : *scrollable_areas) {
               if (scrollable_area->ScrollsOverflow()) {
                 if (auto* layout_box = scrollable_area->GetLayoutBox()) {
@@ -875,7 +866,7 @@ void Page::UpdateAcceleratedCompositingSettings() {
       continue;
     // Mark all scrollable areas as needing a paint property update because the
     // compositing reasons may have changed.
-    if (const auto* areas = local_frame->View()->ScrollableAreas()) {
+    if (const auto* areas = local_frame->View()->UserScrollableAreas()) {
       for (const auto& scrollable_area : *areas) {
         if (scrollable_area->ScrollsOverflow()) {
           if (auto* layout_box = scrollable_area->GetLayoutBox())
@@ -1021,6 +1012,9 @@ void Page::RegisterPluginsChangedObserver(PluginsChangedObserver* observer) {
 ScrollbarTheme& Page::GetScrollbarTheme() const {
   if (settings_->GetForceAndroidOverlayScrollbar())
     return ScrollbarThemeOverlayMobile::GetInstance();
+
+  // Ensures that renderer preferences are set.
+  DCHECK(main_frame_);
   return ScrollbarTheme::GetTheme();
 }
 

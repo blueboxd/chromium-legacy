@@ -21,11 +21,17 @@ const char kAutofillCreditCardUploadDescription[] =
     "Offers uploading Autofilled credit cards to Google Payments after form "
     "submission.";
 
-const char kAutofillEnableOffersInDownstreamName[] =
-    "Enable Autofill offers in downstream";
-const char kAutofillEnableOffersInDownstreamDescription[] =
-    "When enabled, offer data will be retrieved during downstream and shown in "
-    "the dropdown list.";
+const char kAutofillEnableSendingBcnInGetUploadDetailsName[] =
+    "Enable sending billing customer number in GetUploadDetails";
+const char kAutofillEnableSendingBcnInGetUploadDetailsDescription[] =
+    "When enabled the billing customer number will be sent in the "
+    "GetUploadDetails preflight calls.";
+
+const char kAutofillEnableUnmaskCardRequestSetInstrumentIdName[] =
+    "When enabled, sets non-legacy instrument ID in UnmaskCardRequest";
+const char kAutofillEnableUnmaskCardRequestSetInstrumentIdDescription[] =
+    "When enabled, UnmaskCardRequest will set the card's non-legacy ID when "
+    "available.";
 
 const char kAutofillFillMerchantPromoCodeFieldsName[] =
     "Enable Autofill of promo code fields in forms";
@@ -73,13 +79,11 @@ const char kBreakpadNoDelayInitialUploadDescription[] =
     "disabled, initial upload is delayed until deferred initialization. This "
     "does not affect recovery mode.";
 
-const char kCommercePriceTrackingName[] = "Price Tracking";
-const char kCommercePriceTrackingDescription[] =
-    "Allows users to track product prices through Chrome.";
-
-const char kContextMenuActionsRefreshName[] = "Context menu actions refresh";
-const char kContextMenuActionsRefreshDescription[] =
-    "When enabled, context menu actions are updated";
+const char kContentSuggestionsHeaderMigrationName[] =
+    "Content Suggestions header migration";
+const char kContentSuggestionsHeaderMigrationDescription[] =
+    "When enabled, the Content Suggestions header will be logically moved to "
+    "the Discover feed ScrollView";
 
 const char kCrashpadIOSName[] = "Use Crashpad for crash collection.";
 const char kCrashpadIOSDescription[] =
@@ -188,6 +192,10 @@ const char kEnableFREUIModuleIOSDescription[] =
     "switcher at the TOP or BOTTOM and using OLD or NEW strings set for the "
     "sign-in sync screen.";
 
+const char kEnableFullscreenAPIName[] = "Enable Fullscreen API";
+const char kEnableFullscreenAPIDescription[] =
+    "Enable the Fullscreen API for web content (iOS 15.4+).";
+
 const char kEnableLongMessageDurationName[] = "Enable long message duration";
 const char kEnableLongMessageDurationDescription[] =
     "Enables a long duration when an overlay message is shown.";
@@ -234,6 +242,10 @@ const char kEnableWebChannelsDescription[] =
     "Enable folowing content from web and display Following feed on NTP based "
     "on web channels that users followed.";
 
+const char kEnhancedProtectionName[] = "Enable Enhanced Safe Browsing";
+const char kEnhancedProtectionDescription[] =
+    "Allows users to opt-in to Enhanced Safe Browsing";
+
 const char kExpandedTabStripName[] = "Enable expanded tabstrip";
 const char kExpandedTabStripDescription[] =
     "Enables the new expanded tabstrip. Activated by swiping down the tabstrip"
@@ -250,17 +262,15 @@ const char kForceDisableExtendedSyncPromosName[] =
 const char kForceDisableExtendedSyncPromosDescription[] =
     "When enabled, will not display any extended sync promos";
 
-const char kForceMajorVersion100InUserAgentName[] =
-    "Force major version to 100 in User-Agent";
-const char kForceMajorVersion100InUserAgentDescription[] =
-    "Force the Chrome major version in the User-Agent string to 100, which "
-    "allows testing the 3-digit major version number before the actual M100 "
-    "release. This flag is only available from M96-M99.";
-
 const char kForceStartupSigninPromoName[] = "Display the startup sign-in promo";
 const char kForceStartupSigninPromoDescription[] =
     "When enabled, the startup sign-in promo is always displayed when starting "
     "Chrome.";
+
+const char kFREMobileIdentityConsistencyName[] = "Display the MICe FRE";
+const char kFREMobileIdentityConsistencyDescription[] =
+    "When enabled, the FRE with MICe (the welcome screen and sign-in screen "
+    "are merged).";
 
 const char kFullscreenSmoothScrollingName[] = "Fullscreen Smooth Scrolling";
 const char kFullscreenSmoothScrollingDescription[] =
@@ -295,11 +305,6 @@ const char kIOSEnablePasswordManagerBrandingUpdateName[] =
 const char kIOSEnablePasswordManagerBrandingUpdateDescription[] =
     "Updates icons, strings, and views for Google Password Manager.";
 
-const char kIOSPersistCrashRestoreName[] = "Persist Crash Restore Infobar";
-const char kIOSPersistCrashRestoreDescription[] =
-    "When enabled, the Crash Restore Infobar will persist through navigations "
-    "instead of dismissing.";
-
 const char kIOSSharedHighlightingColorChangeName[] =
     "IOS Shared Highlighting color change";
 const char kIOSSharedHighlightingColorChangeDescription[] =
@@ -318,6 +323,11 @@ const char kIOSSharedHighlightingV2Description[] =
 const char kLazilyCreateWebStateOnRestorationName[] = "Unrealized WebStates";
 const char kLazilyCreateWebStateOnRestorationDescription[] =
     "Create WebState in unrealized state upon session restoration.";
+
+const char kLeakDetectionUnauthenticatedName[] =
+    "Leak detection for signed out users";
+const char kLeakDetectionUnauthenticatedDescription[] =
+    "Enables leak detection feature for signed out users";
 
 const char kLockBottomToolbarName[] = "Lock bottom toolbar";
 const char kLockBottomToolbarDescription[] =
@@ -341,6 +351,11 @@ const char kMetrickitCrashReportDescription[] =
 const char kModernTabStripName[] = "Modern TabStrip";
 const char kModernTabStripDescription[] =
     "When enabled, the newly implemented tabstrip can be tested.";
+
+const char kMuteCompromisedPasswordsName[] =
+    "Mute & Unmute compromised passwords in bulk leak check";
+const char kMuteCompromisedPasswordsDescription[] =
+    "Enables muting/unmuting compromised passwords in bulk leak check.";
 
 const char kNewOverflowMenuName[] = "New Overflow Menu";
 const char kNewOverflowMenuDescription[] = "Enables the new overflow menu";
@@ -441,6 +456,11 @@ const char kSearchHistoryLinkIOSName[] = "Enables Search History Link";
 const char kSearchHistoryLinkIOSDescription[] =
     "Changes the Clear Browsing Data "
     "UI to display a link to clear search history on My Google Activity.";
+
+const char kSendTabToSelfSigninPromoName[] = "Send tab to self sign-in promo";
+const char kSendTabToSelfSigninPromoDescription[] =
+    "Enables a sign-in promo if the user attempts to share a tab while being "
+    "signed out";
 
 const char kSendUmaOverAnyNetwork[] =
     "Send UMA data over any network available.";
@@ -563,6 +583,13 @@ const char kWebViewNativeContextMenuPhase2Name[] =
 const char kWebViewNativeContextMenuPhase2Description[] =
     "When enabled, the context menu displayed when long pressing on a link or "
     "an image has a non-live preview.";
+
+const char kWebViewNativeContextMenuPhase2ScreenshotName[] =
+    "Screenshot preview animation for Context Menu";
+
+const char kWebViewNativeContextMenuPhase2ScreenshotDescription[] =
+    "When enabled with phase2, uses a screenshot as transition animation to "
+    "the context menu.";
 
 // Please insert your name/description above in alphabetical order.
 

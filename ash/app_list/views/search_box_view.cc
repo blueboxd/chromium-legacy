@@ -122,6 +122,10 @@ void SearchBoxView::SetResultSelectionController(
 }
 
 void SearchBoxView::OnTabletModeChanged(bool started) {
+  // Reset timer metrics when tablet mode changes.
+  if (is_tablet_mode_ != started)
+    user_initiated_model_update_time_ = base::TimeTicks();
+
   is_tablet_mode_ = started;
 
   UpdateKeyboardVisibility();
@@ -206,12 +210,35 @@ void SearchBoxView::UpdateKeyboardVisibility() {
 }
 
 void SearchBoxView::UpdateModel(bool initiated_by_user) {
+  auto new_query = search_box()->GetText();
+  SearchBoxModel* const search_box_model =
+      AppListModelProvider::Get()->search_model()->search_box();
+
+  if (initiated_by_user) {
+    const std::u16string& previous_query = search_box_model->text();
+    const base::TimeTicks current_time = base::TimeTicks::Now();
+    if (previous_query.empty() && !new_query.empty()) {
+      // Set 'user_initiated_model_update_time_' when initiating a new query.
+      user_initiated_model_update_time_ = current_time;
+    } else if (!previous_query.empty() && new_query.empty()) {
+      // Reset 'user_initiated_model_update_time_' when clearing the search_box.
+      user_initiated_model_update_time_ = base::TimeTicks();
+    } else if (new_query != previous_query &&
+               !user_initiated_model_update_time_.is_null()) {
+      if (is_tablet_mode_) {
+        UMA_HISTOGRAM_TIMES("Ash.SearchModelUpdateTime.TabletMode",
+                            current_time - user_initiated_model_update_time_);
+      } else {
+        UMA_HISTOGRAM_TIMES("Ash.SearchModelUpdateTime.ClamshellMode",
+                            current_time - user_initiated_model_update_time_);
+      }
+      user_initiated_model_update_time_ = current_time;
+    }
+  }
   // Temporarily remove from observer to ignore notifications caused by us.
   search_box_model_observer_.Reset();
 
-  SearchBoxModel* const search_box_model =
-      AppListModelProvider::Get()->search_model()->search_box();
-  search_box_model->Update(search_box()->GetText(), initiated_by_user);
+  search_box_model->Update(new_query, initiated_by_user);
   search_box_model_observer_.Observe(search_box_model);
 }
 
@@ -427,8 +454,22 @@ void SearchBoxView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void SearchBoxView::UpdateBackground(AppListState target_state) {
-  SetSearchBoxBackgroundCornerRadius(
-      GetSearchBoxBorderCornerRadiusForState(target_state));
+  int corner_radius = GetSearchBoxBorderCornerRadiusForState(target_state);
+  SetSearchBoxBackgroundCornerRadius(corner_radius);
+
+  // The background layer is only painted for the search box in tablet mode.
+  // Also the layer is not painted when the search result page is visible.
+  if (is_tablet_mode_ && (!search_result_page_visible_ ||
+                          target_state == AppListState::kStateApps)) {
+    layer()->SetClipRect(GetContentsBounds());
+    layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
+    layer()->SetBackdropFilterQuality(ColorProvider::kBackgroundBlurQuality);
+    layer()->SetRoundedCornerRadius(gfx::RoundedCornersF(corner_radius));
+  } else {
+    layer()->SetBackgroundBlur(0);
+    layer()->SetBackdropFilterQuality(0);
+  }
+
   UpdateBackgroundColor(GetBackgroundColorForState(target_state));
   UpdateTextColor();
   current_app_list_state_ = target_state;
@@ -542,7 +583,7 @@ void SearchBoxView::OnResultContainerVisibilityChanged(bool visible) {
   if (search_result_page_visible_ == visible)
     return;
   search_result_page_visible_ = visible;
-  UpdateBackgroundColor(GetBackgroundColorForState(current_app_list_state_));
+  UpdateBackground(current_app_list_state_);
   SchedulePaint();
 }
 

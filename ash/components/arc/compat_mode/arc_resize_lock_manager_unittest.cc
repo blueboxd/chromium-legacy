@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/components/arc/arc_features.h"
 #include "ash/components/arc/compat_mode/metrics.h"
 #include "ash/components/arc/compat_mode/test/compat_mode_test_base.h"
 #include "ash/constants/app_types.h"
@@ -17,6 +18,7 @@
 #include "base/callback_forward.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -72,6 +74,25 @@ class TestCompatModeButtonController : public CompatModeButtonController {
   base::flat_set<const aura::Window*> update_compat_mode_button_called;
 };
 
+class TestArcResizeLockManager : public ArcResizeLockManager {
+ public:
+  TestArcResizeLockManager() : ArcResizeLockManager(nullptr, nullptr) {}
+  ~TestArcResizeLockManager() override = default;
+
+  // ArcResizeLockManager:
+  void ShowSplashScreenDialog(aura::Window* window, bool) override {
+    show_splash_callback_.Run(window);
+  }
+
+  void set_show_splash_callback(
+      base::RepeatingCallback<void(aura::Window*)> callback) {
+    show_splash_callback_ = std::move(callback);
+  }
+
+ private:
+  base::RepeatingCallback<void(aura::Window*)> show_splash_callback_;
+};
+
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kNonInterestedPropKey, false)
 
 constexpr std::array<ash::ArcResizeLockType, 4> kArcResizeLockTypes{
@@ -120,8 +141,13 @@ class ArcResizeLockManagerTest : public CompatModeTestBase {
     test_compat_mode_button_controller_->ResetUpdateCompatModeButtonCalled();
   }
 
+  void SetShowSplashCallback(
+      base::RepeatingCallback<void(aura::Window*)> callback) {
+    arc_resize_lock_manager_.set_show_splash_callback(std::move(callback));
+  }
+
  private:
-  ArcResizeLockManager arc_resize_lock_manager_{nullptr, nullptr};
+  TestArcResizeLockManager arc_resize_lock_manager_;
 
   // Owned by |arc_resize_lock_manager_|.
   TestCompatModeButtonController* test_compat_mode_button_controller_;
@@ -421,6 +447,79 @@ TEST_F(ArcResizeLockManagerTest, UpdateCompatModeButton) {
       ResetUpdateCompatModeButtonCalled();
     }
   }
+}
+
+// Tests that compatible window snapping is properly enabled for resize-locked
+// windows.
+TEST_F(ArcResizeLockManagerTest, TestCompatWindowSnap) {
+  auto arc_window = CreateFakeWindow(true);
+  arc_window->SetProperty(ash::kAppIDKey, std::string("app-id"));
+
+  // Resize locking the window makes it compat snappable.
+  arc_window->SetProperty(ash::kArcResizeLockTypeKey,
+                          ash::ArcResizeLockType::RESIZE_DISABLED_TOGGLABLE);
+  const gfx::Size* prop =
+      arc_window->GetProperty(ash::kUnresizableSnappedSizeKey);
+  EXPECT_TRUE(prop->width() > 0);
+
+  // Non-resize locked window can't be snapped.
+  arc_window->SetProperty(ash::kArcResizeLockTypeKey,
+                          ash::ArcResizeLockType::NONE);
+  EXPECT_EQ(arc_window->GetProperty(ash::kUnresizableSnappedSizeKey), nullptr);
+
+  // Fully-locked window can't be snapped.
+  arc_window->SetProperty(ash::kArcResizeLockTypeKey,
+                          ash::ArcResizeLockType::RESIZE_DISABLED_NONTOGGLABLE);
+  EXPECT_EQ(arc_window->GetProperty(ash::kUnresizableSnappedSizeKey), nullptr);
+}
+
+// TODO(b/215063759): Remove this test after the launch.
+// Tests that compatible window snapping is properly disabled if the flag is
+// disabled.
+TEST_F(ArcResizeLockManagerTest, TestCompatWindowSnapWithFlagDisabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature({arc::kCompatSnapFeature});
+
+  auto arc_window = CreateFakeWindow(true);
+  arc_window->SetProperty(ash::kAppIDKey, std::string("app-id"));
+  arc_window->SetProperty(aura::client::kResizeBehaviorKey,
+                          aura::client::kResizeBehaviorNone);
+
+  arc_window->SetProperty(ash::kArcResizeLockTypeKey,
+                          ash::ArcResizeLockType::RESIZE_DISABLED_TOGGLABLE);
+  EXPECT_EQ(arc_window->GetProperty(ash::kUnresizableSnappedSizeKey), nullptr);
+
+  arc_window->SetProperty(ash::kArcResizeLockTypeKey,
+                          ash::ArcResizeLockType::NONE);
+  EXPECT_EQ(arc_window->GetProperty(ash::kUnresizableSnappedSizeKey), nullptr);
+
+  arc_window->SetProperty(ash::kArcResizeLockTypeKey,
+                          ash::ArcResizeLockType::RESIZE_DISABLED_NONTOGGLABLE);
+  EXPECT_EQ(arc_window->GetProperty(ash::kUnresizableSnappedSizeKey), nullptr);
+}
+
+// Test that the splash screen dialog is shown properly.
+TEST_F(ArcResizeLockManagerTest, ShowSplashScreen) {
+  auto arc_window = CreateFakeWindow(true);
+  std::string app_id = "app-id";
+  arc_window->SetProperty(ash::kAppIDKey, app_id);
+  pref_delegate()->SetResizeLockState(app_id, mojom::ArcResizeLockState::READY);
+  pref_delegate()->SetShowSplashScreenDialogCount(1);
+
+  EXPECT_FALSE(IsResizeLockEnabled(arc_window.get()));
+
+  bool show_splash_called = false;
+  SetShowSplashCallback(base::BindLambdaForTesting([&](aura::Window* window) {
+    show_splash_called = true;
+    // The compat-mode button must exist at the time of showing the splash.
+    EXPECT_TRUE(IsUpdateCompatModeButtonCalled(window));
+  }));
+
+  // Enable resize-lock.
+  arc_window->SetProperty(ash::kArcResizeLockTypeKey,
+                          ash::ArcResizeLockType::RESIZE_DISABLED_TOGGLABLE);
+
+  EXPECT_TRUE(show_splash_called);
 }
 
 }  // namespace arc

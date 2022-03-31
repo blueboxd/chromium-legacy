@@ -177,7 +177,7 @@ public class ContentViewRenderView
             }
             ContentViewRenderViewJni.get().surfaceChanged(mNativeContentViewRenderView,
                     canBeUsedWithSurfaceControl, width, height, transparentBackground, surface);
-            mCompositorHasSurface = mLastSurface != null;
+            mCompositorHasSurface = surface != null;
             maybeUpdatePhysicalBackingSize(width, height);
             updateBackgroundColor();
         }

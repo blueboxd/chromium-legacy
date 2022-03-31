@@ -476,6 +476,8 @@ void AudioRendererImpl::OnDeviceInfoReceived(
       format = AudioParameters::AUDIO_BITSTREAM_AC3;
     } else if (codec == AudioCodec::kEAC3) {
       format = AudioParameters::AUDIO_BITSTREAM_EAC3;
+    } else if (codec == AudioCodec::kDTS) {
+      format = AudioParameters::AUDIO_BITSTREAM_DTS;
     } else {
       NOTREACHED();
     }
@@ -842,10 +844,13 @@ void AudioRendererImpl::DecodedAudioReady(
   pending_read_ = false;
 
   if (result.has_error()) {
-    HandleAbortedReadOrDecodeError(result.code() ==
-                                           DecoderStatus::Codes::kAborted
-                                       ? PIPELINE_OK
-                                       : PIPELINE_ERROR_DECODE);
+    auto status = PIPELINE_ERROR_DECODE;
+    if (result.code() == DecoderStatus::Codes::kAborted)
+      status = PIPELINE_OK;
+    else if (result.code() == DecoderStatus::Codes::kDisconnected)
+      status = PIPELINE_ERROR_DISCONNECTED;
+
+    HandleAbortedReadOrDecodeError(status);
     return;
   }
 

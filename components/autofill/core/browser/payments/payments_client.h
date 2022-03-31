@@ -287,8 +287,10 @@ class PaymentsClient {
     // |instrument_id| is used by the server as an identifier for the card that
     // was uploaded. Currently, we have it in the UploadCardResponseDetails so
     // that we can send it in the GetDetailsForEnrollRequest in the virtual card
-    // enrollment flow.
-    int64_t instrument_id = 0;
+    // enrollment flow. Will only not be populated in the case of an imperfect
+    // conversion from string to int64_t, or if the server does not return an
+    // instrument id.
+    absl::optional<int64_t> instrument_id;
     // |virtual_card_enrollment_state| is used to determine whether we want to
     // pursue further action with the credit card that was uploaded regarding
     // virtual card enrollment. For example, if the state is
@@ -302,7 +304,8 @@ class PaymentsClient {
     // art. Since chrome sync does not instantly sync the card art with the url,
     // the actual card art image might not always be present. Flows that use
     // |card_art_url| need to make sure they handle the case where the image has
-    // not been synced yet.
+    // not been synced yet. For virtual card eligible cards this should not be
+    // empty. If using this field use DCHECKs to ensure it is populated.
     GURL card_art_url;
   };
 
@@ -312,8 +315,8 @@ class PaymentsClient {
     UpdateVirtualCardEnrollmentRequestDetails();
     UpdateVirtualCardEnrollmentRequestDetails(
         const UpdateVirtualCardEnrollmentRequestDetails&);
-    UpdateVirtualCardEnrollmentRequestDetails operator=(
-        const UpdateVirtualCardEnrollmentRequestDetails&) = delete;
+    UpdateVirtualCardEnrollmentRequestDetails& operator=(
+        const UpdateVirtualCardEnrollmentRequestDetails&);
     ~UpdateVirtualCardEnrollmentRequestDetails();
     // Denotes the source that the corresponding
     // UpdateVirtualCardEnrollmentRequest for this
@@ -430,16 +433,17 @@ class PaymentsClient {
 
   // Determine if the user meets the Payments service's conditions for upload.
   // The service uses |addresses| (from which names and phone numbers are
-  // removed) and |app_locale| to determine which legal message to display.
-  // |detected_values| is a bitmask of CreditCardSaveManager::DetectedValue
-  // values that relays what data is actually available for upload in order to
-  // make more informed upload decisions. |callback| is the callback function
-  // when get response from server. |billable_service_number| is used to set the
-  // billable service number in the GetUploadDetails request. If the conditions
-  // are met, the legal message will be returned via |callback|.
-  // |active_experiments| is used by Payments server to track requests that were
-  // triggered by enabled features. |upload_card_source| is used by Payments
-  // server metrics to track the source of the request.
+  // removed) and |app_locale| and |billing_customer_number| to determine which
+  // legal message to display. |detected_values| is a bitmask of
+  // CreditCardSaveManager::DetectedValue values that relays what data is
+  // actually available for upload in order to make more informed upload
+  // decisions. |callback| is the callback function when get response from
+  // server. |billable_service_number| is used to set the billable service
+  // number in the GetUploadDetails request. If the conditions are met, the
+  // legal message will be returned via |callback|. |active_experiments| is used
+  // by Payments server to track requests that were triggered by enabled
+  // features. |upload_card_source| is used by Payments server metrics to track
+  // the source of the request.
   virtual void GetUploadDetails(
       const std::vector<AutofillProfile>& addresses,
       const int detected_values,
@@ -450,6 +454,7 @@ class PaymentsClient {
                               std::unique_ptr<base::Value>,
                               std::vector<std::pair<int, int>>)> callback,
       const int billable_service_number,
+      const int64_t billing_customer_number,
       UploadCardSource upload_card_source =
           UploadCardSource::UNKNOWN_UPLOAD_CARD_SOURCE);
 
@@ -482,9 +487,9 @@ class PaymentsClient {
   // enrollment.
   virtual void GetVirtualCardEnrollmentDetails(
       const GetDetailsForEnrollmentRequestDetails& request_details,
-      base::OnceCallback<void(
-          AutofillClient::PaymentsRpcResult,
-          payments::PaymentsClient::GetDetailsForEnrollmentResponseDetails&)>
+      base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
+                              const payments::PaymentsClient::
+                                  GetDetailsForEnrollmentResponseDetails&)>
           callback);
 
   // The user has chosen to change the virtual-card enrollment of a credit card.

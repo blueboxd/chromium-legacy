@@ -390,6 +390,7 @@ MediaAppUIBrowserTest.NotifyCurrentFile = async () => {
   const imageFile = new File([], 'image.png', {type: 'image/png'});
   const audioFile = new File([], 'audio.wav', {type: 'audio/wav'});
   const videoFile = new File([], 'video.mp4', {type: 'video/mp4'});
+  const pdfFile = new File([], 'form.pdf', {type: 'application/pdf'});
   const unknownFile = new File([], 'foo.xyz', {type: 'unknown/unknown'});
 
   const TEST_CASES = [
@@ -397,6 +398,7 @@ MediaAppUIBrowserTest.NotifyCurrentFile = async () => {
     {file: audioFile, expectedTitle: 'audio.wav', expectedIconType: 'audio'},
     {file: videoFile, expectedTitle: 'video.mp4', expectedIconType: 'video'},
     {file: unknownFile, expectedTitle: 'foo.xyz', expectedIconType: 'file'},
+    {file: pdfFile, expectedTitle: 'form.pdf', expectedIconType: 'pdf'},
     {file: undefined, expectedTitle: 'Gallery', expectedIconType: 'app'},
   ];
   for (const {file, expectedTitle, expectedIconType} of TEST_CASES) {
@@ -1432,4 +1434,18 @@ MediaAppUIBrowserTest.GuestHasFocus = async () => {
 
   // By the time this tests runs the iframe should already have been loaded.
   assertEquals(document.activeElement, guest);
+};
+
+// Check the body element's background color when the DarkLightMode feature is
+// enabled.
+MediaAppUIBrowserTest.BodyHasCorrectBackgroundColorWithDarkLight = () => {
+  const actualBackgroundColor = getComputedStyle(document.body).backgroundColor;
+  assertEquals(actualBackgroundColor, 'rgb(255, 255, 255)');  // White.
+};
+
+// Check the body element's background color when the DarkLightMode feature is
+// disabled.
+MediaAppUIBrowserTest.BodyHasCorrectBackgroundColorWithoutDarkLight = () => {
+  const actualBackgroundColor = getComputedStyle(document.body).backgroundColor;
+  assertEquals(actualBackgroundColor, 'rgb(32, 33, 36)');  // Grey 900.
 };

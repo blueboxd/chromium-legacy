@@ -4,7 +4,7 @@
 
 #include "media/formats/hls/types.h"
 #include "base/location.h"
-#include "media/formats/hls/parse_context.h"
+#include "media/formats/hls/source_string.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -406,6 +406,49 @@ TEST(HlsFormatParserTest, AttributeMapTest) {
     EXPECT_TRUE(storage[2].second.has_value());
     EXPECT_EQ(storage[2].second.value().Str(), "foo");
   }
+}
+
+TEST(HlsFormatParserTest, ParseVariableNameTest) {
+  auto const ok_test = [](base::StringPiece input,
+                          const base::Location& from =
+                              base::Location::Current()) {
+    auto result =
+        types::ParseVariableName(SourceString::CreateForTesting(input));
+    ASSERT_TRUE(result.has_value()) << from.ToString();
+    EXPECT_EQ(std::move(result).value().name, input);
+  };
+
+  auto const error_test = [](base::StringPiece input,
+                             const base::Location& from =
+                                 base::Location::Current()) {
+    auto result =
+        types::ParseVariableName(SourceString::CreateForTesting(input));
+    ASSERT_TRUE(result.has_error()) << from.ToString();
+    EXPECT_EQ(std::move(result).error().code(),
+              ParseStatusCode::kMalformedVariableName);
+  };
+
+  // Variable names may not be empty
+  error_test("");
+
+  // Variable names may not have whitespace
+  error_test(" Hello");
+  error_test("He llo");
+  error_test("Hello ");
+
+  // Variable names may not have characters outside the allowed set
+  error_test("He*llo");
+  error_test("!Hello");
+  error_test("He$o");
+  error_test("He=o");
+
+  // Test some valid variable names
+  ok_test("Hello");
+  ok_test("HE-LLO");
+  ok_test("__H3LL0__");
+  ok_test("12345");
+  ok_test("-1_2-3_4-5_");
+  ok_test("______-___-__---");
 }
 
 }  // namespace hls

@@ -53,23 +53,24 @@ const base::Feature kUseMultipleOverlays{"UseMultipleOverlays",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 const char kMaxOverlaysParam[] = "max_overlays";
 
-const base::Feature kDelegatedCompositing{"DelegatedCompositing",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kSimpleFrameRateThrottling{
-    "SimpleFrameRateThrottling", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Use the SkiaRenderer.
-const base::Feature kUseSkiaRenderer {
-  "UseSkiaRenderer",
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID) ||           \
-    BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_MAC)
+const base::Feature kDelegatedCompositing {
+  "DelegatedCompositing",
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
+
+const base::Feature kVideoDetectorIgnoreNonVideos{
+    "VideoDetectorIgnoreNonVideos", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kSimpleFrameRateThrottling{
+    "SimpleFrameRateThrottling", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Use the SkiaRenderer.
+const base::Feature kUseSkiaRenderer{"UseSkiaRenderer",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Kill-switch to disable de-jelly, even if flags/properties indicate it should
 // be enabled.
@@ -151,12 +152,6 @@ const base::Feature kUseSurfaceLayerForVideoDefault{
 const base::Feature kUseRealVideoColorSpaceForDisplay{
     "UseRealVideoColorSpaceForDisplay", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
-
-// Used by CC to throttle frame production of older surfaces. Used by the
-// Browser to batch SurfaceSync calls sent to the Renderer for properties can
-// change in close proximity to each other.
-const base::Feature kSurfaceSyncThrottling{"SurfaceSyncThrottling",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDrawPredictedInkPoint{"DrawPredictedInkPoint",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
@@ -329,10 +324,6 @@ bool UseRealVideoColorSpaceForDisplay() {
 }
 #endif
 
-bool IsSurfaceSyncThrottling() {
-  return base::FeatureList::IsEnabled(kSurfaceSyncThrottling);
-}
-
 // Used by Viz to determine if viz::DisplayScheduler should dynamically adjust
 // its frame deadline. Returns the percentile of historic draw times to base the
 // deadline on. Or absl::nullopt if the feature is disabled.
@@ -370,6 +361,10 @@ int MaxOverlaysConsidered() {
 
   return base::GetFieldTrialParamByFeatureAsInt(kUseMultipleOverlays,
                                                 kMaxOverlaysParam, 2);
+}
+
+bool ShouldVideoDetectorIgnoreNonVideoFrames() {
+  return base::FeatureList::IsEnabled(kVideoDetectorIgnoreNonVideos);
 }
 
 }  // namespace features

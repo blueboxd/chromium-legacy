@@ -8,14 +8,12 @@ import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.app.Activity;
 import android.util.TypedValue;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -32,11 +30,6 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.feed.sections.SectionType;
-import org.chromium.chrome.browser.feed.sort_ui.SortChipProperties;
-import org.chromium.chrome.browser.feed.sort_ui.SortView;
-import org.chromium.chrome.browser.feed.sort_ui.SortViewBinder;
-import org.chromium.chrome.browser.feed.v2.ContentOrder;
 import org.chromium.chrome.browser.feed.v2.FeedUserActionType;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -65,9 +58,6 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
-import org.chromium.ui.modelutil.ListModel;
-import org.chromium.ui.modelutil.ListModelChangeProcessor;
-import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 import org.chromium.url.GURL;
 
@@ -400,7 +390,7 @@ public class FeedStream implements Stream {
     private final long mNativeFeedStream;
     private final ObserverList<ContentChangedListener> mContentChangedListeners =
             new ObserverList<>();
-    private final boolean mIsInterestFeed;
+    private final int mStreamKind;
     // Various helpers/controllers.
     private ShareHelperWrapper mShareHelper;
     private SnackbarManager mSnackManager;
@@ -444,9 +434,6 @@ public class FeedStream implements Stream {
     private String mBottomSheetOriginatingSliceId;
     private View mLastFocusedView;
 
-    // Sort options drawer.
-    private View mSortView;
-
     /**
      * Creates a new Feed Stream.
      * @param activity {@link Activity} that this is bound to.
@@ -455,7 +442,7 @@ public class FeedStream implements Stream {
      * @param isPlaceholderShown Whether the placeholder is shown initially.
      * @param windowAndroid The {@link WindowAndroid} this is shown on.
      * @param shareDelegateSupplier The supplier for {@link ShareDelegate} for sharing actions.
-     * @param isInterestFeed Whether this stream is for interest feed (true) or web feed (false).
+     * @param streamKind Kind of stream data this feed stream serves.
      * @param feedAutoplaySettingsDelegate The delegate to invoke autoplay settings.
      * @param actionDelegate Implements some Feed actions.
      * @param helpAndFeedbackLauncher A HelpAndFeedbackLauncher.
@@ -463,13 +450,13 @@ public class FeedStream implements Stream {
     public FeedStream(Activity activity, SnackbarManager snackbarManager,
             BottomSheetController bottomSheetController, boolean isPlaceholderShown,
             WindowAndroid windowAndroid, Supplier<ShareDelegate> shareDelegateSupplier,
-            boolean isInterestFeed, FeedAutoplaySettingsDelegate feedAutoplaySettingsDelegate,
+            int streamKind, FeedAutoplaySettingsDelegate feedAutoplaySettingsDelegate,
             FeedActionDelegate actionDelegate, HelpAndFeedbackLauncher helpAndFeedbackLauncher) {
         this.mActivity = activity;
-        mIsInterestFeed = isInterestFeed;
+        mStreamKind = streamKind;
         mReliabilityLoggingBridge = new FeedReliabilityLoggingBridge();
         mNativeFeedStream = FeedStreamJni.get().init(
-                this, isInterestFeed, mReliabilityLoggingBridge.getNativePtr());
+                this, streamKind, mReliabilityLoggingBridge.getNativePtr());
 
         mBottomSheetController = bottomSheetController;
         mShareHelper = new ShareHelperWrapper(windowAndroid, shareDelegateSupplier);
@@ -511,44 +498,15 @@ public class FeedStream implements Stream {
 
         // Only watch for unread content on the web feed, not for-you feed.
         // Sort options only available for web feed right now.
-        if (!isInterestFeed) {
+        if (streamKind == StreamKind.FOLLOWING) {
             mUnreadContentObserver = new UnreadContentObserver(/*isWebFeed=*/true);
-
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_FEED_SORT)) {
-                @ContentOrder
-                int currentSort = FeedServiceBridge.getContentOrderForWebFeed();
-
-                mSortView =
-                        LayoutInflater.from(activity).inflate(R.layout.feed_options_panel, null);
-                SortView chipView = mSortView.findViewById(R.id.button_bar);
-                ListModel<PropertyModel> sortModel = new ListModel<>();
-                ListModelChangeProcessor<ListModel<PropertyModel>, SortView, Void> processor =
-                        new ListModelChangeProcessor<>(sortModel, chipView, new SortViewBinder());
-                sortModel.addObserver(processor);
-
-                sortModel.add(
-                        createSortModel(ContentOrder.REVERSE_CHRON, R.string.latest, currentSort));
-
-                sortModel.add(createSortModel(
-                        ContentOrder.GROUPED, R.string.feed_sort_publisher, currentSort));
-            }
         }
     }
 
-    private PropertyModel createSortModel(
-            @ContentOrder int order, @StringRes int stringResource, @ContentOrder int currentSort) {
-        return new PropertyModel.Builder(SortChipProperties.ALL_KEYS)
-                .with(SortChipProperties.NAME_KEY,
-                        mActivity.getResources().getString(stringResource))
-                .with(SortChipProperties.ON_SELECT_CALLBACK_KEY,
-                        () -> FeedServiceBridge.setContentOrderForWebFeed(order))
-                .with(SortChipProperties.IS_INITIALLY_SELECTED_KEY, currentSort == order)
-                .build();
-    }
-
     @Override
-    public View getOptionsView() {
-        return mSortView;
+    public boolean supportsOptions() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_FEED_SORT)
+                && mStreamKind == StreamKind.FOLLOWING;
     }
 
     @Override
@@ -560,9 +518,9 @@ public class FeedStream implements Stream {
     }
 
     @Override
-    @SectionType
-    public int getSectionType() {
-        return mIsInterestFeed ? SectionType.FOR_YOU_FEED : SectionType.WEB_FEED;
+    @StreamKind
+    public int getStreamKind() {
+        return mStreamKind;
     }
 
     @Override
@@ -576,8 +534,7 @@ public class FeedStream implements Stream {
             HybridListRenderer renderer, FeedLaunchReliabilityLogger launchReliabilityLogger,
             int headerCount) {
         mLaunchReliabilityLogger = launchReliabilityLogger;
-        launchReliabilityLogger.sendPendingEvents(
-                mIsInterestFeed ? StreamType.FOR_YOU : StreamType.WEB_FEED,
+        launchReliabilityLogger.sendPendingEvents(getStreamType(),
                 FeedStreamJni.get().getSurfaceId(mNativeFeedStream, FeedStream.this));
         launchReliabilityLogger.logFeedReloading(System.nanoTime());
         mReliabilityLoggingBridge.setLogger(launchReliabilityLogger);
@@ -675,34 +632,6 @@ public class FeedStream implements Stream {
     @Override
     public void removeOnContentChangedListener(ContentChangedListener listener) {
         mContentChangedListeners.removeObserver(listener);
-    }
-
-    // TODO(chili): extract these uma-record methods to somewhere else - FeedLogger.java?
-    @Override
-    public void toggledArticlesListVisible(boolean visible) {
-        FeedStreamJni.get().reportOtherUserAction(mNativeFeedStream, FeedStream.this,
-                visible ? FeedUserActionType.TAPPED_TURN_ON : FeedUserActionType.TAPPED_TURN_OFF);
-    }
-
-    @Override
-    public void recordActionManageInterests() {
-        FeedStreamJni.get().reportOtherUserAction(
-                mNativeFeedStream, FeedStream.this, FeedUserActionType.TAPPED_MANAGE_INTERESTS);
-    }
-    @Override
-    public void recordActionManageActivity() {
-        FeedStreamJni.get().reportOtherUserAction(
-                mNativeFeedStream, FeedStream.this, FeedUserActionType.TAPPED_MANAGE_ACTIVITY);
-    }
-    @Override
-    public void recordActionManageReactions() {
-        FeedStreamJni.get().reportOtherUserAction(
-                mNativeFeedStream, FeedStream.this, FeedUserActionType.TAPPED_MANAGE_REACTIONS);
-    }
-    @Override
-    public void recordActionLearnMore() {
-        FeedStreamJni.get().reportOtherUserAction(
-                mNativeFeedStream, FeedStream.this, FeedUserActionType.TAPPED_LEARN_MORE);
     }
 
     @Override
@@ -838,7 +767,7 @@ public class FeedStream implements Stream {
         // Starts to load more content if not yet.
         if (!mIsLoadingMoreContent) {
             mIsLoadingMoreContent = true;
-            FeedUma.recordFeedLoadMoreTrigger(getSectionType(), totalItemCount, numItemsRemaining);
+            FeedUma.recordFeedLoadMoreTrigger(getStreamKind(), totalItemCount, numItemsRemaining);
             // The native loadMore() call may immediately result in onStreamUpdated(), which can
             // result in a crash if maybeLoadMore() is being called in response to certain events.
             // Use postTask to avoid this.
@@ -937,7 +866,7 @@ public class FeedStream implements Stream {
                     getLateralPaddingsPx(), sliceId, R.layout.feed_spinner);
         }
         assert slice.hasZeroStateSlice();
-        if (!mIsInterestFeed) {
+        if (mStreamKind == StreamKind.FOLLOWING) {
             return new NtpListContentManager.NativeViewContent(
                     getLateralPaddingsPx(), sliceId, R.layout.following_empty_state);
         }
@@ -960,6 +889,17 @@ public class FeedStream implements Stream {
         if (mContentManager.replaceRange(
                     mHeaderCount, mContentManager.getItemCount() - mHeaderCount, newContentList)) {
             notifyContentChange();
+        }
+    }
+
+    private @StreamType int getStreamType() {
+        switch (mStreamKind) {
+            case StreamKind.FOR_YOU:
+                return StreamType.FOR_YOU;
+            case StreamKind.FOLLOWING:
+                return StreamType.WEB_FEED;
+            default:
+                return StreamType.UNSPECIFIED;
         }
     }
 
@@ -1148,7 +1088,8 @@ public class FeedStream implements Stream {
     @NativeMethods
     @VisibleForTesting
     public interface Natives {
-        long init(FeedStream caller, boolean isForYou, long nativeFeedReliabilityLoggingBridge);
+        long init(FeedStream caller, @StreamKind int streamKind,
+                long nativeFeedReliabilityLoggingBridge);
         void reportFeedViewed(long nativeFeedStream, FeedStream caller);
         void reportSliceViewed(long nativeFeedStream, FeedStream caller, String sliceId);
         void reportPageLoaded(long nativeFeedStream, FeedStream caller, boolean inNewTab);

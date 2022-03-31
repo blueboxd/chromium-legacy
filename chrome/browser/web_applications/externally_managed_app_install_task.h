@@ -12,7 +12,7 @@
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
-#include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
@@ -26,14 +26,16 @@ namespace content {
 class WebContents;
 }
 
+namespace webapps {
+enum class InstallResultCode;
+}
+
 namespace web_app {
 
 class WebAppUrlLoader;
-class OsIntegrationManager;
 class WebAppInstallFinalizer;
 class WebAppInstallManager;
 class WebAppUiManager;
-enum class InstallResultCode;
 
 // Class to install WebApp from a WebContents. A queue of such tasks is owned by
 // ExternallyManagedAppManager. Can only be called from the UI thread.
@@ -49,7 +51,6 @@ class ExternallyManagedAppInstallTask {
       Profile* profile,
       WebAppUrlLoader* url_loader,
       WebAppRegistrar* registrar,
-      OsIntegrationManager* os_integration_manager,
       WebAppUiManager* ui_manager,
       WebAppInstallFinalizer* install_finalizer,
       WebAppInstallManager* install_manager,
@@ -109,18 +110,20 @@ class ExternallyManagedAppInstallTask {
                          bool offline_install,
                          ResultCallback result_callback,
                          const AppId& app_id,
-                         InstallResultCode code);
+                         webapps::InstallResultCode code);
+  void OnWebAppInstalledWithHooksErrors(bool is_placeholder,
+                                        bool offline_install,
+                                        ResultCallback result_callback,
+                                        const AppId& app_id,
+                                        webapps::InstallResultCode code,
+                                        OsHooksErrors os_hooks_errors);
   void TryAppInfoFactoryOnFailure(
       ResultCallback result_callback,
       ExternallyManagedAppManager::InstallResult result);
-  void OnOsHooksCreated(const AppId& app_id,
-                        base::ScopedClosureRunner scoped_closure,
-                        const OsHooksErrors os_hooks_errors);
 
   const raw_ptr<Profile> profile_;
   const raw_ptr<WebAppUrlLoader> url_loader_;
   const raw_ptr<WebAppRegistrar> registrar_;
-  const raw_ptr<OsIntegrationManager> os_integration_manager_;
   const raw_ptr<WebAppInstallFinalizer> install_finalizer_;
   const raw_ptr<WebAppInstallManager> install_manager_;
   const raw_ptr<WebAppUiManager> ui_manager_;

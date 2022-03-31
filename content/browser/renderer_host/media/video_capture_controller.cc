@@ -658,6 +658,17 @@ void VideoCaptureController::OnFrameDropped(
   LogVideoFrameDrop(reason, stream_type_);
 }
 
+void VideoCaptureController::OnFrameWithEmptyRegionCapture() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  EmitLogMessage(__func__, 3);
+  for (const auto& client : controller_clients_) {
+    if (client->session_closed) {
+      continue;
+    }
+    client->event_handler->OnFrameWithEmptyRegionCapture(client->controller_id);
+  }
+}
+
 void VideoCaptureController::OnLog(const std::string& message) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   EmitLogMessage(message, 3);
@@ -813,11 +824,12 @@ void VideoCaptureController::Resume() {
 
 void VideoCaptureController::Crop(
     const base::Token& crop_id,
+    uint32_t crop_version,
     base::OnceCallback<void(media::mojom::CropRequestResult)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(launched_device_);
   EmitLogMessage(__func__, 3);
-  launched_device_->Crop(crop_id, std::move(callback));
+  launched_device_->Crop(crop_id, crop_version, std::move(callback));
 }
 
 void VideoCaptureController::RequestRefreshFrame() {

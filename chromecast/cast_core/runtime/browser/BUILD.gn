@@ -4,26 +4,6 @@
 
 import("//chromecast/chromecast.gni")
 
-cast_source_set("grpc_impl") {
-  sources = [
-    "runtime_application_service_grpc_impl.cc",
-    "runtime_application_service_grpc_impl.h",
-    "runtime_message_port_application_service_grpc_impl.cc",
-    "runtime_message_port_application_service_grpc_impl.h",
-    "runtime_service_grpc_impl.cc",
-    "runtime_service_grpc_impl.h",
-  ]
-
-  public_deps = [
-    "//base",
-    "//chromecast/cast_core/runtime/browser/grpc",
-    "//third_party/cast_core/public/src/proto/runtime:runtime_service_proto",
-    "//third_party/cast_core/public/src/proto/v2:runtime_application_service_proto",
-    "//third_party/cast_core/public/src/proto/v2:runtime_message_port_application_service_proto",
-    "//third_party/grpc:grpc++",
-  ]
-}
-
 cast_source_set("message_port") {
   sources = [
     "message_port_handler.cc",
@@ -34,9 +14,8 @@ cast_source_set("message_port") {
 
   public_deps = [
     "//base",
-    "//chromecast/cast_core/runtime/browser/grpc",
     "//components/cast/message_port",
-    "//third_party/cast_core/public/src/proto/v2:core_application_service_proto",
+    "//third_party/cast_core/public/src/proto/v2:core_message_port_application_service_proto_castcore",
     "//third_party/cast_core/public/src/proto/web:message_channel_proto",
   ]
 }
@@ -51,12 +30,9 @@ cast_source_set("metrics_recorder") {
     "cast_runtime_metrics_recorder.h",
     "cast_runtime_metrics_recorder_service.cc",
     "cast_runtime_metrics_recorder_service.h",
-    "metrics_recorder_grpc.cc",
-    "metrics_recorder_grpc.h",
   ]
 
   public_deps = [
-    ":grpc_impl",
     "//base",
     "//chromecast/metrics:metrics_recorder",
     "//third_party/cast_core/public/src/proto/metrics:metrics_recorder_proto",
@@ -65,6 +41,7 @@ cast_source_set("metrics_recorder") {
 
   deps = [
     "//chromecast/base/metrics",
+    "//third_party/abseil-cpp:absl",
     "//third_party/metrics_proto",
   ]
 }
@@ -93,7 +70,8 @@ cast_source_set("grpc_webui") {
 
   public_deps = [
     "//chromecast/browser:public",
-    "//third_party/cast_core/public/src/proto/v2:core_application_service_proto",
+    "//third_party/abseil-cpp:absl",
+    "//third_party/cast_core/public/src/proto/v2:core_application_service_proto_castcore",
   ]
 
   if (enable_chromecast_extensions) {
@@ -124,7 +102,7 @@ cast_source_set("core_service_bindings") {
     "//components/cast/message_port",
     "//components/cast/message_port:blink_message_port_adapter",
     "//mojo/public/cpp/bindings",
-    "//third_party/cast_core/public/src/proto/v2:core_application_service_proto",
+    "//third_party/cast_core/public/src/proto/v2:core_message_port_application_service_proto_castcore",
     "//third_party/cast_core/public/src/proto/web:message_channel_proto",
   ]
 
@@ -140,6 +118,7 @@ cast_source_set("runtime_application") {
   ]
 
   public_deps = [
+    "//base",
     "//third_party/cast_core/public/src/proto/common:application_config_proto",
     "//third_party/cast_core/public/src/proto/runtime:runtime_service_proto",
     "//url",
@@ -148,15 +127,26 @@ cast_source_set("runtime_application") {
 
 cast_source_set("streaming_receiver_session_client") {
   sources = [
+    "streaming_controller.h",
+    "streaming_controller_base.cc",
+    "streaming_controller_base.h",
+    "streaming_controller_mirroring.cc",
+    "streaming_controller_mirroring.h",
     "streaming_receiver_session_client.cc",
     "streaming_receiver_session_client.h",
   ]
+
+  if (!enable_remoting_for_cwr) {
+    sources += [ "streaming_controller_factory_mirroring.cc" ]
+  }
 
   public_deps = [
     "//base",
     "//chromecast/browser:public",
     "//components/cast/message_port",
     "//components/cast_streaming/browser",
+    "//media/mojo/mojom",
+    "//third_party/abseil-cpp:absl",
   ]
 
   deps = [
@@ -191,22 +181,23 @@ cast_source_set("runtime_application_dispatcher") {
   ]
 
   public_deps = [
-    ":grpc_impl",
     ":grpc_webui",
     ":metrics_recorder",
     ":runtime_application",
     ":runtime_application_watcher",
     "//base",
     "//chromecast/browser:browser_base",
-    "//chromecast/cast_core/runtime/browser/grpc",
     "//chromecast/common:feature_constants",
     "//components/cast_streaming/public/mojom",
     "//components/url_rewrite/browser",
-    "//media/mojo/mojom",
-    "//third_party/cast_core/public/src/proto/common:application_config_proto",
-    "//third_party/cast_core/public/src/proto/core:cast_core_service_proto",
-    "//third_party/cast_core/public/src/proto/metrics:metrics_recorder_proto",
-    "//third_party/cast_core/public/src/proto/v2:core_application_service_proto",
+    "//third_party/abseil-cpp:absl",
+    "//third_party/cast_core/public/src/proto/core:cast_core_service_proto_castcore",
+    "//third_party/cast_core/public/src/proto/metrics:metrics_recorder_proto_castcore",
+    "//third_party/cast_core/public/src/proto/runtime:runtime_service_proto_castcore",
+    "//third_party/cast_core/public/src/proto/v2:core_application_service_proto_castcore",
+    "//third_party/cast_core/public/src/proto/v2:core_message_port_application_service_proto_castcore",
+    "//third_party/cast_core/public/src/proto/v2:runtime_application_service_proto_castcore",
+    "//third_party/cast_core/public/src/proto/v2:runtime_message_port_application_service_proto_castcore",
     "//third_party/grpc:grpc++",
   ]
 
@@ -274,21 +265,6 @@ cast_source_set("browser_simple") {
   sources = [ "cast_runtime_content_browser_client_simple.cc" ]
 
   deps = [ ":browser" ]
-}
-
-executable("demo_platform_service") {
-  sources = [
-    "demo_platform_service.cc",
-    "demo_platform_service.h",
-  ]
-
-  public_deps = [
-    "//base",
-    "//third_party/cast_core/public/src/proto/core:cast_core_service_proto",
-    "//third_party/cast_core/public/src/proto/platform:platform_service_proto",
-  ]
-
-  deps = [ "//third_party/grpc:grpc++" ]
 }
 
 # TODO(b/194439829): Upstream additional metrics unit tests.

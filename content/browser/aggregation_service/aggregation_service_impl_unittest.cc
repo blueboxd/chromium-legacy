@@ -168,18 +168,14 @@ TEST_F(AggregationServiceImplTest, AssembleReport_Succeed) {
   AssembleReport(std::move(request));
 
   std::vector<AggregatableReport::AggregationServicePayload> payloads;
-  payloads.emplace_back(url::Origin::Create(GURL("https://a.example")),
-                        /*payload=*/kABCD1234AsBytes,
-                        /*key_id=*/"key_1");
-  payloads.emplace_back(url::Origin::Create(GURL("https://b.example")),
-                        /*payload=*/kEFGH5678AsBytes,
-                        /*key_id=*/"key_2");
+  payloads.emplace_back(/*payload=*/kABCD1234AsBytes,
+                        /*key_id=*/"key_1",
+                        /*debug_cleartext_payload=*/absl::nullopt);
+  payloads.emplace_back(/*payload=*/kEFGH5678AsBytes,
+                        /*key_id=*/"key_2",
+                        /*debug_cleartext_payload=*/absl::nullopt);
 
-  AggregatableReportSharedInfo shared_info(
-      base::Time::FromJavaTime(1234567890123),
-      /*privacy_budget_key=*/"example_pbk");
-
-  AggregatableReport report(std::move(payloads), std::move(shared_info));
+  AggregatableReport report(std::move(payloads), "example_shared_info");
   assembler()->TriggerResponse(
       /*report_id=*/0, std::move(report),
       AggregatableReportAssembler::AssemblyStatus::kOk);
@@ -208,18 +204,14 @@ TEST_F(AggregationServiceImplTest, AssembleReport_Fail) {
 
 TEST_F(AggregationServiceImplTest, SendReport) {
   std::vector<AggregatableReport::AggregationServicePayload> payloads;
-  payloads.emplace_back(url::Origin::Create(GURL("https://a.example")),
-                        /*payload=*/kABCD1234AsBytes,
-                        /*key_id=*/"key_1");
-  payloads.emplace_back(url::Origin::Create(GURL("https://b.example")),
-                        /*payload=*/kEFGH5678AsBytes,
-                        /*key_id=*/"key_2");
+  payloads.emplace_back(/*payload=*/kABCD1234AsBytes,
+                        /*key_id=*/"key_1",
+                        /*debug_cleartext_payload=*/absl::nullopt);
+  payloads.emplace_back(/*payload=*/kEFGH5678AsBytes,
+                        /*key_id=*/"key_2",
+                        /*debug_cleartext_payload=*/absl::nullopt);
 
-  AggregatableReportSharedInfo shared_info(
-      base::Time::FromJavaTime(1234567890123),
-      /*privacy_budget_key=*/"example_pbk");
-
-  AggregatableReport report(std::move(payloads), std::move(shared_info));
+  AggregatableReport report(std::move(payloads), "example_shared_info");
 
   SendReport(GURL("https://example.com/reports"), report);
 

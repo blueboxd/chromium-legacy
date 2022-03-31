@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -17,7 +18,6 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine/data_type_activation_response.h"
@@ -1112,7 +1112,7 @@ void ClientTagBasedModelTypeProcessor::MergeDataWithMetadataForDebugging(
   std::string type_string = ModelTypeToDebugString(type_);
 
   while (batch->HasNext()) {
-    const auto& [storage_key, data] = batch->Next();
+    auto [storage_key, data] = batch->Next();
 
     // There is an overlap between EntityData fields from the bridge and
     // EntityMetadata fields from the processor's entity, metadata is
@@ -1131,7 +1131,7 @@ void ClientTagBasedModelTypeProcessor::MergeDataWithMetadataForDebugging(
     }
 
     std::unique_ptr<base::DictionaryValue> node = data->ToDictionaryValue();
-    node->SetString("modelType", type_string);
+    node->SetStringKey("modelType", type_string);
     // Copy the whole metadata message into the dictionary (if existing).
     if (entity != nullptr) {
       node->Set("metadata", EntityMetadataToValue(entity->metadata()));
@@ -1148,11 +1148,11 @@ void ClientTagBasedModelTypeProcessor::MergeDataWithMetadataForDebugging(
   // UNIQUE_SERVER_TAG to check if the node is root node. isChildOf in
   // sync_node_browser.js uses modelType to check if root node is parent of real
   // data node. NON_UNIQUE_NAME will be the name of node to display.
-  rootnode->SetString("PARENT_ID", "r");
-  rootnode->SetString("UNIQUE_SERVER_TAG", type_string);
-  rootnode->SetBoolean("IS_DIR", true);
-  rootnode->SetString("modelType", type_string);
-  rootnode->SetString("NON_UNIQUE_NAME", type_string);
+  rootnode->SetStringKey("PARENT_ID", "r");
+  rootnode->SetStringKey("UNIQUE_SERVER_TAG", type_string);
+  rootnode->SetBoolKey("IS_DIR", true);
+  rootnode->SetStringKey("modelType", type_string);
+  rootnode->SetStringKey("NON_UNIQUE_NAME", type_string);
   all_nodes->Append(std::move(rootnode));
 
   std::move(callback).Run(type_, std::move(all_nodes));

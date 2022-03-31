@@ -5,17 +5,8 @@
 import os.path
 import unittest
 
-from . import model, test_common
+from . import model
 from .test_config import TestConfig
-
-mock = test_common.import_mock()
-
-
-def _get_identity_hash(i):
-    if i == '[IDENTITY]':
-        return 'identity'
-
-    raise
 
 
 class TestCodeSignedProduct(unittest.TestCase):
@@ -76,7 +67,6 @@ class TestVerifyOptions(unittest.TestCase):
         self.assertFalse(model.VerifyOptions.valid(['--whatever']))
 
 
-@mock.patch('signing.model._get_identity_hash', _get_identity_hash)
 class TestDistribution(unittest.TestCase):
 
     def test_no_options(self):
@@ -85,7 +75,7 @@ class TestDistribution(unittest.TestCase):
         self.assertEqual(base_config, config.base_config)
         self.assertEqual(base_config.app_product, config.app_product)
         self.assertEqual(base_config.base_bundle_id, config.base_bundle_id)
-        self.assertEqual('provisiontest.identity',
+        self.assertEqual(base_config.provisioning_profile_basename,
                          config.provisioning_profile_basename)
         self.assertEqual(base_config.packaging_basename,
                          config.packaging_basename)
@@ -97,7 +87,7 @@ class TestDistribution(unittest.TestCase):
         self.assertEqual(base_config.app_product, config.app_product)
         self.assertEqual(base_config.product, config.product)
         self.assertEqual(base_config.base_bundle_id, config.base_bundle_id)
-        self.assertEqual('provisiontest.identity',
+        self.assertEqual(base_config.provisioning_profile_basename,
                          config.provisioning_profile_basename)
         self.assertEqual(base_config.packaging_basename,
                          config.packaging_basename)
@@ -113,7 +103,7 @@ class TestDistribution(unittest.TestCase):
         self.assertEqual('App Product Beta', config.app_product)
         self.assertEqual(base_config.product, config.product)
         self.assertEqual('test.signing.bundle_id.beta', config.base_bundle_id)
-        self.assertEqual('provisiontest_Beta.identity',
+        self.assertEqual('provisiontest_Beta',
                          config.provisioning_profile_basename)
         self.assertEqual('AppProductBeta-99.0.9999.99',
                          config.packaging_basename)
@@ -125,7 +115,7 @@ class TestDistribution(unittest.TestCase):
         self.assertEqual(base_config, config.base_config)
         self.assertEqual(base_config.app_product, config.app_product)
         self.assertEqual(base_config.base_bundle_id, config.base_bundle_id)
-        self.assertEqual('provisiontest.identity',
+        self.assertEqual(base_config.provisioning_profile_basename,
                          config.provisioning_profile_basename)
         self.assertEqual('AppProduct-99.0.9999.99-Canary',
                          config.packaging_basename)
@@ -142,7 +132,7 @@ class TestDistribution(unittest.TestCase):
         self.assertEqual('App Product Dev', config.app_product)
         self.assertEqual('Product', config.product)
         self.assertEqual('test.signing.bundle_id.dev', config.base_bundle_id)
-        self.assertEqual('provisiontest_Dev.identity',
+        self.assertEqual('provisiontest_Dev',
                          config.provisioning_profile_basename)
         self.assertEqual('AppProductDev-99.0.9999.99-Dev',
                          config.packaging_basename)

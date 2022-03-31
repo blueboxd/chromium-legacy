@@ -36,7 +36,7 @@ class FakeVideoStream : public protocol::VideoStream {
   void SetLosslessEncode(bool want_lossless) override;
   void SetLosslessColor(bool want_lossless) override;
   void SetObserver(Observer* observer) override;
-  void SelectSource(int id) override;
+  void SelectSource(webrtc::ScreenId id) override;
 
   Observer* observer() { return observer_; }
 
@@ -50,7 +50,7 @@ class FakeVideoStream : public protocol::VideoStream {
 
 class FakeConnectionToClient : public ConnectionToClient {
  public:
-  FakeConnectionToClient(std::unique_ptr<Session> session);
+  explicit FakeConnectionToClient(std::unique_ptr<Session> session);
 
   FakeConnectionToClient(const FakeConnectionToClient&) = delete;
   FakeConnectionToClient& operator=(const FakeConnectionToClient&) = delete;
@@ -60,6 +60,7 @@ class FakeConnectionToClient : public ConnectionToClient {
   void SetEventHandler(EventHandler* event_handler) override;
 
   std::unique_ptr<VideoStream> StartVideoStream(
+      const std::string& stream_name,
       std::unique_ptr<webrtc::DesktopCapturer> desktop_capturer) override;
   std::unique_ptr<AudioStream> StartAudioStream(
       std::unique_ptr<AudioSource> audio_source) override;

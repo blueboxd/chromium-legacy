@@ -275,10 +275,11 @@ void SelectSingleClientCertificateFromOnc(
       toplevel_onc->FindKey(onc::toplevel_config::kCertificates);
   ASSERT_TRUE(certs);
   ASSERT_TRUE(certs->is_list());
-  ASSERT_TRUE(certs->GetList().size() > client_certificate_index);
+  ASSERT_TRUE(certs->GetListDeprecated().size() > client_certificate_index);
 
   base::ListValue selected_certs;
-  selected_certs.Append(certs->GetList()[client_certificate_index].Clone());
+  selected_certs.Append(
+      certs->GetListDeprecated()[client_certificate_index].Clone());
 
   chromeos::onc::OncParsedCertificates parsed_selected_certs(selected_certs);
   ASSERT_FALSE(parsed_selected_certs.has_error());
@@ -296,7 +297,7 @@ MATCHER_P(IsEqualTo,
 }
 
 MATCHER(IsListEmpty, std::string(negation ? "isn't" : "is") + " empty.") {
-  return arg.GetList().empty();
+  return arg.GetListDeprecated().empty();
 }
 
 MATCHER(IsDictEmpty, std::string(negation ? "isn't" : "is") + " empty.") {
@@ -334,10 +335,8 @@ class NetworkConfigurationUpdaterAshTest : public testing::Test {
     base::Value fake_toplevel_onc =
         chromeos::onc::ReadDictionaryFromJson(kFakeONC);
 
-    base::DictionaryValue* global_config = nullptr;
-    fake_toplevel_onc
-        .FindKey(onc::toplevel_config::kGlobalNetworkConfiguration)
-        ->GetAsDictionary(&global_config);
+    base::Value* global_config = fake_toplevel_onc.FindDictKey(
+        onc::toplevel_config::kGlobalNetworkConfiguration);
     fake_global_network_config_.MergeDictionary(global_config);
 
     base::Value* certs =
@@ -455,7 +454,7 @@ class NetworkConfigurationUpdaterAshTest : public testing::Test {
       base::StringPiece guid,
       std::initializer_list<base::StringPiece> path,
       base::Value value) {
-    for (base::Value& network_config : network_configs->GetList()) {
+    for (base::Value& network_config : network_configs->GetListDeprecated()) {
       const base::Value* guid_value =
           network_config.FindKey(::onc::network_config::kGUID);
       if (!guid_value || guid_value->GetString() != guid)
@@ -466,7 +465,7 @@ class NetworkConfigurationUpdaterAshTest : public testing::Test {
   }
 
   base::Value fake_network_configs_;
-  base::DictionaryValue fake_global_network_config_;
+  base::Value fake_global_network_config_{base::Value::Type::DICTIONARY};
   chromeos::ScopedFakeSessionManagerClient scoped_session_manager_client_;
 };
 
@@ -520,19 +519,15 @@ TEST_F(NetworkConfigurationUpdaterAshTest,
 }
 
 TEST_F(NetworkConfigurationUpdaterAshTest, PolicyIsValidatedAndRepaired) {
-  std::unique_ptr<base::DictionaryValue> onc_repaired =
-      chromeos::onc::test_utils::ReadTestDictionary(
-          "repaired_toplevel_partially_invalid.onc");
+  base::Value onc_repaired = chromeos::onc::test_utils::ReadTestDictionaryValue(
+      "repaired_toplevel_partially_invalid.onc");
 
-  base::ListValue* network_configs_repaired = NULL;
-  onc_repaired->GetListWithoutPathExpansion(
-      onc::toplevel_config::kNetworkConfigurations, &network_configs_repaired);
+  base::Value* network_configs_repaired =
+      onc_repaired.FindListKey(onc::toplevel_config::kNetworkConfigurations);
   ASSERT_TRUE(network_configs_repaired);
 
-  base::DictionaryValue* global_config_repaired = NULL;
-  onc_repaired->GetDictionaryWithoutPathExpansion(
-      onc::toplevel_config::kGlobalNetworkConfiguration,
-      &global_config_repaired);
+  base::Value* global_config_repaired = onc_repaired.FindDictKey(
+      onc::toplevel_config::kGlobalNetworkConfiguration);
   ASSERT_TRUE(global_config_repaired);
 
   std::string onc_policy =
@@ -551,7 +546,7 @@ TEST_F(NetworkConfigurationUpdaterAshTest, PolicyIsValidatedAndRepaired) {
   std::vector<chromeos::onc::OncParsedCertificates::ClientCertificate>
       expected_client_certificates;
   ASSERT_NO_FATAL_FAILURE(SelectSingleClientCertificateFromOnc(
-      onc_repaired.get(), 1 /* client_certificate_index */,
+      &onc_repaired, 1 /* client_certificate_index */,
       &expected_client_certificates));
   certificate_importer_->SetExpectedONCClientCertificates(
       expected_client_certificates);

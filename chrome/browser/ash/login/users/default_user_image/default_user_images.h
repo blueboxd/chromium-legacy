@@ -74,7 +74,7 @@ bool IsDefaultImageUrl(const std::string& url, int* image_id);
 const gfx::ImageSkia& GetDefaultImage(int index);
 
 // Returns ID of default user image with specified index.
-const int GetDefaultImageResourceId(int index);
+int GetDefaultImageResourceId(int index);
 
 // Returns a random default image index.
 int GetRandomDefaultImageIndex();
@@ -92,7 +92,7 @@ std::unique_ptr<base::ListValue> GetCurrentImageSetAsListValue();
 
 // Returns the source info of the default user image with specified index.
 // Returns nullopt if there is no source info.
-absl::optional<DefaultImageSourceInfo> GetDefaultImageSourceInfo(int index);
+absl::optional<DefaultImageSourceInfo> GetDefaultImageSourceInfo(size_t index);
 
 }  // namespace default_user_image
 }  // namespace ash

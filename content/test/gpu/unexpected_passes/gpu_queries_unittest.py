@@ -3,17 +3,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from __future__ import print_function
+# pylint: disable=protected-access
 
 import json
 import subprocess
-import sys
 import unittest
-
-if sys.version_info[0] == 2:
-  import mock
-else:
-  import unittest.mock as mock
+import unittest.mock as mock
 
 from unexpected_passes import gpu_queries
 from unexpected_passes import gpu_unittest_utils as gpu_uu
@@ -149,7 +144,7 @@ class GetQueryGeneratorForBuilderUnittest(unittest.TestCase):
         test_filter.GetClauses()[0], """\
         AND REGEXP_CONTAINS(
           test_id,
-          r"gpu_tests\.pixel_integration_test\.")""")
+          r"gpu_tests\\.pixel_integration_test\\.")""")
     self.assertIsInstance(test_filter, gpu_queries.GpuFixedQueryGenerator)
     self._query_mock.assert_not_called()
 
@@ -407,6 +402,18 @@ WITH
       AND unnested_changes.submit_status = "SUCCESS"
       AND start_time > TIMESTAMP_SUB(CURRENT_TIMESTAMP(),
                                      INTERVAL 30 DAY)
+    UNION ALL
+    SELECT
+      CONCAT("build-", CAST(unnested_builds.id AS STRING)) as id
+    FROM
+      `commit-queue.angle.attempts`,
+      UNNEST(builds) as unnested_builds,
+      UNNEST(gerrit_changes) as unnested_changes
+    WHERE
+      unnested_builds.host = "cr-buildbucket.appspot.com"
+      AND unnested_changes.submit_status = "SUCCESS"
+      AND start_time > TIMESTAMP_SUB(CURRENT_TIMESTAMP(),
+                                     INTERVAL 30 DAY)
   ),
   builds AS (
     SELECT
@@ -467,6 +474,18 @@ WITH
       CONCAT("build-", CAST(unnested_builds.id AS STRING)) as id
     FROM
       `commit-queue.chromium.attempts`,
+      UNNEST(builds) as unnested_builds,
+      UNNEST(gerrit_changes) as unnested_changes
+    WHERE
+      unnested_builds.host = "cr-buildbucket.appspot.com"
+      AND unnested_changes.submit_status = "SUCCESS"
+      AND start_time > TIMESTAMP_SUB(CURRENT_TIMESTAMP(),
+                                     INTERVAL 30 DAY)
+    UNION ALL
+    SELECT
+      CONCAT("build-", CAST(unnested_builds.id AS STRING)) as id
+    FROM
+      `commit-queue.angle.attempts`,
       UNNEST(builds) as unnested_builds,
       UNNEST(gerrit_changes) as unnested_changes
     WHERE
@@ -585,7 +604,6 @@ class GetSuiteFilterClauseUnittest(unittest.TestCase):
     """Tests that no filter is returned for non-WebGL suites."""
     for suite in [
         'context_lost',
-        'depth_capture',
         'hardware_accelerated_feature',
         'gpu_process',
         'info_collection',

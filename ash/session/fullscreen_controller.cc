@@ -15,6 +15,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
+#include "base/check.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -165,7 +166,7 @@ bool FullscreenController::ShouldExitFullscreenBeforeLock() {
   auto* prefs = Shell::Get()->session_controller()->GetPrimaryUserPrefService();
   const auto* url_allow_list =
       prefs->GetList(prefs::kKeepFullscreenWithoutNotificationUrlAllowList);
-  if (url_allow_list->GetList().size() == 0)
+  if (url_allow_list->GetListDeprecated().size() == 0)
     return true;
 
   // Get the URL of the active window from the shell delegate.

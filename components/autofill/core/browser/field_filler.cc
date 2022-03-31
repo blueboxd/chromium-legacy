@@ -960,7 +960,7 @@ FieldFiller::FieldFiller(const std::string& app_locale,
 
 FieldFiller::~FieldFiller() {}
 
-bool FieldFiller::FillFormField(
+std::u16string FieldFiller::GetValueForFilling(
     const AutofillField& field,
     absl::variant<const AutofillProfile*, const CreditCard*>
         profile_or_credit_card,
@@ -968,8 +968,8 @@ bool FieldFiller::FillFormField(
     const std::u16string& cvc,
     mojom::RendererFormDataAction action,
     std::string* failure_to_fill) {
-  const AutofillType type = field.Type();
   std::u16string value;
+  DCHECK(field_data);
 
   if (absl::holds_alternative<const CreditCard*>(profile_or_credit_card)) {
     const CreditCard* credit_card =
@@ -991,15 +991,26 @@ bool FieldFiller::FillFormField(
         profile_or_credit_card));
     const AutofillProfile* profile =
         absl::get<const AutofillProfile*>(profile_or_credit_card);
-    if (profile->ShouldSkipFillingOrSuggesting(type.GetStorableType())) {
-      if (failure_to_fill)
-        *failure_to_fill += "ShouldSkipFillingOrSuggesting() returned true. ";
-      return false;
-    }
 
     value = GetValueForProfile(*profile, app_locale_, field, field_data,
                                failure_to_fill);
   }
+
+  return value;
+}
+
+bool FieldFiller::FillFormField(
+    const AutofillField& field,
+    absl::variant<const AutofillProfile*, const CreditCard*>
+        profile_or_credit_card,
+    FormFieldData* field_data,
+    const std::u16string& cvc,
+    mojom::RendererFormDataAction action,
+    std::string* failure_to_fill) {
+  const AutofillType type = field.Type();
+
+  std::u16string value = GetValueForFilling(
+      field, profile_or_credit_card, field_data, cvc, action, failure_to_fill);
 
   // Do not attempt to fill empty values as it would skew the metrics.
   if (value.empty()) {

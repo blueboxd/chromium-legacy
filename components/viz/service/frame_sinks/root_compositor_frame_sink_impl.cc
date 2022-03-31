@@ -10,6 +10,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -30,6 +31,41 @@
 #endif
 
 namespace viz {
+
+class RootCompositorFrameSinkImpl::StandaloneBeginFrameObserver
+    : public BeginFrameObserverBase {
+ public:
+  StandaloneBeginFrameObserver(
+      mojo::PendingRemote<mojom::BeginFrameObserver> observer,
+      BeginFrameSource* begin_frame_source)
+      : remote_observer_(std::move(observer)),
+        begin_frame_source_(begin_frame_source) {
+    remote_observer_.set_disconnect_handler(base::BindOnce(
+        &StandaloneBeginFrameObserver::StopObserving, base::Unretained(this)));
+    begin_frame_source_->AddObserver(this);
+  }
+
+  ~StandaloneBeginFrameObserver() override { StopObserving(); }
+
+  bool OnBeginFrameDerivedImpl(const BeginFrameArgs& args) override {
+    remote_observer_->OnStandaloneBeginFrame(args);
+    return true;
+  }
+
+  void OnBeginFrameSourcePausedChanged(bool paused) override {}
+  bool IsRoot() const override { return true; }
+
+ private:
+  void StopObserving() {
+    if (!begin_frame_source_)
+      return;
+    begin_frame_source_->RemoveObserver(this);
+    begin_frame_source_ = nullptr;
+  }
+
+  mojo::Remote<mojom::BeginFrameObserver> remote_observer_;
+  base::raw_ptr<BeginFrameSource> begin_frame_source_;
+};
 
 // static
 std::unique_ptr<RootCompositorFrameSinkImpl>
@@ -366,6 +402,13 @@ void RootCompositorFrameSinkImpl::SetDelegatedInkPointRenderer(
   display_->InitDelegatedInkPointRendererReceiver(std::move(receiver));
 }
 
+void RootCompositorFrameSinkImpl::SetStandaloneBeginFrameObserver(
+    mojo::PendingRemote<mojom::BeginFrameObserver> observer) {
+  standalone_begin_frame_observer_ =
+      std::make_unique<StandaloneBeginFrameObserver>(std::move(observer),
+                                                     begin_frame_source());
+}
+
 void RootCompositorFrameSinkImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
   support_->SetNeedsBeginFrame(needs_begin_frame);
 }
@@ -508,10 +551,13 @@ base::ScopedClosureRunner RootCompositorFrameSinkImpl::GetCacheBackBufferCb() {
 
 void RootCompositorFrameSinkImpl::DisplayDidReceiveCALayerParams(
     const gfx::CALayerParams& ca_layer_params) {
+  if (last_ca_layer_params_ == ca_layer_params)
+    return;
 #if BUILDFLAG(IS_APPLE)
   // If |ca_layer_params| should have content only when there exists a client
   // to send it to.
   DCHECK(ca_layer_params.is_empty || display_client_);
+  last_ca_layer_params_ = ca_layer_params;
   if (display_client_)
     display_client_->OnDisplayReceivedCALayerParams(ca_layer_params);
 #else

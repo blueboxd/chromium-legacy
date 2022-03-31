@@ -17,17 +17,9 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
-#include "base/strings/strcat.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
 #include "chromeos/system/statistics_provider.h"
-#include "ui/base/ime/ash/input_method_manager.h"
-#include "ui/chromeos/events/event_rewriter_chromeos.h"
-#include "ui/events/devices/device_util_linux.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/event_constants.h"
-#include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 
 namespace ash {
@@ -53,16 +45,35 @@ enum {
   kFKey15
 };
 
+// Numeric values of evdev KEY_F# are non-contiguous, making this mapping
+// non-trivial.
+constexpr auto kFKeyOrder =
+    base::MakeFixedFlatMap<uint32_t, unsigned int>({{KEY_F1, kFKey1},
+                                                    {KEY_F2, kFKey2},
+                                                    {KEY_F3, kFKey3},
+                                                    {KEY_F4, kFKey4},
+                                                    {KEY_F5, kFKey5},
+                                                    {KEY_F6, kFKey6},
+                                                    {KEY_F7, kFKey7},
+                                                    {KEY_F8, kFKey8},
+                                                    {KEY_F9, kFKey9},
+                                                    {KEY_F10, kFKey10},
+                                                    {KEY_F11, kFKey11},
+                                                    {KEY_F12, kFKey12},
+                                                    {KEY_F13, kFKey13},
+                                                    {KEY_F14, kFKey14},
+                                                    {KEY_F15, kFKey15}});
+
 // Mapping from keyboard scancodes to TopRowKeys (must be in scancode-sorted
-// order). This replicates and should be identical to the mapping behaviour
-// of ChromeOS: changes will be needed if new AT scancodes or HID mappings
-// are used in a top-row key, likely added in
-// ui/events/keycodes/dom/dom_code_data.inc
+// order) for keyboards with custom top row layouts (vivaldi). This replicates
+// and should be identical to the mapping behaviour of ChromeOS: changes will
+// be needed if new AT scancodes or HID mappings are used in a top-row key,
+// likely added in ui/events/keycodes/dom/dom_code_data.inc.
 //
-// Note that there are no dedicated scancodes for kScreenMirror.
-constexpr auto kScancodeMapping =
+// Note that there are currently no dedicated scancodes for kScreenMirror.
+constexpr auto kCustomScancodeMapping =
     base::MakeFixedFlatMap<uint32_t, mojom::TopRowKey>({
-        // Vivaldi extended Set-1 AT-style scancodes
+        // Vivaldi-specific extended Set-1 AT-style scancodes.
         {0x90, mojom::TopRowKey::kPreviousTrack},
         {0x91, mojom::TopRowKey::kFullscreen},
         {0x92, mojom::TopRowKey::kOverview},
@@ -77,7 +88,6 @@ constexpr auto kScancodeMapping =
         {0xA0, mojom::TopRowKey::kVolumeMute},
         {0xAE, mojom::TopRowKey::kVolumeDown},
         {0xB0, mojom::TopRowKey::kVolumeUp},
-        {0xD3, mojom::TopRowKey::kDelete},  // Only relevant for Drallion.
         {0xE9, mojom::TopRowKey::kForward},
         {0xEA, mojom::TopRowKey::kBack},
         {0xE7, mojom::TopRowKey::kRefresh},
@@ -164,6 +174,19 @@ constexpr mojom::TopRowKey kSystemKeysDrallion[] = {
     mojom::TopRowKey::kDelete  // Just a normal Delete key, but in the top row.
 };
 
+// Wilco and Drallion have unique 'action' scancodes for their top rows,
+// that are different from the vivaldi mappings. These scancodes are generated
+// when a top-tow key is pressed without the /Fn/ modifier.
+constexpr uint32_t kScancodesWilco[] = {
+    0xEA, 0xE7, 0xD5, 0xD6, 0x95, 0x91, 0xA0,
+    0xAE, 0xB0, 0x44, 0x57, 0x8B, 0xD3,
+};
+
+constexpr uint32_t kScancodesDrallion[] = {
+    0xEA, 0xE7, 0xD5, 0xD6, 0x95, 0x91, 0xA0,
+    0xAE, 0xB0, 0x44, 0x57, 0xd7, 0x8B, 0xD3,
+};
+
 mojom::MechanicalLayout GetSystemMechanicalLayout() {
   chromeos::system::StatisticsProvider* stats_provider =
       chromeos::system::StatisticsProvider::GetInstance();
@@ -185,137 +208,63 @@ mojom::MechanicalLayout GetSystemMechanicalLayout() {
   }
 }
 
-// Convert an XKB layout string as stored in VPD (e.g. "xkb:us::eng" or
-// "xkb:cz:qwerty:cze") into the form used by XkbKeyboardLayoutEngine (e.g. "us"
-// or "cz(qwerty)").
-std::string ConvertXkbLayoutString(const std::string& input) {
-  std::vector<base::StringPiece> parts = base::SplitStringPiece(
-      input, ":", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-  const base::StringPiece& id = parts[1];
-  const base::StringPiece& variant = parts[2];
-  return variant.empty() ? std::string(id)
-                         : base::StrCat({id, "(", variant, ")"});
+absl::optional<std::string> GetRegionCode() {
+  chromeos::system::StatisticsProvider* stats_provider =
+      chromeos::system::StatisticsProvider::GetInstance();
+  std::string layout_string;
+  if (!stats_provider->GetMachineStatistic(chromeos::system::kRegionKey,
+                                           &layout_string)) {
+    LOG(ERROR) << "Couldn't determine region";
+    return absl::nullopt;
+  }
+
+  return layout_string;
 }
 
 }  // namespace
 
-InputDataProviderKeyboard::InputDataProviderKeyboard()
-    : xkb_layout_engine_(xkb_evdev_codes_) {}
+InputDataProviderKeyboard::InputDataProviderKeyboard() {}
 InputDataProviderKeyboard::~InputDataProviderKeyboard() {}
 
-void InputDataProviderKeyboard::GetKeyboardVisualLayout(
-    mojom::KeyboardInfoPtr keyboard,
-    mojom::InputDataProvider::GetKeyboardVisualLayoutCallback callback) {
-  std::string layout_name;
-  if (keyboard->connection_type == mojom::ConnectionType::kInternal) {
-    chromeos::system::StatisticsProvider* stats_provider =
-        chromeos::system::StatisticsProvider::GetInstance();
-    if (!stats_provider->GetMachineStatistic(
-            chromeos::system::kKeyboardLayoutKey, &layout_name) ||
-        layout_name.empty()) {
-      LOG(ERROR) << "Couldn't determine visual layout for keyboard with ID "
-                 << keyboard->id;
-      return;
-    }
-    // In some regions, the keyboard layout string from the region database will
-    // contain multiple comma-separated parts, where the first is the XKB layout
-    // name. (For example, in region "gcc" (Gulf Cooperation Council), the
-    // string is "xkb:us::eng,m17n:ar,t13n:ar".) We just want the first part.
-    layout_name = base::SplitString(layout_name, ",", base::KEEP_WHITESPACE,
-                                    base::SPLIT_WANT_ALL)[0];
-    layout_name = ConvertXkbLayoutString(layout_name);
-  } else {
-    // TODO(crbug.com/1207678): Ensure layout is updated when IME changes
-    // External keyboards generally don't tell us what layout they have, so
-    // assume the layout the user has currently selected.
-    layout_name = input_method::InputMethodManager::Get()
-                      ->GetActiveIMEState()
-                      ->GetCurrentInputMethod()
-                      .keyboard_layout();
-  }
-
-  xkb_layout_engine_.SetCurrentLayoutByNameWithCallback(
-      layout_name,
-      base::BindOnce(&InputDataProviderKeyboard::ProcessXkbLayout,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void InputDataProviderKeyboard::ProcessXkbLayout(
-    mojom::InputDataProvider::GetKeyboardVisualLayoutCallback callback) {
-  base::flat_map<uint32_t, mojom::KeyGlyphSetPtr> layout;
-
-  // Add the glyphs for each range of evdev keycodes we're concerned with.
-  // (The keycode ranges generally correspond to rows on a QWERTY keyboard, see
-  // Linux's input-event-codes.h.)
-  for (int evdev_code = KEY_1; evdev_code <= KEY_EQUAL; evdev_code++) {
-    layout[evdev_code] = LookupGlyphSet(evdev_code);
-  }
-  for (int evdev_code = KEY_Q; evdev_code <= KEY_RIGHTBRACE; evdev_code++) {
-    layout[evdev_code] = LookupGlyphSet(evdev_code);
-  }
-  for (int evdev_code = KEY_A; evdev_code <= KEY_GRAVE; evdev_code++) {
-    layout[evdev_code] = LookupGlyphSet(evdev_code);
-  }
-  for (int evdev_code = KEY_BACKSLASH; evdev_code <= KEY_SLASH; evdev_code++) {
-    layout[evdev_code] = LookupGlyphSet(evdev_code);
-  }
-  layout[KEY_102ND] = LookupGlyphSet(KEY_102ND);
-
-  std::move(callback).Run(std::move(layout));
-}
-
-mojom::KeyGlyphSetPtr InputDataProviderKeyboard::LookupGlyphSet(
-    uint32_t evdev_code) {
-  ui::DomCode dom_code = ui::KeycodeConverter::EvdevCodeToDomCode(evdev_code);
-  ui::DomKey dom_key;
-  ui::KeyboardCode key_code;
-  if (!xkb_layout_engine_.Lookup(dom_code, ui::EF_NONE, &dom_key, &key_code)) {
-    LOG(ERROR) << "Couldn't look up glyph for evdev code " << evdev_code;
-    return nullptr;
-  }
-  mojom::KeyGlyphSetPtr glyph_set = mojom::KeyGlyphSet::New();
-  glyph_set->main_glyph = ui::KeycodeConverter::DomKeyToKeyString(dom_key);
-
-  if (!xkb_layout_engine_.Lookup(dom_code, ui::EF_SHIFT_DOWN, &dom_key,
-                                 &key_code)) {
-    LOG(WARNING) << "Couldn't look up shift glyph for evdev code "
-                 << evdev_code;
-  } else {
-    const std::string shift_glyph =
-        ui::KeycodeConverter::DomKeyToKeyString(dom_key);
-    if (shift_glyph != base::ToUpperASCII(glyph_set->main_glyph)) {
-      glyph_set->shift_glyph = shift_glyph;
-    }
-  }
-  return glyph_set;
-}
+InputDataProviderKeyboard::AuxData::AuxData() = default;
+InputDataProviderKeyboard::AuxData::~AuxData() = default;
 
 void InputDataProviderKeyboard::ProcessKeyboardTopRowLayout(
     const InputDeviceInformation* device_info,
-    ui::EventRewriterChromeOS::KeyboardTopRowLayout* out_top_row_layout,
-    std::vector<mojom::TopRowKey>* out_top_row_keys) {
+    ui::EventRewriterChromeOS::KeyboardTopRowLayout top_row_layout,
+    const base::flat_map<uint32_t, ui::EventRewriterChromeOS::MutableKeyState>&
+        scan_code_map,
+    std::vector<mojom::TopRowKey>* out_top_row_keys,
+    AuxData* out_aux_data) {
   ui::InputDevice input_device = device_info->input_device;
-  ui::EventRewriterChromeOS::DeviceType device_type;
-  ui::EventRewriterChromeOS::KeyboardTopRowLayout top_row_layout;
-  base::flat_map<uint32_t, ui::EventRewriterChromeOS::MutableKeyState>
-      scan_code_map;
-  ui::EventRewriterChromeOS::IdentifyKeyboard(input_device, &device_type,
-                                              &top_row_layout, &scan_code_map);
 
   // Simple array in physical order from left to right
   std::vector<mojom::TopRowKey> top_row_keys = {};
+
+  // Map of scan-code -> index within tow_row_keys: 0 is first key to the
+  // right of Escape, 1 is next key to the right of it, etc.
+  base::flat_map<uint32_t, uint32_t> top_row_key_scancode_indexes;
 
   switch (top_row_layout) {
     case ui::EventRewriterChromeOS::kKbdTopRowLayoutWilco:
       top_row_keys.assign(std::begin(kSystemKeysWilco),
                           std::end(kSystemKeysWilco));
+
+      for (size_t i = 0; i < top_row_keys.size(); i++)
+        top_row_key_scancode_indexes[kScancodesWilco[i]] = i;
       break;
 
     case ui::EventRewriterChromeOS::kKbdTopRowLayoutDrallion:
       top_row_keys.assign(std::begin(kSystemKeysDrallion),
                           std::end(kSystemKeysDrallion));
 
+      for (size_t i = 0; i < top_row_keys.size(); i++)
+        top_row_key_scancode_indexes[kScancodesDrallion[i]] = i;
+
       // On some Drallion devices, the F12 key is used for the Privacy Screen.
+
+      // The scancode for F12 does not need to be modified, it is the same on
+      // all Drallion devices, only the interpretation of the key is different.
 
       // This should be the same logic as in
       // EventRewriterControllerImpl::Initialize. This is a historic device, and
@@ -332,7 +281,7 @@ void InputDataProviderKeyboard::ProcessKeyboardTopRowLayout(
 
       // Process scan-code map generated from custom top-row key layout: it maps
       // from physical scan codes to several things, including VKEY key-codes,
-      // which we will use to produce indexes.
+      // which we will use to derive a linear index.
 
       for (auto iter = scan_code_map.begin(); iter != scan_code_map.end();
            iter++) {
@@ -342,28 +291,43 @@ void InputDataProviderKeyboard::ProcessKeyboardTopRowLayout(
         if (top_row_keys.size() < fn_key_number + 1)
           top_row_keys.resize(fn_key_number + 1, mojom::TopRowKey::kNone);
 
-        if (kScancodeMapping.contains(scancode))
-          top_row_keys[fn_key_number] = kScancodeMapping.at(scancode);
+        if (kCustomScancodeMapping.contains(scancode))
+          top_row_keys[fn_key_number] = kCustomScancodeMapping.at(scancode);
         else
           top_row_keys[fn_key_number] = mojom::TopRowKey::kUnknown;
+
+        top_row_key_scancode_indexes[scancode] = fn_key_number;
       }
       break;
 
     case ui::EventRewriterChromeOS::kKbdTopRowLayout2:
       top_row_keys.assign(std::begin(kSystemKeys2), std::end(kSystemKeys2));
+      // No specific top_row_key_scancode_indexes are needed
+      // for classic ChromeOS keyboards, as they do not have an /Fn/ key and
+      // only emit /F[0-9]+/ keys.
       break;
 
     case ui::EventRewriterChromeOS::kKbdTopRowLayout1:
     default:
       top_row_keys.assign(std::begin(kSystemKeys1), std::end(kSystemKeys1));
+      // No specific top_row_key_scancode_indexes are needed for classic
+      // ChromeOS keyboards, as they do not have an /Fn/ key and only emit
+      // /F[0-9]+/ keys.
+      //
+      // If this is an unknown keyboard and we are just using Layout1 as
+      // the default, we also do not want to assign any scancode or keycode
+      // indexes, as we do not know whether the keyboard can generate special
+      // keys, or their location relative to the top row.
   }
 
-  *out_top_row_layout = std::move(top_row_layout);
   *out_top_row_keys = std::move(top_row_keys);
+  out_aux_data->top_row_key_scancode_indexes =
+      std::move(top_row_key_scancode_indexes);
 }
 
 mojom::KeyboardInfoPtr InputDataProviderKeyboard::ConstructKeyboard(
-    const InputDeviceInformation* device_info) {
+    const InputDeviceInformation* device_info,
+    AuxData* out_aux_data) {
   mojom::KeyboardInfoPtr result = mojom::KeyboardInfo::New();
 
   result->id = device_info->evdev_id;
@@ -373,22 +337,45 @@ mojom::KeyboardInfoPtr InputDataProviderKeyboard::ConstructKeyboard(
   // TODO(crbug.com/1207678): review support for WWCB keyboards, Chromebase
   // keyboards, and Dell KM713 Chrome keyboard.
 
-  ui::EventRewriterChromeOS::KeyboardTopRowLayout top_row_layout_type;
+  ProcessKeyboardTopRowLayout(device_info, device_info->keyboard_top_row_layout,
+                              device_info->keyboard_scan_code_map,
+                              &result->top_row_keys, out_aux_data);
 
-  ProcessKeyboardTopRowLayout(device_info, &top_row_layout_type,
-                              &result->top_row_keys);
-
-  if (result->connection_type == mojom::ConnectionType::kInternal) {
-    if (device_info->event_device_info.HasKeyEvent(KEY_KBD_LAYOUT_NEXT)) {
-      // Only Dell Enterprise devices have this key, marked by a globe icon.
-      result->physical_layout = mojom::PhysicalLayout::kChromeOSDellEnterprise;
+  // Work out the physical layout.
+  if (device_info->keyboard_type ==
+      ui::EventRewriterChromeOS::DeviceType::kDeviceInternalKeyboard) {
+    // TODO(crbug.com/1207678): set internal keyboard as unknown on CloudReady
+    // (board names chromeover64 or reven).
+    if (device_info->keyboard_top_row_layout ==
+        ui::EventRewriterChromeOS::KeyboardTopRowLayout::
+            kKbdTopRowLayoutWilco) {
+      result->physical_layout =
+          mojom::PhysicalLayout::kChromeOSDellEnterpriseWilco;
+    } else if (device_info->keyboard_top_row_layout ==
+               ui::EventRewriterChromeOS::KeyboardTopRowLayout::
+                   kKbdTopRowLayoutDrallion) {
+      result->physical_layout =
+          mojom::PhysicalLayout::kChromeOSDellEnterpriseDrallion;
     } else {
       result->physical_layout = mojom::PhysicalLayout::kChromeOS;
     }
-    // TODO(crbug.com/1207678): set internal keyboard as unknown on CloudReady
-    // (board names chromeover64 or reven).
-    result->mechanical_layout = GetSystemMechanicalLayout();
+  } else {
+    result->physical_layout = mojom::PhysicalLayout::kUnknown;
+  }
 
+  // Get the mechanical and visual layouts, if possible.
+  if (device_info->keyboard_type ==
+      ui::EventRewriterChromeOS::DeviceType::kDeviceInternalKeyboard) {
+    result->mechanical_layout = GetSystemMechanicalLayout();
+    result->region_code = GetRegionCode();
+  } else {
+    result->mechanical_layout = mojom::MechanicalLayout::kUnknown;
+    result->region_code = absl::nullopt;
+  }
+
+  // Determine number pad presence.
+  if (device_info->keyboard_type ==
+      ui::EventRewriterChromeOS::DeviceType::kDeviceInternalKeyboard) {
     result->number_pad_present =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kHasNumberPad)
@@ -401,31 +388,56 @@ mojom::KeyboardInfoPtr InputDataProviderKeyboard::ConstructKeyboard(
         !device_info->event_device_info.HasNumberpad())
       LOG(ERROR) << "OS believes internal numberpad is implemented, but "
                     "evdev disagrees.";
+  } else if (device_info->keyboard_top_row_layout ==
+             ui::EventRewriterChromeOS::KeyboardTopRowLayout::
+                 kKbdTopRowLayoutCustom) {
+    // If keyboard has WWCB top row custom layout (vivaldi) then we can trust
+    // the HID descriptor to be accurate about presence of keys.
+    result->number_pad_present = device_info->event_device_info.HasNumberpad()
+                                     ? mojom::NumberPadPresence::kPresent
+                                     : mojom::NumberPadPresence::kNotPresent;
   } else {
-    result->physical_layout = mojom::PhysicalLayout::kUnknown;
-
-    if (top_row_layout_type == ui::EventRewriterChromeOS::KeyboardTopRowLayout::
-                                   kKbdTopRowLayoutCustom) {
-      // If keyboard has WWCB top row custom layout (vivaldi) then we can trust
-      // the HID descriptor to be accurate about presence of keys.
-      result->number_pad_present =
-          !device_info->event_device_info.HasNumberpad()
-              ? mojom::NumberPadPresence::kNotPresent
-              : mojom::NumberPadPresence::kPresent;
-    } else {
-      // Without WWCB information, absence of KP keycodes means it definitely
-      // doesn't have a numberpad, but the presence isn't a reliable indicator.
-      result->number_pad_present =
-          !device_info->event_device_info.HasNumberpad()
-              ? mojom::NumberPadPresence::kNotPresent
-              : mojom::NumberPadPresence::kUnknown;
-    }
+    // Without WWCB information, absence of KP keycodes means it definitely
+    // doesn't have a numberpad, but the presence isn't a reliable indicator.
+    result->number_pad_present = device_info->event_device_info.HasNumberpad()
+                                     ? mojom::NumberPadPresence::kUnknown
+                                     : mojom::NumberPadPresence::kNotPresent;
   }
 
   result->has_assistant_key =
       device_info->event_device_info.HasKeyEvent(KEY_ASSISTANT);
 
   return result;
+}
+
+mojom::KeyEventPtr InputDataProviderKeyboard::ConstructInputKeyEvent(
+    const mojom::KeyboardInfoPtr& keyboard,
+    const AuxData* aux_data,
+    uint32_t key_code,
+    uint32_t scan_code,
+    bool down) {
+  mojom::KeyEventPtr event = mojom::KeyEvent::New();
+  event->id = keyboard->id;
+  event->type =
+      down ? mojom::KeyEventType::kPress : mojom::KeyEventType::kRelease;
+  event->key_code = key_code;    // evdev code
+  event->scan_code = scan_code;  // scan code
+  event->top_row_position = -1;
+
+  // If a top row action key was pressed, note its physical index in the row.
+  const auto iter =
+      aux_data->top_row_key_scancode_indexes.find(event->scan_code);
+  if (iter != aux_data->top_row_key_scancode_indexes.end()) {
+    event->top_row_position = iter->second;
+  }
+
+  // Do the same if F1-F15 was pressed.
+  const auto* jter = kFKeyOrder.find(event->key_code);
+  if (event->top_row_position == -1 && jter != kFKeyOrder.end()) {
+    event->top_row_position = jter->second;
+  }
+
+  return event;
 }
 
 }  // namespace diagnostics

@@ -160,6 +160,16 @@ void VideoCaptureHost::OnBufferReady(
   if (!base::Contains(device_id_to_observer_map_, controller_id))
     return;
 
+  if (region_capture_rect_ != buffer.frame_info->metadata.region_capture_rect) {
+    region_capture_rect_ = buffer.frame_info->metadata.region_capture_rect;
+    media_stream_manager_->OnRegionCaptureRectChanged(controller_id,
+                                                      region_capture_rect_);
+  }
+
+  // TODO(crbug.com/1276822): When Region Capture is used, use the information
+  // in |buffer.frame_info->metadata.region_capture_rect| to dynamically update
+  // the tab-capture-indicating blue border.
+
   media::mojom::ReadyBufferPtr mojom_buffer = media::mojom::ReadyBuffer::New(
       buffer.buffer_id, buffer.frame_info->Clone());
   std::vector<media::mojom::ReadyBufferPtr> mojom_scaled_buffers;
@@ -168,8 +178,25 @@ void VideoCaptureHost::OnBufferReady(
     mojom_scaled_buffers.push_back(media::mojom::ReadyBuffer::New(
         scaled_buffer.buffer_id, scaled_buffer.frame_info->Clone()));
   }
+  // TODO(crbug.com/1266378): Use |buffer.frame_info->metadata| to carry
+  // crop-target versioning information, allowing cropTo() Promises to be
+  // resolved at the right time.
   device_id_to_observer_map_[controller_id]->OnBufferReady(
       std::move(mojom_buffer), std::move(mojom_scaled_buffers));
+}
+
+void VideoCaptureHost::OnFrameWithEmptyRegionCapture(
+    const VideoCaptureControllerID& controller_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (controllers_.find(controller_id) == controllers_.end())
+    return;
+
+  if (region_capture_rect_ != absl::nullopt) {
+    region_capture_rect_ = absl::nullopt;
+    media_stream_manager_->OnRegionCaptureRectChanged(controller_id,
+                                                      region_capture_rect_);
+  }
 }
 
 void VideoCaptureHost::OnEnded(const VideoCaptureControllerID& controller_id) {

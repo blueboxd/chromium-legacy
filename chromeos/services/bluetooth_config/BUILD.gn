@@ -57,7 +57,9 @@ static_library("bluetooth_config") {
 
   deps = [
     "//ash/constants",
+    "//ash/services/nearby/public/cpp",
     "//base",
+    "//chromeos/dbus/power",
     "//chromeos/services/bluetooth_config/public/cpp",
     "//chromeos/services/bluetooth_config/public/mojom",
     "//components/device_event_log",
@@ -66,6 +68,7 @@ static_library("bluetooth_config") {
     "//components/session_manager/core",
     "//components/user_manager",
     "//device/bluetooth",
+    "//device/bluetooth/public/cpp",
     "//mojo/public/cpp/bindings",
   ]
 }
@@ -86,6 +89,7 @@ component("in_process_bluetooth_config") {
 
   deps = [
     ":bluetooth_config",
+    "//components/device_event_log",
     "//device/bluetooth",
   ]
 }
@@ -162,9 +166,12 @@ source_set("unit_tests") {
     ":bluetooth_config",
     ":test_support",
     "//ash/constants",
+    "//ash/services/nearby/public/cpp",
     "//base",
     "//base/test:test_support",
+    "//chromeos/dbus/power",
     "//chromeos/services/bluetooth_config/public/cpp",
+    "//chromeos/services/bluetooth_config/public/cpp:unit_tests",
     "//components/session_manager/core",
     "//components/sync_preferences:test_support",
     "//components/user_manager:test_support",

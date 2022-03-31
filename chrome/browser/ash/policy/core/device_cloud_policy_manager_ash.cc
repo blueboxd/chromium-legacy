@@ -135,6 +135,7 @@ void DeviceCloudPolicyManagerAsh::Shutdown() {
   syslog_uploader_.reset();
   status_uploader_.reset();
   managed_session_service_.reset();
+  euicc_status_uploader_.reset();
   external_data_manager_->Disconnect();
   state_keys_update_subscription_ = {};
   CloudPolicyManager::Shutdown();
@@ -245,9 +246,7 @@ void DeviceCloudPolicyManagerAsh::StartConnection(
   if (install_attributes->IsCloudManaged()) {
     managed_session_service_ =
         std::make_unique<policy::ManagedSessionService>();
-    // TODO(b/199169968):: Pass managed_session_service_ to
-    // DeviceStatusCollector instance.
-    CreateStatusUploader();
+    CreateStatusUploader(managed_session_service_.get());
     syslog_uploader_ =
         std::make_unique<SystemLogUploader>(nullptr, task_runner_);
     heartbeat_scheduler_ = std::make_unique<HeartbeatScheduler>(
@@ -256,7 +255,8 @@ void DeviceCloudPolicyManagerAsh::StartConnection(
     login_logout_reporter_ = ash::reporting::LoginLogoutReporter::Create(
         managed_session_service_.get());
     user_added_removed_reporter_ =
-        std::make_unique<::reporting::UserAddedRemovedReporter>();
+        ::reporting::UserAddedRemovedReporter::Create(
+            managed_session_service_.get());
     metric_reporting_manager_ = reporting::MetricReportingManager::Create(
         managed_session_service_.get());
   }
@@ -308,7 +308,8 @@ void DeviceCloudPolicyManagerAsh::NotifyDisconnected() {
     observer.OnDeviceCloudPolicyManagerDisconnected();
 }
 
-void DeviceCloudPolicyManagerAsh::CreateStatusUploader() {
+void DeviceCloudPolicyManagerAsh::CreateStatusUploader(
+    ManagedSessionService* managed_session_service) {
   std::unique_ptr<StatusCollector> collector;
   bool granular_reporting_enabled;
   ash::CrosSettings* settings = ash::CrosSettings::Get();
@@ -320,7 +321,8 @@ void DeviceCloudPolicyManagerAsh::CreateStatusUploader() {
 
   if (granular_reporting_enabled) {
     collector = std::make_unique<DeviceStatusCollector>(
-        local_state_, chromeos::system::StatisticsProvider::GetInstance());
+        local_state_, chromeos::system::StatisticsProvider::GetInstance(),
+        managed_session_service);
   } else {
     collector = std::make_unique<LegacyDeviceStatusCollector>(
         local_state_, chromeos::system::StatisticsProvider::GetInstance());

@@ -23,6 +23,7 @@
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/ash/crostini/crostini_shelf_utils.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -46,12 +47,12 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "components/account_id/account_id.h"
+#include "components/app_constants/constants.h"
 #include "components/exo/shell_surface_base.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/services/app_service/public/cpp/instance.h"
 #include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
-#include "extensions/common/constants.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -272,7 +273,7 @@ void AppServiceAppWindowShelfController::OnWindowVisibilityChanged(
 
   if (app_service_instance_helper_->IsOpenedInBrowser(GetAppId(shelf_id.app_id),
                                                       window) ||
-      shelf_id.app_id == extension_misc::kChromeAppId) {
+      shelf_id.app_id == app_constants::kChromeAppId) {
     app_service_instance_helper_->OnWindowVisibilityChanged(shelf_id, window,
                                                             visible);
     return;
@@ -286,7 +287,7 @@ void AppServiceAppWindowShelfController::OnWindowVisibilityChanged(
                                             shelf_id.launch_id, state);
 
   // Only register the visible non-browser |window| for the active user.
-  if (!visible || shelf_id.app_id == extension_misc::kChromeAppId ||
+  if (!visible || shelf_id.app_id == app_constants::kChromeAppId ||
       !proxy_->InstanceRegistry().Exists(window)) {
     return;
   }
@@ -333,7 +334,7 @@ void AppServiceAppWindowShelfController::OnWindowDestroying(
   if (!app_id.empty() &&
       !app_service_instance_helper_->IsOpenedInBrowser(GetAppId(app_id),
                                                        window) &&
-      app_id != extension_misc::kChromeAppId) {
+      app_id != app_constants::kChromeAppId) {
     // Delete the instance from InstanceRegistry.
     app_service_instance_helper_->OnInstances(GetAppId(app_id), window,
                                               std::string(),
@@ -423,7 +424,7 @@ void AppServiceAppWindowShelfController::OnInstanceUpdate(
     // Apps opened in browser are managed by browser, so skip them.
     if (app_service_instance_helper_->IsOpenedInBrowser(
             GetAppId(shelf_id.app_id), window) ||
-        shelf_id.app_id == extension_misc::kChromeAppId) {
+        shelf_id.app_id == app_constants::kChromeAppId) {
       return;
     }
     window_list_.push_back(window);
@@ -541,7 +542,7 @@ void AppServiceAppWindowShelfController::SetWindowActivated(
 
   if (app_service_instance_helper_->IsOpenedInBrowser(GetAppId(shelf_id.app_id),
                                                       window) ||
-      shelf_id.app_id == extension_misc::kChromeAppId) {
+      shelf_id.app_id == app_constants::kChromeAppId) {
     app_service_instance_helper_->SetWindowActivated(shelf_id, window, active);
     return;
   }
@@ -589,9 +590,11 @@ void AppServiceAppWindowShelfController::RegisterWindow(
     exo::SetShellUseImmersiveForFullscreen(window, false);
     window->SetProperty(chromeos::kEscHoldToExitFullscreen, true);
   } else if (borealis::BorealisWindowManager::IsBorealisWindow(window)) {
-    // Set fullscreen properties for Borealis.
-    window->SetProperty(chromeos::kEscHoldToExitFullscreen, true);
-    window->SetProperty(chromeos::kEscHoldExitFullscreenToMinimized, true);
+    window->SetProperty(chromeos::kUseOverviewToExitFullscreen, true);
+    window->SetProperty(chromeos::kUseOverviewToExitPointerLock, true);
+  } else if (crostini::IsCrostiniWindow(window)) {
+    // Permit pointer lock in Crostini (and Bruschetta).
+    window->SetProperty(chromeos::kUseOverviewToExitPointerLock, true);
   }
 
   AddWindowToShelf(window, shelf_id);
@@ -685,7 +688,7 @@ void AppServiceAppWindowShelfController::OnItemDelegateDiscarded(
 ash::ShelfID AppServiceAppWindowShelfController::GetShelfId(
     aura::Window* window) const {
   if (crosapi::browser_util::IsLacrosWindow(window))
-    return ash::ShelfID(extension_misc::kLacrosAppId);
+    return ash::ShelfID(app_constants::kLacrosAppId);
 
   std::string shelf_app_id;
   if (borealis::BorealisWindowManager::IsBorealisWindow(window)) {

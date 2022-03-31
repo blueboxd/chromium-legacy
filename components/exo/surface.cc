@@ -327,8 +327,10 @@ void Surface::Attach(Buffer* buffer, gfx::Vector2d offset) {
       buffer ? static_cast<const void*>(buffer->gfx_buffer()) : nullptr,
       "app_id", GetApplicationId(window_.get()));
   has_pending_contents_ = true;
-  pending_state_.buffer.Reset(buffer ? buffer->AsWeakPtr()
-                                     : base::WeakPtr<Buffer>());
+  if (!pending_state_.buffer.has_value())
+    pending_state_.buffer.emplace();
+  pending_state_.buffer->Reset(buffer ? buffer->AsWeakPtr()
+                                      : base::WeakPtr<Buffer>());
   pending_state_.basic_state.offset = offset;
 }
 
@@ -337,7 +339,8 @@ gfx::Vector2d Surface::GetBufferOffset() {
 }
 
 bool Surface::HasPendingAttachedBuffer() const {
-  return pending_state_.buffer.buffer() != nullptr;
+  return pending_state_.buffer.has_value() &&
+         pending_state_.buffer->buffer() != nullptr;
 }
 
 void Surface::Damage(const gfx::Rect& damage) {
@@ -502,8 +505,8 @@ void Surface::PlaceSubSurfaceBelow(Surface* sub_surface, Surface* sibling) {
     return;
   }
 
-  auto sibling_it = FindListEntry(pending_sub_surfaces_, sibling);
-  if (sibling_it == pending_sub_surfaces_.end()) {
+  auto position_it = FindListEntry(pending_sub_surfaces_, sibling);
+  if (position_it == pending_sub_surfaces_.end()) {
     DLOG(WARNING) << "Client tried to place sub-surface below a surface that "
                      "is not a sibling";
     return;
@@ -511,9 +514,12 @@ void Surface::PlaceSubSurfaceBelow(Surface* sub_surface, Surface* sibling) {
 
   DCHECK(ListContainsEntry(pending_sub_surfaces_, sub_surface));
   auto it = FindListEntry(pending_sub_surfaces_, sub_surface);
-  if (it == sibling_it)
+
+  // If |sub_surface| is already immediately below |sibling|, do not do
+  // anything.
+  if (it == --position_it)
     return;
-  pending_sub_surfaces_.splice(sibling_it, pending_sub_surfaces_, it);
+  pending_sub_surfaces_.splice(++position_it, pending_sub_surfaces_, it);
   sub_surfaces_changed_ = true;
 }
 
@@ -748,11 +754,12 @@ bool Surface::HasPendingPerCommitBufferReleaseCallback() const {
 }
 
 void Surface::Commit() {
-  TRACE_EVENT1("exo", "Surface::Commit", "buffer_id",
-               static_cast<const void*>(
-                   pending_state_.buffer.buffer()
-                       ? pending_state_.buffer.buffer()->gfx_buffer()
-                       : nullptr));
+  TRACE_EVENT1(
+      "exo", "Surface::Commit", "buffer_id",
+      static_cast<const void*>(
+          pending_state_.buffer.has_value() && pending_state_.buffer->buffer()
+              ? pending_state_.buffer->buffer()->gfx_buffer()
+              : nullptr));
 
   for (auto& observer : observers_)
     observer.OnCommit(this);
@@ -764,9 +771,11 @@ void Surface::Commit() {
   pending_state_.basic_state.only_visible_on_secure_output = false;
   has_cached_contents_ |= has_pending_contents_;
   has_pending_contents_ = false;
-  cached_state_.buffer = std::move(pending_state_.buffer);
-  cached_state_.rounded_corners_bounds =
-      std::move(pending_state_.rounded_corners_bounds);
+  if (pending_state_.buffer.has_value()) {
+    cached_state_.buffer = std::move(pending_state_.buffer);
+    pending_state_.buffer.reset();
+  }
+  cached_state_.rounded_corners_bounds = pending_state_.rounded_corners_bounds;
   cached_state_.overlay_priority_hint = pending_state_.overlay_priority_hint;
   cached_state_.acquire_fence = std::move(pending_state_.acquire_fence);
   cached_state_.per_commit_explicit_release_callback_ =
@@ -893,16 +902,20 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
     if (has_cached_contents_) {
       has_cached_contents_ = false;
 
-      bool current_invert_y =
-          state_.buffer.buffer() && state_.buffer.buffer()->y_invert();
-      cached_invert_y = cached_state_.buffer.buffer() &&
-                        cached_state_.buffer.buffer()->y_invert();
+      bool current_invert_y = state_.buffer.has_value() &&
+                              state_.buffer->buffer() &&
+                              state_.buffer->buffer()->y_invert();
+      cached_invert_y = cached_state_.buffer.has_value() &&
+                        cached_state_.buffer->buffer() &&
+                        cached_state_.buffer->buffer()->y_invert();
       if (current_invert_y != cached_invert_y)
         needs_update_buffer_transform = true;
 
-      state_.buffer = std::move(cached_state_.buffer);
-      state_.rounded_corners_bounds =
-          std::move(cached_state_.rounded_corners_bounds);
+      if (cached_state_.buffer.has_value()) {
+        state_.buffer = std::move(cached_state_.buffer);
+        cached_state_.buffer.reset();
+      }
+      state_.rounded_corners_bounds = cached_state_.rounded_corners_bounds;
       state_.overlay_priority_hint = cached_state_.overlay_priority_hint;
       state_.acquire_fence = std::move(cached_state_.acquire_fence);
       state_.per_commit_explicit_release_callback_ =
@@ -1145,16 +1158,16 @@ bool Surface::State::operator==(const State& other) const {
          other.blend_mode == blend_mode && other.alpha == alpha;
 }
 
-Surface::BufferAttachment::BufferAttachment() {}
+Surface::BufferAttachment::BufferAttachment() = default;
 
 Surface::BufferAttachment::~BufferAttachment() {
   if (buffer_)
     buffer_->OnDetach();
 }
 
-Surface::ExtendedState::ExtendedState() = default;
-
-Surface::ExtendedState::~ExtendedState() = default;
+Surface::BufferAttachment::BufferAttachment(BufferAttachment&& other) {
+  *this = std::move(other);
+}
 
 Surface::BufferAttachment& Surface::BufferAttachment::operator=(
     BufferAttachment&& other) {
@@ -1190,11 +1203,15 @@ void Surface::BufferAttachment::Reset(base::WeakPtr<Buffer> buffer) {
   buffer_ = buffer;
 }
 
+Surface::ExtendedState::ExtendedState() = default;
+
+Surface::ExtendedState::~ExtendedState() = default;
+
 void Surface::UpdateResource(FrameSinkResourceManager* resource_manager) {
   DCHECK(needs_update_resource_);
   needs_update_resource_ = false;
-  if (state_.buffer.buffer()) {
-    if (state_.buffer.buffer()->ProduceTransferableResource(
+  if (state_.buffer.has_value() && state_.buffer->buffer()) {
+    if (state_.buffer->buffer()->ProduceTransferableResource(
             resource_manager, std::move(state_.acquire_fence),
             state_.basic_state.only_visible_on_secure_output,
             &current_resource_,
@@ -1202,16 +1219,16 @@ void Surface::UpdateResource(FrameSinkResourceManager* resource_manager) {
                 kProtectedNativePixmapQueryDelegate),
             std::move(state_.per_commit_explicit_release_callback_))) {
       current_resource_has_alpha_ =
-          FormatHasAlpha(state_.buffer.buffer()->GetFormat());
+          FormatHasAlpha(state_.buffer->buffer()->GetFormat());
       // Setting colors for YUV buffers has been problematic in the past. See
       // crrev.com/c/2331769
-      if (state_.buffer.buffer()->GetFormat() != gfx::BufferFormat::YVU_420)
+      if (state_.buffer->buffer()->GetFormat() != gfx::BufferFormat::YVU_420)
         current_resource_.color_space = state_.basic_state.color_space;
     } else {
       current_resource_.id = viz::kInvalidResourceId;
       // Use the buffer's size, so the AppendContentsToFrame() will append
       // a SolidColorDrawQuad with the buffer's size.
-      current_resource_.size = state_.buffer.size();
+      current_resource_.size = state_.buffer->size();
       current_resource_has_alpha_ = false;
     }
   } else {
@@ -1461,8 +1478,8 @@ void Surface::AppendContentsToFrame(const gfx::PointF& origin,
 
 #if BUILDFLAG(USE_ARC_PROTECTED_MEDIA)
       if (state_.basic_state.only_visible_on_secure_output &&
-          state_.buffer.buffer() &&
-          state_.buffer.buffer()->NeedsHardwareProtection()) {
+          state_.buffer.has_value() && state_.buffer->buffer() &&
+          state_.buffer->buffer()->NeedsHardwareProtection()) {
         texture_quad->protected_video_type =
             gfx::ProtectedVideoType::kHardwareProtected;
       }
@@ -1476,8 +1493,8 @@ void Surface::AppendContentsToFrame(const gfx::PointF& origin,
         damage_rect = gfx::RectF();
       }
     }
-  } else if (state_.buffer.buffer()) {
-    SkColor color = state_.buffer.buffer()->GetColor().toSkColor();
+  } else if (state_.buffer.has_value() && state_.buffer->buffer()) {
+    SkColor color = state_.buffer->buffer()->GetColor().toSkColor();
     viz::SolidColorDrawQuad* solid_quad =
         render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
     solid_quad->SetNew(quad_state, quad_rect, quad_rect, color,
@@ -1506,8 +1523,9 @@ void Surface::UpdateContentSize() {
     content_size = state_.basic_state.crop.size();
   } else {
     content_size = gfx::ScaleSize(
-        gfx::SizeF(ToTransformedSize(state_.buffer.size(),
-                                     state_.basic_state.buffer_transform)),
+        gfx::SizeF(ToTransformedSize(
+            state_.buffer.has_value() ? state_.buffer->size() : gfx::Size(),
+            state_.basic_state.buffer_transform)),
         1.0f / state_.basic_state.buffer_scale);
   }
 
@@ -1575,6 +1593,11 @@ void Surface::Pin(bool trusted) {
 void Surface::Unpin() {
   if (delegate_)
     delegate_->Unpin();
+}
+
+void Surface::ThrottleFrameRate(bool on) {
+  for (SurfaceObserver& observer : observers_)
+    observer.ThrottleFrameRate(on);
 }
 
 }  // namespace exo

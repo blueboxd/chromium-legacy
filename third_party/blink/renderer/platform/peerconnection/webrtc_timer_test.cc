@@ -5,6 +5,7 @@
 #include "third_party/webrtc_overrides/webrtc_timer.h"
 
 #include "base/task/thread_pool.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,8 +25,11 @@ class WebRtcTimerTest : public ::testing::Test {
             base::test::TaskEnvironment::ThreadingMode::MULTIPLE_THREADS,
             base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         metronome_source_(
-            base::MakeRefCounted<MetronomeSource>(kMetronomeTick)),
-        metronome_provider_(base::MakeRefCounted<MetronomeProvider>()) {}
+            base::MakeRefCounted<MetronomeSource>(base::TimeTicks::Now(),
+                                                  kMetronomeTick)),
+        metronome_provider_(base::MakeRefCounted<MetronomeProvider>()) {
+    scoped_feature_list_.InitAndEnableFeature(kWebRtcTimerUsesMetronome);
+  }
 
   void StartUsingMetronome() {
     metronome_provider_->OnStartUsingMetronome(metronome_source_);
@@ -33,6 +37,7 @@ class WebRtcTimerTest : public ::testing::Test {
   void StopUsingMetronome() { metronome_provider_->OnStopUsingMetronome(); }
 
  protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
   base::test::TaskEnvironment task_environment_;
   scoped_refptr<MetronomeSource> metronome_source_;
   scoped_refptr<MetronomeProvider> metronome_provider_;
@@ -480,7 +485,8 @@ TEST(WebRtcTimerRealThreadsTest, StopTimerWithRaceCondition) {
       base::test::TaskEnvironment::ThreadingMode::MULTIPLE_THREADS,
       base::test::TaskEnvironment::TimeSource::SYSTEM_TIME);
   scoped_refptr<MetronomeSource> metronome_source(
-      base::MakeRefCounted<MetronomeSource>(kMetronomeTick));
+      base::MakeRefCounted<MetronomeSource>(base::TimeTicks::Now(),
+                                            kMetronomeTick));
   scoped_refptr<MetronomeProvider> metronome_provider(
       base::MakeRefCounted<MetronomeProvider>());
 

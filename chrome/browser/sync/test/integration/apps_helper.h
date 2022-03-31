@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_multi_source_observation.h"
 #include "chrome/browser/extensions/install_observer.h"
 #include "chrome/browser/extensions/install_tracker.h"
@@ -21,7 +22,6 @@
 #include "extensions/browser/extension_registry_observer.h"
 
 class Profile;
-class SyncedExtensionInstaller;
 
 namespace apps_helper {
 
@@ -114,23 +114,20 @@ void FixNTPOrdinalCollisions(Profile* profile);
 void AwaitWebAppQuiescence(std::vector<Profile*> profiles);
 }  // namespace apps_helper
 
-// Checker to block for a set of profiles to have matching extensions lists. If
-// the verifier profile is enabled, it will be included in the set of profiles
-// to check against.
-class AppsMatchChecker : public StatusChangeChecker,
-                         public extensions::ExtensionRegistryObserver,
-                         public extensions::ExtensionPrefsObserver,
-                         public extensions::InstallObserver {
+// An app specific version of StatusChangeChecker which checks the exit
+// condition on all extension app events. Subclasses must override
+// IsExitConditionSatisfied() with their desired check.
+class AppsStatusChangeChecker : public StatusChangeChecker,
+                                public extensions::ExtensionRegistryObserver,
+                                public extensions::ExtensionPrefsObserver,
+                                public extensions::InstallObserver {
  public:
-  AppsMatchChecker();
+  AppsStatusChangeChecker();
 
-  AppsMatchChecker(const AppsMatchChecker&) = delete;
-  AppsMatchChecker& operator=(const AppsMatchChecker&) = delete;
+  AppsStatusChangeChecker(const AppsStatusChangeChecker&) = delete;
+  AppsStatusChangeChecker& operator=(const AppsStatusChangeChecker&) = delete;
 
-  ~AppsMatchChecker() override;
-
-  // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied(std::ostream* os) override;
+  ~AppsStatusChangeChecker() override;
 
   // extensions::ExtensionRegistryObserver implementation.
   void OnExtensionLoaded(content::BrowserContext* context,
@@ -161,18 +158,30 @@ class AppsMatchChecker : public StatusChangeChecker,
   void OnAppsReordered(
       const absl::optional<std::string>& extension_id) override;
 
- private:
+ protected:
   std::vector<Profile*> profiles_;
 
-  content::NotificationRegistrar registrar_;
+ private:
+  void InstallSyncedApps(Profile* profile);
 
-  // This installs apps, too.
-  std::vector<std::unique_ptr<SyncedExtensionInstaller>>
-      synced_extension_installers_;
+  content::NotificationRegistrar registrar_;
 
   base::ScopedMultiSourceObservation<extensions::InstallTracker,
                                      extensions::InstallObserver>
       install_tracker_observation_{this};
+
+  base::WeakPtrFactory<AppsStatusChangeChecker> weak_ptr_factory_{this};
+};
+
+// Checker to block for a set of profiles to have matching extensions lists. If
+// the verifier profile is enabled, it will be included in the set of profiles
+// to check against.
+class AppsMatchChecker : public AppsStatusChangeChecker {
+ public:
+  AppsMatchChecker();
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied(std::ostream* os) override;
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_APPS_HELPER_H_

@@ -8,11 +8,6 @@
 #include "Availability.h"
 #include "base/feature_list.h"
 
-// Allows the user to track product prices through Chrome.
-// Use IsPriceAlertsEnabled in price_alert_util rather than depending
-// on this directly.
-extern const base::Feature kCommercePriceTracking;
-
 // Feature to open tab switcher after sliding down the toolbar.
 extern const base::Feature kExpandedTabStrip;
 
@@ -55,19 +50,12 @@ extern const base::Feature kIOSNewOmniboxImplementation;
 // Feature flag that fixes omnibox behavior when using iOS native dictation
 extern const base::Feature kIOSOmniboxAllowEditsDuringDictation;
 
-// Feature flag that enables persisting the Crash Restore Infobar across
-// navigations.
-extern const base::Feature kIOSPersistCrashRestore;
-
 // Enables the Search History Link in Clear Browsing Data for iOS.
 extern const base::Feature kSearchHistoryLinkIOS;
 
 // Feature flag to enable removing any entry points to the history UI from
 // Incognito mode.
 extern const base::Feature kUpdateHistoryEntryPointsInIncognito;
-
-// Feature to update context menu actions.
-extern const base::Feature kContextMenuActionsRefresh;
 
 // Feature flag to enable using Lens to search for images.
 extern const base::Feature kUseLensToSearchForImage;
@@ -92,9 +80,6 @@ extern const base::Feature kUseSFSymbolsSamples;
 
 // Feature flag to use UIKit menus instead of custom ones.
 extern const base::Feature kUseUIKitPopupMenu;
-
-// Whether the ContextMenuActionsRefresh flag is enabled.
-bool IsContextMenuActionsRefreshEnabled();
 
 // Whether the kUseUIKitPopupMenu flag is enabled.
 bool ShouldUseUIKitPopupMenu();

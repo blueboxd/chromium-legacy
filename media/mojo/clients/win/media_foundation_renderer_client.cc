@@ -199,13 +199,13 @@ void MediaFoundationRendererClient::OnRemoteRendererInitialized(
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(!init_cb_.is_null());
 
-  if (status != PipelineStatus::PIPELINE_OK) {
+  if (status != PIPELINE_OK) {
     std::move(init_cb_).Run(status);
     return;
   }
 
   if (!has_video_) {
-    std::move(init_cb_).Run(PipelineStatus::PIPELINE_OK);
+    std::move(init_cb_).Run(PIPELINE_OK);
     return;
   }
 
@@ -288,19 +288,18 @@ void MediaFoundationRendererClient::InitializeDCOMPRenderingIfNeeded() {
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(&MediaFoundationRendererClient::OnDCOMPSurfaceReceived,
                          weak_factory_.GetWeakPtr()),
-          absl::nullopt));
+          absl::nullopt, "disconnection error"));
 }
 
 void MediaFoundationRendererClient::OnDCOMPSurfaceReceived(
-    const absl::optional<base::UnguessableToken>& token) {
+    const absl::optional<base::UnguessableToken>& token,
+    const std::string& error) {
   DVLOG_FUNC(1);
   DCHECK(has_video_);
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   if (!token) {
-    MEDIA_LOG(ERROR, media_log_)
-        << "Failed to initialize DCOMP mode or failed to get or "
-           "register DCOMP surface handle on remote renderer";
+    MEDIA_LOG(ERROR, media_log_) << "GetDCOMPSurface failed: " + error;
     MediaFoundationRenderer::ReportErrorReason(
         MediaFoundationRenderer::ErrorReason::kOnDCompSurfaceReceivedError);
     OnError(PIPELINE_ERROR_COULD_NOT_RENDER);

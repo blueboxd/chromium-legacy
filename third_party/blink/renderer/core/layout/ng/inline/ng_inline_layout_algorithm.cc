@@ -194,7 +194,7 @@ void NGInlineLayoutAlgorithm::RebuildBoxStates(
   line_info.ItemsData().GetOpenTagItems(break_token->ItemIndex(), &open_items);
 
   // Create box states for tags that are not closed yet.
-  NGLogicalLineItems line_box;
+  NGLogicalLineItems& line_box = *MakeGarbageCollected<NGLogicalLineItems>();
   box_states->OnBeginPlaceItems(Node(), line_info.LineStyle(), baseline_type_,
                                 quirks_mode_, &line_box);
   for (const NGInlineItem* item : open_items) {
@@ -203,6 +203,7 @@ void NGInlineLayoutAlgorithm::RebuildBoxStates(
                                         Node().IsSvgText(), &item_result);
     HandleOpenTag(*item, item_result, &line_box, box_states);
   }
+  line_box.clear();
 }
 
 #if DCHECK_IS_ON()
@@ -211,11 +212,12 @@ void NGInlineLayoutAlgorithm::CheckBoxStates(
     const NGInlineBreakToken* break_token) const {
   NGInlineLayoutStateStack rebuilt;
   RebuildBoxStates(line_info, break_token, &rebuilt);
-  NGLogicalLineItems line_box;
+  NGLogicalLineItems& line_box = *MakeGarbageCollected<NGLogicalLineItems>();
   rebuilt.OnBeginPlaceItems(Node(), line_info.LineStyle(), baseline_type_,
                             quirks_mode_, &line_box);
   DCHECK(box_states_);
   box_states_->CheckSame(rebuilt);
+  line_box.clear();
 }
 #endif
 
@@ -334,9 +336,8 @@ void NGInlineLayoutAlgorithm::CreateLine(
       has_out_of_flow_positioned_items = true;
     } else if (item.Type() == NGInlineItem::kFloating) {
       if (item_result.positioned_float) {
-        if (scoped_refptr<const NGLayoutResult> layout_result =
-                item_result.positioned_float->layout_result) {
-          line_box->AddChild(std::move(layout_result),
+        if (item_result.positioned_float->layout_result) {
+          line_box->AddChild(item_result.positioned_float->layout_result,
                              item_result.positioned_float->bfc_offset,
                              item.BidiLevel());
         } else {
@@ -379,10 +380,11 @@ void NGInlineLayoutAlgorithm::CreateLine(
   // Truncate the line if:
   //  - 'text-overflow: ellipsis' is set and we *aren't* a line-clamp context.
   //  - If we've reached the line-clamp limit.
-  if (UNLIKELY((line_info->HasOverflow() &&
-                !ConstraintSpace().IsLineClampContext() &&
-                node_.GetLayoutBlockFlow()->ShouldTruncateOverflowingText()) ||
-               ConstraintSpace().LinesUntilClamp() == 1)) {
+  if (UNLIKELY(((line_info->HasOverflow() &&
+                 !ConstraintSpace().IsLineClampContext() &&
+                 node_.GetLayoutBlockFlow()->ShouldTruncateOverflowingText()) ||
+                ConstraintSpace().LinesUntilClamp() == 1) &&
+               !line_info->IsBlockInInline())) {
     DCHECK(!line_info->IsBlockInInline());
     NGLineTruncator truncator(*line_info);
     auto* input =
@@ -927,7 +929,8 @@ absl::optional<LayoutUnit> NGInlineLayoutAlgorithm::ApplyJustify(
     line_text_builder.Append(last_item_result.hyphen_string);
 
   // Compute the spacing to justify.
-  String line_text = line_text_builder.ToString();
+  // Releasing string, StringBuilder reset.
+  String line_text = line_text_builder.ReleaseString();
   DCHECK_GT(line_text.length(), 0u);
 
   ShapeResultSpacing<String> spacing(line_text, Node().IsSvgText());
@@ -1111,7 +1114,7 @@ bool NGInlineLayoutAlgorithm::AddAnyClearanceAfterLine(
   return true;
 }
 
-scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
+const NGLayoutResult* NGInlineLayoutAlgorithm::Layout() {
   NGExclusionSpace initial_exclusion_space(ConstraintSpace().ExclusionSpace());
 
   end_margin_strut_ = ConstraintSpace().MarginStrut();
@@ -1375,8 +1378,7 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 
   DCHECK(items_builder);
   container_builder_.PropagateChildrenData(*line_box);
-  scoped_refptr<const NGLayoutResult> layout_result =
-      container_builder_.ToLineBoxFragment();
+  const NGLayoutResult* layout_result = container_builder_.ToLineBoxFragment();
   items_builder->AssociateLogicalLineItems(line_box,
                                            layout_result->PhysicalFragment());
   return layout_result;
@@ -1429,7 +1431,7 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingFloats(
       }
     }
 
-    positioned_floats->push_back(std::move(positioned_float));
+    positioned_floats->push_back(positioned_float);
   }
 
   return index;
@@ -1511,16 +1513,14 @@ void NGInlineLayoutAlgorithm::BidiReorder(TextDirection base_direction,
   NGBidiParagraph::IndicesInVisualOrder(levels, &indices_in_visual_order);
 
   // Reorder to the visual order.
-  NGLogicalLineItems visual_items;
+  NGLogicalLineItems& visual_items =
+      *MakeGarbageCollected<NGLogicalLineItems>();
   visual_items.ReserveInitialCapacity(line_box->size());
-  for (unsigned logical_index : indices_in_visual_order) {
+  for (unsigned logical_index : indices_in_visual_order)
     visual_items.AddChild(std::move((*line_box)[logical_index]));
-    DCHECK(!(*line_box)[logical_index].HasInFlowFragment() ||
-           // |inline_item| will not be null by moving.
-           (*line_box)[logical_index].inline_item);
-  }
   DCHECK_EQ(line_box->size(), visual_items.size());
-  *line_box = std::move(visual_items);
+  line_box->swap(visual_items);
+  visual_items.clear();
 }
 
 }  // namespace blink

@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
+#include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 
 using testing::_;
@@ -394,6 +395,91 @@ TEST_P(PaintLayerScrollableAreaTest, OverlayScrollbarColorThemeUpdated) {
   ASSERT_EQ(ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeDark,
             white_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
   ASSERT_EQ(ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeLight,
+            black_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
+}
+
+TEST_P(PaintLayerScrollableAreaTest,
+       RecalculatesScrollbarOverlayIfBackgroundChanges) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #scroller {
+        width: 10px;
+        height: 10px;
+        overflow: scroll;
+      }
+      .forcescroll { height: 1000px; }
+    </style>
+    <div id="scroller">
+      <div class="forcescroll"></div>
+    </div>
+  )HTML");
+  PaintLayer* scroll_paint_layer = GetPaintLayerByElementId("scroller");
+  EXPECT_EQ(
+      ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeDark,
+      scroll_paint_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
+
+  GetElementById("scroller")
+      ->setAttribute(html_names::kStyleAttr, "background: rgb(34, 85, 51);");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(
+      ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeLight,
+      scroll_paint_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
+
+  GetElementById("scroller")
+      ->setAttribute(html_names::kStyleAttr, "background: rgb(236, 143, 185);");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(
+      ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeDark,
+      scroll_paint_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
+}
+
+// The scrollbar overlay color theme should follow the used color scheme when a
+// background color is not available on the scroller itself.
+TEST_P(PaintLayerScrollableAreaTest, PreferredOverlayScrollbarColorTheme) {
+  ColorSchemeHelper color_scheme_helper(GetDocument());
+  color_scheme_helper.SetPreferredColorScheme(
+      mojom::blink::PreferredColorScheme::kDark);
+  SetBodyInnerHTML(R"HTML(
+    <meta name="color-scheme" content="light dark">
+    <style>
+      .scroller {
+        width: 10px;
+        height: 10px;
+        overflow: scroll;
+      }
+      #white { background-color: white; }
+      #black { background-color: black; }
+      .forcescroll { height: 1000px; }
+    </style>
+    <div class="scroller" id="none">
+      <div class="forcescroll"></div>
+    </div>
+    <div class="scroller" id="white">
+      <div class="forcescroll"></div>
+    </div>
+    <div class="scroller" id="black">
+      <div class="forcescroll"></div>
+    </div>
+  )HTML");
+
+  PaintLayer* none_layer = GetPaintLayerByElementId("none");
+  PaintLayer* white_layer = GetPaintLayerByElementId("white");
+  PaintLayer* black_layer = GetPaintLayerByElementId("black");
+  EXPECT_EQ(ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeLight,
+            none_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
+  EXPECT_EQ(ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeDark,
+            white_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
+  EXPECT_EQ(ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeLight,
+            black_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
+
+  color_scheme_helper.SetPreferredColorScheme(
+      mojom::blink::PreferredColorScheme::kLight);
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeDark,
+            none_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
+  EXPECT_EQ(ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeDark,
+            white_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
+  EXPECT_EQ(ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeLight,
             black_layer->GetScrollableArea()->GetScrollbarOverlayColorTheme());
 }
 
@@ -1474,6 +1560,38 @@ TEST_P(PaintLayerScrollableAreaTest,
     }
     EXPECT_TRUE(found_subscroller_scrollbar);
   }
+}
+
+TEST_P(PaintLayerScrollableAreaTest,
+       ResizeSmallerToBeScrollableWithResizerAndStackedChild) {
+  USE_NON_OVERLAY_SCROLLBARS();
+
+  SetBodyInnerHTML(R"HTML(
+    <div id="scroller"
+         style="overflow: auto; width: 150px; height: 100px; resize: both">
+      <div style="width: 149px; height: 98px; position: relative"></div>
+    </div>
+  )HTML");
+
+  auto* scroller = GetDocument().getElementById("scroller");
+  auto* scrollable_area = scroller->GetLayoutBox()->GetScrollableArea();
+  ASSERT_TRUE(scrollable_area);
+  EXPECT_FALSE(scrollable_area->HasScrollbar());
+  // The resizer needs to be painted above the stacked child.
+  EXPECT_TRUE(scrollable_area->HasOverlayOverflowControls());
+  EXPECT_TRUE(
+      scroller->GetLayoutBox()->Layer()->NeedsReorderOverlayOverflowControls());
+
+  // Shrink the scroller, and it becomes scrollable.
+  scroller->SetInlineStyleProperty(CSSPropertyID::kWidth, "140px");
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_TRUE(scrollable_area->HasScrollbar());
+  ASSERT_FALSE(scrollable_area->HorizontalScrollbar()->IsOverlayScrollbar());
+  // Because there is non-overlay scrollbar, the resizer on longer overlaps
+  // with the contents, so no need to overlay.
+  EXPECT_FALSE(scrollable_area->HasOverlayOverflowControls());
+  EXPECT_FALSE(
+      scroller->GetLayoutBox()->Layer()->NeedsReorderOverlayOverflowControls());
 }
 
 }  // namespace blink

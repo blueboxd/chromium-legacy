@@ -22,10 +22,6 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/views/controls/button/button.h"
 
-namespace ui {
-class Shadow;
-}  // namespace ui
-
 namespace views {
 class Widget;
 }  // namespace views
@@ -35,6 +31,7 @@ class DragWindowController;
 class OverviewGrid;
 class OverviewItemView;
 class RoundedLabelWidget;
+class SystemShadow;
 
 // This class represents an item in overview mode.
 class ASH_EXPORT OverviewItem : public aura::WindowObserver,
@@ -79,13 +76,16 @@ class ASH_EXPORT OverviewItem : public aura::WindowObserver,
   void Shutdown();
 
   // Hides the overview item. This is used to hide any overview items that may
-  // be present when entering the desk templates UI.
-  void HideForDesksTemplatesGrid();
+  // be present when entering the desk templates UI. Animates `item_widget_` and
+  // the windows in the transient tree to 0 opacity if `animate` is true,
+  // otherwise just sets them to 0 opacity.
+  void HideForDesksTemplatesGrid(bool animate);
 
   // This shows overview items that were hidden by the desk templates grid.
   // Called when exiting the desk templates UI and going back to the overview
-  // grid.
-  void RevertHideForDesksTemplatesGrid();
+  // grid. Fades the overview items in if `animate` is true, otherwise shows
+  // them immediately.
+  void RevertHideForDesksTemplatesGrid(bool animate);
 
   // Dispatched before beginning window overview. This will do any necessary
   // one time actions such as restoring minimized windows.
@@ -177,6 +177,9 @@ class ASH_EXPORT OverviewItem : public aura::WindowObserver,
 
   // Updates the rounded corners and shadow on this overview window item.
   void UpdateRoundedCornersAndShadow();
+
+  // Updates the shadow type while being dragged and dropped.
+  void UpdateShadowTypeForDrag(bool is_dragging);
 
   // Called when the starting animation is completed, or called immediately
   // if there was no starting animation.
@@ -437,7 +440,7 @@ class ASH_EXPORT OverviewItem : public aura::WindowObserver,
   // The shadow around the overview window. Shadows the original window, not
   // |item_widget_|. Done here instead of on the original window because of the
   // rounded edges mask applied on entering overview window.
-  std::unique_ptr<ui::Shadow> shadow_;
+  std::unique_ptr<SystemShadow> shadow_;
 
   // Cached values of the item bounds so that they do not have to be calculated
   // on each scroll update. Will be nullopt unless a grid scroll is underway.

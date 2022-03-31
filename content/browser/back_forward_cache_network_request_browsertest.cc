@@ -20,6 +20,8 @@
 
 namespace content {
 
+using NotRestoredReason = BackForwardCacheMetrics::NotRestoredReason;
+
 // When loading task is unfreezable with the feature flag
 // kLoadingTaskUnfreezable, a page will keep processing the in-flight network
 // requests while the page is frozen in BackForwardCache.
@@ -104,9 +106,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // 3) Go back to A.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
-  ExpectNotRestored(
-      {BackForwardCacheMetrics::NotRestoredReason::kNetworkRequestRedirected},
-      {}, {}, {}, {}, FROM_HERE);
+  ExpectNotRestored({NotRestoredReason::kNetworkRequestRedirected}, {}, {}, {},
+                    {}, FROM_HERE);
 }
 
 // Eviction is triggered when a keepalive fetch request gets redirected while
@@ -160,9 +161,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // 3) Go back to A.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
-  ExpectNotRestored(
-      {BackForwardCacheMetrics::NotRestoredReason::kNetworkRequestRedirected},
-      {}, {}, {}, {}, FROM_HERE);
+  ExpectNotRestored({NotRestoredReason::kNetworkRequestRedirected}, {}, {}, {},
+                    {}, FROM_HERE);
 }
 
 // Tests the case when the header was received before the page is frozen,
@@ -199,9 +199,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // 3) Go back to A.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
-  ExpectNotRestored({BackForwardCacheMetrics::NotRestoredReason::
-                         kNetworkRequestDatapipeDrainedAsBytesConsumer},
-                    {}, {}, {}, {}, FROM_HERE);
+  ExpectNotRestored(
+      {NotRestoredReason::kNetworkRequestDatapipeDrainedAsBytesConsumer}, {},
+      {}, {}, {}, FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -284,9 +284,8 @@ IN_PROC_BROWSER_TEST_F(
 
   // 3) Go back to A.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
-  ExpectNotRestored(
-      {BackForwardCacheMetrics::NotRestoredReason::kNetworkExceedsBufferLimit},
-      {}, {}, {}, {}, FROM_HERE);
+  ExpectNotRestored({NotRestoredReason::kNetworkExceedsBufferLimit}, {}, {}, {},
+                    {}, FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
@@ -384,7 +383,7 @@ IN_PROC_BROWSER_TEST_F(
   RenderFrameHostImpl* rfh_1 = current_frame_host();
   // Wait for the document to load DOM to ensure that kLoading is not
   // one of the reasons why the document wasn't cached.
-  WaitForDOMContentLoaded(rfh_1);
+  ASSERT_TRUE(WaitForDOMContentLoaded(rfh_1));
 
   EXPECT_TRUE(ExecJs(rfh_1, R"(
       var image1 = document.createElement("img");
@@ -433,9 +432,8 @@ IN_PROC_BROWSER_TEST_F(
   // 3) Go back to the first page. We should not restore the page from the
   // back-forward cache.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
-  ExpectNotRestored(
-      {BackForwardCacheMetrics::NotRestoredReason::kNetworkExceedsBufferLimit},
-      {}, {}, {}, {}, FROM_HERE);
+  ExpectNotRestored({NotRestoredReason::kNetworkExceedsBufferLimit}, {}, {}, {},
+                    {}, FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -453,7 +451,7 @@ IN_PROC_BROWSER_TEST_F(
   RenderFrameHostImpl* main_rfh = current_frame_host();
   // Wait for the document to load DOM to ensure that kLoading is not
   // one of the reasons why the document wasn't cached.
-  WaitForDOMContentLoaded(main_rfh);
+  ASSERT_TRUE(WaitForDOMContentLoaded(main_rfh));
 
   EXPECT_TRUE(ExecJs(main_rfh, R"(
       var image1 = document.createElement("img");
@@ -471,7 +469,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // First, wait for the subframe document to load DOM to ensure that kLoading
   // is not one of the reasons why the document wasn't cached.
-  WaitForDOMContentLoaded(subframe_rfh);
+  EXPECT_TRUE(WaitForDOMContentLoaded(subframe_rfh));
 
   EXPECT_TRUE(ExecJs(subframe_rfh, R"(
       var image2 = document.createElement("img");
@@ -516,9 +514,8 @@ IN_PROC_BROWSER_TEST_F(
   // 3) Go back to the first page. We should not restore the page from the
   // back-forward cache.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
-  ExpectNotRestored(
-      {BackForwardCacheMetrics::NotRestoredReason::kNetworkExceedsBufferLimit},
-      {}, {}, {}, {}, FROM_HERE);
+  ExpectNotRestored({NotRestoredReason::kNetworkExceedsBufferLimit}, {}, {}, {},
+                    {}, FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -541,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("a.com", "/title2.html")));
   RenderFrameHostImpl* rfh_2 = current_frame_host();
-  WaitForDOMContentLoaded(rfh_2);
+  ASSERT_TRUE(WaitForDOMContentLoaded(rfh_2));
 
   // The first page was still loading images when we navigated away, but it's
   // still eligible for back-forward cache.
@@ -615,7 +612,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("a.com", "/title2.html")));
   RenderFrameHostImpl* rfh_2 = current_frame_host();
-  WaitForDOMContentLoaded(rfh_2);
+  ASSERT_TRUE(WaitForDOMContentLoaded(rfh_2));
 
   // The first page was still loading images when we navigated away, but it's
   // still eligible for back-forward cache.
@@ -646,9 +643,8 @@ IN_PROC_BROWSER_TEST_F(
   // 4) Go back to the first page. We should not restore the page from the
   // back-forward cache.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
-  ExpectNotRestored(
-      {BackForwardCacheMetrics::NotRestoredReason::kNetworkExceedsBufferLimit},
-      {}, {}, {}, {}, FROM_HERE);
+  ExpectNotRestored({NotRestoredReason::kNetworkExceedsBufferLimit}, {}, {}, {},
+                    {}, FROM_HERE);
 
   // The second page was still loading images when we navigated away, but it's
   // still eligible for back-forward cache.
@@ -704,9 +700,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // 3) Go back to the first page. We should not restore the page from the
   // back-forward cache.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
-  ExpectNotRestored(
-      {BackForwardCacheMetrics::NotRestoredReason::kNetworkRequestTimeout}, {},
-      {}, {}, {}, FROM_HERE);
+  ExpectNotRestored({NotRestoredReason::kNetworkRequestTimeout}, {}, {}, {}, {},
+                    FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -724,7 +719,7 @@ IN_PROC_BROWSER_TEST_F(
   RenderFrameHostImpl* rfh_1 = current_frame_host();
   // Wait for the document to load DOM to ensure that kLoading is not
   // one of the reasons why the document wasn't cached.
-  WaitForDOMContentLoaded(rfh_1);
+  ASSERT_TRUE(WaitForDOMContentLoaded(rfh_1));
 
   EXPECT_TRUE(ExecJs(rfh_1, R"(
       var image1 = document.createElement("img");
@@ -779,9 +774,8 @@ IN_PROC_BROWSER_TEST_F(
   // 3) Go back to the first page. We should not restore the page from the
   // back-forward cache.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
-  ExpectNotRestored(
-      {BackForwardCacheMetrics::NotRestoredReason::kNetworkExceedsBufferLimit},
-      {}, {}, {}, {}, FROM_HERE);
+  ExpectNotRestored({NotRestoredReason::kNetworkExceedsBufferLimit}, {}, {}, {},
+                    {}, FROM_HERE);
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,

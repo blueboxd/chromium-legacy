@@ -67,7 +67,6 @@
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
-#include "third_party/blink/public/mojom/federated_learning/floc.mojom.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 #include "url/gurl.h"
@@ -317,13 +316,12 @@ ContentBrowserClient::GetAdditionalSiteIsolationModes() {
 bool ContentBrowserClient::ShouldUrlUseApplicationIsolationLevel(
     BrowserContext* browser_context,
     const GURL& url) {
-  // For short-term testing, use kDirectSockets to enable isolated application
-  // level. DirectSocket WPT and browser tests require application isolation
-  // level.
-  //
-  // TODO(crbug.com/1206150): Figure out a better way to enable isolated
-  // application level in tests.
-  return base::FeatureList::IsEnabled(features::kDirectSockets);
+  return false;
+}
+
+bool ContentBrowserClient::AreDirectSocketsAllowedByPolicy(
+    BrowserContext* context) {
+  return true;
 }
 
 size_t ContentBrowserClient::GetMaxRendererProcessCountOverride() {
@@ -910,6 +908,11 @@ bool ContentBrowserClient::ShouldOverrideUrlLoading(
     bool* ignore_navigation) {
   return true;
 }
+
+bool ContentBrowserClient::
+    ShouldIgnoreInitialNavigationEntryNavigationStateChangedForLegacySupport() {
+  return false;
+}
 #endif
 
 bool ContentBrowserClient::AllowRenderingMhtmlOverHttp(
@@ -967,13 +970,13 @@ bool ContentBrowserClient::CreateThreadPool(base::StringPiece name) {
   return true;
 }
 
-#if !BUILDFLAG(IS_ANDROID)
 WebAuthenticationDelegate*
 ContentBrowserClient::GetWebAuthenticationDelegate() {
   static base::NoDestructor<WebAuthenticationDelegate> delegate;
   return delegate.get();
 }
 
+#if !BUILDFLAG(IS_ANDROID)
 std::unique_ptr<AuthenticatorRequestClientDelegate>
 ContentBrowserClient::GetWebAuthenticationRequestDelegate(
     RenderFrameHost* render_frame_host) {
@@ -1014,9 +1017,15 @@ bool ContentBrowserClient::HandleExternalProtocol(
   return true;
 }
 
-std::unique_ptr<OverlayWindow>
-ContentBrowserClient::CreateWindowForPictureInPicture(
-    PictureInPictureWindowController* controller) {
+std::unique_ptr<VideoOverlayWindow>
+ContentBrowserClient::CreateWindowForVideoPictureInPicture(
+    VideoPictureInPictureWindowController* controller) {
+  return nullptr;
+}
+
+std::unique_ptr<DocumentOverlayWindow>
+ContentBrowserClient::CreateWindowForDocumentPictureInPicture(
+    DocumentPictureInPictureWindowController* controller) {
   return nullptr;
 }
 
@@ -1064,6 +1073,10 @@ std::string ContentBrowserClient::GetUserAgent() {
 
 std::string ContentBrowserClient::GetUserAgentBasedOnPolicy(
     content::BrowserContext* content) {
+  return GetUserAgent();
+}
+
+std::string ContentBrowserClient::GetFullUserAgent() {
   return GetUserAgent();
 }
 
@@ -1122,13 +1135,6 @@ void ContentBrowserClient::AugmentNavigationDownloadPolicy(
     RenderFrameHost* frame_host,
     bool user_gesture,
     blink::NavigationDownloadPolicy* download_policy) {}
-
-blink::mojom::InterestCohortPtr ContentBrowserClient::GetInterestCohortForJsApi(
-    WebContents* web_contents,
-    const GURL& url,
-    const absl::optional<url::Origin>& top_frame_origin) {
-  return blink::mojom::InterestCohort::New();
-}
 
 bool ContentBrowserClient::IsBluetoothScanningBlocked(
     content::BrowserContext* browser_context,
@@ -1295,6 +1301,14 @@ bool ContentBrowserClient::ShouldPreconnectNavigation(
 
 bool ContentBrowserClient::IsFirstPartySetsEnabled() {
   return base::FeatureList::IsEnabled(features::kFirstPartySets);
+}
+
+mojom::AlternativeErrorPageOverrideInfoPtr
+ContentBrowserClient::GetAlternativeErrorPageOverrideInfo(
+    const GURL& url,
+    BrowserContext* browser_context,
+    int32_t error_code) {
+  return nullptr;
 }
 
 }  // namespace content

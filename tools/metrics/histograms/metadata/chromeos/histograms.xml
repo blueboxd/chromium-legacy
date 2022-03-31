@@ -551,12 +551,15 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.CWP.JankinessTriggerStatus"
-    enum="ChromeOSJankinessTriggerStatus" expires_after="2020-08-30">
-  <owner>cywang@chromium.org</owner>
+    enum="ChromeOSJankinessTriggerStatus" expires_after="2023-03-30">
   <owner>chinglinyu@chromium.org</owner>
+  <owner>cwp-team@google.com</owner>
   <summary>
     Records the status of collection attempts triggered by jankiness on Chrome
     OS.
+
+    Warning: this histogram was expired from 08/30/2020 to 03/30/2022; data may
+    be missing.
   </summary>
 </histogram>
 
@@ -627,7 +630,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.CWP.UploadPerf" units="reports"
-    expires_after="2022-03-27">
+    expires_after="2023-03-30">
   <owner>aalexand@google.com</owner>
   <owner>gmx@chromium.org</owner>
   <owner>cwp-team@google.com</owner>
@@ -737,78 +740,6 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </token>
 </histogram>
 
-<histogram name="ChromeOS.FamilyLink.ChildStatusReportRequest.Size" units="KB"
-    expires_after="2022-08-23">
-  <owner>tobyhuang@chromium.org</owner>
-  <owner>cros-families-eng@google.com</owner>
-  <summary>
-    Reports the size of the uploaded ChildStatusReportRequest proto in
-    kilobytes. This metric records right before the report uploads. The max
-    bucket value is 500MB.
-  </summary>
-</histogram>
-
-<histogram
-    name="ChromeOS.FamilyLink.ChildStatusReportRequest.TimeSinceLastReport"
-    units="minutes" expires_after="2022-08-23">
-  <owner>tobyhuang@chromium.org</owner>
-  <owner>cros-families-eng@google.com</owner>
-  <summary>
-    Reports the time in between ChildStatusReportRequest uploads in minutes. The
-    default upload frequency is once every ten minutes. This metric records
-    right before the report uploads. The max bucket value is 100,000 minutes
-    (1667 hours).
-  </summary>
-</histogram>
-
-<histogram name="ChromeOS.FamilyLinkUser.LogSegment"
-    enum="FamilyLinkUserLogSegment" expires_after="never">
-<!-- expires-never: used internally for filtering -->
-
-  <owner>tobyhuang@chromium.org</owner>
-  <owner>cros-families-eng@google.com</owner>
-  <owner>chrome-metrics-team@google.com</owner>
-  <summary>
-    Categorizes the current user for the Family Experiences team's metrics.
-    Other is for all other users that do not fall into any of the below
-    categories. Users under the age of consent automatically have supervision
-    applied to their accounts. Users over the age of consent can opt into
-    supervision.
-  </summary>
-</histogram>
-
-<histogram name="ChromeOS.FamilyUser.LogSegment2" enum="FamilyUserLogSegment"
-    expires_after="never">
-<!-- expires-never: used internally for filtering -->
-
-  <owner>tobyhuang@chromium.org</owner>
-  <owner>cros-families-eng@google.com</owner>
-  <owner>chrome-metrics-team@google.com</owner>
-  <summary>
-    Categorizes the current user for the Family Experiences team's metrics.
-    Other is for all other users that do not fall into any of the below
-    categories. A Supervised User has a supervised primary account and no
-    secondary accounts. A Supervised Student has a supervised primary account
-    and one or more EDU secondary accounts, which is the only available option
-    for a secondary account in that scenario. A Student at Home has a K-12 EDU
-    primary account on an unmanaged ChromeOS device, regardless of the secondary
-    account. A Regular User is an unmanaged consumer user on any device. This
-    metric is logged with every UMA upload in ProvideCurrentSessionData().
-  </summary>
-</histogram>
-
-<histogram name="ChromeOS.FamilyUser.NumSecondaryAccounts" units="accounts"
-    expires_after="2022-03-10">
-  <owner>tobyhuang@chromium.org</owner>
-  <owner>cros-families-eng@google.com</owner>
-  <owner>chrome-metrics-team@google.com</owner>
-  <summary>
-    Reports the number of secondary accounts besides the primary user. This
-    metric is logged with every UMA upload in ProvideCurrentSessionData(). This
-    metric is not reported for guest users.
-  </summary>
-</histogram>
-
 <histogram name="ChromeOS.FeatureUsage.{FeatureName}" enum="FeatureUsageEvent"
     expires_after="2022-11-11">
   <owner>rsorokin@chromium.org</owner>
@@ -829,6 +760,60 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     Records the duration of time (ms) a given {FeatureName} feature was used.
   </summary>
   <token key="FeatureName" variants="FeaturesLoggingUsageEvents"/>
+</histogram>
+
+<histogram name="ChromeOS.FirmwareUpdateUi.InstallResult"
+    enum="FirmwareUpdateInstallResult" expires_after="2023-01-01">
+  <owner>jimmyxgong@chromium.org</owner>
+  <owner>zentaro@chromium.org</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Records the result of installing a firmware update. Recorded once per
+    install and the histogram is emitted either when an install is completed or
+    when a failure state is reached. An example failure state is if we're unable
+    to create a firmware update directory.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.FirmwareUpdateUi.{Source}.DeviceCount"
+    units="devices" expires_after="2023-01-01">
+  <owner>jimmyxgong@chromium.org</owner>
+  <owner>zentaro@chromium.org</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Records the total number of devices found. OnStartup is recorded when a user
+    first logs in and OnRefresh is recorded for any subsequent request. The
+    cases in which a subsequent request will be made are when the Firmware
+    Update SWA is launched, when an install is completed, and when we detect
+    that a device has been added or removed.
+  </summary>
+  <token key="Source">
+    <variant name="OnRefresh"/>
+    <variant name="OnStartup"/>
+  </token>
+</histogram>
+
+<histogram name="ChromeOS.FirmwareUpdateUi.{Source}.{Severity}UpdateCount"
+    units="updates" expires_after="2023-01-01">
+  <owner>jimmyxgong@chromium.org</owner>
+  <owner>zentaro@chromium.org</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Records the total number of {Severity} firmware updates found for all of the
+    peripherals currently connected. The histogram is emitted once we've
+    received the list of updates (if any) for all peripherals. OnStartup is
+    recorded when a user first logs in and OnRefresh is recorded for any
+    subsequent request. The cases in which a subsequent request will be made are
+    when the Firmware Update SWA is launched, when an install is completed, and
+    when we detect that a device has been added or removed.
+  </summary>
+  <token key="Source">
+    <variant name="OnRefresh"/>
+    <variant name="OnStartup"/>
+  </token>
+  <token key="Severity">
+    <variant name="Critical"/>
+  </token>
 </histogram>
 
 <histogram name="ChromeOS.Gaia.Message.{GaiaAuthFlow}.{MessageName}"
@@ -1072,6 +1057,36 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.LanguagePacks.Mojo.GetPackInfo.Feature"
+    enum="LanguagePackMojoFeatureId" expires_after="2022-10-01">
+  <owner>mlcui@google.com</owner>
+  <owner>cros-borders-eng@google.com</owner>
+  <summary>
+    Records which feature was requested by callers of the language packs Mojo
+    interface's &quot;GetPackInfo&quot; IPC call.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.LanguagePacks.Mojo.InstallPack.Feature"
+    enum="LanguagePackMojoFeatureId" expires_after="2022-10-01">
+  <owner>mlcui@google.com</owner>
+  <owner>cros-borders-eng@google.com</owner>
+  <summary>
+    Records which feature was requested by callers of the language packs Mojo
+    interface's &quot;InstallPack&quot; IPC call.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.LanguagePacks.Mojo.PackStateResponse"
+    enum="LanguagePackMojoPackState" expires_after="2022-10-01">
+  <owner>mlcui@google.com</owner>
+  <owner>cros-borders-eng@google.com</owner>
+  <summary>
+    Records the state of what state a language pack is in (whether it's
+    installed or not) when the language packs Mojo interface responds to an IPC.
+  </summary>
+</histogram>
+
 <histogram name="ChromeOS.LanguagePacks.UninstallComplete.Success"
     enum="BooleanSuccess" expires_after="2022-10-01">
   <owner>claudiomagni@chromium.org</owner>
@@ -1083,15 +1098,19 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="ChromeOS.LegacySupervisedUsers.HiddenFromLoginScreen"
-    enum="LegacySupervisedUserStatus" expires_after="2022-04-09">
-  <owner>tobyhuang@chromium.org</owner>
-  <owner>cros-families-eng@google.com</owner>
+<histogram name="ChromeOS.Liveness.BrowserStateAtTimeout"
+    enum="ChromeOSBrowserProcessState" expires_after="2023-01-30">
+  <owner>iby@google.com</owner>
+  <owner>xiyuan@google.com</owner>
+  <owner>kaznacheev@google.com</owner>
   <summary>
-    Reports &quot;hidden&quot; when the login screen hides a legacy supervised
-    user (LSU). Reports &quot;displayed&quot; when the login screen displays a
-    non-LSU Gaia user. Reports &quot;deleted&quot; when the login screen
-    attempts to delete a LSU. Recorded whenever the user sees the login screen.
+    Records the state of the Chrome browser process at the moment
+    session_manager's LivenessChecker ping times out. This is the moment when
+    LivenessChecker will send an abort signal, if sending an abort signal is
+    enabled, but this metric is recorded regardless of whether or not aborting
+    from LivenessChecker is enabled. Exactly one sample of this metric is
+    recorded when the timeout occurs. If aborting is enabled, this should mean
+    one sample per abort.
   </summary>
 </histogram>
 
@@ -1103,6 +1122,17 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     Reports the time (ms) elapsed between sending of a LivenessChecker ping and
     receipt of the response. Recorded when LivenessChecker receives a ping
     response.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.Liveness.PingResult" enum="BooleanSuccess"
+    expires_after="2023-02-04">
+  <owner>iby@google.com</owner>
+  <owner>xiyuan@google.com</owner>
+  <summary>
+    Records whether the dbus liveness pings successfully go through. True is
+    recorded when the session manager daemon receives the pong back from chrome
+    in time. False is recorded when it times out waiting for the pong.
   </summary>
 </histogram>
 
@@ -1402,6 +1432,17 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name="Arc" summary="arc app"/>
     <variant name="Web" summary="web app"/>
   </token>
+</histogram>
+
+<histogram name="ChromeOS.Sharesheet.CopyToClipboard.FormFactor"
+    enum="ChromeOSSharesheetFormFactor" expires_after="2023-02-16">
+  <owner>melzhang@chromium.org</owner>
+  <owner>vpao@google.com</owner>
+  <owner>chromeos-apps-foundation-team@google.com</owner>
+  <summary>
+    Records the form factor when the Copy To Clipboard option is selected from
+    the sharesheet.
+  </summary>
 </histogram>
 
 <histogram name="ChromeOS.Sharesheet.FileCount" units="files"
@@ -1742,7 +1783,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="ChromeOS.WebAPK.UninstallSource"
+<histogram name="ChromeOS.WebApk.UninstallSource"
     enum="WebApkUninstallSourceChromeOS" expires_after="2022-04-01">
   <owner>tsergeant@chromium.org</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>

@@ -199,6 +199,27 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
             UpdateService::PolicySameVersionUpdate::kAllowed);
   }
 
+  void SetupFakeLegacyUpdaterData() const override {
+    updater::test::SetupFakeLegacyUpdaterData(updater_scope_);
+  }
+
+  void ExpectLegacyUpdaterDataMigrated() const override {
+    updater::test::ExpectLegacyUpdaterDataMigrated(updater_scope_);
+  }
+
+  void RunRecoveryComponent(const std::string& app_id,
+                            const base::Version& version) const override {
+    updater::test::RunRecoveryComponent(updater_scope_, app_id, version);
+  }
+
+  void ExpectLastChecked() const override {
+    updater::test::ExpectLastChecked(updater_scope_);
+  }
+
+  void ExpectLastStarted() const override {
+    updater::test::ExpectLastStarted(updater_scope_);
+  }
+
  private:
   ~IntegrationTestCommandsUser() override = default;
 

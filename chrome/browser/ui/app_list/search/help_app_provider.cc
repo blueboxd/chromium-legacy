@@ -24,6 +24,7 @@
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/ash/release_notes/release_notes_storage.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/search/common/icon_constants.h"
 #include "chrome/browser/ui/app_list/search/search_tags_util.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
@@ -141,7 +142,7 @@ HelpAppResult::HelpAppResult(
   SetResultType(ResultType::kHelpApp);
   SetDisplayType(DisplayType::kList);
   SetMetricsType(ash::HELP_APP_DEFAULT);
-  SetIcon(IconInfo(icon));
+  SetIcon(IconInfo(icon, GetAppIconDimension()));
   SetDetails(result->main_category);
 }
 
@@ -240,7 +241,8 @@ void HelpAppProvider::Start(const std::u16string& query) {
     LogListSearchResultState(ListSearchResultState::kNoHelpAppIcon);
     // This prevents a timeout in the test, but it does not change the user
     // experience because the results were already cleared at the start.
-    ClearResults();
+    SearchProvider::Results search_results;
+    SwapResults(&search_results);
     return;
   }
 

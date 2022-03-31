@@ -165,8 +165,8 @@ void AddPair(base::ListValue* list,
              const std::u16string& key,
              const std::u16string& value) {
   std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue());
-  results->SetString("key", key);
-  results->SetString("value", value);
+  results->SetStringKey("key", key);
+  results->SetStringKey("value", value);
   list->Append(std::move(results));
 }
 
@@ -296,8 +296,8 @@ void NaClDomHandler::AddNaClInfo(base::ListValue* list) {
 
 void NaClDomHandler::HandleRequestNaClInfo(const base::ListValue* args) {
   CHECK(callback_id_.empty());
-  CHECK_EQ(1U, args->GetList().size());
-  callback_id_ = args->GetList()[0].GetString();
+  CHECK_EQ(1U, args->GetListDeprecated().size());
+  callback_id_ = args->GetListDeprecated()[0].GetString();
 
   if (!has_plugin_info_) {
     PluginService::GetInstance()->GetPlugins(base::BindOnce(
@@ -353,8 +353,10 @@ void CheckVersion(const base::FilePath& pnacl_path, std::string* version) {
 
   // Now try to get the field. This may leave version empty if the
   // the "get" fails (no key, or wrong type).
-  static_cast<base::DictionaryValue*>(root.get())->GetStringASCII(
-      "pnacl-version", version);
+  if (const std::string* ptr = root->FindStringKey("pnacl-version")) {
+    if (base::IsStringASCII(*ptr))
+      *version = *ptr;
+  }
 }
 
 bool CheckPathAndVersion(std::string* version) {

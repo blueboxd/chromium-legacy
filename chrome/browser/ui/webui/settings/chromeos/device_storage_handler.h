@@ -11,7 +11,7 @@
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager_observer.h"
-#include "chrome/browser/ui/webui/settings/chromeos/calculator/size_calculator.h"
+#include "chrome/browser/ui/webui/settings/ash/calculator/size_calculator.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "third_party/re2/src/re2/re2.h"
 
@@ -83,11 +83,11 @@ class StorageHandler : public ::settings::SettingsPageUIHandler,
 
  private:
   // Handlers of JS messages.
-  void HandleUpdateAndroidEnabled(const base::ListValue* unused_args);
-  void HandleUpdateStorageInfo(const base::ListValue* unused_args);
-  void HandleOpenMyFiles(const base::ListValue* unused_args);
-  void HandleOpenArcStorage(const base::ListValue* unused_args);
-  void HandleUpdateExternalStorages(const base::ListValue* unused_args);
+  void HandleUpdateAndroidEnabled(base::Value::ConstListView unused_args);
+  void HandleUpdateStorageInfo(base::Value::ConstListView unused_args);
+  void HandleOpenMyFiles(base::Value::ConstListView unused_args);
+  void HandleOpenArcStorage(base::Value::ConstListView unused_args);
+  void HandleUpdateExternalStorages(base::Value::ConstListView unused_args);
 
   // Updates storage row on the UI.
   void UpdateStorageItem(

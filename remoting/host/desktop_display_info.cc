@@ -75,7 +75,8 @@ const DisplayGeometry* DesktopDisplayInfo::GetDisplayInfo(
 // Calculate the offset from the origin of the desktop to the origin of the
 // specified display.
 //
-// For Mac, the origin of the desktop is the origin of the default display.
+// For Mac and ChromeOS, the origin of the desktop is the origin of the default
+// display.
 //
 // For Windows/Linux, the origin of the desktop is the upper-left of the
 // entire desktop region.
@@ -142,6 +143,10 @@ webrtc::DesktopVector DesktopDisplayInfo::CalcDisplayOffset(
     // x,y values.
     return origin;
   }
+#elif BUILDFLAG(IS_CHROMEOS)
+  // ChromeOS display offsets need to be relative to the main display's origin,
+  // which is stored in the DisplayGeometry x,y values.
+  return origin;
 #else
   // Return offset to this screen, relative to topleft.
   return origin.subtract(topleft);
@@ -155,6 +160,7 @@ void DesktopDisplayInfo::AddDisplay(const DisplayGeometry& display) {
 void DesktopDisplayInfo::AddDisplayFrom(
     const protocol::VideoTrackLayout& track) {
   DisplayGeometry display;
+  display.id = track.id();
   display.x = track.position_x();
   display.y = track.position_y();
   display.width = track.width();
@@ -163,6 +169,13 @@ void DesktopDisplayInfo::AddDisplayFrom(
   display.bpp = 24;
   display.is_default = false;
   displays_.push_back(display);
+}
+
+std::ostream& operator<<(std::ostream& out, const DisplayGeometry& geo) {
+  out << "Display " << geo.id << (geo.is_default ? " (primary)" : "") << ": "
+      << geo.x << "+" << geo.y << "-" << geo.width << "x" << geo.height << " @ "
+      << geo.dpi;
+  return out;
 }
 
 }  // namespace remoting

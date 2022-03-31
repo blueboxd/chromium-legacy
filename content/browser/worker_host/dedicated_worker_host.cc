@@ -20,8 +20,8 @@
 #include "content/browser/devtools/worker_devtools_manager.h"
 #include "content/browser/loader/content_security_notifier.h"
 #include "content/browser/renderer_host/code_cache_host_impl.h"
-#include "content/browser/renderer_host/cross_origin_embedder_policy.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
+#include "content/browser/renderer_host/private_network_access_util.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
@@ -44,6 +44,7 @@
 #include "net/base/isolation_info.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/mojom/blocked_by_response_reason.mojom.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/common/features.h"
@@ -238,9 +239,10 @@ void DedicatedWorkerHost::StartScriptLoad(
     return;
   }
 
-  // If this is a nested worker, there is no creator frame.
   RenderFrameHostImpl* creator_render_frame_host = nullptr;
+  DedicatedWorkerHost* creator_worker = nullptr;
   if (creator_render_frame_host_id_) {
+    // This is not a nested worker, it has a creator frame.
     creator_render_frame_host =
         RenderFrameHostImpl::FromID(*creator_render_frame_host_id_);
     if (!creator_render_frame_host) {
@@ -248,7 +250,28 @@ void DedicatedWorkerHost::StartScriptLoad(
           script_url, network::URLLoaderCompletionStatus(net::ERR_ABORTED));
       return;
     }
+  } else {
+    // The creator of this worker is a dedicated worker.
+    DCHECK(creator_worker_token_);
+
+    creator_worker =
+        service_->GetDedicatedWorkerHostFromToken(*creator_worker_token_);
+    if (!creator_worker) {
+      ScriptLoadStartFailed(
+          script_url, network::URLLoaderCompletionStatus(net::ERR_ABORTED));
+      return;
+    }
   }
+
+  // At this point there is either a creator frame or a creator worker.
+  //
+  // This may change at some point in the future if dedicated workers can be
+  // nested inside shared workers, as the HTML spec dictates. For now, nesting
+  // is only supported for dedicated workers inside dedicated workers, so the
+  // following invariant holds. If and when this changes, conditionals below
+  // should be revisited to account for the novel possibility of a creator
+  // shared worker.
+  DCHECK_NE(creator_render_frame_host == nullptr, creator_worker == nullptr);
 
   // Set if the subresource loader factories support file URLs so that we can
   // recreate the factories after Network Service crashes.
@@ -269,23 +292,18 @@ void DedicatedWorkerHost::StartScriptLoad(
       service_worker_handle_->set_parent_container_host(
           creator_render_frame_host->GetLastCommittedServiceWorkerHost());
     } else {
-      // The creator of this worker is a dedicated worker.
-      DCHECK(creator_worker_token_);
-
-      DedicatedWorkerHost* creator_worker =
-          service_->GetDedicatedWorkerHostFromToken(
-              creator_worker_token_.value());
-      if (!creator_worker) {
-        ScriptLoadStartFailed(
-            script_url, network::URLLoaderCompletionStatus(net::ERR_ABORTED));
-        return;
-      }
-
       base::WeakPtr<ServiceWorkerContainerHost> creator_container_host =
           creator_worker->service_worker_handle()->container_host();
-
       service_worker_handle_->set_parent_container_host(creator_container_host);
     }
+  }
+
+  network::mojom::ClientSecurityStatePtr client_security_state;
+  if (creator_render_frame_host) {
+    client_security_state =
+        creator_render_frame_host->BuildClientSecurityState();
+  } else {
+    client_security_state = creator_worker->client_security_state()->Clone();
   }
 
   // Get a storage domain.
@@ -299,7 +317,8 @@ void DedicatedWorkerHost::StartScriptLoad(
       nearest_ancestor_render_frame_host->ComputeSiteForCookies(),
       creator_origin_, storage_key_,
       nearest_ancestor_render_frame_host->GetIsolationInfoForSubresources(),
-      credentials_mode, std::move(outside_fetch_client_settings_object),
+      std::move(client_security_state), credentials_mode,
+      std::move(outside_fetch_client_settings_object),
       network::mojom::RequestDestination::kWorker,
       storage_partition_impl->GetServiceWorkerContext(),
       service_worker_handle_.get(), std::move(blob_url_loader_factory), nullptr,
@@ -347,34 +366,60 @@ void DedicatedWorkerHost::DidStartScriptLoad(
     return;
   }
 
-  // TODO(https://crbug.com/1282637): Compute the client security state based on
-  // the response head and the creator's client security state, just like is
-  // currently done for COEP. Preserve existing functionality in the meantime.
-  worker_client_security_state_ =
-      ancestor_render_frame_host->BuildClientSecurityState();
-
-  // Alias the COEP field inside `worker_client_security_state_` for brevity
-  // below. Note that this is a reference, not a copy.
-  network::CrossOriginEmbedderPolicy& coep =
-      worker_client_security_state_->cross_origin_embedder_policy;
-
   // https://html.spec.whatwg.org/C/#run-a-worker
-  if (final_response_url.SchemeIsBlob() ||
-      final_response_url.SchemeIs(url::kAboutScheme) ||
-      final_response_url.SchemeIs(url::kDataScheme)) {
-    // > 14.5 If response's url's scheme is a local scheme, then set worker
-    // global scope's embedder policy to owner's embedder policy.
-    coep = creator_client_security_state_->cross_origin_embedder_policy;
-  } else if (main_script_load_params->response_head->parsed_headers) {
+  if (final_response_url.SchemeIsLocal()) {
+    // TODO(https://crbug.com/1146362): Inherit from the file creator instead
+    // once creator policies are persisted through the filesystem store.
+    if (base::FeatureList::IsEnabled(
+            features::kPrivateNetworkAccessForWorkers)) {
+      worker_client_security_state_ = creator_client_security_state_->Clone();
+    } else {
+      // Preserve incorrect functionality if PNA is not enabled.
+      worker_client_security_state_ =
+          ancestor_render_frame_host->BuildClientSecurityState();
+
+      // > 14.5 If response's url's scheme is a local scheme, then set worker
+      // global scope's embedder policy to owner's embedder policy.
+      worker_client_security_state_->cross_origin_embedder_policy =
+          creator_client_security_state_->cross_origin_embedder_policy;
+    }
+  } else if (main_script_load_params) {
+    DCHECK(main_script_load_params->response_head);
+    DCHECK(main_script_load_params->response_head->parsed_headers);
+
+    if (base::FeatureList::IsEnabled(
+            features::kPrivateNetworkAccessForWorkers)) {
+      worker_client_security_state_ =
+          network::mojom::ClientSecurityState::New();
+      worker_client_security_state_->ip_address_space = CalculateIPAddressSpace(
+          final_response_url, main_script_load_params->response_head.get(),
+          GetContentClient()->browser());
+      worker_client_security_state_->is_web_secure_context =
+          network::IsUrlPotentiallyTrustworthy(final_response_url) &&
+          creator_client_security_state_->is_web_secure_context;
+      worker_client_security_state_->private_network_request_policy =
+          DerivePrivateNetworkRequestPolicy(
+              worker_client_security_state_->ip_address_space,
+              worker_client_security_state_->is_web_secure_context);
+    } else {
+      // Preserve incorrect functionality if PNA is not enabled.
+      worker_client_security_state_ =
+          ancestor_render_frame_host->BuildClientSecurityState();
+    }
+
     // > 14.6 Otherwise, set worker global scope's embedder policy to the result
     // of obtaining an embedder policy from response.
-    coep = CoepFromMainResponse(final_response_url,
-                                main_script_load_params->response_head.get());
+    worker_client_security_state_->cross_origin_embedder_policy =
+        main_script_load_params->response_head->parsed_headers
+            ->cross_origin_embedder_policy;
   }
 
   auto* storage_partition = static_cast<StoragePartitionImpl*>(
       worker_process_host_->GetStoragePartition());
+
   // Create a COEP reporter with worker's policy.
+  const network::CrossOriginEmbedderPolicy& coep =
+      worker_client_security_state_->cross_origin_embedder_policy;
   coep_reporter_ = std::make_unique<CrossOriginEmbedderPolicyReporter>(
       storage_partition->GetWeakPtr(), final_response_url,
       coep.reporting_endpoint, coep.report_only_reporting_endpoint,

@@ -13,6 +13,7 @@
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace web_app {
 
@@ -24,13 +25,15 @@ class WebAppTranslationManagerTest : public WebAppTest {
         std::make_unique<FakeWebAppRegistryController>();
     fake_registry_controller_->SetUp(profile());
 
+    install_manager_ = std::make_unique<WebAppInstallManager>(profile());
+
     file_utils_ = base::MakeRefCounted<TestFileUtils>();
 
     controller().Init();
     InitWebAppProvider();
 
     translation_manager_ = std::make_unique<WebAppTranslationManager>(
-        profile(), registrar(), file_utils_);
+        profile(), &install_manager(), file_utils_);
   }
 
  protected:
@@ -84,9 +87,10 @@ class WebAppTranslationManagerTest : public WebAppTest {
     return *fake_registry_controller_;
   }
 
+  WebAppInstallManager& install_manager() { return *install_manager_; }
+
   FakeWebAppProvider& provider() { return *provider_; }
 
-  WebAppRegistrar* registrar() { return &provider().registrar(); }
   WebAppTranslationManager& translation_manager() {
     return *translation_manager_;
   }
@@ -97,9 +101,12 @@ class WebAppTranslationManagerTest : public WebAppTest {
 
  private:
   std::unique_ptr<FakeWebAppRegistryController> fake_registry_controller_;
+  std::unique_ptr<WebAppInstallManager> install_manager_;
   std::unique_ptr<WebAppTranslationManager> translation_manager_;
   scoped_refptr<TestFileUtils> file_utils_;
   web_app::FakeWebAppProvider* provider_;
+  base::test::ScopedFeatureList features_{
+      blink::features::kWebAppEnableTranslations};
 };
 
 TEST_F(WebAppTranslationManagerTest, WriteReadAndDelete) {
@@ -114,23 +121,23 @@ TEST_F(WebAppTranslationManagerTest, WriteReadAndDelete) {
   base::flat_map<Locale, blink::Manifest::TranslationItem> translations2;
 
   blink::Manifest::TranslationItem item1;
-  item1.name = u"name 1";
-  item1.short_name = u"short name 1";
-  item1.description = u"description 1";
+  item1.name = "name 1";
+  item1.short_name = "short name 1";
+  item1.description = "description 1";
   translations1[u"en"] = item1;
 
   blink::Manifest::TranslationItem item2;
-  item2.name = u"name 2";
-  item2.description = u"description 2";
+  item2.name = "name 2";
+  item2.description = "description 2";
   translations1[u"fr"] = item2;
 
   blink::Manifest::TranslationItem item3;
-  item3.name = u"name 3";
+  item3.name = "name 3";
   translations2[u"en"] = item3;
 
   blink::Manifest::TranslationItem item4;
-  item4.short_name = u"short name 4";
-  item4.description = u"description 4";
+  item4.short_name = "short name 4";
+  item4.description = "description 4";
   translations2[u"fr"] = item4;
 
   // Write translations for both apps.
@@ -168,14 +175,14 @@ TEST_F(WebAppTranslationManagerTest, UpdateTranslations) {
   base::flat_map<Locale, blink::Manifest::TranslationItem> translations2;
 
   blink::Manifest::TranslationItem item1;
-  item1.name = u"name 1";
-  item1.short_name = u"short name 1";
-  item1.description = u"description 1";
+  item1.name = "name 1";
+  item1.short_name = "short name 1";
+  item1.description = "description 1";
   translations1[u"en"] = item1;
 
   blink::Manifest::TranslationItem item2;
-  item2.name = u"name 2";
-  item2.description = u"description 2";
+  item2.name = "name 2";
+  item2.description = "description 2";
   translations2[u"en"] = item2;
 
   // Write translations for the app.

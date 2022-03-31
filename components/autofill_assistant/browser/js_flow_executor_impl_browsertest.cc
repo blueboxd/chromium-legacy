@@ -2,29 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill_assistant/browser/js_flow_executor_impl.h"
+#include "components/autofill_assistant/browser/js_flow_executor.h"
 
+#include <iosfwd>
+#include <memory>
+#include <string>
+#include <type_traits>
+
+#include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/json/json_reader.h"
+#include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/gmock_callback_support.h"
-#include "base/test/mock_callback.h"
-#include "base/test/task_environment.h"
-#include "base/time/tick_clock.h"
+#include "base/values.h"
+#include "components/autofill_assistant/browser/base_browsertest.h"
+#include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/js_flow_executor_impl.h"
-#include "content/public/test/browser_task_environment.h"
+#include "components/autofill_assistant/browser/model.pb.h"
+#include "components/autofill_assistant/browser/service.pb.h"
 #include "content/public/test/browser_test.h"
-#include "content/public/test/browser_test_utils.h"
-#include "content/public/test/content_browser_test.h"
-#include "content/public/test/content_browser_test_utils.h"
-#include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_renderer_host.h"
-#include "content/public/test/web_contents_tester.h"
 #include "content/shell/browser/shell.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/switches.h"
 
 namespace autofill_assistant {
 namespace {
@@ -41,11 +44,6 @@ using ::testing::Property;
 using ::testing::SizeIs;
 using ::testing::WithArg;
 
-std::unique_ptr<base::Value> UniqueValueFromJson(const std::string& json) {
-  return std::make_unique<base::Value>(
-      std::move(*base::JSONReader::Read(json)));
-}
-
 class MockJsFlowExecutorImplDelegate : public JsFlowExecutorImpl::Delegate {
  public:
   MockJsFlowExecutorImplDelegate() = default;
@@ -54,43 +52,20 @@ class MockJsFlowExecutorImplDelegate : public JsFlowExecutorImpl::Delegate {
   MOCK_METHOD(
       void,
       RunNativeAction,
-      (std::unique_ptr<base::Value> native_action,
+      (int,
+       const std::string&,
        base::OnceCallback<void(const ClientStatus& result_status,
                                std::unique_ptr<base::Value> result_value)>
            callback),
       (override));
 };
 
-class JsFlowExecutorImplTest : public content::ContentBrowserTest {
+class JsFlowExecutorImplTest : public autofill_assistant::BaseBrowserTest {
  public:
   JsFlowExecutorImplTest() {}
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch("site-per-process");
-    // Necessary to avoid flakiness or failure due to input arriving
-    // before the first compositor commit.
-    command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
-  }
-
   void SetUpOnMainThread() override {
-    ContentBrowserTest::SetUpOnMainThread();
-
-    // Start a mock server for hosting an OOPIF.
-    http_server_iframe_ = std::make_unique<net::EmbeddedTestServer>(
-        net::EmbeddedTestServer::TYPE_HTTP);
-    http_server_iframe_->ServeFilesFromSourceDirectory(
-        "components/test/data/autofill_assistant/html_iframe");
-    ASSERT_TRUE(http_server_iframe_->Start(8081));
-
-    // Start the main server hosting the test page.
-    http_server_ = std::make_unique<net::EmbeddedTestServer>(
-        net::EmbeddedTestServer::TYPE_HTTP);
-    http_server_->ServeFilesFromSourceDirectory(
-        "components/test/data/autofill_assistant/html");
-    ASSERT_TRUE(http_server_->Start(8080));
-    ASSERT_TRUE(NavigateToURL(
-        shell(),
-        http_server_->GetURL("/autofill_assistant_target_website.html")));
+    BaseBrowserTest::SetUpOnMainThread();
 
     flow_executor_ = std::make_unique<JsFlowExecutorImpl>(
         shell()->web_contents(), &mock_delegate_);
@@ -127,8 +102,6 @@ class JsFlowExecutorImplTest : public content::ContentBrowserTest {
  protected:
   NiceMock<MockJsFlowExecutorImplDelegate> mock_delegate_;
   std::unique_ptr<JsFlowExecutorImpl> flow_executor_;
-  std::unique_ptr<net::EmbeddedTestServer> http_server_;
-  std::unique_ptr<net::EmbeddedTestServer> http_server_iframe_;
 };
 
 IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, SmokeTest) {
@@ -159,15 +132,17 @@ IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, RunNativeActionWithReturnValue) {
         )")));
 
   EXPECT_CALL(mock_delegate_, RunNativeAction)
-      .WillOnce([&](std::unique_ptr<base::Value> value, auto callback) {
-        EXPECT_EQ(*value, base::Value("test"));
+      .WillOnce([&](int action_id, const std::string& action, auto callback) {
+        EXPECT_EQ(12, action_id);
+        EXPECT_EQ("test", action);
         std::move(callback).Run(ClientStatus(ACTION_APPLIED),
                                 std::move(native_return_value));
       });
 
   std::unique_ptr<base::Value> js_return_value;
   EXPECT_THAT(RunTest(R"(
-                        let [status, value] = await runNativeAction("test");
+                        let [status, value] = await runNativeAction(
+                            12, "dGVzdA==" /*test*/);
                         if (status != 2) { // ACTION_APPLIED
                           return status;
                         }
@@ -198,16 +173,17 @@ IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, RunNativeActionWithReturnValue) {
     )"));
 }
 
-IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, RunNativeActionAsSimpleString) {
+IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, RunNativeActionAsBase64String) {
   EXPECT_CALL(mock_delegate_, RunNativeAction)
-      .WillOnce([&](auto value, auto callback) {
-        EXPECT_EQ(*value, base::Value("test"));
+      .WillOnce([&](int action_id, const std::string& action, auto callback) {
+        EXPECT_EQ(12, action_id);
+        EXPECT_EQ("test", action);
         std::move(callback).Run(ClientStatus(ACTION_APPLIED), nullptr);
       });
 
   std::unique_ptr<base::Value> result;
   EXPECT_THAT(RunTest(R"(
-      let [status, value] = await runNativeAction("test");
+      let [status, value] = await runNativeAction(12, "dGVzdA==" /*test*/);
       return status;
   )",
                       result),
@@ -223,32 +199,46 @@ IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, RunNativeActionAsSimpleString) {
     )"));
 }
 
-IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, RunNativeActionAsJsonData) {
+IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest,
+                       RunNativeActionAsSerializedProto) {
   EXPECT_CALL(mock_delegate_, RunNativeAction)
-      .WillOnce([&](auto value, auto callback) {
-        EXPECT_EQ(*value,
-                  *UniqueValueFromJson(R"([1, null, "test", {"foo": "bar"}])"));
+      .WillOnce([&](int action_id, const std::string& action, auto callback) {
+        EXPECT_EQ(ActionProto::kTell, action_id);
+        TellProto tell;
+        EXPECT_TRUE(tell.ParseFromString(action));
+        EXPECT_EQ(tell.message(), "my message");
         std::move(callback).Run(ClientStatus(ACTION_APPLIED), nullptr);
       });
 
   std::unique_ptr<base::Value> result;
   EXPECT_THAT(RunTest(R"(
-      let arg = [1, null, "test", {"foo": "bar"}];
-      let [status, value] = await runNativeAction(arg);
+      let [status, value] = await runNativeAction(
+          11, ["aa.msg", "my message"]);
       return status;
   )",
                       result),
               Property(&ClientStatus::proto_status, ACTION_APPLIED));
+  EXPECT_EQ(*result, *base::JSONReader::Read(R"(
+      {
+        "result": {
+          "description": "2",
+          "type": "number",
+          "value": 2
+        }
+      }
+    )"));
 }
 
 IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, RunMultipleNativeActions) {
   EXPECT_CALL(mock_delegate_, RunNativeAction)
-      .WillOnce([&](auto value, auto callback) {
-        EXPECT_EQ(*value, base::Value("action1"));
+      .WillOnce([&](int action_id, const std::string& action, auto callback) {
+        EXPECT_EQ(1, action_id);
+        EXPECT_EQ("test1", action);
         std::move(callback).Run(ClientStatus(ACTION_APPLIED), nullptr);
       })
-      .WillOnce([&](auto value, auto callback) {
-        EXPECT_EQ(*value, base::Value("action2"));
+      .WillOnce([&](int action_id, const std::string& action, auto callback) {
+        EXPECT_EQ(2, action_id);
+        EXPECT_EQ("test2", action);
         std::move(callback).Run(ClientStatus(OTHER_ACTION_STATUS), nullptr);
       });
 
@@ -257,9 +247,11 @@ IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, RunMultipleNativeActions) {
   // OTHER_ACTION_STATUS, i.e., 3.
   std::unique_ptr<base::Value> result;
   EXPECT_THAT(RunTest(R"(
-                        let [status, value] = await runNativeAction("action1");
+                        let [status, value] = await runNativeAction(
+                            1, "dGVzdDE=" /*test1*/);
                         if (status == 2) { // ACTION_APPLIED
-                          [status, value] = await runNativeAction("action2");
+                          [status, value] = await runNativeAction(
+                            2, "dGVzdDI=" /*test2*/);
                         }
                         return status;
                       )",
@@ -416,24 +408,38 @@ IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, RunMultipleConsecutiveFlows) {
 }
 
 IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest,
-                       UnserializableRunNativeActionArgument) {
+                       UnserializableRunNativeActionString) {
   std::unique_ptr<base::Value> result;
   EXPECT_CALL(mock_delegate_, RunNativeAction).Times(0);
   ClientStatus status = RunTest(
       R"(
-        // NaN cannot be serialized as a JSON object, so this should fail.
-        let [status, result] = await runNativeAction(NaN);
+        // {} is not a string or an array, so this should fail.
+        let [status, result] = await runNativeAction(1, {});
         return status;
       )",
       result);
   EXPECT_EQ(result, nullptr);
-  EXPECT_EQ(status.proto_status(), UNEXPECTED_JS_ERROR);
-  EXPECT_TRUE(status.details().has_unexpected_error_info());
+  EXPECT_EQ(status.proto_status(), INVALID_ACTION);
+}
+
+IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest,
+                       UnserializableRunNativeActionId) {
+  std::unique_ptr<base::Value> result;
+  EXPECT_CALL(mock_delegate_, RunNativeAction).Times(0);
+  ClientStatus status = RunTest(
+      R"(
+        // {} is not a number, so this should fail.
+        let [status, result] = await runNativeAction({}, "");
+        return status;
+      )",
+      result);
+  EXPECT_EQ(result, nullptr);
+  EXPECT_EQ(status.proto_status(), INVALID_ACTION);
 }
 
 IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, StartWhileAlreadyRunningFails) {
   EXPECT_CALL(mock_delegate_, RunNativeAction)
-      .WillOnce(WithArg<1>([&](auto callback) {
+      .WillOnce(WithArg<2>([&](auto callback) {
         // Starting a second flow while the first one is running should fail.
         EXPECT_EQ(RunTest(std::string()).proto_status(), INVALID_ACTION);
 
@@ -444,7 +450,7 @@ IN_PROC_BROWSER_TEST_F(JsFlowExecutorImplTest, StartWhileAlreadyRunningFails) {
   std::unique_ptr<base::Value> result;
   ClientStatus status = RunTest(
       R"(
-      let [status, result] = await runNativeAction("");
+      let [status, result] = await runNativeAction(1, "dGVzdA==" /*test*/);
       return status;
       )",
       result);

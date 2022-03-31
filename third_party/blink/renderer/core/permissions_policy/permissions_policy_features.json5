@@ -87,6 +87,11 @@
       permissions_policy_name: "ch-ect",
     },
     {
+      name: "ClientHintPartitionedCookies",
+      permissions_policy_name: "ch-partitioned-cookies",
+      depends_on: ["PartitionedCookies"],
+    },
+    {
       name: "ClientHintPrefersColorScheme",
       permissions_policy_name: "ch-prefers-color-scheme",
     },
@@ -124,6 +129,11 @@
       feature_default: "EnableForAll",
     },
     {
+      name: "ClientHintUAFull",
+      permissions_policy_name: "ch-ua-full",
+      depends_on: ["SendFullUserAgentAfterReduction"],
+    },
+    {
       name: "ClientHintUAFullVersion",
       permissions_policy_name: "ch-ua-full-version",
     },
@@ -135,6 +145,10 @@
     {
       name: "ClientHintUAPlatformVersion",
       permissions_policy_name: "ch-ua-platform-version",
+    },
+    {
+      name: "ClientHintUAWoW64",
+      permissions_policy_name: "ch-ua-wow64",
     },
     {
       name: "ClientHintUAReduced",
@@ -239,12 +253,6 @@
       name: "IdleDetection",
       permissions_policy_name: "idle-detection",
       depends_on: ["IdleDetection"],
-    },
-    {
-      name: "InterestCohort",
-      permissions_policy_name: "interest-cohort",
-      feature_default: "EnableForAll",
-      depends_on: ["InterestCohortFeaturePolicy"],
     },
     {
       name: "JoinAdInterestGroup",

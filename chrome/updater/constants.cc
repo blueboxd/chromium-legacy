@@ -17,6 +17,7 @@ const char kNullVersion[] = "0.0.0.0";
 
 // Command line arguments.
 const char kServerSwitch[] = "server";
+const char kWindowsServiceSwitch[] = "windows-service";
 const char kComServiceSwitch[] = "com-service";
 const char kCrashMeSwitch[] = "crash-me";
 const char kCrashHandlerSwitch[] = "crash-handler";
@@ -47,9 +48,19 @@ const char kServerServiceSwitch[] = "service";
 const char kServerUpdateServiceInternalSwitchValue[] = "update-internal";
 const char kServerUpdateServiceSwitchValue[] = "update";
 
+// Recovery command line arguments.
+const char kRecoverSwitch[] = "recover";
+const char kBrowserVersionSwitch[] = "browser-version";
+const char kSessionIdSwitch[] = "sessionid";
+const char kAppGuidSwitch[] = "appguid";
+
 #if BUILDFLAG(IS_WIN)
 const char kInstallFromOutDir[] = "install-from-out-dir";
 #endif  // BUILDFLAG(IS_WIN)
+
+const char kHealthCheckSwitch[] = "healthcheck";
+
+const char kHandoffSwitch[] = "handoff";
 
 // Path names.
 const char kAppsDir[] = "apps";

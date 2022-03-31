@@ -4,11 +4,20 @@
 
 module remoting.mojom;
 
+// Struct that represents a DOMException, yielded by the remote request during a
+// Create or Get request.
+struct WebAuthnExceptionDetails {
+  // The `name` field of a DOMException.
+  string name;
+
+  // The `message` field of a DOMException.
+  string message;
+};
+
 // The response object for WebAuthnProxy.Create().
 union WebAuthnCreateResponse {
-  // The `name` property of the `DOMException`, if any, yielded by the remote
-  // request.
-  string error_name;
+  // The `DOMException`, if any, yielded by the remote request.
+  WebAuthnExceptionDetails error_details;
 
   // A string-serialized representation of the `PublicKeyCredential`
   // (https://w3c.github.io/webauthn/#publickeycredential), if any, yielded
@@ -16,6 +25,29 @@ union WebAuthnCreateResponse {
   // Note that it is opaque to chromoting host processes and will be passed
   // verbatim to the Chrome webAuthenticationProxy extension API.
   string response_data;
+};
+
+// The response object for WebAuthnProxy.Get().
+union WebAuthnGetResponse {
+  // The `DOMException`, if any, yielded by the remote request.
+  WebAuthnExceptionDetails error_details;
+
+  // A string-serialized representation of the `PublicKeyCredential`
+  // (https://w3c.github.io/webauthn/#publickeycredential), if any, yielded
+  // by the remote request.
+  // Note that it is opaque to chromoting host processes and will be passed
+  // verbatim to the Chrome webAuthenticationProxy extension API.
+  string response_data;
+};
+
+// An interface for the client (CRD WebAuthn Native Messaging Host) to cancel
+// an ongoing remote Create or Get request.
+interface WebAuthnRequestCanceller {
+  // Cancels the ongoing Create or Get request.
+  //
+  // Returns a boolean indicating whether the request has been successfully
+  // canceled.
+  Cancel() => (bool was_canceled);
 };
 
 // An interface for the host-side chromoting extension to pass intercepted Web
@@ -44,10 +76,32 @@ interface WebAuthnProxy {
   IsUserVerifyingPlatformAuthenticatorAvailable() => (bool is_available);
 
   // Handles a navigator.credentials.create() call remotely.
-  // |request_data| is the string-serialized representation of the parameters
-  // passed to the create() call. It is opaque to chromoting host processes and
-  // will be passed verbatim to the client.
+  //
+  // |request_data|: the string-serialized representation of the parameters
+  //     passed to the create() call. It is opaque to chromoting host processes
+  //     and will be passed verbatim to the client.
+  // |request_canceller|: interface for the caller to cancel the Create request
+  //     before it has been resolved. The receiver will be closed once the
+  //     cancelation has succeeded, or a CreateResponse has been returned.
+  //
   // If |response| is null, it means that the remote create() call has yielded
   // `null`, which is still a valid response according to the spec.
-  Create(string request_data) => (WebAuthnCreateResponse? response);
+  Create(string request_data,
+         pending_receiver<WebAuthnRequestCanceller> request_canceller) =>
+      (WebAuthnCreateResponse? response);
+
+  // Handles a navigator.credentials.get() call remotely.
+  //
+  // |request_data|: the string-serialized representation of the parameters
+  //     passed to the get() call. It is opaque to chromoting host processes
+  //     and will be passed verbatim to the client.
+  // |request_canceller|: interface for the caller to cancel the Get request
+  //     before it has been resolved. The receiver will be closed once the
+  //     cancelation has succeeded, or a GetResponse has been returned.
+  //
+  // If |response| is null, it means that the remote get() call has yielded
+  // `null`, which is still a valid response according to the spec.
+  Get(string request_data,
+      pending_receiver<WebAuthnRequestCanceller> request_canceller) =>
+      (WebAuthnGetResponse? response);
 };

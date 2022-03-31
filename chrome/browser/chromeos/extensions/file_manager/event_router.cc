@@ -358,20 +358,6 @@ bool ShouldShowNotificationForVolume(
   return true;
 }
 
-std::set<std::string> GetEventListenerExtensionIds(
-    Profile* profile,
-    const std::string& event_name) {
-  const extensions::EventListenerMap::ListenerList& listeners =
-      extensions::EventRouter::Get(profile)
-          ->listeners()
-          .GetEventListenersByName(event_name);
-  std::set<std::string> extension_ids;
-  for (const auto& listener : listeners) {
-    extension_ids.insert(listener->extension_id());
-  }
-  return extension_ids;
-}
-
 // Sub-part of the event router for handling device events.
 class DeviceEventRouterImpl : public DeviceEventRouter {
  public:
@@ -920,13 +906,13 @@ void EventRouter::DispatchDirectoryChangeEventWithEntryDefinition(
                          ? file_manager_private::FILE_WATCH_EVENT_TYPE_ERROR
                          : file_manager_private::FILE_WATCH_EVENT_TYPE_CHANGED;
 
-  event.entry.additional_properties.SetString(
+  event.entry.additional_properties.SetStringKey(
       "fileSystemName", entry_definition.file_system_name);
-  event.entry.additional_properties.SetString(
+  event.entry.additional_properties.SetStringKey(
       "fileSystemRoot", entry_definition.file_system_root_url);
-  event.entry.additional_properties.SetString(
+  event.entry.additional_properties.SetStringKey(
       "fileFullPath", "/" + entry_definition.full_path.value());
-  event.entry.additional_properties.SetBoolean("fileIsDirectory",
+  event.entry.additional_properties.SetBoolKey("fileIsDirectory",
                                                entry_definition.is_directory);
 
   BroadcastEvent(profile_,
@@ -1122,12 +1108,12 @@ void EventRouter::PopulateCrostiniEvent(
   event.event_type = event_type;
   event.vm_name = vm_name;
   file_manager_private::CrostiniEvent::EntriesType entry;
-  entry.additional_properties.SetString(
+  entry.additional_properties.SetStringKey(
       "fileSystemRoot",
       storage::GetExternalFileSystemRootURIString(origin.GetURL(), mount_name));
-  entry.additional_properties.SetString("fileSystemName", file_system_name);
-  entry.additional_properties.SetString("fileFullPath", full_path);
-  entry.additional_properties.SetBoolean("fileIsDirectory", true);
+  entry.additional_properties.SetStringKey("fileSystemName", file_system_name);
+  entry.additional_properties.SetStringKey("fileFullPath", full_path);
+  entry.additional_properties.SetBoolKey("fileIsDirectory", true);
   event.entries.emplace_back(std::move(entry));
 }
 
@@ -1275,29 +1261,21 @@ void EventRouter::OnIOTaskStatus(const io_task::ProgressStatus& status) {
     // Send file watch notifications on I/O task completion. inotify is flaky on
     // some filesystems, so send these notifications so that at least operations
     // made from Files App are always reflected in the UI.
-    switch (status.state) {
-      case io_task::State::kSuccess:
-      case io_task::State::kError:
-      case io_task::State::kCancelled: {
-        std::set<base::FilePath> updated_paths;
-        if (status.destination_folder.is_valid()) {
-          updated_paths.insert(status.destination_folder.path());
-        }
-        for (const auto& source : status.sources) {
-          updated_paths.insert(source.url.path().DirName());
-        }
-        for (const auto& output : status.outputs) {
-          updated_paths.insert(output.url.path().DirName());
-        }
-
-        for (const auto& path : updated_paths) {
-          HandleFileWatchNotification(path, false);
-        }
-        break;
+    if (status.IsCompleted()) {
+      std::set<base::FilePath> updated_paths;
+      if (status.destination_folder.is_valid()) {
+        updated_paths.insert(status.destination_folder.path());
       }
-      case io_task::State::kQueued:
-      case io_task::State::kInProgress:
-        break;
+      for (const auto& source : status.sources) {
+        updated_paths.insert(source.url.path().DirName());
+      }
+      for (const auto& output : status.outputs) {
+        updated_paths.insert(output.url.path().DirName());
+      }
+
+      for (const auto& path : updated_paths) {
+        HandleFileWatchNotification(path, false);
+      }
     }
 
     return;

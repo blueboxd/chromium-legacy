@@ -17,9 +17,11 @@
 #include "ash/capture_mode/capture_mode_menu_group.h"
 #include "ash/capture_mode/capture_mode_metrics.h"
 #include "ash/capture_mode/capture_mode_session.h"
+#include "ash/capture_mode/capture_mode_session_test_api.h"
 #include "ash/capture_mode/capture_mode_settings_test_api.h"
 #include "ash/capture_mode/capture_mode_settings_view.h"
 #include "ash/capture_mode/capture_mode_source_view.h"
+#include "ash/capture_mode/capture_mode_test_util.h"
 #include "ash/capture_mode/capture_mode_toggle_button.h"
 #include "ash/capture_mode/capture_mode_type_view.h"
 #include "ash/capture_mode/capture_mode_types.h"
@@ -50,7 +52,6 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_widget_builder.h"
-#include "ash/wm/cursor_manager_chromeos.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_test_util.h"
@@ -128,16 +129,6 @@ bool IsCursorCompositingEnabled() {
       ->is_cursor_compositing_enabled();
 }
 
-void ClickOnView(const views::View* view,
-                 ui::test::EventGenerator* event_generator) {
-  DCHECK(view);
-  DCHECK(event_generator);
-
-  const gfx::Point view_center = view->GetBoundsInScreen().CenterPoint();
-  event_generator->MoveMouseTo(view_center);
-  event_generator->ClickLeftButton();
-}
-
 void TouchOnView(const views::View* view,
                  ui::test::EventGenerator* event_generator) {
   DCHECK(view);
@@ -189,18 +180,6 @@ void SetUpFileDeletionVerifier(base::RunLoop* loop) {
             EXPECT_FALSE(base::PathExists(path));
             loop->Quit();
           }));
-}
-
-// Moves the mouse and updates the cursor's display manually to imitate what a
-// real mouse move event does in shell.
-// TODO(crbug.com/990589): Unit tests should be able to simulate mouse input
-// without having to call |CursorManager::SetDisplay|.
-void MoveMouseToAndUpdateCursorDisplay(
-    const gfx::Point& point,
-    ui::test::EventGenerator* event_generator) {
-  Shell::Get()->cursor_manager()->SetDisplay(
-      display::Screen::GetScreen()->GetDisplayNearestPoint(point));
-  event_generator->MoveMouseTo(point);
 }
 
 bool IsLayerStackedRightBelow(ui::Layer* layer, ui::Layer* sibling) {
@@ -282,74 +261,6 @@ class TestCaptureClientObserver : public aura::client::CaptureClientObserver {
 
 }  // namespace
 
-// Wrapper for CaptureModeSession that exposes internal state to test functions.
-class CaptureModeSessionTestApi {
- public:
-  explicit CaptureModeSessionTestApi(CaptureModeSession* session)
-      : session_(session) {}
-  CaptureModeSessionTestApi(const CaptureModeSessionTestApi&) = delete;
-  CaptureModeSessionTestApi& operator=(const CaptureModeSessionTestApi&) =
-      delete;
-  ~CaptureModeSessionTestApi() = default;
-
-  CaptureModeBarView* capture_mode_bar_view() const {
-    return session_->capture_mode_bar_view_;
-  }
-
-  CaptureModeSettingsView* capture_mode_settings_view() const {
-    return session_->capture_mode_settings_view_;
-  }
-
-  views::Widget* capture_mode_settings_widget() const {
-    return session_->capture_mode_settings_widget_.get();
-  }
-
-  views::Widget* capture_label_widget() const {
-    return session_->capture_label_widget_.get();
-  }
-
-  views::Widget* dimensions_label_widget() const {
-    return session_->dimensions_label_widget_.get();
-  }
-
-  UserNudgeController* user_nudge_controller() const {
-    return session_->user_nudge_controller_.get();
-  }
-
-  const MagnifierGlass& magnifier_glass() const {
-    return session_->magnifier_glass_;
-  }
-
-  bool IsUsingCustomCursor(CaptureModeType type) const {
-    return session_->IsUsingCustomCursor(type);
-  }
-
-  CaptureModeSessionFocusCycler::FocusGroup GetCurrentFocusGroup() const {
-    return session_->focus_cycler_->current_focus_group_;
-  }
-
-  size_t GetCurrentFocusIndex() const {
-    return session_->focus_cycler_->focus_index_;
-  }
-
-  CaptureModeSessionFocusCycler::HighlightableView* GetCurrentFocusedView() {
-    return session_->focus_cycler_->GetGroupItems(
-        GetCurrentFocusGroup())[GetCurrentFocusIndex()];
-  }
-
-  bool HasFocus() const { return session_->focus_cycler_->HasFocus(); }
-
-  bool IsFolderSelectionDialogShown() const {
-    return session_->folder_selection_dialog_controller_ &&
-           session_->folder_selection_dialog_controller_->dialog_window();
-  }
-
-  bool IsAllUisVisible() const { return session_->is_all_uis_visible_; }
-
- private:
-  const CaptureModeSession* const session_;
-};
-
 class CaptureModeTest : public AshTestBase {
  public:
   CaptureModeTest() = default;
@@ -362,7 +273,7 @@ class CaptureModeTest : public AshTestBase {
   CaptureModeBarView* GetCaptureModeBarView() const {
     auto* session = CaptureModeController::Get()->capture_mode_session();
     DCHECK(session);
-    return CaptureModeSessionTestApi(session).capture_mode_bar_view();
+    return CaptureModeSessionTestApi(session).GetCaptureModeBarView();
   }
 
   views::Widget* GetCaptureModeBarWidget() const {
@@ -374,19 +285,19 @@ class CaptureModeTest : public AshTestBase {
   views::Widget* GetCaptureModeLabelWidget() const {
     auto* session = CaptureModeController::Get()->capture_mode_session();
     DCHECK(session);
-    return CaptureModeSessionTestApi(session).capture_label_widget();
+    return CaptureModeSessionTestApi(session).GetCaptureLabelWidget();
   }
 
   CaptureModeSettingsView* GetCaptureModeSettingsView() const {
     auto* session = CaptureModeController::Get()->capture_mode_session();
     DCHECK(session);
-    return CaptureModeSessionTestApi(session).capture_mode_settings_view();
+    return CaptureModeSessionTestApi(session).GetCaptureModeSettingsView();
   }
 
   views::Widget* GetCaptureModeSettingsWidget() const {
     auto* session = CaptureModeController::Get()->capture_mode_session();
     DCHECK(session);
-    return CaptureModeSessionTestApi(session).capture_mode_settings_widget();
+    return CaptureModeSessionTestApi(session).GetCaptureModeSettingsWidget();
   }
 
   bool IsFolderSelectionDialogShown() const {
@@ -453,7 +364,7 @@ class CaptureModeTest : public AshTestBase {
     auto* controller = CaptureModeController::Get();
     DCHECK(controller->IsActive());
     auto* widget = CaptureModeSessionTestApi(controller->capture_mode_session())
-                       .dimensions_label_widget();
+                       .GetDimensionsLabelWidget();
     return widget ? widget->GetNativeWindow() : nullptr;
   }
 
@@ -462,23 +373,13 @@ class CaptureModeTest : public AshTestBase {
     DCHECK(controller->IsActive());
     auto& magnifier =
         CaptureModeSessionTestApi(controller->capture_mode_session())
-            .magnifier_glass();
+            .GetMagnifierGlass();
     if (magnifier.host_widget_for_testing()) {
       return magnifier.host_widget_for_testing()
           ->GetWindowBoundsInScreen()
           .CenterPoint();
     }
     return absl::nullopt;
-  }
-
-  CaptureModeController* StartCaptureSession(CaptureModeSource source,
-                                             CaptureModeType type) {
-    auto* controller = CaptureModeController::Get();
-    controller->SetSource(source);
-    controller->SetType(type);
-    controller->Start(CaptureModeEntryType::kQuickSettings);
-    DCHECK(controller->IsActive());
-    return controller;
   }
 
   void StartVideoRecordingImmediately() {
@@ -567,19 +468,6 @@ class CaptureModeTest : public AshTestBase {
         }));
     run_loop.Run();
     return result;
-  }
-
-  void WaitForRecordingToStart() {
-    auto* controller = CaptureModeController::Get();
-    if (controller->is_recording_in_progress())
-      return;
-    auto* test_delegate = static_cast<TestCaptureModeDelegate*>(
-        controller->delegate_for_testing());
-    ASSERT_TRUE(test_delegate);
-    base::RunLoop run_loop;
-    test_delegate->set_on_recording_started_callback(run_loop.QuitClosure());
-    run_loop.Run();
-    ASSERT_TRUE(controller->is_recording_in_progress());
   }
 
   base::FilePath CreateCustomFolder(const std::string& custom_folder_name) {
@@ -1542,8 +1430,9 @@ TEST_F(CaptureModeTest, FullscreenCursorStates) {
 
   // Move the mouse over to capture label widget won't change the cursor since
   // it's a label not a label button.
-  event_generator->MoveMouseTo(
-      test_api.capture_label_widget()->GetWindowBoundsInScreen().CenterPoint());
+  event_generator->MoveMouseTo(test_api.GetCaptureLabelWidget()
+                                   ->GetWindowBoundsInScreen()
+                                   .CenterPoint());
   EXPECT_EQ(CursorType::kCustom, cursor_manager->GetCursor().type());
   EXPECT_TRUE(test_api.IsUsingCustomCursor(CaptureModeType::kImage));
 
@@ -2014,6 +1903,30 @@ TEST_F(CaptureModeTest, VideoNotificationThumbnail) {
       gfx::test::AreBitmapsEqual(notification_thumbnail, service_thumbnail));
 }
 
+TEST_F(CaptureModeTest, LowDriveFsSpace) {
+  auto* controller = StartCaptureSession(CaptureModeSource::kFullscreen,
+                                         CaptureModeType::kVideo);
+  const base::FilePath drive_fs_folder = CreateFolderOnDriveFS("test");
+  controller->SetCustomCaptureFolder(drive_fs_folder);
+  auto* test_delegate =
+      static_cast<TestCaptureModeDelegate*>(controller->delegate_for_testing());
+
+  // Simulate low DriveFS free space by setting it to e.g. 200 MB.
+  test_delegate->set_fake_drive_fs_free_bytes(200 * 1024 * 1024);
+
+  base::HistogramTester histogram_tester;
+  StartVideoRecordingImmediately();
+  EXPECT_TRUE(controller->is_recording_in_progress());
+  CaptureModeTestApi().FlushRecordingServiceForTesting();
+  test_delegate->RequestAndWaitForVideoFrame();
+
+  // Recording should end immediately due to a low Drive FS free space.
+  WaitForCaptureFileToBeSaved();
+  histogram_tester.ExpectBucketCount(
+      kEndRecordingReasonInClamshellHistogramName,
+      EndRecordingReason::kLowDriveFsQuota, 1);
+}
+
 TEST_F(CaptureModeTest, WindowRecordingCaptureId) {
   auto window = CreateTestWindow(gfx::Rect(200, 200));
   StartCaptureSession(CaptureModeSource::kWindow, CaptureModeType::kVideo);
@@ -2219,7 +2132,8 @@ TEST_F(CaptureModeTest, MultiDisplayWindowRecording) {
   EXPECT_EQ(shield_layer->bounds(), roots[1]->bounds());
 }
 
-TEST_F(CaptureModeTest, WindowResizing) {
+// Flaky especially on MSan: https://crbug.com/1293188
+TEST_F(CaptureModeTest, DISABLED_WindowResizing) {
   UpdateDisplay("700x600");
   auto window = CreateTestWindow(gfx::Rect(200, 200));
   auto* controller =
@@ -2598,7 +2512,13 @@ class CaptureModeRecordingSizeTest : public CaptureModeTest {
   std::unique_ptr<aura::Window> window_;
 };
 
-TEST_F(CaptureModeRecordingSizeTest, CaptureAtPixelsFullscreen) {
+// TODO(crbug.com/1291073): Flaky on ChromeOS.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_CaptureAtPixelsFullscreen DISABLED_CaptureAtPixelsFullscreen
+#else
+#define MAYBE_CaptureAtPixelsFullscreen CaptureAtPixelsFullscreen
+#endif
+TEST_F(CaptureModeRecordingSizeTest, MAYBE_CaptureAtPixelsFullscreen) {
   float dsf = 1.6f;
   SetDeviceScaleFactor(dsf);
   auto* controller = StartVideoRecording(CaptureModeSource::kFullscreen);
@@ -4871,7 +4791,7 @@ TEST_F(ProjectorCaptureModeIntegrationTests, KeyboardNavigationBasic) {
   SendKey(ui::VKEY_SPACE, event_generator);
   EXPECT_EQ(FocusGroup::kPendingSettings, test_api.GetCurrentFocusGroup());
   CaptureModeSettingsView* settings_menu =
-      test_api.capture_mode_settings_view();
+      test_api.GetCaptureModeSettingsView();
   ASSERT_TRUE(settings_menu);
 
   CaptureModeSettingsTestApi settings_test_api;
@@ -5363,13 +5283,13 @@ class CaptureModeSettingsTest : public CaptureModeTest {
   CaptureModeSettingsView* GetCaptureModeSettingsView() const {
     auto* session = CaptureModeController::Get()->capture_mode_session();
     DCHECK(session);
-    return CaptureModeSessionTestApi(session).capture_mode_settings_view();
+    return CaptureModeSessionTestApi(session).GetCaptureModeSettingsView();
   }
 
   UserNudgeController* GetUserNudgeController() const {
     auto* session = CaptureModeController::Get()->capture_mode_session();
     DCHECK(session);
-    return CaptureModeSessionTestApi(session).user_nudge_controller();
+    return CaptureModeSessionTestApi(session).GetUserNudgeController();
   }
 
   void WaitForSettingsMenuToBeRefreshed() {
@@ -5429,7 +5349,7 @@ class CaptureModeNudgeDismissalTest
       case NudgeDismissalCause::kCaptureViaLabelButton:
         auto* label_button_widget =
             CaptureModeSessionTestApi(controller->capture_mode_session())
-                .capture_label_widget();
+                .GetCaptureLabelWidget();
         EXPECT_TRUE(label_button_widget);
         ClickOnView(label_button_widget->GetContentsView(), event_generator);
         break;

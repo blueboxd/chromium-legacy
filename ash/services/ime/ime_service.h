@@ -10,11 +10,14 @@
 #include <utility>
 #include <vector>
 
+#include "ash/services/ime/connection_factory.h"
 #include "ash/services/ime/decoder/decoder_engine.h"
 #include "ash/services/ime/input_engine.h"
 #include "ash/services/ime/public/cpp/shared_lib/interfaces.h"
 #include "ash/services/ime/public/mojom/ime_service.mojom.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/metrics/field_trial_params.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -23,16 +26,45 @@
 namespace chromeos {
 namespace ime {
 
+class FieldTrialParamsRetriever {
+ public:
+  virtual ~FieldTrialParamsRetriever() = default;
+
+  virtual std::string GetFieldTrialParamValueByFeature(
+      const base::Feature& feature,
+      const std::string& param_name) = 0;
+};
+
+class FieldTrialParamsRetrieverImpl : public FieldTrialParamsRetriever {
+ public:
+  explicit FieldTrialParamsRetrieverImpl() = default;
+  ~FieldTrialParamsRetrieverImpl() override = default;
+  FieldTrialParamsRetrieverImpl(const FieldTrialParamsRetrieverImpl&) = delete;
+  FieldTrialParamsRetrieverImpl& operator=(
+      const FieldTrialParamsRetrieverImpl&) = delete;
+
+  std::string GetFieldTrialParamValueByFeature(
+      const base::Feature& feature,
+      const std::string& param_name) override;
+};
+
 class ImeService : public mojom::ImeService,
                    public mojom::InputEngineManager,
                    public ImeCrosPlatform {
  public:
-  explicit ImeService(mojo::PendingReceiver<mojom::ImeService> receiver);
+  explicit ImeService(
+      mojo::PendingReceiver<mojom::ImeService> receiver,
+      ImeDecoder* ime_decoder,
+      std::unique_ptr<FieldTrialParamsRetriever> field_trial_params_retriever);
 
   ImeService(const ImeService&) = delete;
   ImeService& operator=(const ImeService&) = delete;
 
   ~ImeService() override;
+
+  // ImeCrosPlatform overrides:
+  const char* GetFieldTrialParamValueByFeature(const char* feature_name,
+                                               const char* param_name) override;
 
  private:
   // mojom::ImeService overrides:
@@ -53,6 +85,10 @@ class ImeService : public mojom::ImeService,
       mojo::PendingReceiver<mojom::InputMethod> input_method,
       mojo::PendingRemote<mojom::InputMethodHost> input_method_host,
       ConnectToInputMethodCallback callback) override;
+  void InitializeConnectionFactory(
+      mojo::PendingReceiver<mojom::ConnectionFactory> connection_factory,
+      mojom::ConnectionTarget connection_target,
+      InitializeConnectionFactoryCallback callback) override;
 
   // ImeCrosPlatform overrides:
   const char* GetImeBundleDir() override;
@@ -84,9 +120,17 @@ class ImeService : public mojom::ImeService,
   std::unique_ptr<DecoderEngine> decoder_engine_;
   std::unique_ptr<InputEngine> input_engine_;
 
+  // Used to support connections to the RuleBasedEngine implemented in the
+  // ime service itself.
+  std::unique_ptr<ConnectionFactory> connection_factory_;
+
   // Platform delegate for access to privilege resources.
   mojo::Remote<mojom::PlatformAccessProvider> platform_access_;
   mojo::ReceiverSet<mojom::InputEngineManager> manager_receivers_;
+
+  ImeDecoder* ime_decoder_ = nullptr;
+
+  std::unique_ptr<FieldTrialParamsRetriever> field_trial_params_retriever_;
 };
 
 }  // namespace ime

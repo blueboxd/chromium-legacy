@@ -130,11 +130,14 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <variants name="SearchView">
+  <variant name="AnswerCard" summary="answer card"/>
   <variant name="AppsSearch" summary="app tiles search"/>
   <variant name="AppsZeroState" summary="app tiles zero-state"/>
   <variant name="Chip" summary="suggestion chips"/>
+  <variant name="Continue" summary="continue section"/>
   <variant name="ListSearch" summary="results list search"/>
   <variant name="ListZeroState" summary="results list zero-state"/>
+  <variant name="RecentApps" summary="recent apps row"/>
 </variants>
 
 <variants name="TabletOrClamshellMode">
@@ -143,14 +146,17 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="AppManagement.AppDetailViews" enum="AppManagementUserAction"
-    expires_after="2022-05-01">
+    expires_after="2022-08-14">
 <!-- Name completed by histogram_suffixes name="AppType" -->
 
   <owner>jshikaram@chromium.org</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
+  <owner>desktop-pwas-team@google.com</owner>
   <summary>
     The actions taken by the user when they are viewing the app details of an
-    app in App Management (chrome://os-settings/app-management).
+    app in App Management (chrome://os-settings/app-management). On
+    Windows/Linux/MacOS AppManagement.AppDetailViews.WebApp is the view on
+    chrome://app-settings page.
   </summary>
 </histogram>
 
@@ -341,6 +347,39 @@ chromium-metrics-reviews@google.com.
         summary="Triggered by entering cardified state in the app list"/>
     <variant name=".ExitCardifiedState"
         summary="Triggered by exiting cardified state in the app list"/>
+  </token>
+</histogram>
+
+<histogram name="Apps.AppList.ContinueIsDriveEnabled" enum="BooleanEnabled"
+    expires_after="2023-02-09">
+  <owner>tby@chromium.org</owner>
+  <owner>gzadina@chromium.org</owner>
+  <summary>
+    Recorded once upon login, records the state of the Disconnect Google Drive
+    Account setting.
+  </summary>
+</histogram>
+
+<histogram name="Apps.AppList.ContinueResultCount.{Type}" units="count"
+    expires_after="2023-02-09">
+  <obsolete>
+    Deprecated Feb 2022 in favor of
+    Apps.AppList.Search.ContinueResultCount.Type. This histogram was recorded in
+    the wrong place to be useful for counting how many Continue results the user
+    sees, vs. how many the search backend is prepared to show.
+  </obsolete>
+  <owner>amandadeacon@chromium.org</owner>
+  <owner>tby@chromium.org</owner>
+  <owner>thanhdng@chromium.org</owner>
+  <owner>wrong@chromium.org</owner>
+  <summary>
+    Recorded on the first publication of zero-state results when opening the
+    launcher. Records the number of {Type} results that are ready for display.
+  </summary>
+  <token key="Type">
+    <variant name="Drive" summary="Count of Drive results"/>
+    <variant name="Local" summary="Count of local file results"/>
+    <variant name="Total" summary="Count of all results"/>
   </token>
 </histogram>
 
@@ -543,6 +582,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="Apps.AppList.LaunchedResultInNewUsersFirstSearch{TabletOrClamshell}"
+    enum="AppListSearchResult" expires_after="2022-12-05">
+  <owner>tbarzic@chromium.org</owner>
+  <owner>gzadina@google.com</owner>
+  <summary>
+    Type of the result that a user opened during their first launcher search in
+    their first user session on the device. It includes a bucket for the case
+    the user does not launch any results.
+  </summary>
+  <token key="TabletOrClamshell" variants="TabletOrClamshellMode"/>
+</histogram>
+
 <histogram name="Apps.AppList.LauncherSearchProvider.QueryTime" units="ms"
     expires_after="2021-12-31">
   <owner>jennyz@chromium.org</owner>
@@ -620,7 +672,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.PersistentProto.ReadStatus"
-    enum="PersistentProtoReadStatus" expires_after="2022-06-05">
+    enum="PersistentProtoReadStatus" expires_after="2022-08-07">
   <owner>wrong@chromium.org</owner>
   <owner>tby@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
@@ -641,6 +693,46 @@ chromium-metrics-reviews@google.com.
     Various error states on writing a backing file to disk, in the score
     normalizer used by the Chrome OS launcher. Emitted each time a persistent
     proto writes to disk.
+  </summary>
+</histogram>
+
+<histogram name="Apps.AppList.Search.ContinueResultCount.{Type}" units="count"
+    expires_after="2023-02-14">
+  <owner>amandadeacon@chromium.org</owner>
+  <owner>tby@chromium.org</owner>
+  <owner>thanhdng@chromium.org</owner>
+  <owner>wrong@chromium.org</owner>
+  <summary>
+    Recorded when the user has seen the zero-state launcher. Records the number
+    of {Type} results shown.
+  </summary>
+  <token key="Type">
+    <variant name="Drive" summary="Count of Drive results"/>
+    <variant name="Local" summary="Count of local file results"/>
+    <variant name="Total" summary="Count of all results"/>
+  </token>
+</histogram>
+
+<histogram name="Apps.AppList.Search.ContinueResultRemoved"
+    enum="LauncherContinueSectionResultType" expires_after="2023-02-14">
+  <owner>anasalazar@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <summary>
+    Records the type of a zero-state result when it is removed from the Continue
+    section. Recorded once every time a result is removed.
+  </summary>
+</histogram>
+
+<histogram name="Apps.AppList.Search.DriveContinueResultsShown"
+    enum="BooleanShown" expires_after="2023-02-14">
+  <owner>amandadeacon@chromium.org</owner>
+  <owner>tby@chromium.org</owner>
+  <owner>thanhdng@chromium.org</owner>
+  <owner>wrong@chromium.org</owner>
+  <summary>
+    Recorded when the user has seen the zero-state launcher. Records whether or
+    not the user would have seen any Drive files. This is equivalent to
+    Apps.AppList.Search.ContinueResultCount.Drive greater than 0.
   </summary>
 </histogram>
 
@@ -1116,7 +1208,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppListCreationTime" units="ms"
-    expires_after="2022-06-01">
+    expires_after="2022-08-14">
   <owner>tbarzic@chromium.org</owner>
   <owner>mmourgos@chromium.org</owner>
   <summary>
@@ -1495,13 +1587,7 @@ chromium-metrics-reviews@google.com.
     new user. Split depending on whether the device was in tablet or clamshell
     mode when the metric was recorded.
   </summary>
-  <token key="TabletOrClamshell" variants="TabletOrClamshellMode">
-    <variant name="">
-      <obsolete>
-        Base histogram. Use suffixes of this histogram instead.
-      </obsolete>
-    </variant>
-  </token>
+  <token key="TabletOrClamshell" variants="TabletOrClamshellMode"/>
 </histogram>
 
 <histogram name="Apps.AppsCount.{AppType}" units="Apps"
@@ -1585,6 +1671,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Apps.ClamshellLauncher.AnimationSmoothness.{Transition}"
     units="%" expires_after="2022-09-01">
+<!-- This metric is used in Tast tests. Do not rename the metric or variants. -->
+
   <owner>jamescook@chromium.org</owner>
   <owner>tbarzic@chromium.org</owner>
   <owner>chromeos-launcher@google.com</owner>
@@ -1594,8 +1682,12 @@ chromium-metrics-reviews@google.com.
     60 frames per second.
   </summary>
   <token key="Transition">
-    <variant name="Close" summary="close"/>
-    <variant name="OpenAppsPage" summary="open apps page"/>
+    <variant name="Close" summary="close launcher"/>
+    <variant name="HideAppsPage"
+        summary="switch away from apps page to another page"/>
+    <variant name="OpenAppsPage" summary="open launcher to apps page"/>
+    <variant name="ShowAppsPage"
+        summary="switch to apps page from another page"/>
   </token>
 </histogram>
 
@@ -1654,7 +1746,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.CreateShortcuts.Linux.Result"
-    enum="WebAppCreateShortcutLinuxResult" expires_after="2022-06-05">
+    enum="WebAppCreateShortcutLinuxResult" expires_after="2022-08-07">
   <owner>phillis@chromium.org</owner>
   <owner>cmumford@chromium.org</owner>
   <summary>
@@ -1769,13 +1861,7 @@ chromium-metrics-reviews@google.com.
     user's session for the first time. Split depending on whether the first
     launcher action occurred in clamshell or tablet mode.
   </summary>
-  <token key="TabletOrClamshell" variants="TabletOrClamshellMode">
-    <variant name="">
-      <obsolete>
-        Base histogram. Use suffixes of this histogram instead.
-      </obsolete>
-    </variant>
-  </token>
+  <token key="TabletOrClamshell" variants="TabletOrClamshellMode"/>
 </histogram>
 
 <histogram
@@ -1825,6 +1911,17 @@ chromium-metrics-reviews@google.com.
   <summary>Records the app icon loading method when loading app icons.</summary>
 </histogram>
 
+<histogram name="Apps.Launcher.AppListSortClearAction.{TabletOrClamshell}"
+    enum="AppListOrderUpdateEvent" expires_after="2022-09-01">
+  <owner>andrewxu@chromium.org</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <summary>
+    The events that reset the app list pref sort order. Triggered when the pref
+    sort order is reset.
+  </summary>
+  <token key="TabletOrClamshell" variants="DisplayModes"/>
+</histogram>
+
 <histogram name="Apps.Launcher.InstallAppFromLinkResult"
     enum="WebAppInstallResultCode" expires_after="2022-07-17">
   <owner>dmurph@chromium.org</owner>
@@ -1846,6 +1943,30 @@ chromium-metrics-reviews@google.com.
     a greyed out webapp icon in the chrome://apps page and clicks
     &quot;Install&quot;.
   </summary>
+</histogram>
+
+<histogram name="Apps.Launcher.ProductivityReorderAction.{TabletOrClamshell}"
+    enum="AppListSortOrder" expires_after="2022-09-01">
+  <owner>andrewxu@chromium.org</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <summary>
+    The user-set sort order of the productivity launcher. Triggered when the
+    launcher is set with a new order.
+  </summary>
+  <token key="TabletOrClamshell" variants="DisplayModes"/>
+</histogram>
+
+<histogram
+    name="Apps.Launcher.ProductivityReorderAnimationSmoothness.{TabletOrClamshell}"
+    units="%" expires_after="2022-09-01">
+  <owner>andrewxu@chromium.org</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <summary>
+    Emitted when the app list reorder animation completes. Reports the
+    smoothness of this animation. 100% represents the ideally smooth 60 frames
+    per second.
+  </summary>
+  <token key="TabletOrClamshell" variants="DisplayModes"/>
 </histogram>
 
 <histogram name="Apps.LockScreen.AppsProfile.Creation.Duration" units="ms"
@@ -2482,6 +2603,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Apps.TimeBetweenAppInstallAndLaunch{TabletOrClamshell}"
+    units="ms" expires_after="2022-08-01">
+  <owner>jamescook@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <summary>
+    Time between when an app is installed and when the user launches the app.
+    Recorded the first time the user launches the app. The clamshell or tablet
+    mode state is the state when the app is launched.
+  </summary>
+  <token key="TabletOrClamshell" variants="TabletOrClamshellMode"/>
+</histogram>
+
 <histogram
     name="Apps.TimeBetweenNewUserSessionActivationAndFirstLauncherAction{TabletOrClamshell}"
     units="ms" expires_after="2022-04-17">
@@ -2494,13 +2628,7 @@ chromium-metrics-reviews@google.com.
     chip or the search box. This metric is recorded when a new user triggers the
     launcher action for the first time.
   </summary>
-  <token key="TabletOrClamshell" variants="TabletOrClamshellMode">
-    <variant name="">
-      <obsolete>
-        Base histogram. Use suffixes of this histogram instead.
-      </obsolete>
-    </variant>
-  </token>
+  <token key="TabletOrClamshell" variants="TabletOrClamshellMode"/>
 </histogram>
 
 <histogram
@@ -2513,13 +2641,7 @@ chromium-metrics-reviews@google.com.
     the first time on a new user session. This metric is recorded when a new
     user opens the laucnher for the first time.
   </summary>
-  <token key="TabletOrClamshell" variants="TabletOrClamshellMode">
-    <variant name="">
-      <obsolete>
-        Base histogram. Use suffixes of this histogram instead.
-      </obsolete>
-    </variant>
-  </token>
+  <token key="TabletOrClamshell" variants="TabletOrClamshellMode"/>
 </histogram>
 
 <histogram name="Apps.UsageTime.{AppType}" units="ms"

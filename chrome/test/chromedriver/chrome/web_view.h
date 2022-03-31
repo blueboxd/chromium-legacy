@@ -170,7 +170,7 @@ class WebView {
                                    bool async_dispatch_events) = 0;
 
   // Return all the cookies visible to the current page.
-  virtual Status GetCookies(std::unique_ptr<base::ListValue>* cookies,
+  virtual Status GetCookies(base::Value* cookies,
                             const std::string& current_page_url) = 0;
 
   // Delete the cookie with the given name.
@@ -233,7 +233,7 @@ class WebView {
   // Set files in a file input element.
   // |element| is the WebElement JSON Object of the input element.
   virtual Status SetFileInputFiles(const std::string& frame,
-                                   const base::DictionaryValue& element,
+                                   const base::Value& element,
                                    const std::vector<base::FilePath>& files,
                                    const bool append) = 0;
 
@@ -274,7 +274,7 @@ class WebView {
   virtual void SetFrame(const std::string& new_frame_id) = 0;
 
   virtual Status GetNodeIdByElement(const std::string& frame,
-                                    const base::DictionaryValue& element,
+                                    const base::Value& element,
                                     int* node_id) = 0;
 };
 

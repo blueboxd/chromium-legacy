@@ -139,9 +139,7 @@ void WebTestBrowserMainRunner::Initialize() {
   // only default to a software GL if the flag isn't already specified.
   if (!command_line.HasSwitch(switches::kUseGpuInTests) &&
       !command_line.HasSwitch(switches::kUseGL)) {
-    // This setting makes web tests run on SwANGLE instead of SwiftShader GL.
-    bool legacy_software_gl = false;
-    gl::SetSoftwareGLCommandLineSwitches(&command_line, legacy_software_gl);
+    gl::SetSoftwareGLCommandLineSwitches(&command_line);
   }
   command_line.AppendSwitchASCII(switches::kTouchEventFeatureDetection,
                                  switches::kTouchEventFeatureDetectionEnabled);
@@ -186,7 +184,7 @@ void WebTestBrowserMainRunner::Initialize() {
   // These must be kept in sync with //third_party/wpt_tools/wpt.config.json.
   command_line.AppendSwitchASCII(network::switches::kIpAddressSpaceOverrides,
                                  "127.0.0.1:8082=private,"
-                                 "127.0.0.1:8083=public,"
+                                 "127.0.0.1:8093=public,"
                                  "127.0.0.1:8446=private,"
                                  "127.0.0.1:8447=public");
 

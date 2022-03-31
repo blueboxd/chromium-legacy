@@ -141,15 +141,15 @@ void RemovePersistedPathFromPrefs(base::Value* shared_paths,
                  << " for VM " << vm_name;
     return;
   }
-  auto it = std::find(found->GetList().begin(), found->GetList().end(),
-                      base::Value(vm_name));
+  auto it = std::find(found->GetListDeprecated().begin(),
+                      found->GetListDeprecated().end(), base::Value(vm_name));
   if (!found->EraseListIter(it)) {
     LOG(WARNING) << "VM not in prefs to unshare path " << path.value()
                  << " for VM " << vm_name;
     return;
   }
   // If VM list is now empty, remove |path| from |shared_paths|.
-  if (found->GetList().empty()) {
+  if (found->GetListDeprecated().empty()) {
     shared_paths->RemoveKey(path.value());
   }
 }
@@ -290,8 +290,8 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
 
       // TODO(crbug.com/917920): Do not allow Computers Grand Root, or single
       // Computer Root to be shared until DriveFS enforces allowed write paths.
-      std::vector<base::FilePath::StringType> components;
-      relative_path.GetComponents(&components);
+      std::vector<base::FilePath::StringType> components =
+          relative_path.GetComponents();
       if (components.size() < 2) {
         allowed_path = false;
       }
@@ -541,7 +541,7 @@ std::vector<base::FilePath> GuestOsSharePath::GetPersistedSharedPaths(
   CHECK(shared_paths);
   for (const auto it : shared_paths->DictItems()) {
     base::FilePath path(it.first);
-    for (const auto& vm : it.second.GetList()) {
+    for (const auto& vm : it.second.GetListDeprecated()) {
       // Register all shared paths for all VMs since we want FilePathWatchers
       // to start immediately.
       RegisterSharedPath(vm.GetString(), path);
@@ -574,7 +574,8 @@ void GuestOsSharePath::RegisterPersistedPath(const std::string& vm_name,
   for (const auto it : shared_paths->DictItems()) {
     base::FilePath shared(it.first);
     auto& vms = it.second;
-    auto vm_matches = base::Contains(vms.GetList(), base::Value(vm_name));
+    auto vm_matches =
+        base::Contains(vms.GetListDeprecated(), base::Value(vm_name));
     if (path == shared) {
       already_shared = true;
       if (!vm_matches) {
@@ -635,7 +636,7 @@ void GuestOsSharePath::OnVolumeMounted(chromeos::MountError error_code,
     if (path != volume.mount_path() && !volume.mount_path().IsParent(path)) {
       continue;
     }
-    const auto& vms = it.second.GetList();
+    const auto& vms = it.second.GetListDeprecated();
     for (const auto& vm : vms) {
       RegisterSharedPath(vm.GetString(), path);
       if (crostini::CrostiniManager::GetForProfile(profile_)->IsVmRunning(

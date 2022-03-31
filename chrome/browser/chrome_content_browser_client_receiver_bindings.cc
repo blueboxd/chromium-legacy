@@ -15,8 +15,6 @@
 #include "chrome/browser/chrome_browser_interface_binders.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
 #include "chrome/browser/content_settings/content_settings_manager_delegate.h"
-#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
-#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/headless/headless_mode_util.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
@@ -30,7 +28,6 @@
 #include "components/autofill_assistant/content/browser/content_autofill_assistant_driver.h"
 #include "components/autofill_assistant/content/common/autofill_assistant_driver.mojom.h"
 #include "components/content_capture/browser/onscreen_content_provider.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/metrics/call_stack_profile_collector.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
@@ -59,12 +56,14 @@
 #include "chrome/browser/win/conflicts/module_database.h"
 #include "chrome/browser/win/conflicts/module_event_sink_impl.h"
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/system_extensions/api/hid/hid_impl.h"
 #include "chrome/browser/ash/system_extensions/api/window_management/window_management_impl.h"
 #include "chrome/browser/ash/system_extensions/system_extension.h"
 #include "chrome/browser/ash/system_extensions/system_extensions_provider.h"
 #include "chromeos/components/cdm_factory_daemon/cdm_factory_daemon_proxy_ash.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "third_party/blink/public/mojom/chromeos/system_extensions/hid/cros_hid.mojom.h"
 #include "third_party/blink/public/mojom/chromeos/system_extensions/window_management/cros_window_management.mojom.h"
 #if defined(ARCH_CPU_X86_64)
 #include "chrome/browser/performance_manager/mechanisms/userspace_swap_chromeos.h"
@@ -387,6 +386,36 @@ void ChromeContentBrowserClient::
               std::make_unique<ash::WindowManagementImpl>(
                   render_process_host->GetBrowserContext()),
               std::move(receiver));
+        }));
+  }
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // TODO(b/210738172): Only add this mapping if the System Extension type
+  // is HID.
+  if (SystemExtensionsProvider::IsEnabled()) {
+    map->Add<blink::mojom::CrosHID>(base::BindRepeating(
+        [](const content::ServiceWorkerVersionBaseInfo& info,
+           mojo::PendingReceiver<blink::mojom::CrosHID> receiver) {
+          DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+          if (!SystemExtensionsProvider::IsDebugMode() &&
+              !SystemExtension::IsSystemExtensionOrigin(
+                  info.storage_key.origin())) {
+            return;
+          }
+
+          content::RenderProcessHost* render_process_host =
+              content::RenderProcessHost::FromID(info.process_id);
+          if (!render_process_host)
+            return;
+
+          // TODO(crbug.com/1253318): Once system extensions are site-isolated,
+          // ensure that the render_process_host is origin-locked via
+          // ChildProcessSecurityPolicy::CanAccessDataForOrigin().
+
+          mojo::MakeSelfOwnedReceiver(std::make_unique<ash::HIDImpl>(),
+                                      std::move(receiver));
         }));
   }
 #endif

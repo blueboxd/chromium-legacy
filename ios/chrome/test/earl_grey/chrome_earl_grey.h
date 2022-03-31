@@ -159,11 +159,6 @@ UIWindow* GetAnyKeyWindow();
 // Programmatically dismisses settings screen.
 - (void)dismissSettings;
 
-#pragma mark - Settings Utilities (EG2)
-
-// Sets value for content setting.
-- (void)setContentSettings:(ContentSetting)setting;
-
 #pragma mark - Sync Utilities (EG2)
 
 // Clears fake sync server data if the server is running.
@@ -590,6 +585,13 @@ UIWindow* GetAnyKeyWindow();
 // induced.
 - (id)executeJavaScript:(NSString*)javaScript;
 
+- (base::Value)evaluateJavaScript:(NSString*)javaScript [[nodiscard]];
+
+// Executes JavaScript on current WebState. This function should be used in
+// place -evaluateJavaScript when the executed JavaScript's return value will
+// not be used.
+- (void)evaluateJavaScriptForSideEffect:(NSString*)javaScript;
+
 // Returns the user agent that should be used for the mobile version.
 - (NSString*)mobileUserAgentString;
 
@@ -618,6 +620,9 @@ UIWindow* GetAnyKeyWindow();
 // Returns YES if a variation triggering server-side behavior is enabled.
 - (BOOL)isTriggerVariationEnabled:(int)variationID;
 
+// Returns YES if |kSupportForAddPasswordsInSettings| is enabled.
+- (BOOL)isAddCredentialsInSettingsEnabled;
+
 // Returns YES if UKM feature is enabled.
 - (BOOL)isUKMEnabled [[nodiscard]];
 
@@ -645,16 +650,13 @@ UIWindow* GetAnyKeyWindow();
 // can, open multiple windows.
 - (BOOL)areMultipleWindowsSupported;
 
-// Returns whether the ContextMenuActionsRefresh feature is enabled.
-- (BOOL)isContextMenuActionsRefreshEnabled;
-
 // Returns whether the new ContextMenu for web content feature is enabled.
 - (BOOL)isContextMenuInWebViewEnabled;
 
 // Returns whether the NewOverflowMenu feature is enabled.
 - (BOOL)isNewOverflowMenuEnabled;
 
-#pragma mark - Popup Blocking
+#pragma mark - ContentSettings
 
 // Gets the current value of the popup content setting preference for the
 // original browser state.
@@ -663,6 +665,9 @@ UIWindow* GetAnyKeyWindow();
 // Sets the popup content setting preference to the given value for the original
 // browser state.
 - (void)setPopupPrefValue:(ContentSetting)value;
+
+// Resets the desktop content setting to its default value.
+- (void)resetDesktopContentSetting;
 
 #pragma mark - Keyboard utilities
 
@@ -751,7 +756,7 @@ UIWindow* GetAnyKeyWindow();
 - (void)watchForButtonsWithLabels:(NSArray<NSString*>*)labels
                           timeout:(NSTimeInterval)timeout;
 
-// Returns YES is the button with given (accessibility) |label| was observed at
+// Returns YES if the button with given (accessibility) |label| was observed at
 // some point since |watchForButtonsWithLabels:timeout:| was called.
 - (BOOL)watcherDetectedButtonWithLabel:(NSString*)label;
 

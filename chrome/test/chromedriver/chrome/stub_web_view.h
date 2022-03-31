@@ -75,7 +75,7 @@ class StubWebView : public WebView {
       bool async_dispatch_events = false) override;
   Status DispatchKeyEvents(const std::vector<KeyEvent>& events,
                            bool async_dispatch_events = false) override;
-  Status GetCookies(std::unique_ptr<base::ListValue>* cookies,
+  Status GetCookies(base::Value* cookies,
                     const std::string& current_page_url) override;
   Status DeleteCookie(const std::string& name,
                       const std::string& url,
@@ -109,7 +109,7 @@ class StubWebView : public WebView {
   Status PrintToPDF(const base::DictionaryValue& params,
                     std::string* pdf) override;
   Status SetFileInputFiles(const std::string& frame,
-                           const base::DictionaryValue& element,
+                           const base::Value& element,
                            const std::vector<base::FilePath>& files,
                            const bool append) override;
   Status TakeHeapSnapshot(std::unique_ptr<base::Value>* snapshot) override;
@@ -130,7 +130,7 @@ class StubWebView : public WebView {
   std::unique_ptr<base::Value> GetCastIssueMessage() override;
   void SetFrame(const std::string& new_frame_id) override;
   Status GetNodeIdByElement(const std::string& frame,
-                            const base::DictionaryValue& element,
+                            const base::Value& element,
                             int* node_id) override;
 
  private:

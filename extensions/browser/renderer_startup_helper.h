@@ -72,6 +72,12 @@ class RendererStartupHelper : public KeyedService,
   void OnExtensionUnloaded(const Extension& extension);
   void OnExtensionLoaded(const Extension& extension);
 
+  // Sends a message to all renderers to update the developer mode.
+  void OnDeveloperModeChanged(bool in_developer_mode);
+
+  // Unload all extensions. Does not send notifications.
+  void UnloadAllExtensionsForTest();
+
   // Returns mojom::Renderer* corresponding to |process|. This would return
   // nullptr when it's called before |process| is inserted to
   // |process_mojo_map_| or after it's deleted. Note that the callers should

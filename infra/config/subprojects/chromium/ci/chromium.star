@@ -5,7 +5,7 @@
 
 load("//lib/builders.star", "goma", "os", "sheriff_rotations")
 load("//lib/branches.star", "branches")
-load("//lib/ci.star", "ci")
+load("//lib/ci.star", "ci", "rbe_instance", "rbe_jobs")
 load("//lib/consoles.star", "consoles")
 
 ci.defaults.set(
@@ -119,6 +119,9 @@ ci.builder(
     cores = 8,
     os = os.LINUX_BIONIC_REMOVE,
     tree_closing = True,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -142,6 +145,9 @@ ci.builder(
         },
     },
     tree_closing = True,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -345,7 +351,8 @@ ci.builder(
         short_name = "off",
     ),
     # TODO(crbug.com/1279290) builds with PGO change take long time.
-    execution_timeout = 30 * time.hour,
+    # Keep in sync with mac-official in try/chromium.star.
+    execution_timeout = 7 * time.hour,
     os = os.MAC_ANY,
 )
 

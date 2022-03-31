@@ -11,9 +11,12 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chromeos/dbus/fwupd/fwupd_client.h"
 #include "chromeos/dbus/fwupd/fwupd_device.h"
@@ -40,6 +43,21 @@ class COMPONENT_EXPORT(ASH_FIRMWARE_UPDATE_MANAGER) FirmwareUpdateManager
   FirmwareUpdateManager(const FirmwareUpdateManager&) = delete;
   FirmwareUpdateManager& operator=(const FirmwareUpdateManager&) = delete;
   ~FirmwareUpdateManager() override;
+
+  class Observer : public base::CheckedObserver {
+   public:
+    ~Observer() override = default;
+
+    // Called to notify observers, primarily notification controllers, that a
+    // critical firmware update is available.
+    virtual void OnFirmwareUpdateReceived() = 0;
+  };
+
+  // Returns true if the global instance is initialized.
+  static bool IsInitialized();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // firmware_update::mojom::UpdateProvider
   void ObservePeripheralUpdates(
@@ -90,6 +108,10 @@ class COMPONENT_EXPORT(ASH_FIRMWARE_UPDATE_MANAGER) FirmwareUpdateManager
       mojo::PendingReceiver<firmware_update::mojom::UpdateProvider>
           pending_receiver);
 
+  void set_should_show_notification_for_test(bool show_notification) {
+    should_show_notification_for_test_ = show_notification;
+  }
+
  protected:
   friend class FirmwareUpdateManagerTest;
   // Temporary auxiliary variables for testing.
@@ -116,11 +138,16 @@ class COMPONENT_EXPORT(ASH_FIRMWARE_UPDATE_MANAGER) FirmwareUpdateManager
                             const base::FilePath& filepath,
                             base::OnceCallback<void()> callback);
 
+  void MaybeDownloadFileToInternal(const base::FilePath& patch_path,
+                                   const std::string& device_id,
+                                   const base::FilePath& filepath,
+                                   base::OnceCallback<void()> callback,
+                                   bool write_file_success);
+
   void DownloadFileToInternal(const base::FilePath& patch_path,
                               const std::string& device_id,
                               const base::FilePath& filepath,
-                              base::OnceCallback<void()> callback,
-                              bool write_file_success);
+                              base::OnceCallback<void()> callback);
 
   void OnUrlDownloadedToFile(
       const std::string& device_id,
@@ -144,9 +171,30 @@ class COMPONENT_EXPORT(ASH_FIRMWARE_UPDATE_MANAGER) FirmwareUpdateManager
   // and |update_progress_observer_|.
   void ResetInstallState();
 
+  // Checks if any update in |updates_| is critical. If so,
+  // a single notification is shown to the user.
+  void ShowNotificationIfRequired();
+
+  // Call to notify observers that a new notification is needed.
+  void NotifyCriticalFirmwareUpdateReceived();
+
+  // Records the # of devices found at startup and whenever the device list
+  // is refreshed.
+  void RecordDeviceMetrics(int num_devices);
+
+  // Records the # of updates found at startup and whenever the update list
+  // is refreshed.
+  void RecordUpdateMetrics();
+
+  int GetNumCriticalUpdates();
+
   // Map of a device ID to `FwupdDevice` which is waiting for the list
   // of updates.
   base::flat_map<std::string, chromeos::FwupdDevice> devices_pending_update_;
+
+  // Set of device IDs with critical updates that we've already shown a
+  // notification for.
+  base::flat_set<std::string> devices_already_notified_;
 
   // List of all available updates. If `devices_pending_update_` is not
   // empty then this list is not yet complete.
@@ -158,6 +206,16 @@ class COMPONENT_EXPORT(ASH_FIRMWARE_UPDATE_MANAGER) FirmwareUpdateManager
   // The device update that is currently inflight.
   firmware_update::mojom::FirmwareUpdatePtr inflight_update_;
 
+  // Used to show the firmware update notification and to determine which
+  // metric to fire (Startup/Refresh).
+  bool is_first_response_ = true;
+
+  // Whether or not fetching updates in inflight.
+  bool is_fetching_updates_ = false;
+
+  // Used only for testing to force notification to appear.
+  bool should_show_notification_for_test_ = false;
+
   // Remotes for tracking observers that will be notified of changes to the
   // list of firmware updates.
   mojo::RemoteSet<firmware_update::mojom::UpdateObserver>
@@ -167,6 +225,8 @@ class COMPONENT_EXPORT(ASH_FIRMWARE_UPDATE_MANAGER) FirmwareUpdateManager
   // the in-progress update.
   mojo::Remote<firmware_update::mojom::UpdateProgressObserver>
       update_progress_observer_;
+
+  base::ObserverList<Observer> observer_list_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

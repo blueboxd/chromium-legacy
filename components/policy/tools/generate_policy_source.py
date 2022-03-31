@@ -101,7 +101,6 @@ class PolicyDetails:
     self.metapolicy_type = features.get('metapolicy_type', '')
     self.is_deprecated = policy.get('deprecated', False)
     self.is_device_only = policy.get('device_only', False)
-    self.is_future = policy.get('future', False)
     self.per_profile = features.get('per_profile', False)
     self.supported_chrome_os_management = policy.get(
         'supported_chrome_os_management', ['active_directory', 'google_cloud'])
@@ -141,8 +140,7 @@ class PolicyDetails:
 
     self.is_supported = (target_platform in self.platforms
                          or target_platform in self.future_on)
-    self.is_future_on = target_platform in self.future_on
-    self.is_future = self.is_future or self.is_future_on
+    self.is_future = target_platform in self.future_on
 
     if policy['type'] not in PolicyDetails.TYPE_MAP:
       raise NotImplementedError(
@@ -505,7 +503,14 @@ def _WritePolicyConstantHeader(policies, policy_atomic_groups, target_platform,
 
 #include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/policy_map.h"
-#include "components/policy/proto/cloud_policy.pb.h"
+
+namespace enterprise_management {
+class BooleanPolicyProto;
+class CloudPolicySettings;
+class IntegerPolicyProto;
+class StringListPolicyProto;
+class StringPolicyProto;
+}
 
 namespace em = enterprise_management;
 
@@ -522,7 +527,7 @@ struct SchemaData;
             'configuration resides.\n'
             'extern const wchar_t kRegistryChromePolicyKey[];\n')
 
-  f.write('''#if defined(OS_CHROMEOS)
+  f.write('''#if BUILDFLAG(IS_CHROMEOS)
 // Sets default profile policies values for enterprise users.
 void SetEnterpriseUsersProfileDefaults(PolicyMap* policy_map);
 // Sets default system-wide policies values for enterprise users.
@@ -1133,7 +1138,7 @@ namespace policy {
       f.write('  // %s\n' % policy.name)
       f.write('  { %-14s%-10s%-17s%4s,%22s, %s },\n' %
               ('true,' if policy.is_deprecated else 'false,',
-               'true,' if policy.is_future_on else 'false, ',
+               'true,' if policy.is_future else 'false, ',
                'true,' if policy.is_device_only else 'false,', policy.id,
                policy.max_size, risk_tags.ToInitString(policy.tags)))
   f.write('};\n\n')
@@ -1208,7 +1213,7 @@ namespace policy {
       else:
         system_wide_policy_enterprise_defaults += setting_enterprise_default
 
-  f.write('#if defined(OS_CHROMEOS)')
+  f.write('#if BUILDFLAG(IS_CHROMEOS)')
   f.write('''
 void SetEnterpriseUsersProfileDefaults(PolicyMap* policy_map) {
 %s

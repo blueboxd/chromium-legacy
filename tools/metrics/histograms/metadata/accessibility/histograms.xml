@@ -159,7 +159,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.Android.OnDemand.EventsDropped" units="count"
-    expires_after="2022-06-05">
+    expires_after="2022-08-07">
   <owner>mschillaci@google.com</owner>
   <owner>abigailbklein@google.com</owner>
   <summary>
@@ -179,14 +179,53 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="Accessibility.Android.OnDemand.OneHundredPercentEventsDropped.{AXMode}"
+    units="count" expires_after="2022-06-26">
+  <owner>mschillaci@google.com</owner>
+  <owner>abigailbklein@google.com</owner>
+  <summary>
+    Tracks the number of AccessibilityEvents dropped when the OnDemand
+    accessibility services feature is enabled, and the ComputeAXMode feature is
+    enabled, and the number of events dropped is 100%. Tracks for when the
+    AXMode is set to {AXMode}. Recorded a the end of a session.
+  </summary>
+  <token key="AXMode">
+    <variant name="Basic"
+        summary="kAXModeBasic - Includes only NativeAPIs and WebContents"/>
+    <variant name="Complete"
+        summary="kAXModeComplete - Includes NativeAPIs, WebContents,
+                 InlineTextBoxes, ScreenReader, and HTML"/>
+  </token>
+</histogram>
+
 <histogram name="Accessibility.Android.OnDemand.PercentageDropped" units="%"
-    expires_after="2022-06-05">
+    expires_after="2022-08-07">
   <owner>mschillaci@google.com</owner>
   <owner>abigailbklein@google.com</owner>
   <summary>
     Tracks the percentage of AccessibilityEvents dropped when the OnDemand
     accessibility services feature is enabled. Recorded at the end of a session.
   </summary>
+</histogram>
+
+<histogram name="Accessibility.Android.OnDemand.PercentageDropped.{AXMode}"
+    units="%" expires_after="2022-06-26">
+  <owner>mschillaci@google.com</owner>
+  <owner>abigailbklein@google.com</owner>
+  <summary>
+    Tracks the percentage of AccessibilityEvents dropped when the OnDemand
+    accessibility services feature is enabled, and the ComputeAXMode feature is
+    enabled. Tracks for when the AXMode is set to {AXMode}. Recorded at the end
+    of a session.
+  </summary>
+  <token key="AXMode">
+    <variant name="Basic"
+        summary="kAXModeBasic - Includes only NativeAPIs and WebContents"/>
+    <variant name="Complete"
+        summary="kAXModeComplete - Includes NativeAPIs, WebContents,
+                 InlineTextBoxes, ScreenReader, and HTML"/>
+  </token>
 </histogram>
 
 <histogram name="Accessibility.Android.ScreenReader{AccessibilityEveryReport}"
@@ -319,7 +358,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.ChromeVox.PerformGestureType"
-    enum="ChromeVoxGestureType" expires_after="2022-02-06">
+    enum="ChromeVoxGestureType" expires_after="2023-02-06">
   <owner>dtseng@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -839,7 +878,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.ImageLabels" enum="BooleanEnabled"
-    expires_after="2022-04-17">
+    expires_after="2022-08-14">
   <owner>katie@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -1225,7 +1264,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.ModeFlag" enum="AccessibilityModeFlagEnum"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>aleventhal@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -1434,7 +1473,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.WebSpeech.Duration" units="ms"
-    expires_after="2022-06-05">
+    expires_after="2022-08-07">
   <owner>evliu@google.com</owner>
   <owner>chrome-media-ux@google.com</owner>
   <summary>
@@ -1444,7 +1483,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.WinAPIs" enum="AccessibilityWinAPIEnum"
-    expires_after="2022-04-24">
+    expires_after="2022-07-31">
   <owner>aleventhal@chromium.org</owner>
   <owner>nektar@chromium.org</owner>
   <owner>chrome-a11y-core@google.com</owner>
@@ -1602,7 +1641,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DomDistiller.InfoBarUsage" enum="BooleanUsage"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>mdjones@chromium.org</owner>
   <summary>
     &quot;Used&quot; is recorded when the user clicks the infobar to enter

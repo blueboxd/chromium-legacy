@@ -54,6 +54,7 @@ run_jsbundler("accessibility_common_copied_files") {
     "dictation/parse/pumpkin_parse_strategy.js",
     "dictation/parse/simple_parse_strategy.js",
     "dictation/parse/speech_parser.js",
+    "dictation/ui_controller.js",
     "magnifier/magnifier.js",
   ]
   rewrite_rules = [
@@ -122,6 +123,7 @@ js2gtest("accessibility_common_extjs_tests") {
     "autoclick/autoclick_test.js",
     "dictation/dictation_test.js",
     "dictation/dictation_test_base.js",
+    "dictation/dictation_ui_test.js",
     "dictation/macros/dictation_macros_test.js",
     "dictation/parse/dictation_parse_test.js",
     "magnifier/magnifier_test.js",
@@ -158,7 +160,9 @@ js_library("accessibility_common") {
     ":autoclick",
     ":dictation",
     ":magnifier",
+    "../common:automation_predicate",
     "../common:chrome_event_handler",
+    "../common:constants",
     "../common:event_generator",
     "../common:event_handler",
     "../common:instance_checker",
@@ -196,6 +200,7 @@ js_library("dictation") {
   deps = [
     ":dictation_input_controller",
     ":dictation_metrics",
+    ":dictation_ui_controller",
     ":speech_parsing",
   ]
   externs_list = [
@@ -207,10 +212,19 @@ js_library("dictation") {
 
 js_library("dictation_input_controller") {
   sources = [ "dictation/input_controller.js" ]
+  deps = [
+    "../common:automation_predicate",
+    "../common:constants",
+  ]
   externs_list = [
     "$externs_path/input_method_private.js",
     "$externs_path/language_settings_private.js",
   ]
+}
+
+js_library("dictation_ui_controller") {
+  sources = [ "dictation/ui_controller.js" ]
+  externs_list = [ "$externs_path/accessibility_private.js" ]
 }
 
 js_library("dictation_macros") {

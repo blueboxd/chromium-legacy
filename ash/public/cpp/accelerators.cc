@@ -85,6 +85,7 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_Z, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
      TOGGLE_SPOKEN_FEEDBACK},
     {true, ui::VKEY_D, ui::EF_COMMAND_DOWN, TOGGLE_DICTATION},
+    {true, ui::VKEY_DICTATE, ui::EF_NONE, TOGGLE_DICTATION},
     {true, ui::VKEY_OEM_COMMA, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
      SWITCH_TO_PREVIOUS_USER},
     {true, ui::VKEY_OEM_PERIOD, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
@@ -93,6 +94,7 @@ const AcceleratorData kAcceleratorData[] = {
     {false, ui::VKEY_LSHIFT, ui::EF_NONE, DISABLE_CAPS_LOCK},
     {false, ui::VKEY_SHIFT, ui::EF_NONE, DISABLE_CAPS_LOCK},
     {false, ui::VKEY_RSHIFT, ui::EF_NONE, DISABLE_CAPS_LOCK},
+    {true, ui::VKEY_C, ui::EF_COMMAND_DOWN, TOGGLE_CALENDAR},
     // Accelerators to toggle Caps Lock.
     // The following is triggered when Search is released while Alt is still
     // down. The key_code here is LWIN (for search) and Alt is a modifier.
@@ -114,6 +116,7 @@ const AcceleratorData kAcceleratorData[] = {
      NEW_INCOGNITO_WINDOW},
     {true, ui::VKEY_N, ui::EF_CONTROL_DOWN, NEW_WINDOW},
     {true, ui::VKEY_T, ui::EF_CONTROL_DOWN, NEW_TAB},
+    {true, ui::VKEY_NEW, ui::EF_NONE, NEW_TAB},
     {true, ui::VKEY_OEM_MINUS, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
      SCALE_UI_UP},
     {true, ui::VKEY_OEM_PLUS, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
@@ -206,6 +209,7 @@ const AcceleratorData kAcceleratorData[] = {
     // Emoji picker shortcut.
     {true, ui::VKEY_SPACE, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN,
      SHOW_EMOJI_PICKER},
+    {true, ui::VKEY_EMOJI_PICKER, ui::EF_NONE, SHOW_EMOJI_PICKER},
 
     // Debugging shortcuts that need to be available to end-users in
     // release builds.

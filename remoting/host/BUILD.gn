@@ -286,6 +286,7 @@ static_library("common") {
     "host_details.cc",
     "host_details.h",
     "host_event_logger.h",
+    "host_event_reporter.h",
     "host_experiment_session_plugin.cc",
     "host_experiment_session_plugin.h",
     "host_extension_session_manager.cc",
@@ -386,9 +387,9 @@ static_library("common") {
     "//build:branding_buildflags",
     "//build:chromeos_buildflags",
     "//components/policy/core/common",
+    "//components/webrtc:thread_wrapper",
     "//crypto",
     "//google_apis",
-    "//jingle:webrtc_glue",
     "//media",
     "//remoting/base",
     "//remoting/base:authorization",
@@ -406,7 +407,7 @@ static_library("common") {
     "//remoting/signaling:signaling",
     "//services/network:network_service",
     "//services/network/public/cpp:cpp",
-    "//third_party/libjingle_xmpp",
+    "//third_party/libjingle_xmpp:rtc_xmllite",
     "//third_party/webrtc_overrides:webrtc_component",
     "//ui/events:events",
 
@@ -632,7 +633,7 @@ static_library("test_support") {
     ":common",
     "//remoting/base:test_support",
     "//remoting/host/file_transfer:test_support",
-    "//third_party/libjingle_xmpp",
+    "//third_party/libjingle_xmpp:rtc_xmllite",
     "//third_party/protobuf:protobuf_lite",
     "//third_party/webrtc_overrides:webrtc_component",
   ]
@@ -748,7 +749,12 @@ source_set("unit_tests") {
   }
 
   if (is_chromeos_ash) {
-    deps += [ "//remoting/host/chromeos:unit_tests" ]
+    sources += [ "desktop_display_info_loader_chromeos_unittest.cc" ]
+    deps += [
+      "//remoting/host/chromeos",
+      "//remoting/host/chromeos:reporter_unit_tests",
+      "//remoting/host/chromeos:unit_tests",
+    ]
   }
 
   if (is_win) {
@@ -907,8 +913,8 @@ if (enable_me2me_host) {
       "//base",
       "//base:i18n",
       "//components/policy/core/common",
+      "//components/webrtc:thread_wrapper",
       "//ipc",
-      "//jingle:webrtc_glue",
       "//mojo/core/embedder",
       "//net",
       "//remoting/base",
@@ -921,7 +927,7 @@ if (enable_me2me_host) {
       "//remoting/protocol:protocol",
       "//remoting/signaling:signaling",
       "//services/network/public/cpp:cpp",
-      "//third_party/libjingle_xmpp",
+      "//third_party/libjingle_xmpp:rtc_xmllite",
       "//third_party/webrtc_overrides:webrtc_component",
     ]
 

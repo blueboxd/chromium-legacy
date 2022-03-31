@@ -85,6 +85,10 @@
         <item name="trackTint">@color/switch_track_tint</item>
         <item name="trackTintMode">src_in</item>
     </style>
+    <style name="Widget.BrowserUI.Switch.Incognito" parent="Widget.MaterialComponents.CompoundButton.Switch">
+        <item name="thumbTint">@color/switch_thumb_tint_incognito</item>
+        <item name="trackTint">@color/switch_track_tint_incognito</item>
+    </style>
     <!-- TextInputLayout style -->
     <style name="Widget.BrowserUI.TextInputLayout" parent="Widget.Design.TextInputLayout">
         <item name="errorTextAppearance">@style/TextAppearance.ErrorCaption</item>
@@ -107,35 +111,6 @@
         <item name="colorControlHighlight">@color/control_highlight_color</item>
     </style>
     <style name="OverflowMenuThemeOverlay" parent="Base.OverflowMenuThemeOverlay" />
-
-    <!-- TODO(https://crbug.com/1242702): Rename to ThemeOverlay.Chromium.AlertDialog. -->
-    <!-- AlertDialog styles -->
-    <!-- This should be kept in sync with |Theme.BrowserUI.AlertDialog.NoActionBar|. -->
-    <style name="Base.Theme.Chromium.AlertDialog"
-        parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
-        <item name="android:textColorPrimary">@macro/default_text_color</item>
-        <item name="android:windowBackground">@drawable/dialog_bg_tinted</item>
-        <item name="android:windowTitleStyle">@style/TextAppearance.AlertDialogTitleStyle</item>
-        <item name="android:textColorHighlight">@color/text_highlight_color</item>
-
-        <!--  Overriding AppCompat values -->
-        <item name="colorControlHighlight">@color/control_highlight_color</item>
-        <item name="spinnerStyle">@style/SpinnerStyle</item>
-
-        <!-- Depending on if the support library or framework is inflating the
-             dialog, a different layout is used, that names this style slightly
-             differently. WebView will use the framework version for the
-             foreseeable future, so both of these need to be specified. See
-             https://crbug.com/1234129. -->
-        <item name="android:buttonBarButtonStyle">@style/AlertDialogButtonStyle</item>
-        <item name="buttonBarButtonStyle">@style/AlertDialogButtonStyle</item>
-    </style>
-    <style name="Theme.Chromium.AlertDialog" parent="Base.Theme.Chromium.AlertDialog" />
-
-    <style name="Theme.Chromium.AlertDialog.NoActionBar">
-        <item name="windowNoTitle">true</item>
-        <item name="windowActionBar">false</item>
-    </style>
 
     <style name="AlertDialogButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
         <item name="android:textAppearance">@style/TextAppearance.Button.Text.Blue</item>
@@ -181,12 +156,12 @@
     <!-- TODO(sinansahin): See if we can pass the baseline dark theme to the incognito NTP instead.
          -->
     <style name="SwitchMaterialDark">
-        <item name="colorPrimaryNonDynamic">@color/baseline_primary_200</item>
-        <item name="colorPrimaryContainerNonDynamic">@color/baseline_primary_100</item>
-        <item name="colorSwitchThumbNormalNonDynamic">@color/baseline_neutral_100</item>
-        <item name="colorSwitchTrackNormalNonDynamic">@color/baseline_neutral_variant_400</item>
+        <!-- TODO(sinansahin): When we migrate the switch style to Material3, we should override
+             colorOnSurface and colorPrimary instead of these attributes because they are what
+             m3_selection_control_ripple_color_selector uses. -->
+        <item name="colorControlActivated">@color/default_control_color_active_dark</item>
         <item name="colorControlHighlight">@color/default_control_color_highlight_dark</item>
-        <item name="switchStyle">@style/Widget.BrowserUI.Switch</item>
+        <item name="switchStyle">@style/Widget.BrowserUI.Switch.Incognito</item>
     </style>
 
     <!-- Styling for an app menu item row. -->
@@ -288,6 +263,14 @@
     </style>
     <style name="TextAppearance.TextSmall.Primary.OnAccent1" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/default_text_color_on_accent1_list</item>
+    </style>
+
+    <!-- Chip Text Styles -->
+    <style name="TextAppearance.ChipText" parent="TextAppearance.TextAccentMediumThick">
+        <item name="android:textColor">@color/chip_text_color_secondary</item>
+    </style>
+    <style name="TextAppearance.ChipHint" parent="TextAppearance.TextAccentMediumThick">
+        <item name="android:textColor">@color/chip_text_color_secondary</item>
     </style>
 
     <!-- Other text styles -->

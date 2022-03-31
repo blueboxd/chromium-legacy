@@ -47,11 +47,14 @@ class TestPrintingContext : public PrintingContext {
   void SetNewDocumentBlockedByPermissions() {
     new_document_blocked_by_permissions_ = true;
   }
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   void SetOnRenderPageBlockedByPermissions() {
     render_page_blocked_by_permissions_ = true;
   }
 #endif
+  void SetDocumentDoneBlockedByPermissions() {
+    document_done_blocked_by_permissions_ = true;
+  }
 
   // PrintingContext overrides:
   void AskUserForSettings(int max_pages,
@@ -82,9 +85,10 @@ class TestPrintingContext : public PrintingContext {
  private:
   base::flat_map<std::string, std::unique_ptr<PrintSettings>> device_settings_;
   bool new_document_blocked_by_permissions_ = false;
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   bool render_page_blocked_by_permissions_ = false;
 #endif
+  bool document_done_blocked_by_permissions_ = false;
 };
 
 }  // namespace printing

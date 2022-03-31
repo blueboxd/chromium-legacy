@@ -80,6 +80,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
+import org.chromium.chrome.browser.layouts.LayoutTestUtils;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
@@ -193,8 +194,7 @@ public class StartSurfaceTest {
     // clang-format off
     @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS +
         "/home_button_on_grid_tab_switcher/false"})
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.O,
-                     message = "https://crbug.com/1291957")
+    @DisabledTest(message = "https://crbug.com/1291957")
     public void testShow_SingleAsHomepage() {
         // clang-format on
         if (!mImmediateReturn) {
@@ -233,8 +233,8 @@ public class StartSurfaceTest {
     @MediumTest
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS})
-    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.O,
-                     message = "https://crbug.com/1291957")
+    @DisableIf.
+    Build(sdk_is_less_than = Build.VERSION_CODES.O, message = "https://crbug.com/1291957")
     public void testShow_SingleAsHomepage_NoIncognitoSwitch() {
         if (!mImmediateReturn) {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
@@ -428,7 +428,10 @@ public class StartSurfaceTest {
                     mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
             onViewWaiting(withId(R.id.secondary_tasks_surface_view));
         } else {
-            onViewWaiting(withId(R.id.new_tab_incognito_container));
+            int container_id = ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_NTP_REVAMP)
+                    ? R.id.revamped_incognito_ntp_container
+                    : R.id.new_tab_incognito_container;
+            onViewWaiting(withId(container_id)).check(matches(isDisplayed()));
         }
     }
 
@@ -721,6 +724,7 @@ public class StartSurfaceTest {
         StartSurfaceTestUtils.pressHomePageButton(cta);
         assertFalse(bottomSheetTestSupport.hasSuppressionTokens());
 
+        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.TAB_SWITCHER);
         StartSurfaceTestUtils.clickMoreTabs(cta);
         onViewWaiting(withId(R.id.secondary_tasks_surface_view));
         assertTrue(bottomSheetTestSupport.hasSuppressionTokens());
@@ -850,7 +854,10 @@ public class StartSurfaceTest {
         // show.
         onView(withId(R.id.home_button)).perform(click());
         assertFalse(cta.getLayoutManager().overviewVisible());
-        onViewWaiting(withId(R.id.new_tab_incognito_container)).check(matches(isDisplayed()));
+        int container_id = ChromeFeatureList.isEnabled(ChromeFeatureList.INCOGNITO_NTP_REVAMP)
+                ? R.id.revamped_incognito_ntp_container
+                : R.id.new_tab_incognito_container;
+        onViewWaiting(withId(container_id)).check(matches(isDisplayed()));
     }
 
     @Test

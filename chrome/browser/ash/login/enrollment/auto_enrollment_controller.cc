@@ -20,6 +20,7 @@
 #include "chrome/browser/ash/policy/enrollment/private_membership/fake_private_membership_rlwe_client.h"
 #include "chrome/browser/ash/policy/enrollment/private_membership/private_membership_rlwe_client.h"
 #include "chrome/browser/ash/policy/enrollment/private_membership/private_membership_rlwe_client_impl.h"
+#include "chrome/browser/ash/policy/enrollment/private_membership/psm_rlwe_id_provider_impl.h"
 #include "chrome/browser/ash/policy/server_backed_state/server_backed_state_keys_broker.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/browser_process.h"
@@ -276,6 +277,11 @@ AutoEnrollmentController::GetFRERequirement() {
       return FRERequirement::kExplicitlyNotRequired;
     if (check_enrollment_value == "1")
       return FRERequirement::kExplicitlyRequired;
+
+    LOG(ERROR) << "Unexpected value for " << system::kCheckEnrollmentKey << ": "
+               << check_enrollment_value;
+    LOG(WARNING) << "Forcing auto enrollment check.";
+    return FRERequirement::kExplicitlyRequired;
   }
   // Assume that the presence of the machine serial number means that VPD has
   // been read successfully. Don't trust a missing ActivateDate if VPD could not
@@ -486,6 +492,10 @@ AutoEnrollmentController::DetermineAutoEnrollmentCheckType(
   FRERequirement fre_requirement = GetFRERequirement();
   LOG_DETERMINATION() << FRERequirementToString(fre_requirement);
 
+  // Skip FRE check if the device is explicitly marked as consumer owned.
+  if (fre_requirement == FRERequirement::kExplicitlyNotRequired)
+    return AutoEnrollmentCheckType::kNone;
+
   if (ShouldDoFRECheck(command_line, fre_requirement)) {
     // FRE has precedence over Initial Enrollment.
     LOG(WARNING) << "Proceeding with FRE check.";
@@ -671,7 +681,7 @@ void AutoEnrollmentController::StartClientForInitialEnrollment() {
       g_browser_process->system_network_context_manager()
           ->GetSharedURLLoaderFactory(),
       serial_number, rlz_brand_code, power_initial, power_limit,
-      psm_rlwe_client_factory_.get());
+      psm_rlwe_client_factory_.get(), &psm_rlwe_id_provider_);
 
   LOG(WARNING) << "Starting auto-enrollment client for Initial Enrollment.";
   client_->Start();

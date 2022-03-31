@@ -12,9 +12,11 @@ import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path
 
 import {isNonEmptyArray} from '../common/utils.js';
 
+import {ambientReducers} from './ambient/ambient_reducers.js';
+import {AmbientState} from './ambient/ambient_state.js';
 import {PersonalizationActionName} from './personalization_actions.js';
 import {Actions} from './personalization_actions.js';
-import {WallpaperImage} from './personalization_app.mojom-webui.js';
+import {GooglePhotosPhoto, WallpaperImage} from './personalization_app.mojom-webui.js';
 import {PersonalizationState} from './personalization_state.js';
 import {themeReducers} from './theme/theme_reducers.js';
 import {ThemeState} from './theme/theme_state.js';
@@ -24,7 +26,7 @@ import {WallpaperActionName} from './wallpaper/wallpaper_actions.js';
 import {wallpaperReducers} from './wallpaper/wallpaper_reducers.js';
 import {WallpaperState} from './wallpaper/wallpaper_state.js';
 
-export type DisplayableImage = FilePath|WallpaperImage;
+export type DisplayableImage = FilePath|GooglePhotosPhoto|WallpaperImage;
 
 export type ReducerFunction<State> =
     (state: State, action: Actions, globalState: PersonalizationState) => State;
@@ -99,6 +101,7 @@ function errorReducer(
 
 const root = combineReducers<PersonalizationState>({
   error: errorReducer,
+  ambient: combineReducers<AmbientState>(ambientReducers),
   theme: combineReducers<ThemeState>(themeReducers),
   user: combineReducers<UserState>(userReducers),
   wallpaper: combineReducers<WallpaperState>(wallpaperReducers),

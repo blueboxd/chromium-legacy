@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,9 @@ chrome.autofillPrivate.AddressField = {
  *   summarySublabel: (string|undefined),
  *   isLocal: (boolean|undefined),
  *   isCached: (boolean|undefined),
- *   isMigratable: (boolean|undefined)
+ *   isMigratable: (boolean|undefined),
+ *   isVirtualCardEnrollmentEligible: (boolean|undefined),
+ *   isVirtualCardEnrolled: (boolean|undefined)
  * }}
  */
 chrome.autofillPrivate.AutofillMetadata;
@@ -210,6 +212,22 @@ chrome.autofillPrivate.setCreditCardFIDOAuthEnabledState = function(enabled) {};
  *     called with the list of UPI IDs.
  */
 chrome.autofillPrivate.getUpiIdList = function(callback) {};
+
+/**
+ * Enrolls a credit card into virtual cards.
+ * @param {string} cardId The server side id of the credit card to be
+ *     enrolled. Note it refers to the legacy server id of credit cards, not the
+ *     instrument ids.
+ */
+chrome.autofillPrivate.addVirtualCard = function(cardId) {};
+
+/**
+ * Unenrolls a credit card from virtual cards.
+ * @param {string} cardId The server side id of the credit card to be
+ *     unenrolled. Note it refers to the legacy server id of credit cards, not
+ *     the instrument ids.
+ */
+chrome.autofillPrivate.removeVirtualCard = function(cardId) {};
 
 /**
  * Fired when the personal data has changed, meaning that an entry has been

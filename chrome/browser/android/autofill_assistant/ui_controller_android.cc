@@ -11,6 +11,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/android/locale_utils.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
@@ -28,12 +29,10 @@
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantOverlayModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantPlaceholdersConfiguration_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantUiController_jni.h"
-#include "chrome/android/features/autofill_assistant/jni_headers_public/AssistantDependencies_jni.h"
 #include "chrome/browser/android/autofill_assistant/client_android.h"
 #include "chrome/browser/android/autofill_assistant/dependencies.h"
 #include "chrome/browser/android/autofill_assistant/generic_ui_root_controller_android.h"
 #include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
-#include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill_assistant/browser/bottom_sheet_state.h"
@@ -277,9 +276,7 @@ UiControllerAndroid::UiControllerAndroid(
       form_delegate_(this),
       generic_ui_delegate_(this),
       bottom_bar_delegate_(this),
-      jstatic_dependencies_(
-          Java_AssistantDependencies_getStaticDependencies(env,
-                                                           jdependencies)) {
+      dependencies_(Dependencies::CreateFromJavaDependencies(jdependencies)) {
   java_object_ = Java_AutofillAssistantUiController_Constructor(
       env, reinterpret_cast<intptr_t>(this), jdependencies,
       /* allowTabSwitching= */
@@ -487,8 +484,10 @@ void UiControllerAndroid::OnProgressBarErrorStateChanged(bool error) {
 void UiControllerAndroid::OnStepProgressBarConfigurationChanged(
     const ShowProgressBarProto::StepProgressBarConfiguration& configuration) {
   header_model_->SetStepProgressBarConfiguration(
-      configuration, Java_AutofillAssistantUiController_getContext(
-                         AttachCurrentThread(), java_object_));
+      configuration,
+      Java_AutofillAssistantUiController_getContext(AttachCurrentThread(),
+                                                    java_object_),
+      *dependencies_);
 }
 
 void UiControllerAndroid::OnViewportModeChanged(ViewportMode mode) {
@@ -1112,21 +1111,27 @@ UiControllerAndroid::GetCollectUserDataModel() {
 void UiControllerAndroid::OnShippingAddressChanged(
     std::unique_ptr<autofill::AutofillProfile> address,
     UserDataEventType event_type) {
-  ui_delegate_->SetShippingAddress(std::move(address), event_type);
+  ui_delegate_->HandleShippingAddressChange(std::move(address), event_type);
 }
 
 void UiControllerAndroid::OnContactInfoChanged(
     std::unique_ptr<autofill::AutofillProfile> profile,
     UserDataEventType event_type) {
-  ui_delegate_->SetContactInfo(std::move(profile), event_type);
+  ui_delegate_->HandleContactInfoChange(std::move(profile), event_type);
+}
+
+void UiControllerAndroid::OnPhoneNumberChanged(
+    std::unique_ptr<autofill::AutofillProfile> profile,
+    UserDataEventType event_type) {
+  ui_delegate_->HandlePhoneNumberChange(std::move(profile), event_type);
 }
 
 void UiControllerAndroid::OnCreditCardChanged(
     std::unique_ptr<autofill::CreditCard> card,
     std::unique_ptr<autofill::AutofillProfile> billing_profile,
     UserDataEventType event_type) {
-  ui_delegate_->SetCreditCard(std::move(card), std::move(billing_profile),
-                              event_type);
+  ui_delegate_->HandleCreditCardChange(std::move(card),
+                                       std::move(billing_profile), event_type);
 }
 
 void UiControllerAndroid::OnTermsAndConditionsChanged(
@@ -1172,7 +1177,7 @@ void UiControllerAndroid::HideKeyboardIfFocusNotOnText() {
 }
 
 ScopedJavaGlobalRef<jobject> UiControllerAndroid::GetInfoPageUtil() const {
-  return Dependencies::CreateInfoPageUtil(jstatic_dependencies_);
+  return dependencies_->CreateInfoPageUtil();
 }
 
 void UiControllerAndroid::OnCollectUserDataOptionsChanged(
@@ -1185,8 +1190,15 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
     return;
   }
 
+  Java_AssistantCollectUserDataModel_setAccountEmail(
+      env, jmodel,
+      base::android::ConvertUTF8ToJavaString(
+          env, client_->GetEmailAddressForAccessTokenAccount()));
+
   Java_AssistantCollectUserDataModel_setShouldStoreUserDataChanges(
       env, jmodel, collect_user_data_options->should_store_data_changes);
+  Java_AssistantCollectUserDataModel_setUseGmsCoreEditDialogs(
+      env, jmodel, collect_user_data_options->use_gms_core_edit_dialogs);
   Java_AssistantCollectUserDataModel_setRequestName(
       env, jmodel, collect_user_data_options->request_payer_name);
   Java_AssistantCollectUserDataModel_setRequestEmail(
@@ -1211,6 +1223,8 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
       Java_AssistantCollectUserDataModel_createContactDescriptionOptions(
           env, base::android::ToJavaIntArray(env, contact_full_fields),
           collect_user_data_options->contact_full_max_lines));
+  Java_AssistantCollectUserDataModel_setRequestPhoneNumberSeparately(
+      env, jmodel, collect_user_data_options->request_phone_number_separately);
   Java_AssistantCollectUserDataModel_setRequestShippingAddress(
       env, jmodel, collect_user_data_options->request_shipping);
   Java_AssistantCollectUserDataModel_setRequestPayment(
@@ -1225,6 +1239,10 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
       env, jmodel,
       ConvertUTF8ToJavaString(
           env, collect_user_data_options->contact_details_section_title));
+  Java_AssistantCollectUserDataModel_setPhoneNumberSectionTitle(
+      env, jmodel,
+      ConvertUTF8ToJavaString(
+          env, collect_user_data_options->phone_number_section_title));
   Java_AssistantCollectUserDataModel_setShippingSectionTitle(
       env, jmodel,
       ConvertUTF8ToJavaString(
@@ -1297,7 +1315,6 @@ void UiControllerAndroid::OnUserDataChanged(
     UserData::FieldChange field_change) {
   DCHECK(execution_delegate_ != nullptr);
   DCHECK(ui_delegate_ != nullptr);
-  DCHECK(client_->GetWebContents() != nullptr);
   const CollectUserDataOptions* collect_user_data_options =
       ui_delegate_->GetCollectUserDataOptions();
   if (collect_user_data_options == nullptr) {
@@ -1309,9 +1326,6 @@ void UiControllerAndroid::OnUserDataChanged(
 
   JNIEnv* env = AttachCurrentThread();
   auto jmodel = GetCollectUserDataModel();
-  auto jcontext =
-      Java_AutofillAssistantUiController_getContext(env, java_object_);
-  auto web_contents = client_->GetWebContents()->GetJavaWebContents();
 
   if (field_change == UserData::FieldChange::ALL ||
       field_change == UserData::FieldChange::TERMS_AND_CONDITIONS) {
@@ -1325,15 +1339,23 @@ void UiControllerAndroid::OnUserDataChanged(
   auto jselected_contact =
       selected_contact_profile == nullptr
           ? nullptr
-          : Java_AssistantCollectUserDataModel_createAutofillContact(
-                env, jcontext,
-                autofill::PersonalDataManagerAndroid::
-                    CreateJavaProfileFromNative(env, *selected_contact_profile),
-                collect_user_data_options->request_payer_name,
-                collect_user_data_options->request_payer_phone,
-                collect_user_data_options->request_payer_email);
+          : ui_controller_android_utils::CreateAssistantAutofillProfile(
+                env, *selected_contact_profile,
+                base::android::GetDefaultLocaleString());
   const auto& selected_contact_errors = user_data::GetContactValidationErrors(
       selected_contact_profile, *collect_user_data_options);
+
+  const autofill::AutofillProfile* selected_phone_number =
+      user_data.selected_phone_number();
+  auto jselected_phone_number =
+      selected_phone_number == nullptr
+          ? nullptr
+          : ui_controller_android_utils::CreateAssistantAutofillProfile(
+                env, *selected_phone_number,
+                base::android::GetDefaultLocaleString());
+  const auto& selected_phone_number_errors =
+      user_data::GetPhoneNumberValidationErrors(selected_contact_profile,
+                                                *collect_user_data_options);
 
   const autofill::AutofillProfile* selected_shipping_address =
       user_data.selected_address(
@@ -1341,11 +1363,9 @@ void UiControllerAndroid::OnUserDataChanged(
   auto jselected_shipping_address =
       selected_shipping_address == nullptr
           ? nullptr
-          : Java_AssistantCollectUserDataModel_createAutofillAddress(
-                env, jcontext,
-                autofill::PersonalDataManagerAndroid::
-                    CreateJavaProfileFromNative(env,
-                                                *selected_shipping_address));
+          : ui_controller_android_utils::CreateAssistantAutofillProfile(
+                env, *selected_shipping_address,
+                base::android::GetDefaultLocaleString());
   const auto& selected_shipping_address_errors =
       user_data::GetShippingAddressValidationErrors(selected_shipping_address,
                                                     *collect_user_data_options);
@@ -1354,26 +1374,20 @@ void UiControllerAndroid::OnUserDataChanged(
       field_change == UserData::FieldChange::AVAILABLE_PROFILES) {
     // Contacts.
     auto jcontactlist =
-        Java_AssistantCollectUserDataModel_createAutofillContactList(env);
+        Java_AssistantCollectUserDataModel_createContactList(env);
     auto contact_indices = user_data::SortContactsByCompleteness(
         *collect_user_data_options, user_data.available_contacts_);
     for (int index : contact_indices) {
-      auto jcontact = Java_AssistantCollectUserDataModel_createAutofillContact(
-          env, jcontext,
-          autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
-              env, *user_data.available_contacts_[index]->profile),
-          collect_user_data_options->request_payer_name,
-          collect_user_data_options->request_payer_phone,
-          collect_user_data_options->request_payer_email);
-      if (jcontact) {
-        const auto& errors = user_data::GetContactValidationErrors(
-            user_data.available_contacts_[index]->profile.get(),
-            *collect_user_data_options);
-        Java_AssistantCollectUserDataModel_addAutofillContact(
-            env, jcontactlist, jcontact,
-            base::android::ToJavaArrayOfStrings(env, errors),
-            collect_user_data_options->can_edit_contacts);
-      }
+      const auto& errors = user_data::GetContactValidationErrors(
+          user_data.available_contacts_[index]->profile.get(),
+          *collect_user_data_options);
+      Java_AssistantCollectUserDataModel_addContact(
+          env, jcontactlist,
+          ui_controller_android_utils::CreateAssistantAutofillProfile(
+              env, *user_data.available_contacts_[index]->profile,
+              base::android::GetDefaultLocaleString()),
+          base::android::ToJavaArrayOfStrings(env, errors),
+          collect_user_data_options->can_edit_contacts);
     }
     Java_AssistantCollectUserDataModel_setAvailableContacts(env, jmodel,
                                                             jcontactlist);
@@ -1381,19 +1395,38 @@ void UiControllerAndroid::OnUserDataChanged(
         env, jmodel, jselected_contact,
         base::android::ToJavaArrayOfStrings(env, selected_contact_errors),
         collect_user_data_options->can_edit_contacts);
+    // Phone numbers.
+    auto jphone_number_list =
+        Java_AssistantCollectUserDataModel_createContactList(env);
+    auto phone_number_indices = user_data::SortPhoneNumbersByCompleteness(
+        *collect_user_data_options, user_data.available_phone_numbers_);
+    for (int index : phone_number_indices) {
+      const auto& errors = user_data::GetPhoneNumberValidationErrors(
+          user_data.available_phone_numbers_[index]->profile.get(),
+          *collect_user_data_options);
+      Java_AssistantCollectUserDataModel_addContact(
+          env, jphone_number_list,
+          ui_controller_android_utils::CreateAssistantAutofillProfile(
+              env, *user_data.available_phone_numbers_[index]->profile,
+              base::android::GetDefaultLocaleString()),
+          base::android::ToJavaArrayOfStrings(env, errors),
+          /* canEdit = */ false);
+    }
+    Java_AssistantCollectUserDataModel_setAvailablePhoneNumbers(
+        env, jmodel, jphone_number_list);
+    Java_AssistantCollectUserDataModel_setSelectedPhoneNumber(
+        env, jmodel, jselected_phone_number,
+        base::android::ToJavaArrayOfStrings(env, selected_phone_number_errors),
+        /* canEdit = */ false);
 
     // Billing addresses.
     auto jbillinglist =
         Java_AssistantCollectUserDataModel_createBillingAddressList(env);
     for (const auto& address : user_data.available_addresses_) {
-      auto jaddress = Java_AssistantCollectUserDataModel_createAutofillAddress(
-          env, jcontext,
-          autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
-              env, *address->profile));
-      if (jaddress) {
-        Java_AssistantCollectUserDataModel_addBillingAddress(env, jbillinglist,
-                                                             jaddress);
-      }
+      Java_AssistantCollectUserDataModel_addBillingAddress(
+          env, jbillinglist,
+          ui_controller_android_utils::CreateAssistantAutofillProfile(
+              env, *address->profile, base::android::GetDefaultLocaleString()));
     }
     Java_AssistantCollectUserDataModel_setAvailableBillingAddresses(
         env, jmodel, jbillinglist);
@@ -1404,18 +1437,15 @@ void UiControllerAndroid::OnUserDataChanged(
     auto address_indices = user_data::SortShippingAddressesByCompleteness(
         *collect_user_data_options, user_data.available_addresses_);
     for (int index : address_indices) {
-      auto jaddress = Java_AssistantCollectUserDataModel_createAutofillAddress(
-          env, jcontext,
-          autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
-              env, *user_data.available_addresses_[index]->profile));
-      if (jaddress) {
-        const auto& errors = user_data::GetShippingAddressValidationErrors(
-            user_data.available_addresses_[index]->profile.get(),
-            *collect_user_data_options);
-        Java_AssistantCollectUserDataModel_addShippingAddress(
-            env, jshippinglist, jaddress,
-            base::android::ToJavaArrayOfStrings(env, errors));
-      }
+      const auto& errors = user_data::GetShippingAddressValidationErrors(
+          user_data.available_addresses_[index]->profile.get(),
+          *collect_user_data_options);
+      Java_AssistantCollectUserDataModel_addShippingAddress(
+          env, jshippinglist,
+          ui_controller_android_utils::CreateAssistantAutofillProfile(
+              env, *user_data.available_addresses_[index]->profile,
+              base::android::GetDefaultLocaleString()),
+          base::android::ToJavaArrayOfStrings(env, errors));
     }
     Java_AssistantCollectUserDataModel_setAvailableShippingAddresses(
         env, jmodel, jshippinglist);
@@ -1431,6 +1461,14 @@ void UiControllerAndroid::OnUserDataChanged(
         env, jmodel, jselected_contact,
         base::android::ToJavaArrayOfStrings(env, selected_contact_errors),
         collect_user_data_options->can_edit_contacts);
+  }
+  if (field_change == UserData::FieldChange::PHONE_NUMBER) {
+    // The selection is already known in Java, but it has no errors. The PDM
+    // off case does not set updated phone numbers.
+    Java_AssistantCollectUserDataModel_setSelectedPhoneNumber(
+        env, jmodel, jselected_phone_number,
+        base::android::ToJavaArrayOfStrings(env, selected_phone_number_errors),
+        /* canEdit = */ false);
   }
   if (field_change == UserData::FieldChange::SHIPPING_ADDRESS) {
     // The selection is already known in Java, but it has no errors. The PDM
@@ -1448,13 +1486,14 @@ void UiControllerAndroid::OnUserDataChanged(
   auto jselected_card =
       selected_card == nullptr
           ? nullptr
-          : autofill::PersonalDataManagerAndroid::
-                CreateJavaCreditCardFromNative(env, *selected_card);
+          : ui_controller_android_utils::CreateAssistantAutofillCreditCard(
+                env, *selected_card, base::android::GetDefaultLocaleString());
   auto jselected_billing_address =
       selected_billing_address == nullptr
           ? nullptr
-          : autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
-                env, *selected_billing_address);
+          : ui_controller_android_utils::CreateAssistantAutofillProfile(
+                env, *selected_billing_address,
+                base::android::GetDefaultLocaleString());
   const auto& selected_payment_instrument_errors =
       user_data::GetPaymentInstrumentValidationErrors(
           selected_card, selected_billing_address, *collect_user_data_options);
@@ -1470,26 +1509,29 @@ void UiControllerAndroid::OnUserDataChanged(
             user_data.available_payment_instruments_);
     for (int index : sorted_payment_instrument_indices) {
       const auto& instrument = user_data.available_payment_instruments_[index];
+      if (instrument->card == nullptr) {
+        NOTREACHED();
+        continue;
+      }
       const auto& errors = user_data::GetPaymentInstrumentValidationErrors(
           instrument->card.get(), instrument->billing_address.get(),
           *collect_user_data_options);
       Java_AssistantCollectUserDataModel_addAutofillPaymentInstrument(
-          env, jlist, web_contents,
-          instrument->card == nullptr
-              ? nullptr
-              : autofill::PersonalDataManagerAndroid::
-                    CreateJavaCreditCardFromNative(env, *(instrument->card)),
+          env, jlist,
+          ui_controller_android_utils::CreateAssistantAutofillCreditCard(
+              env, *(instrument->card),
+              base::android::GetDefaultLocaleString()),
           instrument->billing_address == nullptr
               ? nullptr
-              : autofill::PersonalDataManagerAndroid::
-                    CreateJavaProfileFromNative(env,
-                                                *(instrument->billing_address)),
+              : ui_controller_android_utils::CreateAssistantAutofillProfile(
+                    env, *(instrument->billing_address),
+                    base::android::GetDefaultLocaleString()),
           base::android::ToJavaArrayOfStrings(env, errors));
     }
     Java_AssistantCollectUserDataModel_setAvailablePaymentInstruments(
         env, jmodel, jlist);
     Java_AssistantCollectUserDataModel_setSelectedPaymentInstrument(
-        env, jmodel, web_contents, jselected_card, jselected_billing_address,
+        env, jmodel, jselected_card, jselected_billing_address,
         base::android::ToJavaArrayOfStrings(
             env, selected_payment_instrument_errors));
   }
@@ -1499,7 +1541,7 @@ void UiControllerAndroid::OnUserDataChanged(
     // The selection is already known in Java, but it has no errors. The PDM
     // off case does not set updated payment instruments.
     Java_AssistantCollectUserDataModel_setSelectedPaymentInstrument(
-        env, jmodel, web_contents, jselected_card, jselected_billing_address,
+        env, jmodel, jselected_card, jselected_billing_address,
         base::android::ToJavaArrayOfStrings(
             env, selected_payment_instrument_errors));
   }
@@ -1664,7 +1706,7 @@ void UiControllerAndroid::OnClientSettingsChanged(
     Java_AssistantOverlayModel_setOverlayImage(
         env, GetOverlayModel(), jcontext,
         ui_controller_android_utils::CreateJavaDrawable(
-            env, jcontext, image.image_drawable(),
+            env, jcontext, *dependencies_, image.image_drawable(),
             execution_delegate_->GetUserModel()),
         image_size, top_margin, bottom_margin,
         ConvertUTF8ToJavaString(env, image.text()),
@@ -1863,7 +1905,7 @@ UiControllerAndroid::CreateGenericUiControllerForProto(
       Java_AutofillAssistantUiController_getContext(env, java_object_);
   return GenericUiRootControllerAndroid::CreateFromProto(
       proto, base::android::ScopedJavaGlobalRef<jobject>(jcontext),
-      GetInfoPageUtil(), generic_ui_delegate_.GetJavaObject(),
+      GetInfoPageUtil(), *dependencies_, generic_ui_delegate_.GetJavaObject(),
       ui_delegate_->GetEventHandler(), execution_delegate_->GetUserModel(),
       ui_delegate_->GetBasicInteractions());
 }

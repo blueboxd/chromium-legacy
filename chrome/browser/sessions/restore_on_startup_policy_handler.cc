@@ -50,14 +50,15 @@ bool RestoreOnStartupPolicyHandler::CheckPolicySettings(
       case 0:  // Deprecated kPrefValueHomePage.
         errors->AddError(policy_name(), IDS_POLICY_VALUE_DEPRECATED);
         break;
-      case SessionStartupPref::kPrefValueLast: {
+      case SessionStartupPref::kPrefValueLast:
+      case SessionStartupPref::kPrefValueLastAndURLs: {
         // If the "restore last session" policy is set, session cookies are
         // treated as permanent cookies and site data needed to restore the
         // session is not cleared so we have to warn the user in that case.
         const base::Value* cookies_policy =
             policies.GetValue(key::kCookiesSessionOnlyForUrls);
         if (cookies_policy && cookies_policy->is_list() &&
-            !cookies_policy->GetList().empty()) {
+            !cookies_policy->GetListDeprecated().empty()) {
           errors->AddError(key::kCookiesSessionOnlyForUrls,
                            IDS_POLICY_OVERRIDDEN,
                            key::kRestoreOnStartup);

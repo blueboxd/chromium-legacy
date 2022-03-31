@@ -12,12 +12,13 @@
 #include "base/callback.h"
 #include "base/containers/contains.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/web_applications/os_integration/web_app_file_handler_manager.h"
+#include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
-#include "chrome/browser/web_applications/web_app_file_handler_manager.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_proto_utils.h"
@@ -357,6 +358,11 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
         syncer::TimeToProtoTime(web_app.manifest_update_time()));
   }
 
+  if (web_app.install_source_for_metrics()) {
+    local_data->set_install_source_for_metrics(
+        static_cast<int>(*web_app.install_source_for_metrics()));
+  }
+
   if (web_app.chromeos_data().has_value()) {
     auto& chromeos_data = web_app.chromeos_data().value();
     auto* mutable_chromeos_data = local_data->mutable_chromeos_data();
@@ -382,6 +388,11 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
 
   local_data->set_user_run_on_os_login_mode(
       ToWebAppProtoRunOnOsLoginMode(web_app.run_on_os_login_mode()));
+  if (web_app.run_on_os_login_os_integration_state()) {
+    local_data->set_run_on_os_login_os_integration_state(
+        ToWebAppProtoRunOnOsLoginMode(
+            *web_app.run_on_os_login_os_integration_state()));
+  }
   local_data->set_is_from_sync_and_pending_installation(
       web_app.is_from_sync_and_pending_installation());
   local_data->set_is_uninstalling(web_app.is_uninstalling());
@@ -406,6 +417,7 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   for (const auto& file_handler : web_app.file_handlers()) {
     WebAppFileHandlerProto* file_handler_proto =
         local_data->add_file_handlers();
+    DCHECK(file_handler.action.is_valid());
     file_handler_proto->set_action(file_handler.action.spec());
     file_handler_proto->set_display_name(
         base::UTF16ToUTF8(file_handler.display_name));
@@ -574,6 +586,18 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
 
   if (web_app.parent_app_id_) {
     local_data->set_parent_app_id(*web_app.parent_app_id_);
+  }
+
+  if (!web_app.permissions_policy().empty()) {
+    auto& policy = *local_data->mutable_permissions_policy();
+    for (const auto& decl : web_app.permissions_policy()) {
+      WebAppPermissionsPolicy proto_policy;
+      proto_policy.set_feature(decl.feature);
+      for (const auto& origin : decl.allowlist) {
+        proto_policy.add_allowlist(origin);
+      }
+      policy.Add(std::move(proto_policy));
+    }
   }
 
   return local_data;
@@ -755,12 +779,22 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     web_app->SetLastLaunchTime(
         syncer::ProtoTimeToTime(local_data.last_launch_time()));
   }
-  if (local_data.has_install_time()) {
-    web_app->SetInstallTime(syncer::ProtoTimeToTime(local_data.install_time()));
+  if (local_data.has_install_source_for_metrics()) {
+    int install_source = local_data.install_source_for_metrics();
+    if (install_source >= 0 &&
+        install_source <
+            static_cast<int>(webapps::WebappInstallSource::COUNT)) {
+      web_app->SetInstallSourceForMetrics(
+          static_cast<webapps::WebappInstallSource>(install_source));
+    }
   }
   if (local_data.has_manifest_update_time()) {
     web_app->SetManifestUpdateTime(
         syncer::ProtoTimeToTime(local_data.manifest_update_time()));
+  }
+
+  if (local_data.has_install_time()) {
+    web_app->SetInstallTime(syncer::ProtoTimeToTime(local_data.install_time()));
   }
 
   absl::optional<WebApp::SyncFallbackData> parsed_sync_fallback_data =
@@ -1028,6 +1062,11 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
         ToRunOnOsLoginMode(local_data.user_run_on_os_login_mode()));
   }
 
+  if (local_data.has_run_on_os_login_os_integration_state()) {
+    web_app->SetRunOnOsLoginOsIntegrationState(
+        ToRunOnOsLoginMode(local_data.run_on_os_login_os_integration_state()));
+  }
+
   if (local_data.has_capture_links())
     web_app->SetCaptureLinks(ProtoToCaptureLinks(local_data.capture_links()));
   else
@@ -1083,6 +1122,19 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
 
   if (local_data.has_parent_app_id()) {
     web_app->parent_app_id_ = local_data.parent_app_id();
+  }
+
+  if (local_data.permissions_policy_size()) {
+    std::vector<PermissionsPolicyDeclaration> policy;
+    for (const auto& decl_proto : local_data.permissions_policy()) {
+      PermissionsPolicyDeclaration decl;
+      decl.feature = decl_proto.feature();
+      for (const std::string& origin : decl_proto.allowlist()) {
+        decl.allowlist.push_back(origin);
+      }
+      policy.push_back(decl);
+    }
+    web_app->SetPermissionsPolicy(policy);
   }
 
   return web_app;

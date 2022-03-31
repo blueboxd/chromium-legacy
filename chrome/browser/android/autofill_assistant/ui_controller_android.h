@@ -19,6 +19,7 @@
 #include "chrome/browser/android/autofill_assistant/assistant_header_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_header_model.h"
 #include "chrome/browser/android/autofill_assistant/assistant_overlay_delegate.h"
+#include "chrome/browser/android/autofill_assistant/dependencies.h"
 #include "components/autofill_assistant/browser/chip.h"
 #include "components/autofill_assistant/browser/controller_observer.h"
 #include "components/autofill_assistant/browser/details.h"
@@ -163,6 +164,8 @@ class UiControllerAndroid : public ControllerObserver, UiControllerObserver {
       UserDataEventType event_type);
   void OnContactInfoChanged(std::unique_ptr<autofill::AutofillProfile> profile,
                             UserDataEventType event_type);
+  void OnPhoneNumberChanged(std::unique_ptr<autofill::AutofillProfile> profile,
+                            UserDataEventType event_type);
   void OnCreditCardChanged(
       std::unique_ptr<autofill::CreditCard> card,
       std::unique_ptr<autofill::AutofillProfile> billing_profile,
@@ -301,7 +304,7 @@ class UiControllerAndroid : public ControllerObserver, UiControllerObserver {
 
   // Java-side AssistantStaticDependencies object. This never changes during the
   // life of the application.
-  const base::android::ScopedJavaGlobalRef<jobject> jstatic_dependencies_;
+  const std::unique_ptr<const Dependencies> dependencies_;
 
   // Native controllers for generic UI.
   std::unique_ptr<GenericUiRootControllerAndroid>

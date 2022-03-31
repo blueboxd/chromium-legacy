@@ -73,6 +73,16 @@
 
 namespace media {
 
+namespace {
+
+bool IsVp9KSVCStream(uint32_t input_format_fourcc,
+                     const DecoderBuffer& decoder_buffer) {
+  return input_format_fourcc == V4L2_PIX_FMT_VP9 &&
+         decoder_buffer.side_data_size() > 0;
+}
+
+}  // namespace
+
 // static
 const uint32_t V4L2VideoDecodeAccelerator::supported_input_fourccs_[] = {
     V4L2_PIX_FMT_H264, V4L2_PIX_FMT_VP8, V4L2_PIX_FMT_VP9,
@@ -267,6 +277,8 @@ void V4L2VideoDecodeAccelerator::InitializeTask(const Config& config,
   // No need to keep going is configuration is not supported.
   if (!config_result)
     return;
+
+  container_color_space_ = config.container_color_space;
 
   frame_splitter_ =
       v4l2_vda_helpers::InputBufferFragmentSplitter::CreateFromProfile(
@@ -854,6 +866,12 @@ void V4L2VideoDecodeAccelerator::DecodeTask(scoped_refptr<DecoderBuffer> buffer,
 
   if (IsDestroyPending())
     return;
+
+  if (IsVp9KSVCStream(input_format_fourcc_, *buffer)) {
+    LOG(ERROR) << "VDA does not support decoding VP9 k-SVC stream";
+    NOTIFY_ERROR(PLATFORM_FAILURE);
+    return;
+  }
 
   std::unique_ptr<BitstreamBufferRef> bitstream_record(new BitstreamBufferRef(
       decode_client_, decode_task_runner_, std::move(buffer), bitstream_id));
@@ -2142,18 +2160,22 @@ bool V4L2VideoDecodeAccelerator::CreateBuffersForFormat(
 
   coded_size_.SetSize(format.fmt.pix_mp.width, format.fmt.pix_mp.height);
   visible_size_ = visible_size;
+  egl_image_size_ = coded_size_;
   if (image_processor_device_) {
-    egl_image_size_ = visible_size_;
     egl_image_planes_count = 0;
+    auto output_size = coded_size_;
     if (!V4L2ImageProcessorBackend::TryOutputFormat(
             output_format_fourcc_->ToV4L2PixFmt(),
-            egl_image_format_fourcc_->ToV4L2PixFmt(), coded_size_,
-            &egl_image_size_, &egl_image_planes_count)) {
+            egl_image_format_fourcc_->ToV4L2PixFmt(), coded_size_, &output_size,
+            &egl_image_planes_count)) {
       VLOGF(1) << "Fail to get output size and plane count of processor";
       return false;
     }
+    // This is very restrictive because it assumes the IP has the same alignment
+    // criteria as the video decoder that will produce the input video frames.
+    // In practice, this applies to all Image Processors, i.e. Mediatek devices.
+    DCHECK_EQ(coded_size_, output_size);
   } else {
-    egl_image_size_ = coded_size_;
     egl_image_planes_count = format.fmt.pix_mp.num_planes;
   }
   VLOGF(2) << "new resolution: " << coded_size_.ToString()
@@ -2340,9 +2362,10 @@ bool V4L2VideoDecodeAccelerator::CreateImageProcessor() {
 
   image_processor_ = v4l2_vda_helpers::CreateImageProcessor(
       *output_format_fourcc_, *egl_image_format_fourcc_, coded_size_,
-      egl_image_size_, visible_size_, VideoFrame::StorageType::STORAGE_DMABUFS,
-      output_buffer_map_.size(), image_processor_device_,
-      image_processor_output_mode, decoder_thread_.task_runner(),
+      coded_size_, gfx::Rect(visible_size_),
+      VideoFrame::StorageType::STORAGE_DMABUFS, output_buffer_map_.size(),
+      image_processor_device_, image_processor_output_mode,
+      decoder_thread_.task_runner(),
       // Unretained(this) is safe for ErrorCB because |decoder_thread_| is owned
       // by this V4L2VideoDecodeAccelerator and |this| must be valid when
       // ErrorCB is executed.
@@ -2440,7 +2463,7 @@ bool V4L2VideoDecodeAccelerator::CreateOutputBuffers() {
     buffer_count += kDpbOutputBufferExtraCountForImageProcessor;
 
   DVLOGF(3) << "buffer_count=" << buffer_count
-            << ", coded_size=" << egl_image_size_.ToString();
+            << ", coded_size=" << coded_size_.ToString();
 
   // With ALLOCATE mode the client can sample it as RGB and doesn't need to
   // know the precise format.
@@ -2536,9 +2559,10 @@ void V4L2VideoDecodeAccelerator::SendBufferToClient(
   buffers_at_client_.emplace(
       output_record.picture_id,
       std::make_pair(std::move(vda_buffer), std::move(frame)));
-  // TODO(hubbe): Insert correct color space. http://crbug.com/647725
+  // TODO(b/214190092): Get color space from the v4l2 buffer.
   const Picture picture(output_record.picture_id, bitstream_buffer_id,
-                        gfx::Rect(visible_size_), gfx::ColorSpace(), false);
+                        gfx::Rect(visible_size_),
+                        container_color_space_.ToGfxColorSpace(), false);
   pending_picture_ready_.emplace(output_record.cleared, picture);
   SendPictureReady();
   // This picture will be cleared next time we see it.

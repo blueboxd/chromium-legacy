@@ -597,6 +597,10 @@ const struct DomCodeToKeyboardCodeEntry {
     // DomCode::EJECT                              0x0C00B8 Eject
     {DomCode::MEDIA_PLAY_PAUSE,
      VKEY_MEDIA_PLAY_PAUSE},  // 0x0C00CD MediaPlayPause
+#if BUILDFLAG(IS_POSIX)
+    {DomCode::DICTATE, VKEY_DICTATE},            // 0x0C00D8 Dictate
+    {DomCode::EMOJI_PICKER, VKEY_EMOJI_PICKER},  // 0x0C00D9 Emoji
+#endif
     {DomCode::MEDIA_SELECT,
      VKEY_MEDIA_LAUNCH_MEDIA_SELECT},                // 0x0C0183 MediaSelect
     {DomCode::LAUNCH_MAIL, VKEY_MEDIA_LAUNCH_MAIL},  // 0x0C018A LaunchMail
@@ -606,6 +610,8 @@ const struct DomCodeToKeyboardCodeEntry {
     {DomCode::LAUNCH_CONTROL_PANEL,
      VKEY_SETTINGS},                              // 0x0C019F Launch Assistant
     {DomCode::LAUNCH_ASSISTANT, VKEY_ASSISTANT},  // 0x0C01CB Launch Assistant
+    {DomCode::NEW, VKEY_NEW},                     // 0x0C0201 AC New
+    {DomCode::CLOSE, VKEY_CLOSE},                 // 0x0C0203 AC Close
 #endif
     {DomCode::BROWSER_SEARCH, VKEY_BROWSER_SEARCH},  // 0x0C0221 BrowserSearch
     {DomCode::BROWSER_HOME, VKEY_BROWSER_HOME},      // 0x0C0223 BrowserHome

@@ -27,7 +27,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
 import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BaseMixin} from '../base_mixin.js';
 import {SettingsToggleButtonElement} from '../controls/settings_toggle_button.js';
@@ -41,6 +41,7 @@ import {RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router
 import {ChooserType, ContentSettingsTypes, NotificationSetting} from '../site_settings/constants.js';
 import {SiteSettingsPrefsBrowserProxyImpl} from '../site_settings/site_settings_prefs_browser_proxy.js';
 
+import {getTemplate} from './privacy_page.html.js';
 import {PrivacyPageBrowserProxy, PrivacyPageBrowserProxyImpl} from './privacy_page_browser_proxy.js';
 
 type BlockAutoplayStatus = {
@@ -75,7 +76,7 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -155,9 +156,9 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
             loadTimeData.getBoolean('enableWebBluetoothNewPermissionsBackend'),
       },
 
-      enablePrivacyReview_: {
+      enablePrivacyGuide_: {
         type: Boolean,
-        value: () => loadTimeData.getBoolean('privacyReviewEnabled'),
+        value: () => loadTimeData.getBoolean('privacyGuideEnabled'),
       },
 
       enableIphDemo_: {
@@ -188,8 +189,8 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
             map.set(routes.SITE_SETTINGS.path, '#permissionsLinkRow');
           }
 
-          if (routes.PRIVACY_REVIEW) {
-            map.set(routes.PRIVACY_REVIEW.path, '#privacyReviewLinkRow');
+          if (routes.PRIVACY_GUIDE) {
+            map.set(routes.PRIVACY_GUIDE.path, '#privacyGuideLinkRow');
           }
 
           return map;
@@ -236,7 +237,7 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
   private enableSecurityKeysSubpage_: boolean;
   private enableQuietNotificationPromptsSetting_: boolean;
   private enableWebBluetoothNewPermissionsBackend_: boolean;
-  private enablePrivacyReview_: boolean;
+  private enablePrivacyGuide_: boolean;
   private focusConfig_: FocusConfig;
   private searchFilter_: string;
   private siteDataFilter_: string;
@@ -365,32 +366,32 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
         .dispatchEvent(new MouseEvent('click'));
   }
 
-  private onPrivacyReviewClick_() {
+  private onPrivacyGuideClick_() {
     this.metricsBrowserProxy_.recordPrivacyGuideEntryExitHistogram(
         PrivacyGuideInteractions.SETTINGS_LINK_ROW_ENTRY);
     this.metricsBrowserProxy_.recordAction(
         'Settings.PrivacyGuide.StartPrivacySettings');
     Router.getInstance().navigateTo(
-        routes.PRIVACY_REVIEW, /* dynamicParams */ undefined,
+        routes.PRIVACY_GUIDE, /* dynamicParams */ undefined,
         /* removeSearch */ true);
   }
 
   private onIsManagedChanged_(isManaged: boolean) {
-    // If the user became managed, then hide the privacy review entry point.
+    // If the user became managed, then hide the privacy guide entry point.
     // However, if the user was managed before and is no longer now, then do not
-    // make the privacy review entry point visible, as the Settings route for
-    // privacy review would still be unavailable until the page is reloaded.
-    this.enablePrivacyReview_ = this.enablePrivacyReview_ && !isManaged;
+    // make the privacy guide entry point visible, as the Settings route for
+    // privacy guide would still be unavailable until the page is reloaded.
+    this.enablePrivacyGuide_ = this.enablePrivacyGuide_ && !isManaged;
   }
 
   private onSyncStatusChanged_(syncStatus: SyncStatus) {
     // If the user signed in to a child user account, then hide the privacy
-    // review entry point. However, if the user was a child user before and is
-    // no longer now then do not make the privacy review entry point visible, as
-    // the Settings route for privacy review would still be unavailable until
+    // guide entry point. However, if the user was a child user before and is
+    // no longer now then do not make the privacy guide entry point visible, as
+    // the Settings route for privacy guide would still be unavailable until
     // the page is reloaded.
-    this.enablePrivacyReview_ =
-        this.enablePrivacyReview_ && !syncStatus.childUser;
+    this.enablePrivacyGuide_ =
+        this.enablePrivacyGuide_ && !syncStatus.childUser;
   }
 
   private interactedWithPage_() {
@@ -399,9 +400,11 @@ export class SettingsPrivacyPageElement extends SettingsPrivacyPageElementBase {
   }
 
   private computePrivacySandboxSublabel_(): string {
-    return this.getPref('privacy_sandbox.apis_enabled').value ?
-        this.i18n('privacySandboxTrialsEnabled') :
-        this.i18n('privacySandboxTrialsDisabled');
+    const enabled = loadTimeData.getBoolean('privacySandboxSettings3Enabled') ?
+        this.getPref('privacy_sandbox.apis_enabled_v2').value :
+        this.getPref('privacy_sandbox.apis_enabled').value;
+    return enabled ? this.i18n('privacySandboxTrialsEnabled') :
+                     this.i18n('privacySandboxTrialsDisabled');
   }
 }
 

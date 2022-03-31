@@ -139,7 +139,7 @@ base::Value BuildAddressDictionary(const AutofillProfile& profile,
                          address_lines);
   AppendStringIfNotEmpty(profile, ADDRESS_HOME_LINE3, app_locale,
                          address_lines);
-  if (!address_lines.GetList().empty())
+  if (!address_lines.GetListDeprecated().empty())
     postal_address.SetKey("address_line", std::move(address_lines));
 
   SetStringIfNotEmpty(profile, ADDRESS_HOME_CITY, app_locale, "locality_name",
@@ -277,7 +277,8 @@ class GetUnmaskDetailsRequest : public PaymentsRequest {
     const auto* fido_eligible_card_ids = response.FindKeyOfType(
         "fido_eligible_card_id", base::Value::Type::LIST);
     if (fido_eligible_card_ids) {
-      for (const base::Value& result : fido_eligible_card_ids->GetList()) {
+      for (const base::Value& result :
+           fido_eligible_card_ids->GetListDeprecated()) {
         unmask_details_.fido_eligible_card_ids.insert(result.GetString());
       }
     }
@@ -431,6 +432,7 @@ class GetUploadDetailsRequest : public PaymentsRequest {
                               std::unique_ptr<base::Value>,
                               std::vector<std::pair<int, int>>)> callback,
       const int billable_service_number,
+      const int64_t billing_customer_number,
       PaymentsClient::UploadCardSource upload_card_source)
       : addresses_(addresses),
         detected_values_(detected_values),
@@ -439,7 +441,8 @@ class GetUploadDetailsRequest : public PaymentsRequest {
         app_locale_(app_locale),
         callback_(std::move(callback)),
         billable_service_number_(billable_service_number),
-        upload_card_source_(upload_card_source) {}
+        upload_card_source_(upload_card_source),
+        billing_customer_number_(billing_customer_number) {}
 
   GetUploadDetailsRequest(const GetUploadDetailsRequest&) = delete;
   GetUploadDetailsRequest& operator=(const GetUploadDetailsRequest&) = delete;
@@ -457,6 +460,12 @@ class GetUploadDetailsRequest : public PaymentsRequest {
     base::Value context(base::Value::Type::DICTIONARY);
     context.SetKey("language_code", base::Value(app_locale_));
     context.SetKey("billable_service", base::Value(billable_service_number_));
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillEnableSendingBcnInGetUploadDetails) &&
+        billing_customer_number_ != 0) {
+      context.SetKey("customer_context",
+                     BuildCustomerContextDictionary(billing_customer_number_));
+    }
     request_dict.SetKey("context", std::move(context));
 
     base::Value chrome_user_context(base::Value::Type::DICTIONARY);
@@ -590,6 +599,7 @@ class GetUploadDetailsRequest : public PaymentsRequest {
   std::vector<std::pair<int, int>> supported_card_bin_ranges_;
   const int billable_service_number_;
   PaymentsClient::UploadCardSource upload_card_source_;
+  const int64_t billing_customer_number_;
 };
 
 class UploadCardRequest : public PaymentsRequest {
@@ -698,11 +708,15 @@ class UploadCardRequest : public PaymentsRequest {
     upload_card_response_details_.server_id =
         credit_card_id ? *credit_card_id : std::string();
 
-    const absl::optional<int> instrument_id =
-        response.FindIntKey("instrument_id");
-    upload_card_response_details_.instrument_id =
-        instrument_id.has_value() ? static_cast<int64_t>(instrument_id.value())
-                                  : 0;
+    const std::string* response_instrument_id =
+        response.FindStringKey("instrument_id");
+    if (response_instrument_id) {
+      int64_t instrument_id;
+      if (base::StringToInt64(base::StringPiece(*response_instrument_id),
+                              &instrument_id)) {
+        upload_card_response_details_.instrument_id = instrument_id;
+      }
+    }
 
     const auto* virtual_card_metadata = response.FindKeyOfType(
         "virtual_card_metadata", base::Value::Type::DICTIONARY);
@@ -825,7 +839,7 @@ class MigrateCardsRequest : public PaymentsRequest {
 
     save_result_ =
         std::make_unique<std::unordered_map<std::string, std::string>>();
-    for (const base::Value& result : found_list->GetList()) {
+    for (const base::Value& result : found_list->GetListDeprecated()) {
       if (result.is_dict()) {
         const std::string* unique_id = result.FindStringKey("unique_id");
         const std::string* status = result.FindStringKey("status");
@@ -924,8 +938,9 @@ PaymentsClient::UnmaskResponseDetails::UnmaskResponseDetails(
   *this = other;
 }
 PaymentsClient::UnmaskResponseDetails::~UnmaskResponseDetails() = default;
-PaymentsClient::UnmaskResponseDetails& PaymentsClient::UnmaskResponseDetails::
-operator=(const PaymentsClient::UnmaskResponseDetails& other) {
+PaymentsClient::UnmaskResponseDetails&
+PaymentsClient::UnmaskResponseDetails::operator=(
+    const PaymentsClient::UnmaskResponseDetails& other) {
   real_pan = other.real_pan;
   if (other.fido_creation_options.has_value()) {
     fido_creation_options = other.fido_creation_options->Clone();
@@ -1015,6 +1030,9 @@ PaymentsClient::UpdateVirtualCardEnrollmentRequestDetails::
 PaymentsClient::UpdateVirtualCardEnrollmentRequestDetails::
     UpdateVirtualCardEnrollmentRequestDetails(
         const UpdateVirtualCardEnrollmentRequestDetails&) = default;
+PaymentsClient::UpdateVirtualCardEnrollmentRequestDetails&
+PaymentsClient::UpdateVirtualCardEnrollmentRequestDetails::operator=(
+    const UpdateVirtualCardEnrollmentRequestDetails&) = default;
 PaymentsClient::UpdateVirtualCardEnrollmentRequestDetails::
     ~UpdateVirtualCardEnrollmentRequestDetails() = default;
 
@@ -1078,13 +1096,14 @@ void PaymentsClient::GetUploadDetails(
                             std::unique_ptr<base::Value>,
                             std::vector<std::pair<int, int>>)> callback,
     const int billable_service_number,
+    const int64_t billing_customer_number,
     UploadCardSource upload_card_source) {
-  IssueRequest(
-      std::make_unique<GetUploadDetailsRequest>(
-          addresses, detected_values, active_experiments,
-          account_info_getter_->IsSyncFeatureEnabled(), app_locale,
-          std::move(callback), billable_service_number, upload_card_source),
-      /*authenticate=*/false);
+  IssueRequest(std::make_unique<GetUploadDetailsRequest>(
+                   addresses, detected_values, active_experiments,
+                   account_info_getter_->IsSyncFeatureEnabled(), app_locale,
+                   std::move(callback), billable_service_number,
+                   billing_customer_number, upload_card_source),
+               /*authenticate=*/false);
 }
 
 void PaymentsClient::UploadCard(
@@ -1120,9 +1139,9 @@ void PaymentsClient::SelectChallengeOption(
 
 void PaymentsClient::GetVirtualCardEnrollmentDetails(
     const GetDetailsForEnrollmentRequestDetails& request_details,
-    base::OnceCallback<
-        void(AutofillClient::PaymentsRpcResult,
-             payments::PaymentsClient::GetDetailsForEnrollmentResponseDetails&)>
+    base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
+                            const payments::PaymentsClient::
+                                GetDetailsForEnrollmentResponseDetails&)>
         callback) {
   IssueRequest(std::make_unique<GetDetailsForEnrollmentRequest>(
                    request_details, std::move(callback)),

@@ -41,7 +41,7 @@ namespace image_editor {
 
 // Colors for semitransparent overlay.
 static constexpr SkColor kColorSemitransparentOverlayMask =
-    SkColorSetARGB(0x7F, 0x00, 0x00, 0x00);
+    SkColorSetARGB(0x9F, 0x00, 0x00, 0x00);
 static constexpr SkColor kColorSemitransparentOverlayVisible =
     SkColorSetARGB(0x00, 0x00, 0x00, 0x00);
 static constexpr SkColor kColorSelectionRect = SkColorSetRGB(0xEE, 0xEE, 0xEE);
@@ -80,7 +80,7 @@ void ScreenshotFlow::CreateAndAddUIOverlay() {
   bounds.Offset(-offset_bounds.x(), -offset_bounds.y());
 
   event_capture_mac_ = std::make_unique<EventCaptureMac>(
-      this, web_contents_view, web_contents_->GetTopLevelNativeWindow());
+      this, web_contents_->GetTopLevelNativeWindow());
 #else
   const gfx::NativeWindow& native_window = web_contents_->GetNativeView();
   ui::Layer* content_layer = native_window->layer();
@@ -102,7 +102,6 @@ void ScreenshotFlow::CreateAndAddUIOverlay() {
 void ScreenshotFlow::RemoveUIOverlay() {
   if (capture_mode_ == CaptureMode::NOT_CAPTURING)
     return;
-  is_dragging_ = false;
   capture_mode_ = CaptureMode::NOT_CAPTURING;
   if (!web_contents_ || !screen_capture_layer_)
     return;
@@ -175,8 +174,6 @@ void ScreenshotFlow::CaptureAndRunScreenshotCompleteCallback(
 
 void ScreenshotFlow::CancelCapture() {
   RemoveUIOverlay();
-  CaptureAndRunScreenshotCompleteCallback(
-      ScreenshotCaptureResultCode::USER_NAVIGATED_EXIT, gfx::Rect());
 }
 
 void ScreenshotFlow::OnKeyEvent(ui::KeyEvent* event) {
@@ -204,41 +201,44 @@ void ScreenshotFlow::OnMouseEvent(ui::MouseEvent* event) {
       web_contents_->GetContentNativeView();
   views::Widget* widget =
       views::Widget::GetWidgetForNativeView(web_contents_view);
+  if (!widget)
+    return;
   const gfx::Rect widget_bounds = widget->GetWindowBoundsInScreen();
   location.set_x(location.x() + (widget_bounds.x() - web_contents_bounds.x()));
   location.set_y(location.y() + (widget_bounds.y() - web_contents_bounds.y()));
 #endif
+
   switch (event->type()) {
     case ui::ET_MOUSE_MOVED:
       SetCursor(ui::mojom::CursorType::kCross);
       event->SetHandled();
       break;
     case ui::ET_MOUSE_PRESSED:
-      if (event->IsOnlyLeftMouseButton()) {
+      if (event->IsLeftMouseButton()) {
+#if BUILDFLAG(IS_MAC)
         // Don't capture initial clicks on browser ui outside the webcontents.
         if (location.x() < 0 || location.y() < 0 ||
             location.x() > web_contents_bounds.width() ||
             location.y() > web_contents_bounds.height()) {
-          return;
+          event->SetHandled();
+          break;
         }
-        is_dragging_ = true;
+#endif  // BUILDFLAG(IS_MAC)
         drag_start_ = location;
         drag_end_ = location;
         event->SetHandled();
       }
       break;
     case ui::ET_MOUSE_DRAGGED:
-      if (event->IsOnlyLeftMouseButton() && is_dragging_) {
+      if (event->IsLeftMouseButton()) {
         drag_end_ = location;
         RequestRepaint(gfx::Rect());
         event->SetHandled();
       }
       break;
     case ui::ET_MOUSE_RELEASED:
-      if ((capture_mode_ == CaptureMode::SELECTION_RECTANGLE ||
-           capture_mode_ == CaptureMode::SELECTION_ELEMENT) &&
-          is_dragging_) {
-        is_dragging_ = false;
+      if (capture_mode_ == CaptureMode::SELECTION_RECTANGLE ||
+          capture_mode_ == CaptureMode::SELECTION_ELEMENT) {
         AttemptRegionCapture(web_contents_bounds);
         event->SetHandled();
       }
@@ -247,8 +247,7 @@ void ScreenshotFlow::OnMouseEvent(ui::MouseEvent* event) {
     case ui::ET_MOUSEWHEEL:
       if ((capture_mode_ == CaptureMode::SELECTION_RECTANGLE ||
            capture_mode_ == CaptureMode::SELECTION_ELEMENT) &&
-          event->AsMouseWheelEvent()->y_offset() > 0 && is_dragging_) {
-        is_dragging_ = false;
+          event->AsMouseWheelEvent()->y_offset() > 0) {
         AttemptRegionCapture(web_contents_bounds);
         event->SetHandled();
       }
@@ -268,8 +267,7 @@ void ScreenshotFlow::OnScrollEvent(ui::ScrollEvent* event) {
   gfx::Rect web_contents_bounds = web_contents_->GetViewBounds();
   if ((capture_mode_ == CaptureMode::SELECTION_RECTANGLE ||
        capture_mode_ == CaptureMode::SELECTION_ELEMENT) &&
-      event->y_offset() > 0 && is_dragging_) {
-    is_dragging_ = false;
+      event->y_offset() > 0) {
     AttemptRegionCapture(web_contents_bounds);
     event->SetHandled();
   }

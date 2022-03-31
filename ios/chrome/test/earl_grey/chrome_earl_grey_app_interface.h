@@ -16,6 +16,17 @@
 @class FakeChromeIdentity;
 @class NamedGuide;
 
+@interface JavaScriptExecutionResult : NSObject
+@property(readonly, nonatomic) BOOL success;
+@property(readonly, nonatomic) NSString* result;
+
+- (instancetype)initWithResult:(NSString*)result
+           successfulExecution:(BOOL)outcome;
+
+- (instancetype)init NS_UNAVAILABLE;
+
+@end
+
 // ChromeEarlGreyAppInterface contains the app-side implementation for helpers
 // that primarily work via direct model access. These helpers are compiled into
 // the app binary and can be called from either app or test code.
@@ -286,9 +297,6 @@
 // timeout, or else an NSError indicating why the operation failed.
 + (NSError*)waitForWebStateZoomScale:(CGFloat)scale;
 
-// Sets value for content setting.
-+ (void)setContentSettings:(ContentSetting)setting;
-
 // Signs the user out from Chrome and then starts clearing the identities.
 //
 // Note: This method does not wait for identities to be cleared from the
@@ -462,6 +470,12 @@
 // otherwise returns object representing execution result.
 + (id)executeJavaScript:(NSString*)javaScript error:(NSError**)error;
 
+// Executes JavaScript through the WebState's WebFrame and waits for either the
+// completion or timeout. If execution does not complete within a timeout or
+// JavaScript exception is thrown, |success| is NO.
+// otherwise returns object representing execution result.
++ (JavaScriptExecutionResult*)executeJavaScript:(NSString*)javaScript;
+
 // Returns the user agent that should be used for the mobile version.
 + (NSString*)mobileUserAgentString;
 
@@ -485,6 +499,9 @@
 
 // Returns YES if a variation triggering server-side behavior is enabled.
 + (BOOL)isTriggerVariationEnabled:(int)variationID;
+
+// Returns YES if |kSupportForAddPasswordsInSettings| is enabled.
++ (BOOL)isAddCredentialsInSettingsEnabled;
 
 // Returns YES if UKM feature is enabled.
 + (BOOL)isUKMEnabled [[nodiscard]];
@@ -513,16 +530,13 @@
 // can, open multiple windows.
 + (BOOL)areMultipleWindowsSupported;
 
-// Returns whether the ContextMenuActionsRefresh feature is enabled.
-+ (BOOL)isContextMenuActionsRefreshEnabled;
-
 // Returns whether the new ContextMenu for web content feature is enabled.
 + (BOOL)isContextMenuInWebViewEnabled;
 
 // Returns whether the NewOverflowMenu feature is enabled.
 + (BOOL)isNewOverflowMenuEnabled;
 
-#pragma mark - Popup Blocking
+#pragma mark - ContentSettings
 
 // Gets the current value of the popup content setting preference for the
 // original browser state.
@@ -531,6 +545,9 @@
 // Sets the popup content setting preference to the given value for the original
 // browser state.
 + (void)setPopupPrefValue:(ContentSetting)value;
+
+// Resets the desktop content setting to its default value.
++ (void)resetDesktopContentSetting;
 
 #pragma mark - Pref Utilities (EG2)
 
@@ -600,7 +617,7 @@
 + (void)watchForButtonsWithLabels:(NSArray<NSString*>*)labels
                           timeout:(NSTimeInterval)timeout;
 
-// Returns YES is the button with given (accessibility) |label| was observed at
+// Returns YES if the button with given (accessibility) |label| was observed at
 // some point since |watchForButtonsWithLabels:timeout:| was called.
 + (BOOL)watcherDetectedButtonWithLabel:(NSString*)label;
 

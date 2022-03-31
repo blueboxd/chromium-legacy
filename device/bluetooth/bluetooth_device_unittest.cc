@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
@@ -317,7 +318,7 @@ TEST_F(BluetoothTest, LowEnergyDeviceProperties) {
   BluetoothDevice* device = SimulateLowEnergyDevice(1);
   ASSERT_TRUE(device);
 // Bluetooth class information for BLE device is not available on Windows.
-#ifndef OS_WIN
+#if !BUILDFLAG(IS_WIN)
   EXPECT_EQ(0x1F00u, device->GetBluetoothClass());
 #endif
   EXPECT_EQ(kTestDeviceAddress1, device->GetAddress());

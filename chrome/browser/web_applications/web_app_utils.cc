@@ -4,6 +4,9 @@
 
 #include "chrome/browser/web_applications/web_app_utils.h"
 
+#include <utility>
+
+#include "base/base64.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -11,16 +14,21 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/grit/components_resources.h"
 #include "components/site_engagement/content/site_engagement_service.h"
+#include "components/strings/grit/components_strings.h"
+#include "skia/ext/skia_utils_base.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -39,6 +47,18 @@ bool g_enable_system_web_apps_in_lacros_for_testing = false;
 // main profile. This may be modified by SkipMainProfileCheckForTesting().
 bool g_skip_main_profile_check_for_testing = false;
 #endif
+
+GURL EncodeIconAsUrl(const SkBitmap& bitmap) {
+  std::vector<unsigned char> output;
+  gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &output);
+  std::string encoded;
+  base::Base64Encode(
+      base::StringPiece(reinterpret_cast<const char*>(output.data()),
+                        output.size()),
+      &encoded);
+  return GURL("data:image/png;base64," + encoded);
+}
+
 }  // namespace
 
 namespace web_app {
@@ -113,6 +133,64 @@ content::BrowserContext* GetBrowserContextForWebAppMetrics(
       AreWebAppsEnabled(original_profile) &&
       !original_profile->IsGuestSession();
   return is_web_app_metrics_enabled ? original_profile : nullptr;
+}
+
+content::mojom::AlternativeErrorPageOverrideInfoPtr GetAppManifestInfo(
+    const GURL& url,
+    content::BrowserContext* browser_context) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  web_app::WebAppProvider* web_app_provider =
+      web_app::WebAppProvider::GetForWebApps(profile);
+  if (web_app_provider == nullptr) {
+    return nullptr;
+  }
+
+  web_app::WebAppRegistrar& web_app_registrar = web_app_provider->registrar();
+  const absl::optional<web_app::AppId> app_id =
+      web_app_registrar.FindAppWithUrlInScope(url);
+  if (!app_id.has_value()) {
+    return nullptr;
+  }
+
+  auto alternative_error_page_info =
+      content::mojom::AlternativeErrorPageOverrideInfo::New();
+  // TODO(crbug.com/1285128): Ensure sufficient contrast.
+  base::Value dict(base::Value::Type::DICTIONARY);
+  std::string theme_color = skia::SkColorToHexString(
+      web_app_registrar.GetAppThemeColor(*app_id).value_or(SK_ColorBLACK));
+  std::string background_color = skia::SkColorToHexString(
+      web_app_registrar.GetAppBackgroundColor(*app_id).value_or(SK_ColorWHITE));
+  dict.SetStringKey(default_offline::kThemeColor, theme_color);
+  dict.SetStringKey(default_offline::kBackgroundColor, background_color);
+  dict.SetStringKey(default_offline::kAppShortName,
+                    web_app_registrar.GetAppShortName(*app_id));
+  dict.SetStringKey(
+      default_offline::kMessage,
+      l10n_util::GetStringUTF16(IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED));
+  SkBitmap bitmap = web_app_provider->icon_manager().GetFavicon(*app_id);
+  std::string icon_url = EncodeIconAsUrl(bitmap).spec();
+  dict.SetStringKey(default_offline::kIconUrl, icon_url);
+  absl::optional<SkColor> dark_mode_theme_color =
+      web_app_registrar.GetAppDarkModeThemeColor(*app_id);
+  if (dark_mode_theme_color) {
+    dict.SetStringKey(default_offline::kDarkModeThemeColor,
+                      skia::SkColorToHexString(dark_mode_theme_color.value()));
+  } else {
+    dict.SetStringKey(default_offline::kDarkModeThemeColor, theme_color);
+  }
+  absl::optional<SkColor> dark_mode_background_color =
+      web_app_registrar.GetAppDarkModeThemeColor(*app_id);
+  if (dark_mode_background_color) {
+    dict.SetStringKey(
+        default_offline::kDarkModeBackgroundColor,
+        skia::SkColorToHexString(dark_mode_background_color.value()));
+  } else {
+    dict.SetStringKey(default_offline::kDarkModeBackgroundColor,
+                      background_color);
+  }
+  alternative_error_page_info->alternative_error_page_params = std::move(dict);
+  alternative_error_page_info->resource_id = IDR_WEBAPP_DEFAULT_OFFLINE_HTML;
+  return alternative_error_page_info;
 }
 
 base::FilePath GetWebAppsRootDirectory(Profile* profile) {
@@ -368,4 +446,25 @@ void RegisterFileHandlersWithOs(WebAppProvider* provider,
                                 const AppId& app_id,
                                 absl::optional<ApiApprovalState> approval_state,
                                 base::OnceClosure finished_closure) {}
+
+AppId GetAppIdFromAppSettingsUrl(const GURL& url) {
+  // App Settings page is served under chrome://app-settings/<app-id>.
+  // url.path() returns "/<app-id>" with a leading slash.
+  std::string path = url.path();
+  if (path.size() <= 1)
+    return AppId();
+  return path.substr(1);
+}
+
+bool HasAppSettingsPage(Profile* profile, const GURL& url) {
+  const AppId app_id = GetAppIdFromAppSettingsUrl(url);
+  if (app_id.empty())
+    return false;
+
+  WebAppProvider* provider = WebAppProvider::GetForWebApps(profile);
+  if (!provider)
+    return false;
+  return provider->registrar().IsLocallyInstalled(app_id);
+}
+
 }  // namespace web_app

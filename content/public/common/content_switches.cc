@@ -22,10 +22,6 @@ const char kAllowInsecureLocalhost[] = "allow-insecure-localhost";
 const char kAllowLoopbackInPeerConnection[] =
     "allow-loopback-in-peer-connection";
 
-// Allow a page to send synchronus XHR during its unloading.
-// TODO(https://crbug.com/1003101): Remove this in Chrome 88.
-const char kAllowSyncXHRInPageDismissal[] = "allow-sync-xhr-in-page-dimissal";
-
 // Uses the android SkFontManager on linux. The specified directory should
 // include the configuration xml file with the name "fonts.xml".
 // This is used in blimp to emulate android fonts on linux.
@@ -89,12 +85,12 @@ const char kDisableAccelerated2dCanvas[]    = "disable-accelerated-2d-canvas";
 // Enable in-progress canvas 2d API methods BeginLayer and EndLayer.
 const char kEnableCanvas2DLayers[] = "canvas-2d-layers";
 
-// Enables canvas to clear its context when it is running in background.
-const char kEnableCanvasContextLostInBackground[] =
-    "enable-canvas-context-lost-in-background";
-
 // Enable in-progress canvas 2d API features.
 const char kEnableNewCanvas2DAPI[] = "new-canvas-2d-api";
+
+// Disables hardware acceleration of video decode, where available.
+const char kDisableAcceleratedVideoDecode[] =
+    "disable-accelerated-video-decode";
 
 // Disables hardware acceleration of video encode, where available.
 const char kDisableAcceleratedVideoEncode[] =
@@ -321,6 +317,10 @@ const char kDisable2dCanvasClipAntialiasing[] = "disable-2d-canvas-clip-aa";
 // Has no effect unless GPU rasterization is enabled.
 const char kDisableYUVImageDecoding[] = "disable-yuv-image-decoding";
 
+// Enables the Accept-CH cache for client hints to be durable past browser
+// restarts.
+const char kDurableClientHintsCache[] = "durable-client-hints-cache";
+
 // Enables LCD text.
 const char kEnableLCDText[]                 = "enable-lcd-text";
 
@@ -479,12 +479,6 @@ const char kEnableWebGLImageChromium[] = "enable-webgl-image-chromium";
 // in file URLs. The format is "/alias=/replacement", which would turn
 // file:///alias/some/path.html into file:///replacement/some/path.html.
 const char kFileUrlPathAlias[] = "file-url-path-alias";
-
-// Forces the Chrome major version to 100 in the User-Agent string.
-const char kForceMajorVersionTo100[] = "force-major-version-to-100";
-
-// Forces the Chrome minor version to 100 in the User-Agent string.
-const char kForceMinorVersionTo100[] = "force-minor-version-to-100";
 
 // Forces the Chrome major version to the minor position in the User-Agent
 // string. Locks major version to 99.
@@ -938,10 +932,6 @@ const char kWebXrRuntimeOrientationSensors[] = "orientation-sensors";
 // The following are the runtimes that WebXr supports.
 const char kWebXrRuntimeOpenXr[] = "openxr";
 const char kWebXrRuntimeWMR[] = "windows-mixed-reality";
-
-// Disables hardware acceleration of video decode, where available.
-const char kDisableAcceleratedVideoDecode[] =
-    "disable-accelerated-video-decode";
 
 #if BUILDFLAG(IS_ANDROID)
 // Disable Media Session API

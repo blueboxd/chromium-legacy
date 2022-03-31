@@ -14,6 +14,7 @@
 #include "content/browser/loader/browser_initiated_resource_request.h"
 #include "content/browser/loader/file_url_loader_factory.h"
 #include "content/browser/navigation_subresource_loader_params.h"
+#include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
@@ -30,7 +31,9 @@
 #include "content/public/browser/url_loader_throttles.h"
 #include "content/public/browser/web_ui_url_loader_factory.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -41,6 +44,7 @@
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/ip_address_space_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/client_security_state.mojom.h"
 #include "services/network/public/mojom/early_hints.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -49,6 +53,7 @@
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 
 namespace content {
 
@@ -204,6 +209,7 @@ void WorkerScriptFetcher::CreateAndStart(
     const url::Origin& request_initiator,
     const blink::StorageKey& request_initiator_storage_key,
     const net::IsolationInfo& trusted_isolation_info,
+    network::mojom::ClientSecurityStatePtr client_security_state,
     network::mojom::CredentialsMode credentials_mode,
     blink::mojom::FetchClientSettingsObjectPtr
         outside_fetch_client_settings_object,
@@ -219,6 +225,7 @@ void WorkerScriptFetcher::CreateAndStart(
     const base::UnguessableToken& devtools_worker_token,
     CompletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(client_security_state);
   DCHECK(storage_partition);
   DCHECK(devtools_agent_host);
   DCHECK(request_destination == network::mojom::RequestDestination::kWorker ||
@@ -322,8 +329,8 @@ void WorkerScriptFetcher::CreateAndStart(
   WorkerScriptFetcher::CreateScriptLoader(
       worker_process_id, worker_token, initial_request_url,
       ancestor_render_frame_host, creator_render_frame_host,
-      trusted_isolation_info, std::move(resource_request),
-      std::move(factory_bundle_for_browser),
+      trusted_isolation_info, std::move(client_security_state),
+      std::move(resource_request), std::move(factory_bundle_for_browser),
       std::move(subresource_loader_factories),
       std::move(service_worker_context), service_worker_handle,
       std::move(blob_url_loader_factory),
@@ -338,6 +345,7 @@ void WorkerScriptFetcher::CreateScriptLoader(
     RenderFrameHostImpl* ancestor_render_frame_host,
     RenderFrameHostImpl* creator_render_frame_host,
     const net::IsolationInfo& trusted_isolation_info,
+    network::mojom::ClientSecurityStatePtr client_security_state,
     std::unique_ptr<network::ResourceRequest> resource_request,
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         factory_bundle_for_browser_info,
@@ -353,6 +361,7 @@ void WorkerScriptFetcher::CreateScriptLoader(
     WorkerScriptFetcher::CompletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(devtools_agent_host);
+  DCHECK(client_security_state);
 
   RenderProcessHost* factory_process =
       RenderProcessHost::FromID(worker_process_id);
@@ -361,15 +370,9 @@ void WorkerScriptFetcher::CreateScriptLoader(
   BrowserContext* browser_context = factory_process->GetBrowserContext();
   DCHECK(browser_context);  // Checked in the Start method.
 
-  network::mojom::ClientSecurityStatePtr client_security_state;
-  if (creator_render_frame_host) {
-    client_security_state =
-        creator_render_frame_host->BuildClientSecurityState();
-
-    // Do not enforce COEP on the main script fetch.
-    client_security_state->cross_origin_embedder_policy =
-        network::CrossOriginEmbedderPolicy();
-  }
+  // Do not enforce COEP on the main script fetch.
+  client_security_state->cross_origin_embedder_policy =
+      network::CrossOriginEmbedderPolicy();
 
   // Create the URL loader factory for WorkerScriptLoaderFactory to use to load
   // the main script.

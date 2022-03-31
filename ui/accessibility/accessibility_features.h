@@ -20,12 +20,6 @@ AX_BASE_EXPORT extern const base::Feature
 // property.
 AX_BASE_EXPORT bool IsAccessibilityAriaVirtualContentEnabled();
 
-AX_BASE_EXPORT extern const base::Feature kEnableAccessibilityExposeDisplayNone;
-
-// Returns true if "display: none" nodes should be exposed to the
-// browser process AXTree.
-AX_BASE_EXPORT bool IsAccessibilityExposeDisplayNoneEnabled();
-
 AX_BASE_EXPORT extern const base::Feature kEnableAccessibilityExposeHTMLElement;
 
 // Returns true if the <html> element should be exposed to the
@@ -125,11 +119,24 @@ AX_BASE_EXPORT extern const base::Feature
 // Returns true if experimental accessibility dictation extension is enabled.
 AX_BASE_EXPORT bool IsExperimentalAccessibilityDictationExtensionEnabled();
 
+// Enables accessibility Dictation UI hints.
+AX_BASE_EXPORT extern const base::Feature
+    kExperimentalAccessibilityDictationHints;
+
+// Returns true if experimental accessibility dictation hints is enabled.
+AX_BASE_EXPORT bool IsExperimentalAccessibilityDictationHintsEnabled();
+
 // Enables high-quality, network-based voices in Select-to-speak.
 AX_BASE_EXPORT extern const base::Feature kEnhancedNetworkVoices;
 
 // Returns true if network-based voices are enabled in Select-to-speak.
 AX_BASE_EXPORT bool IsEnhancedNetworkVoicesEnabled();
+
+// Enables improved Accessibility OS Settings visibility.
+AX_BASE_EXPORT extern const base::Feature kAccessibilityOSSettingsVisibility;
+
+// Returns true if improved Accessibility OS Settings visibility is enabled.
+AX_BASE_EXPORT bool IsAccessibilityOSSettingsVisibilityEnabled();
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

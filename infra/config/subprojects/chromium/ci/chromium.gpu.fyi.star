@@ -46,8 +46,8 @@ consoles.console_view(
         "Linux|Builder": "*type*",
         "Linux|Intel": "*type*",
         "Linux|Nvidia": "*type*",
-        "Android": ["L32", "M64", "N64", "P32", "vk", "skgl", "skv"],
-        "Android|M64": ["QCOM"],
+        "Android": ["Builder", "L32", "M64", "P32", "R32", "S64"],
+        "Lacros": "*builder*",
     },
 )
 
@@ -58,10 +58,10 @@ def gpu_fyi_windows_builder(*, name, **kwargs):
 ci.thin_tester(
     name = "Android FYI Release (NVIDIA Shield TV)",
     console_view_entry = consoles.console_view_entry(
-        category = "Android|N64|NVDA",
+        category = "Android|P32|NVDA",
         short_name = "STV",
     ),
-    triggered_by = ["GPU FYI Android arm64 Builder"],
+    triggered_by = ["GPU FYI Android arm Builder"],
 )
 
 ci.thin_tester(
@@ -111,29 +111,14 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "Android FYI Release (Pixel 6)",
+    # TODO(crbug.com/1280418): Revert this to the default once more Pixel 6
+    # capacity is deployed.
+    execution_timeout = 8 * time.hour,
     console_view_entry = consoles.console_view_entry(
         category = "Android|S64|ARM",
         short_name = "P6",
     ),
     triggered_by = ["GPU FYI Android arm64 Builder"],
-)
-
-ci.thin_tester(
-    name = "Android FYI SkiaRenderer GL (Nexus 5X)",
-    console_view_entry = consoles.console_view_entry(
-        category = "Android|skgl|M64",
-        short_name = "N5X",
-    ),
-    triggered_by = ["GPU FYI Android arm64 Builder"],
-)
-
-ci.thin_tester(
-    name = "Android FYI SkiaRenderer Vulkan (Pixel 2)",
-    console_view_entry = consoles.console_view_entry(
-        category = "Android|skv|P32",
-        short_name = "P2",
-    ),
-    triggered_by = ["GPU FYI Android arm Builder"],
 )
 
 ci.gpu.linux_builder(
@@ -142,17 +127,35 @@ ci.gpu.linux_builder(
     # timeout.
     execution_timeout = 8 * time.hour,
     console_view_entry = consoles.console_view_entry(
-        category = "ChromeOS|amd64|generic",
-        short_name = "x64",
+        category = "ChromeOS|LLVM",
+        short_name = "gen",
     ),
+)
+
+ci.gpu.linux_builder(
+    name = "gpu-fyi-chromeos-jacuzzi-exp",
+    console_view_entry = consoles.console_view_entry(
+        category = "ChromeOS|ARM",
+        short_name = "jcz",
+    ),
+    list_view = "chromium.gpu.experimental",
 )
 
 ci.gpu.linux_builder(
     name = "ChromeOS FYI Release (kevin)",
     console_view_entry = consoles.console_view_entry(
-        category = "ChromeOS|arm|kevin",
+        category = "ChromeOS|ARM",
         short_name = "kvn",
     ),
+)
+
+ci.gpu.linux_builder(
+    name = "gpu-fyi-chromeos-octopus-exp",
+    console_view_entry = consoles.console_view_entry(
+        category = "ChromeOS|Intel",
+        short_name = "oct",
+    ),
+    list_view = "chromium.gpu.experimental",
 )
 
 ci.gpu.linux_builder(
@@ -216,15 +219,6 @@ ci.gpu.linux_builder(
     goma_backend = None,
     reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
-)
-
-# Builder + tester.
-ci.gpu.linux_builder(
-    name = "Linux FYI SkiaRenderer Dawn Release (Intel HD 630)",
-    console_view_entry = consoles.console_view_entry(
-        category = "Linux|Intel",
-        short_name = "skd",
-    ),
 )
 
 ci.gpu.mac_builder(
@@ -347,24 +341,6 @@ ci.thin_tester(
 )
 
 ci.thin_tester(
-    name = "Linux FYI SkiaRenderer Vulkan (Intel HD 630)",
-    console_view_entry = consoles.console_view_entry(
-        category = "Linux|Intel",
-        short_name = "skv",
-    ),
-    triggered_by = ["GPU FYI Linux Builder"],
-)
-
-ci.thin_tester(
-    name = "Linux FYI SkiaRenderer Vulkan (NVIDIA)",
-    console_view_entry = consoles.console_view_entry(
-        category = "Linux|Nvidia",
-        short_name = "skv",
-    ),
-    triggered_by = ["GPU FYI Linux Builder"],
-)
-
-ci.thin_tester(
     name = "Mac FYI Debug (Intel)",
     console_view_entry = consoles.console_view_entry(
         category = "Mac|Intel",
@@ -386,10 +362,11 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "Mac FYI Experimental Retina Release (AMD)",
-    console_view_entry = consoles.console_view_entry(
-        category = "Mac|AMD|Retina",
-        short_name = "exp",
-    ),
+    # Uncomment this entry when this experimental tester is actually in use.
+    # console_view_entry = consoles.console_view_entry(
+    #     category = "Mac|AMD|Retina",
+    #     short_name = "exp",
+    # ),
     list_view = "chromium.gpu.experimental",
     triggered_by = ["GPU FYI Mac Builder"],
 )
@@ -573,15 +550,6 @@ ci.thin_tester(
         short_name = "xr",
     ),
     triggered_by = ["GPU FYI XR Win x64 Builder"],
-)
-
-# Builder + tester.
-gpu_fyi_windows_builder(
-    name = "Win10 FYI x64 SkiaRenderer Dawn Release (NVIDIA)",
-    console_view_entry = consoles.console_view_entry(
-        category = "Windows|10|x64|Nvidia",
-        short_name = "skd",
-    ),
 )
 
 ci.thin_tester(

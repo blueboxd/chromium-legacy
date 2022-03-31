@@ -72,18 +72,12 @@ class CONTENT_EXPORT NativeIOManager {
   // Removes an storage key's data and closes any open files.
   void DeleteStorageKeyData(
       const blink::StorageKey& storage_key,
-      storage::mojom::QuotaClient::DeleteStorageKeyDataCallback callback);
+      storage::mojom::QuotaClient::DeleteBucketDataCallback callback);
 
   // Computes all storage keys with data for a given type.
   void GetStorageKeysForType(
       blink::mojom::StorageType type,
       storage::mojom::QuotaClient::GetStorageKeysForTypeCallback callback);
-
-  // Computes all storage keys with data for a given hostname.
-  void GetStorageKeysForHost(
-      blink::mojom::StorageType type,
-      const std::string& host,
-      storage::mojom::QuotaClient::GetStorageKeysForHostCallback callback);
 
   // Computes the amount of bytes for the given storage key.
   //
@@ -93,7 +87,7 @@ class CONTENT_EXPORT NativeIOManager {
   void GetStorageKeyUsage(
       const blink::StorageKey& storage_key,
       blink::mojom::StorageType type,
-      storage::mojom::QuotaClient::GetStorageKeyUsageCallback callback);
+      storage::mojom::QuotaClient::GetBucketUsageCallback callback);
 
   // Computes the amount of bytes for all storage keys.
   //

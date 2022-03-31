@@ -109,11 +109,6 @@ void DumpAccessibilityTestBase::SetUp() {
 void DumpAccessibilityTestBase::ChooseFeatures(
     std::vector<base::Feature>* enabled_features,
     std::vector<base::Feature>* disabled_features) {
-
-  // Enable exposing "display: none" nodes to the browser process for testing.
-  enabled_features->emplace_back(
-      features::kEnableAccessibilityExposeDisplayNone);
-
   // For the best test coverage during development of this feature, enable the
   // code that expposes document markers on AXInlineTextBox objects and the
   // corresponding code in AXPosition on the browser that collects those
@@ -314,7 +309,7 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
 
   // Execute and wait for specified string
   for (const auto& function_name : scenario_.execute) {
-    VLOG(1) << "executing: " << function_name;
+    DLOG(INFO) << "executing: " << function_name;
     base::Value result =
         ExecuteScriptAndGetValue(web_contents->GetMainFrame(), function_name);
     const std::string& str = result.is_string() ? result.GetString() : "";
@@ -457,9 +452,12 @@ std::unique_ptr<AXTreeFormatter> DumpAccessibilityTestBase::CreateFormatter()
 std::pair<base::Value, std::vector<std::string>>
 DumpAccessibilityTestBase::CaptureEvents(InvokeAction invoke_action) {
   // Create a new Event Recorder for the run.
+  BrowserAccessibilityManager* manager = GetManager();
+  ui::AXTreeSelector selector(
+      manager->GetRoot()->GetTargetForNativeAccessibilityEvent());
   std::unique_ptr<ui::AXEventRecorder> event_recorder =
-      AXInspectFactory::CreateRecorder(GetParam(), GetManager(),
-                                       base::GetCurrentProcId(), {});
+      AXInspectFactory::CreateRecorder(GetParam(), manager,
+                                       base::GetCurrentProcId(), selector);
   event_recorder->SetOnlyWebEvents(true);
 
   event_recorder->ListenToEvents(base::BindRepeating(

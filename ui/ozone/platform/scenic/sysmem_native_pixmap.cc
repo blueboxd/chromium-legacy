@@ -83,6 +83,11 @@ bool SysmemNativePixmap::ScheduleOverlayPlane(
     std::vector<gfx::GpuFence> release_fences) {
   DCHECK(collection_->scenic_overlay_view());
   ScenicOverlayView* overlay_view = collection_->scenic_overlay_view();
+  const auto& buffer_collection_id = handle_.buffer_collection_id.value();
+  if (!overlay_view->AttachToScenicSurface(widget, buffer_collection_id)) {
+    DLOG(ERROR) << "Failed to attach to surface.";
+    return false;
+  }
 
   // Convert gfx::GpuFence to zx::event for PresentImage call.
   std::vector<zx::event> acquire_events;
@@ -107,17 +112,13 @@ const gfx::NativePixmapHandle& SysmemNativePixmap::PeekHandle() const {
   return handle_;
 }
 
-bool SysmemNativePixmap::SupportsOverlayPlane() const {
-  // We can display an overlay as long as we have a ScenicOverlayView. Note that
-  // ScenicOverlayView can migrate from one surface to another, but it can't
-  // be used across multiple surfaces similtaneously. But on Fuchsia each buffer
-  // collection is allocated (in FuchsiaVideoDecoder) for a specific web frame,
-  // and each frame can be displayed only on one specific surface.
-  return !!collection_->scenic_overlay_view();
-}
+bool SysmemNativePixmap::SupportsOverlayPlane(
+    gfx::AcceleratedWidget widget) const {
+  if (!collection_->scenic_overlay_view())
+    return false;
 
-ScenicOverlayView* SysmemNativePixmap::GetScenicOverlayView() {
-  return collection_->scenic_overlay_view();
+  return collection_->scenic_overlay_view()->CanAttachToAcceleratedWidget(
+      widget);
 }
 
 }  // namespace ui

@@ -71,6 +71,15 @@ extern const BASE_EXPORT Feature kUseFiveMinutesThreadReclaimTime;
 // Controls whether or not canceled delayed tasks are removed from task queues.
 extern const BASE_EXPORT base::Feature kRemoveCanceledTasksInTaskQueue;
 
+// Under this feature, a non-zero leeway is added to delayed tasks. Along with
+// DelayPolicy, this affects the time at which a delayed task runs.
+extern const BASE_EXPORT Feature kAddTaskLeewayFeature;
+extern const BASE_EXPORT base::FeatureParam<TimeDelta> kTaskLeewayParam;
+
+// Under this feature, wake ups are aligned at a 4ms boundary when allowed per
+// DelayPolicy.
+extern const BASE_EXPORT base::Feature kAlignWakeUps;
+
 }  // namespace base
 
 #endif  // BASE_TASK_TASK_FEATURES_H_

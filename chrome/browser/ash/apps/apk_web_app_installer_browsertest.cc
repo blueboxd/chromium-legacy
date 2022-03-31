@@ -139,9 +139,10 @@ void ExpectInitialManifestFieldsFromWebAppInstallInfo(
 
 namespace ash {
 
-class ApkWebAppInstallerBrowserTest : public InProcessBrowserTest,
-                                      public web_app::AppRegistrarObserver,
-                                      public ArcAppListPrefs::Observer {
+class ApkWebAppInstallerBrowserTest
+    : public InProcessBrowserTest,
+      public web_app::WebAppInstallManagerObserver,
+      public ArcAppListPrefs::Observer {
  public:
   ApkWebAppInstallerBrowserTest() = default;
 
@@ -180,7 +181,7 @@ class ApkWebAppInstallerBrowserTest : public InProcessBrowserTest,
   void SetUpWebApps() {
     provider_ = web_app::WebAppProvider::GetForTest(browser()->profile());
     DCHECK(provider_);
-    observation_.Observe(&provider_->registrar());
+    observation_.Observe(&provider_->install_manager());
   }
 
   void TearDownWebApps() {
@@ -246,7 +247,7 @@ class ApkWebAppInstallerBrowserTest : public InProcessBrowserTest,
     app_uninstalled_callback_ = callback;
   }
 
-  // web_app::AppRegistrarObserver overrides.
+  // web_app::WebAppInstallManagerObserver overrides.
   void OnWebAppInstalled(const web_app::AppId& web_app_id) override {
     installed_web_app_ids_.push_back(web_app_id);
     installed_web_app_names_.push_back(
@@ -278,8 +279,8 @@ class ApkWebAppInstallerBrowserTest : public InProcessBrowserTest,
   }
 
  protected:
-  base::ScopedObservation<web_app::WebAppRegistrar,
-                          web_app::AppRegistrarObserver>
+  base::ScopedObservation<web_app::WebAppInstallManager,
+                          web_app::WebAppInstallManagerObserver>
       observation_{this};
   ArcAppListPrefs* arc_app_list_prefs_ = nullptr;
   web_app::WebAppProvider* provider_ = nullptr;
@@ -583,12 +584,10 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerWithShelfControllerBrowserTest,
       ArcAppListPrefs::GetAppId(kPackageName, kAppActivity);
 
   /// Create an app and add to the package.
-  arc::mojom::AppInfo app;
-  app.name = kAppTitle;
-  app.package_name = kPackageName;
-  app.activity = kAppActivity;
-  app.sticky = true;
-  app_instance_->SendPackageAppListRefreshed(kPackageName, {app});
+  std::vector<arc::mojom::AppInfoPtr> apps;
+  apps.emplace_back(arc::mojom::AppInfo::New(kAppTitle, kPackageName,
+                                             kAppActivity, true /* sticky */));
+  app_instance_->SendPackageAppListRefreshed(kPackageName, apps);
 
   EXPECT_TRUE(installed_web_app_ids_.empty());
   EXPECT_TRUE(uninstalled_web_app_ids_.empty());

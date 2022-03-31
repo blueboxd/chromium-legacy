@@ -108,7 +108,14 @@ void FakeWebState::DidCoverWebContent() {}
 
 void FakeWebState::DidRevealWebContent() {}
 
+base::Time FakeWebState::GetLastActiveTime() const {
+  return last_active_time_;
+}
+
 void FakeWebState::WasShown() {
+  if (!is_visible_)
+    last_active_time_ = base::Time::Now();
+
   is_visible_ = true;
   for (auto& observer : observers_)
     observer.WasShown(this);
@@ -224,16 +231,16 @@ bool FakeWebState::ContentIsHTML() const {
   return content_is_html_;
 }
 
+int FakeWebState::GetNavigationItemCount() const {
+  return navigation_item_count_;
+}
+
 const GURL& FakeWebState::GetVisibleURL() const {
   return url_;
 }
 
 const GURL& FakeWebState::GetLastCommittedURL() const {
   return url_;
-}
-
-const base::Time FakeWebState::GetLastCommittedTimestamp() const {
-  return timestamp_;
 }
 
 GURL FakeWebState::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
@@ -249,6 +256,10 @@ base::CallbackListSubscription FakeWebState::AddScriptCommandCallback(
   last_added_callback_ = callback;
   last_command_prefix_ = command_prefix;
   return callback_list_.Add(callback);
+}
+
+void FakeWebState::SetLastActiveTime(base::Time time) {
+  last_active_time_ = time;
 }
 
 void FakeWebState::SetBrowserState(BrowserState* browser_state) {
@@ -451,8 +462,8 @@ void FakeWebState::SetCurrentURL(const GURL& url) {
   url_ = url;
 }
 
-void FakeWebState::SetCurrentTimestamp(const base::Time& timestamp) {
-  timestamp_ = timestamp;
+void FakeWebState::SetNavigationItemCount(int count) {
+  navigation_item_count_ = count;
 }
 
 void FakeWebState::SetVisibleURL(const GURL& url) {
@@ -522,24 +533,32 @@ NSData* FakeWebState::SessionStateData() {
 PermissionState FakeWebState::GetStateForPermission(
     Permission permission) const {
   switch (permission) {
-    case Permission::CAMERA:
+    case PermissionCamera:
       return camera_permission_state_;
-    case Permission::MICROPHONE:
+    case PermissionMicrophone:
       return microphone_permission_state_;
   }
-  return PermissionState::NOT_ACCESSIBLE;
+  return PermissionStateNotAccessible;
 }
 
 void FakeWebState::SetStateForPermission(PermissionState state,
                                          Permission permission) {
   switch (permission) {
-    case Permission::CAMERA:
+    case PermissionCamera:
       camera_permission_state_ = state;
       return;
-    case Permission::MICROPHONE:
+    case PermissionMicrophone:
       microphone_permission_state_ = state;
       return;
   }
+}
+
+NSDictionary<NSNumber*, NSNumber*>* FakeWebState::GetStatesForAllPermissions()
+    const {
+  return @{
+    @(PermissionCamera) : @(camera_permission_state_),
+    @(PermissionMicrophone) : @(microphone_permission_state_)
+  };
 }
 
 FakeWebStateWithPolicyCache::FakeWebStateWithPolicyCache(

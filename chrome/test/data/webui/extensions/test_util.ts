@@ -20,7 +20,7 @@ export class ClickMock {
    */
   testClickingCalls(
       element: HTMLElement, callName: string, opt_expectedArgs: any[],
-      opt_returnValue: any) {
+      opt_returnValue?: any) {
     const mock = new MockController();
     const mockMethod = mock.createFunctionMock(this, callName);
     mockMethod.returnValue = opt_returnValue;
@@ -158,15 +158,14 @@ export function testVisible(
 
 /**
  * Creates an ExtensionInfo object.
- * @param opt_properties A set of properties that will be used on the resulting
+ * @param properties A set of properties that will be used on the resulting
  *     ExtensionInfo (otherwise defaults will be used).
  */
 export function createExtensionInfo(
-    opt_properties: Partial<chrome.developerPrivate.ExtensionInfo>):
+    properties?: Partial<chrome.developerPrivate.ExtensionInfo>):
     chrome.developerPrivate.ExtensionInfo {
-  const id = opt_properties && opt_properties.hasOwnProperty('id') ?
-      opt_properties['id']! :
-      'a'.repeat(32);
+  const id = properties && properties.hasOwnProperty('id') ? properties['id']! :
+                                                             'a'.repeat(32);
   const baseUrl = 'chrome-extension://' + id + '/';
   return Object.assign(
       {
@@ -213,14 +212,15 @@ export function createExtensionInfo(
         webStoreUrl: '',
         showSafeBrowsingAllowlistWarning: false,
       },
-      opt_properties);
+      properties || {});
 }
 
 /**
  * Finds all nodes matching |query| under |root|, within self and children's
  * Shadow DOM.
  */
-export function findMatches(root: HTMLElement, query: string): HTMLElement[] {
+export function findMatches(
+    root: HTMLElement|Document, query: string): HTMLElement[] {
   let elements = new Set<HTMLElement>();
   function doSearch(node: Node) {
     if (node.nodeType === Node.ELEMENT_NODE) {

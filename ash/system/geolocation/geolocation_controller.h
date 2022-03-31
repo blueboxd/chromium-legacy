@@ -11,6 +11,8 @@
 #include "ash/ash_export.h"
 #include "ash/components/geolocation/simple_geolocation_provider.h"
 #include "ash/components/settings/timezone_settings.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -103,6 +105,10 @@ class ASH_EXPORT GeolocationController
                      bool server_error,
                      const base::TimeDelta elapsed);
 
+  // Virtual so that it can be overridden by a fake implementation in unit tests
+  // that doesn't request actual geopositions.
+  virtual void RequestGeoposition();
+
  private:
   // Gets now time from the `clock_` or `base::Time::Now()` if `clock_` does
   // not exist.
@@ -115,10 +121,6 @@ class ASH_EXPORT GeolocationController
   // |possible_change_in_timezone| to indicate whether timezone might have
   // changed as a result of the geoposition change.
   void NotifyGeopositionChange(bool possible_change_in_timezone);
-
-  // Virtual so that it can be overridden by a fake implementation in unit tests
-  // that doesn't request actual geopositions.
-  virtual void RequestGeoposition();
 
   // Note that the below computation is intentionally performed every time
   // GetSunsetTime() or GetSunriseTime() is called rather than once whenever we

@@ -6,6 +6,7 @@
 
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/bluetooth/bluetooth_common.h"
@@ -75,6 +76,10 @@ mojom::PairingResult GetPairingResult(
 
 }  // namespace
 
+// static
+const base::TimeDelta DevicePairingHandler::kPairingFailureDelay =
+    base::Milliseconds(500);
+
 DevicePairingHandler::DevicePairingHandler(
     mojo::PendingReceiver<mojom::DevicePairingHandler> pending_receiver,
     AdapterStateController* adapter_state_controller,
@@ -88,6 +93,7 @@ DevicePairingHandler::DevicePairingHandler(
 DevicePairingHandler::~DevicePairingHandler() = default;
 
 void DevicePairingHandler::CancelPairing() {
+  is_canceling_pairing_ = true;
   device::BluetoothDevice* device = FindDevice(current_pairing_device_id_);
   if (!device) {
     BLUETOOTH_LOG(ERROR)
@@ -113,10 +119,12 @@ void DevicePairingHandler::PairDevice(
     const std::string& device_id,
     mojo::PendingRemote<mojom::DevicePairingDelegate> delegate,
     PairDeviceCallback callback) {
+  BLUETOOTH_LOG(USER) << "Attempting to pair with device " << device_id;
+
   // There should only be one PairDevice request at a time.
   CHECK(current_pairing_device_id_.empty());
 
-  pairing_start_timestamp_ = base::Time();
+  pairing_start_timestamp_ = base::Time::Now();
   pair_device_callback_ = std::move(callback);
 
   delegate_.reset();
@@ -127,8 +135,7 @@ void DevicePairingHandler::PairDevice(
   // If Bluetooth is not enabled, fail immediately.
   if (!IsBluetoothEnabled()) {
     BLUETOOTH_LOG(ERROR) << "Pairing failed due to Bluetooth not being "
-                            "enabled, device identifier: "
-                         << device_id;
+                         << "enabled, device identifier: " << device_id;
     FinishCurrentPairingRequest(device::ConnectionFailureReason::kFailed);
     return;
   }
@@ -138,8 +145,7 @@ void DevicePairingHandler::PairDevice(
 
   if (!device) {
     BLUETOOTH_LOG(ERROR) << "Pairing failed due to device not being "
-                            "found, identifier: "
-                         << device_id;
+                         << "found, identifier: " << device_id;
     FinishCurrentPairingRequest(device::ConnectionFailureReason::kFailed);
     return;
   }
@@ -151,12 +157,16 @@ void DevicePairingHandler::PairDevice(
 }
 
 void DevicePairingHandler::RequestPinCode(device::BluetoothDevice* device) {
+  BLUETOOTH_LOG(EVENT) << "Requesting pin code for "
+                       << current_pairing_device_id_;
   DCHECK(device->GetIdentifier() == current_pairing_device_id_);
   delegate_->RequestPinCode(base::BindOnce(
       &DevicePairingHandler::OnRequestPinCode, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DevicePairingHandler::RequestPasskey(device::BluetoothDevice* device) {
+  BLUETOOTH_LOG(EVENT) << "Requesting passkey for "
+                       << current_pairing_device_id_;
   DCHECK(device->GetIdentifier() == current_pairing_device_id_);
   delegate_->RequestPasskey(base::BindOnce(
       &DevicePairingHandler::OnRequestPasskey, weak_ptr_factory_.GetWeakPtr()));
@@ -164,6 +174,9 @@ void DevicePairingHandler::RequestPasskey(device::BluetoothDevice* device) {
 
 void DevicePairingHandler::DisplayPinCode(device::BluetoothDevice* device,
                                           const std::string& pin_code) {
+  BLUETOOTH_LOG(EVENT) << "Displaying pin code for "
+                       << current_pairing_device_id_
+                       << ", pin code: " << pin_code;
   DCHECK(device->GetIdentifier() == current_pairing_device_id_);
   key_entered_handler_.reset();
   delegate_->DisplayPinCode(pin_code,
@@ -172,6 +185,9 @@ void DevicePairingHandler::DisplayPinCode(device::BluetoothDevice* device,
 
 void DevicePairingHandler::DisplayPasskey(device::BluetoothDevice* device,
                                           uint32_t passkey) {
+  BLUETOOTH_LOG(EVENT) << "Displaying passkey for "
+                       << current_pairing_device_id_
+                       << ", passkey: " << passkey;
   DCHECK(device->GetIdentifier() == current_pairing_device_id_);
   key_entered_handler_.reset();
   delegate_->DisplayPasskey(PasskeyToString(passkey),
@@ -180,12 +196,17 @@ void DevicePairingHandler::DisplayPasskey(device::BluetoothDevice* device,
 
 void DevicePairingHandler::KeysEntered(device::BluetoothDevice* device,
                                        uint32_t entered) {
+  BLUETOOTH_LOG(EVENT) << entered << " keys entered for "
+                       << current_pairing_device_id_;
   DCHECK(device->GetIdentifier() == current_pairing_device_id_);
   key_entered_handler_->HandleKeyEntered(entered);
 }
 
 void DevicePairingHandler::ConfirmPasskey(device::BluetoothDevice* device,
                                           uint32_t passkey) {
+  BLUETOOTH_LOG(EVENT) << "Confirming passkey for "
+                       << current_pairing_device_id_
+                       << ", passkey: " << passkey;
   DCHECK(device->GetIdentifier() == current_pairing_device_id_);
   delegate_->ConfirmPasskey(
       PasskeyToString(passkey),
@@ -194,6 +215,8 @@ void DevicePairingHandler::ConfirmPasskey(device::BluetoothDevice* device,
 }
 
 void DevicePairingHandler::AuthorizePairing(device::BluetoothDevice* device) {
+  BLUETOOTH_LOG(EVENT) << "Authorizing pairing for "
+                       << current_pairing_device_id_;
   DCHECK(device->GetIdentifier() == current_pairing_device_id_);
   delegate_->AuthorizePairing(base::BindOnce(
       &DevicePairingHandler::OnConfirmPairing, weak_ptr_factory_.GetWeakPtr()));
@@ -207,21 +230,72 @@ void DevicePairingHandler::OnAdapterStateChanged() {
     return;
 
   // If Bluetooth disables while we are attempting to pair, cancel the pairing.
+  BLUETOOTH_LOG(EVENT) << "Bluetooth disabled while attempting to pair with "
+                       << current_pairing_device_id_ << ", canceling pairing";
   CancelPairing();
 }
 
 void DevicePairingHandler::OnDeviceConnect(
     absl::optional<device::BluetoothDevice::ConnectErrorCode> error_code) {
   if (!error_code.has_value()) {
+    BLUETOOTH_LOG(EVENT) << "Device " << current_pairing_device_id_
+                         << " successfully paired";
     FinishCurrentPairingRequest(absl::nullopt);
     NotifyFinished();
     return;
   }
 
-  BLUETOOTH_LOG(ERROR) << "Pairing failed with error code: "
-                       << error_code.value();
+  // In some cases, device->Connect() will return a failure if the pairing
+  // succeeded but the subsequent connection request returns with a failure.
+  // Empirically, it's found that the device actually does connect, and
+  // device->IsConnected() returns true. Wait |kPairingFailureDelay| to check if
+  // the device is connected. Only do this if the failure is not due to a
+  // pairing cancellation. If the pairing is canceled, we know for sure that the
+  // device is not actually paired.
+  // TODO(b/209531279): Remove this delay and |is_canceling_pairing| when the
+  // root cause of issue is fixed.
+  if (!is_canceling_pairing_) {
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&DevicePairingHandler::HandlePairingFailed,
+                       weak_ptr_factory_.GetWeakPtr(), error_code.value()),
+        kPairingFailureDelay);
+    return;
+  }
+
+  // Immediately handle pairing failures if pairing is being canceled, because
+  // we know for sure that the device is not actually paired, and because if
+  // the pairing is being canceled due to the handler being destroyed, if there
+  // is a delay the failure will never be handled.
+  HandlePairingFailed(error_code.value());
+}
+
+void DevicePairingHandler::HandlePairingFailed(
+    device::BluetoothDevice::ConnectErrorCode error_code) {
+  device::BluetoothDevice* device = FindDevice(current_pairing_device_id_);
+
+  // In some cases, device->Connect() will return a failure if the pairing
+  // succeeded but the subsequent connection request returns with a failure.
+  // Empirically, it's found that the device actually does connect, and
+  // device->IsConnected() returns true. Handle this case the
+  // same as pairing succeeding if this wasn't a pairing cancellation.
+  // TODO(b/209531279): Remove this when the root cause of issue is fixed.
+  if (device && device->IsConnected() && !is_canceling_pairing_) {
+    BLUETOOTH_LOG(EVENT)
+        << device->GetAddress()
+        << ": Pairing finished with an error code, but device "
+        << "is connected. Handling like pairing succeeded. Error code: "
+        << error_code;
+    FinishCurrentPairingRequest(absl::nullopt);
+    NotifyFinished();
+    return;
+  }
+
+  BLUETOOTH_LOG(ERROR) << device->GetAddress()
+                       << ": Pairing failed with error code: " << error_code;
+
   using ErrorCode = device::BluetoothDevice::ConnectErrorCode;
-  switch (error_code.value()) {
+  switch (error_code) {
     case ErrorCode::ERROR_AUTH_CANCELED:
       [[fallthrough]];
     case ErrorCode::ERROR_AUTH_FAILED:
@@ -264,6 +338,8 @@ void DevicePairingHandler::OnRequestPinCode(const std::string& pin_code) {
     return;
   }
 
+  BLUETOOTH_LOG(USER) << "Received pin code " << pin_code << " for device "
+                      << current_pairing_device_id_;
   device->SetPinCode(pin_code);
 }
 
@@ -280,15 +356,23 @@ void DevicePairingHandler::OnRequestPasskey(const std::string& passkey) {
 
   uint32_t passkey_num;
   if (base::StringToUint(passkey, &passkey_num)) {
+    BLUETOOTH_LOG(USER) << "Received passkey " << passkey_num << " for device "
+                        << current_pairing_device_id_;
     device->SetPasskey(passkey_num);
     return;
   }
 
   // If string to uint32_t conversion was unsuccessful, cancel the pairing.
+  BLUETOOTH_LOG(ERROR) << "Converting " << passkey
+                       << "to uint32_t failed, canceling pairing with "
+                       << current_pairing_device_id_;
   CancelPairing();
 }
 
 void DevicePairingHandler::OnConfirmPairing(bool confirmed) {
+  BLUETOOTH_LOG(EVENT) << "OnConfirmPairing() called with confirmed: "
+                       << confirmed;
+
   device::BluetoothDevice* device = FindDevice(current_pairing_device_id_);
   if (!device) {
     BLUETOOTH_LOG(ERROR)
@@ -307,6 +391,8 @@ void DevicePairingHandler::OnConfirmPairing(bool confirmed) {
 
 void DevicePairingHandler::FinishCurrentPairingRequest(
     absl::optional<device::ConnectionFailureReason> failure_reason) {
+  // Reset state.
+  is_canceling_pairing_ = false;
   device::BluetoothDevice* device = FindDevice(current_pairing_device_id_);
   current_pairing_device_id_.clear();
 
@@ -314,18 +400,22 @@ void DevicePairingHandler::FinishCurrentPairingRequest(
       device ? device->GetType()
              : device::BluetoothTransport::BLUETOOTH_TRANSPORT_INVALID;
 
-  device::RecordPairingResult(
-      failure_reason, GetBluetoothTransport(transport),
-      base::DefaultClock::GetInstance()->Now() - pairing_start_timestamp_);
+  device::RecordPairingResult(failure_reason, GetBluetoothTransport(transport),
+                              base::Time::Now() - pairing_start_timestamp_);
 
   std::move(pair_device_callback_).Run(GetPairingResult(failure_reason));
 }
 
 void DevicePairingHandler::OnDelegateDisconnect() {
+  BLUETOOTH_LOG(DEBUG) << "Delegate disconnected";
+
   // If the delegate disconnects and we have a pairing attempt, cancel the
   // pairing.
-  if (!current_pairing_device_id_.empty())
+  if (!current_pairing_device_id_.empty()) {
+    BLUETOOTH_LOG(EVENT) << "Delegate disconnected during pairing with "
+                         << current_pairing_device_id_ << ", canceling pairing";
     CancelPairing();
+  }
 
   delegate_.reset();
 }

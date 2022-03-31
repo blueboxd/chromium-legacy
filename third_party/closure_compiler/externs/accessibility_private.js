@@ -300,6 +300,7 @@ chrome.accessibilityPrivate.AcceleratorAction = {
 chrome.accessibilityPrivate.AccessibilityFeature = {
   ENHANCED_NETWORK_VOICES: 'enhancedNetworkVoices',
   DICTATION_COMMANDS: 'dictationCommands',
+  DICTATION_HINTS: 'dictationHints',
 };
 
 /**
@@ -337,10 +338,25 @@ chrome.accessibilityPrivate.DictationBubbleIconType = {
 };
 
 /**
+ * @enum {string}
+ */
+chrome.accessibilityPrivate.DictationBubbleHintType = {
+  TRY_SAYING: 'trySaying',
+  TYPE: 'type',
+  DELETE: 'delete',
+  SELECT_ALL: 'selectAll',
+  UNDO: 'undo',
+  HELP: 'help',
+  UNSELECT: 'unselect',
+  COPY: 'copy',
+};
+
+/**
  * @typedef {{
  *   visible: boolean,
  *   icon: !chrome.accessibilityPrivate.DictationBubbleIconType,
- *   text: (string|undefined)
+ *   text: (string|undefined),
+ *   hints: (!Array<!chrome.accessibilityPrivate.DictationBubbleHintType>|undefined)
  * }}
  */
 chrome.accessibilityPrivate.DictationBubbleProperties;

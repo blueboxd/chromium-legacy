@@ -650,7 +650,8 @@ def main():
       '-DLLVM_ENABLE_ASSERTIONS=%s' % ('OFF' if args.disable_asserts else 'ON'),
       '-DLLVM_ENABLE_PROJECTS=' + projects,
       '-DLLVM_TARGETS_TO_BUILD=' + targets,
-      '-DLLVM_ENABLE_PIC=OFF',
+      # PIC needed for Rust build (links LLVM into shared object)
+      '-DLLVM_ENABLE_PIC=ON',
       '-DLLVM_ENABLE_UNWIND_TABLES=OFF',
       '-DLLVM_ENABLE_TERMINFO=OFF',
       '-DLLVM_ENABLE_Z3_SOLVER=OFF',
@@ -703,6 +704,8 @@ def main():
 
   if sys.platform == 'win32':
     base_cmake_args.append('-DLLVM_USE_CRT_RELEASE=MT')
+    # TODO(crbug.com/1292528): We need Visual Studio 19.27 or later.
+    base_cmake_args.append('-DLLVM_TEMPORARILY_ALLOW_OLD_TOOLCHAIN=ON')
 
     # Require zlib compression.
     zlib_dir = AddZlibToPath()
@@ -900,17 +903,18 @@ def main():
     print('Profile generated.')
 
   compiler_rt_args = [
-    '-DCOMPILER_RT_BUILD_CRT=OFF',
-    '-DCOMPILER_RT_BUILD_LIBFUZZER=OFF',
-    '-DCOMPILER_RT_BUILD_MEMPROF=OFF',
-    '-DCOMPILER_RT_BUILD_ORC=OFF',
-    '-DCOMPILER_RT_BUILD_PROFILE=ON',
-    '-DCOMPILER_RT_BUILD_SANITIZERS=ON',
-    '-DCOMPILER_RT_BUILD_XRAY=OFF',
+      # Build crtbegin/crtend. It's just two tiny TUs, so just enable this
+      # everywhere, even though we only need it on Linux.
+      '-DCOMPILER_RT_BUILD_CRT=ON',
+      '-DCOMPILER_RT_BUILD_LIBFUZZER=OFF',
+      '-DCOMPILER_RT_BUILD_MEMPROF=OFF',
+      '-DCOMPILER_RT_BUILD_ORC=OFF',
+      '-DCOMPILER_RT_BUILD_PROFILE=ON',
+      '-DCOMPILER_RT_BUILD_SANITIZERS=ON',
+      '-DCOMPILER_RT_BUILD_XRAY=OFF',
   ]
   if sys.platform == 'darwin':
     compiler_rt_args.extend([
-        '-DCOMPILER_RT_BUILD_BUILTINS=ON',
         '-DCOMPILER_RT_ENABLE_IOS=ON',
         '-DCOMPILER_RT_ENABLE_WATCHOS=OFF',
         '-DCOMPILER_RT_ENABLE_TVOS=OFF',
@@ -921,8 +925,12 @@ def main():
         # We don't need 32-bit intel support for macOS, we only ship 64-bit.
         '-DDARWIN_osx_ARCHS=arm64;x86_64',
     ])
-  else:
+
+  if sys.platform == 'win32':
+    # https://crbug.com/1293778
     compiler_rt_args.append('-DCOMPILER_RT_BUILD_BUILTINS=OFF')
+  else:
+    compiler_rt_args.append('-DCOMPILER_RT_BUILD_BUILTINS=ON')
 
   # LLVM uses C++11 starting in llvm 3.5. On Linux, this means libstdc++4.7+ is
   # needed, on OS X it requires libc++. clang only automatically links to libc++
@@ -1113,6 +1121,10 @@ def main():
           '--unwindlib=none',
       ]
 
+      if target_arch == 'aarch64':
+        # Use PAC/BTI instructions for AArch64
+        cflags += [ '-mbranch-protection=standard' ]
+
       android_args = base_cmake_args + [
         '-DCMAKE_C_COMPILER=' + os.path.join(LLVM_BUILD_DIR, 'bin/clang'),
         '-DCMAKE_CXX_COMPILER=' + os.path.join(LLVM_BUILD_DIR, 'bin/clang++'),
@@ -1164,6 +1176,7 @@ def main():
 
       libs_want = [
           'lib/linux/libclang_rt.asan-{0}-android.so',
+          'lib/linux/libclang_rt.asan_static-{0}-android.a',
           'lib/linux/libclang_rt.ubsan_standalone-{0}-android.so',
           'lib/linux/libclang_rt.profile-{0}-android.a',
       ]
@@ -1270,11 +1283,13 @@ def main():
                    [COMPILER_RT_DIR])
         profile_a = 'libclang_rt.profile.a'
         asan_preinit_a = 'libclang_rt.asan-preinit.a'
+        asan_static_a = 'libclang_rt.asan_static.a'
         asan_so = 'libclang_rt.asan.so'
         ninja_command = ['ninja', profile_a]
         if sys.platform != 'darwin':
           ninja_command.append(asan_so)
           ninja_command.append(asan_preinit_a)
+          ninja_command.append(asan_static_a)
         RunCommand(ninja_command)
         CopyFile(os.path.join(build_phase2_dir, 'lib', target_spec, profile_a),
                               fuchsia_lib_dst_dir)
@@ -1284,6 +1299,9 @@ def main():
           CopyFile(
               os.path.join(build_phase2_dir, 'lib', target_spec,
                            asan_preinit_a), fuchsia_lib_dst_dir)
+          CopyFile(
+              os.path.join(build_phase2_dir, 'lib', target_spec, asan_static_a),
+              fuchsia_lib_dst_dir)
 
   # Run tests.
   if (not args.build_mac_arm and

@@ -19,6 +19,7 @@
 #include "chrome/browser/sharesheet/sharesheet_types.h"
 #include "chrome/browser/ui/ash/sharesheet/sharesheet_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/components/sharesheet/constants.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "ui/base/clipboard/file_info.h"
@@ -28,6 +29,12 @@
 
 namespace {
 const char kToastId[] = "copy_to_clipboard_share_action";
+
+void RecordFormFactorMetric() {
+  auto form_factor = ::sharesheet::SharesheetMetrics::GetFormFactorForMetrics();
+  ::sharesheet::SharesheetMetrics::RecordCopyToClipboardShareActionFormFactor(
+      form_factor);
+}
 
 void RecordMimeTypes(
     const base::flat_set<::sharesheet::SharesheetMetrics::MimeType>&
@@ -99,6 +106,7 @@ void CopyToClipboardShareAction::LaunchAction(
     clipboard_writer.WriteFilenames(ui::FileInfosToURIList(file_infos));
   }
 
+  RecordFormFactorMetric();
   RecordMimeTypes(
       ::sharesheet::SharesheetMetrics::GetMimeTypesFromIntentForMetrics(
           intent));

@@ -257,8 +257,8 @@ class NET_EXPORT UDPSocketPosix {
 
   // Requests that packets sent by this socket not be fragment, either locally
   // by the host, or by routers (via the DF bit in the IPv4 packet header).
-  // May not be supported by all platforms. Returns a return a network error
-  // code if there was a problem, but the socket will still be usable. Can not
+  // May not be supported by all platforms. Returns a network error code if
+  // there was a problem, but the socket will still be usable. Can not
   // return ERR_IO_PENDING.
   int SetDoNotFragment();
 
@@ -342,6 +342,10 @@ class NET_EXPORT UDPSocketPosix {
   // do anything on some platforms.
   // Returns a net error code.
   int SetDiffServCodePoint(DiffServCodePoint dscp);
+
+  // Exposes the underlying socket descriptor for testing its state. Does not
+  // release ownership of the descriptor.
+  SocketDescriptor SocketDescriptorForTesting() const { return socket_; }
 
   // Resets the thread to be used for thread-safety checks.
   void DetachFromThread();

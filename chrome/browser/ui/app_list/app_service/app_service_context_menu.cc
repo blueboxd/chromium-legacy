@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/settings/ash/app_management/app_management_uma.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/app_constants/constants.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -364,8 +365,8 @@ void AppServiceContextMenu::OnGetMenuModel(
     BuildExtensionAppShortcutsMenu(menu_model.get());
 
   // Create default items for non-Remote apps.
-  if (app_id() != extension_misc::kChromeAppId &&
-      app_id() != extension_misc::kLacrosAppId &&
+  if (app_id() != app_constants::kChromeAppId &&
+      app_id() != app_constants::kLacrosAppId &&
       app_type_ != apps::AppType::kUnknown &&
       app_type_ != apps::AppType::kRemote) {
     app_list::AppContextMenu::BuildMenu(menu_model.get());
@@ -390,25 +391,31 @@ void AppServiceContextMenu::OnGetMenuModel(
 
   if (add_sort_options_) {
     reorder_submenu_ = std::make_unique<ui::SimpleMenuModel>(this);
+    const ui::ColorId color_id = apps::GetColorIdForMenuItemIcon();
     // As all the options below are only for tests and are expected to change in
     // the future, the strings are directly written as the parameters.
     reorder_submenu_->AddItemWithIcon(
         ash::REORDER_BY_NAME_ALPHABETICAL,
         l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_REORDER_BY_NAME),
-        ui::ImageModel::FromVectorIcon(GetMenuItemVectorIcon(
-            ash::REORDER_BY_NAME_ALPHABETICAL, /*string_id=*/-1)));
+        ui::ImageModel::FromVectorIcon(
+            GetMenuItemVectorIcon(ash::REORDER_BY_NAME_ALPHABETICAL,
+                                  /*string_id=*/-1),
+            color_id));
     reorder_submenu_->AddItemWithIcon(
         ash::REORDER_BY_COLOR,
         l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_REORDER_BY_COLOR),
         ui::ImageModel::FromVectorIcon(
-            GetMenuItemVectorIcon(ash::REORDER_BY_COLOR, /*string_id=*/-1)));
+            GetMenuItemVectorIcon(ash::REORDER_BY_COLOR, /*string_id=*/-1),
+            color_id));
     menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
+
     menu_model->AddSubMenuWithIcon(
         ash::REORDER_SUBMENU,
         l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_REORDER_TITLE),
         reorder_submenu_.get(),
         ui::ImageModel::FromVectorIcon(
-            GetMenuItemVectorIcon(ash::REORDER_SUBMENU, /*string_id=*/-1)));
+            GetMenuItemVectorIcon(ash::REORDER_SUBMENU, /*string_id=*/-1),
+            color_id));
   }
 
   std::move(callback).Run(std::move(menu_model));

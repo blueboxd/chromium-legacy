@@ -348,7 +348,7 @@ bool SurfaceAnimationManager::ProcessTransitionDirectives(
         handled = ProcessAnimateRendererDirective(directive, storage);
         break;
       case CompositorFrameTransitionDirective::Type::kRelease:
-        handled = ProcessReleaseDirective(directive, storage);
+        handled = ProcessReleaseDirective();
         break;
     }
 
@@ -365,6 +365,13 @@ bool SurfaceAnimationManager::ProcessTransitionDirectives(
 bool SurfaceAnimationManager::ProcessSaveDirective(
     const CompositorFrameTransitionDirective& directive,
     StorageWithSurface& storage) {
+  // We can only have one saved frame. It is the job of the client to ensure the
+  // correct API usage. So if we are receiving a save directive while we already
+  // have a saved frame, release it first. That ensures that any subsequent
+  // animate directives which presumably rely on this save directive will
+  // succeed.
+  ProcessReleaseDirective();
+
   // We need to be in the idle state in order to save.
   if (state_ != State::kIdle)
     return false;
@@ -433,9 +440,7 @@ bool SurfaceAnimationManager::ProcessAnimateRendererDirective(
   return true;
 }
 
-bool SurfaceAnimationManager::ProcessReleaseDirective(
-    const CompositorFrameTransitionDirective& directive,
-    StorageWithSurface& storage) {
+bool SurfaceAnimationManager::ProcessReleaseDirective() {
   if (state_ != State::kAnimatingRenderer)
     return false;
 
@@ -1215,11 +1220,28 @@ bool SurfaceAnimationManager::FilterSharedElementsWithRenderPassOrResource(
     }
   }
 
+#if DCHECK_IS_ON()
+  LOG(ERROR) << "Content not found for shared element: "
+             << shared_element_quad.resource_id.ToString();
+  LOG(ERROR) << "Known shared element ids:";
+  for (const auto& [shared_resource_id, render_pass] : *element_id_to_pass) {
+    LOG(ERROR) << " " << shared_resource_id.ToString()
+               << " -> RenderPassId: " << render_pass->id.GetUnsafeValue();
+  }
+
+  if (saved_textures_) {
+    LOG(ERROR) << "Known saved textures:";
+    for (const auto& [shared_resource_id, transferable_resource] :
+         saved_textures_->element_id_to_resource) {
+      LOG(ERROR) << " " << shared_resource_id.ToString();
+    }
+  }
+
   // The DCHECK below is for debugging in dev builds. This can happen in
   // production code because of a compromised renderer.
-  LOG(ERROR) << "Content not found for shared element : "
-             << shared_element_quad.resource_id.ToString();
   NOTREACHED();
+#endif
+
   return true;
 }
 

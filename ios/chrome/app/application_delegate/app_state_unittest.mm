@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/ios/block_types.h"
 #import "base/ios/ios_util.h"
+#include "base/mac/foundation_util.h"
 #import "base/test/task_environment.h"
 #import "ios/chrome/app/app_startup_parameters.h"
 #import "ios/chrome/app/application_delegate/app_state_observer.h"
@@ -110,10 +111,10 @@
       break;
     case InitStageSafeMode:
       break;
-    case InitStageEnterprise:
-      break;
     case InitStageBrowserObjectsForBackgroundHandlers:
       [appState queueTransitionToNextInitStage];
+      break;
+    case InitStageEnterprise:
       break;
     case InitStageBrowserObjectsForUI:
       [appState queueTransitionToNextInitStage];
@@ -250,6 +251,11 @@ class AppStateTest : public BlockCleanupTest {
     browser_state_ = test_cbs_builder.Build();
   }
 
+  void TearDown() override {
+    main_scene_state_ = nil;
+    BlockCleanupTest::TearDown();
+  }
+
   void swizzleConnectedScenes(NSArray<SceneState*>* connectedScenes) {
     connected_scenes_swizzle_block_ = ^NSArray<SceneState*>*(id self) {
       return connectedScenes;
@@ -361,7 +367,9 @@ class AppStateTest : public BlockCleanupTest {
               applicationDelegate:main_application_delegate_];
       [app_state_.connectedScenes addObject:main_scene_state_];
 
-      main_scene_state_ = [main_scene_state_ initWithAppState:app_state_];
+      main_scene_state_ =
+          [main_scene_state_ initWithAppState:app_state_
+                                 browserState:browser_state_.get()];
       main_scene_state_.window = getWindowMock();
 
       if (with_safe_mode_agent) {
@@ -401,7 +409,9 @@ class AppStateTest : public BlockCleanupTest {
               applicationDelegate:main_application_delegate_];
       [app_state_.connectedScenes addObject:main_scene_state_];
 
-      main_scene_state_ = [main_scene_state_ initWithAppState:app_state_];
+      main_scene_state_ =
+          [main_scene_state_ initWithAppState:app_state_
+                                 browserState:browser_state_.get()];
       main_scene_state_.window = window;
       [window makeKeyAndVisible];
 
@@ -603,8 +613,11 @@ using AppStateNoFixtureTest = PlatformTest;
 // Test that -willResignActive set cold start to NO and launch record.
 TEST_F(AppStateNoFixtureTest, willResignActive) {
   // Setup.
-  base::test::TaskEnvironment task_environment_;
-  std::unique_ptr<Browser> browser = std::make_unique<TestBrowser>();
+  base::test::TaskEnvironment task_environment;
+  std::unique_ptr<TestChromeBrowserState> browser_state =
+      TestChromeBrowserState::Builder().Build();
+  std::unique_ptr<Browser> browser =
+      std::make_unique<TestBrowser>(browser_state.get());
 
   StubBrowserInterfaceProvider* interfaceProvider =
       [[StubBrowserInterfaceProvider alloc] init];
@@ -706,7 +719,8 @@ TEST_F(AppStateTest, applicationWillEnterForeground) {
   id memoryHelper = [OCMockObject mockForClass:[MemoryWarningHelper class]];
   StubBrowserInterfaceProvider* interfaceProvider = getInterfaceProvider();
   id tabOpener = [OCMockObject mockForProtocol:@protocol(TabOpening)];
-  std::unique_ptr<Browser> browser = std::make_unique<TestBrowser>();
+  std::unique_ptr<Browser> browser =
+      std::make_unique<TestBrowser>(getBrowserState());
 
   [[[getBrowserLauncherMock() stub] andReturn:interfaceProvider]
       interfaceProvider];
@@ -774,60 +788,6 @@ TEST_F(AppStateTest, applicationWillEnterForegroundFromBackground) {
   EXPECT_OCMOCK_VERIFY(getBrowserLauncherMock());
 }
 
-// Tests that -applicationWillEnterForeground starts the safe mode if the
-// application is in background.
-TEST_F(AppStateTest,
-       applicationWillEnterForegroundFromBackgroundShouldStartSafeMode) {
-  if (base::ios::IsMultiwindowSupported()) {
-    // In Multi Window, this is not the case. Skip this test.
-    return;
-  }
-  // Setup.
-  id application = [OCMockObject mockForClass:[UIApplication class]];
-  id metricsMediator = [OCMockObject mockForClass:[MetricsMediator class]];
-  id memoryHelper = [OCMockObject mockForClass:[MemoryWarningHelper class]];
-
-  base::TimeTicks now = base::TimeTicks::Now();
-  [[[getStartupInformationMock() stub] andReturnValue:@YES] isColdStart];
-  [[[getStartupInformationMock() stub] andDo:^(NSInvocation* invocation) {
-    [invocation setReturnValue:(void*)&now];
-  }] appLaunchTime];
-
-  id window = getWindowMock();
-
-  [[[window stub] andReturn:nil] rootViewController];
-  [[window stub] setRootViewController:[OCMArg any]];
-  swizzleSafeModeShouldStart(YES);
-
-  // The helper below calls makeKeyAndVisible.
-  [[window expect] makeKeyAndVisible];
-
-  AppState* appState = getAppStateWithRealWindow(window);
-  id browserLauncherMock = getBrowserLauncherMock();
-  NSDictionary* launchOptions = @{};
-  [[browserLauncherMock expect] setLaunchOptions:launchOptions];
-
-  [appState requiresHandlingAfterLaunchWithOptions:launchOptions
-                                   stateBackground:YES];
-
-  // Starting safe mode will call makeKeyAndVisible on the window.
-  [[window expect] makeKeyAndVisible];
-  SceneState* sceneState = appState.connectedScenes.firstObject;
-  sceneState.window = window;
-
-  // Actions.
-  [appState applicationWillEnterForeground:application
-                           metricsMediator:metricsMediator
-                              memoryHelper:memoryHelper];
-  // Transition the activation level to active to trigger the safe mode.
-  sceneState.activationLevel = SceneActivationLevelForegroundActive;
-
-  // Tests.
-  EXPECT_OCMOCK_VERIFY(window);
-
-  EXPECT_EQ(InitStageSafeMode, appState.initStage);
-}
-
 // Tests that -applicationDidEnterBackground calls the metrics mediator.
 TEST_F(AppStateTest, applicationDidEnterBackgroundIncognito) {
   swizzleSafeModeShouldStart(NO);
@@ -839,7 +799,8 @@ TEST_F(AppStateTest, applicationDidEnterBackgroundIncognito) {
   StubBrowserInterfaceProvider* interfaceProvider = getInterfaceProvider();
   crash_helper::SetEnabled(true);
 
-  std::unique_ptr<Browser> browser = std::make_unique<TestBrowser>();
+  std::unique_ptr<Browser> browser =
+      std::make_unique<TestBrowser>(getBrowserState());
   id startupInformation = getStartupInformationMock();
   id browserLauncher = getBrowserLauncherMock();
 

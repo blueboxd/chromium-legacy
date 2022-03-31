@@ -52,7 +52,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/inspector_protocol/crdtp/json.h"
 
-#ifdef OS_ANDROID
+#if BUILDFLAG(IS_ANDROID)
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #endif
 
@@ -98,7 +98,7 @@ base::Value ConvertDictKeyStyle(const base::Value& value) {
 
   if (value.is_list()) {
     base::Value out(base::Value::Type::LIST);
-    for (const auto& v : value.GetList())
+    for (const auto& v : value.GetListDeprecated())
       out.Append(ConvertDictKeyStyle(v));
     return out;
   }
@@ -512,7 +512,7 @@ TracingHandler::TracingHandler(DevToolsIOContext* io_context)
       gzip_compression_(false),
       buffer_usage_reporting_interval_(0) {
   bool use_video_capture_api = true;
-#ifdef OS_ANDROID
+#if BUILDFLAG(IS_ANDROID)
   // Video capture API cannot be used on Android WebView.
   if (!CompositorImpl::IsInitialized())
     use_video_capture_api = false;
@@ -722,14 +722,10 @@ void TracingHandler::Start(Maybe<std::string> categories,
     base::trace_event::TraceConfig browser_config =
         base::trace_event::TraceConfig();
     if (config.isJust()) {
-      base::Value value = protocol::toBaseValue(
-          protocol::ValueTypeConverter<Tracing::TraceConfig>::ToValue(
-              *config.fromJust())
-              .get(),
-          1000);
-      if (value.is_dict()) {
-        browser_config = GetTraceConfigFromDevToolsConfig(value);
-      }
+      base::flat_map<std::string, base::Value> dict;
+      CHECK(crdtp::ConvertProtocolValue(*config.fromJust(), &dict));
+      browser_config =
+          GetTraceConfigFromDevToolsConfig(base::Value(std::move(dict)));
     } else if (categories.isJust() || options.isJust()) {
       browser_config = base::trace_event::TraceConfig(categories.fromMaybe(""),
                                                       options.fromMaybe(""));

@@ -81,11 +81,15 @@ void DlpWarnNotifier::ShowDlpWarningDialog(
   // end up showing in the screenshots, video recording, or screen share.
   widget->GetNativeWindow()->SetProperty(aura::client::kAnimationsDisabledKey,
                                          true);
+  // We set the dialog as the current capture window as it should be the target
+  // for all input events.
+  widget->GetNativeWindow()->SetCapture();
   widget->AddObserver(this);
   widgets_.push_back(widget);
 }
 
 void DlpWarnNotifier::RemoveWidget(views::Widget* widget) {
+  widget->RemoveObserver(this);
   base::EraseIf(widgets_, [=](views::Widget* widget_ptr) -> bool {
     return widget_ptr == widget;
   });

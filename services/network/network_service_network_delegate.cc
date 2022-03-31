@@ -92,8 +92,6 @@ int NetworkServiceNetworkDelegate::OnBeforeURLRequest(
   if (!loader)
     return net::OK;
 
-  loader->OnBeforeURLRequest();
-
   NetworkService* network_service = network_context_->network_service();
   if (network_service) {
     loader->SetEnableReportingRawHeaders(network_service->HasRawHeadersAccess(
@@ -251,7 +249,8 @@ bool NetworkServiceNetworkDelegate::OnCanSetCookie(
   return true;
 }
 
-bool NetworkServiceNetworkDelegate::OnForcePrivacyMode(
+net::NetworkDelegate::PrivacySetting
+NetworkServiceNetworkDelegate::OnForcePrivacyMode(
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
     const absl::optional<url::Origin>& top_frame_origin,

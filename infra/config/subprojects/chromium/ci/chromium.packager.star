@@ -93,6 +93,8 @@ ci.builder(
     executable = "recipe:android/avd_packager",
     properties = {
         "avd_configs": [
+            "tools/android/avd/proto/creation/generic_android19.textpb",
+            "tools/android/avd/proto/creation/generic_android22.textpb",
             "tools/android/avd/proto/creation/generic_android23.textpb",
             "tools/android/avd/proto/creation/generic_android27.textpb",
             "tools/android/avd/proto/creation/generic_android28.textpb",
@@ -178,6 +180,14 @@ ci.builder(
             {
                 "sdk_package_name": "sources;android-31",
                 "cipd_yaml": "third_party/android_sdk/cipd/sources/android-31.yaml",
+            },
+            {
+                "sdk_package_name": "system-images;android-19;google_apis;x86",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-19/google_apis/x86.yaml",
+            },
+            {
+                "sdk_package_name": "system-images;android-22;google_apis;x86",
+                "cipd_yaml": "third_party/android_sdk/cipd/system_images/android-22/google_apis/x86.yaml",
             },
             {
                 "sdk_package_name": "system-images;android-23;google_apis;x86",

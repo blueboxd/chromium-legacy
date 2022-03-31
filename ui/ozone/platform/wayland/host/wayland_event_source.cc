@@ -85,7 +85,8 @@ WaylandEventSource::WaylandEventSource(wl_display* display,
     : window_manager_(window_manager),
       connection_(connection),
       event_watcher_(
-          std::make_unique<WaylandEventWatcher>(display, event_queue)) {
+          WaylandEventWatcher::CreateWaylandEventWatcher(display,
+                                                         event_queue)) {
   DCHECK(window_manager_);
 
   // Observes remove changes to know when touch points can be removed.
@@ -248,6 +249,10 @@ void WaylandEventSource::OnPointerAxisEvent(const gfx::Vector2dF& offset) {
 
 void WaylandEventSource::OnResetPointerFlags() {
   ResetPointerFlags();
+}
+
+void WaylandEventSource::RoundTripQueue() {
+  event_watcher_->RoundTripQueue();
 }
 
 const gfx::PointF& WaylandEventSource::GetPointerLocation() const {
@@ -461,16 +466,8 @@ void WaylandEventSource::ResetPointerFlags() {
   pointer_flags_ = 0;
 }
 
-void WaylandEventSource::UseSingleThreadedPollingForTesting() {
-  event_watcher_->UseSingleThreadedPollingForTesting();
-}
-
 void WaylandEventSource::OnDispatcherListChanged() {
   StartProcessingEvents();
-}
-
-void WaylandEventSource::StopProcessingEventsForTesting() {
-  event_watcher_->StopProcessingEvents();
 }
 
 void WaylandEventSource::OnWindowRemoved(WaylandWindow* window) {

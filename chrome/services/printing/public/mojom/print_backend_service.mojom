@@ -112,6 +112,11 @@ interface PrintBackendService {
   FetchCapabilities(string printer_name)
     => (PrinterCapsAndInfoResult printer_caps_and_info);
 
+  // Generates a print settings object based upon the default settings for the
+  // default printer.
+  UseDefaultSettings()
+    => (PrintSettingsResult settings);
+
   // Generates a print settings object based upon the job settings used with
   // the device settings.  The driver to be used is expected to be identified
   // in the `job_settings` map by an entry with key
@@ -138,5 +143,10 @@ interface PrintBackendService {
                     gfx.mojom.Size page_size,
                     gfx.mojom.Rect page_content_rect,
                     float shrink_factor)
+    => (ResultCode result_code);
+
+  // Signals that all data for the document has been provided and final
+  // processing and cleanup for the print job should be performed.
+  DocumentDone(int32 document_cookie)
     => (ResultCode result_code);
 };

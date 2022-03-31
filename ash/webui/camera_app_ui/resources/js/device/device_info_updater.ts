@@ -6,10 +6,6 @@ import {assertExists} from '../assert.js';
 import {DeviceOperator} from '../mojo/device_operator.js';
 import {Camera3DeviceInfo} from './camera3_device_info.js';
 import {
-  PhotoConstraintsPreferrer,
-  VideoConstraintsPreferrer,
-} from './constraints_preferrer.js';
-import {
   DeviceInfo,
   StreamManager,
 } from './stream_manager.js';
@@ -61,9 +57,7 @@ export class DeviceInfoUpdater {
    */
   private pendingDevicesInfo: DeviceInfo[] = [];
 
-  constructor(
-      private readonly photoPreferrer: PhotoConstraintsPreferrer,
-      private readonly videoPreferrer: VideoConstraintsPreferrer) {
+  constructor() {
     StreamManager.getInstance().addRealDeviceChangeListener(
         async (devicesInfo) => {
           this.pendingDevicesInfo = devicesInfo;
@@ -109,12 +103,10 @@ export class DeviceInfoUpdater {
     if (await DeviceOperator.isSupported()) {
       this.camera3DevicesInfo =
           this.pendingDevicesInfo.map((d) => assertExists(d.v3Info));
-      this.photoPreferrer.updateDevicesInfo(this.camera3DevicesInfo);
-      this.videoPreferrer.updateDevicesInfo(this.camera3DevicesInfo);
-      this.deviceChangeListeners.forEach((l) => l(this));
     } else {
       this.camera3DevicesInfo = null;
     }
+    this.deviceChangeListeners.forEach((l) => l(this));
   }
 
   /**

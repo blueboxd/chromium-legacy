@@ -109,8 +109,7 @@ class ThreatDetails : public content::WebContentsObserver {
 
   void OnCacheCollectionReady();
 
-  // Overridden during tests
-  virtual void OnRedirectionCollectionReady();
+  void OnRedirectionCollectionReady();
 
   // WebContentsObserver implementation:
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
@@ -263,10 +262,10 @@ class ThreatDetails : public content::WebContentsObserver {
   static ThreatDetailsFactory* factory_;
 
   // Used to collect details from the HTTP Cache.
-  std::unique_ptr<ThreatDetailsCacheCollector> cache_collector_;
+  scoped_refptr<ThreatDetailsCacheCollector> cache_collector_;
 
   // Used to collect redirect urls from the history service
-  std::unique_ptr<ThreatDetailsRedirectsCollector> redirects_collector_;
+  scoped_refptr<ThreatDetailsRedirectsCollector> redirects_collector_;
 
   // Callback to run when the report is finished.
   ThreatDetailsDoneCallback done_callback_;
@@ -295,7 +294,6 @@ class ThreatDetails : public content::WebContentsObserver {
   FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, ThreatDOMDetails_MultipleFrames);
   FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, ThreatDOMDetails_TrimToAdTags);
   FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, ThreatDOMDetails);
-  FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, CanCancelDuringCollection);
 };
 
 // Factory for creating ThreatDetails.  Useful for tests.

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/strings/string_split.h"
+#include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
 #include "chrome/browser/nearby_sharing/contacts/nearby_share_contact_manager.h"
 #include "chrome/browser/nearby_sharing/file_attachment.h"
 #include "chrome/browser/nearby_sharing/nearby_per_session_discovery_manager.h"
@@ -29,6 +30,7 @@
 #include "chrome/grit/nearby_share_dialog_resources.h"
 #include "chrome/grit/nearby_share_dialog_resources_map.h"
 #include "chrome/grit/theme_resources.h"
+#include "chromeos/components/sharesheet/constants.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -79,6 +81,9 @@ NearbyShareDialogUI::NearbyShareDialogUI(content::WebUI* web_ui)
   html_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::WorkerSrc, "worker-src blob: 'self';");
 
+  html_source->AddBoolean(
+      "isOnePageOnboardingEnabled",
+      base::FeatureList::IsEnabled(features::kNearbySharingOnePageOnboarding));
   RegisterNearbySharedStrings(html_source);
   html_source->UseStringsJs();
 
@@ -166,7 +171,7 @@ void NearbyShareDialogUI::HandleClose(const base::ListValue* args) {
   if (!sharesheet_controller_)
     return;
 
-  base::Value::ConstListView args_list = args->GetList();
+  base::Value::ConstListView args_list = args->GetListDeprecated();
   CHECK_EQ(1u, args_list.size());
   CHECK_GE(args_list[0].GetInt(), 0u);
   CHECK_LE(args_list[0].GetInt(), static_cast<int>(CloseReason::kMax));

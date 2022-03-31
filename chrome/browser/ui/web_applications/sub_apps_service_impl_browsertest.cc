@@ -7,6 +7,7 @@
 
 #include "chrome/browser/ui/web_applications/sub_apps_service_impl.h"
 
+#include "base/containers/flat_set.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/ui/browser.h"
@@ -24,6 +25,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/features.h"
 
+using blink::mojom::SubAppsServiceListResultPtr;
 using blink::mojom::SubAppsServiceResult;
 
 namespace web_app {
@@ -38,6 +40,7 @@ constexpr const char kSubAppPath[] = "/web_apps/site_a/basic.html";
 constexpr const char kSubAppPathMinimalUi[] =
     "/web_apps/site_a/basic.html?manifest=manifest_minimal_ui.json";
 constexpr const char kSubAppPath2[] = "/web_apps/site_b/basic.html";
+constexpr const char kSubAppPath3[] = "/web_apps/site_d/basic.html";
 constexpr const char kSubAppPathInvalid[] = "/invalid/sub/app/path.html";
 
 }  // namespace
@@ -45,8 +48,9 @@ constexpr const char kSubAppPathInvalid[] = "/invalid/sub/app/path.html";
 // There's one simple end-to-end test that actually calls the JS API interface,
 // the rest test the mojo interface (since the first layer listening to the API
 // calls is almost a direct passthrough to the mojo service).
-// TODO(isandrk): JS API interface tests should be in
-// third_party/blink/web_tests/wpt_internal/subapps/.
+//
+// JS API interface tests are in
+// third_party/blink/web_tests/external/wpt/subapps/.
 
 class SubAppsServiceImplBrowserTest : public WebAppControllerBrowserTest {
  public:
@@ -71,6 +75,8 @@ class SubAppsServiceImplBrowserTest : public WebAppControllerBrowserTest {
         ui_test_utils::NavigateToURL(browser(), GetURL(kParentAppPath)));
   }
 
+  void UninstallParentApp() { UninstallWebApp(parent_app_id_); }
+
   std::vector<AppId> GetAllSubAppIds(const AppId& parent_app_id) {
     return provider().registrar().GetAllSubAppIds(parent_app_id);
   }
@@ -88,6 +94,14 @@ class SubAppsServiceImplBrowserTest : public WebAppControllerBrowserTest {
     base::test::TestFuture<SubAppsServiceResult> future;
     remote_->Add(install_path, future.GetCallback());
     return future.Get();
+  }
+
+  // Calls the List() method on the mojo interface which is async, and waits for
+  // it to finish.
+  SubAppsServiceListResultPtr CallList() {
+    base::test::TestFuture<SubAppsServiceListResultPtr> future;
+    remote_->List(future.GetCallback());
+    return future.Take();
   }
 
  protected:
@@ -241,6 +255,146 @@ IN_PROC_BROWSER_TEST_F(SubAppsServiceImplBrowserTest, AddInvalid) {
 
   EXPECT_EQ(SubAppsServiceResult::kFailure, CallAdd(kSubAppPathInvalid));
   EXPECT_EQ(0ul, GetAllSubAppIds(parent_app_id_).size());
+}
+
+// Verify that uninstalling an app with sub-apps causes sub-apps to be
+// uninstalled as well.
+IN_PROC_BROWSER_TEST_F(SubAppsServiceImplBrowserTest,
+                       UninstallingParentAppUninstallsSubApps) {
+  InstallParentApp();
+  NavigateToParentApp();
+  BindRemote();
+
+  EXPECT_EQ(SubAppsServiceResult::kSuccess, CallAdd(kSubAppPath));
+  EXPECT_EQ(SubAppsServiceResult::kSuccess, CallAdd(kSubAppPath2));
+  EXPECT_EQ(SubAppsServiceResult::kSuccess, CallAdd(kSubAppPath3));
+
+  // Verify that subapps are installed.
+  AppId sub_app_id_1 =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, GetURL(kSubAppPath));
+  AppId sub_app_id_2 =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, GetURL(kSubAppPath2));
+  AppId sub_app_id_3 =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, GetURL(kSubAppPath3));
+
+  EXPECT_TRUE(provider().registrar().IsInstalled(sub_app_id_1));
+  EXPECT_TRUE(provider().registrar().IsInstalled(sub_app_id_2));
+  EXPECT_TRUE(provider().registrar().IsInstalled(sub_app_id_3));
+
+  UninstallParentApp();
+  // Verify that both parent app and sub apps are no longer installed.
+  EXPECT_FALSE(provider().registrar().IsInstalled(parent_app_id_));
+  EXPECT_FALSE(provider().registrar().IsInstalled(sub_app_id_1));
+  EXPECT_FALSE(provider().registrar().IsInstalled(sub_app_id_2));
+  EXPECT_FALSE(provider().registrar().IsInstalled(sub_app_id_3));
+}
+
+// Verify that uninstalling an app that has a sub-app with more than one
+// install source only removes the "sub-app" install source for that sub-app
+// but does not uninstall it.
+IN_PROC_BROWSER_TEST_F(
+    SubAppsServiceImplBrowserTest,
+    StandaloneAppStaysInstalledAfterUpgradedParentUninstall) {
+  // Install app as standalone app.
+  AppId standalone_app_id = InstallPWA(GetURL(kSubAppPath2));
+
+  InstallParentApp();
+  NavigateToParentApp();
+  BindRemote();
+
+  // Add normal subapp to verify standalone app install/uninstall does
+  // not affect normal sub app uninstalls.
+  EXPECT_EQ(SubAppsServiceResult::kSuccess, CallAdd(kSubAppPath));
+  AppId sub_app_id =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, GetURL(kSubAppPath));
+  EXPECT_TRUE(provider().registrar().IsInstalled(sub_app_id));
+
+  // Add standalone app as sub-app.
+  EXPECT_EQ(SubAppsServiceResult::kSuccess, CallAdd(kSubAppPath2));
+
+  // Verify that it is now installed and registered as a subapp.
+  const WebApp* standalone_app =
+      provider().registrar().GetAppById(standalone_app_id);
+  EXPECT_EQ(parent_app_id_, standalone_app->parent_app_id());
+  EXPECT_FALSE(standalone_app->HasOnlySource(Source::kSync));
+  EXPECT_TRUE(standalone_app->IsSubAppInstalledApp());
+
+  UninstallParentApp();
+
+  // Verify that normal sub-app is uninstalled.
+  EXPECT_FALSE(provider().registrar().IsInstalled(sub_app_id));
+
+  // Verify that previous standalone is still installed.
+  EXPECT_TRUE(provider().registrar().IsInstalled(standalone_app_id));
+
+  // Verify that there are no apps registered as parent app's sub apps.
+  EXPECT_EQ(0ul, GetAllSubAppIds(parent_app_id_).size());
+
+  EXPECT_EQ(absl::nullopt, standalone_app->parent_app_id());
+
+  // Verify that the standalone app no longer has the sub-app install source.
+  EXPECT_TRUE(standalone_app->HasOnlySource(Source::kSync));
+}
+
+// List call returns the correct value for three sub-apps.
+IN_PROC_BROWSER_TEST_F(SubAppsServiceImplBrowserTest, ListSuccess) {
+  InstallParentApp();
+  NavigateToParentApp();
+  BindRemote();
+
+  // Empty list before adding any sub-apps.
+  SubAppsServiceListResultPtr result = CallList();
+  EXPECT_EQ(SubAppsServiceResult::kSuccess, result->code);
+  EXPECT_EQ(std::vector<std::string>{}, result->sub_app_ids);
+
+  EXPECT_EQ(SubAppsServiceResult::kSuccess, CallAdd(kSubAppPath));
+  EXPECT_EQ(SubAppsServiceResult::kSuccess, CallAdd(kSubAppPath2));
+  EXPECT_EQ(SubAppsServiceResult::kSuccess, CallAdd(kSubAppPath3));
+
+  // We need to use a set for comparison because the ordering changes between
+  // invocations (due to embedded test server using a random port each time).
+  base::flat_set<std::string> expected_set = {
+      GetURL(kSubAppPath).spec(),
+      GetURL(kSubAppPath2).spec(),
+      GetURL(kSubAppPath3).spec(),
+  };
+  result = CallList();
+  EXPECT_EQ(SubAppsServiceResult::kSuccess, result->code);
+  base::flat_set<std::string> actual_set(result->sub_app_ids.begin(),
+                                         result->sub_app_ids.end());
+  // We see all three sub-apps now.
+  EXPECT_EQ(expected_set, actual_set);
+}
+
+// Verify that the list call doesn't return a non-sub-apps installed app.
+IN_PROC_BROWSER_TEST_F(SubAppsServiceImplBrowserTest,
+                       ListDoesntReturnNonSubApp) {
+  // Regular install.
+  InstallPWA(GetURL(kSubAppPath));
+
+  InstallParentApp();
+  NavigateToParentApp();
+  BindRemote();
+
+  // Sub-app install.
+  EXPECT_EQ(SubAppsServiceResult::kSuccess, CallAdd(kSubAppPath2));
+
+  // Should only see the sub-app one here, not the standalone.
+  SubAppsServiceListResultPtr result = CallList();
+  EXPECT_EQ(SubAppsServiceResult::kSuccess, result->code);
+  EXPECT_EQ(std::vector<std::string>{GetURL(kSubAppPath2).spec()},
+            result->sub_app_ids);
+}
+
+// List call returns failure if the parent app isn't installed.
+IN_PROC_BROWSER_TEST_F(SubAppsServiceImplBrowserTest,
+                       ListFailParentAppNotInstalled) {
+  NavigateToParentApp();
+  BindRemote();
+
+  SubAppsServiceListResultPtr result = CallList();
+  EXPECT_EQ(SubAppsServiceResult::kFailure, result->code);
+  EXPECT_EQ(std::vector<std::string>(), result->sub_app_ids);
 }
 
 }  // namespace web_app

@@ -22,6 +22,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/viz/privileged/mojom/compositing/begin_frame_observer.mojom.h"
 #include "services/viz/privileged/mojom/compositing/display_private.mojom.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
@@ -88,10 +89,11 @@ class VIZ_SERVICE_EXPORT RootCompositorFrameSinkImpl
 #endif
   void AddVSyncParameterObserver(
       mojo::PendingRemote<mojom::VSyncParameterObserver> observer) override;
-
   void SetDelegatedInkPointRenderer(
       mojo::PendingReceiver<gfx::mojom::DelegatedInkPointRenderer> receiver)
       override;
+  void SetStandaloneBeginFrameObserver(
+      mojo::PendingRemote<mojom::BeginFrameObserver> observer) override;
 
   // mojom::CompositorFrameSink:
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
@@ -120,6 +122,8 @@ class VIZ_SERVICE_EXPORT RootCompositorFrameSinkImpl
   base::ScopedClosureRunner GetCacheBackBufferCb();
 
  private:
+  class StandaloneBeginFrameObserver;
+
   RootCompositorFrameSinkImpl(
       FrameSinkManagerImpl* frame_sink_manager,
       const FrameSinkId& frame_sink_id,
@@ -175,6 +179,9 @@ class VIZ_SERVICE_EXPORT RootCompositorFrameSinkImpl
   // to the BFS.
   std::unique_ptr<Display> display_;
 
+  std::unique_ptr<StandaloneBeginFrameObserver>
+      standalone_begin_frame_observer_;
+
   // |use_preferred_interval_| indicates if we should use the preferred interval
   // from FrameRateDecider to tick.
   bool use_preferred_interval_ = false;
@@ -192,6 +199,8 @@ class VIZ_SERVICE_EXPORT RootCompositorFrameSinkImpl
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   gfx::Size last_swap_pixel_size_;
 #endif
+
+  gfx::CALayerParams last_ca_layer_params_;
 
 #if BUILDFLAG(IS_ANDROID)
   // Let client control whether it wants `DidCompleteSwapWithSize`.

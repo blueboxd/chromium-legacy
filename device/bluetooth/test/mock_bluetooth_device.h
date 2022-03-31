@@ -76,6 +76,15 @@ class MockBluetoothDevice : public BluetoothDevice {
   MOCK_METHOD2(Connect_,
                void(BluetoothDevice::PairingDelegate* pairing_delegate,
                     ConnectCallback& callback));
+#if BUILDFLAG(IS_CHROMEOS)
+  void ConnectClassic(BluetoothDevice::PairingDelegate* pairing_delegate,
+                      ConnectCallback callback) override {
+    ConnectClassic_(pairing_delegate, callback);
+  }
+  MOCK_METHOD2(ConnectClassic_,
+               void(BluetoothDevice::PairingDelegate* pairing_delegate,
+                    ConnectCallback& callback));
+#endif  // BUILDFLAG(IS_CHROMEOS)
   void Pair(BluetoothDevice::PairingDelegate* pairing_delegate,
             ConnectCallback callback) override {
     Pair_(pairing_delegate, callback);
@@ -109,7 +118,6 @@ class MockBluetoothDevice : public BluetoothDevice {
   }
   MOCK_METHOD1(CreateGattConnection_, void(GattConnectionCallback& callback));
 
-  MOCK_METHOD1(SetGattServicesDiscoveryComplete, void(bool));
   MOCK_CONST_METHOD0(IsGattServicesDiscoveryComplete, bool());
 
   MOCK_CONST_METHOD0(GetGattServices,

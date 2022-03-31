@@ -7,6 +7,7 @@
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
+GEN('#include "build/build_config.h"');
 GEN('#include "chrome/browser/ui/webui/extensions/' +
     'extension_settings_browsertest.h"');
 GEN('#include "chrome/browser/ui/ui_features.h"');
@@ -105,7 +106,7 @@ TEST_F('CrExtensionsToolbarTest', 'FailedUpdateFiresLoadError', function() {
 });
 
 // TODO(crbug.com/882342) Disabled on other platforms but MacOS due to timeouts.
-GEN('#if !defined(OS_MAC)');
+GEN('#if !BUILDFLAG(IS_MAC)');
 GEN('#define MAYBE_ClickHandlers DISABLED_ClickHandlers');
 GEN('#else');
 GEN('#define MAYBE_ClickHandlers ClickHandlers');
@@ -289,6 +290,13 @@ TEST_F('CrExtensionsDetailViewTest', 'IndicatorTest', function() {
 TEST_F('CrExtensionsDetailViewTest', 'Warnings', function() {
   this.runMochaTest(extension_detail_view_tests.TestNames.Warnings);
 });
+
+TEST_F(
+    'CrExtensionsDetailViewTest', 'NoSiteAccessWithEnhancedSiteControls',
+    function() {
+      this.runMochaTest(extension_detail_view_tests.TestNames
+                            .NoSiteAccessWithEnhancedSiteControls);
+    });
 
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Item List Tests
@@ -595,7 +603,7 @@ TEST_F('CrExtensionsPackDialogTest', 'Interaction', function() {
 
 // Disabling on Windows due to flaky timeout on some build bots.
 // http://crbug.com/832885
-GEN('#if defined(OS_WIN)');
+GEN('#if BUILDFLAG(IS_WIN)');
 GEN('#define MAYBE_PackSuccess DISABLED_PackSuccess');
 GEN('#else');
 GEN('#define MAYBE_PackSuccess PackSuccess');
@@ -610,7 +618,7 @@ TEST_F('CrExtensionsPackDialogTest', 'PackError', function() {
 
 // Temporarily disabling on Mac due to flakiness.
 // http://crbug.com/877109
-GEN('#if defined(OS_MAC)');
+GEN('#if BUILDFLAG(IS_MAC)');
 GEN('#define MAYBE_PackWarning DISABLED_PackWarning');
 GEN('#else');
 GEN('#define MAYBE_PackWarning PackWarning');
@@ -854,5 +862,78 @@ var CrExtensionsHostPermissionsToggleListTest =
 };
 
 TEST_F('CrExtensionsHostPermissionsToggleListTest', 'All', () => {
+  mocha.run();
+});
+
+////////////////////////////////////////////////////////////////////////////////
+// SitePermissions tests
+
+var CrExtensionsSitePermissionsTest = class extends CrExtensionsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/test_loader.html?module=extensions/site_permissions_test.js&host=webui-test';
+  }
+};
+
+TEST_F('CrExtensionsSitePermissionsTest', 'All', () => {
+  mocha.run();
+});
+
+////////////////////////////////////////////////////////////////////////////////
+// SitePermissionsBySite tests
+
+var CrExtensionsSitePermissionsBySiteTest =
+    class extends CrExtensionsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/test_loader.html?module=extensions/site_permissions_by_site_test.js&host=webui-test';
+  }
+};
+
+TEST_F('CrExtensionsSitePermissionsBySiteTest', 'All', () => {
+  mocha.run();
+});
+
+////////////////////////////////////////////////////////////////////////////////
+// SitePermissionsAddSiteDialog tests
+
+var CrExtensionsSitePermissionsAddSiteDialogTest =
+    class extends CrExtensionsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/test_loader.html?module=extensions/site_permissions_add_site_dialog_test.js&host=webui-test';
+  }
+};
+
+TEST_F('CrExtensionsSitePermissionsAddSiteDialogTest', 'All', () => {
+  mocha.run();
+});
+
+////////////////////////////////////////////////////////////////////////////////
+// SitePermissionsList tests
+
+var CrExtensionsSitePermissionsListTest =
+    class extends CrExtensionsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/test_loader.html?module=extensions/site_permissions_list_test.js&host=webui-test';
+  }
+};
+
+TEST_F('CrExtensionsSitePermissionsListTest', 'All', () => {
+  mocha.run();
+});
+
+////////////////////////////////////////////////////////////////////////////////
+// UrlUtil tests
+
+var CrUrlUtilTest = class extends CrExtensionsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://extensions/test_loader.html?module=extensions/url_util_test.js&host=webui-test';
+  }
+};
+
+TEST_F('CrUrlUtilTest', 'All', () => {
   mocha.run();
 });

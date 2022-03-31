@@ -14,6 +14,7 @@
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/proto/sct_audit_report.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -52,6 +53,16 @@ class NetworkContext;
 // every session).
 class COMPONENT_EXPORT(NETWORK_SERVICE) SCTAuditingCache {
  public:
+  struct COMPONENT_EXPORT(NETWORK_SERVICE) ReportEntry {
+    ReportEntry();
+    ~ReportEntry();
+    ReportEntry(const ReportEntry&) = delete;
+    ReportEntry operator==(const ReportEntry&) = delete;
+    ReportEntry(ReportEntry&&);
+    net::HashValue key;
+    std::unique_ptr<sct_auditing::SCTClientReport> report;
+  };
+
   explicit SCTAuditingCache(size_t cache_size = 1024);
   ~SCTAuditingCache();
 
@@ -63,8 +74,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SCTAuditingCache {
   // cache. If the SCTs were not already in the cache, a random sample is drawn
   // to determine whether to send a report. This means we sample a subset of
   // *certificates* rather than a subset of *connections*.
-  void MaybeEnqueueReport(
-      NetworkContext* context,
+  // Returns the report entry if the report should be sent, and absl::nullopt
+  // otherwise.
+  absl::optional<ReportEntry> MaybeGenerateReportEntry(
       const net::HostPortPair& host_port_pair,
       const net::X509Certificate* validated_certificate_chain,
       const net::SignedCertificateTimestampAndStatusList&
@@ -72,9 +84,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SCTAuditingCache {
 
   void ClearCache();
 
-  void set_enabled(bool enabled);
   void set_sampling_rate(double rate) { sampling_rate_ = rate; }
   void set_report_uri(const GURL& report_uri) { report_uri_ = report_uri; }
+  void set_popular_scts(std::vector<std::vector<uint8_t>> popular_scts) {
+    popular_scts_ = std::move(popular_scts);
+  }
   void set_traffic_annotation(
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
     traffic_annotation_ = traffic_annotation;
@@ -90,7 +104,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SCTAuditingCache {
 
  private:
   void ReportHWMMetrics();
-  void SetPeriodicMetricsEnabled(bool enabled);
 
   // Value `bool` is ignored in the dedupe cache. This cache only stores
   // recently seen hashes of SCTs in order to deduplicate on SCTs, and the bool
@@ -99,7 +112,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SCTAuditingCache {
   // Tracks high-water-mark of `dedupe_cache_.size()`.
   size_t dedupe_cache_size_hwm_ = 0;
 
-  bool enabled_ = false;
+  // A list of hashes for popular SCTs that should not be scheduled for auditing
+  // as an optimization for hashdance clients.
+  std::vector<std::vector<uint8_t>> popular_scts_;
+
   double sampling_rate_ = 0;
   GURL report_uri_;
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;

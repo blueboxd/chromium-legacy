@@ -50,6 +50,7 @@ class SharedImageRepresentationGLTexture;
 class SharedImageRepresentationGLTexturePassthrough;
 class SharedImageRepresentationSkia;
 class SharedImageRepresentationDawn;
+class SharedImageRepresentationLegacyOverlay;
 class SharedImageRepresentationOverlay;
 class SharedImageRepresentationMemory;
 class SharedImageRepresentationVaapi;
@@ -129,7 +130,7 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   virtual void OnMemoryDump(const std::string& dump_name,
                             base::trace_event::MemoryAllocatorDump* dump,
                             base::trace_event::ProcessMemoryDump* pmd,
-                            uint64_t client_tracing_id) {}
+                            uint64_t client_tracing_id);
 
   // Prepares the backing for use with the legacy mailbox system.
   // TODO(ericrk): Remove this once the new codepath is complete.
@@ -189,6 +190,10 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   virtual std::unique_ptr<SharedImageRepresentationRaster> ProduceRaster(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker);
+#if BUILDFLAG(IS_ANDROID)
+  virtual std::unique_ptr<SharedImageRepresentationLegacyOverlay>
+  ProduceLegacyOverlay(SharedImageManager* manager, MemoryTypeTracker* tracker);
+#endif
 
   // Used by subclasses during destruction.
   bool have_context() const EXCLUSIVE_LOCKS_REQUIRED(lock_);

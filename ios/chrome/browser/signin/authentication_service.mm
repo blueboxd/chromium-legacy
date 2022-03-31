@@ -14,6 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/ios/browser/features.h"
 #import "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/device_accounts_synchronizer.h"
@@ -31,9 +32,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
-#include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -133,8 +132,6 @@ void AuthenticationService::Initialize(
   crash_keys::SetCurrentlySignedIn(
       HasPrimaryIdentity(signin::ConsentLevel::kSignin));
 
-  identity_service_observation_.Observe(
-      ios::GetChromeBrowserProvider().GetChromeIdentityService());
   account_manager_service_observation_.Observe(account_manager_service_);
 
   // Register for prefs::kSigninAllowed.
@@ -291,16 +288,6 @@ void AuthenticationService::ApproveAccountList() {
       current_accounts_info);
 }
 
-void AuthenticationService::OnChromeIdentityServiceDidChange(
-    ios::ChromeIdentityService* new_service) {
-  identity_service_observation_.Observe(
-      ios::GetChromeBrowserProvider().GetChromeIdentityService());
-}
-
-void AuthenticationService::OnChromeBrowserProviderWillBeDestroyed() {
-  identity_service_observation_.Reset();
-}
-
 void AuthenticationService::MigrateAccountsStoredInPrefsIfNeeded() {
   if (identity_manager_->GetAccountIdMigrationState() ==
       signin::IdentityManager::AccountIdMigrationState::MIGRATION_NOT_STARTED) {
@@ -361,7 +348,53 @@ ChromeIdentity* AuthenticationService::GetPrimaryIdentity(
   return account_manager_service_->GetIdentityWithGaiaID(authenticated_gaia_id);
 }
 
-void AuthenticationService::SignIn(ChromeIdentity* identity) {
+void AuthenticationService::SignIn(ChromeIdentity* identity,
+                                   signin_ui::CompletionCallback completion) {
+  base::WeakPtr<AuthenticationService> weak_ptr = GetWeakPtr();
+  ProceduralBlock signin_callback = ^() {
+    bool has_primary_identity = false;
+    AuthenticationService* strong_ptr = weak_ptr.get();
+    if (strong_ptr) {
+      strong_ptr->SignInInternal(identity);
+      has_primary_identity =
+          strong_ptr->HasPrimaryIdentity(signin::ConsentLevel::kSignin);
+    }
+    if (completion) {
+      completion(has_primary_identity);
+    }
+  };
+
+  if (base::FeatureList::IsEnabled(signin::kEnableUnicornAccountSupport)) {
+    ios::ChromeIdentityService* identity_service =
+        ios::GetChromeBrowserProvider().GetChromeIdentityService();
+    identity_service->IsSubjectToParentalControls(
+        identity, ^(ios::ChromeIdentityCapabilityResult result) {
+          AuthenticationService* strong_ptr = weak_ptr.get();
+          if (strong_ptr) {
+            strong_ptr->OnIsSubjectToParentalControlsResult(result,
+                                                            signin_callback);
+          }
+        });
+    return;
+  }
+
+  // When supervised user account are not enabled, sign in the account by
+  // default.
+  signin_callback();
+}
+
+void AuthenticationService::OnIsSubjectToParentalControlsResult(
+    ios::ChromeIdentityCapabilityResult result,
+    ProceduralBlock completion) {
+  // Clears browsing data for supervised users before sign-in operation.
+  if (result == ios::ChromeIdentityCapabilityResult::kTrue) {
+    delegate_->ClearBrowsingData(completion);
+  } else if (completion) {
+    completion();
+  }
+}
+
+void AuthenticationService::SignInInternal(ChromeIdentity* identity) {
   ServiceStatus status = GetServiceStatus();
   CHECK(status == ServiceStatus::SigninAllowed ||
         status == ServiceStatus::SigninForcedByPolicy)
@@ -467,17 +500,34 @@ void AuthenticationService::SignOut(
   sync_service_->StopAndClear();
 
   auto* account_mutator = identity_manager_->GetPrimaryAccountMutator();
-
   // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
   DCHECK(account_mutator);
+
+  // Retrieve primary identity before clearing in the account mutator.
+  ChromeIdentity* primary_identity =
+      GetPrimaryIdentity(signin::ConsentLevel::kSignin);
+
   account_mutator->ClearPrimaryAccount(
       signout_source, signin_metrics::SignoutDelete::kIgnoreMetric);
   crash_keys::SetCurrentlySignedIn(false);
   cached_mdm_infos_.clear();
+
   // Browsing data for managed account needs to be cleared only if sync has
   // started at least once.
   if (force_clear_browsing_data || (is_managed && is_first_setup_complete)) {
     delegate_->ClearBrowsingData(completion);
+  } else if (base::FeatureList::IsEnabled(
+                 signin::kEnableUnicornAccountSupport)) {
+    ios::ChromeIdentityService* identity_service =
+        ios::GetChromeBrowserProvider().GetChromeIdentityService();
+    base::WeakPtr<AuthenticationService> weak_ptr = GetWeakPtr();
+    identity_service->IsSubjectToParentalControls(
+        primary_identity, ^(ios::ChromeIdentityCapabilityResult result) {
+          AuthenticationService* strong_ptr = weak_ptr.get();
+          if (strong_ptr) {
+            strong_ptr->OnIsSubjectToParentalControlsResult(result, completion);
+          }
+        });
   } else if (completion) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   base::BindOnce(completion));
@@ -622,10 +672,6 @@ void AuthenticationService::OnAccessTokenRefreshFailed(
       base::BindOnce(&AuthenticationService::HandleForgottenIdentity,
                      base::Unretained(this), identity, /*should_prompt=*/true,
                      /*device_restore=*/false));
-}
-
-void AuthenticationService::OnChromeIdentityServiceWillBeDestroyed() {
-  identity_service_observation_.Reset();
 }
 
 void AuthenticationService::HandleForgottenIdentity(

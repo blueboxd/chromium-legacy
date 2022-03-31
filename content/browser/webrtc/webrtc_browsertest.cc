@@ -63,8 +63,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, CanSetupAudioAndVideoCall) {
   MakeTypicalPeerConnectionCall("call({video: true, audio: true});");
 }
 
-#if BUILDFLAG(IS_ANDROID)
-// Flaky on Android https://crbug.com/1099365
+// Flaky on Android and Linux ASAN https://crbug.com/1099365.
+#if BUILDFLAG(IS_ANDROID) || (BUILDFLAG(IS_LINUX) && defined(ADDRESS_SANITIZER))
 #define MAYBE_NetworkProcessCrashRecovery DISABLED_NetworkProcessCrashRecovery
 #else
 #define MAYBE_NetworkProcessCrashRecovery NetworkProcessCrashRecovery
@@ -220,15 +220,6 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, NegotiateOfferWithBLine) {
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
                        CallWithNewVideoMediaStream) {
   MakeTypicalPeerConnectionCall("callWithNewVideoMediaStream();");
-}
-
-// This test will make a PeerConnection-based call and send a new Video
-// MediaStream that has been created based on a MediaStream created with
-// getUserMedia. When video is flowing, the VideoTrack is removed and an
-// AudioTrack is added instead.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, CallAndModifyStream) {
-  MakeTypicalPeerConnectionCall(
-      "callWithNewVideoMediaStreamLaterSwitchToAudio();");
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest, AddTwoMediaStreamsToOnePC) {

@@ -137,15 +137,14 @@ base::Value GetPrintPreviewTicket() {
   return print_ticket;
 }
 
-std::unique_ptr<base::ListValue> ConstructPreviewArgs(
-    base::StringPiece callback_id,
-    const base::Value& print_ticket) {
+base::Value ConstructPreviewArgs(base::StringPiece callback_id,
+                                 const base::Value& print_ticket) {
   base::Value args(base::Value::Type::LIST);
   args.Append(callback_id);
   std::string json;
   base::JSONWriter::Write(print_ticket, &json);
   args.Append(json);
-  return base::ListValue::From(base::Value::ToUniquePtrValue(std::move(args)));
+  return args;
 }
 
 UserActionBuckets GetUserActionForPrinterType(mojom::PrinterType type) {
@@ -208,7 +207,7 @@ class TestPrinterHandler : public PrinterHandler {
 
   void StartGetPrinters(AddedPrintersCallback added_printers_callback,
                         GetPrintersDoneCallback done_callback) override {
-    if (!printers_.GetList().empty())
+    if (!printers_.GetListDeprecated().empty())
       added_printers_callback.Run(printers_);
     std::move(done_callback).Run();
   }
@@ -460,8 +459,6 @@ class PrintPreviewHandlerTest : public testing::Test {
     // before any other messages are sent.
     base::Value args(base::Value::Type::LIST);
     args.Append("test-callback-id-0");
-    std::unique_ptr<base::ListValue> list_args =
-        base::ListValue::From(base::Value::ToUniquePtrValue(std::move(args)));
 
     auto* browser_process = TestingBrowserProcess::GetGlobal();
     std::string original_locale = browser_process->GetApplicationLocale();
@@ -472,7 +469,7 @@ class PrintPreviewHandlerTest : public testing::Test {
       browser_process->SetApplicationLocale(locale);
       base::test::ScopedRestoreICUDefaultLocale scoped_locale(locale);
       base::ResetFormattersForTesting();
-      handler()->HandleGetInitialSettings(list_args.get());
+      handler()->HandleGetInitialSettings(args.GetListDeprecated());
     }
     // Reset again now that |scoped_locale| has been destroyed.
     browser_process->SetApplicationLocale(original_locale);
@@ -632,7 +629,7 @@ class PrintPreviewHandlerTest : public testing::Test {
     base::Value args(base::Value::Type::LIST);
     args.Append(callback_id_in);
     args.Append(static_cast<int>(type));
-    handler()->HandleGetPrinters(&base::Value::AsListValue(args));
+    handler()->HandleGetPrinters(args.GetListDeprecated());
   }
 
   // Validates that the printers-added Web UI event has been fired for
@@ -648,7 +645,8 @@ class PrintPreviewHandlerTest : public testing::Test {
         static_cast<mojom::PrinterType>(add_data.arg2()->GetInt());
     EXPECT_EQ(expected_type, type);
     ASSERT_TRUE(add_data.arg3());
-    base::Value::ConstListView printer_list = add_data.arg3()->GetList();
+    base::Value::ConstListView printer_list =
+        add_data.arg3()->GetListDeprecated();
     ASSERT_EQ(printer_list.size(), 1u);
     EXPECT_TRUE(printer_list[0].FindKeyOfType("printer_name",
                                               base::Value::Type::STRING));
@@ -663,7 +661,7 @@ class PrintPreviewHandlerTest : public testing::Test {
     args.Append(callback_id_in);
     args.Append(printer_name);
     args.Append(static_cast<int>(type));
-    handler()->HandleGetPrinterCapabilities(&base::Value::AsListValue(args));
+    handler()->HandleGetPrinterCapabilities(args.GetListDeprecated());
   }
 
   // Validates that a printer capabilities promise was resolved/rejected.
@@ -1239,9 +1237,9 @@ TEST_F(PrintPreviewHandlerTest, Print) {
     preview_ticket.SetIntKey(kPreviewRequestID, i);
     std::string preview_callback_id =
         "test-callback-id-" + base::NumberToString(2 * i + 1);
-    std::unique_ptr<base::ListValue> preview_list_args =
+    base::Value preview_list_args =
         ConstructPreviewArgs(preview_callback_id, preview_ticket);
-    handler()->HandleGetPreview(preview_list_args.get());
+    handler()->HandleGetPreview(preview_list_args.GetListDeprecated());
 
     // Send printing request.
     mojom::PrinterType type = kAllTypes[i];
@@ -1253,9 +1251,7 @@ TEST_F(PrintPreviewHandlerTest, Print) {
     std::string json;
     base::JSONWriter::Write(print_ticket, &json);
     print_args.Append(json);
-    std::unique_ptr<base::ListValue> print_list_args = base::ListValue::From(
-        base::Value::ToUniquePtrValue(std::move(print_args)));
-    handler()->HandlePrint(print_list_args.get());
+    handler()->HandlePrint(print_args.GetListDeprecated());
 
     CheckHistograms(histograms, type);
 
@@ -1290,9 +1286,9 @@ TEST_F(PrintPreviewHandlerTest, GetPreview) {
   print_render_frame.SetCompletionClosure(run_loop.QuitClosure());
 
   base::Value print_ticket = GetPrintPreviewTicket();
-  std::unique_ptr<base::ListValue> list_args =
+  base::Value list_args =
       ConstructPreviewArgs("test-callback-id-1", print_ticket);
-  handler()->HandleGetPreview(list_args.get());
+  handler()->HandleGetPreview(list_args.GetListDeprecated());
   run_loop.Run();
 
   // Verify that the preview was requested from the renderer with the
@@ -1321,9 +1317,8 @@ TEST_F(PrintPreviewHandlerTest, SendPreviewUpdates) {
 
   const char callback_id_in[] = "test-callback-id-1";
   base::Value print_ticket = GetPrintPreviewTicket();
-  std::unique_ptr<base::ListValue> list_args =
-      ConstructPreviewArgs(callback_id_in, print_ticket);
-  handler()->HandleGetPreview(list_args.get());
+  base::Value list_args = ConstructPreviewArgs(callback_id_in, print_ticket);
+  handler()->HandleGetPreview(list_args.GetListDeprecated());
   run_loop.Run();
   const base::Value& preview_params = print_render_frame.GetSettings();
 
@@ -1441,9 +1436,7 @@ TEST_F(PrintPreviewHandlerFailingTest, GetPrinterCapabilities) {
     args.Append(callback_id_in);
     args.Append(kDummyPrinterName);
     args.Append(static_cast<int>(type));
-    std::unique_ptr<base::ListValue> list_args =
-        base::ListValue::From(base::Value::ToUniquePtrValue(std::move(args)));
-    handler()->HandleGetPrinterCapabilities(list_args.get());
+    handler()->HandleGetPrinterCapabilities(args.GetListDeprecated());
     EXPECT_TRUE(handler()->CalledOnlyForType(type));
 
     // Start with 1 call from initial settings, then add 1 more for each loop

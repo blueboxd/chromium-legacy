@@ -180,6 +180,8 @@ cc_component("cc") {
     "metrics/compositor_timing_history.h",
     "metrics/dropped_frame_counter.cc",
     "metrics/dropped_frame_counter.h",
+    "metrics/event_latency_tracing_recorder.cc",
+    "metrics/event_latency_tracing_recorder.h",
     "metrics/event_metrics.cc",
     "metrics/event_metrics.h",
     "metrics/events_metrics_manager.cc",
@@ -298,6 +300,8 @@ cc_component("cc") {
     "tiles/image_decode_cache_utils.h",
     "tiles/mipmap_util.cc",
     "tiles/mipmap_util.h",
+    "tiles/occluded_tile_iterator.cc",
+    "tiles/occluded_tile_iterator.h",
     "tiles/picture_layer_tiling.cc",
     "tiles/picture_layer_tiling.h",
     "tiles/picture_layer_tiling_set.cc",
@@ -841,6 +845,7 @@ cc_test("cc_unittests") {
     sources += [
       "paint/skottie_mru_resource_provider_unittest.cc",
       "paint/skottie_resource_metadata_unittest.cc",
+      "paint/skottie_serialization_history_unittest.cc",
       "paint/skottie_transfer_cache_entry_unittest.cc",
       "paint/skottie_wrapper_unittest.cc",
     ]
@@ -894,6 +899,7 @@ cc_test("cc_unittests") {
   }
 
   if (is_fuchsia) {
+    use_cfv2 = false
     additional_manifest_fragments = [
       "//build/config/fuchsia/test/font_capabilities.test-cmx",
 

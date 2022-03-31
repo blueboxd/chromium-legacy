@@ -14,6 +14,7 @@
 
 #include "base/base64.h"
 #include "base/containers/contains.h"
+#include "base/guid.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
@@ -66,13 +67,6 @@ testing::AssertionResult AggregatableReportsEqual(
     const AggregationServicePayload& expected_payload = expected.payloads()[i];
     const AggregationServicePayload& actual_payload = actual.payloads()[i];
 
-    if (expected_payload.origin != actual_payload.origin) {
-      return testing::AssertionFailure()
-             << "Expected origin " << expected_payload.origin
-             << " at payload index " << i
-             << ", actual: " << actual_payload.origin;
-    }
-
     if (expected_payload.payload != actual_payload.payload) {
       return testing::AssertionFailure()
              << "Expected payloads at payload index " << i << " to match";
@@ -86,7 +80,13 @@ testing::AssertionResult AggregatableReportsEqual(
     }
   }
 
-  return SharedInfoEqual(expected.shared_info(), actual.shared_info());
+  if (expected.shared_info() != actual.shared_info()) {
+    return testing::AssertionFailure()
+           << "Expected shared info " << expected.shared_info()
+           << ", actual: " << actual.shared_info();
+  }
+
+  return testing::AssertionSuccess();
 }
 
 testing::AssertionResult ReportRequestsEqual(
@@ -155,47 +155,49 @@ testing::AssertionResult SharedInfoEqual(
            << "Expected privacy_budget_key " << expected.privacy_budget_key
            << ", actual: " << actual.privacy_budget_key;
   }
+  if (expected.report_id != actual.report_id) {
+    return testing::AssertionFailure()
+           << "Expected report_id " << expected.report_id
+           << ", actual: " << actual.report_id;
+  }
+  if (expected.debug_mode != actual.debug_mode) {
+    return testing::AssertionFailure()
+           << "Expected debug_mode " << expected.debug_mode
+           << ", actual: " << actual.debug_mode;
+  }
 
   return testing::AssertionSuccess();
 }
 
-std::vector<url::Origin> GetExampleProcessingOrigins() {
-  return {url::Origin::Create(GURL("https://a.example")),
-          url::Origin::Create(GURL("https://b.example"))};
-}
-
 AggregatableReportRequest CreateExampleRequest(
     AggregationServicePayloadContents::ProcessingType processing_type) {
-  return CreateExampleRequest(processing_type, GetExampleProcessingOrigins());
-}
-
-AggregatableReportRequest CreateExampleRequest(
-    AggregationServicePayloadContents::ProcessingType processing_type,
-    std::vector<url::Origin> processing_origins) {
   return AggregatableReportRequest::Create(
-             std::move(processing_origins),
              AggregationServicePayloadContents(
                  AggregationServicePayloadContents::Operation::kHistogram,
-                 /*bucket=*/123, /*value=*/456, processing_type,
-                 url::Origin::Create(GURL("https://reporting.example"))),
+                 /*bucket=*/123, /*value=*/456, processing_type),
              AggregatableReportSharedInfo(
                  /*scheduled_report_time=*/base::Time::Now(),
-                 /*privacy_budget_key=*/"example_budget_key"))
+                 /*privacy_budget_key=*/"example_budget_key",
+                 /*report_id=*/
+                 base::GUID::GenerateRandomV4(),
+                 url::Origin::Create(GURL("https://reporting.example")),
+                 AggregatableReportSharedInfo::DebugMode::kDisabled))
       .value();
 }
 
 AggregatableReportRequest CloneReportRequest(
     const AggregatableReportRequest& request) {
-  return AggregatableReportRequest::Create(request.processing_origins(),
-                                           request.payload_contents(),
-                                           request.shared_info())
+  return AggregatableReportRequest::CreateForTesting(
+             request.processing_origins(), request.payload_contents(),
+             request.shared_info())
       .value();
 }
 
 AggregatableReport CloneAggregatableReport(const AggregatableReport& report) {
   std::vector<AggregationServicePayload> payloads;
   for (const AggregationServicePayload& payload : report.payloads()) {
-    payloads.emplace_back(payload.origin, payload.payload, payload.key_id);
+    payloads.emplace_back(payload.payload, payload.key_id,
+                          payload.debug_cleartext_payload);
   }
 
   return AggregatableReport(std::move(payloads), report.shared_info());
@@ -237,65 +239,6 @@ TestAggregationServiceStorageContext::GetKeyStorage() {
   return storage_;
 }
 
-TestAggregationServiceKeyFetcher::TestAggregationServiceKeyFetcher()
-    : AggregationServiceKeyFetcher(/*storage_context=*/nullptr,
-                                   /*network_fetcher=*/nullptr) {}
-
-TestAggregationServiceKeyFetcher::~TestAggregationServiceKeyFetcher() = default;
-
-void TestAggregationServiceKeyFetcher::GetPublicKey(const url::Origin& origin,
-                                                    FetchCallback callback) {
-  callbacks_[origin].push_back(std::move(callback));
-}
-
-void TestAggregationServiceKeyFetcher::TriggerPublicKeyResponse(
-    const url::Origin& origin,
-    absl::optional<PublicKey> key,
-    PublicKeyFetchStatus status) {
-  ASSERT_TRUE(base::Contains(callbacks_, origin))
-      << "No corresponding GetPublicKeys call for origin " << origin;
-  ASSERT_EQ(key.has_value(), status == PublicKeyFetchStatus::kOk)
-      << "Key must be returned if and only if status is kOk";
-
-  std::vector<FetchCallback> callbacks = std::move(callbacks_[origin]);
-  callbacks_.erase(origin);
-  for (FetchCallback& callback : callbacks) {
-    std::move(callback).Run(key, status);
-  }
-}
-
-void TestAggregationServiceKeyFetcher::TriggerPublicKeyResponseForAllOrigins(
-    absl::optional<PublicKey> key,
-    PublicKeyFetchStatus status) {
-  std::vector<url::Origin> all_origins_;
-  for (const auto& elem : callbacks_) {
-    all_origins_.push_back(elem.first);
-  }
-  for (auto& origin : all_origins_) {
-    TriggerPublicKeyResponse(std::move(origin), key, status);
-  }
-}
-
-bool TestAggregationServiceKeyFetcher::HasPendingCallbacks() {
-  return !callbacks_.empty();
-}
-
-TestAggregatableReportProvider::TestAggregatableReportProvider() = default;
-TestAggregatableReportProvider::~TestAggregatableReportProvider() = default;
-
-absl::optional<AggregatableReport>
-TestAggregatableReportProvider::CreateFromRequestAndPublicKeys(
-    AggregatableReportRequest report_request,
-    std::vector<PublicKey> public_keys) const {
-  ++num_calls_;
-  previous_request_ = aggregation_service::CloneReportRequest(report_request);
-  previous_public_keys_ = public_keys;
-
-  EXPECT_TRUE(report_to_return_.has_value());
-  return aggregation_service::CloneAggregatableReport(
-      report_to_return_.value());
-}
-
 std::ostream& operator<<(
     std::ostream& out,
     const AggregationServicePayloadContents::Operation& operation) {
@@ -314,6 +257,28 @@ std::ostream& operator<<(
     case AggregationServicePayloadContents::ProcessingType::kSingleServer:
       return out << "kSingleServer";
   }
+}
+
+std::ostream& operator<<(
+    std::ostream& out,
+    const AggregatableReportSharedInfo::DebugMode& debug_mode) {
+  switch (debug_mode) {
+    case AggregatableReportSharedInfo::DebugMode::kDisabled:
+      return out << "kDisabled";
+    case AggregatableReportSharedInfo::DebugMode::kEnabled:
+      return out << "kEnabled";
+  }
+}
+
+bool operator==(const PublicKey& a, const PublicKey& b) {
+  const auto tie = [](const PublicKey& public_key) {
+    return std::make_tuple(public_key.id, public_key.key);
+  };
+  return tie(a) == tie(b);
+}
+
+bool operator==(const AggregatableReport& a, const AggregatableReport& b) {
+  return aggregation_service::AggregatableReportsEqual(a, b);
 }
 
 }  // namespace content

@@ -44,6 +44,7 @@
 #include "pdf/content_restriction.h"
 #include "pdf/document_layout.h"
 #include "pdf/document_metadata.h"
+#include "pdf/file_extension.h"
 #include "pdf/paint_ready_rect.h"
 #include "pdf/pdf_engine.h"
 #include "pdf/pdf_features.h"
@@ -1334,11 +1335,11 @@ void PdfViewPluginBase::HandleViewportMessage(const base::Value& message) {
     }
   }
 
-  gfx::Vector2dF scroll_offset(message.FindDoubleKey("xOffset").value(),
-                               message.FindDoubleKey("yOffset").value());
-  double new_zoom = message.FindDoubleKey("zoom").value();
+  gfx::Vector2dF scroll_offset(*message.FindDoubleKey("xOffset"),
+                               *message.FindDoubleKey("yOffset"));
+  double new_zoom = *message.FindDoubleKey("zoom");
   const PinchPhase pinch_phase =
-      static_cast<PinchPhase>(message.FindIntKey("pinchPhase").value());
+      static_cast<PinchPhase>(*message.FindIntKey("pinchPhase"));
 
   received_viewport_message_ = true;
   stop_scrolling_ = false;
@@ -1359,14 +1360,14 @@ void PdfViewPluginBase::HandleViewportMessage(const base::Value& message) {
   if (pinch_phase == PinchPhase::kUpdateZoomIn ||
       (pinch_phase == PinchPhase::kUpdateZoomOut && zoom_ratio > 1.0)) {
     // Get the coordinates of the center of the pinch gesture.
-    const double pinch_x = message.FindDoubleKey("pinchX").value();
-    const double pinch_y = message.FindDoubleKey("pinchY").value();
+    const double pinch_x = *message.FindDoubleKey("pinchX");
+    const double pinch_y = *message.FindDoubleKey("pinchY");
     gfx::Point pinch_center(pinch_x, pinch_y);
 
     // Get the pinch vector which represents the panning caused by the change in
     // pinch center between the start and the end of the gesture.
-    const double pinch_vector_x = message.FindDoubleKey("pinchVectorX").value();
-    const double pinch_vector_y = message.FindDoubleKey("pinchVectorY").value();
+    const double pinch_vector_x = *message.FindDoubleKey("pinchVectorX");
+    const double pinch_vector_y = *message.FindDoubleKey("pinchVectorY");
     gfx::Vector2d pinch_vector =
         gfx::Vector2d(pinch_vector_x * zoom_ratio, pinch_vector_y * zoom_ratio);
 
@@ -1575,7 +1576,7 @@ void PdfViewPluginBase::SendAttachments() {
 
 void PdfViewPluginBase::SendBookmarks() {
   base::Value bookmarks = engine()->GetBookmarks();
-  if (bookmarks.GetList().empty())
+  if (bookmarks.GetListDeprecated().empty())
     return;
 
   base::Value message(base::Value::Type::DICTIONARY);
@@ -1697,6 +1698,15 @@ enum class PdfIsTagged {
 
 }  // namespace
 
+void PdfViewPluginBase::RecordAttachmentTypes() {
+  const std::vector<DocumentAttachmentInfo>& list =
+      engine()->GetDocumentAttachmentInfoList();
+  for (const auto& info : list) {
+    HistogramEnumeration("PDF.AttachmentType",
+                         FileNameToExtensionIndex(info.name));
+  }
+}
+
 void PdfViewPluginBase::RecordDocumentMetrics() {
   const DocumentMetadata& document_metadata = engine()->GetDocumentMetadata();
   HistogramEnumeration("PDF.Version", document_metadata.version);
@@ -1709,6 +1719,7 @@ void PdfViewPluginBase::RecordDocumentMetrics() {
                                            ? PdfIsTagged::kYes
                                            : PdfIsTagged::kNo);
   HistogramEnumeration("PDF.FormType", document_metadata.form_type);
+  RecordAttachmentTypes();
 }
 
 template <typename T>

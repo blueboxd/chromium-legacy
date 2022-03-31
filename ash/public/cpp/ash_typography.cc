@@ -28,9 +28,6 @@ void ApplyAshFontStyles(int context,
     case CONTEXT_SEARCH_RESULT_VIEW:
       details.size_delta = 2;
       break;
-    case CONTEXT_TOAST_OVERLAY:
-      details.size_delta = 3;
-      break;
     case CONTEXT_SHARESHEET_BUBBLE_TITLE:
       details.typeface = "Google Sans";
       details.size_delta = 4;
@@ -45,6 +42,8 @@ void ApplyAshFontStyles(int context,
     case CONTEXT_HEADLINE_OVERSIZED:
       details.size_delta = 15;
       break;
+    case CONTEXT_SEARCH_RESULT_BIG_TITLE:
+      details.size_delta = 24;
   }
 
   switch (style) {

@@ -321,6 +321,10 @@ void AppListControllerImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(
       prefs::kSuggestedContentInfoDismissedInLauncher, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  AppListNudgeController::RegisterProfilePrefs(registry);
+
+  // TODO(crbug.com/1277666): Move to Launcher nudge controller.
+  registry->RegisterDictionaryPref(prefs::kLauncherFilesPrivacyNotice);
 }
 
 void AppListControllerImpl::SetClient(AppListClient* client) {
@@ -521,12 +525,15 @@ void AppListControllerImpl::ProcessScrollEvent(const ui::ScrollEvent& event) {
   fullscreen_presenter_->ProcessScrollOffset(event.location(), offset);
 }
 
-void AppListControllerImpl::UpdateAppListWithNewSortingOrder(
+void AppListControllerImpl::UpdateAppListWithNewTemporarySortOrder(
     const absl::optional<AppListSortOrder>& new_order,
     bool animate,
     base::OnceClosure update_position_closure) {
   DCHECK(features::IsProductivityLauncherEnabled());
   DCHECK(features::IsLauncherAppSortEnabled());
+
+  if (new_order)
+    RecordAppListSortAction(*new_order, IsInTabletMode());
 
   // Adapt the bubble app list to the new sorting order. NOTE: the bubble app
   // list is visible only in clamshell mode. Therefore do not animate in tablet
@@ -563,17 +570,6 @@ ShelfAction AppListControllerImpl::ToggleAppList(
   }
 
   if (features::IsProductivityLauncherEnabled()) {
-#if !defined(OFFICIAL_BUILD)
-    // Make shift-click on the shelf button toggle the non-bubble app list. This
-    // allows developers to compare behavior without restarting to flip the
-    // flag. TODO(crbug.com/1232168): Remove before feature launch.
-    if (show_source == AppListShowSource::kShelfButtonFullscreen) {
-      bubble_presenter_->Dismiss();
-      return fullscreen_presenter_->ToggleAppList(display_id, show_source,
-                                                  event_time_stamp);
-    }
-    fullscreen_presenter_->Dismiss(event_time_stamp);
-#endif  // !defined(OFFICIAL_BUILD)
     ShelfAction action = bubble_presenter_->Toggle(display_id);
     if (action == SHELF_ACTION_APP_LIST_SHOWN)
       LogAppListShowSource(show_source, /*app_list_bubble=*/true);
@@ -1181,20 +1177,15 @@ void AppListControllerImpl::StartSearch(const std::u16string& raw_query) {
     std::u16string query;
     base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
     client_->StartSearch(query);
-    auto* notifier = GetNotifier();
-    if (notifier)
-      notifier->NotifySearchQueryChanged(raw_query);
   }
 }
 
-void AppListControllerImpl::OpenSearchResult(
-    const std::string& result_id,
-    AppListSearchResultType result_type,
-    int event_flags,
-    AppListLaunchedFrom launched_from,
-    AppListLaunchType launch_type,
-    int suggestion_index,
-    bool launch_as_default) {
+void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
+                                             int event_flags,
+                                             AppListLaunchedFrom launched_from,
+                                             AppListLaunchType launch_type,
+                                             int suggestion_index,
+                                             bool launch_as_default) {
   SearchModel* search_model = GetSearchModel();
   SearchResult* result = search_model->FindSearchResult(result_id);
   if (!result)
@@ -1266,22 +1257,8 @@ void AppListControllerImpl::OpenSearchResult(
     }
   }
 
-  auto* notifier = GetNotifier();
-  if (notifier) {
-    // Special-case chip results, because the display type of app results
-    // doesn't account for whether it's being displayed in the suggestion chips
-    // or app tiles.
-    AppListNotifier::Result notifier_result(result->id(),
-                                            result->metrics_type());
-    if (launched_from == AppListLaunchedFrom::kLaunchedFromSuggestionChip) {
-      notifier->NotifyLaunched(SearchResultDisplayType::kChip, notifier_result);
-    } else {
-      notifier->NotifyLaunched(result->display_type(), notifier_result);
-    }
-  }
-
   if (client_) {
-    client_->OpenSearchResult(profile_id_, result_id, result_type, event_flags,
+    client_->OpenSearchResult(profile_id_, result_id, event_flags,
                               launched_from, launch_type, suggestion_index,
                               launch_as_default);
   }
@@ -1362,7 +1339,7 @@ void AppListControllerImpl::ActivateItem(const std::string& id,
   }
 
   if (client_)
-    client_->ActivateItem(profile_id_, id, event_flags);
+    client_->ActivateItem(profile_id_, id, event_flags, launched_from);
 
   ResetHomeLauncherIfShown();
 }
@@ -1518,10 +1495,6 @@ AppListViewState AppListControllerImpl::GetAppListViewState() const {
 void AppListControllerImpl::OnViewStateChanged(AppListViewState state) {
   DVLOG(1) << __PRETTY_FUNCTION__ << " " << state;
   app_list_view_state_ = state;
-
-  auto* notifier = GetNotifier();
-  if (notifier)
-    notifier->NotifyUIStateChanged(state);
 
   for (auto& observer : observers_)
     observer.OnViewStateChanged(state);
@@ -1729,6 +1702,11 @@ void AppListControllerImpl::OnVisibilityChanged(bool visible,
     // but we do not want to introduce new dependency of AppListController to
     // Assistant.
     GetAssistantViewDelegate()->OnHostViewVisibilityChanged(real_visibility);
+
+    // Updates AppsContainerView in `fullscreen_presenter_`.
+    if (app_list_view)
+      app_list_view->OnAppListVisibilityChanged(real_visibility);
+
     for (auto& observer : observers_)
       observer.OnAppListVisibilityChanged(real_visibility, display_id);
 

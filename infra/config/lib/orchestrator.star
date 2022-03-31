@@ -5,13 +5,8 @@
 """Library for defining orchestrators and compilators."""
 
 load("@stdlib//internal/graph.star", "graph")
-<<<<<<< HEAD
 load("@stdlib//internal/luci/common.star", "kinds")
 load("./builder_url.star", "builder_url")
-=======
-load("./builder_url.star", "builder_url")
-load("./nodes.star", "nodes")
->>>>>>> 99.0.4844.51
 
 # The generator in builder_config.star will set the
 # chromium_tests_builder_config property on the orchestrator, so load it first
@@ -21,9 +16,8 @@ load("./builder_config.star", _ = "builder_config")  # @unused
 
 # infra/infra git revision to use for the compilator_watcher luciexe sub_build
 # Used by chromium orchestrators
-_COMPILATOR_WATCHER_GIT_REVISION = "7809a690bbd935bcb3b4d922e24cabe168aaabc8"
+_COMPILATOR_WATCHER_GIT_REVISION = "c49f1d02dec735eb0e8f03121d3fab2840c2c954"
 
-<<<<<<< HEAD
 # The kind of nodes for the definition of an orchestrator builder
 _ORCHESTRATOR_KIND = "orchestrator"
 
@@ -57,46 +51,26 @@ def _compilator_ref_key(ref):
 def register_orchestrator(bucket, name, builder_group, compilator):
     orchestrator_key = _orchestrator_key(bucket, name)
     graph.add_node(orchestrator_key, props = {
-=======
-# Nodes for the definition of an orchestrator builder
-_ORCHESTRATOR = nodes.create_bucket_scoped_node_type("orchestrator")
-
-# Nodes for the definition of a compilator builder
-_COMPILATOR = nodes.create_node_type_with_builder_ref("compilator")
-
-def register_orchestrator(bucket, name, builder_group, compilator):
-    key = _ORCHESTRATOR.add(bucket, name, props = {
->>>>>>> 99.0.4844.51
         "bucket": bucket,
         "name": name,
         "builder_group": builder_group,
     })
 
-<<<<<<< HEAD
     compilator_ref_key = _compilator_ref_key(compilator)
     graph.add_edge(orchestrator_key, compilator_ref_key)
 
 def register_compilator(bucket, name):
     compilator_key = _compilator_key(bucket, name)
     graph.add_node(compilator_key, props = {
-=======
-    _COMPILATOR.add_ref(key, compilator)
-
-def register_compilator(bucket, name):
-    _COMPILATOR.add(bucket, name, props = {
->>>>>>> 99.0.4844.51
         "bucket": bucket,
         "name": name,
     })
 
-<<<<<<< HEAD
     for ref in (name, "{}/{}".format(bucket, name)):
         ref_key = _compilator_ref_key(ref)
         graph.add_node(ref_key, idempotent = True)
         graph.add_edge(ref_key, compilator_key)
 
-=======
->>>>>>> 99.0.4844.51
 def _builder_name(node):
     return "{}/{}".format(node.props.bucket, node.props.name)
 
@@ -107,7 +81,6 @@ def _update_description(builder, additional_description):
     description += additional_description
     builder.description_html = description
 
-<<<<<<< HEAD
 def _follow_compilator_ref(ref_node, context_node):
     """Get the pointed-at compilator node for a compilator ref.
 
@@ -140,8 +113,6 @@ def _follow_compilator_ref(ref_node, context_node):
         trace = context_node.trace,
     )
 
-=======
->>>>>>> 99.0.4844.51
 def _get_orchestrator(bucket_name, builder):
     """Get orchestrator details for a buildbucket Builder message.
 
@@ -157,30 +128,18 @@ def _get_orchestrator(bucket_name, builder):
           "linux-rel").
       Otherwise, None.
     """
-<<<<<<< HEAD
     node = graph.node(_orchestrator_key(bucket_name, builder.name))
     if not node:
         return None
 
     compilator_ref_nodes = graph.children(node.key, _COMPILATOR_REF_KIND)
-=======
-    node = _ORCHESTRATOR.get(bucket_name, builder.name)
-    if not node:
-        return None
-
-    compilator_ref_nodes = graph.children(node.key, _COMPILATOR.ref_kind)
->>>>>>> 99.0.4844.51
 
     # This would represent an error in the register code
     if len(compilator_ref_nodes) != 1:
         fail("internal error: orchestrator node {} should have exactly one compilator ref child, got {}"
             .format(_builder_name(node), [n.key.id for n in compilator_ref_nodes]))
 
-<<<<<<< HEAD
     compilator_node = _follow_compilator_ref(compilator_ref_nodes[0], node)
-=======
-    compilator_node = _COMPILATOR.follow_ref(compilator_ref_nodes[0], node)
->>>>>>> 99.0.4844.51
     return struct(
         name = _builder_name(node),
         builder = builder,
@@ -206,22 +165,13 @@ def _get_compilator(bucket_name, builder):
     Fails:
       If the number of orchestrators referring to the compilator is not 1.
     """
-<<<<<<< HEAD
     node = graph.node(_compilator_key(bucket_name, builder.name))
-=======
-    node = _COMPILATOR.get(bucket_name, builder.name)
->>>>>>> 99.0.4844.51
     if not node:
         return None
 
     orchestrator_nodes = []
-<<<<<<< HEAD
     for r in graph.parents(node.key, _COMPILATOR_REF_KIND):
         orchestrator_nodes.extend(graph.parents(r.key, _ORCHESTRATOR_KIND))
-=======
-    for r in graph.parents(node.key, _COMPILATOR.ref_kind):
-        orchestrator_nodes.extend(graph.parents(r.key, _ORCHESTRATOR.kind))
->>>>>>> 99.0.4844.51
 
     if len(orchestrator_nodes) != 1:
         fail("compilator should have exactly 1 referring orchestrator, got: {}".format(

@@ -4395,6 +4395,9 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.texture_target_exception_list =
       group_->gpu_preferences().texture_target_exception_list;
 
+  caps.angle_rgbx_internal_format =
+      feature_info_->feature_flags().angle_rgbx_internal_format;
+
   return caps;
 }
 
@@ -4563,7 +4566,13 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   }
 
   if (shader_spec == SH_WEBGL2_SPEC) {
-    resources.ANGLE_base_vertex_base_instance =
+    // The gl_BaseVertex/BaseInstance shader builtins is disabled in ANGLE for
+    // WebGL As they are removed in
+    // https://github.com/KhronosGroup/WebGL/pull/3278
+    // To re-enable the shader
+    // builtins add back SH_EMULATE_GL_BASE_VERTEX_BASE_INSTANCE to
+    // ShCompileOptions in ANGLE
+    resources.ANGLE_base_vertex_base_instance_shader_builtin =
         (draw_instanced_base_vertex_base_instance_explicitly_enabled_ &&
          features().webgl_draw_instanced_base_vertex_base_instance) ||
         (multi_draw_instanced_base_vertex_base_instance_explicitly_enabled_ &&
@@ -7041,7 +7050,7 @@ void GLES2DecoderImpl::DoGenerateMipmap(GLenum target) {
     }
   }
 
-  bool enable_srgb = 0;
+  bool enable_srgb = false;
   if (target == GL_TEXTURE_2D) {
     tex->GetLevelType(target, tex->base_level(), &type, &internal_format);
     enable_srgb = GLES2Util::GetColorEncodingFromInternalFormat(
@@ -13755,8 +13764,8 @@ error::Error GLES2DecoderImpl::HandleScheduleOverlayPlaneCHROMIUM(
           image, std::move(gpu_fence),
           gfx::OverlayPlaneData(
               c.plane_z_order, transform,
-              gfx::Rect(c.bounds_x, c.bounds_y, c.bounds_width,
-                        c.bounds_height),
+              gfx::RectF(c.bounds_x, c.bounds_y, c.bounds_width,
+                         c.bounds_height),
               gfx::RectF(c.uv_x, c.uv_y, c.uv_width, c.uv_height),
               c.enable_blend,
               /*damage_rect=*/gfx::Rect(), /*opacity*/ 1.0f,

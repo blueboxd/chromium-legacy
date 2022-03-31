@@ -28,7 +28,19 @@ const base::Feature kColorProviderRedirectionForThemeProvider = {
 // Destroy profiles when their last browser window is closed, instead of when
 // the browser exits.
 const base::Feature kDestroyProfileOnBrowserClose{
-    "DestroyProfileOnBrowserClose", base::FEATURE_DISABLED_BY_DEFAULT};
+  "DestroyProfileOnBrowserClose",
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+      base::FEATURE_ENABLED_BY_DEFAULT
+};
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+};
+#endif
+
+// DestroyProfileOnBrowserClose only covers deleting regular (non-System)
+// Profiles. This flags lets us destroy the System Profile, as well.
+const base::Feature kDestroySystemProfiles{"DestroySystemProfiles",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Nukes profile directory before creating a new profile using
 // ProfileManager::CreateMultiProfileAsync().
@@ -110,32 +122,6 @@ const base::Feature kPwaUpdateDialogForNameAndIcon{
 // Implementation bug: https://crbug.com/1253379
 const base::Feature kSandboxExternalProtocolBlocked{
     "SandboxExternalProtocolBlocked", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// If enabled, a blue-border is drawn around shared tabs.
-// If disabled, the blue border is *never* used, no matter what any other
-// flag might say.
-// If enabled, the blue border is *generally* used, but other flags might
-// still disable it for specific cases.
-const base::Feature kTabCaptureBlueBorder{"TabCaptureBlueBorder",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
-// This flag is subordinate to |kTabCaptureBlueBorder|:
-// * If |kTabCaptureBlueBorder| is disabled, the blue border is always disabled,
-//    and this flag has no effect.
-// * If |kTabCaptureBlueBorder| and
-//   |kTabCaptureBlueBorderForSelfCaptureRegionCaptureOT| are both enabled,
-//   the blue-border is always drawn.
-// * If |kTabCaptureBlueBorder| is enabled but
-//   |kTabCaptureBlueBorderForSelfCaptureRegionCaptureOT| is disabled,
-//   then the blue-border tab-capture-indicator will NOT be drawn if the
-//   following conditions apply:
-//   1. A single capture of the tab exists, and it is self-capture (a document
-//      is tab-capturing the very tab in which the document is loaded).
-//   2. The capturing document is opted-into Region Capture. (Either through an
-//      origin trial or through enabling Experimental Web Platforms features.)
-const base::Feature kTabCaptureBlueBorderForSelfCaptureRegionCaptureOT{
-    "TabCaptureBlueBorderForSelfCaptureRegionCaptureOT",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables migration of the network context data from `unsandboxed_data_path` to
 // `data_path`. See the explanation in network_context.mojom.

@@ -20,6 +20,8 @@ static_library("camera_app_ui") {
     "camera_app_ui.cc",
     "camera_app_ui.h",
     "camera_app_ui_delegate.h",
+    "camera_app_untrusted_ui.cc",
+    "camera_app_untrusted_ui.h",
     "resources.h",
     "url_constants.cc",
     "url_constants.h",
@@ -109,6 +111,7 @@ mojom("mojo_bindings") {
     "//ash/components/arc/mojom:camera_intent",
     "//chromeos/services/machine_learning/public/mojom:document_scanner_param_types",
     "//ui/gfx/geometry/mojom",
+    "//url/mojom:url_mojom_gurl",
   ]
   webui_module_path = "/ash/webui/camera_app_ui"
 }

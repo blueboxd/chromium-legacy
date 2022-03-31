@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/json/json_writer.h"
 #include "base/rand_util.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/identity_request_dialog_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -31,14 +32,16 @@
 namespace content {
 
 namespace {
+using LoginState = IdentityRequestAccount::LoginState;
+
 // TODO(kenrb): These need to be defined in the explainer or draft spec and
 // referenced here.
 
-// Well-known configuration keys.
+// fedcm.json configuration keys.
 constexpr char kIdpEndpointKey[] = "idp_endpoint";
 constexpr char kTokenEndpointKey[] = "idtoken_endpoint";
 constexpr char kAccountsEndpointKey[] = "accounts_endpoint";
-constexpr char kClientIdMetadataEndpointKey[] = "client_id_metadata_endpoint";
+constexpr char kClientMetadataEndpointKey[] = "client_metadata_endpoint";
 constexpr char kRevokeEndpoint[] = "revoke_endpoint";
 
 // Client metadata keys.
@@ -49,18 +52,37 @@ constexpr char kTermsOfServiceKey[] = "terms_of_service_url";
 constexpr char kAccountsKey[] = "accounts";
 constexpr char kIdpBrandingKey[] = "branding";
 
+// Keys in 'account' dictionary in accounts endpoint.
+constexpr char kAccountIdKey[] = "id";
+constexpr char kAccountEmailKey[] = "email";
+constexpr char kAccountNameKey[] = "name";
+constexpr char kAccountGivenNameKey[] = "given_name";
+constexpr char kAccountPictureKey[] = "picture";
+constexpr char kAccountApprovedClientsKey[] = "approved_clients";
+
+// Keys in 'branding' dictionary in accounts endpoint.
+constexpr char kIdpBrandingBackgroundColor[] = "background_color";
+constexpr char kIdpBrandingForegroundColor[] = "foreground_color";
+constexpr char kIdpBrandingIcons[] = "icons";
+
+// Keys in 'branding' 'icons' dictionary in accounts endpoint.
+constexpr char kIdpBrandingIconUrl[] = "url";
+constexpr char kIdpBrandingIconSize[] = "size";
+
 // Sign-in request response keys.
-// TODO(majidvp): For consistency rename to signin_endpoint and move into
-// `.well-known`.
+// TODO(majidvp): For consistency rename to signin_endpoint and move into the
+// fedcm manifest.
 constexpr char kSigninUrlKey[] = "signin_url";
 constexpr char kIdTokenKey[] = "id_token";
 
 // Token request body keys
-constexpr char kAccountKey[] = "account_id";
-constexpr char kRequestKey[] = "request";
+constexpr char kTokenAccountKey[] = "account_id";
+constexpr char kTokenRequestKey[] = "request";
 
 // Revoke request body keys.
 constexpr char kClientIdKey[] = "client_id";
+constexpr char kRevokeAccountKey[] = "account_id";
+constexpr char kRevokeRequestKey[] = "request";
 
 constexpr char kRequestBodyContentType[] = "application/x-www-form-urlencoded";
 
@@ -83,8 +105,9 @@ net::NetworkTrafficAnnotationTag CreateTrafficAnnotation() {
             "browser-mediated alternative to previously existing federated "
             "sign-in implementations."
           trigger:
-            "A website executes the navigator.id.get() JavaScript method to "
-            "initiate federated user sign-in to a designated provider."
+            "A website executes the navigator.credentials.get() JavaScript "
+            "method to initiate federated user sign-in to a designated "
+            "provider."
           data:
             "An identity request contains a scope of claims specifying what "
             "user information is being requested from the identity provider, "
@@ -103,24 +126,38 @@ net::NetworkTrafficAnnotationTag CreateTrafficAnnotation() {
         })");
 }
 
-std::unique_ptr<network::ResourceRequest> CreateCredentialedResourceRequest(
-    GURL target_url,
-    url::Origin initiator) {
-  auto resource_request = std::make_unique<network::ResourceRequest>();
-  auto target_origin = url::Origin::Create(target_url);
-  auto site_for_cookies = net::SiteForCookies::FromOrigin(target_origin);
-  resource_request->request_initiator = initiator;
-  resource_request->url = target_url;
-  resource_request->site_for_cookies = site_for_cookies;
-  resource_request->headers.SetHeader(net::HttpRequestHeaders::kAccept,
-                                      kRequestBodyContentType);
-
+void AddCsrfHeader(network::ResourceRequest* request) {
   // Using a random 64-bit header value. This is just to keep service
   // implementations from assuming any particular static value.
   const int kBytes = 64 / 8;
   std::string webid_header_value;
   base::Base64Encode(base::RandBytesAsString(kBytes), &webid_header_value);
-  resource_request->headers.SetHeader(kSecFedCmCsrfHeader, webid_header_value);
+  request->headers.SetHeader(kSecFedCmCsrfHeader, webid_header_value);
+}
+
+std::unique_ptr<network::ResourceRequest> CreateCredentialedResourceRequest(
+    GURL target_url,
+    bool send_referrer,
+    url::Origin initiator) {
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  auto target_origin = url::Origin::Create(target_url);
+  auto site_for_cookies = net::SiteForCookies::FromOrigin(target_origin);
+  AddCsrfHeader(resource_request.get());
+  resource_request->request_initiator = initiator;
+  resource_request->url = target_url;
+  resource_request->site_for_cookies = site_for_cookies;
+  if (send_referrer) {
+    resource_request->referrer = initiator.GetURL();
+    // Since referrer_policy only affects redirects and we disable redirects
+    // below, we don't need to set referrer_policy here.
+  }
+  // TODO(cbiesinger): Not following redirects is important for security because
+  // this bypasses CORB. Ensure there is a test added.
+  // https://crbug.com/1155312.
+  resource_request->redirect_mode = network::mojom::RedirectMode::kError;
+  resource_request->headers.SetHeader(net::HttpRequestHeaders::kAccept,
+                                      kRequestBodyContentType);
+
   resource_request->credentials_mode =
       network::mojom::CredentialsMode::kInclude;
   resource_request->trusted_params = network::ResourceRequest::TrustedParams();
@@ -132,37 +169,54 @@ std::unique_ptr<network::ResourceRequest> CreateCredentialedResourceRequest(
 }
 
 absl::optional<content::IdentityRequestAccount> ParseAccount(
-    const base::Value& account) {
-  // TODO(yigu): Per spec the account id field should be "account_id" instead of
-  // "sub". Using "sub" temporarily to unblock partner deployment.
-  auto* account_id = account.FindStringKey("sub");
-  auto* email = account.FindStringKey("email");
-  auto* name = account.FindStringKey("name");
-  auto* given_name = account.FindStringKey("given_name");
-  auto* picture = account.FindStringKey("picture");
+    const base::Value& account,
+    const std::string& client_id) {
+  auto* id = account.FindStringKey(kAccountIdKey);
+  auto* email = account.FindStringKey(kAccountEmailKey);
+  auto* name = account.FindStringKey(kAccountNameKey);
+  auto* given_name = account.FindStringKey(kAccountGivenNameKey);
+  auto* picture = account.FindStringKey(kAccountPictureKey);
+  auto* approved_clients = account.FindListKey(kAccountApprovedClientsKey);
 
   // required fields
-  if (!(account_id && email && name))
+  if (!(id && email && name))
     return absl::nullopt;
 
-  return content::IdentityRequestAccount(*account_id, *email, *name,
-                                         given_name ? *given_name : "",
-                                         picture ? GURL(*picture) : GURL());
+  absl::optional<LoginState> approved_value;
+  if (approved_clients) {
+    for (const base::Value& entry : approved_clients->GetListDeprecated()) {
+      if (entry.is_string() && entry.GetString() == client_id) {
+        approved_value = LoginState::kSignIn;
+        break;
+      }
+    }
+    if (!approved_value) {
+      // We did get an approved_clients list, but the client ID was not found.
+      // This means we are certain that the client is not approved; set to
+      // kSignUp instead of leaving as nullopt.
+      approved_value = LoginState::kSignUp;
+    }
+  }
+
+  return content::IdentityRequestAccount(
+      *id, *email, *name, given_name ? *given_name : "",
+      picture ? GURL(*picture) : GURL(), approved_value);
 }
 
 // Parses accounts from given Value. Returns true if parse is successful and
 // adds parsed accounts to the |account_list|.
 bool ParseAccounts(const base::Value* accounts,
-                   IdpNetworkRequestManager::AccountList& account_list) {
+                   IdpNetworkRequestManager::AccountList& account_list,
+                   const std::string& client_id) {
   DCHECK(account_list.empty());
   if (!accounts->is_list())
     return false;
 
-  for (auto& account : accounts->GetList()) {
+  for (auto& account : accounts->GetListDeprecated()) {
     if (!account.is_dict())
       return false;
 
-    auto parsed_account = ParseAccount(account);
+    auto parsed_account = ParseAccount(account, client_id);
     if (parsed_account)
       account_list.push_back(parsed_account.value());
   }
@@ -190,11 +244,11 @@ void ParseIdentityProviderMetadata(const base::Value& idp_metadata_value,
   if (!idp_metadata_value.is_dict())
     return;
 
-  idp_metadata.brand_background_color =
-      ParseCssColor(idp_metadata_value.FindStringKey("background_color"));
+  idp_metadata.brand_background_color = ParseCssColor(
+      idp_metadata_value.FindStringKey(kIdpBrandingBackgroundColor));
   if (idp_metadata.brand_background_color) {
-    idp_metadata.brand_text_color =
-        ParseCssColor(idp_metadata_value.FindStringKey("foreground_color"));
+    idp_metadata.brand_text_color = ParseCssColor(
+        idp_metadata_value.FindStringKey(kIdpBrandingForegroundColor));
     if (idp_metadata.brand_text_color) {
       float text_contrast_ratio = color_utils::GetContrastRatio(
           *idp_metadata.brand_background_color, *idp_metadata.brand_text_color);
@@ -203,14 +257,16 @@ void ParseIdentityProviderMetadata(const base::Value& idp_metadata_value,
     }
   }
 
-  const base::Value* icons_value = idp_metadata_value.FindKey("icons");
+  const base::Value* icons_value =
+      idp_metadata_value.FindKey(kIdpBrandingIcons);
   if (icons_value != nullptr && icons_value->is_list()) {
     std::vector<blink::Manifest::ImageResource> icons;
-    for (const base::Value& icon_value : icons_value->GetList()) {
+    for (const base::Value& icon_value : icons_value->GetListDeprecated()) {
       if (!icon_value.is_dict())
         continue;
 
-      const std::string* icon_src = icon_value.FindStringKey("url");
+      const std::string* icon_src =
+          icon_value.FindStringKey(kIdpBrandingIconUrl);
       if (icon_src == nullptr)
         continue;
 
@@ -221,7 +277,8 @@ void ParseIdentityProviderMetadata(const base::Value& idp_metadata_value,
 
       icon.purpose = {blink::mojom::ManifestImageResource_Purpose::MASKABLE};
 
-      absl::optional<int> icon_size = icon_value.FindIntKey("size");
+      absl::optional<int> icon_size =
+          icon_value.FindIntKey(kIdpBrandingIconSize);
       int icon_size_int = icon_size ? icon_size.value() : 0;
       icon.sizes.emplace_back(icon_size_int, icon_size_int);
 
@@ -275,22 +332,24 @@ IdpNetworkRequestManager::AccountRequestInfo::AccountRequestInfo(
     AccountsRequestCallback callback,
     int idp_brand_icon_ideal_size,
     int idp_brand_icon_minimum_size,
-    IdpNetworkRequestManager::BrandIconDownloader idp_brand_icon_downloader)
+    IdpNetworkRequestManager::BrandIconDownloader idp_brand_icon_downloader,
+    const std::string& client_id)
     : callback(std::move(callback)),
       idp_brand_icon_ideal_size(idp_brand_icon_ideal_size),
       idp_brand_icon_minimum_size(idp_brand_icon_minimum_size),
-      idp_brand_icon_downloader(std::move(idp_brand_icon_downloader)) {}
+      idp_brand_icon_downloader(std::move(idp_brand_icon_downloader)),
+      client_id(client_id) {}
 IdpNetworkRequestManager::AccountRequestInfo::~AccountRequestInfo() = default;
 IdpNetworkRequestManager::AccountRequestInfo::AccountRequestInfo(
     AccountRequestInfo&&) = default;
 
 // static
-constexpr char IdpNetworkRequestManager::kWellKnownFilePath[];
+constexpr char IdpNetworkRequestManager::kManifestFilePath[];
 
 // static
 std::unique_ptr<IdpNetworkRequestManager> IdpNetworkRequestManager::Create(
     const GURL& provider,
-    RenderFrameHost* host) {
+    RenderFrameHostImpl* host) {
   // FedCM is restricted to secure contexts.
   if (!network::IsOriginPotentiallyTrustworthy(url::Origin::Create(provider)))
     return nullptr;
@@ -312,24 +371,33 @@ IdpNetworkRequestManager::IdpNetworkRequestManager(
 
 IdpNetworkRequestManager::~IdpNetworkRequestManager() = default;
 
-void IdpNetworkRequestManager::FetchIdpWellKnown(
-    FetchWellKnownCallback callback) {
+void IdpNetworkRequestManager::FetchManifest(FetchManifestCallback callback) {
   DCHECK(!url_loader_);
-  DCHECK(!idp_well_known_callback_);
+  DCHECK(!idp_manifest_callback_);
 
-  idp_well_known_callback_ = std::move(callback);
+  idp_manifest_callback_ = std::move(callback);
 
-  // TODO(yigu): Using .well-known in sub-directory (non-root) is common for multi-tenancy. However,
-  // this may be an invalid use of .well-known and we should enforce it to be under root.
-  // https://crbug.com/1277712.
-  GURL target_url =
-      provider_.Resolve(IdpNetworkRequestManager::kWellKnownFilePath);
+  // Accepts both "https://idp.example/foo/" and "https://idp.example/foo" as
+  // valid provider url to locate the manifest. Historically, URLs with a
+  // trailing slash indicate a directory while those without a trailing slash
+  // denote a file. However, to give developers more flexibility, we append a
+  // trailing slash if one is not present.
+  GURL target_url = provider_;
+  if (target_url.path().empty() || target_url.path().back() != '/') {
+    std::string new_path = target_url.path() + '/';
+    GURL::Replacements replacements;
+    replacements.SetPathStr(new_path);
+    target_url = target_url.ReplaceComponents(replacements);
+  }
 
-  url_loader_ = CreateUncredentialedUrlLoader(target_url);
+  target_url = target_url.Resolve(IdpNetworkRequestManager::kManifestFilePath);
+
+  url_loader_ =
+      CreateUncredentialedUrlLoader(target_url, /* send_referrer= */ false);
 
   url_loader_->DownloadToString(
       loader_factory_.get(),
-      base::BindOnce(&IdpNetworkRequestManager::OnWellKnownLoaded,
+      base::BindOnce(&IdpNetworkRequestManager::OnManifestLoaded,
                      weak_ptr_factory_.GetWeakPtr()),
       maxResponseSizeInKiB * 1024);
 }
@@ -346,7 +414,8 @@ void IdpNetworkRequestManager::SendSigninRequest(
   std::string escaped_request = net::EscapeUrlEncodedData(request, true);
 
   GURL target_url = GURL(signin_url.spec() + "?" + escaped_request);
-  url_loader_ = CreateCredentialedUrlLoader(target_url);
+  url_loader_ =
+      CreateCredentialedUrlLoader(target_url, /* send_referrer= */ true);
   url_loader_->DownloadToString(
       loader_factory_.get(),
       base::BindOnce(&IdpNetworkRequestManager::OnSigninRequestResponse,
@@ -359,16 +428,12 @@ void IdpNetworkRequestManager::SendAccountsRequest(
     int idp_brand_icon_ideal_size,
     int idp_brand_icon_minimum_size,
     BrandIconDownloader idp_brand_icon_downloader,
+    const std::string& client_id,
     AccountsRequestCallback callback) {
   DCHECK(!url_loader_);
 
-  // Use ReferrerPolicy::NO_REFERRER for this request so that relying party
-  // identity is not exposed to the Identity provider via referrer.
-  // TODO(cbiesinger): I don't think this does the right thing; per comments
-  // in referrer_policy.h this only applies to redirects.
-  net::ReferrerPolicy policy = net::ReferrerPolicy::NO_REFERRER;
   url_loader_ =
-      CreateCredentialedUrlLoader(accounts_url, absl::nullopt, policy);
+      CreateCredentialedUrlLoader(accounts_url, /* send_referrer= */ false);
 
   url_loader_->DownloadToString(
       loader_factory_.get(),
@@ -377,7 +442,7 @@ void IdpNetworkRequestManager::SendAccountsRequest(
           weak_ptr_factory_.GetWeakPtr(),
           AccountRequestInfo(std::move(callback), idp_brand_icon_ideal_size,
                              idp_brand_icon_minimum_size,
-                             std::move(idp_brand_icon_downloader))),
+                             std::move(idp_brand_icon_downloader), client_id)),
       maxResponseSizeInKiB * 1024);
 }
 
@@ -392,9 +457,9 @@ std::string CreateTokenRequestBody(const std::string& account,
   //   }
   // }```
   base::Value request_data(base::Value::Type::DICTIONARY);
-  request_data.SetStringKey(kAccountKey, account);
+  request_data.SetStringKey(kTokenAccountKey, account);
   if (!request.empty())
-    request_data.SetStringKey(kRequestKey, request);
+    request_data.SetStringKey(kTokenRequestKey, request);
 
   std::string request_body;
   if (!base::JSONWriter::Write(request_data, &request_body)) {
@@ -418,7 +483,8 @@ void IdpNetworkRequestManager::SendTokenRequest(const GURL& token_url,
     return;
   }
 
-  url_loader_ = CreateCredentialedUrlLoader(token_url, request);
+  url_loader_ = CreateCredentialedUrlLoader(token_url,
+                                            /* send_referrer= */ true, request);
 
   url_loader_->DownloadToString(
       loader_factory_.get(),
@@ -441,8 +507,8 @@ std::string CreateRevokeRequestBody(const std::string& client_id,
   request_dict.SetStringKey(kClientIdKey, client_id);
 
   base::Value request_data(base::Value::Type::DICTIONARY);
-  request_data.SetStringKey(kAccountKey, account);
-  request_data.SetKey(kRequestKey, std::move(request_dict));
+  request_data.SetStringKey(kRevokeAccountKey, account);
+  request_data.SetKey(kRevokeRequestKey, std::move(request_dict));
 
   std::string request_body;
   if (!base::JSONWriter::Write(request_data, &request_body)) {
@@ -476,7 +542,8 @@ void IdpNetworkRequestManager::SendRevokeRequest(const GURL& revoke_url,
     return;
   }
 
-  url_loader_ = CreateCredentialedUrlLoader(revoke_url, revoke_request_body);
+  url_loader_ = CreateCredentialedUrlLoader(
+      revoke_url, /* send_referrer= */ true, revoke_request_body);
 
   url_loader_->DownloadToString(
       loader_factory_.get(),
@@ -494,8 +561,8 @@ void IdpNetworkRequestManager::SendLogout(const GURL& logout_url,
 
   logout_callback_ = std::move(callback);
 
-  auto resource_request =
-      CreateCredentialedResourceRequest(logout_url, relying_party_origin_);
+  auto resource_request = CreateCredentialedResourceRequest(
+      logout_url, /* send_referrer= */ false, relying_party_origin_);
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kAccept, "*/*");
 
   auto traffic_annotation = CreateTrafficAnnotation();
@@ -510,27 +577,27 @@ void IdpNetworkRequestManager::SendLogout(const GURL& logout_url,
       maxResponseSizeInKiB * 1024);
 }
 
-void IdpNetworkRequestManager::OnWellKnownLoaded(
+void IdpNetworkRequestManager::OnManifestLoaded(
     std::unique_ptr<std::string> response_body) {
   FetchStatus response_error =
       GetResponseError(url_loader_.get(), response_body.get());
   url_loader_.reset();
 
   if (response_error != FetchStatus::kSuccess) {
-    std::move(idp_well_known_callback_).Run(response_error, Endpoints());
+    std::move(idp_manifest_callback_).Run(response_error, Endpoints());
     return;
   }
 
   data_decoder::DataDecoder::ParseJsonIsolated(
       *response_body,
-      base::BindOnce(&IdpNetworkRequestManager::OnWellKnownParsed,
+      base::BindOnce(&IdpNetworkRequestManager::OnManifestParsed,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void IdpNetworkRequestManager::OnWellKnownParsed(
+void IdpNetworkRequestManager::OnManifestParsed(
     data_decoder::DataDecoder::ValueOrError result) {
   if (GetParsingError(result) == FetchStatus::kInvalidResponseError) {
-    std::move(idp_well_known_callback_)
+    std::move(idp_manifest_callback_)
         .Run(FetchStatus::kInvalidResponseError, Endpoints());
     return;
   }
@@ -548,10 +615,10 @@ void IdpNetworkRequestManager::OnWellKnownParsed(
   endpoints.idp = ExtractEndpoint(kIdpEndpointKey);
   endpoints.token = ExtractEndpoint(kTokenEndpointKey);
   endpoints.accounts = ExtractEndpoint(kAccountsEndpointKey);
-  endpoints.client_id_metadata = ExtractEndpoint(kClientIdMetadataEndpointKey);
+  endpoints.client_metadata = ExtractEndpoint(kClientMetadataEndpointKey);
   endpoints.revoke = ExtractEndpoint(kRevokeEndpoint);
 
-  std::move(idp_well_known_callback_).Run(FetchStatus::kSuccess, endpoints);
+  std::move(idp_manifest_callback_).Run(FetchStatus::kSuccess, endpoints);
 }
 
 void IdpNetworkRequestManager::OnSigninRequestResponse(
@@ -586,7 +653,7 @@ void IdpNetworkRequestManager::OnSigninRequestParsed(
     return;
   }
 
-  // TODO(kenrb): This possibly should be part of the well-known file, unless
+  // TODO(kenrb): This possibly should be part of the fedcm manifest, unless
   // IDPs ever have a reason to serve different URLs for sign-in pages.
   // https://crbug.com/1141125.
   const base::Value* signin_url = response.FindKey(kSigninUrlKey);
@@ -648,7 +715,8 @@ void IdpNetworkRequestManager::OnAccountsRequestParsed(
   AccountList account_list;
   auto& response = *result.value;
   const base::Value* accounts = response.FindKey(kAccountsKey);
-  bool accounts_present = accounts && ParseAccounts(accounts, account_list);
+  bool accounts_present =
+      accounts && ParseAccounts(accounts, account_list, request_info.client_id);
 
   if (!accounts_present) {
     Fail();
@@ -753,10 +821,10 @@ void IdpNetworkRequestManager::OnLogoutCompleted(
   std::move(logout_callback_).Run();
 }
 
-void IdpNetworkRequestManager::FetchClientIdMetadata(
+void IdpNetworkRequestManager::FetchClientMetadata(
     const GURL& endpoint,
     const std::string& client_id,
-    FetchClientIdMetadataCallback callback) {
+    FetchClientMetadataCallback callback) {
   DCHECK(!url_loader_);
   DCHECK(!client_metadata_callback_);
 
@@ -765,38 +833,38 @@ void IdpNetworkRequestManager::FetchClientIdMetadata(
   GURL target_url = endpoint.Resolve(
       "?client_id=" + net::EscapeQueryParamValue(client_id, true));
 
-  url_loader_ = CreateUncredentialedUrlLoader(target_url);
+  url_loader_ =
+      CreateUncredentialedUrlLoader(target_url, /* send_referrer= */ true);
 
   url_loader_->DownloadToString(
       loader_factory_.get(),
-      base::BindOnce(&IdpNetworkRequestManager::OnClientIdMetadataLoaded,
+      base::BindOnce(&IdpNetworkRequestManager::OnClientMetadataLoaded,
                      weak_ptr_factory_.GetWeakPtr()),
       maxResponseSizeInKiB * 1024);
 }
 
-void IdpNetworkRequestManager::OnClientIdMetadataLoaded(
+void IdpNetworkRequestManager::OnClientMetadataLoaded(
     std::unique_ptr<std::string> response_body) {
   FetchStatus response_error =
       GetResponseError(url_loader_.get(), response_body.get());
   url_loader_.reset();
 
   if (response_error != FetchStatus::kSuccess) {
-    std::move(client_metadata_callback_)
-        .Run(response_error, ClientIdMetadata());
+    std::move(client_metadata_callback_).Run(response_error, ClientMetadata());
     return;
   }
 
   data_decoder::DataDecoder::ParseJsonIsolated(
       *response_body,
-      base::BindOnce(&IdpNetworkRequestManager::OnClientIdMetadataParsed,
+      base::BindOnce(&IdpNetworkRequestManager::OnClientMetadataParsed,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void IdpNetworkRequestManager::OnClientIdMetadataParsed(
+void IdpNetworkRequestManager::OnClientMetadataParsed(
     data_decoder::DataDecoder::ValueOrError result) {
   if (GetParsingError(result) == FetchStatus::kInvalidResponseError) {
     std::move(client_metadata_callback_)
-        .Run(FetchStatus::kInvalidResponseError, ClientIdMetadata());
+        .Run(FetchStatus::kInvalidResponseError, ClientMetadata());
     return;
   }
 
@@ -809,7 +877,7 @@ void IdpNetworkRequestManager::OnClientIdMetadataParsed(
     return endpoint->GetString();
   };
 
-  ClientIdMetadata data;
+  ClientMetadata data;
   data.privacy_policy_url = ExtractUrl(kPrivacyPolicyKey);
   data.terms_of_service_url = ExtractUrl(kTermsOfServiceKey);
 
@@ -818,32 +886,31 @@ void IdpNetworkRequestManager::OnClientIdMetadataParsed(
 
 std::unique_ptr<network::SimpleURLLoader>
 IdpNetworkRequestManager::CreateUncredentialedUrlLoader(
-    const GURL& target_url) const {
+    const GURL& target_url,
+    bool send_referrer) const {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       CreateTrafficAnnotation();
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
-  const url::Origin& idp_origin = url::Origin::Create(provider_);
 
   resource_request->url = target_url;
-  // TODO(kenrb): credentials_mode should be kOmit, but for prototyping
-  // purposes it is useful to be able to run test IdPs on services that always
-  // require cookies. This needs to be changed back when a better solution is
-  // found or those test IdPs are no longer required.
-  // See https://crbug.com/1159177.
-  resource_request->credentials_mode =
-      network::mojom::CredentialsMode::kInclude;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kAccept,
                                       kRequestBodyContentType);
-  // TODO(kenrb): Not following redirects is important for security because
+  AddCsrfHeader(resource_request.get());
+  if (send_referrer) {
+    resource_request->referrer = relying_party_origin_.GetURL();
+    // Since referrer_policy only affects redirects and we disable redirects
+    // below, we don't need to set referrer_policy here.
+  }
+  // TODO(cbiesinger): Not following redirects is important for security because
   // this bypasses CORB. Ensure there is a test added.
   // https://crbug.com/1155312.
   resource_request->redirect_mode = network::mojom::RedirectMode::kError;
   resource_request->request_initiator = relying_party_origin_;
   resource_request->trusted_params = network::ResourceRequest::TrustedParams();
   resource_request->trusted_params->isolation_info =
-      net::IsolationInfo::Create(net::IsolationInfo::RequestType::kOther,
-                                 idp_origin, idp_origin, net::SiteForCookies());
+      net::IsolationInfo::CreateTransient();
 
   return network::SimpleURLLoader::Create(std::move(resource_request),
                                           traffic_annotation);
@@ -852,12 +919,10 @@ IdpNetworkRequestManager::CreateUncredentialedUrlLoader(
 std::unique_ptr<network::SimpleURLLoader>
 IdpNetworkRequestManager::CreateCredentialedUrlLoader(
     const GURL& target_url,
-    absl::optional<std::string> request_body,
-    absl::optional<net::ReferrerPolicy> policy) const {
-  auto resource_request =
-      CreateCredentialedResourceRequest(target_url, relying_party_origin_);
-  if (policy)
-    resource_request->referrer_policy = *policy;
+    bool send_referrer,
+    absl::optional<std::string> request_body) const {
+  auto resource_request = CreateCredentialedResourceRequest(
+      target_url, send_referrer, relying_party_origin_);
   if (request_body) {
     resource_request->method = net::HttpRequestHeaders::kPostMethod;
     resource_request->headers.SetHeader(net::HttpRequestHeaders::kContentType,

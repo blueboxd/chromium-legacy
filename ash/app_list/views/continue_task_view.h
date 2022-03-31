@@ -36,6 +36,14 @@ class ASH_EXPORT ContinueTaskView : public views::Button,
                                     public ui::SimpleMenuModel::Delegate,
                                     public SearchResultObserver {
  public:
+  // The type of result for the task.
+  // These values are used for metrics and should not be changed.
+  enum class TaskResultType {
+    kLocalFile = 0,
+    kDriveFile = 1,
+    kMaxValue = kDriveFile,
+  };
+
   METADATA_HEADER(ContinueTaskView);
 
   ContinueTaskView(AppListViewDelegate* view_delegate, bool tablet_mode);
@@ -90,6 +98,13 @@ class ASH_EXPORT ContinueTaskView : public views::Button,
   // Closes the context menu for this view if it is running.
   void CloseContextMenu();
 
+  // Updates the background and the border if the ContinueTaskView is in tablet
+  // mode.
+  void UpdateStyleForTabletMode();
+
+  // Record metrics at the moment when the ContinueTaskView result is removed.
+  void LogMetricsOnResultRemoved();
+
   // The index of this view within a |SearchResultContainerView| that holds it.
   absl::optional<int> index_in_container_;
 
@@ -98,6 +113,8 @@ class ASH_EXPORT ContinueTaskView : public views::Button,
   views::Label* subtitle_ = nullptr;
   views::ImageView* icon_ = nullptr;
   SearchResult* result_ = nullptr;  // Owned by SearchModel::SearchResults.
+
+  const bool is_tablet_mode_;
 
   std::unique_ptr<ui::SimpleMenuModel> context_menu_model_;
   std::unique_ptr<views::MenuRunner> context_menu_runner_;

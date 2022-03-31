@@ -35,6 +35,7 @@
 #include "components/omnibox/browser/builtin_provider.h"
 #include "components/omnibox/browser/clipboard_provider.h"
 #include "components/omnibox/browser/document_provider.h"
+#include "components/omnibox/browser/history_fuzzy_provider.h"
 #include "components/omnibox/browser/history_quick_provider.h"
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/keyword_provider.h"
@@ -42,6 +43,7 @@
 #include "components/omnibox/browser/most_visited_sites_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/on_device_head_provider.h"
+#include "components/omnibox/browser/open_tab_provider.h"
 #include "components/omnibox/browser/query_tile_provider.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/omnibox/browser/shortcuts_provider.h"
@@ -367,6 +369,12 @@ AutocompleteController::AutocompleteController(
     voice_suggest_provider_ =
         new VoiceSuggestProvider(provider_client_.get(), this);
     providers_.push_back(voice_suggest_provider_.get());
+  }
+  if (provider_types & AutocompleteProvider::TYPE_HISTORY_FUZZY) {
+    providers_.push_back(new HistoryFuzzyProvider(provider_client_.get()));
+  }
+  if (provider_types & AutocompleteProvider::TYPE_OPEN_TAB) {
+    providers_.push_back(new OpenTabProvider(provider_client_.get()));
   }
 
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(

@@ -13,7 +13,9 @@
 #include "base/compiler_specific.h"
 #include "base/dcheck_is_on.h"
 
-namespace partition_alloc::internal {
+namespace partition_alloc {
+
+namespace internal {
 
 // Alignment has two constraints:
 // - Alignment requirement for scalar types: alignof(std::max_align_t)
@@ -37,20 +39,28 @@ static_assert(kAlignment <= 16,
               "PartitionAlloc doesn't support a fundamental alignment larger "
               "than 16 bytes.");
 
-}  // namespace partition_alloc::internal
+constexpr bool ThreadSafe = true;
+
+template <bool thread_safe>
+struct SlotSpanMetadata;
+
+}  // namespace internal
+
+class PartitionStatsDumper;
+
+}  // namespace partition_alloc
 
 namespace base {
 
 // TODO(https://crbug.com/1288247): Remove these 'using' declarations once
 // the migration to the new namespaces gets done.
+using ::partition_alloc::PartitionStatsDumper;
 using ::partition_alloc::internal::kAlignment;
 
 namespace internal {
 
-template <bool thread_safe>
-struct SlotSpanMetadata;
-
-constexpr bool ThreadSafe = true;
+using ::partition_alloc::internal::SlotSpanMetadata;
+using ::partition_alloc::internal::ThreadSafe;
 
 #if (DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)) && \
     BUILDFLAG(USE_BACKUP_REF_PTR)
@@ -64,9 +74,24 @@ struct PartitionRoot;
 
 using ThreadSafePartitionRoot = PartitionRoot<internal::ThreadSafe>;
 
-class PartitionStatsDumper;
-
 }  // namespace base
+
+namespace partition_alloc {
+
+// TODO(https://crbug.com/1288247): Remove these 'using' declarations once
+// the migration to the new namespaces gets done.
+using ::base::PartitionRoot;
+
+namespace internal {
+
+#if (DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)) && \
+    BUILDFLAG(USE_BACKUP_REF_PTR)
+using ::base::internal::CheckThatSlotOffsetIsZero;
+#endif
+
+}  // namespace internal
+
+}  // namespace partition_alloc
 
 // From https://clang.llvm.org/docs/AttributeReference.html#malloc:
 //
@@ -80,25 +105,25 @@ class PartitionStatsDumper;
 #if defined(__has_attribute)
 
 #if __has_attribute(malloc)
-#define MALLOC_FN __attribute__((malloc))
+#define PA_MALLOC_FN __attribute__((malloc))
 #endif
 
 // Allows the compiler to assume that the return value is aligned on a
 // kAlignment boundary. This is useful for e.g. using aligned vector
 // instructions in the constructor for zeroing.
 #if __has_attribute(assume_aligned)
-#define MALLOC_ALIGNED \
+#define PA_MALLOC_ALIGNED \
   __attribute__((assume_aligned(::partition_alloc::internal::kAlignment)))
 #endif
 
 #endif  // defined(__has_attribute)
 
-#if !defined(MALLOC_FN)
-#define MALLOC_FN
+#if !defined(PA_MALLOC_FN)
+#define PA_MALLOC_FN
 #endif
 
-#if !defined(MALLOC_ALIGNED)
-#define MALLOC_ALIGNED
+#if !defined(PA_MALLOC_ALIGNED)
+#define PA_MALLOC_ALIGNED
 #endif
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ALLOC_FORWARD_H_

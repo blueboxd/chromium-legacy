@@ -18,6 +18,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observation.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/default_clock.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/ash/policy/status_collector/status_collector.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
+#include "chromeos/services/cros_healthd/public/cpp/service_connection.h"
 #include "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_member.h"
@@ -56,7 +58,7 @@ namespace policy {
 class EnterpriseActivityStorage;
 class DeviceStatusCollectorState;
 
-// Enum used to define which data the CrosHealthdDataFetcher should collect.
+// TODO(b/216131674): Remove this.
 enum class CrosHealthdCollectionMode { kFull, kBattery };
 
 // Sampled hardware measurement data for single time point.
@@ -111,9 +113,9 @@ class DeviceStatusCollector : public StatusCollector,
       chromeos::cros_healthd::mojom::TelemetryInfoPtr,
       const base::circular_deque<std::unique_ptr<SampledData>>&)>;
   // Gets the data from cros_healthd and passes it to CrosHealthdDataReceiver.
-  using CrosHealthdDataFetcher =
-      base::RepeatingCallback<void(CrosHealthdCollectionMode,
-                                   CrosHealthdDataReceiver)>;
+  using CrosHealthdDataFetcher = base::RepeatingCallback<void(
+      std::vector<chromeos::cros_healthd::mojom::ProbeCategoryEnum>,
+      CrosHealthdDataReceiver)>;
 
   // Asynchronously receives the graphics status.
   using GraphicsStatusReceiver =
@@ -147,6 +149,7 @@ class DeviceStatusCollector : public StatusCollector,
   DeviceStatusCollector(
       PrefService* pref_service,
       chromeos::system::StatisticsProvider* provider,
+      ManagedSessionService* managed_session_service,
       const VolumeInfoFetcher& volume_info_fetcher,
       const CPUStatisticsFetcher& cpu_statistics_fetcher,
       const CPUTempFetcher& cpu_temp_fetcher,
@@ -154,7 +157,6 @@ class DeviceStatusCollector : public StatusCollector,
       const TpmStatusFetcher& tpm_status_fetcher,
       const EMMCLifetimeFetcher& emmc_lifetime_fetcher,
       const StatefulPartitionInfoFetcher& stateful_partition_info_fetcher,
-      const CrosHealthdDataFetcher& cros_healthd_data_fetcher,
       const GraphicsStatusFetcher& graphics_status_fetcher,
       const CrashReportInfoFetcher& crash_report_info_fetcher,
       base::Clock* clock = base::DefaultClock::GetInstance());
@@ -163,7 +165,8 @@ class DeviceStatusCollector : public StatusCollector,
   // Blocking Pool. Caller is responsible for passing already initialized
   // |pref_service|.
   DeviceStatusCollector(PrefService* pref_service,
-                        chromeos::system::StatisticsProvider* provider);
+                        chromeos::system::StatisticsProvider* provider,
+                        ManagedSessionService* managed_session_service);
 
   DeviceStatusCollector(const DeviceStatusCollector&) = delete;
   DeviceStatusCollector& operator=(const DeviceStatusCollector&) = delete;
@@ -181,10 +184,6 @@ class DeviceStatusCollector : public StatusCollector,
   bool IsReportingAppInfoAndActivity() const override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
-
-  ManagedSessionService* GetManagedSessionServiceForTesting() {
-    return &managed_session_service_;
-  }
 
   // How often to poll to see if the user is idle.
   static constexpr base::TimeDelta kIdlePollInterval = base::Seconds(30);
@@ -263,6 +262,9 @@ class DeviceStatusCollector : public StatusCollector,
       enterprise_management::DeviceStatusReportRequest* status);
   bool GetRunningKioskApp(
       enterprise_management::DeviceStatusReportRequest* status);
+  bool GetDeviceBootMode(
+      enterprise_management::DeviceStatusReportRequest* status);
+  void GetStorageStatus(scoped_refptr<DeviceStatusCollectorState> state);
   void GetGraphicsStatus(scoped_refptr<DeviceStatusCollectorState>
                              state);  // Queues async queries!
   void GetCrashReportInfo(scoped_refptr<DeviceStatusCollectorState>
@@ -309,10 +311,12 @@ class DeviceStatusCollector : public StatusCollector,
                      SamplingCallback callback);
 
   // CrosHealthdDataReceiver interface implementation, fetches data from
-  // cros_healthd and passes it to |callback|. The data collected depends on the
-  // collection |mode|.
-  void FetchCrosHealthdData(CrosHealthdCollectionMode mode,
-                            CrosHealthdDataReceiver callback);
+  // cros_healthd and passes it to |callback|. The data collected depends on
+  // the categories in |categories_to_probe|.
+  void FetchCrosHealthdData(
+      std::vector<chromeos::cros_healthd::mojom::ProbeCategoryEnum>
+          categories_to_probe,
+      CrosHealthdDataReceiver callback);
 
   // Callback for CrosHealthd that performs final sampling and
   // actually invokes |callback|.
@@ -415,6 +419,10 @@ class DeviceStatusCollector : public StatusCollector,
   // Power manager client. Used to listen to power changed events.
   chromeos::PowerManagerClient* const power_manager_;
 
+  base::ScopedObservation<chromeos::PowerManagerClient,
+                          chromeos::PowerManagerClient::Observer>
+      power_manager_observation_{this};
+
   // The most recent CPU readings.
   uint64_t last_cpu_active_ = 0;
   uint64_t last_cpu_idle_ = 0;
@@ -469,8 +477,6 @@ class DeviceStatusCollector : public StatusCollector,
   base::CallbackListSubscription system_info_subscription_;
   base::CallbackListSubscription app_info_subscription_;
   base::CallbackListSubscription stats_reporting_pref_subscription_;
-
-  ManagedSessionService managed_session_service_;
 
   AppInfoGenerator app_info_generator_;
 

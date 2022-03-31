@@ -242,26 +242,36 @@ bool ShouldTreatNavigationAsReload(FrameTreeNode* node,
 }
 
 bool DoesURLMatchOriginForNavigation(
-    const GURL& url,
+    const GURL& destination_url,
     const absl::optional<url::Origin>& origin,
-    SubresourceWebBundleNavigationInfo*
-        subresource_web_bundle_navigation_info) {
+    SubresourceWebBundleNavigationInfo* subresource_web_bundle_navigation_info,
+    NavigationEntry* entry,
+    bool is_main_frame) {
   // If there is no origin supplied there is nothing to match. This can happen
   // for navigations to a pending entry and therefore it should be allowed.
   if (!origin)
     return true;
 
+  // For a history navigation to a document loaded with loadDataWithBaseURL,
+  // compare the origin to the entry's base URL instead of the data: URL used to
+  // commit.
+  const GURL& base_url_for_data_url = entry->GetBaseURLForDataURL();
+  bool check_origin_against_base_url =
+      is_main_frame && !base_url_for_data_url.is_empty();
+
+  const GURL& url_for_origin =
+      check_origin_against_base_url ? base_url_for_data_url : destination_url;
   // Urn: and uuid-in-package: subframe from WebBundle has an opaque origin
   // derived from the Bundle's origin.
   // TODO(https://crbug.com/1257045): Remove urn: scheme support.
-  if ((url.SchemeIs(url::kUrnScheme) ||
-       url.SchemeIs(url::kUuidInPackageScheme)) &&
+  if ((url_for_origin.SchemeIs(url::kUrnScheme) ||
+       url_for_origin.SchemeIs(url::kUuidInPackageScheme)) &&
       subresource_web_bundle_navigation_info) {
     return origin->CanBeDerivedFrom(
         subresource_web_bundle_navigation_info->bundle_url());
   }
 
-  return origin->CanBeDerivedFrom(url);
+  return origin->CanBeDerivedFrom(url_for_origin);
 }
 
 absl::optional<url::Origin> GetCommittedOriginForFrameEntry(
@@ -272,16 +282,6 @@ absl::optional<url::Origin> GetCommittedOriginForFrameEntry(
   // should commit in the correct origin, setting the opaque origin on the
   // FrameNavigationEntry will be incorrect.
   if (request && request->DidEncounterError())
-    return absl::nullopt;
-
-  // We also currently don't save committed origins for loadDataWithBaseURL
-  // navigations (probably accidentally). Without this check, navigations to
-  // the FrameNavigationEntry might fail the DoesURLMatchOriginForNavigation()
-  // check since the origin will be based on the base URL instead of the data:
-  // URL used for the navigation.
-  // TODO(https://crbug.com/1198406): Save committed origin in
-  // FrameNavigationEntry for this case too.
-  if (request && request->IsLoadDataWithBaseURL())
     return absl::nullopt;
 
   return absl::make_optional(params.origin);
@@ -690,6 +690,15 @@ void NavigationControllerImpl::Restore(
   needs_reload_type_ = NeedsReloadType::kRestoreSession;
   entries_.reserve(entries->size());
   for (auto& entry : *entries) {
+    if (entry->GetURL().is_empty()) {
+      // We're trying to restore an entry with an empty URL (e.g. from
+      // persisting the initial NavigationEntry, which is no longer possible but
+      // some old persisted sessions might still contain it). Trying to restore
+      // and navigate to an entry with an empty URL will result in crashes, so
+      // change the URL to about:blank. See also https://crbug.com/1240138.
+      CHECK_EQ(1u, entries->size());
+      entry->SetURL(GURL(url::kAboutBlankURL));
+    }
     entries_.push_back(
         NavigationEntryImpl::FromNavigationEntry(std::move(entry)));
   }
@@ -1181,10 +1190,6 @@ bool NavigationControllerImpl::PendingEntryMatchesRequest(
     NavigationRequest* request) const {
   return pending_entry_ &&
          pending_entry_->GetUniqueID() == request->nav_entry_id();
-}
-
-bool NavigationControllerImpl::has_post_commit_error_entry() const {
-  return entry_replaced_by_post_commit_error_ != nullptr;
 }
 
 bool NavigationControllerImpl::RendererDidNavigate(
@@ -2226,7 +2231,7 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
           dest_top_url.SchemeIsHTTPOrHTTPS() &&
           current_top_url.DeprecatedGetOriginAsURL() !=
               dest_top_url.DeprecatedGetOriginAsURL()) {
-        bad_message::ReceivedBadMessage(rfh->GetProcess(),
+        bad_message::ReceivedBadMessage(rfh->GetMainFrame()->GetProcess(),
                                         bad_message::NC_AUTO_SUBFRAME);
       }
 
@@ -2321,7 +2326,6 @@ void NavigationControllerImpl::CopyStateFrom(NavigationController* temp,
     SessionStorageNamespaceImpl* source_namespace =
         static_cast<SessionStorageNamespaceImpl*>(it.second.get());
     session_storage_namespace_map_[it.first] = source_namespace->Clone();
-    OnStoragePartitionIdAdded(it.first);
   }
 
   FinishRestore(source->last_committed_entry_index_, RestoreType::kRestored);
@@ -2740,7 +2744,7 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
 }
 
 void NavigationControllerImpl::SetSessionStorageNamespace(
-    const StoragePartitionId& partition_id,
+    const StoragePartitionConfig& partition_config,
     SessionStorageNamespace* session_storage_namespace) {
   if (!session_storage_namespace)
     return;
@@ -2750,12 +2754,11 @@ void NavigationControllerImpl::SetSessionStorageNamespace(
   // so die hard on an error.
   bool successful_insert =
       session_storage_namespace_map_
-          .insert(std::make_pair(partition_id,
+          .insert(std::make_pair(partition_config,
                                  static_cast<SessionStorageNamespaceImpl*>(
                                      session_storage_namespace)))
           .second;
   CHECK(successful_insert) << "Cannot replace existing SessionStorageNamespace";
-  OnStoragePartitionIdAdded(partition_id);
 }
 
 bool NavigationControllerImpl::IsUnmodifiedBlankTab() {
@@ -2766,33 +2769,18 @@ bool NavigationControllerImpl::IsUnmodifiedBlankTab() {
 }
 
 SessionStorageNamespace* NavigationControllerImpl::GetSessionStorageNamespace(
-    const SiteInfo& site_info) {
-  // TODO(acolwell): Remove partition_id logic once we have successfully
-  // migrated the implementation to be a StoragePartitionConfig. At that point
-  // |site_info| can be replaced with a StoragePartitionConfig.
-  const StoragePartitionId partition_id =
-      site_info.GetStoragePartitionId(browser_context_);
-  const StoragePartitionConfig partition_config =
-      site_info.storage_partition_config();
-
+    const StoragePartitionConfig& partition_config) {
   StoragePartition* partition =
       browser_context_->GetStoragePartition(partition_config);
   DOMStorageContextWrapper* context_wrapper =
       static_cast<DOMStorageContextWrapper*>(partition->GetDOMStorageContext());
 
   SessionStorageNamespaceMap::const_iterator it =
-      session_storage_namespace_map_.find(partition_id);
+      session_storage_namespace_map_.find(partition_config);
   if (it != session_storage_namespace_map_.end()) {
     // Ensure that this namespace actually belongs to this partition.
     DCHECK(static_cast<SessionStorageNamespaceImpl*>(it->second.get())
                ->IsFromContext(context_wrapper));
-
-    // Verify that the config we generated now matches the one that
-    // was generated when the namespace was added to the map.
-    if (partition_config != it->first.config()) {
-      LogStoragePartitionIdCrashKeys(it->first, partition_id);
-    }
-    CHECK_EQ(partition_config, it->first.config());
 
     return it->second.get();
   }
@@ -2802,16 +2790,16 @@ SessionStorageNamespace* NavigationControllerImpl::GetSessionStorageNamespace(
       SessionStorageNamespaceImpl::Create(context_wrapper);
   SessionStorageNamespaceImpl* session_storage_namespace_ptr =
       session_storage_namespace.get();
-  session_storage_namespace_map_[partition_id] =
+  session_storage_namespace_map_[partition_config] =
       std::move(session_storage_namespace);
-  OnStoragePartitionIdAdded(partition_id);
 
   return session_storage_namespace_ptr;
 }
 
 SessionStorageNamespace*
 NavigationControllerImpl::GetDefaultSessionStorageNamespace() {
-  return GetSessionStorageNamespace(SiteInfo(GetBrowserContext()));
+  return GetSessionStorageNamespace(
+      StoragePartitionConfig::CreateDefault(GetBrowserContext()));
 }
 
 const SessionStorageNamespaceMap&
@@ -3634,7 +3622,8 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
 
   if (!DoesURLMatchOriginForNavigation(
           url_to_load, origin_to_commit,
-          frame_entry->subresource_web_bundle_navigation_info())) {
+          frame_entry->subresource_web_bundle_navigation_info(), entry,
+          node->IsMainFrame())) {
     DCHECK(false) << " url:" << url_to_load
                   << " origin:" << origin_to_commit.value();
     return nullptr;
@@ -3723,15 +3712,12 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
               network::mojom::WebClientHintsType>() /* enabled_client_hints */,
           false /* is_cross_browsing_instance */, nullptr /* old_page_info */,
           -1 /* http_response_code */,
-          std::vector<blink::mojom::
-                          AppHistoryEntryPtr>() /* app_history_back_entries */,
-          std::vector<
-              blink::mojom::
-                  AppHistoryEntryPtr>() /* app_history_forward_entries */,
+          blink::mojom::AppHistoryEntryArrays::New(),
           std::vector<GURL>() /* early_hints_preloaded_resources */,
           absl::nullopt /* ad_auction_components */,
           // This timestamp will be populated when the commit IPC is sent.
-          base::TimeTicks() /* commit_sent */, false /* anonymous */);
+          base::TimeTicks() /* commit_sent */, false /* anonymous */,
+          std::string() /* srcdoc_value */);
 #if BUILDFLAG(IS_ANDROID)
   if (ValidateDataURLAsString(params.data_url_as_string)) {
     commit_params->data_url_as_string = params.data_url_as_string->data();
@@ -3809,8 +3795,10 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
 
   if (!DoesURLMatchOriginForNavigation(
           dest_url, origin_to_commit,
-          frame_entry->subresource_web_bundle_navigation_info())) {
+          frame_entry->subresource_web_bundle_navigation_info(), entry,
+          frame_tree_node->IsMainFrame())) {
     DCHECK(false) << " url:" << dest_url
+                  << " base_url_for_data_url: " << entry->GetBaseURLForDataURL()
                   << " origin:" << origin_to_commit.value();
     return nullptr;
   }
@@ -3870,6 +3858,8 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
           frame_tree_node->pending_frame_policy());
   commit_params->post_content_type = post_content_type;
 
+  if (common_params->url.IsAboutSrcdoc())
+    commit_params->srcdoc_value = frame_tree_node->srcdoc_value();
   return NavigationRequest::CreateBrowserInitiated(
       frame_tree_node, std::move(common_params), std::move(commit_params),
       is_browser_initiated, false /* was_opener_suppressed */,
@@ -3889,10 +3879,20 @@ void NavigationControllerImpl::NotifyNavigationEntryCommitted(
   // when it wants to draw.  See http://crbug.com/11157
   ssl_manager_.DidCommitProvisionalLoad(*details);
 
-  delegate_->NotifyNavigationStateChanged(
-      (details && details->should_stay_as_initial_entry)
-          ? INVALIDATE_TYPE_ALL_BUT_KEEPS_INITIAL_NAVIGATION_ENTRY_STATUS
-          : INVALIDATE_TYPE_ALL_AND_REMOVES_INITIAL_NAVIGATION_ENTRY_STATUS);
+  bool should_fire_navigation_state_changed = true;
+#if BUILDFLAG(IS_ANDROID)
+  if (details && details->should_stay_as_initial_entry) {
+    // For initial NavigationEntries, only fire NavigationStateChanged() if the
+    // embedder wants to hear about it.
+    should_fire_navigation_state_changed =
+        !GetContentClient()
+             ->browser()
+             ->ShouldIgnoreInitialNavigationEntryNavigationStateChangedForLegacySupport();
+  }
+#endif
+  if (should_fire_navigation_state_changed)
+    delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_ALL);
+
   delegate_->NotifyNavigationEntryCommitted(*details);
 
   // TODO(avi): Remove. http://crbug.com/170921
@@ -4047,12 +4047,23 @@ void NavigationControllerImpl::DiscardNonCommittedEntriesWithCommitDetails(
     return;
   }
   DiscardPendingEntry(false);
-  if (delegate_) {
-    delegate_->NotifyNavigationStateChanged(
-        (commit_details && commit_details->should_stay_as_initial_entry)
-            ? INVALIDATE_TYPE_ALL_BUT_KEEPS_INITIAL_NAVIGATION_ENTRY_STATUS
-            : INVALIDATE_TYPE_ALL_AND_REMOVES_INITIAL_NAVIGATION_ENTRY_STATUS);
+
+  if (!delegate_)
+    return;
+
+  bool should_fire_navigation_state_changed = true;
+#if BUILDFLAG(IS_ANDROID)
+  if (commit_details && commit_details->should_stay_as_initial_entry) {
+    // For initial NavigationEntries, only fire NavigationStateChanged() if the
+    // embedder wants to hear about it.
+    should_fire_navigation_state_changed =
+        !GetContentClient()
+             ->browser()
+             ->ShouldIgnoreInitialNavigationEntryNavigationStateChangedForLegacySupport();
   }
+#endif
+  if (should_fire_navigation_state_changed)
+    delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_ALL);
 }
 
 int NavigationControllerImpl::GetEntryIndexWithUniqueID(
@@ -4080,13 +4091,6 @@ void NavigationControllerImpl::InsertEntriesFrom(
   }
   DCHECK(pending_entry_index_ == -1 ||
          pending_entry_ == GetEntryAtIndex(pending_entry_index_));
-  if (!source->frame_tree_.root()->is_on_initial_empty_document()) {
-    // If the source frame tree's root is not on the initial empty document,
-    // also mark this FrameTree's root as such, so that the next navigation
-    // won't replace the latest NavigationEntry due to it still being marked as
-    // "on the initial empty document".
-    frame_tree_.root()->SetNotOnInitialEmptyDocument();
-  }
 }
 
 void NavigationControllerImpl::SetGetTimestampCallbackForTest(
@@ -4292,31 +4296,6 @@ void NavigationControllerImpl::UpdateStateForFrame(
   NotifyEntryChanged(entry);
 }
 
-void NavigationControllerImpl::OnStoragePartitionIdAdded(
-    const StoragePartitionId& partition_id) {
-  auto it = partition_config_to_id_map_.insert(
-      std::make_pair(partition_id.config(), partition_id));
-  bool successful_insert = it.second;
-  if (!successful_insert) {
-    LogStoragePartitionIdCrashKeys(it.first->second, partition_id);
-  }
-  CHECK(successful_insert);
-}
-
-void NavigationControllerImpl::LogStoragePartitionIdCrashKeys(
-    const StoragePartitionId& original_partition_id,
-    const StoragePartitionId& new_partition_id) {
-  base::debug::SetCrashKeyString(
-      base::debug::AllocateCrashKeyString("original_partition_id",
-                                          base::debug::CrashKeySize::Size256),
-      original_partition_id.ToString());
-
-  base::debug::SetCrashKeyString(
-      base::debug::AllocateCrashKeyString("new_partition_id",
-                                          base::debug::CrashKeySize::Size256),
-      new_partition_id.ToString());
-}
-
 std::vector<blink::mojom::AppHistoryEntryPtr>
 NavigationControllerImpl::PopulateSingleAppHistoryEntryVector(
     Direction direction,
@@ -4337,9 +4316,16 @@ NavigationControllerImpl::PopulateSingleAppHistoryEntryVector(
   for (int i = entry_index + offset; i >= 0 && i < GetEntryCount();
        i += offset) {
     FrameNavigationEntry* frame_entry = GetEntryAtIndex(i)->GetFrameEntry(node);
-    if (!frame_entry || !frame_entry->committed_origin())
+    if (!frame_entry)
       break;
-    if (!pending_origin.IsSameOriginWith(*frame_entry->committed_origin()))
+    // An entry should only appear in appHistory entries if it is for the same
+    // origin as the document being committed. Check the committed origin, or if
+    // that is not available (during restore), check against the FNE's url.
+    url::Origin frame_entry_origin =
+        frame_entry->committed_origin().value_or(url::Origin::Resolve(
+            frame_entry->url(),
+            frame_entry->initiator_origin().value_or(url::Origin())));
+    if (!pending_origin.IsSameOriginWith(frame_entry_origin))
       break;
     if (previous_item_sequence_number == frame_entry->item_sequence_number())
       continue;
@@ -4381,7 +4367,8 @@ NavigationControllerImpl::PopulateSingleAppHistoryEntryVector(
   return entries;
 }
 
-void NavigationControllerImpl::PopulateAppHistoryEntryVectors(
+blink::mojom::AppHistoryEntryArraysPtr
+NavigationControllerImpl::GetAppHistoryEntryVectors(
     NavigationRequest* request) {
   url::Origin pending_origin =
       request->commit_params().origin_to_commit
@@ -4417,18 +4404,19 @@ void NavigationControllerImpl::PopulateAppHistoryEntryVectors(
     }
   }
 
-  request->set_app_history_back_entries(PopulateSingleAppHistoryEntryVector(
+  auto entry_arrays = blink::mojom::AppHistoryEntryArrays::New();
+  entry_arrays->back_entries = PopulateSingleAppHistoryEntryVector(
       Direction::kBack, entry_index, pending_origin, node, site_instance.get(),
-      pending_item_sequence_number, pending_document_sequence_number));
+      pending_item_sequence_number, pending_document_sequence_number);
 
   // Don't populate forward entries if they will be truncated by a new entry.
   if (!will_create_new_entry) {
-    request->set_app_history_forward_entries(
-        PopulateSingleAppHistoryEntryVector(
-            Direction::kForward, entry_index, pending_origin, node,
-            site_instance.get(), pending_item_sequence_number,
-            pending_document_sequence_number));
+    entry_arrays->forward_entries = PopulateSingleAppHistoryEntryVector(
+        Direction::kForward, entry_index, pending_origin, node,
+        site_instance.get(), pending_item_sequence_number,
+        pending_document_sequence_number);
   }
+  return entry_arrays;
 }
 
 NavigationControllerImpl::HistoryNavigationAction

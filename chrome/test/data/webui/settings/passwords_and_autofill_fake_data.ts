@@ -279,14 +279,15 @@ export function makeInsecureCredential(
  */
 export function makeCompromisedCredential(
     url: string, username: string, type: chrome.passwordsPrivate.CompromiseType,
-    id?: number, elapsedMinSinceCompromise?: number):
-    chrome.passwordsPrivate.InsecureCredential {
+    id?: number, elapsedMinSinceCompromise?: number,
+    isMuted?: boolean): chrome.passwordsPrivate.InsecureCredential {
   const credential = makeInsecureCredential(url, username, id);
   elapsedMinSinceCompromise = elapsedMinSinceCompromise || 0;
   credential.compromisedInfo = {
     compromiseTime: Date.now() - (elapsedMinSinceCompromise * 60000),
     elapsedTimeSinceCompromise: `${elapsedMinSinceCompromise} minutes ago`,
     compromiseType: type,
+    isMuted: isMuted ?? false,
   };
   return credential;
 }
@@ -522,6 +523,9 @@ export class PaymentsManagerExpectations {
   requestedCreditCards: number = 0;
   listeningCreditCards: number = 0;
   requestedUpiIds: number = 0;
+  removedCreditCards: number = 0;
+  clearedCachedCreditCards: number = 0;
+  addedVirtualCards: number = 0;
 }
 
 /**
@@ -573,17 +577,27 @@ export class TestPaymentsManager implements PaymentsManagerProxy {
     callback(this.data.upiIds);
   }
 
-  clearCachedCreditCard(_guid: string) {}
+  clearCachedCreditCard(_guid: string) {
+    this.actual_.clearedCachedCreditCards++;
+  }
 
   logServerCardLinkClicked() {}
 
   migrateCreditCards() {}
 
-  removeCreditCard(_guid: string) {}
+  removeCreditCard(_guid: string) {
+    this.actual_.removedCreditCards++;
+  }
 
   saveCreditCard(_creditCard: chrome.autofillPrivate.CreditCardEntry) {}
 
   setCreditCardFIDOAuthEnabledState(_enabled: boolean) {}
+
+  addVirtualCard(_cardId: string) {
+    this.actual_.addedVirtualCards++;
+  }
+
+  removeVirtualCard(_cardId: string) {}
 
   /**
    * Verifies expectations.
@@ -592,5 +606,9 @@ export class TestPaymentsManager implements PaymentsManagerProxy {
     const actual = this.actual_;
     assertEquals(expected.requestedCreditCards, actual.requestedCreditCards);
     assertEquals(expected.listeningCreditCards, actual.listeningCreditCards);
+    assertEquals(expected.removedCreditCards, actual.removedCreditCards);
+    assertEquals(
+        expected.clearedCachedCreditCards, actual.clearedCachedCreditCards);
+    assertEquals(expected.addedVirtualCards, actual.addedVirtualCards);
   }
 }

@@ -60,7 +60,7 @@
 #include "chrome/browser/safe_browsing/metrics/safe_browsing_metrics_provider.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
-#include "chrome/browser/tracing/background_tracing_metrics_provider.h"
+#include "chrome/browser/tracing/chrome_background_tracing_metrics_provider.h"
 #include "chrome/browser/translate/translate_ranker_metrics_provider.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
@@ -154,9 +154,9 @@
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/metrics/ambient_mode_metrics_provider.h"
 #include "chrome/browser/metrics/assistant_service_metrics_provider.h"
+#include "chrome/browser/metrics/chromeos_family_link_user_metrics_provider.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "chrome/browser/metrics/cros_healthd_metrics_provider.h"
-#include "chrome/browser/metrics/family_link_user_metrics_provider.h"
 #include "chrome/browser/metrics/family_user_metrics_provider.h"
 #include "chrome/browser/metrics/per_user_state_manager_chromeos.h"
 #include "components/metrics/structured/structured_metrics_provider.h"  // nogncheck
@@ -457,6 +457,27 @@ class ChromeComponentMetricsProviderDelegate
   raw_ptr<component_updater::ComponentUpdateService> component_updater_service_;
 };
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// TODO(crbug/1295789): Remove this and use ChangeMetricsReportingState() once
+// crash no longer depends on GoogleUpdateSettings and per-user is available
+// outside of Ash.
+void UpdateMetricsServicesForPerUser(bool enabled) {
+  // Set the local state pref because a lot of services read directly from this
+  // pref to obtain metrics consent.
+  //
+  // This is OK on Chrome OS because this pref is set on every startup with the
+  // device policy value. The previous user consent will get overwritten by
+  // the correct device policy value on startup.
+  //
+  // TODO(crbug/1297765): Once a proper API is established and services no
+  // longer read the pref value directly, this can be removed.
+  g_browser_process->local_state()->SetBoolean(
+      metrics::prefs::kMetricsReportingEnabled, enabled);
+
+  g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
+}
+#endif
+
 }  // namespace
 
 ChromeMetricsServiceClient::ChromeMetricsServiceClient(
@@ -724,7 +745,7 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
               g_browser_process->component_updater())));
 
   metrics_service_->RegisterMetricsProvider(
-      std::make_unique<tracing::BackgroundTracingMetricsProvider>());
+      std::make_unique<tracing::ChromeBackgroundTracingMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(MakeDemographicMetricsProvider(
       metrics::MetricsLogUploader::MetricServiceType::UMA));
@@ -806,7 +827,7 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
       std::make_unique<FamilyUserMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(
-      std::make_unique<FamilyLinkUserMetricsProvider>());
+      std::make_unique<ChromeOSFamilyLinkUserMetricsProvider>());
 
   if (base::FeatureList::IsEnabled(
           ::features::kUserTypeByDeviceTypeMetricsProvider)) {
@@ -1253,8 +1274,10 @@ void ChromeMetricsServiceClient::InitPerUserMetrics() {
   if (base::FeatureList::IsEnabled(ash::features::kPerUserMetrics)) {
     per_user_state_manager_ =
         std::make_unique<metrics::PerUserStateManagerChromeOS>(
-            this, g_browser_process->GetMetricsServicesManager(),
-            g_browser_process->local_state());
+            this, g_browser_process->local_state());
+    per_user_consent_change_subscription_ =
+        per_user_state_manager_->AddObserver(
+            base::BindRepeating(&UpdateMetricsServicesForPerUser));
   }
 }
 

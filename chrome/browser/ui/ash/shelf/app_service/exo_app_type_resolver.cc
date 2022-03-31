@@ -47,6 +47,14 @@ void ExoAppTypeResolver::PopulateProperties(
                                          true);
     out_properties_container.SetProperty(app_restore::kLacrosWindowId,
                                          params.app_id);
+    const int32_t restore_window_id =
+        app_restore::GetLacrosRestoreWindowId(params.app_id);
+    out_properties_container.SetProperty(app_restore::kRestoreWindowIdKey,
+                                         restore_window_id);
+    out_properties_container.SetProperty(
+        app_restore::kParentToHiddenContainerKey,
+        restore_window_id == app_restore::kParentToHiddenContainer);
+    return;
   } else if (borealis::BorealisWindowManager::IsBorealisWindowId(
                  params.app_id.empty() ? params.startup_id : params.app_id)) {
     // TODO(b/165865831): Stop using CROSTINI_APP for borealis windows.
@@ -60,10 +68,12 @@ void ExoAppTypeResolver::PopulateProperties(
     // In some instances we don't want new borealis windows to steal focus,
     // instead they are created as minimized windows.
     // TODO(b/210569001): this is intended to be a temporary solution.
-    if (borealis::BorealisWindowManager::ShouldNewWindowBeMinimized()) {
+    if (borealis::BorealisWindowManager::ShouldNewWindowBeMinimized(
+            params.app_id.empty() ? params.startup_id : params.app_id)) {
       out_properties_container.SetProperty(aura::client::kShowStateKey,
                                            ui::SHOW_STATE_MINIMIZED);
     }
+    return;
   }
 
   auto task_id = arc::GetTaskIdFromWindowAppId(params.app_id);

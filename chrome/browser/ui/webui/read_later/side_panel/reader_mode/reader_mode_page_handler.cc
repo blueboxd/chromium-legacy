@@ -45,10 +45,12 @@ const ui::AXNode* GetArticleNode(const ui::AXNode* node) {
   while (!queue.empty()) {
     const ui::AXNode* popped = queue.front();
     queue.pop();
-    if (popped->data().role == ax::mojom::Role::kArticle)
+    if (popped->GetRole() == ax::mojom::Role::kArticle)
       return popped;
-    for (size_t i = 0; i < popped->GetUnignoredChildCount(); ++i)
-      queue.push(popped->GetUnignoredChildAtIndex(i));
+    for (auto iter = popped->UnignoredChildrenBegin();
+         iter != popped->UnignoredChildrenEnd(); ++iter) {
+      queue.push(iter.get());
+    }
   }
 
   return nullptr;
@@ -56,33 +58,33 @@ const ui::AXNode* GetArticleNode(const ui::AXNode* node) {
 
 void AddTextNodesToVector(const ui::AXNode* node,
                           std::vector<std::string>* strings) {
-  const ui::AXNodeData& node_data = node->data();
-
-  if (node_data.role == ax::mojom::Role::kStaticText) {
-    if (node_data.HasStringAttribute(ax::mojom::StringAttribute::kName)) {
-      strings->emplace_back(
-          node_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
-    }
+  if (node->GetRole() == ax::mojom::Role::kStaticText) {
+    std::string value;
+    if (node->GetStringAttribute(ax::mojom::StringAttribute::kName, &value))
+      strings->emplace_back(value);
     return;
   }
 
   for (const auto role : kRolesToSkip) {
-    if (role == node_data.role)
+    if (role == node->GetRole())
       return;
   }
-  for (size_t i = 0; i < node->GetUnignoredChildCount(); ++i)
-    AddTextNodesToVector(node->GetUnignoredChildAtIndex(i), strings);
+  for (auto iter = node->UnignoredChildrenBegin();
+       iter != node->UnignoredChildrenEnd(); ++iter) {
+    AddTextNodesToVector(iter.get(), strings);
+  }
 }
 
 }  // namespace
 
 ReaderModePageHandler::ReaderModePageHandler(
+    mojo::PendingRemote<reader_mode::mojom::Page> page,
     mojo::PendingReceiver<reader_mode::mojom::PageHandler> receiver)
-    : receiver_(this, std::move(receiver)) {}
+    : receiver_(this, std::move(receiver)), page_(std::move(page)) {}
 
 ReaderModePageHandler::~ReaderModePageHandler() = default;
 
-void ReaderModePageHandler::ShowReaderMode(ShowReaderModeCallback callback) {
+void ReaderModePageHandler::ShowUI() {
   Browser* browser = chrome::FindLastActive();
   if (!browser)
     return;
@@ -93,14 +95,13 @@ void ReaderModePageHandler::ShowReaderMode(ShowReaderModeCallback callback) {
   // This will include subframe content for any subframes loaded at this point.
   web_contents->RequestAXTreeSnapshot(
       base::BindOnce(&ReaderModePageHandler::CombineTextNodesAndMakeCallback,
-                     weak_pointer_factory_.GetWeakPtr(), std::move(callback)),
+                     weak_pointer_factory_.GetWeakPtr()),
       ui::AXMode::kWebContents,
       /* exclude_offscreen= */ false, kMaxNodes,
       /* timeout= */ {});
 }
 
 void ReaderModePageHandler::CombineTextNodesAndMakeCallback(
-    ShowReaderModeCallback callback,
     const ui::AXTreeUpdate& update) {
   ui::AXTree tree;
   bool success = tree.Unserialize(update);
@@ -117,5 +118,5 @@ void ReaderModePageHandler::CombineTextNodesAndMakeCallback(
   text_node_contents.reserve(update.nodes.size());
   AddTextNodesToVector(reader_root, &text_node_contents);
 
-  std::move(callback).Run(text_node_contents);
+  page_->OnEssentialContent(std::move(text_node_contents));
 }

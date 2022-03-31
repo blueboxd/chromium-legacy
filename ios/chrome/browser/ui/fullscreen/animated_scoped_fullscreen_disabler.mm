@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
 
-#include "base/callback.h"
 #include "base/check.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/common/material_timing.h"
@@ -92,19 +91,14 @@ AnimatedScopedFullscreenDisabler::AnimatedScopedFullscreenDisabler(
     FullscreenController* controller)
     : controller_(controller) {
   DCHECK(controller_);
-  controller_->AddObserver(this);
   observer_list_container_ =
       [[AnimatedScopedFullscreenDisablerObserverListContainer alloc]
           initWithDisabler:this];
 }
 
 AnimatedScopedFullscreenDisabler::~AnimatedScopedFullscreenDisabler() {
-  if (controller_) {
-    if (disabling_)
-      controller_->DecrementDisabledCounter();
-    controller_->RemoveObserver(this);
-    controller_ = nullptr;
-  }
+  if (disabling_)
+    controller_->DecrementDisabledCounter();
   [observer_list_container_ onDisablerDestroyed];
 }
 
@@ -121,7 +115,7 @@ void AnimatedScopedFullscreenDisabler::RemoveObserver(
 void AnimatedScopedFullscreenDisabler::StartAnimation() {
   // StartAnimation() should be idempotent, so early return if this disabler has
   // already incremented the disabled counter.
-  if (disabling_ || !controller_)
+  if (disabling_)
     return;
   disabling_ = true;
 
@@ -129,43 +123,17 @@ void AnimatedScopedFullscreenDisabler::StartAnimation() {
     // Increment the disabled counter in an animation block if the controller is
     // not already disabled.
     [observer_list_container_ onAnimationStarted];
-
-    base::WeakPtr<AnimatedScopedFullscreenDisabler> weak_ptr =
-        weak_factory_.GetWeakPtr();
-
-    base::RepeatingClosure animation_started = base::BindRepeating(
-        &AnimatedScopedFullscreenDisabler::OnAnimationStart, weak_ptr);
-
-    base::RepeatingClosure animation_completed = base::BindRepeating(
-        &AnimatedScopedFullscreenDisabler::OnAnimationCompletion, weak_ptr);
-
+    __weak AnimatedScopedFullscreenDisablerObserverListContainer*
+        weak_observer_list_container = observer_list_container_;
     [UIView animateWithDuration:ios::material::kDuration1
         animations:^{
-          if (!animation_started.IsCancelled())
-            animation_started.Run();
+          controller_->IncrementDisabledCounter();
         }
         completion:^(BOOL finished) {
-          if (!animation_completed.IsCancelled())
-            animation_completed.Run();
+          [weak_observer_list_container onAnimationFinished];
         }];
   } else {
     // If |controller_| is already disabled, no animation is necessary.
     controller_->IncrementDisabledCounter();
   }
-}
-
-void AnimatedScopedFullscreenDisabler::FullscreenControllerWillShutDown(
-    FullscreenController* controller) {
-  DCHECK_EQ(controller, controller_);
-  controller_->RemoveObserver(this);
-  controller_ = nullptr;
-}
-
-void AnimatedScopedFullscreenDisabler::OnAnimationStart() {
-  if (controller_)
-    controller_->IncrementDisabledCounter();
-}
-
-void AnimatedScopedFullscreenDisabler::OnAnimationCompletion() {
-  [observer_list_container_ onAnimationFinished];
 }

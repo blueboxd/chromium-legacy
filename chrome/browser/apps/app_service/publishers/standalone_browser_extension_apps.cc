@@ -37,6 +37,9 @@ StandaloneBrowserExtensionApps::~StandaloneBrowserExtensionApps() = default;
 void StandaloneBrowserExtensionApps::RegisterChromeAppsCrosapiHost(
     mojo::PendingReceiver<crosapi::mojom::AppPublisher> receiver) {
   RegisterPublisher(AppType::kStandaloneBrowserChromeApp);
+  apps::AppPublisher::Publish(std::vector<AppPtr>{},
+                              AppType::kStandaloneBrowserChromeApp,
+                              /*should_notify_initialized=*/true);
 
   // At the moment the app service publisher will only accept one client
   // publishing apps to ash chrome. Any extra clients will be ignored.
@@ -70,8 +73,10 @@ void StandaloneBrowserExtensionApps::LoadIcon(const std::string& app_id,
 
   const uint32_t icon_effects = icon_key.icon_effects;
   controller_->LoadIcon(
-      app_id, ConvertIconKeyToMojomIconKey(icon_key), icon_type,
-      size_hint_in_dip,
+      app_id,
+      std::make_unique<IconKey>(icon_key.timeline, icon_key.resource_id,
+                                icon_key.icon_effects),
+      icon_type, size_hint_in_dip,
       base::BindOnce(&StandaloneBrowserExtensionApps::OnLoadIcon,
                      weak_factory_.GetWeakPtr(), icon_effects, size_hint_in_dip,
                      std::move(callback)));
@@ -108,9 +113,6 @@ void StandaloneBrowserExtensionApps::Connect(
 
   mojo::RemoteSetElementId id = subscribers_.Add(std::move(subscriber));
 
-  if (app_ptr_cache_.empty())
-    return;
-
   std::vector<apps::mojom::AppPtr> apps;
   for (auto& it : app_ptr_cache_) {
     apps.push_back(it.second.Clone());
@@ -134,9 +136,10 @@ void StandaloneBrowserExtensionApps::LoadIcon(const std::string& app_id,
     return;
   }
 
-  controller_->LoadIcon(
-      app_id, std::move(icon_key), ConvertMojomIconTypeToIconType(icon_type),
-      size_hint_in_dip, IconValueToMojomIconValueCallback(std::move(callback)));
+  controller_->LoadIcon(app_id, ConvertMojomIconKeyToIconKey(icon_key),
+                        ConvertMojomIconTypeToIconType(icon_type),
+                        size_hint_in_dip,
+                        IconValueToMojomIconValueCallback(std::move(callback)));
 }
 
 void StandaloneBrowserExtensionApps::Launch(
@@ -245,21 +248,33 @@ void StandaloneBrowserExtensionApps::StopApp(const std::string& app_id) {
 
   controller_->StopApp(app_id);
 }
+void StandaloneBrowserExtensionApps::Uninstall(
+    const std::string& app_id,
+    apps::mojom::UninstallSource uninstall_source,
+    bool clear_site_data,
+    bool report_abuse) {
+  // It is possible that Lacros is briefly unavailable, for example if it shuts
+  // down for an update.
+  if (!controller_.is_bound())
+    return;
 
-void StandaloneBrowserExtensionApps::OnApps(
-    std::vector<apps::mojom::AppPtr> deltas) {
+  controller_->Uninstall(app_id, uninstall_source, clear_site_data,
+                         report_abuse);
+}
+
+void StandaloneBrowserExtensionApps::OnApps(std::vector<AppPtr> deltas) {
   if (deltas.empty()) {
     return;
   }
 
-  std::vector<std::unique_ptr<App>> apps;
-  for (apps::mojom::AppPtr& delta : deltas) {
-    apps.push_back(ConvertMojomAppToApp(delta));
-    app_ptr_cache_[delta->app_id] = delta.Clone();
-    PublisherBase::Publish(std::move(delta), subscribers_);
+  for (const AppPtr& delta : deltas) {
+    app_ptr_cache_[delta->app_id] = ConvertAppToMojomApp(delta);
+    PublisherBase::Publish(ConvertAppToMojomApp(delta), subscribers_);
   }
 
-  apps::AppPublisher::Publish(std::move(apps));
+  apps::AppPublisher::Publish(std::move(deltas),
+                              AppType::kStandaloneBrowserChromeApp,
+                              /*should_notify_initialized=*/false);
 }
 
 void StandaloneBrowserExtensionApps::RegisterAppController(

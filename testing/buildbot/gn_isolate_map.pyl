@@ -304,7 +304,6 @@
     "type": "console_test_launcher",
   },
   "browser_tests": {
-    "python3": False,
     "label": "//chrome/test:browser_tests",
     "type": "windowed_test_launcher",
   },
@@ -462,10 +461,6 @@
     "label": "//chrome/android:chrome_modern_public_bundle_smoke_test",
     "type": "console_test_launcher",
   },
-  "chrome_modern_public_bundle_fake_modules_smoke_test": {
-    "label": "//chrome/android:chrome_modern_public_bundle_fake_modules_smoke_test",
-    "type": "console_test_launcher",
-  },
   "chrome_nocompile_tests": {
     "label": "//chrome/android:chrome_nocompile_tests",
     "type": "additional_compile_target",
@@ -524,7 +519,6 @@
     "type": "additional_compile_target",
   },
   "chromedriver_py_tests": {
-    "python3": False,
     "args": [
       "../../testing/scripts/run_chromedriver_tests.py",
       "../../chrome/test/chromedriver/test/run_py_tests.py",
@@ -587,7 +581,6 @@
     "type": "generated_script",
   },
   "chromedriver_replay_unittests": {
-    "python3": False,
     "label": "//chrome/test/chromedriver:chromedriver_replay_unittests",
     "script": "//chrome/test/chromedriver/log_replay/client_replay_unittest.py",
     "type": "script",
@@ -706,7 +699,6 @@
     "type": "console_test_launcher",
   },
   "content_shell_crash_test": {
-    "python3": False,
     "label": "//content/shell:content_shell_crash_test",
     "script": "//testing/scripts/content_shell_crash_test.py",
     "type": "script",
@@ -732,7 +724,6 @@
     "type": "console_test_launcher",
   },
   "crashpad_tests": {
-    "python3": False,
     "label": "//third_party/crashpad/crashpad:crashpad_tests",
     "type": "console_test_launcher",
   },
@@ -793,7 +784,7 @@
     "type": "console_test_launcher",
   },
   "dawn_end2end_tests": {
-    "label": "//third_party/dawn/src/tests:dawn_end2end_tests",
+    "label": "//third_party/dawn/src/dawn/tests:dawn_end2end_tests",
     "type": "windowed_test_launcher",
   },
   "dawn_perf_tests": {
@@ -804,7 +795,7 @@
       "--test-launcher-jobs=1",
       "--test-launcher-retry-limit=0",
     ],
-    "label": "//third_party/dawn/src/tests:dawn_perf_tests",
+    "label": "//third_party/dawn/src/dawn/tests:dawn_perf_tests",
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
@@ -972,7 +963,6 @@
     "type": "console_test_launcher",
   },
   "headless_browsertests": {
-    "python3": False,
     "label": "//headless:headless_browsertests",
     "type": "console_test_launcher",
   },
@@ -1126,10 +1116,6 @@
     "label": "//ipc:ipc_tests",
     "type": "console_test_launcher",
   },
-  "jingle_unittests": {
-    "label": "//jingle:jingle_unittests",
-    "type": "console_test_launcher",
-  },
   "junit_unit_tests": {
     "label": "//testing/android/junit:junit_unit_tests",
     "type": "junit_test",
@@ -1278,10 +1264,6 @@
     "label": "//chrome/android:monochrome_public_bundle_smoke_test",
     "type": "console_test_launcher",
   },
-  "monochrome_public_bundle_fake_modules_smoke_test": {
-    "label": "//chrome/android:monochrome_public_bundle_fake_modules_smoke_test",
-    "type": "console_test_launcher",
-  },
   "mojo_core_unittests": {
     "label": "//mojo/core:mojo_core_unittests",
     "type": "console_test_launcher",
@@ -1293,6 +1275,24 @@
     "label": "//mojo/public/tools:mojo_python_unittests",
     "script": "//testing/scripts/run_isolated_script_test.py",
     "type": "script",
+  },
+  "mojo_rust": {
+    "label": "//mojo/public/rust:mojo_rust",
+    # Since we can't build rust tests on Android now, add this for build
+    # coverage.
+    "type": "additional_compile_target",
+  },
+  "mojo_rust_unittests": {
+    "label": "//mojo/public/rust:mojo_rust_unittests",
+    # We don't yet support running Rust test binaries. For now, at least build
+    # the target. TODO(https://crbug.com/1260120): make this a test.
+    "type": "additional_compile_target",
+  },
+  "mojo_rust_extra_tests": {
+    "label": "//mojo/public/rust:mojo_rust",
+    # We don't yet support running Rust test binaries. For now, at least build
+    # the target. TODO(https://crbug.com/1260120): make this a test.
+    "type": "additional_compile_target",
   },
   "mojo_test_apk": {
     "label": "//mojo/public/java/system:mojo_test_apk",
@@ -1446,10 +1446,6 @@
     "label": "//chrome/test:performance_test_suite",
     "type": "generated_script",
   },
-  "performance_test_suite_android_chrome": {
-    "label": "//chrome/test:performance_test_suite_android_chrome",
-    "type": "generated_script",
-  },
   "performance_test_suite_android_clank_chrome": {
     "label": "//chrome/test:performance_test_suite_android_clank_chrome",
     "type": "generated_script",
@@ -1547,7 +1543,6 @@
     "type": "additional_compile_target",
   },
   "remoting_unittests": {
-    "python3": False,
     "label": "//remoting:remoting_unittests",
     "type": "console_test_launcher",
   },
@@ -1632,7 +1627,6 @@
     "type": "console_test_launcher",
   },
   "services_unittests": {
-    "python3": False,
     "label": "//services:services_unittests",
     "type": "windowed_test_launcher",
   },
@@ -1850,10 +1844,6 @@
     "label": "//chrome/android:trichrome_chrome_bundle_smoke_test",
     "type": "console_test_launcher",
   },
-  "trichrome_chrome_bundle_fake_modules_smoke_test": {
-    "label": "//chrome/android:trichrome_chrome_bundle_fake_modules_smoke_test",
-    "type": "console_test_launcher",
-  },
   "ui_android_unittests": {
     "label": "//ui/android:ui_android_unittests",
     "type": "console_test_launcher",
@@ -1875,7 +1865,6 @@
     "type": "windowed_test_launcher",
   },
   "unit_tests": {
-    "python3": False,
     "label": "//chrome/test:unit_tests",
     "type": "windowed_test_launcher",
   },
@@ -2139,12 +2128,7 @@
       '--enable-pixel-output-in-tests',
     ],
   },
-  "x11_unittests": {
-    "label": "//ui/platform_window/x11:x11_unittests",
-    "type": "windowed_test_launcher",
-  },
   "zlib_unittests": {
-    "python3": False,
     "label": "//third_party/zlib:zlib_unittests",
     "type": "console_test_launcher",
   },

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assert, assertInstanceof} from '../../assert.js';
+import {assert} from '../../assert.js';
 import * as barcodeChip from '../../barcode_chip.js';
+import {CameraManager, CameraUI} from '../../device/index.js';
 import * as dom from '../../dom.js';
-import {Point} from '../../geometry.js';
 import {sendBarcodeEnabledEvent} from '../../metrics.js';
 import {BarcodeScanner} from '../../models/barcode.js';
 import * as state from '../../state.js';
-import {Mode} from '../../type.js';
+import {Mode, PreviewVideo} from '../../type.js';
 import {assertEnumVariant} from '../../util.js';
 
 import {DocumentCornerOverlay} from './document_corner_overlay.js';
@@ -32,7 +32,7 @@ const DEFAULT_SCAN_TYPE = ScanType.DOCUMENT;
 /**
  * Controller for the scan options of Camera view.
  */
-export class ScanOptions {
+export class ScanOptions implements CameraUI {
   /**
    * Togglable barcode option in photo mode.
    */
@@ -42,10 +42,7 @@ export class ScanOptions {
   private readonly scanOptions =
       [...dom.getAll('#scan-modes-group [data-scantype]', HTMLInputElement)];
 
-  /**
-   * Whether preview have attached as scan frame source.
-   */
-  private previewAttached = false;
+  private video: PreviewVideo|null = null;
 
   /**
    * May be null if preview is not ready.
@@ -67,9 +64,11 @@ export class ScanOptions {
    * @param updatePointOfInterest function to update point of interest on the
    *     stream.
    */
-  constructor(updatePointOfInterest: (point: Point) => Promise<void>) {
-    this.documentCornerOverylay =
-        new DocumentCornerOverlay(updatePointOfInterest);
+  constructor(private readonly cameraManager: CameraManager) {
+    this.cameraManager.registerCameraUI(this);
+
+    this.documentCornerOverylay = new DocumentCornerOverlay(
+        (p) => this.cameraManager.setPointOfInterest(p));
 
     [this.photoBarcodeOption, ...this.scanOptions].forEach((opt) => {
       opt.addEventListener('click', (evt) => {
@@ -92,6 +91,32 @@ export class ScanOptions {
   }
 
   /**
+   * Whether preview have attached as scan frame source.
+   */
+  private previewAvailable(): boolean {
+    return this.video?.isExpired() === false;
+  }
+
+  // Overrides |CameraUI|.
+  async onUpdateConfig(): Promise<void> {
+    assert(!this.previewAvailable());
+
+    const video = this.cameraManager.getPreviewVideo();
+    this.video = video;
+    this.barcodeScanner = new BarcodeScanner(video.video, (value) => {
+      barcodeChip.show(value);
+    });
+    const {deviceId} = video.getVideoSettings();
+    this.documentCornerOverylay.attach(deviceId);
+    const scanType = state.get(Mode.SCAN) ? this.getToggledScanOption() : null;
+    (async () => {
+      await video.onExpired;
+      this.detachPreview();
+    })();
+    await this.updateOption(scanType);
+  }
+
+  /**
    * @return Returns scan type of checked radio buttons in scan type option
    *     groups.
    */
@@ -99,23 +124,6 @@ export class ScanOptions {
     const checkedEl = this.scanOptions.find(({checked}) => checked);
     return checkedEl === undefined ? DEFAULT_SCAN_TYPE :
                                      getScanTypeFromElement(checkedEl);
-  }
-
-  /**
-   * Attaches to preview video as source of frames to be scanned.
-   */
-  async attachPreview(video: HTMLVideoElement): Promise<void> {
-    assert(!this.previewAttached);
-    this.barcodeScanner = new BarcodeScanner(video, (value) => {
-      barcodeChip.show(value);
-    });
-    const {deviceId} = assertInstanceof(video.srcObject, MediaStream)
-                           .getVideoTracks()[0]
-                           .getSettings();
-    this.documentCornerOverylay.attach(deviceId);
-    this.previewAttached = true;
-    const scanType = state.get(Mode.SCAN) ? this.getToggledScanOption() : null;
-    await this.updateOption(scanType);
   }
 
   isDocumentModeEanbled(): boolean {
@@ -127,7 +135,7 @@ export class ScanOptions {
    *     enabled.
    */
   private async updateOption(scanType: ScanType|null) {
-    if (!this.previewAttached) {
+    if (!this.previewAvailable()) {
       return;
     }
     assert(this.barcodeScanner !== null);
@@ -152,6 +160,7 @@ export class ScanOptions {
   }
 
   private stopBarcodeScanner() {
+    assert(this.barcodeScanner !== null);
     this.barcodeScanner.stop();
     barcodeChip.dismiss();
     state.set(state.State.ENABLE_SCAN_BARCODE, false);
@@ -169,12 +178,11 @@ export class ScanOptions {
   /**
    * Stops all scanner and detach from current preview.
    */
-  async detachPreview(): Promise<void> {
+  private async detachPreview(): Promise<void> {
     if (this.barcodeScanner !== null) {
       this.stopBarcodeScanner();
       this.barcodeScanner = null;
     }
     await this.documentCornerOverylay.detach();
-    this.previewAttached = false;
   }
 }

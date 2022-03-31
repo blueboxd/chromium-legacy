@@ -35,7 +35,6 @@
 #include "chrome/browser/metrics/power/battery_level_provider.h"
 #include "chrome/browser/metrics/power/power_metrics_reporter.h"
 #include "chrome/browser/metrics/process_memory_metrics_emitter.h"
-#include "chrome/browser/metrics/usage_scenario/usage_scenario_tracker.h"
 #include "chrome/browser/shell_integration.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/policy/core/common/management/management_service.h"
@@ -596,9 +595,7 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
   // Register synthetic Finch trials proposed by PartitionAlloc.
   auto pa_trials = base::allocator::ProposeSyntheticFinchTrials(is_enterprise);
   for (auto& trial : pa_trials) {
-    std::string trial_name;
-    std::string group_name;
-    std::tie(trial_name, group_name) = trial;
+    auto [trial_name, group_name] = trial;
     ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(trial_name,
                                                               group_name);
   }
@@ -690,9 +687,7 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   // power metrics only on those platforms.
   if (performance_monitor::ProcessMonitor::Get()) {
     // PowerMetricsReporter needs ProcessMonitor to be created.
-    usage_scenario_tracker_ = std::make_unique<UsageScenarioTracker>();
-    power_metrics_reporter_ = std::make_unique<PowerMetricsReporter>(
-        usage_scenario_tracker_->data_store(), BatteryLevelProvider::Create());
+    power_metrics_reporter_ = std::make_unique<PowerMetricsReporter>();
   }
 #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 }

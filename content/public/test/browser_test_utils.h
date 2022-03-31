@@ -23,6 +23,7 @@
 #include "base/scoped_observation.h"
 #include "base/template_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/types/strong_alias.h"
 #include "build/build_config.h"
 #include "cc/test/pixel_test_utils.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -39,6 +40,7 @@
 #include "content/public/common/page_type.h"
 #include "content/public/test/fake_frame_widget.h"
 #include "ipc/message_filter.h"
+#include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/base/load_flags.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_partition_key_collection.h"
@@ -878,13 +880,19 @@ enum EvalJsOptions {
 
 // Walks the frame tree of the specified `page`, also descending into any inner
 // frame-trees (e.g. GuestView), and returns the sole frame that matches the
-// specified predicate function. This function will DCHECK if no frames match
-// the specified predicate, or if more than one frame matches.
+// specified predicate function. Returns nullptr if no frame matches.
+// EXPECTs that at most one frame matches.
+RenderFrameHost* FrameMatchingPredicateOrNullptr(
+    Page& page,
+    base::RepeatingCallback<bool(RenderFrameHost*)> predicate);
+
+// Same like FrameMatchingPredicateOrNullptr(), but EXPECTs that exactly one
+// frame matches.
 RenderFrameHost* FrameMatchingPredicate(
     Page& page,
     base::RepeatingCallback<bool(RenderFrameHost*)> predicate);
 
-// Predicates for use with FrameMatchingPredicate.
+// Predicates for use with FrameMatchingPredicate[OrNullPtr]().
 bool FrameMatchesName(const std::string& name, RenderFrameHost* frame);
 bool FrameIsChildOfMainFrame(RenderFrameHost* frame);
 bool FrameHasSourceUrl(const GURL& url, RenderFrameHost* frame);
@@ -1856,7 +1864,9 @@ class ContextMenuInterceptor
 
  private:
   raw_ptr<content::RenderFrameHostImpl> render_frame_host_impl_;
-  raw_ptr<blink::mojom::LocalFrameHost> impl_;
+  mojo::test::ScopedSwapImplForTesting<
+      mojo::AssociatedReceiver<blink::mojom::LocalFrameHost>>
+      swapped_impl_;
   std::unique_ptr<base::RunLoop> run_loop_;
   base::OnceClosure quit_closure_;
   blink::UntrustworthyContextMenuParams last_params_;
@@ -1884,7 +1894,9 @@ class UpdateUserActivationStateInterceptor
 
  private:
   raw_ptr<content::RenderFrameHostImpl> render_frame_host_impl_;
-  raw_ptr<blink::mojom::LocalFrameHost> impl_;
+  mojo::test::ScopedSwapImplForTesting<
+      mojo::AssociatedReceiver<blink::mojom::LocalFrameHost>>
+      swapped_impl_;
   base::OnceClosure quit_handler_;
   bool update_user_activation_state_ = false;
 };
@@ -1973,7 +1985,9 @@ class SynchronizeVisualPropertiesInterceptor
   bool last_pinch_gesture_active_ = false;
   std::unique_ptr<base::RunLoop> pinch_end_run_loop_;
 
-  raw_ptr<blink::mojom::RemoteFrameHost> impl_;
+  mojo::test::ScopedSwapImplForTesting<
+      mojo::AssociatedReceiver<blink::mojom::RemoteFrameHost>>
+      swapped_impl_;
 
   base::WeakPtrFactory<SynchronizeVisualPropertiesInterceptor> weak_factory_{
       this};

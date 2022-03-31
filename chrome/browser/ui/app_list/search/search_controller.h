@@ -16,6 +16,7 @@
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/observer_list_types.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/ranking/launch_data.h"
 #include "chrome/browser/ui/app_list/search/ranking/types.h"
@@ -90,6 +91,8 @@ class SearchController {
   // Update the controller with the given results. Used only if the categorical
   // search feature flag is enabled.
   virtual void SetResults(const SearchProvider* provider, Results results) = 0;
+  // Publishes results to ash.
+  virtual void Publish() = 0;
 
   virtual ChromeSearchResult* FindSearchResult(
       const std::string& result_id) = 0;

@@ -24,8 +24,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
-#include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_test_utils.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
@@ -57,8 +55,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_handle.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
@@ -97,6 +93,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/base/proxy_string_util.h"
+#include "net/base/url_util.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
@@ -512,6 +509,18 @@ class PrefetchProxyBrowserTest
     host_resolver()->AddRule("resolve-success.com", "127.0.0.1");
 
     host_resolver()->AddSimulatedFailure("resolve-fail.com");
+
+    PrefetchProxyTabHelper::SetHostNonUniqueFilterForTest(
+        [](base::StringPiece host) {
+          // Treat *.test as real public hostnames, even though they aren't.
+          return net::IsHostnameNonUnique(std::string{host}) &&
+                 !net::IsSubdomainOf(host, "test");
+        });
+  }
+
+  void TearDownOnMainThread() override {
+    PrefetchProxyTabHelper::ResetHostNonUniqueFilterForTest();
+    InProcessBrowserTest::TearDownOnMainThread();
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
@@ -522,12 +531,6 @@ class PrefetchProxyBrowserTest
                            GetProxyURL().spec());
     cmd->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                            "SpeculationRulesPrefetchProxy");
-  }
-
-  void SetDataSaverEnabled(bool enabled) {
-    data_reduction_proxy::DataReductionProxySettings::
-        SetDataSaverEnabledForTesting(browser()->profile()->GetPrefs(),
-                                      enabled);
   }
 
   void ResetFeatureList() { scoped_feature_list_.Reset(); }
@@ -756,6 +759,31 @@ class PrefetchProxyBrowserTest
     EXPECT_EQ(paths.size(), verified_url_count);
   }
 
+  // Verifies that the "Sec-Purpose" header with the expected value
+  // ("prefetch;anonymous-client-ip" for requests that go through the proxy, and
+  // "prefetch" for non-private prefetches) was included on all requests for
+  // main resources. Subresources are fetched using NSP which does not add the
+  // "Sec-Purpose" header.
+  void VerifyPrefetchRequestsSecPurposeHeader(
+      const std::set<std::string>& main_resource_paths,
+      bool are_requests_anonymous_client_ip) {
+    size_t verified_header_count = 0;
+    for (const auto& request : origin_server_requests()) {
+      const GURL& url = request.GetURL();
+      if (main_resource_paths.find(url.path()) == main_resource_paths.end()) {
+        continue;
+      }
+
+      SCOPED_TRACE(request.GetURL().spec());
+      EXPECT_EQ(request.headers.find("Sec-Purpose")->second,
+                are_requests_anonymous_client_ip
+                    ? "prefetch;anonymous-client-ip"
+                    : "prefetch");
+      verified_header_count++;
+    }
+    EXPECT_EQ(main_resource_paths.size(), verified_header_count);
+  }
+
   size_t OriginServerRequestCount() const {
     base::RunLoop().RunUntilIdle();
     return origin_server_request_count_;
@@ -810,7 +838,11 @@ class PrefetchProxyBrowserTest
 
     bool is_prefetch =
         request.headers.find("Purpose") != request.headers.end() &&
-        request.headers.find("Purpose")->second == "prefetch";
+        request.headers.find("Purpose")->second == "prefetch" &&
+        request.headers.find("Sec-Purpose") != request.headers.end() &&
+        (request.headers.find("Sec-Purpose")->second == "prefetch" ||
+         request.headers.find("Sec-Purpose")->second ==
+             "prefetch;anonymous-client-ip");
 
     if (request.relative_url == "/404_on_prefetch") {
       std::unique_ptr<net::test_server::BasicHttpResponse> resp =
@@ -977,8 +1009,6 @@ class PrefetchProxyBrowserTest
 IN_PROC_BROWSER_TEST_F(
     PrefetchProxyBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(ServiceWorkerRegistrationIsNotEligible)) {
-  SetDataSaverEnabled(true);
-
   // Load a page that registers a service worker.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
@@ -1020,7 +1050,6 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(DRPClientConfigPlumbing)) {
-  SetDataSaverEnabled(true);
   auto client_config = WaitForUpdatedCustomProxyConfig();
   VerifyProxyConfig(std::move(client_config));
 }
@@ -1028,7 +1057,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     PrefetchProxyBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(NoAuthChallenges_FromProxy)) {
-  SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
   WaitForUpdatedCustomProxyConfig();
 
@@ -1054,7 +1082,6 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(ProxyServerBackOff)) {
-  SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
   WaitForUpdatedCustomProxyConfig();
 
@@ -1102,7 +1129,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(CookieOnHigherLevelDomain)) {
-  SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
   WaitForUpdatedCustomProxyConfig();
 
@@ -1131,7 +1157,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(CookieOnOtherPath)) {
-  SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
   WaitForUpdatedCustomProxyConfig();
 
@@ -1160,7 +1185,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(ExpiredCookie)) {
-  SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
   WaitForUpdatedCustomProxyConfig();
 
@@ -1199,7 +1223,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     PrefetchProxyBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(CookieOnNonApplicableDomain)) {
-  SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
   WaitForUpdatedCustomProxyConfig();
 
@@ -1237,7 +1260,6 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     PrefetchProxyBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(CookiesChangedAfterInitialCheck)) {
-  SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
   WaitForUpdatedCustomProxyConfig();
 
@@ -1276,7 +1298,6 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     PrefetchProxyBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(NoAuthChallenges_FromOrigin)) {
-  SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
   WaitForUpdatedCustomProxyConfig();
 
@@ -1318,7 +1339,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
   // back/forward cache to ensure that it doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
       GetWebContents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
-  SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
                                            GetOriginServerURL("/simple.html")));
   WaitForUpdatedCustomProxyConfig();
@@ -1349,6 +1369,9 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
   EXPECT_EQ(u"Title Of Awesomeness", GetWebContents()->GetTitle());
 
   VerifyOriginRequestsAreIsolated({prefetch_url.path()});
+  VerifyPrefetchRequestsSecPurposeHeader(
+      {prefetch_url.path()},
+      /*are_requests_anonymous_client_ip=*/true);
 
   // The origin server should not have served this request.
   EXPECT_EQ(starting_origin_request_count, OriginServerRequestCount());
@@ -1360,7 +1383,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
       "isolated-prerender-unlimited-prefetches");
 
   GURL starting_page = GetOriginServerURL("/simple.html");
-  SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
 
@@ -1415,6 +1437,14 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
       eligible_link_2.path(),
       eligible_link_3.path(),
   });
+
+  VerifyPrefetchRequestsSecPurposeHeader(
+      {
+          eligible_link_1.path(),
+          eligible_link_2.path(),
+          eligible_link_3.path(),
+      },
+      /*are_requests_anonymous_client_ip=*/true);
 
   using UkmEntry = ukm::TestUkmRecorder::HumanReadableUkmEntry;
   auto expected_entries = std::vector<UkmEntry>{
@@ -1555,7 +1585,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
       "isolated-prerender-unlimited-prefetches");
 
   GURL starting_page = GetOriginServerURL("/simple.html");
-  SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
 
@@ -1632,7 +1661,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
       "isolated-prerender-unlimited-prefetches");
 
   GURL starting_page = GetOriginServerURL("/simple.html");
-  SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
 
@@ -1695,7 +1723,6 @@ IN_PROC_BROWSER_TEST_F(
       "isolated-prerender-unlimited-prefetches");
 
   GURL starting_page = GetOriginServerURL("/simple.html");
-  SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
 
@@ -1770,7 +1797,6 @@ IN_PROC_BROWSER_TEST_F(
       "isolated-prerender-unlimited-prefetches");
 
   GURL starting_page = GetOriginServerURL("/simple.html");
-  SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
 
@@ -1846,7 +1872,6 @@ IN_PROC_BROWSER_TEST_F(
       "isolated-prerender-unlimited-prefetches");
 
   GURL starting_page = GetOriginServerURL("/simple.html");
-  SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
 
@@ -1907,7 +1932,6 @@ IN_PROC_BROWSER_TEST_F(
     PrefetchProxyBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(PrefetchingUKM_PrefetchNotStarted)) {
   GURL starting_page = GetOriginServerURL("/simple.html");
-  SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
 
@@ -1989,7 +2013,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
   content::DisableBackForwardCacheForTesting(
       GetWebContents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   GURL starting_page = GetOriginServerURL("/simple.html");
-  SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
 
@@ -2067,7 +2090,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyBrowserTest,
       ->set_client_cert_store_factory_for_testing(
           base::BindRepeating(&CreateCertStore));
 
-  SetDataSaverEnabled(true);
   WaitForUpdatedCustomProxyConfig();
 
   // Setup a test server that requires a client cert.
@@ -2135,8 +2157,6 @@ class PrefetchProxyWithDecoyRequestsBrowserTest
 
 IN_PROC_BROWSER_TEST_F(PrefetchProxyWithDecoyRequestsBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(ServiceWorker)) {
-  SetDataSaverEnabled(true);
-
   GURL starting_page =
       GetOriginServerURL("/service_worker/create_service_worker.html");
 
@@ -2229,7 +2249,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyWithDecoyRequestsBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(Cookie)) {
   GURL starting_page = GetOriginServerURL("/simple.html");
 
-  SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
 
@@ -2407,7 +2426,6 @@ class SSLReportingPrefetchProxyBrowserTest : public PrefetchProxyBrowserTest {
 IN_PROC_BROWSER_TEST_F(
     SSLReportingPrefetchProxyBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(NoIntersitialSSLErrorReporting)) {
-  SetDataSaverEnabled(true);
   WaitForUpdatedCustomProxyConfig();
 
   // Setup a test server that requires a client cert.
@@ -2488,7 +2506,6 @@ class DomainReliabilityPrefetchProxyBrowserTest
 IN_PROC_BROWSER_TEST_F(
     DomainReliabilityPrefetchProxyBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(NoDomainReliabilityUploads)) {
-  SetDataSaverEnabled(true);
   WaitForUpdatedCustomProxyConfig();
 
   net::EmbeddedTestServer https_report_server(
@@ -2594,7 +2611,6 @@ class PrefetchProxyBaseProbingBrowserTest : public PrefetchProxyBrowserTest {
     probing_server.SetConnectionListener(&probe_counter);
     ASSERT_TRUE(probing_server.Start());
 
-    SetDataSaverEnabled(true);
     GURL starting_page = GetOriginServerURL("/simple.html");
     ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
     WaitForUpdatedCustomProxyConfig();
@@ -2899,7 +2915,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyWithNSPBrowserTest,
       GetWebContents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   base::HistogramTester histogram_tester;
 
-  SetDataSaverEnabled(true);
   GURL starting_page = GetOriginServerURL("/simple.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
@@ -2984,6 +2999,9 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyWithNSPBrowserTest,
       "/prefetch/prefetch_proxy/prefetch.js",
       eligible_link.path(),
   });
+  VerifyPrefetchRequestsSecPurposeHeader(
+      {eligible_link.path()},
+      /*are_requests_anonymous_client_ip=*/true);
 
   // Verify the resource load was reported to the subresource manager.
   PrefetchProxyService* service =
@@ -3082,7 +3100,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyWithNSPBrowserTest,
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       "isolated-prerender-start-spare-renderer");
 
-  SetDataSaverEnabled(true);
   GURL starting_page = GetOriginServerURL("/simple.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
@@ -3226,7 +3243,6 @@ IN_PROC_BROWSER_TEST_F(
   content::SetCookie(browser()->profile(),
                      non_eligible_origin.GetURL("b.test", "/"), "cookie=yes");
 
-  SetDataSaverEnabled(true);
   WaitForUpdatedCustomProxyConfig();
 
   PrefetchProxyTabHelper* tab_helper =
@@ -3284,7 +3300,6 @@ IN_PROC_BROWSER_TEST_F(
       &HandleOriginWithIneligibleSubresources, &non_eligible_origin));
   ASSERT_TRUE(eligible_origin.Start());
 
-  SetDataSaverEnabled(true);
   WaitForUpdatedCustomProxyConfig();
 
   PrefetchProxyTabHelper* tab_helper =
@@ -3332,7 +3347,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyWithNSPBrowserTest,
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableLowEndDeviceMode);
 
-  SetDataSaverEnabled(true);
   GURL starting_page = GetOriginServerURL("/simple.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
@@ -3376,7 +3390,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyWithNSPBrowserTest,
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       "isolated-prerender-unlimited-prefetches");
 
-  SetDataSaverEnabled(true);
   GURL starting_page = GetOriginServerURL("/simple.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
@@ -3438,7 +3451,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyWithNSPBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PrefetchProxyWithNSPBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(NoLinkRelSearch)) {
-  SetDataSaverEnabled(true);
   GURL starting_page = GetOriginServerURL("/simple.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
@@ -3487,7 +3499,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyWithNSPBrowserTest,
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       kIsolatedPrerenderLimitNSPSubresourcesCmdLineFlag, "1");
 
-  SetDataSaverEnabled(true);
   GURL starting_page = GetOriginServerURL("/simple.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
@@ -3561,7 +3572,6 @@ class ProbingAndNSPEnabledPrefetchProxyBrowserTest
 
 IN_PROC_BROWSER_TEST_F(ProbingAndNSPEnabledPrefetchProxyBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(ProbeGood_NSPSuccess)) {
-  SetDataSaverEnabled(true);
   GURL starting_page = GetOriginServerURL("/simple.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
@@ -3665,7 +3675,6 @@ IN_PROC_BROWSER_TEST_F(ProbingAndNSPEnabledPrefetchProxyBrowserTest,
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableLowEndDeviceMode);
 
-  SetDataSaverEnabled(true);
   GURL starting_page = GetOriginServerURL("/simple.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
@@ -3709,7 +3718,6 @@ IN_PROC_BROWSER_TEST_F(ProbingAndNSPEnabledPrefetchProxyBrowserTest,
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       "isolated-prerender-unlimited-prefetches");
 
-  SetDataSaverEnabled(true);
   GURL starting_page = GetOriginServerURL("/simple.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
@@ -3775,7 +3783,6 @@ IN_PROC_BROWSER_TEST_F(ProbingAndNSPEnabledPrefetchProxyBrowserTest,
   // back/forward cache to ensure that it doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
       GetWebContents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
-  SetDataSaverEnabled(true);
   GURL starting_page = GetOriginServerURL("/simple.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
@@ -3905,7 +3912,6 @@ IN_PROC_BROWSER_TEST_F(ProbingAndNSPEnabledPrefetchProxyBrowserTest,
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableLowEndDeviceMode);
 
-  SetDataSaverEnabled(true);
   GURL starting_page = GetOriginServerURL("/simple.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
@@ -3956,7 +3962,6 @@ IN_PROC_BROWSER_TEST_F(ProbingAndNSPEnabledPrefetchProxyBrowserTest,
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       "isolated-prerender-unlimited-prefetches");
 
-  SetDataSaverEnabled(true);
   GURL starting_page = GetOriginServerURL("/simple.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
@@ -4051,7 +4056,6 @@ IN_PROC_BROWSER_TEST_F(SpeculationPrefetchProxyTest,
       GetWebContents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   base::HistogramTester histogram_tester;
 
-  SetDataSaverEnabled(true);
   WaitForUpdatedCustomProxyConfig();
 
   ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
@@ -4136,6 +4140,9 @@ IN_PROC_BROWSER_TEST_F(SpeculationPrefetchProxyTest,
       "/prefetch/prefetch_proxy/prefetch.js",
       eligible_link.path(),
   });
+  VerifyPrefetchRequestsSecPurposeHeader(
+      {eligible_link.path()},
+      /*are_requests_anonymous_client_ip=*/true);
 
   // Verify the resource load was reported to the subresource manager.
   PrefetchProxyService* service =
@@ -4226,7 +4233,6 @@ IN_PROC_BROWSER_TEST_F(SpeculationPrefetchProxyTest,
 
 IN_PROC_BROWSER_TEST_F(SpeculationPrefetchProxyTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(ConnectProxyEndtoEnd)) {
-  SetDataSaverEnabled(true);
   WaitForUpdatedCustomProxyConfig();
 
   PrefetchProxyTabHelper* tab_helper =
@@ -4257,6 +4263,9 @@ IN_PROC_BROWSER_TEST_F(SpeculationPrefetchProxyTest,
   EXPECT_EQ(u"Title Of Awesomeness", GetWebContents()->GetTitle());
 
   VerifyOriginRequestsAreIsolated({prefetch_url.path()});
+  VerifyPrefetchRequestsSecPurposeHeader(
+      {prefetch_url.path()},
+      /*are_requests_anonymous_client_ip=*/true);
 
   // The origin server should not have served this request.
   EXPECT_EQ(starting_origin_request_count, OriginServerRequestCount());
@@ -4264,7 +4273,6 @@ IN_PROC_BROWSER_TEST_F(SpeculationPrefetchProxyTest,
 
 IN_PROC_BROWSER_TEST_F(SpeculationPrefetchProxyTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(TwoSpeculations)) {
-  SetDataSaverEnabled(true);
   WaitForUpdatedCustomProxyConfig();
 
   PrefetchProxyTabHelper* tab_helper =
@@ -4344,7 +4352,6 @@ class PrefetchProxyPrerenderBrowserTest : public PrefetchProxyBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(PrefetchProxyPrerenderBrowserTest,
                        ShouldNotAffectPrefetchProxyTabHelperOnPrerendering) {
-  SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
   WaitForUpdatedCustomProxyConfig();
 
@@ -4408,7 +4415,6 @@ class ZeroCacheTimePrefetchProxyBrowserTest : public PrefetchProxyBrowserTest {
 IN_PROC_BROWSER_TEST_F(
     ZeroCacheTimePrefetchProxyBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(PrefetchAfterCacheExpiration)) {
-  SetDataSaverEnabled(true);
   GURL starting_page = GetOriginServerURL("/simple.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
@@ -4480,7 +4486,6 @@ IN_PROC_BROWSER_TEST_F(IndividualNetworkContextsPrefetchProxyBrowserTest,
   content::DisableBackForwardCacheForTesting(
       GetWebContents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   GURL starting_page = GetOriginServerURL("/simple.html");
-  SetDataSaverEnabled(true);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
   WaitForUpdatedCustomProxyConfig();
 
@@ -4582,7 +4587,6 @@ IN_PROC_BROWSER_TEST_F(SpeculationOnlyPrivatePrefetchesPrefetchProxyTest,
   // back/forward cache to ensure that it doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
       GetWebContents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
-  SetDataSaverEnabled(true);
 
   GURL starting_page = GetReferringPageServerURL("/search/q=blah");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
@@ -4638,7 +4642,6 @@ IN_PROC_BROWSER_TEST_F(
   // back/forward cache to ensure that it doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
       GetWebContents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
-  SetDataSaverEnabled(true);
 
   GURL starting_page = GetReferringPageServerURL("/search/q=blah");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
@@ -4689,6 +4692,10 @@ IN_PROC_BROWSER_TEST_F(
             content::GetCookies(
                 browser()->profile(), eligible_link,
                 net::CookieOptions::SameSiteCookieContext::MakeInclusive()));
+
+  VerifyPrefetchRequestsSecPurposeHeader(
+      {eligible_link.path()},
+      /*are_requests_anonymous_client_ip=*/false);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -4698,7 +4705,6 @@ IN_PROC_BROWSER_TEST_F(
   // back/forward cache to ensure that it doesn't get preserved in the cache.
   content::DisableBackForwardCacheForTesting(
       GetWebContents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
-  SetDataSaverEnabled(true);
 
   GURL starting_page = GetOriginServerURL("/search/q=blah");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), starting_page));
@@ -4729,7 +4735,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // The prefetch requests shouldn't use the proxy and should  go directly to
   // the origin server.
-  EXPECT_EQ(proxy_server_requests().size(), (unsigned int)0);
+  EXPECT_EQ(proxy_server_requests().size(), 0U);
 
   // The prefetch should be made using the default network context, so the
   // cookie should be present once the prefetch is complete.
@@ -4752,4 +4758,8 @@ IN_PROC_BROWSER_TEST_F(
       "PrefetchProxy.AfterClick.Mainframe.CookieWaitTime", 0, 1);
   histogram_tester.ExpectUniqueSample(
       "PrefetchProxy.Prefetch.Mainframe.CookiesToCopy", 0, 1);
+
+  VerifyPrefetchRequestsSecPurposeHeader(
+      {eligible_link.path()},
+      /*are_requests_anonymous_client_ip=*/false);
 }

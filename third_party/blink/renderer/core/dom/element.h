@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/dom/element_data.h"
 #include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
+#include "third_party/blink/renderer/core/dom/focusgroup_flags.h"
 #include "third_party/blink/renderer/core/dom/names_map.h"
 #include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -690,13 +691,16 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // delegatesFocus flag.
   bool DelegatesFocus() const;
   Element* GetFocusableArea() const;
+  Element* GetAutofocusDelegate() const;
   virtual void focus(const FocusParams&);
   void focus();
   void focus(const FocusOptions*);
 
-  void UpdateFocusAppearance(SelectionBehaviorOnFocus);
-  virtual void UpdateFocusAppearanceWithOptions(SelectionBehaviorOnFocus,
-                                                const FocusOptions*);
+  void UpdateSelectionOnFocus(SelectionBehaviorOnFocus);
+  // This function is called after SetFocused(true) before dispatching 'focus'
+  // event, or is called just after a layout after changing <input> type.
+  virtual void UpdateSelectionOnFocus(SelectionBehaviorOnFocus,
+                                      const FocusOptions*);
   virtual void blur();
 
   // Whether this element can receive focus at all. Most elements are not
@@ -1029,17 +1033,17 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   void NotifyInlineStyleMutation();
 
-  // Returns true if this element should composite due to a document transition.
-  // See third_party/blink/renderer/core/document_transition/README.md for more
-  // information.
-  bool ShouldCompositeForDocumentTransition() const;
-
   // For undo stack cleanup
   bool HasUndoStack() const;
   void SetHasUndoStack(bool);
 
   // For font-related style invalidation.
   void SetScrollbarPseudoElementStylesDependOnFontMetrics(bool);
+
+  bool AffectedByNonSubjectHas() const;
+  void SetAffectedByNonSubjectHas();
+  bool AncestorsAffectedByHas() const;
+  void SetAncestorsAffectedByHas();
 
   void SaveIntrinsicSize(ResizeObserverSize* size);
   const ResizeObserverSize* LastIntrinsicSize() const;
@@ -1056,6 +1060,12 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
       const Vector<AtomicString>& document_transition_tags);
   void RebuildTransitionPseudoLayoutTree(
       const Vector<AtomicString>& document_transition_tags);
+
+  // Returns true if the element has the 'inert' attribute, forcing itself and
+  // all its subtree to be inert.
+  bool IsInertRoot();
+
+  FocusgroupFlags GetFocusgroupFlags() const;
 
  protected:
   const ElementData* GetElementData() const { return element_data_.Get(); }
@@ -1097,6 +1107,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   void ClearTabIndexExplicitlyIfNeeded();
   void SetTabIndexExplicitly();
+  // Returns false if the style prevents focus. Returning true doesn't imply
+  // focusability, there may be other conditions like SupportsFocus().
   // Subclasses may override this method to affect focusability. This method
   // must be called on an up-to-date ComputedStyle, so it may use existence of
   // layoutObject and the LayoutObject::style() to reason about focusability.
@@ -1104,8 +1116,12 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // This method cannot be moved to LayoutObject because some focusable nodes
   // don't have layoutObjects. e.g., HTMLOptionElement.
   virtual bool IsFocusableStyle() const;
-  // Similar to above, except that it will ensure that any deferred work to
-  // create layout objects is completed (e.g. in display-locked trees).
+  // Contains the base logic for IsFocusableStyle. Doesn't require the node to
+  // have an up-to-date LayoutObject, it's up to the caller to pass the right
+  // one as an argument.
+  bool IsBaseElementFocusableStyle(const LayoutObject*) const;
+  // Similar to IsFocusableStyle, except that it will ensure that any deferred
+  // work to create layout objects is completed (e.g. in display-locked trees).
   bool IsFocusableStyleAfterUpdate() const;
 
   // ClassAttributeChanged() and UpdateClassList() exist to share code between
@@ -1294,6 +1310,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                 const AtomicString& new_id);
   void UpdateName(const AtomicString& old_name, const AtomicString& new_name);
 
+  void UpdateFocusgroup(const AtomicString& input);
+
   void ClientQuads(Vector<gfx::QuadF>& quads) const;
 
   NodeType getNodeType() const final;
@@ -1338,7 +1356,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
       AtomicString name,
       WTF::AtomicStringTable::WeakResult hint) const;
 
-  void CancelFocusAppearanceUpdate();
+  void CancelSelectionAfterLayout();
   virtual int DefaultTabIndex() const;
 
   const ComputedStyle* VirtualEnsureComputedStyle(

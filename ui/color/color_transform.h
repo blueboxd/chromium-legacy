@@ -85,10 +85,6 @@ COMPONENT_EXPORT(COLOR) ColorTransform ContrastInvert(ColorTransform transform);
 COMPONENT_EXPORT(COLOR)
 ColorTransform DeriveDefaultIconColor(ColorTransform transform);
 
-// A transform which returns the color |id| from set |set_id|.
-COMPONENT_EXPORT(COLOR)
-ColorTransform FromOriginalColorFromSet(ColorId id, ColorSetId set_id);
-
 // A transform which returns the transform's input color (i.e. does nothing).
 // This is useful to supply as an argument to other transforms to control how
 // the input color is routed.
@@ -124,6 +120,10 @@ COMPONENT_EXPORT(COLOR)
 ColorTransform PickGoogleColor(ColorTransform color,
                                ColorTransform background_color,
                                float min_contrast = 0.0f);
+
+// A transform that returns the HSL shifted color given the input color.
+COMPONENT_EXPORT(COLOR)
+ColorTransform HSLShift(ColorTransform color, color_utils::HSL hsl);
 
 #if BUILDFLAG(IS_MAC)
 COMPONENT_EXPORT(COLOR)

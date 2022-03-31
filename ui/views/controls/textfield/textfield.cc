@@ -201,9 +201,12 @@ base::TimeDelta Textfield::GetCaretBlinkInterval() {
                                       : base::Milliseconds(system_value);
   }
 #elif BUILDFLAG(IS_MAC)
-  base::TimeDelta system_value;
-  if (ui::TextInsertionCaretBlinkPeriod(&system_value))
-    return system_value;
+  // If there's insertion point flash rate info in NSUserDefaults, use the
+  // blink period derived from that.
+  absl::optional<base::TimeDelta> system_value(
+      ui::TextInsertionCaretBlinkPeriodFromDefaults());
+  if (system_value)
+    return *system_value;
 #endif
   return base::Milliseconds(500);
 }
@@ -305,7 +308,6 @@ void Textfield::SetTextInputType(ui::TextInputType type) {
   text_input_type_ = type;
   if (GetInputMethod())
     GetInputMethod()->OnTextInputTypeChanged(this);
-  UpdateCursorViewPosition();
   OnCaretBoundsChanged();
   OnPropertyChanged(&text_input_type_, kPropertyEffectsPaint);
 }
@@ -930,13 +932,6 @@ void Textfield::OnDragExited() {
   SchedulePaint();
 }
 
-DragOperation Textfield::OnPerformDrop(const ui::DropTargetEvent& event) {
-  auto cb = Textfield::GetDropCallback(event);
-  ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
-  std::move(cb).Run(event, output_drag_op);
-  return output_drag_op;
-}
-
 views::View::DropCallback Textfield::GetDropCallback(
     const ui::DropTargetEvent& event) {
   DCHECK(CanDrop(event.data()));
@@ -1457,6 +1452,10 @@ bool Textfield::CanComposeInline() const {
   return true;
 }
 
+// TODO(mbid): GetCaretBounds is const but calls
+// RenderText::GetUpdatedCursorBounds, which is not const and in fact mutates
+// internal state. (Is it at least logically const?) Violation of const
+// correctness?
 gfx::Rect Textfield::GetCaretBounds() const {
   gfx::Rect rect = GetRenderText()->GetUpdatedCursorBounds();
   ConvertRectToScreen(this, &rect);
@@ -2401,13 +2400,17 @@ void Textfield::UpdateCursorVisibility() {
     StopBlinkingCursor();
 }
 
-void Textfield::UpdateCursorViewPosition() {
+gfx::Rect Textfield::CalculateCursorViewBounds() const {
   gfx::Rect location(GetRenderText()->GetUpdatedCursorBounds());
   location.set_x(GetMirroredXForRect(location));
   location.set_height(
       std::min(location.height(),
                GetLocalBounds().height() - location.y() - location.y()));
-  cursor_view_->SetBoundsRect(location);
+  return location;
+}
+
+void Textfield::UpdateCursorViewPosition() {
+  cursor_view_->SetBoundsRect(CalculateCursorViewBounds());
 }
 
 int Textfield::GetTextStyle() const {
@@ -2465,6 +2468,8 @@ void Textfield::OnCaretBoundsChanged() {
   // Screen reader users don't expect notifications about unfocused textfields.
   if (HasFocus())
     NotifyAccessibilityEvent(ax::mojom::Event::kTextSelectionChanged, true);
+
+  UpdateCursorViewPosition();
 }
 
 void Textfield::OnBeforeUserAction() {
@@ -2555,6 +2560,7 @@ void Textfield::RevealPasswordChar(int index, base::TimeDelta duration) {
   GetRenderText()->SetObscuredRevealIndex(index);
   SchedulePaint();
   password_char_reveal_index_ = index;
+  UpdateCursorViewPosition();
 
   if (index != -1) {
     password_reveal_timer_.Start(
@@ -2613,6 +2619,13 @@ void Textfield::StopBlinkingCursor() {
 
 void Textfield::OnCursorBlinkTimerFired() {
   DCHECK(ShouldBlinkCursor());
+  // TODO(crbug.com/1294712): The cursor position is not updated appropriately
+  // when locale changes from a left-to-right script to a right-to-left script.
+  // Thus the cursor is displayed at a wrong position immediately after the
+  // locale change. As a band-aid solution, we update the cursor here, so that
+  // the cursor can be at the wrong position only up until the next blink. It
+  // would be better to detect locale change explicitly (how?) and update
+  // there.
   UpdateCursorViewPosition();
   cursor_view_->SetVisible(!cursor_view_->GetVisible());
 }

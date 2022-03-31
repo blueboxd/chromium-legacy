@@ -85,6 +85,25 @@ constexpr char kTestUrl[] = "https://foo.com";
 constexpr char kTestGaiaId[] = "123";
 #endif
 
+std::string ExpectedOsPlatform() {
+#if BUILDFLAG(IS_WIN)
+  return "Windows";
+#elif BUILDFLAG(IS_MAC)
+  return "Mac OS X";
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  return "Chrome OS";
+#else
+  return "Chromium OS";
+#endif
+#elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  return "Linux";
+#endif
+#if BUILDFLAG(IS_FUCHSIA)
+  return "Fuchsia";
+#endif
+}
+
 }  // namespace
 
 // Profile DM token tests
@@ -330,21 +349,19 @@ class ConnectorsServiceAnalysisProfileBrowserTest
 
   // Returns the Value the "normal" reporting workflow uses to validate that it
   // is in sync with the information sent through analysis-reporting.
-  base::Value ReportingMetadata(bool include_device_info) {
-    base::Value output = base::Value(base::Value::Type::DICTIONARY);
-    output.SetKey(
-        "browser",
-        policy::ReportingJobConfigurationBase::BrowserDictionaryBuilder::
-            BuildBrowserDictionary(include_device_info));
-    base::Value context = reporting::GetContext(browser()->profile());
-    output.MergeDictionary(&context);
+  base::Value::Dict ReportingMetadata(bool include_device_info) {
+    base::Value::Dict output;
+    output.Set("browser",
+               policy::ReportingJobConfigurationBase::BrowserDictionaryBuilder::
+                   BuildBrowserDictionary(include_device_info));
+    base::Value::Dict context = reporting::GetContext(browser()->profile());
+    output.Merge(context);
     if (include_device_info) {
-      base::Value device = base::Value(base::Value::Type::DICTIONARY);
-      device.SetKey(
-          "device",
-          policy::ReportingJobConfigurationBase::DeviceDictionaryBuilder ::
-              BuildDeviceDictionary(kFakeBrowserDMToken, kFakeBrowserClientId));
-      output.MergeDictionary(&device);
+      base::Value::Dict device;
+      device.Set("device", policy::ReportingJobConfigurationBase::
+                               DeviceDictionaryBuilder ::BuildDeviceDictionary(
+                                   kFakeBrowserDMToken, kFakeBrowserClientId));
+      output.Merge(device);
     }
 
     return output;
@@ -358,30 +375,33 @@ class ConnectorsServiceAnalysisProfileBrowserTest
 #else
     bool includes_device_info = !profile_reporting;
 #endif
-    base::Value reporting_metadata = ReportingMetadata(includes_device_info);
+    base::Value::Dict reporting_metadata =
+        ReportingMetadata(includes_device_info);
 
     ASSERT_TRUE(metadata.has_browser());
 
     ASSERT_TRUE(metadata.browser().has_browser_id());
     ASSERT_EQ(metadata.browser().browser_id(),
-              *reporting_metadata.FindStringPath("browser.browserId"));
+              *reporting_metadata.FindStringByDottedPath("browser.browserId"));
 
     ASSERT_TRUE(metadata.browser().has_user_agent());
     ASSERT_EQ(metadata.browser().user_agent(),
-              *reporting_metadata.FindStringPath("browser.userAgent"));
+              *reporting_metadata.FindStringByDottedPath("browser.userAgent"));
 
     ASSERT_TRUE(metadata.browser().has_chrome_version());
     ASSERT_EQ(metadata.browser().chrome_version(),
               version_info::GetVersionNumber());
-    ASSERT_EQ(metadata.browser().chrome_version(),
-              *reporting_metadata.FindStringPath("browser.chromeVersion"));
+    ASSERT_EQ(
+        metadata.browser().chrome_version(),
+        *reporting_metadata.FindStringByDottedPath("browser.chromeVersion"));
 
     ASSERT_EQ(includes_device_info, metadata.browser().has_machine_user());
-    ASSERT_EQ(includes_device_info,
-              !!reporting_metadata.FindStringPath("browser.machineUser"));
+    ASSERT_EQ(includes_device_info, !!reporting_metadata.FindStringByDottedPath(
+                                        "browser.machineUser"));
     if (metadata.browser().has_machine_user()) {
-      ASSERT_EQ(metadata.browser().machine_user(),
-                *reporting_metadata.FindStringPath("browser.machineUser"));
+      ASSERT_EQ(
+          metadata.browser().machine_user(),
+          *reporting_metadata.FindStringByDottedPath("browser.machineUser"));
     }
 
     ASSERT_EQ(includes_device_info, metadata.has_device());
@@ -390,27 +410,29 @@ class ConnectorsServiceAnalysisProfileBrowserTest
       // the device level, aka not the profile level.
       ASSERT_TRUE(metadata.device().has_dm_token());
       ASSERT_EQ(metadata.device().dm_token(), kFakeBrowserDMToken);
-      ASSERT_TRUE(reporting_metadata.FindStringPath("device.dmToken"));
+      ASSERT_TRUE(reporting_metadata.FindStringByDottedPath("device.dmToken"));
       ASSERT_EQ(metadata.device().dm_token(),
-                *reporting_metadata.FindStringPath("device.dmToken"));
+                *reporting_metadata.FindStringByDottedPath("device.dmToken"));
 
 #if !BUILDFLAG(IS_CHROMEOS)
       ASSERT_TRUE(metadata.device().has_client_id());
       ASSERT_EQ(metadata.device().client_id(),
-                *reporting_metadata.FindStringPath("device.clientId"));
+                *reporting_metadata.FindStringByDottedPath("device.clientId"));
 #endif
 
       ASSERT_TRUE(metadata.device().has_os_version());
       ASSERT_EQ(metadata.device().os_version(),
-                *reporting_metadata.FindStringPath("device.osVersion"));
+                *reporting_metadata.FindStringByDottedPath("device.osVersion"));
 
       ASSERT_TRUE(metadata.device().has_os_platform());
-      ASSERT_EQ(metadata.device().os_platform(),
-                *reporting_metadata.FindStringPath("device.osPlatform"));
+      ASSERT_EQ(metadata.device().os_platform(), ExpectedOsPlatform());
+      ASSERT_EQ(
+          metadata.device().os_platform(),
+          *reporting_metadata.FindStringByDottedPath("device.osPlatform"));
 
       ASSERT_TRUE(metadata.device().has_name());
       ASSERT_EQ(metadata.device().name(),
-                *reporting_metadata.FindStringPath("device.name"));
+                *reporting_metadata.FindStringByDottedPath("device.name"));
     }
 
     ASSERT_TRUE(metadata.has_profile());
@@ -418,25 +440,27 @@ class ConnectorsServiceAnalysisProfileBrowserTest
     ASSERT_TRUE(metadata.profile().has_dm_token());
     ASSERT_EQ(metadata.profile().dm_token(), kFakeProfileDMToken);
     ASSERT_EQ(metadata.profile().dm_token(),
-              *reporting_metadata.FindStringPath("profile.dmToken"));
+              *reporting_metadata.FindStringByDottedPath("profile.dmToken"));
 
     ASSERT_TRUE(metadata.profile().has_gaia_email());
     ASSERT_EQ(metadata.profile().gaia_email(),
-              *reporting_metadata.FindStringPath("profile.gaiaEmail"));
+              *reporting_metadata.FindStringByDottedPath("profile.gaiaEmail"));
 
     ASSERT_TRUE(metadata.profile().has_profile_path());
-    ASSERT_EQ(metadata.profile().profile_path(),
-              *reporting_metadata.FindStringPath("profile.profilePath"));
+    ASSERT_EQ(
+        metadata.profile().profile_path(),
+        *reporting_metadata.FindStringByDottedPath("profile.profilePath"));
 
     ASSERT_TRUE(metadata.profile().has_profile_name());
-    ASSERT_EQ(metadata.profile().profile_name(),
-              *reporting_metadata.FindStringPath("profile.profileName"));
+    ASSERT_EQ(
+        metadata.profile().profile_name(),
+        *reporting_metadata.FindStringByDottedPath("profile.profileName"));
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
     ASSERT_TRUE(metadata.profile().has_client_id());
     ASSERT_EQ(metadata.profile().client_id(), kFakeProfileClientId);
     ASSERT_EQ(metadata.profile().client_id(),
-              *reporting_metadata.FindStringPath("profile.clientId"));
+              *reporting_metadata.FindStringByDottedPath("profile.clientId"));
 #endif
   }
 };

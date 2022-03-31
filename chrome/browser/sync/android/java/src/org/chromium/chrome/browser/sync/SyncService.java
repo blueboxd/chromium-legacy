@@ -131,10 +131,6 @@ public abstract class SyncService {
 
     public abstract boolean requiresClientUpgrade();
 
-    public abstract void setDecoupledFromAndroidMasterSync();
-
-    public abstract boolean getDecoupledFromAndroidMasterSync();
-
     public abstract @Nullable CoreAccountInfo getAccountInfo();
 
     public abstract boolean hasSyncConsent();
@@ -213,10 +209,6 @@ public abstract class SyncService {
     public abstract void addSyncStateChangedListener(SyncStateChangedListener listener);
 
     public abstract void removeSyncStateChangedListener(SyncStateChangedListener listener);
-
-    public abstract boolean isSyncAllowedByPlatform();
-
-    public abstract void setSyncAllowedByPlatform(boolean allowed);
 
     /**
      * Returns the actual passphrase type being used for encryption. The sync engine must be

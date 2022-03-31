@@ -10,18 +10,18 @@ import sys
 from gpu_tests import common_browser_args as cba
 from gpu_tests import color_profile_manager
 from gpu_tests import gpu_integration_test
-from gpu_tests import path_util
 from gpu_tests import pixel_test_pages
 from gpu_tests import expected_color_test
+
+import gpu_path_util
 
 from py_utils import cloud_storage
 from telemetry.util import image_util
 
-_MAPS_PERF_TEST_PATH = os.path.join(path_util.GetChromiumSrcDir(), 'tools',
-                                    'perf', 'page_sets', 'maps_perf_test')
+_MAPS_PERF_TEST_PATH = os.path.join(gpu_path_util.TOOLS_PERF_DIR, 'page_sets',
+                                    'maps_perf_test')
 
-_DATA_PATH = os.path.join(path_util.GetChromiumSrcDir(), 'content', 'test',
-                          'gpu', 'gpu_tests')
+_DATA_PATH = os.path.join(gpu_path_util.GPU_DIR, 'gpu_tests')
 
 _TEST_NAME = 'Maps_maps'
 
@@ -85,11 +85,11 @@ class MapsIntegrationTest(expected_color_test.ExpectedColorTest):
     action_runner.WaitForJavaScriptCondition('window.testDone', timeout=320)
 
     # Wait for the page to process immediate work and load tiles.
-    action_runner.EvaluateJavaScript('''
+    action_runner.EvaluateJavaScript("""
         window.testCompleted = false;
         requestIdleCallback(
             () => window.testCompleted = true,
-            { timeout : 10000 })''')
+            { timeout : 10000 })""")
     action_runner.WaitForJavaScriptCondition('window.testCompleted', timeout=30)
 
     expected = _ReadPixelExpectations('maps_pixel_expectations.json')
@@ -107,7 +107,7 @@ class MapsIntegrationTest(expected_color_test.ExpectedColorTest):
       self.fail('Could not capture screenshot')
 
     dpr = tab.EvaluateJavaScript('window.devicePixelRatio')
-    print('Maps\' devicePixelRatio is ' + str(dpr))
+    print("Maps' devicePixelRatio is %s" % dpr)
 
     # The bottom corners of Mac screenshots have black triangles due to the
     # rounded corners of Mac windows. So, crop the bottom few rows off now to

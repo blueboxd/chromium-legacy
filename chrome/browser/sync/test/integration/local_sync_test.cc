@@ -18,8 +18,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/reading_list/features/reading_list_switches.h"
+#include "components/sync/base/command_line_switches.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service_impl.h"
 #include "content/public/test/browser_test.h"
 #include "crypto/ec_private_key.h"
@@ -63,8 +63,8 @@ class LocalSyncTest : public InProcessBrowserTest {
     command_line->AppendSwitchASCII(switches::kLocalSyncBackendDir,
                                     file.MaybeAsASCII());
     command_line->AppendSwitch(switches::kEnableLocalSyncBackend);
-    command_line->AppendSwitchASCII(
-        switches::kSyncDeferredStartupTimeoutSeconds, "1");
+    command_line->AppendSwitchASCII(syncer::kSyncDeferredStartupTimeoutSeconds,
+                                    "1");
   }
 
  private:

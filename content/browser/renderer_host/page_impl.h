@@ -48,6 +48,8 @@ class CONTENT_EXPORT PageImpl : public Page {
   base::WeakPtr<Page> GetWeakPtr() override;
   bool IsPageScaleFactorOne() override;
 
+  base::WeakPtr<PageImpl> GetWeakPtrImpl();
+
   void UpdateManifestUrl(const GURL& manifest_url);
 
   RenderFrameHostImpl& GetMainDocument() const;
@@ -59,11 +61,11 @@ class CONTENT_EXPORT PageImpl : public Page {
     is_on_load_completed_in_main_document_ = completed;
   }
 
-  bool is_document_available_in_main_document() const {
-    return is_document_available_in_main_document_;
+  bool is_main_document_element_available() const {
+    return is_main_document_element_available_;
   }
-  void set_is_document_available_in_main_document(bool completed) {
-    is_document_available_in_main_document_ = completed;
+  void set_is_main_document_element_available(bool completed) {
+    is_main_document_element_available_ = completed;
   }
 
   bool uses_temporary_zoom_level() const { return uses_temporary_zoom_level_; }
@@ -183,9 +185,9 @@ class CONTENT_EXPORT PageImpl : public Page {
   // run for the main document.
   bool is_on_load_completed_in_main_document_ = false;
 
-  // True if we've received a notification that the window.document was created
-  // for the main document.
-  bool is_document_available_in_main_document_ = false;
+  // True if we've received a notification that the window.document element
+  // became available for the main document.
+  bool is_main_document_element_available_ = false;
 
   // True if plugin zoom level is set for the main document.
   bool uses_temporary_zoom_level_ = false;

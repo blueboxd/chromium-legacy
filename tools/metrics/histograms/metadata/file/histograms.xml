@@ -22,6 +22,30 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
+<histogram name="FileBrowser.ArchiveSize.{Extension}" units="100MiB"
+    expires_after="2022-12-01">
+  <owner>msalomao@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Chrome OS File Browser: The size in units of 100MiB of archives users
+    attempt to open. Units are rounded up (e.g., 40MiB gets reported as 100MiB).
+  </summary>
+  <token key="Extension">
+    <variant name="7z"/>
+    <variant name="bz2"/>
+    <variant name="crx"/>
+    <variant name="gz"/>
+    <variant name="iso"/>
+    <variant name="rar"/>
+    <variant name="tar"/>
+    <variant name="tbz"/>
+    <variant name="tbz2"/>
+    <variant name="tgz"/>
+    <variant name="xz"/>
+    <variant name="zip"/>
+  </token>
+</histogram>
+
 <histogram name="FileBrowser.ChangeDirectory.RootType"
     enum="FileManagerRootType" expires_after="2022-04-10">
   <owner>simmonsjosh@google.com</owner>
@@ -51,6 +75,29 @@ chromium-metrics-reviews@google.com.
   <summary>
     Chrome OS File Browser: The mode in which the File Browser was opened.
   </summary>
+</histogram>
+
+<histogram name="FileBrowser.DirectoryListLoad.{RootType}.{NumFiles}"
+    units="ms" expires_after="2022-08-09">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Tracks the user perceived load time for the directory list. Measured from
+    the beginning of the directory scan until all entries are scanned (excluding
+    metadata). {NumFiles} has a tolerance of 20% which leads to the following
+    buckets being tracked: 8-12 files, 80-120 files and 800-1200 files all
+    inclusive. Directories whose file counts fall outside these buckets are
+    simply not recorded. {RootType} is used to differentiate the load times for
+    various volumes.
+  </summary>
+  <token key="NumFiles">
+    <variant name="10"/>
+    <variant name="100"/>
+    <variant name="1000"/>
+  </token>
+  <token key="RootType">
+    <variant name="my_files"/>
+  </token>
 </histogram>
 
 <histogram name="FileBrowser.DirectoryScan" units="ms"
@@ -472,6 +519,15 @@ chromium-metrics-reviews@google.com.
   <summary>How quick view was opened.</summary>
 </histogram>
 
+<histogram name="FileBrowser.Recent.FilterByType"
+    enum="FileManagerRecentFilterType" expires_after="2022-07-20">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    This is recorded when different filter buttons in Recent view are clicked.
+  </summary>
+</histogram>
+
 <histogram name="FileBrowser.Recent.LoadArcMedia" units="ms"
     expires_after="2022-04-10">
   <owner>simmonsjosh@google.com</owner>
@@ -743,6 +799,21 @@ chromium-metrics-reviews@google.com.
     usually happens when one of the storage subsystem methods is called for the
     first time.
   </summary>
+</histogram>
+
+<histogram name="Unzipper.DetectEncoding.Result" enum="ContentEncoding"
+    expires_after="M120">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    ZIP file path encoding, as detected by the Unzipper service.
+  </summary>
+</histogram>
+
+<histogram name="Unzipper.DetectEncoding.Time" units="ms" expires_after="M120">
+  <owner>simmonsjosh@google.com</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>Time to detect ZIP file path encoding.</summary>
 </histogram>
 
 <histogram name="ZipFileCreator.Result" enum="ZipFileCreator.Result"

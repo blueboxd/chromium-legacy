@@ -4,6 +4,7 @@
 
 #include "chrome/updater/win/setup/setup_util.h"
 
+#include <regstr.h>
 #include <shlobj.h>
 #include <windows.h>
 
@@ -24,6 +25,7 @@
 #include "base/win/win_util.h"
 #include "build/branding_buildflags.h"
 #include "chrome/installer/util/install_service_work_item.h"
+#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/work_item_list.h"
 #include "chrome/updater/app/server/win/updater_idl.h"
 #include "chrome/updater/app/server/win/updater_internal_idl.h"
@@ -101,6 +103,7 @@ void UnregisterWakeTask(UpdaterScope scope) {
   }
 
   task_scheduler->DeleteTask(task_name.c_str());
+  VLOG(1) << "UnregisterWakeTask succeeded: " << task_name;
 }
 
 std::vector<IID> GetSideBySideInterfaces() {
@@ -243,7 +246,7 @@ void AddComServiceWorkItems(const base::FilePath& com_service_path,
   // This assumes the COM service runs elevated and in the system updater scope.
   base::CommandLine com_service_command(com_service_path);
   com_service_command.AppendSwitch(kSystemSwitch);
-  com_service_command.AppendSwitch(kComServiceSwitch);
+  com_service_command.AppendSwitch(kWindowsServiceSwitch);
   com_service_command.AppendSwitchASCII(
       kServerServiceSwitch, internal_service
                                 ? kServerUpdateServiceInternalSwitchValue
@@ -251,10 +254,14 @@ void AddComServiceWorkItems(const base::FilePath& com_service_path,
   com_service_command.AppendSwitch(kEnableLoggingSwitch);
   com_service_command.AppendSwitchASCII(kLoggingModuleSwitch,
                                         kLoggingModuleSwitchValue);
+
+  base::CommandLine com_switch(base::CommandLine::NO_PROGRAM);
+  com_switch.AppendSwitch(kComServiceSwitch);
+
   list->AddWorkItem(new installer::InstallServiceWorkItem(
       GetServiceName(internal_service).c_str(),
-      GetServiceDisplayName(internal_service).c_str(), com_service_command,
-      UPDATER_KEY,
+      GetServiceDisplayName(internal_service).c_str(), SERVICE_AUTO_START,
+      com_service_command, com_switch, UPDATER_KEY,
       internal_service ? GetSideBySideServers(UpdaterScope::kSystem)
                        : GetActiveServers(UpdaterScope::kSystem),
       {}));
@@ -338,6 +345,24 @@ std::vector<base::FilePath> ParseFilesFromDeps(const base::FilePath& deps) {
     }
   }
   return result;
+}
+
+void RegisterUserRunAtStartup(const std::wstring& run_value_name,
+                              const base::CommandLine& command,
+                              WorkItemList* list) {
+  DCHECK(list);
+  VLOG(1) << __func__;
+
+  list->AddSetRegValueWorkItem(HKEY_CURRENT_USER, REGSTR_PATH_RUN, 0,
+                               run_value_name, command.GetCommandLineString(),
+                               true);
+}
+
+bool UnregisterUserRunAtStartup(const std::wstring& run_value_name) {
+  VLOG(1) << __func__;
+
+  return InstallUtil::DeleteRegistryValue(HKEY_CURRENT_USER, REGSTR_PATH_RUN, 0,
+                                          run_value_name);
 }
 
 }  // namespace updater

@@ -15,11 +15,13 @@
 #include "base/json/json_writer.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_resource_request_blocked_reason.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
@@ -30,6 +32,7 @@
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/security_interstitials/content/renderer/security_interstitial_page_controller.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
@@ -45,6 +48,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "skia/ext/skia_utils_base.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
@@ -58,6 +62,7 @@
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_history_item.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "url/gurl.h"
@@ -177,11 +182,14 @@ void NetErrorHelper::OnDestruct() {
   delete this;
 }
 
-void NetErrorHelper::PrepareErrorPage(const error_page::Error& error,
-                                      bool is_failed_post,
-                                      std::string* error_html) {
+void NetErrorHelper::PrepareErrorPage(
+    const error_page::Error& error,
+    bool is_failed_post,
+    content::mojom::AlternativeErrorPageOverrideInfoPtr
+        alternative_error_page_info,
+    std::string* error_html) {
   core_->PrepareErrorPage(GetFrameType(render_frame()), error, is_failed_post,
-                          error_html);
+                          std::move(alternative_error_page_info), error_html);
 }
 
 std::unique_ptr<network::ResourceRequest> NetErrorHelper::CreatePostRequest(
@@ -242,24 +250,39 @@ LocalizedError::PageState NetErrorHelper::GenerateLocalizedErrorPage(
     const error_page::Error& error,
     bool is_failed_post,
     bool can_show_network_diagnostics_dialog,
+    content::mojom::AlternativeErrorPageOverrideInfoPtr
+        alternative_error_page_info,
     std::string* error_html) const {
   error_html->clear();
-
   int resource_id = IDR_NET_ERROR_HTML;
+  LocalizedError::PageState page_state;
+  // If the user is viewing an offline web app then a default page is shown
+  // rather than the dino.
+  if (alternative_error_page_info) {
+    DCHECK(
+        base::FeatureList::IsEnabled(features::kDesktopPWAsDefaultOfflinePage));
+    base::UmaHistogramSparse("Net.ErrorPageCounts.WebAppAlternativeErrorPage",
+                             -error.reason());
+    resource_id = alternative_error_page_info->resource_id;
+    page_state = LocalizedError::GetPageStateForOverriddenErrorPage(
+        std::move(alternative_error_page_info->alternative_error_page_params),
+        error.reason(), error.domain(), error.url(),
+        RenderThread::Get()->GetLocale());
+  } else {
+    page_state = LocalizedError::GetPageState(
+        error.reason(), error.domain(), error.url(), is_failed_post,
+        error.resolve_error_info().is_secure_network_error,
+        error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
+        ChromeRenderThreadObserver::is_incognito_process(),
+        IsOfflineContentOnNetErrorFeatureEnabled(), IsAutoFetchFeatureEnabled(),
+        IsRunningInForcedAppMode(), RenderThread::Get()->GetLocale(),
+        IsExtensionExtendedErrorCode(error.extended_reason()));
+  }
   std::string extracted_string =
       ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
           resource_id);
   base::StringPiece template_html(extracted_string.data(),
                                   extracted_string.size());
-
-  LocalizedError::PageState page_state = LocalizedError::GetPageState(
-      error.reason(), error.domain(), error.url(), is_failed_post,
-      error.resolve_error_info().is_secure_network_error,
-      error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
-      ChromeRenderThreadObserver::is_incognito_process(),
-      IsOfflineContentOnNetErrorFeatureEnabled(), IsAutoFetchFeatureEnabled(),
-      IsRunningInForcedAppMode(), RenderThread::Get()->GetLocale(),
-      IsExtensionExtendedErrorCode(error.extended_reason()));
   DCHECK(!template_html.empty()) << "unable to load template.";
   // "t" is the id of the template's root node.
   *error_html =

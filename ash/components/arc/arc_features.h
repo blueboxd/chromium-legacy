@@ -8,11 +8,13 @@
 #define ASH_COMPONENTS_ARC_ARC_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 
 namespace arc {
 
 // Please keep alphabetized.
 extern const base::Feature kBootCompletedBroadcastFeature;
+extern const base::Feature kCompatSnapFeature;
 extern const base::Feature kCustomTabsExperimentFeature;
 extern const base::Feature kDocumentsProviderUnknownSizeFeature;
 extern const base::Feature kEnableArcNearbyShare;

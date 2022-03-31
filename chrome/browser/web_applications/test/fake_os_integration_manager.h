@@ -7,7 +7,7 @@
 
 #include <map>
 
-#include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -60,6 +60,10 @@ class FakeOsIntegrationManager : public OsIntegrationManager {
     return num_register_run_on_os_login_calls_;
   }
 
+  size_t num_unregister_run_on_os_login_calls() const {
+    return num_unregister_run_on_os_login_calls_;
+  }
+
   size_t num_add_app_to_quick_launch_bar_calls() const {
     return num_add_app_to_quick_launch_bar_calls_;
   }
@@ -98,6 +102,7 @@ class FakeOsIntegrationManager : public OsIntegrationManager {
   size_t num_create_file_handlers_calls_ = 0;
   size_t num_update_file_handlers_calls_ = 0;
   size_t num_register_run_on_os_login_calls_ = 0;
+  size_t num_unregister_run_on_os_login_calls_ = 0;
   size_t num_add_app_to_quick_launch_bar_calls_ = 0;
   size_t num_register_url_handlers_calls_ = 0;
   absl::optional<bool> did_add_to_desktop_;

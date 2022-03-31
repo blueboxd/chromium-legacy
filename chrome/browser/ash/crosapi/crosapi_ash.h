@@ -49,6 +49,8 @@ class ImageWriterAsh;
 class KeystoreServiceAsh;
 class KioskSessionServiceAsh;
 class LocalPrinterAsh;
+class LoginAsh;
+class LoginScreenStorageAsh;
 class LoginStateAsh;
 class MessageCenterAsh;
 class MetricsReportingAsh;
@@ -60,7 +62,9 @@ class PrefsAsh;
 class RemotingAsh;
 class ResourceManagerAsh;
 class ScreenManagerAsh;
+class SearchProviderAsh;
 class SelectFileAsh;
+class SharesheetAsh;
 class StructuredMetricsServiceAsh;
 class SystemDisplayAsh;
 class TaskManagerAsh;
@@ -153,6 +157,9 @@ class CrosapiAsh : public mojom::Crosapi {
       mojo::PendingReceiver<mojom::KioskSessionService> receiver) override;
   void BindLocalPrinter(
       mojo::PendingReceiver<mojom::LocalPrinter> receiver) override;
+  void BindLogin(mojo::PendingReceiver<mojom::Login> receiver) override;
+  void BindLoginScreenStorage(
+      mojo::PendingReceiver<mojom::LoginScreenStorage> receiver) override;
   void BindLoginState(
       mojo::PendingReceiver<mojom::LoginState> receiver) override;
   void BindMessageCenter(
@@ -172,11 +179,15 @@ class CrosapiAsh : public mojom::Crosapi {
       mojo::PendingReceiver<mojom::ResourceManager> receiver) override;
   void BindScreenManager(
       mojo::PendingReceiver<mojom::ScreenManager> receiver) override;
+  void BindSearchControllerRegistry(
+      mojo::PendingReceiver<mojom::SearchControllerRegistry> receiver) override;
   void BindSelectFile(
       mojo::PendingReceiver<mojom::SelectFile> receiver) override;
   void BindSensorHalClient(
       mojo::PendingRemote<chromeos::sensors::mojom::SensorHalClient> remote)
       override;
+  void BindSharesheet(
+      mojo::PendingReceiver<mojom::Sharesheet> receiver) override;
   void BindStableVideoDecoderFactory(
       mojo::GenericPendingReceiver receiver) override;
   void BindHidManager(
@@ -192,6 +203,8 @@ class CrosapiAsh : public mojom::Crosapi {
   void BindMediaSessionAudioFocusDebug(
       mojo::PendingReceiver<media_session::mojom::AudioFocusManagerDebug>
           receiver) override;
+  void BindSyncService(
+      mojo::PendingReceiver<mojom::SyncService> receiver) override;
   void BindSystemDisplay(
       mojo::PendingReceiver<mojom::SystemDisplay> receiver) override;
   void BindWebPageInfoFactory(
@@ -239,6 +252,10 @@ class CrosapiAsh : public mojom::Crosapi {
     return kiosk_session_service_ash_.get();
   }
 
+  SearchProviderAsh* search_provider_ash() {
+    return search_provider_ash_.get();
+  }
+
   WebPageInfoFactoryAsh* web_page_info_factory_ash() {
     return web_page_info_factory_ash_.get();
   }
@@ -259,7 +276,15 @@ class CrosapiAsh : public mojom::Crosapi {
     return keystore_service_ash_.get();
   }
 
+  LoginAsh* login_ash() { return login_ash_.get(); }
+
+  LoginScreenStorageAsh* login_screen_storage_ash() {
+    return login_screen_storage_ash_.get();
+  }
+
   LoginStateAsh* login_state_ash() { return login_state_ash_.get(); }
+
+  SharesheetAsh* sharesheet_ash() { return sharesheet_ash_.get(); }
 
   StructuredMetricsServiceAsh* structured_metrics_service_ash() {
     return structured_metrics_service_ash_.get();
@@ -298,6 +323,8 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<KeystoreServiceAsh> keystore_service_ash_;
   std::unique_ptr<KioskSessionServiceAsh> kiosk_session_service_ash_;
   std::unique_ptr<LocalPrinterAsh> local_printer_ash_;
+  std::unique_ptr<LoginAsh> login_ash_;
+  std::unique_ptr<LoginScreenStorageAsh> login_screen_storage_ash_;
   std::unique_ptr<LoginStateAsh> login_state_ash_;
   std::unique_ptr<MessageCenterAsh> message_center_ash_;
   std::unique_ptr<MetricsReportingAsh> metrics_reporting_ash_;
@@ -310,7 +337,9 @@ class CrosapiAsh : public mojom::Crosapi {
   std::unique_ptr<RemotingAsh> remoting_ash_;
   std::unique_ptr<ResourceManagerAsh> resource_manager_ash_;
   std::unique_ptr<ScreenManagerAsh> screen_manager_ash_;
+  std::unique_ptr<SearchProviderAsh> search_provider_ash_;
   std::unique_ptr<SelectFileAsh> select_file_ash_;
+  std::unique_ptr<SharesheetAsh> sharesheet_ash_;
   std::unique_ptr<media::StableVideoDecoderFactoryService>
       stable_video_decoder_factory_ash_;
   std::unique_ptr<StructuredMetricsServiceAsh> structured_metrics_service_ash_;

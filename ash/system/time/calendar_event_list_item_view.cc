@@ -5,8 +5,13 @@
 #include "ash/system/time/calendar_event_list_item_view.h"
 
 #include "ash/public/cpp/ash_typography.h"
+#include "ash/public/cpp/system_tray_client.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/system_tray_model.h"
+#include "ash/system/time/calendar_metrics.h"
 #include "ash/system/time/calendar_utils.h"
+#include "ash/system/time/calendar_view_controller.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
 #include "base/i18n/time_formatting.h"
@@ -94,10 +99,13 @@ class CalendarEventListItemDot : public views::View {
 }  // namespace
 
 CalendarEventListItemView::CalendarEventListItemView(
+    CalendarViewController* calendar_view_controller,
     google_apis::calendar::CalendarEvent event)
     : ActionableView(TrayPopupInkDropStyle::FILL_BOUNDS),
+      calendar_view_controller_(calendar_view_controller),
       summary_(new views::Label()),
-      time_range_(new views::Label()) {
+      time_range_(new views::Label()),
+      event_url_(event.html_link()) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   auto start_time = event.start_time().date_time();
@@ -107,11 +115,12 @@ CalendarEventListItemView::CalendarEventListItemView(
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kButton);
   SetAccessibleName(l10n_util::GetStringFUTF16(
       IDS_ASH_CALENDAR_EVENT_ENTRY_ACCESSIBLE_DESCRIPTION, start_time_string,
-      end_time_string, base::TimeFormatWithPattern(start_time, "z"),
+      end_time_string, base::TimeFormatWithPattern(start_time, "zzzz"),
       base::UTF8ToUTF16(event.summary())));
   SetFocusBehavior(FocusBehavior::ALWAYS);
-
-  summary_->SetText(base::UTF8ToUTF16(event.summary()));
+  summary_->SetText(event.summary().empty()
+                        ? l10n_util::GetStringUTF16(IDS_ASH_CALENDAR_NO_TITLE)
+                        : base::UTF8ToUTF16(event.summary()));
   SetUpLabel(summary_);
   summary_->SetTruncateLength(kTruncatedTitleLength);
   summary_->SetBorder(
@@ -155,7 +164,15 @@ void CalendarEventListItemView::OnThemeChanged() {
 }
 
 bool CalendarEventListItemView::PerformAction(const ui::Event& event) {
-  // TODO(https://crbug.com/1270938): Launch web app implementation.
+  DCHECK(event_url_.is_empty() || event_url_.is_valid());
+
+  calendar_metrics::RecordEventListItemActivated(event);
+  calendar_view_controller_->OnCalendarEventWillLaunch();
+
+  GURL finalized_url;
+  bool opened_pwa = false;
+  Shell::Get()->system_tray_model()->client()->ShowCalendarEvent(
+      event_url_, opened_pwa, finalized_url);
   return true;
 }
 

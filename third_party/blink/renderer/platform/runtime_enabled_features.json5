@@ -24,7 +24,7 @@
     // Example of the dictionary value use:
     // {
     //   name: "ExampleFeature",
-    //   status: {"Android": "stable", "ChromeOS": "experimental"},
+    //   status: {"Android": "stable", "Win": "experimental"},
     // }
     // "ExampleFeature" will be stable on Android, experimental on ChromeOS
     // and not enabled on any other platform
@@ -33,7 +33,7 @@
     // shipped stable can have its runtime flag removed soon after.
     status: {
       valid_values: ["stable", "experimental", "test"],
-      valid_keys: ["Android", "Win", "ChromeOS", "Mac", "Lacros", "Linux"]
+      valid_keys: ["Android", "Win", "ChromeOS_Ash", "ChromeOS_Lacros", "Mac", "Linux"]
     },
 
     // "implied_by" or "depends_on" specifies relationship to other features:
@@ -63,9 +63,9 @@
     // feature to be enabled at runtime on a per-page basis through a signed
     // token for the corresponding feature name. Declaring the
     // origin_trial_feature_name will modify the generation of the static
-    // methods in runtime_enabled_features.h/cpp. The static method then allows
-    // the feature implementation to check if the trial is enabled for the
-    // current context.
+    // methods in runtime_enabled_features.h/cpp -- the no-parameter version
+    // will not be generated, so all callers have to use the version that takes
+    // a const FeatureContext* argument.
     origin_trial_feature_name: {
     },
     // origin_trial_os specifies the platforms where the trial is available.
@@ -106,6 +106,14 @@
   },
 
   data: [
+    {
+      name: "AbortSignalThrowIfAborted",
+      status: "stable",
+    },
+    {
+      name: "AbortSignalTimeout",
+      status: "experimental",
+    },
     {
       name: "Accelerated2dCanvas",
       settable_from_internals: true,
@@ -173,10 +181,6 @@
       name: "AllowContentInitiatedDataUrlNavigations",
     },
     {
-      name: "AllowSyncXHRInPageDismissal",
-      origin_trial_feature_name: "AllowSyncXHRInPageDismissal",
-    },
-    {
       name: "AndroidDownloadableFontsMatching",
     },
     {
@@ -226,27 +230,12 @@
       status: "experimental",
     },
     {
-      name: "AutoLazyLoadOnReloads",
-      depends_on: ["LazyFrameLoading"],
-    },
-    {
-      name: "AutomaticLazyFrameLoading",
-      depends_on: ["LazyFrameLoading"],
-      status: "stable",
-    },
-    {
-      name: "AutomaticLazyImageLoading",
-      depends_on: ["LazyImageLoading"],
-      status: "stable",
-    },
-    {
       name: "AutomationControlled",
       settable_from_internals: true,
     },
     {
       name: "AutoPictureInPicture",
       depends_on: ["PictureInPictureAPI"],
-      origin_trial_feature_name: "AutoPictureInPicture",
       status: "experimental",
     },
     {
@@ -285,8 +274,8 @@
         // Built-in barcode detection APIs are only available from some
         // platforms. See //services/shape_detection.
         "Android": "stable",
-        "ChromeOS": "stable",
-        "Lacros": "stable",
+        "ChromeOS_Ash": "stable",
+        "ChromeOS_Lacros": "stable",
         "Mac": "stable",
         "default": "test",
       },
@@ -302,6 +291,11 @@
       name: "BeforeMatchEvent",
       origin_trial_feature_name: "BeforeMatchEvent",
       status: "experimental",
+    },
+    {
+      name: "BiddingAndScoringDebugReportingAPI",
+      origin_trial_feature_name: "BiddingAndScoringDebugReportingAPI",
+      implied_by: ["Fledge", "Parakeet"],
     },
     {
       name: "BidiCaretAffinity",
@@ -361,9 +355,6 @@
       status: "experimental",
     },
     {
-      name: "CanvasContextLostInBackground",
-    },
-    {
       name: "CanvasFormattedText",
       status: "experimental",
     },
@@ -383,6 +374,7 @@
     {
       name: "CapabilityDelegationPaymentRequest",
       origin_trial_feature_name: "CapabilityDelegationPaymentRequest",
+      status: "stable",
     },
     {
       name: "CaptureHandle",
@@ -451,6 +443,13 @@
     {
       name: "CompositeRelativeKeyframes",
       status: "stable"
+    },
+    {
+      // Compositing of video element is no longer necessary after launch of
+      // CompositeAfterPaint. This feature is to keep the old behavior for A/B
+      // testing. Will disable and remove.
+      name: "CompositeVideoElement",
+      status: "stable",
     },
     {
       name: "ComputedAccessibilityInfo",
@@ -707,7 +706,7 @@
     },
     {
       name: "CSSMixBlendModePlusLighter",
-      status: "test"
+      status: "stable"
     },
     {
       name: "CSSModules",
@@ -826,6 +825,13 @@
       status: "experimental"
     },
     {
+      // Support for viewport units added by css-values-4.
+      //
+      // https://drafts.csswg.org/css-values-4/#viewport-relative-units
+      name: "CSSViewportUnits4",
+      status: "experimental",
+    },
+    {
       name: "CustomElementDefaultStyle",
       status: "experimental",
     },
@@ -846,6 +852,10 @@
       status: "stable",
     },
     {
+      // crbug.com/1259085
+      name: "DeferredShaping",
+    },
+    {
       name: "DelegatedInkTrails",
       status: "stable",
     },
@@ -855,9 +865,7 @@
     },
     {
       name: "DesktopPWAsSubApps",
-      // No status because this blink runtime feature doesn't work by itself.
-      // It's controlled by the corresponding Chromium feature which needs to
-      // be enabled to make the whole feature work.
+      status: "test",
     },
     {
       name: "DeviceAttributes",
@@ -879,8 +887,9 @@
       origin_trial_feature_name: "DigitalGoodsV2",
       origin_trial_os: ["android", "chromeos"],
       status: {
-        "Android": "experimental",
-        "ChromeOS": "experimental",
+        "Android": "stable",
+        "ChromeOS_Ash": "stable",
+        "ChromeOS_Lacros": "stable",
         // crbug.com/1143079: Web tests cannot differentiate ChromeOS and Linux,
         // so enable the API on all platforms for testing.
         "default": "test"
@@ -947,7 +956,13 @@
       // Document transitions, including shared element transitions.
       // See https://github.com/WICG/shared-element-transitions
       name: "DocumentTransition",
-      origin_trial_feature_name: "DocumentTransition",
+    },
+    {
+      // Document transitions, including shared element transitions.
+      // See https://github.com/WICG/shared-element-transitions
+      // Note that this uses a viz animation implementation.
+      name: "DocumentTransitionViz",
+      depends_on: ["DocumentTransition"]
     },
     {
       name: "DocumentWrite",
@@ -965,6 +980,10 @@
       // http://crbug.com/707656 content editable in LayoutNG.
       name: "EditingNG",
       status: "stable",
+    },
+    {
+      name: "ElementSuperRareData",
+      status: "experimental",
     },
     {
       name: "EncryptedMediaSessionClosedReason",
@@ -1103,6 +1122,9 @@
       origin_trial_feature_name: "Fledge",
     },
     {
+      name: "Focusgroup",
+    },
+    {
       name: "FocuslessSpatialNavigation",
       settable_from_internals: true,
     },
@@ -1152,7 +1174,7 @@
     },
     {
       name: "ForceTallerSelectPopup",
-      status: {"ChromeOS": "stable", "Lacros": "stable"},
+      status: {"ChromeOS_Ash": "stable", "ChromeOS_Lacros": "stable"},
     },
     {
       name: "FractionalLineHeight",
@@ -1187,11 +1209,16 @@
     },
     {
       name: "HandwritingRecognition",
-      status: {"ChromeOS": "stable", "Lacros": "stable", "default": "experimental"},
+      status: {
+        "ChromeOS_Ash": "stable",
+        "ChromeOS_Lacros": "stable",
+        "default": "experimental",
+      },
     },
     {
       name: "HidDeviceForget",
-      status: "experimental",
+      depends_on: ["WebHID"],
+      status: {"Android": "", "default": "stable"},
     },
     {
       name: "HighlightAPI",
@@ -1246,15 +1273,6 @@
       status: "stable",
     },
     {
-      name: "InterestCohortAPI",
-      origin_trial_feature_name: "InterestCohortAPI",
-      origin_trial_allows_third_party: true,
-    },
-    {
-      name: "InterestCohortFeaturePolicy",
-      status: "experimental",
-    },
-    {
       name: "KeyboardAccessibleTooltip",
       status: "experimental",
     },
@@ -1288,7 +1306,7 @@
     {
       name: "LayoutNGBlockInInline",
       depends_on: ["LayoutNG"],
-      status: "test",
+      status: "stable",
     },
     {
       // Block fragmentation support in the flex layout algorithm.
@@ -1407,10 +1425,6 @@
       name: "MediaCapture",
       status: {"Android": "stable"},
     },
-    {
-      name: "MediaCaptureDepthVideoKind",
-      status: "experimental",
-    },
     // Set to reflect the MediaCastOverlayButton feature.
     {
       name: "MediaCastOverlayButton",
@@ -1492,6 +1506,21 @@
       status: "stable",
       origin_trial_feature_name: "WebCodecs"
     },
+    {
+      // Feature added "guarding" the already launched exposure of
+      // MediaStreamTracks in the Window contexts, to allow exposure in other
+      // contexts to be feature controlled, crbug.com/c/1290274.
+      name: "MediaStreamTrackInWindow",
+      status: "stable",
+    },
+    {
+      name: "MediaStreamTrackInWorker",
+      status: "test",
+    },
+    {
+      name: "MediaStreamTrackTransfer",
+      status: "test",
+    },
     // This is enabled by default on Windows only. The only part that's
     // "experimental" is the support on other platforms.
     {
@@ -1526,6 +1555,10 @@
       status: "stable",
     },
     {
+      name: "NavigationCounter",
+      status: "experimental",
+    },
+    {
       name: "NavigatorContentUtils",
       // Android does not yet support NavigatorContentUtils.
       status: {"Android": "", "default": "stable"},
@@ -1541,7 +1574,12 @@
     {
       name: "NetInfoDownlinkMax",
       // Only Android, ChromeOS support NetInfo downlinkMax, type and ontypechange now
-      status: {"Android": "stable", "ChromeOS": "stable", "default": "experimental"},
+      status: {
+        "Android": "stable",
+        "ChromeOS_Ash": "stable",
+        "ChromeOS_Lacros": "stable",
+        "default": "experimental",
+      },
     },
     {
       name: "NeverSlowMode",
@@ -1703,10 +1741,9 @@
     {
       name: "PartitionedCookies",
       origin_trial_feature_name: "PartitionedCookies",
-      // No status because this blink runtime feature doesn't work by itself.
-      // It's controlled by the corresponding Chromium feature,
-      // net::features::kPartitionedCookies, which needs to be enabled to make
-      // the whole feature work.
+      status: "experimental",
+      origin_trial_feature_name: "PartitionedCookies",
+      origin_trial_allows_third_party: true,
     },
     // This is to add an option to enable the Reveal button on password inputs while waiting ::reveal gets standardized.
     {
@@ -1736,11 +1773,13 @@
     // TODO(crbug.com/1209835): this feature is getting deprecated.
     {
       name: "PaymentRequestBasicCard",
-      status: "stable",
     },
     {
       name: "PaymentRequestMerchantValidationEvent",
       status: "experimental",
+    },
+    {
+      name: "PaymentRequestRequiresUserActivation",
     },
     {
       name: "PaymentRetry",
@@ -1921,16 +1960,6 @@
       status: "stable",
     },
     {
-      name: "RestrictAutomaticLazyFrameLoadingToDataSaver",
-      depends_on: ["AutomaticLazyFrameLoading"],
-      status: "stable",
-    },
-    {
-      name: "RestrictAutomaticLazyImageLoadingToDataSaver",
-      depends_on: ["AutomaticLazyImageLoading"],
-      status: "stable",
-    },
-    {
       name: "RestrictGamepadAccess",
       status: "experimental",
     },
@@ -2008,10 +2037,6 @@
       name: "SanitizerAPI",
       status: "experimental",
     },
-    {
-      name: "SchedulerCurrentTaskSignal",
-      status: "experimental",
-    },
     // WebSpeech API with both speech recognition and synthesis functionality
     // is not fully enabled on all platforms.
     {
@@ -2076,6 +2101,11 @@
     {
       name: "SendBeaconThrowForBlobWithNonSimpleType",
       status: "stable",
+    },
+    {
+      name: "SendFullUserAgentAfterReduction",
+      origin_trial_feature_name: "SendFullUserAgentAfterReduction",
+      origin_trial_allows_third_party: true
     },
     {
       name: "SendMouseEventsDisabledFormControls",
@@ -2244,6 +2274,14 @@
     {
       name: "TimeZoneChangeEvent",
       status: "experimental",
+    },
+    // This feature allows touch dragging and a context menu to occur
+    // simultaneously, with the assumption that the menu is non-modal.  Without
+    // this feature, a long-press touch gesture can start either a drag or a
+    // context-menu in Blink, not both (more precisely, a context menu is shown
+    // only if a drag cannot be started).
+    {
+      name: "TouchDragAndContextMenu",
     },
     // Many websites disable mouse support when touch APIs are available.  We'd
     // like to enable this always but can't until more websites fix this bug.
@@ -2493,17 +2531,13 @@
       name: "WebAuthenticationLargeBlobExtension",
       status: "experimental",
     },
-    {
-      name: "WebAuthenticationResidentKeyRequirement",
-      status: "stable",
-    },
     // WebBluetooth is enabled by default on Android, ChromeOS and Mac.
     // It is also supported in Windows 10 which is handled in runtime_features.cc
     {
       name: "WebBluetooth",
       status: {
         "Android": "stable",
-        "ChromeOS": "stable",
+        "ChromeOS_Ash": "stable", "ChromeOS_Lacros": "stable",
         "Mac": "stable",
         "default": "experimental",
       },
@@ -2511,27 +2545,6 @@
     {
       name: "WebBluetoothGetDevices",
       status: "experimental",
-    },
-    // WebBluetoothManufacturerDataFilter is enabled by default on Android,
-    // ChromeOS and Mac. It is also supported in Windows 10 which is handled in
-    // runtime_features.cc
-    {
-      name: "WebBluetoothManufacturerDataFilter",
-      status: {
-        "Android": "stable",
-        "ChromeOS": "stable",
-        "Mac": "stable",
-        "default": "experimental",
-      },
-    },
-    {
-      name: "WebBluetoothRemoteCharacteristicNewWriteValue",
-      status: {
-        "Android": "stable",
-        "ChromeOS": "stable",
-        "Mac": "stable",
-        "default": "experimental",
-      },
     },
     {
       name: "WebBluetoothScanning",
@@ -2581,6 +2594,7 @@
     },
     {
       name: "WebID",
+      origin_trial_feature_name: "FedCM",
       status: "test",
     },
     {
@@ -2590,7 +2604,7 @@
     {
       name: "WebNFCMakeReadOnly",
       depends_on: ["WebNFC"],
-      status: "experimental",
+      status: {"Android": "stable", "default": "test"},
     },
     {
       name: "WebOTP",
@@ -2621,7 +2635,7 @@
     {
       name: "WebTransportCustomCertificates",
       origin_trial_feature_name: "WebTransportCustomCertificates",
-      status: "experimental",
+      status: "stable",
       depends_on: ["WebTransport"],
     },
     {
@@ -2709,6 +2723,12 @@
     {
       name: "WindowPlacement",
       origin_trial_feature_name: "WindowPlacementOT2",
+      implied_by: ["WindowPlacementV2"],
+      status: "experimental",
+    },
+    // Further extends window placement functionality for multi-screen devices.
+    {
+      name: "WindowPlacementV2",
       status: "experimental",
     },
     {

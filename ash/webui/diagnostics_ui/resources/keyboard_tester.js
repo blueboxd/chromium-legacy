@@ -5,9 +5,11 @@
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 
 import {MechanicalLayout as DiagramMechanicalLayout, PhysicalLayout as DiagramPhysicalLayout, TopRowKey as DiagramTopRowKey} from 'chrome://resources/ash/common/keyboard_diagram.js';
+import {KeyboardKeyState} from 'chrome://resources/ash/common/keyboard_key.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {KeyboardInfo, MechanicalLayout, NumberPadPresence, PhysicalLayout, TopRowKey} from './diagnostics_types.js';
+import {ConnectionType, InputDataProviderInterface, KeyboardInfo, KeyboardObserverInterface, KeyboardObserverReceiver, KeyEvent, KeyEventType, MechanicalLayout, NumberPadPresence, PhysicalLayout, TopRowKey} from './diagnostics_types.js';
 
 /**
  * @fileoverview
@@ -47,12 +49,32 @@ Polymer({
 
   _template: html`{__html_template__}`,
 
+  /** @private {?KeyboardObserverReceiver} */
+  receiver_: null,
+
+  /** @private {?InputDataProviderInterface} */
+  inputDataProvider_: null,
+
+  /**
+   * Set the InputDataProvider to get events from.
+   * @param {!InputDataProviderInterface} provider
+   */
+  setInputDataProvider(provider) {
+    this.inputDataProvider_ = provider;
+  },
+
   properties: {
     /**
      * The keyboard being tested, or null if none is being tested at the moment.
      * @type {?KeyboardInfo}
      */
     keyboard: KeyboardInfo,
+
+    /** @protected */
+    dialogTitle_: {
+      type: String,
+      computed: 'computeDialogTitle_(keyboard)',
+    },
 
     /** @private */
     layoutIsKnown_: {
@@ -89,6 +111,20 @@ Polymer({
       type: Array,
       computed: 'computeTopRowKeys_(keyboard)',
     },
+  },
+
+  /**
+   * @param {?KeyboardInfo} keyboard
+   * @return {string}
+   * @private
+   */
+  computeDialogTitle_(keyboard) {
+    if (!keyboard) {
+      return '';
+    }
+    return keyboard.connectionType === ConnectionType.kInternal ?
+        'Test your internal keyboard' :
+        'Test your external keyboard';
   },
 
   /**
@@ -137,8 +173,10 @@ Polymer({
     return {
       [PhysicalLayout.kUnknown]: null,
       [PhysicalLayout.kChromeOS]: DiagramPhysicalLayout.kChromeOS,
-      [PhysicalLayout.kChromeOSDellEnterprise]:
-          DiagramPhysicalLayout.kChromeOSDellEnterprise,
+      [PhysicalLayout.kChromeOSDellEnterpriseWilco]:
+          DiagramPhysicalLayout.kChromeOSDellEnterpriseWilco,
+      [PhysicalLayout.kChromeOSDellEnterpriseDrallion]:
+          DiagramPhysicalLayout.kChromeOSDellEnterpriseDrallion,
     }[keyboardInfo.physicalLayout];
   },
 
@@ -167,6 +205,11 @@ Polymer({
 
   /** Shows the tester's dialog. */
   show() {
+    assert(this.inputDataProvider_);
+    this.receiver_ = new KeyboardObserverReceiver(
+        /** @type {!KeyboardObserverInterface} */ (this));
+    this.inputDataProvider_.observeKeyEvents(
+        this.keyboard.id, this.receiver_.$.bindNewPipeAndPassRemote());
     this.$.dialog.showModal();
   },
 
@@ -176,5 +219,45 @@ Polymer({
    */
   isOpen() {
     return this.$.dialog.open;
+  },
+
+  close() {
+    this.$.dialog.close();
+  },
+
+  handleClose() {
+    this.receiver_.$.close();
+  },
+
+  /**
+   * Implements KeyboardObserver.OnKeyEvent.
+   * @param {!KeyEvent} keyEvent
+   */
+  onKeyEvent(keyEvent) {
+    const state = keyEvent.type === KeyEventType.kPress ?
+        KeyboardKeyState.kPressed :
+        KeyboardKeyState.kTested;
+    if (keyEvent.topRowPosition !== -1) {
+      this.$$('#diagram').setTopRowKeyState(keyEvent.topRowPosition, state);
+    } else {
+      this.$$('#diagram').setKeyState(keyEvent.keyCode, state);
+    }
+  },
+
+  /**
+   * Implements KeyboardObserver.OnKeyEventsPaused.
+   */
+  onKeyEventsPaused() {
+    // TODO(crbug.com/1207678): show key event pauses in the UI.
+    console.log('key events paused');
+    this.$$('#diagram').clearPressedKeys();
+  },
+
+  /**
+   * Implements KeyboardObserver.OnKeyEventsResumed.
+   */
+  onKeyEventsResumed() {
+    // TODO(crbug.com/1207678): show key event pauses in the UI.
+    console.log('key events resumed');
   },
 });

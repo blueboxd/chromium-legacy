@@ -30,7 +30,7 @@
       "use_thin_lto": true
     }
   },
-  "Comparison Linux": {
+  "Comparison Linux (reclient)": {
     "goma": {
       "dcheck_always_on": false,
       "ffmpeg_branding": "Chrome",
@@ -49,7 +49,7 @@
       "use_remoteexec": true
     }
   },
-  "Comparison Windows": {
+  "Comparison Windows (reclient)": {
     "goma": {
       "dcheck_always_on": false,
       "ffmpeg_branding": "Chrome",
@@ -550,7 +550,8 @@
     "gn_args": {
       "dcheck_always_on": false,
       "fuchsia_additional_boot_images": [
-        "//third_party/fuchsia-sdk/images/qemu-x64-release/"
+        "//third_party/fuchsia-sdk/images/qemu-x64-release/",
+        "//third_party/fuchsia-sdk/images-internal/chromebook-x64-release/"
       ],
       "fuchsia_browser_type": "chrome",
       "is_component_build": false,
@@ -855,6 +856,17 @@
       "use_goma": true
     }
   },
+  "linux-blink-v8-sandbox-future-dbg": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "is_component_build": true,
+      "is_debug": true,
+      "symbol_level": 1,
+      "target_cpu": "x64",
+      "use_goma": true,
+      "v8_enable_sandbox_future": true
+    }
+  },
   "linux-chromeos-code-coverage": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -1030,7 +1042,7 @@
   },
   "linux-wpt-fyi-rel": {
     "gn_args": {
-      "dcheck_always_on": false,
+      "dcheck_always_on": true,
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 1,

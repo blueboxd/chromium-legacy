@@ -8,6 +8,7 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/public/cpp/desk_template.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
@@ -16,16 +17,21 @@
 #include "ash/style/style_util.h"
 #include "ash/wm/desks/desks_textfield.h"
 #include "ash/wm/desks/templates/desks_templates_dialog_controller.h"
+#include "ash/wm/desks/templates/desks_templates_grid_view.h"
 #include "ash/wm/desks/templates/desks_templates_icon_container.h"
+#include "ash/wm/desks/templates/desks_templates_metrics_util.h"
 #include "ash/wm/desks/templates/desks_templates_name_view.h"
 #include "ash/wm/desks/templates/desks_templates_presenter.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_session.h"
+#include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -36,6 +42,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout_view.h"
+#include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/metadata/view_factory_internal.h"
 #include "ui/views/view.h"
 
@@ -46,6 +53,11 @@ namespace {
 constexpr int kHorizontalPaddingDp = 24;
 constexpr int kVerticalPaddingDp = 16;
 
+// Shift the name view by 2dp so that the text is aligned with the date view.
+// The name view itself has a background, which shows on hover or focus, is not
+// aligned with the date view.
+constexpr gfx::Insets kNameExtraInsets(0, -2, 0, 0);
+
 // The preferred size of the whole DesksTemplatesItemView.
 constexpr gfx::Size kPreferredSize(220, 120);
 
@@ -55,66 +67,74 @@ constexpr int kCornerRadius = 16;
 // The margin for the delete button.
 constexpr int kDeleteButtonMargin = 8;
 
+// The distance from the bottom of the launch button to the bottom of `this`.
+constexpr int kLaunchButtonDistanceFromBottomDp = 14;
+
 // The preferred width of the container that houses the template name textfield
 // and managed status indicator and the time label.
 constexpr int kTemplateNameAndTimePreferredWidth =
     kPreferredSize.width() - kHorizontalPaddingDp * 2;
 
-constexpr int kTimeViewHeight = 20;
+// The height of the view which contains the time of the template.
+constexpr int kTimeViewHeight = 24;
 
 // The spacing between the textfield and the managed status icon.
 constexpr int kManagedStatusIndicatorSpacing = 8;
 constexpr int kManagedStatusIndicatorSize = 20;
 
-constexpr char kAmPmTimeDateFmtStr[] = "%d:%02d%s, %d-%02d-%02d";
-
-// TODO(richui): This is a placeholder text format. Update this once specs are
-// done.
 std::u16string GetTimeStr(base::Time timestamp) {
-  base::Time::Exploded exploded_time;
-  timestamp.LocalExplode(&exploded_time);
+  std::u16string date, time, time_str;
 
-  const int noon = 12;
-  int hour = exploded_time.hour % noon;
-  if (hour == 0)
-    hour += noon;
+  // Returns empty if `timestamp` is out of relative date range, which is
+  // yesterday and today as of now. Please see `ui/base/l10n/time_format.h` for
+  // more details.
+  date = ui::TimeFormat::RelativeDate(timestamp, nullptr);
+  if (date.empty()) {
+    // Syntax `yMMMdjmm` is used by the File App if it's not a relative date.
+    // Please note, this might be slightly different for different locales.
+    // Examples:
+    //  `en-US` - `Jan 1, 2022, 10:30 AM`
+    //  `zh-CN` - `2022年1月1日 10:30`
+    time_str = base::TimeFormatWithPattern(timestamp, "yMMMdjmm");
+  } else {
+    // If it's a relative date, just append `jmm` to it.
+    // Please note, this might be slightly different for different locales.
+    // Examples:
+    //  `en-US` - `Today 10:30 AM`
+    //  `zh-CN` - `今天 10:30`
+    time_str = date + u" " + base::TimeFormatWithPattern(timestamp, "jmm");
+  }
 
-  std::string time = base::StringPrintf(
-      kAmPmTimeDateFmtStr, hour, exploded_time.minute,
-      (exploded_time.hour >= noon ? "pm" : "am"), exploded_time.year,
-      exploded_time.month, exploded_time.day_of_month);
-  return base::UTF8ToUTF16(time);
+  return time_str;
 }
 
 }  // namespace
 
-DesksTemplatesItemView::DesksTemplatesItemView(DeskTemplate* desk_template)
-    : desk_template_(desk_template) {
-  auto launch_template_callback = base::BindRepeating(
-      &DesksTemplatesItemView::OnGridItemPressed, base::Unretained(this));
+DesksTemplatesItemView::DesksTemplatesItemView(
+    const DeskTemplate* desk_template)
+    : desk_template_(desk_template->Clone()) {
+  auto launch_template_callback =
+      base::BindRepeating(&DesksTemplatesItemView::OnGridItemPressed,
+                          weak_ptr_factory_.GetWeakPtr());
 
   const std::u16string template_name = desk_template_->template_name();
   auto* color_provider = AshColorProvider::Get();
+  const bool is_admin_managed =
+      desk_template_->source() == DeskTemplateSource::kPolicy;
 
-  views::BoxLayoutView* card_container;
-  views::View* spacer;
   views::Builder<DesksTemplatesItemView>(this)
       .SetPreferredSize(kPreferredSize)
       .SetUseDefaultFillLayout(true)
       .SetAccessibleName(template_name)
       .SetCallback(std::move(launch_template_callback))
       .SetBackground(views::CreateRoundedRectBackground(
-          color_provider->GetControlsLayerColor(
-              AshColorProvider::ControlsLayerType::
-                  kControlBackgroundColorInactive),
+          color_provider->GetBaseLayerColor(
+              AshColorProvider::BaseLayerType::kTransparent80),
           kCornerRadius))
       .AddChildren(
-          views::Builder<views::BoxLayoutView>()
-              .CopyAddressTo(&card_container)
-              .SetOrientation(views::BoxLayout::Orientation::kVertical)
-              .SetCrossAxisAlignment(
-                  views::BoxLayout::CrossAxisAlignment::kStart)
-              .SetInsideBorderInsets(
+          views::Builder<views::FlexLayoutView>()
+              .SetOrientation(views::LayoutOrientation::kVertical)
+              .SetInteriorMargin(
                   gfx::Insets(kVerticalPaddingDp, kHorizontalPaddingDp))
               // TODO(richui): Consider splitting some of the children into
               // different files and/or classes.
@@ -126,9 +146,11 @@ DesksTemplatesItemView::DesksTemplatesItemView(DeskTemplate* desk_template)
                       .SetPreferredSize(gfx::Size(
                           kTemplateNameAndTimePreferredWidth,
                           DesksTemplatesNameView::kTemplateNameViewHeight))
+                      .SetProperty(views::kMarginsKey, kNameExtraInsets)
                       .AddChildren(
                           views::Builder<DesksTemplatesNameView>()
                               .CopyAddressTo(&name_view_)
+                              .SetController(this)
                               .SetText(template_name)
                               .SetAccessibleName(template_name)
                               .SetReadOnly(!desk_template_->IsModifiable()),
@@ -142,41 +164,51 @@ DesksTemplatesItemView::DesksTemplatesItemView(DeskTemplate* desk_template)
                                   color_provider->GetContentLayerColor(
                                       AshColorProvider::ContentLayerType::
                                           kIconColorSecondary)))
-                              .SetVisible(desk_template->source() ==
-                                          DeskTemplateSource::kPolicy)),
+                              .SetVisible(is_admin_managed)),
                   views::Builder<views::Label>()
                       .CopyAddressTo(&time_view_)
                       .SetHorizontalAlignment(gfx::ALIGN_LEFT)
-                      .SetText(GetTimeStr(desk_template_->created_time()))
+                      .SetText(
+                          is_admin_managed
+                              ? l10n_util::GetStringUTF16(
+                                    IDS_ASH_DESKS_TEMPLATES_MANAGEMENT_STATUS_DESCRIPTION)
+                              : GetTimeStr(desk_template_->created_time()))
                       .SetPreferredSize(gfx::Size(
                           kTemplateNameAndTimePreferredWidth, kTimeViewHeight)),
-                  views::Builder<views::View>().CopyAddressTo(&spacer),
-                  views::Builder<DesksTemplatesIconContainer>().CopyAddressTo(
-                      &icon_container_view_)),
-          views::Builder<views::View>().CopyAddressTo(&hover_container_))
+                  // View which acts as a spacer, taking up all the available
+                  // space between the date and the icons container.
+                  views::Builder<views::View>().SetProperty(
+                      views::kFlexBehaviorKey,
+                      views::FlexSpecification(
+                          views::MinimumFlexSizeRule::kScaleToZero,
+                          views::MaximumFlexSizeRule::kUnbounded)),
+                  views::Builder<DesksTemplatesIconContainer>()
+                      .CopyAddressTo(&icon_container_view_)
+                      .PopulateIconContainerFromTemplate(desk_template_.get())
+                      .SetVisible(true)),
+          views::Builder<views::View>()
+              .CopyAddressTo(&hover_container_)
+              .SetUseDefaultFillLayout(true)
+              .SetVisible(false))
       .BuildChildren();
 
-  // TODO(crbug.com/1267470): Make `PillButton` work with views::Builder.
   launch_button_ = hover_container_->AddChildView(std::make_unique<PillButton>(
       base::BindRepeating(&DesksTemplatesItemView::OnGridItemPressed,
-                          base::Unretained(this)),
+                          weak_ptr_factory_.GetWeakPtr()),
       l10n_util::GetStringUTF16(IDS_ASH_DESKS_TEMPLATES_USE_TEMPLATE_BUTTON),
       PillButton::Type::kIconless, /*icon=*/nullptr));
 
   delete_button_ = hover_container_->AddChildView(std::make_unique<CloseButton>(
       base::BindRepeating(&DesksTemplatesItemView::OnDeleteButtonPressed,
-                          base::Unretained(this)),
+                          weak_ptr_factory_.GetWeakPtr()),
       CloseButton::Type::kMedium));
+  delete_button_->SetVectorIcon(kDeleteIcon);
+  delete_button_->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_ASH_DESKS_TEMPLATES_DELETE_DIALOG_CONFIRM_BUTTON));
+  delete_button_->SetBackgroundColor(color_provider->GetControlsLayerColor(
+      AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive));
 
-  name_view_->set_controller(this);
   name_view_observation_.Observe(name_view_);
-
-  hover_container_->SetUseDefaultFillLayout(true);
-  hover_container_->SetVisible(false);
-
-  icon_container_view_->PopulateIconContainerFromTemplate(desk_template_);
-  icon_container_view_->SetVisible(true);
-  card_container->SetFlexForView(spacer, 1);
 
   StyleUtil::SetUpInkDropForButton(this, gfx::Insets(),
                                    /*highlight_on_hover=*/false,
@@ -218,6 +250,39 @@ bool DesksTemplatesItemView::IsTemplateNameBeingModified() const {
   return name_view_->HasFocus();
 }
 
+void DesksTemplatesItemView::ReplaceTemplate(const std::string& uuid) {
+  // Make sure we delete the template we are replacing first, so that we don't
+  // get template name collisions.
+  DesksTemplatesPresenter::Get()->DeleteEntry(uuid);
+  UpdateTemplateName();
+  RecordReplaceTemplateHistogram();
+}
+
+void DesksTemplatesItemView::RevertTemplateName() {
+  views::FocusManager* focus_manager = GetFocusManager();
+  focus_manager->SetFocusedView(name_view_);
+  name_view_->SetText(desk_template_->template_name());
+  name_view_->SelectAll(true);
+
+  name_view_->OnContentsChanged();
+}
+
+void DesksTemplatesItemView::UpdateTemplate(
+    const DeskTemplate& updated_template) {
+  desk_template_ = updated_template.Clone();
+
+  hover_container_->SetVisible(false);
+  icon_container_view_->SetVisible(true);
+
+  auto new_name = desk_template_->template_name();
+  name_view_->SetText(new_name);
+  name_view_->SetAccessibleName(new_name);
+  SetAccessibleName(new_name);
+  name_view_->OnContentsChanged();
+
+  Layout();
+}
+
 void DesksTemplatesItemView::Layout() {
   const int previous_name_view_width = name_view_->width();
 
@@ -237,22 +302,20 @@ void DesksTemplatesItemView::Layout() {
 
   const gfx::Size launch_button_preferred_size =
       launch_button_->CalculatePreferredSize();
-  launch_button_->SetBoundsRect(gfx::Rect(
-      {(width() - launch_button_preferred_size.width()) / 2,
-       height() - launch_button_preferred_size.height() - kVerticalPaddingDp},
-      launch_button_preferred_size));
+  launch_button_->SetBoundsRect(
+      gfx::Rect({(width() - launch_button_preferred_size.width()) / 2,
+                 height() - launch_button_preferred_size.height() -
+                     kLaunchButtonDistanceFromBottomDp},
+                launch_button_preferred_size));
 }
 
 void DesksTemplatesItemView::OnThemeChanged() {
   views::View::OnThemeChanged();
   auto* color_provider = AshColorProvider::Get();
-  const SkColor control_background_color_inactive =
-      color_provider->GetControlsLayerColor(
-          AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive);
+  GetBackground()->SetNativeControlColor(color_provider->GetBaseLayerColor(
+      AshColorProvider::BaseLayerType::kTransparent80));
 
-  GetBackground()->SetNativeControlColor(control_background_color_inactive);
-
-  time_view_->SetBackgroundColor(control_background_color_inactive);
+  time_view_->SetBackgroundColor(SK_ColorTRANSPARENT);
   time_view_->SetEnabledColor(color_provider->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kTextColorSecondary));
 
@@ -321,36 +384,49 @@ void DesksTemplatesItemView::OnViewBlurred(views::View* observed_view) {
 
   // Collapse the whitespace for the text first before comparing it or trying to
   // commit the name in order to prevent duplicate name issues.
-  name_view_->SetText(
+  const std::u16string user_entered_name =
       base::CollapseWhitespace(name_view_->GetText(),
-                               /*trim_sequences_with_line_breaks=*/false));
+                               /*trim_sequences_with_line_breaks=*/false);
+  name_view_->SetText(user_entered_name);
 
   // When committing the name, do not allow an empty template name. Also, don't
   // commit the name changes if the view was blurred from the user pressing the
   // escape key (identified by `should_commit_name_changes_`). Revert back to
   // the original name.
-  if (!should_commit_name_changes_ || name_view_->GetText().empty() ||
-      desk_template_->template_name() == name_view_->GetText()) {
+  if (!should_commit_name_changes_ || user_entered_name.empty() ||
+      desk_template_->template_name() == user_entered_name) {
     OnTemplateNameChanged(desk_template_->template_name());
     return;
   }
 
-  auto updated_template = desk_template_->Clone();
-  updated_template->set_template_name(name_view_->GetText());
-  OnTemplateNameChanged(updated_template->template_name());
-
-  // Calling `SaveOrUpdateDeskTemplate` will trigger rebuilding the desks
-  // templates grid views hierarchy which includes `this`. Use a post task as
-  // some other `ViewObserver`'s may still be using `this`.
-  // TODO(crbug.com/1266552): Remove the post task once saving and updating does
-  // not cause a `this` to be deleted anymore.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(
-                     [](std::unique_ptr<DeskTemplate> desk_template) {
-                       DesksTemplatesPresenter::Get()->SaveOrUpdateDeskTemplate(
-                           /*is_update=*/false, std::move(desk_template));
-                     },
-                     std::move(updated_template)));
+  // Check if template name exist, replace existing template if confirmed by
+  // user.
+  aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
+  OverviewGrid* overview_grid = Shell::Get()
+                                    ->overview_controller()
+                                    ->overview_session()
+                                    ->GetGridWithRootWindow(root_window);
+  auto* templates_grid_view = static_cast<DesksTemplatesGridView*>(
+      overview_grid->desks_templates_grid_widget()->GetContentsView());
+  for (DesksTemplatesItemView* template_item :
+       templates_grid_view->grid_items()) {
+    auto new_name = name_view_->GetText();
+    if (template_item != this &&
+        template_item->desk_template_->template_name() == new_name) {
+      // Show replace template dialog.
+      // If accepted, replace old template and commit name change.
+      DesksTemplatesDialogController::Get()->ShowReplaceDialog(
+          root_window, new_name,
+          base::BindOnce(
+              &DesksTemplatesItemView::ReplaceTemplate,
+              weak_ptr_factory_.GetWeakPtr(),
+              template_item->desk_template_->uuid().AsLowercaseString()),
+          base::BindOnce(&DesksTemplatesItemView::RevertTemplateName,
+                         weak_ptr_factory_.GetWeakPtr()));
+      return;
+    }
+  }
+  UpdateTemplateName();
 }
 
 views::Button::KeyClickAction DesksTemplatesItemView::GetKeyClickActionForEvent(
@@ -363,11 +439,18 @@ views::Button::KeyClickAction DesksTemplatesItemView::GetKeyClickActionForEvent(
   return Button::GetKeyClickActionForEvent(event);
 }
 
+void DesksTemplatesItemView::UpdateTemplateName() {
+  desk_template_->set_template_name(name_view_->GetText());
+  OnTemplateNameChanged(desk_template_->template_name());
+
+  DesksTemplatesPresenter::Get()->SaveOrUpdateDeskTemplate(
+      /*is_update=*/true, desk_template_->Clone());
+}
+
 void DesksTemplatesItemView::ContentsChanged(
     views::Textfield* sender,
     const std::u16string& new_contents) {
   DCHECK_EQ(sender, name_view_);
-  DCHECK(is_template_name_being_modified_);
 
   // To avoid potential security and memory issues, we don't allow template
   // names to have an unbounded length. Therefore we trim if needed at
@@ -380,6 +463,13 @@ void DesksTemplatesItemView::ContentsChanged(
   }
 
   name_view_->OnContentsChanged();
+
+  auto* focus_manager = GetWidget()->GetFocusManager();
+  if (focus_manager->GetFocusedView() != name_view_) {
+    // The text editor isn't currently the active view, so we'll assume that it
+    // was updated from a drag and drop operation.
+    UpdateTemplateName();
+  }
 }
 
 bool DesksTemplatesItemView::HandleKeyEvent(views::Textfield* sender,
@@ -454,23 +544,16 @@ views::View* DesksTemplatesItemView::TargetForRect(views::View* root,
   // clickable button, as well as having the grid view be a `PreTargetHandler`,
   // we needed to make `this` a `ViewTargeterDelegate` for the view event
   // targeter in order to allow the `name_view_` to be specifically targeted and
-  // focused.
-  if (root == this && gfx::ToRoundedRect(name_view_bounds).Contains(rect))
+  // focused. Use the centerpoint for `rect` as parts of `rect` may be outside
+  // the `name_view_bounds` for touch events.
+  if (root == this &&
+      gfx::ToRoundedRect(name_view_bounds).Contains(rect.CenterPoint())) {
     return name_view_;
+  }
   return views::ViewTargeterDelegate::TargetForRect(root, rect);
 }
 
 void DesksTemplatesItemView::OnDeleteTemplate() {
-  // Notify the highlight controller that we're going away.
-  OverviewHighlightController* highlight_controller =
-      Shell::Get()
-          ->overview_controller()
-          ->overview_session()
-          ->highlight_controller();
-  DCHECK(highlight_controller);
-  highlight_controller->OnViewDestroyingOrDisabling(this);
-  highlight_controller->OnViewDestroyingOrDisabling(name_view_);
-
   DesksTemplatesPresenter::Get()->DeleteEntry(
       desk_template_->uuid().AsLowercaseString());
 }
@@ -479,9 +562,10 @@ void DesksTemplatesItemView::OnDeleteButtonPressed() {
   // Show the dialog to confirm the deletion.
   auto* dialog_controller = DesksTemplatesDialogController::Get();
   dialog_controller->ShowDeleteDialog(
-      Shell::GetPrimaryRootWindow(), name_view_->GetAccessibleName(),
+      GetWidget()->GetNativeWindow()->GetRootWindow(),
+      name_view_->GetAccessibleName(),
       base::BindOnce(&DesksTemplatesItemView::OnDeleteTemplate,
-                     base::Unretained(this)));
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DesksTemplatesItemView::OnGridItemPressed(const ui::Event& event) {
@@ -504,7 +588,8 @@ void DesksTemplatesItemView::MaybeLaunchTemplate(bool should_delay) {
 #endif
 
   DesksTemplatesPresenter::Get()->LaunchDeskTemplate(
-      desk_template_->uuid().AsLowercaseString(), delay);
+      desk_template_->uuid().AsLowercaseString(), delay,
+      GetWidget()->GetNativeWindow()->GetRootWindow());
 }
 
 void DesksTemplatesItemView::OnTemplateNameChanged(
@@ -512,7 +597,7 @@ void DesksTemplatesItemView::OnTemplateNameChanged(
   if (is_template_name_being_modified_)
     return;
 
-  name_view_->SetTextAndElideIfNeeded(new_name);
+  name_view_->SetText(new_name);
   name_view_->SetAccessibleName(new_name);
   SetAccessibleName(new_name);
 
@@ -524,7 +609,7 @@ views::View* DesksTemplatesItemView::GetView() {
 }
 
 void DesksTemplatesItemView::MaybeActivateHighlightedView() {
-  MaybeLaunchTemplate(/*delay=*/false);
+  MaybeLaunchTemplate(/*should_delay=*/false);
 }
 
 void DesksTemplatesItemView::MaybeCloseHighlightedView() {

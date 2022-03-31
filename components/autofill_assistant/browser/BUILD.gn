@@ -21,6 +21,10 @@ proto_library("proto") {
   ]
 }
 
+proto_library("test_proto") {
+  sources = [ "parse_jspb_test.proto" ]
+}
+
 static_library("browser") {
   sources = [
     "actions/action.cc",
@@ -46,6 +50,8 @@ static_library("browser") {
     "actions/dispatch_js_event_action.h",
     "actions/edit_password_action.cc",
     "actions/edit_password_action.h",
+    "actions/execute_js_action.cc",
+    "actions/execute_js_action.h",
     "actions/expect_navigation_action.cc",
     "actions/expect_navigation_action.h",
     "actions/fallback_handler/required_field.cc",
@@ -118,6 +124,9 @@ static_library("browser") {
     "actions/wait_for_dom_action.h",
     "actions/wait_for_navigation_action.cc",
     "actions/wait_for_navigation_action.h",
+    "autofill_assistant_factory.cc",
+    "autofill_assistant_impl.cc",
+    "autofill_assistant_impl.h",
     "autofill_assistant_onboarding_fetcher.cc",
     "autofill_assistant_onboarding_fetcher.h",
     "autofill_assistant_tts_controller.cc",
@@ -174,6 +183,8 @@ static_library("browser") {
     "metrics.h",
     "onboarding_result.h",
     "overlay_state.h",
+    "parse_jspb.cc",
+    "parse_jspb.h",
     "protocol_utils.cc",
     "protocol_utils.h",
     "radio_button_controller.cc",
@@ -289,6 +300,9 @@ static_library("browser") {
     "web/js_snippets.h",
     "web/keyboard_input_data.cc",
     "web/keyboard_input_data.h",
+    "web/selector_observer.cc",
+    "web/selector_observer.h",
+    "web/selector_observer_script.h",
     "web/send_keyboard_input_worker.cc",
     "web/send_keyboard_input_worker.h",
     "web/web_controller.cc",
@@ -312,6 +326,8 @@ static_library("browser") {
     "//components/autofill_assistant/browser/devtools",
     "//components/autofill_assistant/browser/public:public",
     "//components/autofill_assistant/content/browser",
+    "//components/autofill_assistant/content/common",
+    "//components/autofill_assistant/content/common:mojo_interfaces",
     "//components/client_update_protocol",
     "//components/google/core/common:common",
     "//components/keyed_service/core",
@@ -395,6 +411,7 @@ source_set("unit_tests") {
     "actions/delete_password_action_unittest.cc",
     "actions/dispatch_js_event_action_unittest.cc",
     "actions/edit_password_action_unittest.cc",
+    "actions/execute_js_action_unittest.cc",
     "actions/expect_navigation_action_unittest.cc",
     "actions/fallback_handler/required_field_unittest.cc",
     "actions/fallback_handler/required_fields_fallback_handler_unittest.cc",
@@ -429,6 +446,7 @@ source_set("unit_tests") {
     "actions/wait_for_document_action_unittest.cc",
     "actions/wait_for_dom_action_unittest.cc",
     "actions/wait_for_navigation_action_unittest.cc",
+    "autofill_assistant_impl_unittest.cc",
     "autofill_assistant_onboarding_fetcher_unittest.cc",
     "autofill_assistant_tts_controller_unittest.cc",
     "basic_interactions_unittest.cc",
@@ -445,6 +463,7 @@ source_set("unit_tests") {
     "generic_ui_replace_placeholders_unittest.cc",
     "mock_client_context.cc",
     "mock_client_context.h",
+    "parse_jspb_unittest.cc",
     "protocol_utils_unittest.cc",
     "radio_button_controller_unittest.cc",
     "retry_timer_unittest.cc",
@@ -505,6 +524,7 @@ source_set("unit_tests") {
   deps = [
     ":browser",
     ":proto",
+    ":test_proto",
     ":unit_test_support",
     "//base",
     "//base/test:test_support",

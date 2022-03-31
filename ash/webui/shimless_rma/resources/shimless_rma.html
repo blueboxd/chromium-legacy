@@ -1,10 +1,26 @@
 <style include="cr-shared-style shimless-rma-shared">
   #shimlessRMAContainer {
-    padding: 50px;
+    align-items: stretch;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding-inline-end: 40px;
+    padding-inline-start: 40px;
+    width: 100%;
+  }
+
+  #contentContainer {
+    flex-grow: 1;
+  }
+
+  .shimless-content {
+    height: 100%;
+    width: 100%;
   }
 
   .shimless-footer {
-    margin-top: 10px;
+    height: var(--footer-height);
     text-align: end;
   }
 
@@ -14,11 +30,17 @@
 
   #back {
     border: 0;
-    margin-inline-start: -15px;
+    height: 80px;
+  }
+
+  #next {
+    margin-inline-end: -13px;
+    top: 24px;
   }
 
   #cancel {
-    margin-inline-end: 5px;
+    margin-inline-end: 8px;
+    top: 24px;
   }
 
   .busy-icon {

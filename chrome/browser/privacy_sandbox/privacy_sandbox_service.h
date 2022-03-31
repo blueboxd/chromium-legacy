@@ -9,11 +9,11 @@
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
-#include "chrome/browser/federated_learning/floc_id_provider.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/privacy_sandbox/canonical_topic.h"
 #include "components/privacy_sandbox/privacy_sandbox_settings.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -21,6 +21,10 @@
 #include "components/sync/driver/sync_service_observer.h"
 
 class PrefService;
+
+namespace content {
+class InterestGroupManager;
+}
 
 namespace content_settings {
 class CookieSettings;
@@ -40,24 +44,40 @@ class PrivacySandboxService : public KeyedService,
                               public signin::IdentityManager::Observer {
  public:
   // Possible types of Privacy Sandbox dialogs that may be shown to the user.
-  enum class DialogType { kNone, kNotice, kConsent };
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.privacy_sandbox
+  enum class DialogType {
+    kNone = 0,
+    kNotice = 1,
+    kConsent = 2,
+    kMaxValue = kConsent,
+  };
 
   // An exhaustive list of actions related to showing & interacting with the
   // dialog. Includes actions which do not impact consent / notice state.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.privacy_sandbox
   enum class DialogAction {
-    // Shared between notice & consent:
-    kShown,
-    kOpenSettings,
-    kOpenMoreInfo,
-    kCloseMoreInfo,
+    // Notice Interactions:
+    kNoticeShown = 0,
+    kNoticeOpenSettings = 1,
+    kNoticeAcknowledge = 2,
+    kNoticeDismiss = 3,
 
-    // Consent Only
-    kAcceptConsent,
-    kDeclineConsent,
+    // Implies that the browser, or browser window, was shut before the user
+    // interacted with the notice.
+    kNoticeClosedNoInteraction = 4,
 
-    // Notice Only
-    kAcknowledge,
-    kClose,
+    // Consent Interactions:
+    kConsentShown = 5,
+    kConsentAccepted = 6,
+    kConsentDeclined = 7,
+    kConsentMoreInfoOpened = 8,
+    kConsentMoreInfoClosed = 9,
+
+    // Implies that the browser, or browser window, was shut before the user
+    // has made the decision (accepted or declined the consent).
+    kConsentClosedNoDecision = 10,
+
+    kMaxValue = kConsentClosedNoDecision,
   };
 
   PrivacySandboxService(PrivacySandboxSettings* privacy_sandbox_settings,
@@ -66,7 +86,7 @@ class PrivacySandboxService : public KeyedService,
                         policy::PolicyService* policy_service,
                         syncer::SyncService* sync_service,
                         signin::IdentityManager* identity_manager,
-                        federated_learning::FlocIdProvider* floc_id_provider,
+                        content::InterestGroupManager* interest_group_manager,
                         profile_metrics::BrowserProfileType profile_type);
   ~PrivacySandboxService() override;
 
@@ -82,7 +102,8 @@ class PrivacySandboxService : public KeyedService,
   // calls to GetRequiredDialogType() are correct. This is expected to be
   // called appropriately by all locations showing the dialog. Metrics shared
   // between platforms will also be recorded.
-  void DialogActionOccur(DialogAction action);
+  // This method is virtual for mocking in tests.
+  virtual void DialogActionOccurred(DialogAction action);
 
   // Returns a description of FLoC ready for display to the user. Correctly
   // takes into account the FLoC feature parameters when determining the number
@@ -141,6 +162,42 @@ class PrivacySandboxService : public KeyedService,
   // Called when a preference relevant to the the Privacy Sandbox is changed.
   void OnPrivacySandboxPrefChanged();
 
+  // Returns the set of eTLD + 1's on which the user was joined to a FLEDGE
+  // interest group. Consults with the InterestGroupManager associated with
+  // |profile_| and formats the returned data for direct display to the user.
+  // Virtual to allow mocking in tests.
+  virtual void GetFledgeJoiningEtldPlusOneForDisplay(
+      base::OnceCallback<void(std::vector<std::string>)> callback);
+
+  // Returns the set of top frames which are blocked from joining the profile to
+  // an interest group. Virtual to allow mocking in tests.
+  virtual std::vector<std::string> GetBlockedFledgeJoiningTopFramesForDisplay()
+      const;
+
+  // Sets Fledge interest group joining to |allowed| for |top_frame_etld_plus1|.
+  // This is a wrapper on the equivalent function on PrivacySandboxSettings.
+  // Virtual to allow mocking in tests.
+  virtual void SetFledgeJoiningAllowed(const std::string& top_frame_etld_plus1,
+                                       bool allowed) const;
+
+  // Returns the top topics for the previous N epochs.
+  // Virtual for mocking in tests.
+  virtual std::vector<privacy_sandbox::CanonicalTopic> GetCurrentTopTopics()
+      const;
+
+  // Returns the set of topics which have been blocked by the user.
+  // Virtual for mocking in tests.
+  virtual std::vector<privacy_sandbox::CanonicalTopic> GetBlockedTopics() const;
+
+  // Sets a |topic_id|, as both a top topic and topic provided to the web, to be
+  // allowed/blocked based on the value of |allowed|. This is stored to
+  // preferences and made available to the Topics API via the
+  // PrivacySandboxSettings class. This function expects that |topic| will have
+  // previously been provided by one of the above functions. Virtual for mocking
+  // in tests.
+  virtual void SetTopicAllowed(privacy_sandbox::CanonicalTopic topic,
+                               bool allowed);
+
   // KeyedService:
   void Shutdown() override;
 
@@ -188,6 +245,11 @@ class PrivacySandboxService : public KeyedService,
                            MetricsLoggingOccursCorrectly);
   FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceTestNonRegularProfile,
                            NoMetricsRecorded);
+  FRIEND_TEST_ALL_PREFIXES(PrivacySandboxServiceDeathTest,
+                           GetRequiredDialogType);
+
+  // Should be used only for tests when mocking the service.
+  PrivacySandboxService();
 
   // Contains all possible privacy sandbox states, recorded on startup.
   // These values are persisted to logs. Entries should not be renumbered and
@@ -234,6 +296,19 @@ class PrivacySandboxService : public KeyedService,
   // profile startup.
   void LogPrivacySandboxState();
 
+  // Converts the provided list of |top_frames| into eTLD+1s for display, and
+  // provides those to |callback|.
+  void ConvertFledgeJoiningTopFramesForDisplay(
+      base::OnceCallback<void(std::vector<std::string>)> callback,
+      std::vector<url::Origin> top_frames);
+
+  // Contains the logic which powers GetRequiredDialogType(). Static to allow
+  // EXPECT_DCHECK_DEATH testing, which does not work well with many of the
+  // other dependencies of this service.
+  static PrivacySandboxService::DialogType GetRequiredDialogTypeInternal(
+      PrefService* pref_service,
+      profile_metrics::BrowserProfileType profile_type);
+
  private:
   raw_ptr<PrivacySandboxSettings> privacy_sandbox_settings_;
   raw_ptr<content_settings::CookieSettings> cookie_settings_;
@@ -241,7 +316,7 @@ class PrivacySandboxService : public KeyedService,
   raw_ptr<policy::PolicyService> policy_service_;
   raw_ptr<syncer::SyncService> sync_service_;
   raw_ptr<signin::IdentityManager> identity_manager_;
-  raw_ptr<federated_learning::FlocIdProvider> floc_id_provider_;
+  raw_ptr<content::InterestGroupManager> interest_group_manager_;
   profile_metrics::BrowserProfileType profile_type_;
 
   base::ScopedObservation<syncer::SyncService, syncer::SyncServiceObserver>
@@ -255,6 +330,16 @@ class PrivacySandboxService : public KeyedService,
   // A manual record of whether policy_service_ is being observerd.
   // Unfortunately PolicyService does not support scoped observers.
   bool policy_service_observed_ = false;
+
+  // Fake implementation for current and blocked topics.
+  std::set<privacy_sandbox::CanonicalTopic> fake_current_topics_ = {
+      {1, privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY},
+      {2, privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY}};
+  std::set<privacy_sandbox::CanonicalTopic> fake_blocked_topics_ = {
+      {3, privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY},
+      {4, privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY}};
+
+  base::WeakPtrFactory<PrivacySandboxService> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_PRIVACY_SANDBOX_PRIVACY_SANDBOX_SERVICE_H_

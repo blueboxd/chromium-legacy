@@ -138,6 +138,8 @@ const char kManagementOnFileDownloadedVisibleData[] =
 const char kManagementOnBulkDataEntryEvent[] = "managementOnBulkDataEntryEvent";
 const char kManagementOnBulkDataEntryVisibleData[] =
     "managementOnBulkDataEntryVisibleData";
+const char kManagementOnPrintEvent[] = "managementOnPrintEvent";
+const char kManagementOnPrintVisibleData[] = "managementOnPrintVisibleData";
 
 const char kManagementOnPageVisitedEvent[] = "managementOnPageVisitedEvent";
 const char kManagementOnPageVisitedVisibleData[] =
@@ -160,6 +162,8 @@ enum class ReportingType {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kManagementLogUploadEnabled[] = "managementLogUploadEnabled";
 const char kManagementReportActivityTimes[] = "managementReportActivityTimes";
+const char kManagementReportDeviceAudioStatus[] =
+    "managementReportDeviceAudioStatus";
 const char kManagementReportNetworkData[] = "managementReportNetworkData";
 const char kManagementReportHardwareData[] = "managementReportHardwareData";
 const char kManagementReportUsers[] = "managementReportUsers";
@@ -583,6 +587,15 @@ void ManagementUIHandler::AddDeviceReportingInfo(
                               DeviceReportingType::kLogs);
   }
 
+  bool report_audio_status = false;
+  chromeos::CrosSettings::Get()->GetBoolean(ash::kReportDeviceAudioStatus,
+                                            &report_audio_status);
+  if (report_audio_status) {
+    AddDeviceReportingElement(report_sources,
+                              kManagementReportDeviceAudioStatus,
+                              DeviceReportingType::kDevice);
+  }
+
   bool report_print_jobs = false;
   chromeos::CrosSettings::Get()->GetBoolean(ash::kReportDevicePrintJobs,
                                             &report_print_jobs);
@@ -799,6 +812,8 @@ base::Value ManagementUIHandler::GetThreatProtectionInfo(Profile* profile) {
        kManagementOnFileDownloadedVisibleData},
       {enterprise_connectors::BULK_DATA_ENTRY, kManagementOnBulkDataEntryEvent,
        kManagementOnBulkDataEntryVisibleData},
+      {enterprise_connectors::PRINT, kManagementOnPrintEvent,
+       kManagementOnPrintVisibleData},
   };
   auto* connectors_service =
       enterprise_connectors::ConnectorsServiceFactory::GetForBrowserContext(
@@ -977,16 +992,16 @@ void ManagementUIHandler::HandleGetExtensions(const base::ListValue* args) {
   // The number of extensions to be reported in chrome://management with
   // powerful permissions.
   base::UmaHistogramCounts1000(kPowerfulExtensionsCountHistogram,
-                               powerful_extensions.GetList().size());
+                               powerful_extensions.GetListDeprecated().size());
 
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+  ResolveJavascriptCallback(args->GetListDeprecated()[0] /* callback_id */,
                             powerful_extensions);
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void ManagementUIHandler::HandleGetLocalTrustRootsInfo(
     const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetList().size());
+  CHECK_EQ(1U, args->GetListDeprecated().size());
   base::Value trust_roots_configured(false);
   AllowJavascript();
 
@@ -996,7 +1011,7 @@ void ManagementUIHandler::HandleGetLocalTrustRootsInfo(
   if (policy_service && policy_service->has_policy_certificates())
     trust_roots_configured = base::Value(true);
 
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+  ResolveJavascriptCallback(args->GetListDeprecated()[0] /* callback_id */,
                             trust_roots_configured);
 }
 
@@ -1019,18 +1034,18 @@ void ManagementUIHandler::HandleGetDeviceReportingInfo(
   AddDeviceReportingInfo(&report_sources, collector, syslog_uploader,
                          Profile::FromWebUI(web_ui()));
 
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+  ResolveJavascriptCallback(args->GetListDeprecated()[0] /* callback_id */,
                             report_sources);
 }
 
 void ManagementUIHandler::HandleGetPluginVmDataCollectionStatus(
     const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetList().size());
+  CHECK_EQ(1U, args->GetListDeprecated().size());
   base::Value plugin_vm_data_collection_enabled(
       Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
           plugin_vm::prefs::kPluginVmDataCollectionAllowed));
   AllowJavascript();
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+  ResolveJavascriptCallback(args->GetListDeprecated()[0] /* callback_id */,
                             plugin_vm_data_collection_enabled);
 }
 
@@ -1040,7 +1055,7 @@ void ManagementUIHandler::HandleGetContextualManagedData(
     const base::ListValue* args) {
   AllowJavascript();
   auto result = GetContextualManagedData(Profile::FromWebUI(web_ui()));
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+  ResolveJavascriptCallback(args->GetListDeprecated()[0] /* callback_id */,
                             std::move(result));
 }
 
@@ -1048,7 +1063,7 @@ void ManagementUIHandler::HandleGetThreatProtectionInfo(
     const base::ListValue* args) {
   AllowJavascript();
   ResolveJavascriptCallback(
-      args->GetList()[0] /* callback_id */,
+      args->GetListDeprecated()[0] /* callback_id */,
       GetThreatProtectionInfo(Profile::FromWebUI(web_ui())));
 }
 
@@ -1057,7 +1072,7 @@ void ManagementUIHandler::HandleGetManagedWebsites(
   AllowJavascript();
 
   ResolveJavascriptCallback(
-      args->GetList()[0] /* callback_id */,
+      args->GetListDeprecated()[0] /* callback_id */,
       GetManagedWebsitesInfo(Profile::FromWebUI(web_ui())));
 }
 
@@ -1066,7 +1081,7 @@ void ManagementUIHandler::HandleInitBrowserReportingInfo(
   base::Value report_sources(base::Value::Type::LIST);
   AllowJavascript();
   AddReportingInfo(&report_sources);
-  ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
+  ResolveJavascriptCallback(args->GetListDeprecated()[0] /* callback_id */,
                             report_sources);
 }
 

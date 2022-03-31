@@ -27,25 +27,35 @@ using ::base::android::AttachCurrentThread;
 using ::base::android::JavaObjectArrayReader;
 using ::base::android::JavaParamRef;
 using ::base::android::ScopedJavaGlobalRef;
-using ::base::android::ScopedJavaLocalRef;
 
 namespace autofill_assistant {
 
 static jlong JNI_Starter_FromWebContents(
     JNIEnv* env,
-    const JavaParamRef<jobject>& jweb_contents) {
+    const JavaParamRef<jobject>& jweb_contents,
+    const JavaParamRef<jobject>& jstatic_dependencies) {
   auto* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
   CHECK(web_contents);
-  StarterAndroid::CreateForWebContents(web_contents);
+
+  auto dependencies = Dependencies::CreateFromJavaStaticDependencies(
+      ScopedJavaGlobalRef<jobject>(env, jstatic_dependencies));
+  StarterAndroid::CreateForWebContents(web_contents, std::move(dependencies));
   auto* tab_helper_android = StarterAndroid::FromWebContents(web_contents);
   return reinterpret_cast<intptr_t>(tab_helper_android);
 }
 
-StarterAndroid::StarterAndroid(content::WebContents* web_contents)
+StarterAndroid::StarterAndroid(content::WebContents* web_contents,
+                               std::unique_ptr<Dependencies> dependencies)
     : content::WebContentsUserData<StarterAndroid>(*web_contents),
+      dependencies_(std::move(dependencies)),
       website_login_manager_(std::make_unique<WebsiteLoginManagerImpl>(
           ChromePasswordManagerClient::FromWebContents(web_contents),
-          web_contents)) {}
+          web_contents)) {
+  // Create the AnnotateDomModelService when the browser starts, such that it
+  // starts listening to model changes early enough.
+  dependencies_->GetOrCreateAnnotateDomModelService(
+      web_contents->GetBrowserContext());
+}
 
 StarterAndroid::~StarterAndroid() = default;
 
@@ -61,7 +71,7 @@ void StarterAndroid::Attach(JNIEnv* env, const JavaParamRef<jobject>& jcaller) {
 
 void StarterAndroid::Detach(JNIEnv* env, const JavaParamRef<jobject>& jcaller) {
   java_object_ = nullptr;
-  dependencies_ = nullptr;
+  java_dependencies_ = nullptr;
   starter_.reset();
 }
 
@@ -70,7 +80,7 @@ StarterAndroid::CreateTriggerScriptUiDelegate() {
   CreateJavaDependenciesIfNecessary();
   return std::make_unique<TriggerScriptBridgeAndroid>(
       base::android::AttachCurrentThread(),
-      GetWebContents().GetJavaWebContents(), dependencies_->GetJavaObject());
+      GetWebContents().GetJavaWebContents(), java_dependencies_);
 }
 
 std::unique_ptr<ServiceRequestSender>
@@ -126,7 +136,7 @@ void StarterAndroid::OnInteractabilityChanged(
 void StarterAndroid::OnActivityAttachmentChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller) {
-  dependencies_ = nullptr;
+  java_dependencies_ = nullptr;
   if (!starter_) {
     return;
   }
@@ -183,7 +193,7 @@ void StarterAndroid::ShowOnboarding(
 }
 
 void StarterAndroid::HideOnboarding() {
-  if (!dependencies_) {
+  if (!java_dependencies_) {
     return;
   }
   Java_Starter_hideOnboarding(base::android::AttachCurrentThread(),
@@ -228,8 +238,7 @@ bool StarterAndroid::GetMakeSearchesAndBrowsingBetterEnabled() const {
 }
 
 bool StarterAndroid::GetIsCustomTab() const {
-  return ui_controller_android_utils::IsCustomTab(
-      const_cast<content::WebContents*>(&GetWebContents()));
+  return dependencies_->IsCustomTab(GetWebContents());
 }
 
 bool StarterAndroid::GetIsTabCreatedByGSA() const {
@@ -243,7 +252,7 @@ bool StarterAndroid::GetIsTabCreatedByGSA() const {
 }
 
 void StarterAndroid::CreateJavaDependenciesIfNecessary() {
-  if (dependencies_) {
+  if (java_dependencies_) {
     return;
   }
 
@@ -256,12 +265,7 @@ void StarterAndroid::CreateJavaDependenciesIfNecessary() {
     return;
   }
 
-  ScopedJavaGlobalRef<jobject> java_dependencies =
-      ScopedJavaGlobalRef<jobject>(*array.begin());
-  if (!java_dependencies.is_null()) {
-    dependencies_ = Dependencies::CreateFromJavaObject(java_dependencies);
-  }
-
+  java_dependencies_ = *array.begin();
   java_onboarding_helper_ = *(++array.begin());
 }
 
@@ -280,7 +284,7 @@ void StarterAndroid::Start(
       jparameter_values, jdevice_only_parameter_names,
       jdevice_only_parameter_values,
       /* onboarding_shown = */ false, /* is_direct_action = */ false,
-      jinitial_url);
+      jinitial_url, GetIsCustomTab());
 
   starter_->Start(std::move(trigger_context));
 }
@@ -290,8 +294,7 @@ void StarterAndroid::StartRegularScript(
     std::unique_ptr<TriggerContext> trigger_context,
     const absl::optional<TriggerScriptProto>& trigger_script) {
   CreateJavaDependenciesIfNecessary();
-  ClientAndroid::CreateForWebContents(&GetWebContents(),
-                                      std::move(dependencies_));
+  ClientAndroid::CreateForWebContents(&GetWebContents(), java_dependencies_);
   auto* client_android = ClientAndroid::FromWebContents(&GetWebContents());
   DCHECK(client_android);
 

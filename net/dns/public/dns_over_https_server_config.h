@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/strings/string_piece.h"
+#include "base/values.h"
 #include "net/base/net_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -15,10 +17,6 @@ namespace net {
 // Simple representation of a DoH server for use in configurations.
 class NET_EXPORT DnsOverHttpsServerConfig {
  public:
-  // Constructs an empty server config. This is the only constructible
-  // DnsOverHttpsServerConfig value that does not represent a valid config.
-  DnsOverHttpsServerConfig() = default;
-
   // Returns nullopt if |doh_template| is invalid.
   static absl::optional<DnsOverHttpsServerConfig> FromString(
       std::string doh_template);
@@ -27,7 +25,10 @@ class NET_EXPORT DnsOverHttpsServerConfig {
   bool operator<(const DnsOverHttpsServerConfig& other) const;
 
   const std::string& server_template() const;
+  base::StringPiece server_template_piece() const;
   bool use_post() const;
+
+  base::Value ToValue() const;
 
  private:
   DnsOverHttpsServerConfig(std::string server_template, bool use_post)

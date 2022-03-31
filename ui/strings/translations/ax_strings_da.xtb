@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
 <translation id="1018939186200882850">menupunkt</translation>
-<translation id="10623998915015855">skydeknap</translation>
+<translation id="10623998915015855">til/fra-knap</translation>
 <translation id="1188858454923323853">supplerende</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">skyder</translation>
@@ -13,9 +13,9 @@
 <translation id="1359897965706325498">banner</translation>
 <translation id="1589122976691792535">område</translation>
 <translation id="1650423536718072820">opmærksomhedsskabende citat</translation>
-<translation id="1806710327868736751">alert_dialog</translation>
 <translation id="1821985195704844674">trægitter</translation>
 <translation id="1823704031293214298">sidefod</translation>
+<translation id="1838681052457320736">dialogboks med underretning</translation>
 <translation id="1842960171412779397">vælg</translation>
 <translation id="190587075670221089">sletning</translation>
 <translation id="1907737156431278478">eksempel</translation>

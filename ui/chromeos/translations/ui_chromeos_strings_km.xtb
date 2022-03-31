@@ -21,6 +21,7 @@
 <translation id="115443833402798225">អាន់ម៉ាទាហានគុល</translation>
 <translation id="1155759005174418845">កាតាឡាន</translation>
 <translation id="1168100932582989117">ម៉ាស៊ីនមេ​ឈ្មោះ Google</translation>
+<translation id="1171082344678443012">បណ្ណសារដែលបង្ហាប់ដោយ XZ</translation>
 <translation id="1172970565351728681">នៅសល់​ប្រហែល <ph name="REMAINING_TIME" /> ទៀត</translation>
 <translation id="1173894706177603556">ប្តូរឈ្មោះ</translation>
 <translation id="1173916544412572294">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, <ph name="CONNECTION_STATUS" />, កម្លាំង​រលកសញ្ញា <ph name="SIGNAL_STRENGTH" />%, ថ្មទូរសព្ទ <ph name="BATTERY_STATUS" />%, ព័ត៌មាន​លម្អិត</translation>
@@ -119,6 +120,7 @@
 <translation id="2009067268969781306">ការសម្អាត​ឧបករណ៍ផ្ទុក USB នឹងលុបទិន្នន័យ​ទាំងអស់​ដែលបានរក្សាទុក​នៅលើវា។ សកម្មភាព​នេះ​មិន​អាច​​ត្រឡប់វិញ​បានទេ។</translation>
 <translation id="2025955442973426285">ភាសាទីរិនយា</translation>
 <translation id="2028997212275086731">ឯកសារបណ្ណាសារ RAR</translation>
+<translation id="2036414735548252477">បណ្ណសារ tar ដែលបង្ហាប់ដោយ LZMA</translation>
 <translation id="2037845485764049925">ភាសា​រុស្ស៊ី</translation>
 <translation id="2044023416777079300">មិនបានចុះឈ្មោះម៉ូដឹមទេ</translation>
 <translation id="2046702855113914483">មីរ៉ាមេន</translation>
@@ -296,6 +298,7 @@
 <translation id="3556731189587832921">ភាសា​អង់គ្លេស (សហរដ្ឋអាមេរិក) ដែលប្រើក្ដារចុច​កុំព្យូទ័រ​អន្តរជាតិ</translation>
 <translation id="3567221313191587603">ជ្រើសរើស​ឯកសារ រួចបើក <ph name="OFFLINE_CHECKBOX_NAME" /> ដើម្បីឱ្យអាច​ចូលប្រើ​ឯកសារ​របស់អ្នកបាន​ពេលគ្មានអ៊ីនធឺណិត។</translation>
 <translation id="357479282490346887">ភាសាលីទុយអានី</translation>
+<translation id="3587482841069643663">ទាំងអស់</translation>
 <translation id="3592251141500063301">មិនអាចទាញយក <ph name="FILE_NAME" /> មកប្រើពេលគ្មានអ៊ីនធឺណិតបានទេ</translation>
 <translation id="3601151620448429694"><ph name="NETWORK_NAME" /> · <ph name="CARRIER_NAME" /></translation>
 <translation id="3603385196401704894">ភាសាបារាំងកាណាដា</translation>
@@ -441,6 +444,7 @@
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> បៃ</translation>
 <translation id="4880214202172289027">របាររំកិលកម្រិតសំឡេង</translation>
 <translation id="4881695831933465202">បើក</translation>
+<translation id="4886199584824489598">បណ្ណសារដែលបង្ហាប់ដោយ Bzip2</translation>
 <translation id="4900532980794411603">ចែករំលែក​ជាមួយ Parallels Desktop</translation>
 <translation id="4902546322522096650">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, កម្លាំងរលកសញ្ញា <ph name="SIGNAL_STRENGTH" />%, ភ្ជាប់</translation>
 <translation id="4905417359854579806">រួចរាល់​ដើម្បី​បម្រុងទុក <ph name="FILE_COUNT" /></translation>
@@ -584,6 +588,7 @@
 <translation id="6055907707645252013">បណ្ដាញ <ph name="NETWORK_TYPE" />, មិនបាន​ភ្ជាប់</translation>
 <translation id="6074825444536523002">បែបបទ Google</translation>
 <translation id="6079871810119356840">ភាសាហុងគ្រី​ដែលប្រើ​ក្ដារចុច Qwerty</translation>
+<translation id="6082256976217156453">បណ្ណសារដែលបង្ហាប់ដោយ LZMA</translation>
 <translation id="6096979789310008754">បានសម្អាតអត្ថបទស្វែងរក ដែលបង្ហាញឯកសារ និងថតទាំងអស់។</translation>
 <translation id="610101264611565198">កំពុងផ្លាស់ទី <ph name="FILE_NAME" /> ទៅ <ph name="FOLDER_NAME" /></translation>
 <translation id="6129953537138746214">ដកឃ្លា</translation>
@@ -679,6 +684,7 @@
 <translation id="6935521024859866267">ផ្កាប់ចុះក្រោម</translation>
 <translation id="6943836128787782965">HTTP បានបរាជ័យ</translation>
 <translation id="6949408524333579394">ការសរសេរតាម​សូរសព្ទជាភាសាស៊ែប៊ី</translation>
+<translation id="6954309393500027528">ការដាក់​ឯកសារនេះចូល​ត្រូវបាន​ទប់ស្កាត់ដោយ​អ្នកគ្រប់គ្រង​របស់អ្នក</translation>
 <translation id="6960565108681981554">មិនបាន​បើកដំណើរការ​ទេ។ សូម​ទាក់ទង​​ក្រុមហ៊ុន​សេវា​ទូរសព្ទ​របស់​អ្នក។</translation>
 <translation id="696203921837389374">បើកដំណើរការធ្វើសមកម្មនៅលើទិន្នន័យចល័ត</translation>
 <translation id="6965382102122355670">យល់ព្រម</translation>
@@ -839,6 +845,7 @@
 <translation id="8297012244086013755">ហានគុល 3 ឈុត (គ្មាន Shift)</translation>
 <translation id="8299269255470343364">ភាសាជប៉ុន</translation>
 <translation id="8300849813060516376">OTASP បានបរាជ័យ</translation>
+<translation id="8308481408797647857">បណ្ណសារ tar ដែលបង្ហាប់ដោយ XZ</translation>
 <translation id="8312871300878166382">បិទភ្ជាប់ទៅក្នុងថតឯកសារ</translation>
 <translation id="8329978297633540474">អត្ថបទធម្មតា</translation>
 <translation id="8335587457941836791">ដកការដៅចេញពីធ្នើ</translation>
@@ -947,6 +954,7 @@
 <translation id="943972244133411984">កែសម្រួល​ដោយ</translation>
 <translation id="945522503751344254">ផ្ញើមតិ</translation>
 <translation id="947144732524271678">បានជ្រើសរើសធាតុ <ph name="ENTRY_COUNT" /> ជួរចាប់ពី <ph name="FROM_ENTRY_NAME" /> ដល់ <ph name="TO_ENTRY_NAME" /> ។</translation>
+<translation id="961973045258256291">បណ្ណសារដែលបង្ហាប់ដោយ Gzip</translation>
 <translation id="965477715979482472">អង់គ្លេស (អាហ្វ្រិក​ខាងត្បូង)</translation>
 <translation id="981121421437150478">ក្រៅបណ្តាញ</translation>
 <translation id="988685240266037636">ឯកសារដែលដាក់​ឈ្មោះ "<ph name="FILE_NAME" />" មានរួចហើយ។ តើអ្នកចង់​ជំនួសវា​ដែរទេ?</translation>

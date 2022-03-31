@@ -11,6 +11,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
+#include "build/chromeos_buildflags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/insets.h"
@@ -25,6 +26,10 @@
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "base/time/time.h"
+#endif
 
 namespace views {
 class ScrollView;
@@ -91,6 +96,11 @@ class MESSAGE_CENTER_EXPORT MessageView
   virtual void AddGroupNotification(const Notification& notification,
                                     bool newest_first) {}
 
+  // Find the message view associated with a grouped notification id if it
+  // exists.
+  virtual views::View* FindGroupNotificationView(
+      const std::string& notification_id);
+
   // Populates this view with a list of grouped notifications, this is intended
   // to be used for initializing of grouped notifications so it does not
   // explicitly update the size of the view unlike `AddGroupNotification`.
@@ -131,11 +141,18 @@ class MESSAGE_CENTER_EXPORT MessageView
   virtual void OnSettingsButtonPressed(const ui::Event& event);
   virtual void OnSnoozeButtonPressed(const ui::Event& event);
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Gets the animation duration for a recent bounds change.
+  virtual base::TimeDelta GetBoundsAnimationDuration(
+      const Notification& notification) const;
+#endif
+
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnKeyReleased(const ui::KeyEvent& event) override;
   void OnPaint(gfx::Canvas* canvas) override;

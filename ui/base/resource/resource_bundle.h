@@ -22,10 +22,13 @@
 #include "base/strings/string_piece.h"
 #include "build/chromeos_buildflags.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "ui/base/layout.h"
+#include "ui/base/resource/resource_scale_factor.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/native_widget_types.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ui/base/models/image_model.h"
+#endif
 
 class SkBitmap;
 
@@ -33,12 +36,7 @@ namespace base {
 class File;
 class Lock;
 class RefCountedMemory;
-class RefCountedString;
 }  // namespace base
-
-namespace gfx {
-class ImageSkiaRep;
-}
 
 namespace ui {
 
@@ -156,8 +154,12 @@ class COMPONENT_EXPORT(UI_BASE) ResourceBundle {
     virtual ~Delegate() = default;
   };
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   using LottieImageParseFunction =
-      gfx::ImageSkiaRep (*)(const base::RefCountedString& bytes_string);
+      gfx::ImageSkia (*)(const std::string& bytes_string);
+  using LottieThemedImageParseFunction =
+      ui::ImageModel (*)(const std::string& bytes_string);
+#endif
 
   // Initialize the ResourceBundle for this process. Does not take ownership of
   // the |delegate| value. Returns the language selected or an empty string if
@@ -184,6 +186,11 @@ class COMPONENT_EXPORT(UI_BASE) ResourceBundle {
       base::File pak_file,
       const base::MemoryMappedFile::Region& region);
 
+  // Initializes resource bundle by loading the primary data pack from the
+  // specified buffer. This does not infer the locale or access any files.
+  static void InitSharedInstanceWithBuffer(base::span<const uint8_t> buffer,
+                                           ResourceScaleFactor scale_factor);
+
   // Initialize the ResourceBundle using given data pack path for testing.
   static void InitSharedInstanceWithPakPath(const base::FilePath& path);
 
@@ -201,8 +208,9 @@ class COMPONENT_EXPORT(UI_BASE) ResourceBundle {
   static ResourceBundle& GetSharedInstance();
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  static void SetParseLottieAsStillImage(
-      LottieImageParseFunction parse_lottie_as_still_image);
+  static void SetLottieParsingFunctions(
+      LottieImageParseFunction parse_lottie_as_still_image,
+      LottieThemedImageParseFunction parse_lottie_as_themed_still_image);
 #endif
 
   ResourceBundle(const ResourceBundle&) = delete;
@@ -269,6 +277,12 @@ class COMPONENT_EXPORT(UI_BASE) ResourceBundle {
   // gfx::Image will perform a conversion, rather than using the native image
   // loading code of ResourceBundle.
   gfx::Image& GetNativeImageNamed(int resource_id);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Gets a themed Lottie image (not animated) with the specified |resource_id|
+  // from the current module data. |ResourceBundle| owns the result.
+  const ui::ImageModel& GetThemedLottieImageNamed(int resource_id);
+#endif
 
   // Loads the raw bytes of a scale independent data resource or null.
   base::RefCountedMemory* LoadDataResourceBytes(int resource_id) const;
@@ -400,7 +414,6 @@ class COMPONENT_EXPORT(UI_BASE) ResourceBundle {
   friend class ChromeBrowserMainMacBrowserTest;
 
   class BitmapImageSource;
-  class LottieImageSource;
 
   using IdToStringMap = std::unordered_map<int, std::u16string>;
 
@@ -485,14 +498,17 @@ class COMPONENT_EXPORT(UI_BASE) ResourceBundle {
                         bool* fell_back_to_1x);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Creates the |rep| from a Lottie asset, given the |resource_id|. Returns
-  // false if the resource does not exist.
-  bool LoadLottie(int resource_id, gfx::ImageSkiaRep* rep) const;
+  // Creates the |bytes_string| from a Lottie asset, given the |resource_id|.
+  // Returns false if the resource is not a Lottie asset.
+  bool LoadLottieBytesString(int resource_id, std::string* bytes_string) const;
 #endif
 
   // Returns an empty image for when a resource cannot be loaded. This is a
   // bright red bitmap.
   gfx::Image& GetEmptyImage();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  const ui::ImageModel& GetEmptyImageModel();
+#endif
 
   const base::FilePath& GetOverriddenPakPath() const;
 
@@ -527,8 +543,15 @@ class COMPONENT_EXPORT(UI_BASE) ResourceBundle {
   // ownership of the pointers.
   using ImageMap = std::map<int, gfx::Image>;
   ImageMap images_;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  using ImageModelMap = std::map<int, ui::ImageModel>;
+  ImageModelMap image_models_;
+#endif
 
   gfx::Image empty_image_;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ui::ImageModel empty_image_model_;
+#endif
 
   // The various font lists used, as a map from a signed size delta from the
   // platform base font size, plus style, to the FontList. Cached to avoid

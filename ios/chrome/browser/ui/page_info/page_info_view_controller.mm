@@ -149,14 +149,14 @@ float kTitleLabelMinimumScaleFactor = 0.7f;
   [self.tableViewModel setHeader:permissionsHeaderItem
         forSectionWithIdentifier:SectionIdentifierPermissions];
 
-  [self addSwitchIfExistForPermission:web::Permission::CAMERA
-                            withLabel:l10n_util::GetNSString(
-                                          IDS_IOS_PERMISSIONS_CAMERA)
-                               toItem:ItemTypePermissionsCamera];
-  [self addSwitchIfExistForPermission:web::Permission::MICROPHONE
-                            withLabel:l10n_util::GetNSString(
-                                          IDS_IOS_PERMISSIONS_MICROPHONE)
-                               toItem:ItemTypePermissionsMicrophone];
+  [self addSwitchIfAccessibleForPermission:web::PermissionCamera
+                                 withLabel:l10n_util::GetNSString(
+                                               IDS_IOS_PERMISSIONS_CAMERA)
+                                    toItem:ItemTypePermissionsCamera];
+  [self addSwitchIfAccessibleForPermission:web::PermissionMicrophone
+                                 withLabel:l10n_util::GetNSString(
+                                               IDS_IOS_PERMISSIONS_MICROPHONE)
+                                    toItem:ItemTypePermissionsMicrophone];
 
   TableViewLinkHeaderFooterItem* permissionsDescription =
       [[TableViewLinkHeaderFooterItem alloc]
@@ -254,10 +254,10 @@ float kTitleLabelMinimumScaleFactor = 0.7f;
   web::Permission permission;
   switch (sender.tag) {
     case ItemTypePermissionsCamera:
-      permission = web::Permission::CAMERA;
+      permission = web::PermissionCamera;
       break;
     case ItemTypePermissionsMicrophone:
-      permission = web::Permission::MICROPHONE;
+      permission = web::PermissionMicrophone;
       break;
     case ItemTypeSecurityHeader:
     case ItemTypeSecurityDescription:
@@ -270,11 +270,12 @@ float kTitleLabelMinimumScaleFactor = 0.7f;
   [self.permissionsDelegate toggleStateForPermission:permission];
 }
 
-// If |permission| is accessible, add a switch for it to the Permissions section
-// of the table.
-- (void)addSwitchIfExistForPermission:(web::Permission)permission
-                            withLabel:(NSString*)label
-                               toItem:(ItemType)item API_AVAILABLE(ios(15.0)) {
+// If |permission| is accessible, adds a switch for it to the Permissions
+// section of the table.
+- (void)addSwitchIfAccessibleForPermission:(web::Permission)permission
+                                 withLabel:(NSString*)label
+                                    toItem:(ItemType)item
+    API_AVAILABLE(ios(15.0)) {
   if ([self.permissionsDelegate isPermissionAccessible:permission]) {
     TableViewSwitchItem* switchItem =
         [[TableViewSwitchItem alloc] initWithType:item];

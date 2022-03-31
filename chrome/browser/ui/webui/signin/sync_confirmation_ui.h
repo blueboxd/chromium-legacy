@@ -11,6 +11,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/webui/signin/signin_web_dialog_ui.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Browser;
 class Profile;
@@ -39,18 +40,10 @@ class SyncConfirmationUI : public SigninWebDialogUI {
   ~SyncConfirmationUI() override;
 
   // SigninWebDialogUI:
+  // `browser` can be nullptr when the UI is displayed without a browser.
   void InitializeMessageHandlerWithBrowser(Browser* browser) override;
 
-  // Initializes the message handler for the profile creation flow (when there's
-  // no browser available).
-  void InitializeMessageHandlerForCreationFlow(
-      absl::optional<SkColor> profile_color);
-
  private:
-  void Initialize(absl::optional<SkColor> profile_creation_flow_color,
-                  DesignVersion design,
-                  bool is_modal_dialog);
-  void InitializeMessageHandler(Browser* browser);
   void InitializeForSyncConfirmation(
       content::WebUIDataSource* source,
       absl::optional<SkColor> profile_creation_flow_color,

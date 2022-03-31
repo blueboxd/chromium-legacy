@@ -36,13 +36,16 @@ class PrivacySandboxSettings : public KeyedService {
  public:
   class Observer {
    public:
-    virtual void OnFlocDataAccessibleSinceUpdated(bool reset_compute_timer) = 0;
+    virtual void OnFlocDataAccessibleSinceUpdated(bool reset_compute_timer) {}
+
+    virtual void OnTrustTokenBlockingChanged(bool blocked) {}
   };
 
   PrivacySandboxSettings(
       HostContentSettingsMap* host_content_settings_map,
       scoped_refptr<content_settings::CookieSettings> cookie_settings,
-      PrefService* pref_service);
+      PrefService* pref_service,
+      bool incognito_profile);
   ~PrivacySandboxSettings() override;
 
   // Returns whether FLoC is allowed at all. If false, FLoC calculations should
@@ -87,7 +90,9 @@ class PrivacySandboxSettings : public KeyedService {
   // Sets the ability for |top_frame_etld_plus1| to join the profile to interest
   // groups to |allowed|. This information is stored in preferences, and is made
   // available to the API via IsFledgeJoiningAllowed(). |top_frame_etld_plus1|
-  // is DCHECK confirmed to be a non-empty, properly formed eTLD+1.
+  // should in most circumstances be a valid eTLD+1, but hosts are accepted to
+  // allow for shifts in private registries. Entries are converted into wildcard
+  // subdomain ContentSettingsPattern before comparison.
   void SetFledgeJoiningAllowed(const std::string& top_frame_etld_plus1,
                                bool allowed);
 
@@ -117,17 +122,25 @@ class PrivacySandboxSettings : public KeyedService {
   // value of false indicates that the sandbox is completely disabled. A return
   // value of true *must* be followed up by the appropriate context specific
   // check.
-  bool IsPrivacySandboxAllowed();
+  bool IsPrivacySandboxEnabled() const;
 
   // Disables the Privacy Sandbox completely if |enabled| is false, if |enabled|
   // is true, more granular checks will still be performed to determine if
   // specific APIs are available in specific contexts.
   void SetPrivacySandboxEnabled(bool enabled);
 
+  // Returns whether Trust Tokens are "generally" available. A return value of
+  // false is authoritative, while a value of true must be followed by the
+  // appropriate context specific check.
+  bool IsTrustTokensAllowed();
+
   // Called when there's a broad cookies clearing action. For example, this
   // should be called on "Clear browsing data", but shouldn't be called on the
   // Clear-Site-Data header, as it's restricted to a specific site.
   void OnCookiesCleared();
+
+  // Called when the main privacy sandbox preference is changed.
+  void OnPrivacySandboxPrefChanged();
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -138,7 +151,7 @@ class PrivacySandboxSettings : public KeyedService {
   // |url| on |top_frame_origin|. Individual APIs may perform additional checks
   // for allowability (such as incognito) ontop of this. |cookie_settings| is
   // provided as a parameter to allow callers to cache it between calls.
-  bool IsPrivacySandboxAllowedForContext(
+  bool IsPrivacySandboxEnabledForContext(
       const GURL& url,
       const absl::optional<url::Origin>& top_frame_origin,
       const ContentSettingsForOneType& cookie_settings) const;
@@ -149,6 +162,8 @@ class PrivacySandboxSettings : public KeyedService {
   raw_ptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
   raw_ptr<PrefService> pref_service_;
+  PrefChangeRegistrar pref_change_registrar_;
+  bool incognito_profile_;
 };
 
 #endif  // COMPONENTS_PRIVACY_SANDBOX_PRIVACY_SANDBOX_SETTINGS_H_

@@ -234,7 +234,7 @@
       {
         "id": "AccessibilityFeature",
         "type": "string",
-        "enum": [ "enhancedNetworkVoices", "dictationCommands" ],
+        "enum": [ "enhancedNetworkVoices", "dictationCommands", "dictationHints" ],
         "description": "Subset of accessibility features."
       },
       {
@@ -253,7 +253,13 @@
         "id": "DictationBubbleIconType",
         "type": "string",
         "enum": [ "hidden", "standby", "macroSuccess", "macroFail" ],
-        "description": "The icon shown in the Dictation bubble UI"
+        "description": "The icon shown in the Dictation bubble UI."
+      },
+      {
+        "id": "DictationBubbleHintType",
+        "type": "string",
+        "enum": ["trySaying", "type", "delete", "selectAll", "undo", "help", "unselect", "copy"],
+        "description": "Types of hints displayed in the Dictation bubble UI."
       },
       {
         "id": "DictationBubbleProperties",
@@ -270,6 +276,12 @@
           "text": {
             "type": "string",
             "description": "The text to be displayed in the bubble UI. If `text` is undefined, the bubble will clear its current text.",
+            "optional": true
+          },
+          "hints": {
+            "type": "array",
+            "items": { "$ref": "DictationBubbleHintType" },
+            "description": "Array of hints to show in the UI.",
             "optional": true
           }
         }

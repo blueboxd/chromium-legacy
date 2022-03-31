@@ -84,6 +84,8 @@ class TestWaylandServerThread : public base::Thread,
 
   // Initializes and returns WpPresentation.
   MockWpPresentation* EnsureWpPresentation();
+  // Initializes and returns SurfaceAugmenter.
+  TestSurfaceAugmenter* EnsureSurfaceAugmenter();
 
   template <typename T>
   T* GetObject(uint32_t id) {
@@ -127,6 +129,8 @@ class TestWaylandServerThread : public base::Thread,
   void set_output_delegate(OutputDelegate* delegate) {
     output_delegate_ = delegate;
   }
+
+  wl_client* client() const { return client_; }
 
  private:
   void SetupOutputs();

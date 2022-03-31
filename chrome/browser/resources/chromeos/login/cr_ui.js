@@ -140,18 +140,6 @@ cr.define('cr.ui', function() {
     }
 
     /**
-     * Show user-pods.
-     */
-    static showUserPods() {
-      if (Oobe.getInstance().showingViewsLogin) {
-        chrome.send('hideOobeDialog');
-        return;
-      }
-      this.showSigninUI("");
-      this.resetSigninUI(true);
-    }
-
-    /**
      * Sets the current size of the client area (display size).
      * @param {number} width client area width
      * @param {number} height client area height
@@ -179,14 +167,6 @@ cr.define('cr.ui', function() {
      */
     static setDialogSize(width, height) {
       Oobe.getInstance().setDialogSize(width, height);
-    }
-
-    /**
-     * Sets the hint for calculating OOBE dialog margins.
-     * @param {OobeTypes.DialogPaddingMode} mode
-     */
-    static setDialogPaddingMode(mode) {
-      Oobe.getInstance().setDialogPaddingMode(mode);
     }
 
     /**

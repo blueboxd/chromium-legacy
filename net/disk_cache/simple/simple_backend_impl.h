@@ -21,6 +21,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/task/task_traits.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "net/base/cache_type.h"
@@ -46,9 +47,8 @@ namespace disk_cache {
 // destroyed during the iteration will be included in any pre-existing
 // iterations.
 //
-// The non-static functions below must be called on the source creation sequence
-// unless otherwise stated.  Historically the source creation sequence has been
-// the IO thread, but the simple backend may now be used from other sequences.
+// The non-static functions below must be called on the sequence on which the
+// SimpleBackendImpl instance is created.
 
 class BackendCleanupTracker;
 class SimpleEntryImpl;
@@ -59,8 +59,6 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
     public SimpleIndexDelegate,
     public base::SupportsWeakPtr<SimpleBackendImpl> {
  public:
-  static const base::Feature kPrioritizedSimpleCacheTasks;
-
   // Note: only pass non-nullptr for |file_tracker| if you don't want the global
   // one (which things other than tests would want). |file_tracker| must outlive
   // the backend and all the entries, including their asynchronous close.
@@ -135,6 +133,11 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
     return prioritized_task_runner_.get();
   }
 
+  static constexpr base::TaskTraits kWorkerPoolTaskTraits = {
+      base::MayBlock(), base::WithBaseSyncPrimitives(),
+      base::TaskPriority::USER_BLOCKING,
+      base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN};
+
 #if BUILDFLAG(IS_ANDROID)
   void set_app_status_listener(
       base::android::ApplicationStatusListener* app_status_listener) {
@@ -181,7 +184,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
                                            int result);
 
   // Try to create the directory if it doesn't exist. This must run on the
-  // source creation sequence.
+  // sequence on which SimpleIndexFile is running disk I/O.
   static DiskStatResult InitCacheStructureOnDisk(const base::FilePath& path,
                                                  uint64_t suggested_max_size,
                                                  net::CacheType cache_type);
@@ -256,10 +259,6 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   const base::FilePath path_;
   std::unique_ptr<SimpleIndex> index_;
-
-  // This is only used for initial open (including potential format upgrade)
-  // and index load/save.
-  const scoped_refptr<base::SequencedTaskRunner> cache_runner_;
 
   // This is used for all the entry I/O.
   scoped_refptr<net::PrioritizedTaskRunner> prioritized_task_runner_;

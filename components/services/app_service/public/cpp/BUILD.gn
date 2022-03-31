@@ -49,6 +49,8 @@ component("app_types") {
   sources = [
     "app_types.cc",
     "app_types.h",
+    "intent_filter.cc",
+    "intent_filter.h",
     "permission.cc",
     "permission.h",
   ]
@@ -57,7 +59,10 @@ component("app_types") {
 
   public_deps = [ "//components/services/app_service/public/mojom" ]
 
-  deps = [ ":icon_types" ]
+  deps = [
+    ":icon_types",
+    ":run_on_os_login",
+  ]
 }
 
 component("app_update") {
@@ -75,6 +80,8 @@ component("app_update") {
     "app_update.h",
     "capability_access_update.cc",
     "capability_access_update.h",
+    "features.cc",
+    "features.h",
     "macros.h",
   ]
 
@@ -89,6 +96,7 @@ component("app_update") {
     ":app_types",
     ":icon_types",
     ":intents",
+    ":run_on_os_login",
     "//ui/gfx",
   ]
 }
@@ -176,6 +184,18 @@ component("icon_types") {
   deps = [ "//ui/gfx" ]
 }
 
+component("run_on_os_login") {
+  output_name = "LOGIN_MODE"
+  sources = [
+    "run_on_os_login_types.cc",
+    "run_on_os_login_types.h",
+  ]
+
+  defines = [ "IS_LOGIN_MODE_IMPL" ]
+
+  public_deps = [ "//components/services/app_service/public/mojom" ]
+}
+
 source_set("intents") {
   sources = [
     "intent_constants.cc",
@@ -187,6 +207,7 @@ source_set("intents") {
   ]
 
   deps = [
+    ":app_types",
     "//base",
     "//components/services/app_service/public/mojom",
     "//third_party/blink/public/common",
@@ -298,6 +319,7 @@ source_set("unit_tests") {
     ":intents",
     ":preferred_apps",
     ":publisher",
+    ":run_on_os_login",
     ":test_support",
     ":types",
     "//content/test:test_support",

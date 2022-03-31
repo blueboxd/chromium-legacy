@@ -34,18 +34,17 @@ import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxCo
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel;
-import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
-import org.chromium.components.image_fetcher.ImageFetcherConfig;
-import org.chromium.components.image_fetcher.ImageFetcherFactory;
+import org.chromium.components.image_fetcher.ImageFetcher;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ApplicationViewportInsetSupplier;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.util.AccessibilityUtil;
 
 /**
@@ -100,9 +99,10 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
             AssistantOverlayCoordinator overlayCoordinator, BottomSheetController controller,
             ApplicationViewportInsetSupplier applicationViewportInsetSupplier,
             @Nullable AssistantTabObscuringUtil tabObscuringUtil,
-            @NonNull BrowserControlsStateProvider browserControlsStateProvider,
+            @NonNull AssistantBrowserControlsFactory browserControlsFactory,
             AccessibilityUtil accessibilityUtil, AssistantInfoPageUtil infoPageUtil,
-            @Nullable AssistantProfileImageUtil profileImageUtil) {
+            @Nullable AssistantProfileImageUtil profileImageUtil, ImageFetcher imageFetcher,
+            AssistantEditorFactory editorFactory, WindowAndroid windowAndroid) {
         mAccessibilityUtil = accessibilityUtil;
         mModel = model;
         mOverlayCoordinator = overlayCoordinator;
@@ -124,7 +124,7 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
         mRootViewContainer =
                 (AssistantRootViewContainer) LayoutUtils.createInflater(activity).inflate(
                         R.layout.autofill_assistant_bottom_sheet_content, /* root= */ null);
-        mRootViewContainer.initialize(browserControlsStateProvider, accessibilityUtil);
+        mRootViewContainer.initialize(browserControlsFactory, accessibilityUtil);
         mScrollableContent = mRootViewContainer.findViewById(R.id.scrollable_content);
         ViewGroup scrollableContentContainer =
                 mScrollableContent.findViewById(R.id.scrollable_content_container);
@@ -141,13 +141,12 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
         // Instantiate child components.
         mHeaderCoordinator = new AssistantHeaderCoordinator(
                 activity, model.getHeaderModel(), accessibilityUtil, profileImageUtil);
-        mInfoBoxCoordinator = new AssistantInfoBoxCoordinator(activity, model.getInfoBoxModel());
-        AssistantDetailsCoordinator detailsCoordinator =
-                new AssistantDetailsCoordinator(activity, infoPageUtil, model.getDetailsModel(),
-                        ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY,
-                                AutofillAssistantUiController.getProfile().getProfileKey()));
-        mCollectUserDataCoordinator =
-                new AssistantCollectUserDataCoordinator(activity, model.getCollectUserDataModel());
+        mInfoBoxCoordinator =
+                new AssistantInfoBoxCoordinator(activity, model.getInfoBoxModel(), imageFetcher);
+        AssistantDetailsCoordinator detailsCoordinator = new AssistantDetailsCoordinator(
+                activity, infoPageUtil, model.getDetailsModel(), imageFetcher);
+        mCollectUserDataCoordinator = new AssistantCollectUserDataCoordinator(
+                activity, model.getCollectUserDataModel(), editorFactory, windowAndroid);
         AssistantFormCoordinator formCoordinator =
                 new AssistantFormCoordinator(activity, model.getFormModel());
         mActionsCoordinator =

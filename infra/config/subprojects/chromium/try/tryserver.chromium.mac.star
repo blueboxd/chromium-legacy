@@ -53,6 +53,12 @@ try_.orchestrator_builder(
     tryjob = try_.job(),
 )
 
+try_.builder(
+    name = "mac-clang-tidy-rel",
+    executable = "recipe:tricium_clang_tidy_wrapper",
+    goma_jobs = goma.jobs.J150,
+)
+
 try_.compilator_builder(
     name = "mac-rel-compilator",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
@@ -148,11 +154,23 @@ try_.builder(
 )
 
 ios_builder(
+    name = "ios-asan",
+)
+
+ios_builder(
     name = "ios-catalyst",
+    # TODO(crbug.com/1266211): Use main Xcode when main version >= 13c100.
+    xcode = xcode.x13betabots,
 )
 
 ios_builder(
     name = "ios-device",
+)
+
+ios_builder(
+    name = "ios-clang-tidy-rel",
+    executable = "recipe:tricium_clang_tidy_wrapper",
+    goma_jobs = goma.jobs.J150,
 )
 
 ios_builder(
@@ -233,7 +251,8 @@ ios_builder(
 
 ios_builder(
     name = "ios15-sdk-simulator",
-    xcode = xcode.x13latestbeta,
+    xcode = xcode.x13betabots,
+    os = os.MAC_12,
 )
 
 try_.gpu.optional_tests_builder(

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assert, assertNotReached} from '../assert.js';
+import {assert, assertExists, assertNotReached} from '../assert.js';
 import {AsyncJobQueue} from '../async_job_queue.js';
 import {reportError} from '../error.js';
 import {Point} from '../geometry.js';
@@ -15,7 +15,7 @@ import {
   ResolutionList,
   VideoConfig,
 } from '../type.js';
-import {WaitableEvent} from '../waitable_event.js';
+import {CancelableEvent} from '../waitable_event.js';
 
 import {
   AndroidInfoSupportedHardwareLevel,
@@ -32,6 +32,8 @@ import {
   Effect,
   EntryType,
   GetCameraAppDeviceStatus,
+  MojoBlob,
+  PointF,
   ReprocessResultListenerCallbackRouter,
   ResultMetadataObserverCallbackRouter,
   StreamType,
@@ -93,6 +95,9 @@ export function parseMetadata(entry: CameraMetadataEntry): number[] {
  */
 function getMetadataData(
     metadata: CameraMetadata, tag: CameraMetadataTag): number[] {
+  if (metadata.entries === undefined) {
+    return [];
+  }
   for (let i = 0; i < metadata.entryCount; i++) {
     const entry = metadata.entries[i];
     if (entry.tag === tag) {
@@ -109,21 +114,9 @@ function getMetadataData(
 let instance: DeviceOperator|null = null;
 
 /**
- * A ready event which should be signaled once the camera resource is ready.
- */
-const readyEvent = new WaitableEvent();
-
-/**
  * Job queue to sequentialize devices operations.
  */
 const operationQueue = new AsyncJobQueue();
-
-/**
- * Notified when the camera resource is ready.
- */
-export function notifyCameraResourceReady(): void {
-  readyEvent.signal();
-}
 
 /**
  * Operates video capture device through CrOS Camera App Mojo interface.
@@ -558,10 +551,10 @@ export class DeviceOperator {
    */
   async setReprocessOptions(deviceId: string, effects: Effect[]):
       Promise<Array<Promise<Blob>>> {
-    const reprocessEvents = new Map;
+    const reprocessEvents = new Map<Effect, CancelableEvent<Blob>>();
     const callbacks = [];
     for (const effect of effects) {
-      const event = new WaitableEvent<Blob>();
+      const event = new CancelableEvent<Blob>();
       reprocessEvents.set(effect, event);
       callbacks.push(event.wait());
     }
@@ -569,13 +562,10 @@ export class DeviceOperator {
     const listenerCallbacksRouter =
         wrapEndpoint(new ReprocessResultListenerCallbackRouter());
     listenerCallbacksRouter.onReprocessDone.addListener(
-        (effect, status, blob) => {
-          const event = reprocessEvents.get(effect);
-          if (event === undefined) {
-            throw new Error(`Reprocess done with unexpected effect: ${effect}`);
-          }
+        (effect: Effect, status: number, blob: MojoBlob|null) => {
+          const event = assertExists(reprocessEvents.get(effect));
           if (blob === null || status !== 0) {
-            event.signal(new Error(`Set reprocess failed: ${status}`));
+            event.signalError(new Error(`Set reprocess failed: ${status}`));
           } else {
             const {data, mimeType} = blob;
             event.signal(new Blob([new Uint8Array(data)], {type: mimeType}));
@@ -656,9 +646,10 @@ export class DeviceOperator {
       callback: (corners: Point[]) => void): Promise<MojoEndpoint> {
     const observerCallbackRouter =
         wrapEndpoint(new DocumentCornersObserverCallbackRouter());
-    observerCallbackRouter.onDocumentCornersUpdated.addListener((corners) => {
-      callback(corners.map((c) => new Point(c.x, c.y)));
-    });
+    observerCallbackRouter.onDocumentCornersUpdated.addListener(
+        (corners: PointF[]) => {
+          callback(corners.map((c) => new Point(c.x, c.y)));
+        });
 
     const device = await this.getDevice(deviceId);
     await device.registerDocumentCornersObserver(
@@ -683,8 +674,7 @@ export class DeviceOperator {
    *     exist instance.
    * @return The singleton instance.
    */
-  static async getInstance(): Promise<DeviceOperator> {
-    await readyEvent.wait();
+  static async getInstance(): Promise<DeviceOperator|null> {
     if (instance === null) {
       instance = new DeviceOperator();
     }
@@ -693,13 +683,14 @@ export class DeviceOperator {
     }
 
     // Using a wrapper to ensure all the device operations are sequentialized.
-    const deviceOperatorWrapper = {
+    const deviceOperatorWrapper: ProxyHandler<DeviceOperator> = {
       get: function(target, property) {
-        if (target[property] instanceof Function) {
-          return (...args) =>
-                     operationQueue.push(() => target[property](...args));
+        const val = Reflect.get(target, property);
+        if (val instanceof Function) {
+          return (...args: unknown[]) => operationQueue.push(
+                     () => Reflect.apply(val, target, args));
         }
-        return target[property];
+        return val;
       },
     };
     return new Proxy(instance, deviceOperatorWrapper);

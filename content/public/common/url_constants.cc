@@ -25,7 +25,7 @@ const char kAndroidAppScheme[] = "android-app";
 #endif
 const char kGoogleChromeScheme[] = "googlechrome";
 
-const char kChromeUIAttributionInternalsHost[] = "conversion-internals";
+const char kChromeUIAttributionInternalsHost[] = "attribution-internals";
 const char kChromeUIIndexedDBInternalsHost[] = "indexeddb-internals";
 const char kChromeUIBlobInternalsHost[] = "blob-internals";
 const char kChromeUIBrowserCrashHost[] = "inducebrowsercrashforrealz";
@@ -38,7 +38,7 @@ const char kChromeUINetworkErrorHost[] = "network-error";
 const char kChromeUINetworkErrorsListingHost[] = "network-errors";
 const char kChromeUIPrerenderInternalsHost[] = "prerender-internals";
 const char kChromeUIProcessInternalsHost[] = "process-internals";
-const char kChromeUIQuotaInternals2Host[] = "quota-internals-2";
+const char kChromeUIQuotaInternalsHost[] = "quota-internals";
 const char kChromeUIResourcesHost[] = "resources";
 const char kChromeUIServiceWorkerInternalsHost[] = "serviceworker-internals";
 const char kChromeUITracingHost[] = "tracing";

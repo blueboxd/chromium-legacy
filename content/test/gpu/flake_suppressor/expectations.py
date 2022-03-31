@@ -8,20 +8,15 @@ import collections
 import os
 import posixpath
 import re
+import urllib.request
 
-import six
+import gpu_path_util
 
-# This script is Python 3-only, but some presubmit stuff still tries to parse
-# it in Python 2, and this module does not exist in Python 2.
-if six.PY3:
-  import urllib.request
-
-import flake_suppressor
 from flake_suppressor import tag_utils
 
 from typ import expectations_parser
 
-CHROMIUM_SRC_DIR = flake_suppressor.CHROMIUM_SRC_DIR
+CHROMIUM_SRC_DIR = gpu_path_util.CHROMIUM_SRC_DIR
 RELATIVE_EXPECTATION_FILE_DIRECTORY = os.path.join('content', 'test', 'gpu',
                                                    'gpu_tests',
                                                    'test_expectations')
@@ -40,6 +35,7 @@ TEXT_FORMAT_ARG = '?format=TEXT'
 TAG_GROUP_REGEX = re.compile(r'# tags: \[([^\]]*)\]', re.MULTILINE | re.DOTALL)
 
 
+# pylint: disable=too-many-locals
 def IterateThroughResultsForUser(result_map, group_by_tags, include_all_tags):
   """Iterates over |result_map| for the user to provide input.
 
@@ -89,8 +85,10 @@ def IterateThroughResultsForUser(result_map, group_by_tags, include_all_tags):
 
         ModifyFileForResult(suite, test, typ_tags, bug, expected_result,
                             group_by_tags, include_all_tags)
+# pylint: enable=too-many-locals
 
 
+# pylint: disable=too-many-locals,too-many-arguments
 def IterateThroughResultsWithThresholds(result_map, group_by_tags,
                                         result_counts, ignore_threshold,
                                         flaky_threshold, include_all_tags):
@@ -128,6 +126,7 @@ def IterateThroughResultsWithThresholds(result_map, group_by_tags,
           expected_result = 'Failure'
         ModifyFileForResult(suite, test, typ_tags, '', expected_result,
                             group_by_tags, include_all_tags)
+# pylint: enable=too-many-locals,too-many-arguments
 
 
 def FindFailuresInSameTest(result_map, target_suite, target_test,
@@ -247,6 +246,7 @@ def PromptUserForExpectationAction():
   return (expected_result, response)
 
 
+# pylint: disable=too-many-locals,too-many-arguments
 def ModifyFileForResult(suite, test, typ_tags, bug, expected_result,
                         group_by_tags, include_all_tags):
   """Adds an expectation to the appropriate expectation file.
@@ -308,8 +308,10 @@ def ModifyFileForResult(suite, test, typ_tags, bug, expected_result,
         outfile.write(output_contents)
   else:
     AppendExpectationToEnd()
+# pylint: enable=too-many-locals,too-many-arguments
 
 
+# pylint: disable=too-many-locals
 def FilterToMostSpecificTypTags(typ_tags, expectation_file):
   """Filters |typ_tags| to the most specific set.
 
@@ -363,6 +365,7 @@ def FilterToMostSpecificTypTags(typ_tags, expectation_file):
   # Sort to keep order consistent with what we were given.
   filtered_tags.sort()
   return filtered_tags
+# pylint: enable=too-many-locals
 
 
 def GetExpectationFileForSuite(suite, typ_tags):

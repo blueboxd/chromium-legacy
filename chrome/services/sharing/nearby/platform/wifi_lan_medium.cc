@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/sequenced_task_runner.h"
@@ -129,8 +130,6 @@ std::unique_ptr<api::WifiLanSocket> WifiLanMedium::ConnectToService(
     return nullptr;
   }
 
-  VLOG(1) << "WifiLanMedium::" << __func__ << ": Connection established with "
-          << connected_socket_parameters->remote_end_point.ToString();
   return std::make_unique<WifiLanSocket>(
       std::move(*connected_socket_parameters));
 }
@@ -187,7 +186,7 @@ void WifiLanMedium::OnConnect(
   VLOG(1) << "WifiLanMedium::" << __func__
           << ": Created TCP connected socket. local_addr="
           << local_addr->ToString() << ", peer_addr=" << peer_addr->ToString();
-  *connected_socket_parameters = {*peer_addr, std::move(tcp_connected_socket),
+  *connected_socket_parameters = {std::move(tcp_connected_socket),
                                   std::move(receive_stream),
                                   std::move(send_stream)};
 
@@ -427,6 +426,13 @@ void WifiLanMedium::OnFirewallHoleCreated(
 // End: ListenForService()
 /*============================================================================*/
 
+absl::optional<std::pair<std::int32_t, std::int32_t>>
+WifiLanMedium::GetDynamicPortRange() {
+  return std::pair<std::int32_t, std::int32_t>(
+      ash::nearby::TcpServerSocketPort::kMin,
+      ash::nearby::TcpServerSocketPort::kMax);
+}
+
 /*============================================================================*/
 // Begin: Not implemented
 /*============================================================================*/
@@ -447,11 +453,6 @@ bool WifiLanMedium::StopDiscovery(const std::string& service_type) {
   NOTIMPLEMENTED();
   return false;
 }
-absl::optional<std::pair<std::int32_t, std::int32_t>>
-WifiLanMedium::GetDynamicPortRange() {
-  NOTIMPLEMENTED();
-  return absl::nullopt;
-}
 /*============================================================================*/
 // End: Not implemented
 /*============================================================================*/
@@ -463,7 +464,8 @@ void WifiLanMedium::FinishConnectAttempt(base::WaitableEvent* event,
   if (it == pending_connect_waitable_events_.end())
     return;
 
-  // TODO(https://crbug.com/1261238): Log ConnectResult metric.
+  base::UmaHistogramEnumeration("Nearby.Connections.WifiLan.ConnectResult",
+                                result);
 
   base::WaitableEvent* event_copy = *it;
   pending_connect_waitable_events_.erase(it);
@@ -477,7 +479,8 @@ void WifiLanMedium::FinishListenAttempt(base::WaitableEvent* event,
   if (it == pending_listen_waitable_events_.end())
     return;
 
-  // TODO(https://crbug.com/1261238): Log ListenResult metric.
+  base::UmaHistogramEnumeration("Nearby.Connections.WifiLan.ListenResult",
+                                result);
 
   base::WaitableEvent* event_copy = *it;
   pending_listen_waitable_events_.erase(it);

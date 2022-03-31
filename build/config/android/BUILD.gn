@@ -91,11 +91,6 @@ config("runtime_library") {
     libs += [ "android_support" ]
   }
 
-  # arm builds of libc++ starting in NDK r12 depend on unwind.
-  if (current_cpu == "arm") {
-    libs += [ "unwind" ]
-  }
-
   if (current_cpu == "arm" && arm_version == 6) {
     libs += [ "atomic" ]
   }
@@ -143,6 +138,12 @@ if (current_toolchain == default_toolchain) {
   pool("goma_javac_pool") {
     # Override action_pool when goma is enabled for javac.
     depth = 10000
+  }
+
+  # nocompile tests share output directory to avoid them all needing to rebuild
+  # things. But this also means they can't run in parallel.
+  pool("nocompile_pool") {
+    depth = 1
   }
 
   # When defined, this pool should be used instead of link_pool for command

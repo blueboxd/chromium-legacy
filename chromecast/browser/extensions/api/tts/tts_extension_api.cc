@@ -146,7 +146,8 @@ void TtsExtensionEventHandler::OnTtsEvent(content::TtsUtterance* utterance,
 
   auto event = std::make_unique<extensions::Event>(
       ::extensions::events::TTS_ON_EVENT, ::events::kOnEvent,
-      std::move(*arguments).TakeList(), utterance->GetBrowserContext());
+      std::move(*arguments).TakeListDeprecated(),
+      utterance->GetBrowserContext());
   event->event_url = utterance->GetSrcUrl();
   extensions::EventRouter::Get(utterance->GetBrowserContext())
       ->DispatchEventToExtension(src_extension_id_, std::move(event));
@@ -230,7 +231,7 @@ ExtensionFunction::ResponseAction TtsSpeakFunction::Run() {
     const base::Value* list =
         options->FindListKey(constants::kRequiredEventTypesKey);
     EXTENSION_FUNCTION_VALIDATE(list);
-    for (const base::Value& i : list->GetList()) {
+    for (const base::Value& i : list->GetListDeprecated()) {
       const std::string* event_type = i.GetIfString();
       if (event_type) {
         required_event_types.insert(
@@ -244,7 +245,7 @@ ExtensionFunction::ResponseAction TtsSpeakFunction::Run() {
     const base::Value* list =
         options->FindListKey(constants::kDesiredEventTypesKey);
     EXTENSION_FUNCTION_VALIDATE(list);
-    for (const base::Value& i : list->GetList()) {
+    for (const base::Value& i : list->GetListDeprecated()) {
       const std::string* event_type = i.GetIfString();
       if (event_type)
         desired_event_types.insert(TtsEventTypeFromString(event_type->c_str()));

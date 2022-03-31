@@ -27,10 +27,6 @@ const base::Feature kDetectFormSubmissionOnFormClear = {
 #endif
 };
 
-// Enables the editing of passwords in Chrome settings.
-const base::Feature kEditPasswordsInSettings = {
-    "EditPasswordsInSettings", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables UI that allows the user to create a strong password even if the field
 // wasn't parsed as a new password field.
 // TODO(crbug/1181254): Remove once it's launched.
@@ -67,6 +63,13 @@ const base::Feature kFillingAcrossAffiliatedWebsites{
 const base::Feature kFillOnAccountSelect = {"fill-on-account-select",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if BUILDFLAG(IS_LINUX)
+// When enabled, initial sync will be forced during startup if the password
+// store has encryption service failures.
+const base::Feature kForceInitialSyncWhenDecryptionFails = {
+    "ForceInitialSyncWhenDecryptionFails", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enables finding a confirmation password field during saving by inspecting the
 // values of the fields. Used as a kill switch.
 // TODO(crbug.com/1164861): Remove once confirmed to be safe (around M92 or so).
@@ -82,6 +85,10 @@ const base::Feature kIOSEnablePasswordManagerBrandingUpdate{
 // Enables (un)muting compromised passwords from bulk leak check in settings.
 const base::Feature kMuteCompromisedPasswords{
     "MuteCompromisedPasswords", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables adding, displaying and modifying extra notes to stored credentials.
+const base::Feature kPasswordNotes{"PasswordNotes",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables password leak detection for unauthenticated users.
 const base::Feature kLeakDetectionUnauthenticated = {
@@ -100,6 +107,11 @@ const base::Feature kPasswordChangeOnlyRecentCredentials = {
 // Enables password change flow from bulk leak check in settings.
 const base::Feature kPasswordChangeInSettings = {
     "PasswordChangeInSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables fetching credentials capabilities from server for the
+// |PasswordChangeInSettings| and |PasswordChange| features.
+const base::Feature kPasswordDomainCapabilitiesFetching = {
+    "PasswordDomainCapabilitiesFetching", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls the ability to import passwords from Chrome's settings page.
 const base::Feature kPasswordImport = {"PasswordImport",
@@ -150,6 +162,13 @@ const base::Feature kSupportForAddPasswordsInSettings = {
 // during initial sync flow.
 const base::Feature kSyncUndecryptablePasswordsLinux = {
     "SyncUndecryptablePasswordsLinux", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
+#if BUILDFLAG(IS_ANDROID)
+// Enables the experiment to automatically submit a form after filling by
+// TouchToFill
+const base::Feature kTouchToFillPasswordSubmission = {
+    "TouchToFillPasswordSubmission", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Treat heuritistics to find new password fields as reliable. This enables
@@ -211,11 +230,17 @@ const base::Feature kUsernameFirstFlowFallbackCrowdsourcing = {
     "UsernameFirstFlowFallbackCrowdsourcing",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Returns true if the client is part of the live_experiment group for
+// |kPasswordDomainCapabilitiesFetching|, otherwise, the client is assumed to be
+// in the regular launch group.
+extern const base::FeatureParam<bool> kPasswordChangeLiveExperimentParam = {
+    &kPasswordDomainCapabilitiesFetching, "live_experiment", false};
+
 #if BUILDFLAG(IS_ANDROID)
 // Current migration version to Google Mobile Services. If version saved in pref
 // is lower than 'kMigrationVersion' passwords will be re-uploaded.
 extern const base::FeatureParam<int> kMigrationVersion = {
-    &kUnifiedPasswordManagerMigration, "migration_version", 0};
+    &kUnifiedPasswordManagerMigration, "migration_version", 1};
 #endif
 
 // Field trial identifier for password generation requirements.
@@ -246,6 +271,11 @@ const char kPasswordChangeWithForcedDialogAfterEverySuccessfulSubmission[] =
 // settings.
 const char kPasswordChangeInSettingsWithForcedWarningForEverySite[] =
     "should_force_warning_for_every_site_in_settings";
+
+bool IsPasswordScriptsFetchingEnabled() {
+  return base::FeatureList::IsEnabled(kPasswordScriptsFetching) ||
+         base::FeatureList::IsEnabled(kPasswordDomainCapabilitiesFetching);
+}
 
 }  // namespace features
 

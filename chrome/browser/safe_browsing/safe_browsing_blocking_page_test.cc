@@ -30,6 +30,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/interstitials/security_interstitial_idn_test.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
+#include "chrome/browser/password_manager/passwords_navigation_observer.h"
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
@@ -103,8 +104,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/fenced_frame_test_util.h"
 #include "content/public/test/prerender_test_util.h"
 #include "content/public/test/render_view_test.h"
+#include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "net/cert/cert_verify_result.h"
@@ -2612,6 +2615,28 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
                                DelayedWarningEvent::kDownloadCancelled, 1);
 }
 
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
+                       InteractionAfterNonCommittingNavigation_Interstitial) {
+  base::HistogramTester histograms;
+  NavigateAndAssertNoInterstitial();
+
+  const GURL url_204 = embedded_test_server()->GetURL("/page204.html");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url_204));
+  AssertNoInterstitial(browser(), false);
+
+  EXPECT_TRUE(TypeAndWaitForInterstitial(browser()));
+
+  // Navigate away to "flush" the metrics.
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
+
+  histograms.ExpectTotalCount(kDelayedWarningsHistogram, 2);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kPageLoaded, 1);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kWarningShownOnKeypress, 1);
+}
+
 // This test navigates to a page with password form and submits a password. The
 // warning should be delayed, the "Save Password" bubble should not be shown,
 // and a histogram entry for the password save should be recorded.
@@ -2630,7 +2655,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
   observer1.Wait();
 
   // Submit a password.
-  NavigationObserver observer2(contents);
+  PasswordsNavigationObserver observer2(contents);
   std::unique_ptr<BubbleObserver> prompt_observer(new BubbleObserver(contents));
   std::string fill_and_submit =
       "document.getElementById('retry_password_field').value = 'pw';"
@@ -3461,4 +3486,59 @@ IN_PROC_BROWSER_TEST_P(
   histograms.ExpectBucketCount(kDelayedWarningsHistogram,
                                DelayedWarningEvent::kWarningNotShown, 1);
 }
+
+class SafeBrowsingFencedFrameBrowserTest
+    : public SafeBrowsingBlockingPageBrowserTest {
+ public:
+  ~SafeBrowsingFencedFrameBrowserTest() override = default;
+
+  void AddFencedFrameAndExpectInterstitial(const GURL& url) {
+    content::WebContents* contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    content::TestFrameNavigationObserver error_page_navigation_observer(
+        contents->GetMainFrame());
+    // The error checking that the FencedFrameTestHelper performs is not
+    // suitable for this case. The resulting error page is an interstitial shown
+    // in the frame that owns the fenced frame, not in the fenced frame itself.
+    // So we just use our own script to create the fenced frame.
+    // TODO(1257133): Once issue 1257133 is fixed, we would then be able to use
+    // FencedFrameTestHelper::CreateFencedFrame for this case as well.
+    constexpr char kAddFencedFrameScript[] = R"({
+          const fencedFrame = document.createElement('fencedframe');
+          fencedFrame.src = $1;
+          document.body.appendChild(fencedFrame);
+        })";
+    EXPECT_TRUE(
+        content::ExecJs(contents->GetMainFrame(),
+                        content::JsReplace(kAddFencedFrameScript, url)));
+    error_page_navigation_observer.Wait();
+    EXPECT_FALSE(error_page_navigation_observer.last_navigation_succeeded());
+    EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT,
+              error_page_navigation_observer.last_net_error_code());
+    EXPECT_TRUE(IsShowingInterstitial(contents));
+  }
+
+ private:
+  content::test::FencedFrameTestHelper fenced_frame_helper_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SafeBrowsingFencedFrameBrowserTest,
+    testing::Combine(
+        testing::Values(SB_THREAT_TYPE_URL_MALWARE,  // Threat types
+                        SB_THREAT_TYPE_URL_PHISHING,
+                        SB_THREAT_TYPE_URL_UNWANTED),
+        testing::Bool()));  // If isolate all sites for testing.
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingFencedFrameBrowserTest, UnsafeFencedFrame) {
+  const GURL initial_url = embedded_test_server()->GetURL("/title1.html");
+  const GURL fenced_frame_url =
+      embedded_test_server()->GetURL("/fenced_frames/title1.html");
+  SetURLThreatType(fenced_frame_url, GetThreatType());
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
+  AddFencedFrameAndExpectInterstitial(fenced_frame_url);
+}
+
 }  // namespace safe_browsing

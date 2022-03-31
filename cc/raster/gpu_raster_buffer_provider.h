@@ -39,7 +39,6 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
       viz::ResourceFormat tile_format,
       const gfx::Size& max_tile_size,
       bool unpremultiply_and_dither_low_bit_depth_tiles,
-      bool enable_oop_rasterization,
       RasterQueryQueue* const pending_raster_queries,
       float raster_metric_probability = kRasterMetricProbability);
   GpuRasterBufferProvider(const GpuRasterBufferProvider&) = delete;
@@ -66,27 +65,6 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
       base::OnceClosure callback,
       uint64_t pending_callback_id) const override;
   void Shutdown() override;
-
-  gpu::SyncToken PlaybackOnWorkerThread(
-      gpu::Mailbox* mailbox,
-      GLenum texture_target,
-      bool texture_is_overlay_candidate,
-      const gpu::SyncToken& sync_token,
-      const gfx::Size& resource_size,
-      viz::ResourceFormat resource_format,
-      const gfx::ColorSpace& color_space,
-      bool resource_has_previous_content,
-      const RasterSource* raster_source,
-      const gfx::Rect& raster_full_rect,
-      const gfx::Rect& raster_dirty_rect,
-      uint64_t new_content_id,
-      const gfx::AxisTransform2d& transform,
-      const RasterSource::PlaybackSettings& playback_settings,
-      const GURL& url,
-      base::TimeTicks raster_buffer_creation_time,
-      bool depends_on_at_raster_decodes,
-      bool depends_on_hardware_accelerated_jpeg_candidates,
-      bool depends_on_hardware_accelerated_webp_candidates);
 
  private:
   class GpuRasterBacking;
@@ -116,6 +94,32 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
     bool SupportsBackgroundThreadPriority() const override;
 
    private:
+    void PlaybackOnWorkerThread(
+        const RasterSource* raster_source,
+        const gfx::Rect& raster_full_rect,
+        const gfx::Rect& raster_dirty_rect,
+        uint64_t new_content_id,
+        const gfx::AxisTransform2d& transform,
+        const RasterSource::PlaybackSettings& playback_settings,
+        const GURL& url);
+
+    void PlaybackOnWorkerThreadInternal(
+        const RasterSource* raster_source,
+        const gfx::Rect& raster_full_rect,
+        const gfx::Rect& raster_dirty_rect,
+        uint64_t new_content_id,
+        const gfx::AxisTransform2d& transform,
+        const RasterSource::PlaybackSettings& playback_settings,
+        const GURL& url,
+        RasterQuery* query);
+
+    void RasterizeSource(
+        const RasterSource* raster_source,
+        const gfx::Rect& raster_full_rect,
+        const gfx::Rect& playback_rect,
+        const gfx::AxisTransform2d& transform,
+        const RasterSource::PlaybackSettings& playback_settings);
+
     // These fields may only be used on the compositor thread.
     const raw_ptr<GpuRasterBufferProvider> client_;
     raw_ptr<GpuRasterBacking> backing_;
@@ -128,44 +132,16 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
     const bool depends_on_at_raster_decodes_;
     const bool depends_on_hardware_accelerated_jpeg_candidates_;
     const bool depends_on_hardware_accelerated_webp_candidates_;
-    const gpu::SyncToken before_raster_sync_token_;
-    const GLenum texture_target_;
-    const bool texture_is_overlay_candidate_;
-
-    gpu::Mailbox mailbox_;
-    // A SyncToken to be returned from the worker thread, and waited on before
-    // using the rastered resource.
-    gpu::SyncToken after_raster_sync_token_;
-
     base::TimeTicks creation_time_;
   };
 
   bool ShouldUnpremultiplyAndDitherResource(viz::ResourceFormat format) const;
-  gpu::SyncToken PlaybackOnWorkerThreadInternal(
-      gpu::Mailbox* mailbox,
-      GLenum texture_target,
-      bool texture_is_overlay_candidate,
-      const gpu::SyncToken& sync_token,
-      const gfx::Size& resource_size,
-      viz::ResourceFormat resource_format,
-      const gfx::ColorSpace& color_space,
-      bool resource_has_previous_content,
-      const RasterSource* raster_source,
-      const gfx::Rect& raster_full_rect,
-      const gfx::Rect& raster_dirty_rect,
-      uint64_t new_content_id,
-      const gfx::AxisTransform2d& transform,
-      const RasterSource::PlaybackSettings& playback_settings,
-      const GURL& url,
-      bool depends_on_at_raster_decodes,
-      RasterQuery* query);
 
   const raw_ptr<viz::ContextProvider> compositor_context_provider_;
   const raw_ptr<viz::RasterContextProvider> worker_context_provider_;
   const bool use_gpu_memory_buffer_resources_;
   const viz::ResourceFormat tile_format_;
   const gfx::Size max_tile_size_;
-  const bool enable_oop_rasterization_;
 
   const raw_ptr<RasterQueryQueue> pending_raster_queries_;
 

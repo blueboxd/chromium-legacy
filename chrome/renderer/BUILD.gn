@@ -125,7 +125,6 @@ static_library("renderer") {
     "//chrome/common",
     "//chrome/common:mojo_bindings",
     "//chrome/common/net",
-    "//chrome/common/performance_manager/mojom",
     "//chrome/common/search:mojo_bindings",
     "//components/autofill/content/renderer",
     "//components/autofill_assistant/content/renderer",
@@ -223,8 +222,6 @@ static_library("renderer") {
       "pepper/chrome_renderer_pepper_host_factory.h",
       "pepper/pepper_flash_font_file_host.cc",
       "pepper/pepper_flash_font_file_host.h",
-      "pepper/pepper_flash_fullscreen_host.cc",
-      "pepper/pepper_flash_fullscreen_host.h",
       "pepper/pepper_helper.cc",
       "pepper/pepper_helper.h",
       "pepper/pepper_shared_memory_message_filter.cc",
@@ -257,7 +254,6 @@ static_library("renderer") {
     deps += [
       "//components/pdf/common",
       "//components/pdf/renderer",
-      "//pdf:features",
     ]
 
     if (is_linux || is_chromeos) {
@@ -360,19 +356,12 @@ static_library("renderer") {
     ]
   }
 
-  if (is_chromeos_ash || is_chromeos_lacros) {
+  if (is_chromeos) {
     sources += [
       "extensions/file_browser_handler_custom_bindings.cc",
       "extensions/file_browser_handler_custom_bindings.h",
       "extensions/platform_keys_natives.cc",
       "extensions/platform_keys_natives.h",
-    ]
-  }
-
-  if (is_chromeos_ash) {
-    sources += [
-      "extensions/file_manager_private_custom_bindings.cc",
-      "extensions/file_manager_private_custom_bindings.h",
     ]
     if (use_cups) {
       sources += [
@@ -380,6 +369,13 @@ static_library("renderer") {
         "extensions/printing_hooks_delegate.h",
       ]
     }
+  }
+
+  if (is_chromeos_ash) {
+    sources += [
+      "extensions/file_manager_private_custom_bindings.cc",
+      "extensions/file_manager_private_custom_bindings.h",
+    ]
   }
 
   if (!is_android) {
@@ -424,13 +420,6 @@ static_library("renderer") {
   }
 
   if (is_chromeos_ash) {
-    sources += [
-      "performance_manager/mechanisms/tcmalloc_tunables_impl.cc",
-      "performance_manager/mechanisms/tcmalloc_tunables_impl.h",
-    ]
-
-    deps += [ "//chrome/common/performance_manager/mojom" ]
-
     if (target_cpu == "x64") {
       sources += [
         "performance_manager/mechanisms/userspace_swap_impl_chromeos.cc",

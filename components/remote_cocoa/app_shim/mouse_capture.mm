@@ -88,10 +88,9 @@ void CocoaMouseCapture::ActiveEventTap::Init() {
   auto local_block = ^NSEvent*(NSEvent* event) {
     CocoaMouseCapture* owner =
         ui::WeakPtrNSObjectFactory<CocoaMouseCapture>::Get(handle);
-    if (!owner)
-      return event;
-    bool handled = owner->delegate_->PostCapturedEvent(event);
-    return handled ? nil : event;
+    if (owner)
+      owner->delegate_->PostCapturedEvent(event);
+    return nil;  // Swallow all local events.
   };
   auto global_block = ^void(NSEvent* event) {
     CocoaMouseCapture* owner =

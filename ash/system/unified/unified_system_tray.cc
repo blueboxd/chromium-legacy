@@ -7,7 +7,6 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/constants/ash_features.h"
 #include "ash/focus_cycler.h"
-#include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -22,6 +21,7 @@
 #include "ash/system/network/network_tray_view.h"
 #include "ash/system/power/tray_power.h"
 #include "ash/system/privacy_screen/privacy_screen_toast_controller.h"
+#include "ash/system/time/calendar_metrics.h"
 #include "ash/system/time/time_tray_item_view.h"
 #include "ash/system/time/time_view.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -43,6 +43,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/presentation_time_recorder.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/message_center/message_center.h"
@@ -466,7 +467,10 @@ void UnifiedSystemTray::OnTimeViewActionPerformed(const ui::Event& event) {
     CloseBubble();
   } else {
     ShowBubble();
-    bubble_->ShowCalendarView();
+
+    bubble_->ShowCalendarView(
+        calendar_metrics::CalendarViewShowSource::kTimeView,
+        calendar_metrics::GetEventType(event));
   }
 }
 

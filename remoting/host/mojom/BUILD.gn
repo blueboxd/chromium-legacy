@@ -14,11 +14,13 @@ mojom("mojom") {
     "remoting_host.mojom",
     "testing.mojom",
     "webauthn_proxy.mojom",
+    "webrtc_types.mojom",
     "wrapped_primitives.mojom",
   ]
 
   deps = [
     "//mojo/public/mojom/base",
+    "//services/network/public/mojom:mojom_ip_address",
     "//ui/gfx/geometry/mojom",
     "//url/mojom:url_mojom_gurl",
   ]
@@ -31,6 +33,22 @@ mojom("mojom") {
           cpp = "::remoting::protocol::ClipboardEvent"
         },
         {
+          mojom = "remoting.mojom.DesktopCaptureOptions"
+          cpp = "::webrtc::DesktopCaptureOptions"
+        },
+        {
+          mojom = "remoting.mojom.DesktopEnvironmentOptions"
+          cpp = "::remoting::DesktopEnvironmentOptions"
+        },
+        {
+          mojom = "remoting.mojom.DesktopSize"
+          cpp = "::webrtc::DesktopSize"
+        },
+        {
+          mojom = "remoting.mojom.DesktopVector"
+          cpp = "::webrtc::DesktopVector"
+        },
+        {
           mojom = "remoting.mojom.KeyEvent"
           cpp = "::remoting::protocol::KeyEvent"
         },
@@ -41,6 +59,14 @@ mojom("mojom") {
         {
           mojom = "remoting.mojom.MouseEvent"
           cpp = "::remoting::protocol::MouseEvent"
+        },
+        {
+          mojom = "remoting.mojom.ProtocolErrorCode"
+          cpp = "::remoting::protocol::ErrorCode"
+        },
+        {
+          mojom = "remoting.mojom.ScreenResolution"
+          cpp = "::remoting::ScreenResolution"
         },
         {
           mojom = "remoting.mojom.TextEvent"
@@ -58,13 +84,26 @@ mojom("mojom") {
           mojom = "remoting.mojom.TouchEventType"
           cpp = "::remoting::protocol::TouchEvent::TouchEventType"
         },
+        {
+          mojom = "remoting.mojom.TransportRoute"
+          cpp = "::remoting::protocol::TransportRoute"
+        },
+        {
+          mojom = "remoting.mojom.TransportRouteType"
+          cpp = "::remoting::protocol::TransportRoute::RouteType"
+        },
       ]
       traits_headers = [ "remoting_mojom_traits.h" ]
       traits_sources = [ "remoting_mojom_traits.cc" ]
       traits_public_deps = [
         "//mojo/public/cpp/base:shared_typemap_traits",
         "//mojo/public/cpp/bindings",
+        "//remoting/host/base",
         "//remoting/proto",
+        "//remoting/protocol:errors",
+        "//remoting/protocol:transport",
+        "//services/network/public/cpp:ip_address_mojom_support",
+        "//third_party/webrtc_overrides:webrtc_component",
       ]
     },
   ]

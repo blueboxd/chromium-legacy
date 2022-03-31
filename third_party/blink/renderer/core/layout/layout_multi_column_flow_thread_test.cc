@@ -1694,6 +1694,48 @@ LayoutNGBlockFlow DIV id="mc"
   }
 }
 
+TEST_F(MultiColumnRenderingTest, LegacyMulticolWithMathMLAndAbspos) {
+  // Disable LayoutNGBlockFragmentation, so that multicol uses legacy layout.
+  ScopedLayoutNGBlockFragmentationForTest layout_ng_block_fragmentation(false);
+
+  // Enable MathML. This will not actually create MathML objects, since we're
+  // inside legacy multicol. But at the very least it shouldn't crash.
+  ScopedMathMLCoreForTest mathml_core(true);
+  ScopedLayoutNGForTest layout_ng(true);
+
+  // This combination should not crash when having abspos.
+  SetBodyContent(
+      "<section style='position: relative; column-count: 1'>"
+      "<math>"
+      "<mtext style='position: absolute'></mtext>"
+      "<mtext style='position: fixed'></mtext>"
+      "</math>"
+      "</section>");
+}
+
+TEST_F(MultiColumnRenderingTest, LegacyMulticolWithTHeadContainingFixedpos) {
+  // Disable LayoutNGBlockFragmentation, so that multicol uses legacy layout.
+  ScopedLayoutNGBlockFragmentationForTest layout_ng_block_fragmentation(false);
+
+  // Enable MathML. This will not actually create MathML objects, since we're
+  // inside legacy multicol. But at the very least it shouldn't crash.
+  ScopedMathMLCoreForTest mathml_core(true);
+  ScopedLayoutNGForTest layout_ng(true);
+
+  // The table-header-group is a LayoutTableSection and contains position:fixed
+  // due to transform. But LayoutTableSection is not a LayoutBlock, so the
+  // ContainingBlock() of the fixed element is the anonymous LayoutTable.
+  // This combination should not crash.
+  SetBodyContent(
+      "<div style='column-count: 1'>"
+      "<div style='display: table-header-group; transform: scale(1)'>"
+      "<math style='position: absolute'>"
+      "<mtext style='position: fixed'></mtext>"
+      "</math>"
+      "</div>"
+      "</div>");
+}
+
 }  // anonymous namespace
 
 }  // namespace blink

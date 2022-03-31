@@ -85,9 +85,9 @@ PasswordScriptsFetcher* StubPasswordManagerClient::GetPasswordScriptsFetcher() {
   return nullptr;
 }
 
-PasswordChangeSuccessTracker*
+MockPasswordChangeSuccessTracker*
 StubPasswordManagerClient::GetPasswordChangeSuccessTracker() {
-  return nullptr;
+  return &password_change_success_tracker_;
 }
 
 const GURL& StubPasswordManagerClient::GetLastCommittedURL() const {
@@ -143,7 +143,7 @@ ukm::SourceId StubPasswordManagerClient::GetUkmSourceId() {
 PasswordManagerMetricsRecorder*
 StubPasswordManagerClient::GetMetricsRecorder() {
   if (!metrics_recorder_) {
-    metrics_recorder_.emplace(GetUkmSourceId(), nullptr);
+    metrics_recorder_.emplace(GetUkmSourceId());
   }
   return base::OptionalOrNullptr(metrics_recorder_);
 }

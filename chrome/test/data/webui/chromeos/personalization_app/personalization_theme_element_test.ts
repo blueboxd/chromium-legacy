@@ -6,7 +6,8 @@
 
 import {emptyState} from 'chrome://personalization/trusted/personalization_state.js';
 import {PersonalizationThemeElement} from 'chrome://personalization/trusted/personalization_theme_element.js';
-import {ThemeActionName} from 'chrome://personalization/trusted/theme/theme_actions.js';
+import {SetDarkModeEnabledAction, ThemeActionName} from 'chrome://personalization/trusted/theme/theme_actions.js';
+import {ThemeObserver} from 'chrome://personalization/trusted/theme/theme_observer.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/test_util.js';
 
@@ -23,6 +24,7 @@ export function PersonalizationThemeTest() {
     const mocks = baseSetup();
     themeProvider = mocks.themeProvider;
     personalizationStore = mocks.personalizationStore;
+    ThemeObserver.initThemeObserverIfNeeded();
   });
 
   teardown(async () => {
@@ -30,6 +32,7 @@ export function PersonalizationThemeTest() {
       personalizationThemeElement.remove();
     }
     personalizationThemeElement = null;
+    ThemeObserver.shutdown();
     await flushTasks();
   });
 
@@ -40,14 +43,15 @@ export function PersonalizationThemeTest() {
 
     assertEquals(
         personalizationThemeElement.i18n('themeLabel'),
-        personalizationThemeElement.shadowRoot!.querySelector('h2')!.innerText);
+        personalizationThemeElement.shadowRoot!.querySelector('p')!.innerText);
   });
 
   test('sets color mode in store on first load', async () => {
     personalizationStore.expectAction(ThemeActionName.SET_DARK_MODE_ENABLED);
     personalizationThemeElement = initElement(PersonalizationThemeElement);
-    const action = await personalizationStore.waitForAction(
-        ThemeActionName.SET_DARK_MODE_ENABLED);
+    const action =
+        await personalizationStore.waitForAction(
+            ThemeActionName.SET_DARK_MODE_ENABLED) as SetDarkModeEnabledAction;
     assertTrue(action.enabled);
   });
 
@@ -63,8 +67,9 @@ export function PersonalizationThemeTest() {
     themeProvider.themeObserverRemote!.onColorModeChanged(
         /*darkModeEnabled=*/ false);
 
-    const {enabled} = await personalizationStore.waitForAction(
-        ThemeActionName.SET_DARK_MODE_ENABLED);
+    const {enabled} =
+        await personalizationStore.waitForAction(
+            ThemeActionName.SET_DARK_MODE_ENABLED) as SetDarkModeEnabledAction;
     assertFalse(enabled);
   });
 

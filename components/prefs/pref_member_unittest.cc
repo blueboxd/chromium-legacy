@@ -214,7 +214,7 @@ TEST_F(PrefMemberTest, BasicGetAndSet) {
   string_list.Init(kStringListPref, &prefs);
 
   // Check the defaults
-  EXPECT_TRUE(expected_list.Equals(prefs.GetList(kStringListPref)));
+  EXPECT_EQ(expected_list, *prefs.GetList(kStringListPref));
   EXPECT_EQ(expected_vector, string_list.GetValue());
   EXPECT_EQ(expected_vector, *string_list);
   EXPECT_TRUE(string_list.IsDefaultValue());
@@ -224,7 +224,7 @@ TEST_F(PrefMemberTest, BasicGetAndSet) {
   expected_vector.push_back("foo");
   string_list.SetValue(expected_vector);
 
-  EXPECT_TRUE(expected_list.Equals(prefs.GetList(kStringListPref)));
+  EXPECT_EQ(expected_list, *prefs.GetList(kStringListPref));
   EXPECT_EQ(expected_vector, string_list.GetValue());
   EXPECT_EQ(expected_vector, *string_list);
   EXPECT_FALSE(string_list.IsDefaultValue());
@@ -234,17 +234,18 @@ TEST_F(PrefMemberTest, BasicGetAndSet) {
   expected_vector.push_back("bar");
   prefs.Set(kStringListPref, expected_list);
 
-  EXPECT_TRUE(expected_list.Equals(prefs.GetList(kStringListPref)));
+  EXPECT_EQ(expected_list, *prefs.GetList(kStringListPref));
   EXPECT_EQ(expected_vector, string_list.GetValue());
   EXPECT_EQ(expected_vector, *string_list);
   EXPECT_FALSE(string_list.IsDefaultValue());
 
   // Try removing through the pref.
-  EXPECT_TRUE(expected_list.EraseListIter(expected_list.GetList().begin()));
+  EXPECT_TRUE(
+      expected_list.EraseListIter(expected_list.GetListDeprecated().begin()));
   expected_vector.erase(expected_vector.begin());
   prefs.Set(kStringListPref, expected_list);
 
-  EXPECT_TRUE(expected_list.Equals(prefs.GetList(kStringListPref)));
+  EXPECT_EQ(expected_list, *prefs.GetList(kStringListPref));
   EXPECT_EQ(expected_vector, string_list.GetValue());
   EXPECT_EQ(expected_vector, *string_list);
   EXPECT_FALSE(string_list.IsDefaultValue());

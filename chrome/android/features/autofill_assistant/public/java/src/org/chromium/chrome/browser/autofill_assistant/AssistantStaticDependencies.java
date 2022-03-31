@@ -4,15 +4,18 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.app.Activity;
 import android.content.Context;
 
+import androidx.annotation.DimenRes;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.components.favicon.LargeIconBridge;
+import org.chromium.components.image_fetcher.ImageFetcher;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.util.AccessibilityUtil;
-
 /**
  * Generic static dependencies interface. The concrete implementation will depend on the browser
  * framework, i.e., WebLayer vs. Chrome.
@@ -22,7 +25,17 @@ public interface AssistantStaticDependencies {
     @CalledByNative
     long createNative();
 
+    /**
+     * Create the Activity specific dependencies.
+     * */
+    AssistantDependencies createDependencies(Activity activity);
+
     AccessibilityUtil getAccessibilityUtil();
+
+    @CalledByNative
+    default boolean isAccessibilityEnabled() {
+        return getAccessibilityUtil().isAccessibilityEnabled();
+    }
 
     /**
      * Returns a utility for obscuring all tabs. NOTE: Each call returns a new instance that can
@@ -41,9 +54,18 @@ public interface AssistantStaticDependencies {
     @CalledByNative
     AssistantAccessTokenUtil createAccessTokenUtil();
 
+    @CalledByNative
+    ImageFetcher createImageFetcher();
+
+    @CalledByNative
+    LargeIconBridge createIconBridge();
+
     @Nullable
     String getSignedInAccountEmailOrNull();
 
     @Nullable
-    AssistantProfileImageUtil createProfileImageUtilOrNull(Context context);
+    AssistantProfileImageUtil createProfileImageUtilOrNull(
+            Context context, @DimenRes int imageSizeRedId);
+
+    AssistantEditorFactory createEditorFactory();
 }

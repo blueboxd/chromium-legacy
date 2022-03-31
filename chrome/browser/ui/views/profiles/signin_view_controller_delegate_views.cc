@@ -10,7 +10,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/reauth_result.h"
-#include "chrome/browser/signin/reauth_util.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/webui/signin/profile_customization_ui.h"
+#include "chrome/browser/ui/webui/signin/signin_url_utils.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
@@ -34,6 +34,10 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/webview/webview.h"
+#include "ui/views/layout/animating_layout_manager.h"
+#include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/layout_types.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
@@ -64,6 +68,22 @@ void CloseModalSigninInBrowser(base::WeakPtr<Browser> browser) {
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
+// This layout auto-resizes the host view widget to always adapt to changes in
+// the size of the child views.
+class WidgetAutoResizingLayout : public views::FillLayout {
+ public:
+  WidgetAutoResizingLayout() = default;
+
+ private:
+  // views::FillLayout:
+  void OnLayoutChanged() override {
+    FillLayout::OnLayoutChanged();
+    if (views::Widget* widget = host_view()->GetWidget(); widget) {
+      widget->SetSize(widget->non_client_view()->GetPreferredSize());
+    }
+  }
+};
+
 }  // namespace
 
 // static
@@ -90,8 +110,7 @@ std::unique_ptr<views::WebView>
 SigninViewControllerDelegateViews::CreateReauthConfirmationWebView(
     Browser* browser,
     signin_metrics::ReauthAccessPoint access_point) {
-  return CreateDialogWebView(browser,
-                             signin::GetReauthConfirmationURL(access_point),
+  return CreateDialogWebView(browser, GetReauthConfirmationURL(access_point),
                              kReauthDialogHeight, kReauthDialogWidth,
                              InitializeSigninWebDialogUI(false));
 }
@@ -102,7 +121,8 @@ SigninViewControllerDelegateViews::CreateProfileCustomizationWebView(
     Browser* browser) {
   std::unique_ptr<views::WebView> web_view = CreateDialogWebView(
       browser, GURL(chrome::kChromeUIProfileCustomizationURL),
-      kSyncConfirmationDialogHeight, kSyncConfirmationDialogWidth,
+      ProfileCustomizationUI::kPreferredHeight,
+      ProfileCustomizationUI::kPreferredWidth,
       InitializeSigninWebDialogUI(false));
 
   ProfileCustomizationUI* web_ui = web_view->GetWebContents()
@@ -145,30 +165,17 @@ SigninViewControllerDelegateViews::CreateEnterpriseConfirmationWebView(
 }
 #endif
 
-views::View* SigninViewControllerDelegateViews::GetContentsView() {
-  return content_view_;
-}
-
-views::Widget* SigninViewControllerDelegateViews::GetWidget() {
-  return content_view_->GetWidget();
-}
-
-const views::Widget* SigninViewControllerDelegateViews::GetWidget() const {
-  return content_view_->GetWidget();
-}
-
 bool SigninViewControllerDelegateViews::ShouldShowCloseButton() const {
   return should_show_close_button_;
 }
 
 void SigninViewControllerDelegateViews::CloseModalSignin() {
   NotifyModalDialogClosed();
-  // Either `modal_signin_widget_` or `owned_content_view_` is nullptr.
+  // Either `this` is owned by the view hierarchy through `modal_signin_widget_`
+  // or `modal_signin_widget_` is nullptr and then `this` is self-owned.
   if (modal_signin_widget_) {
-    DCHECK(!owned_content_view_);
     modal_signin_widget_->Close();
   } else {
-    DCHECK(owned_content_view_);
     delete this;
   }
 }
@@ -243,17 +250,35 @@ SigninViewControllerDelegateViews::SigninViewControllerDelegateViews(
     ui::ModalType dialog_modal_type,
     bool wait_for_size,
     bool should_show_close_button)
-    : owned_content_view_(std::move(content_view)),
-      web_contents_(owned_content_view_->GetWebContents()),
+    : content_view_(content_view.get()),
+      web_contents_(content_view->GetWebContents()),
       browser_(browser),
-      content_view_(owned_content_view_.get()),
       should_show_close_button_(should_show_close_button) {
   DCHECK(web_contents_);
   DCHECK(browser_);
   DCHECK(browser_->tab_strip_model()->GetActiveWebContents())
       << "A tab must be active to present the sign-in modal dialog.";
-  DCHECK(owned_content_view_);
   DCHECK(content_view_);
+
+  // Use the layout manager of `this` to automatically translate its preferred
+  // size to the owning Widget.
+  SetLayoutManager(std::make_unique<WidgetAutoResizingLayout>());
+  // `AnimatingLayoutManager` resizes `animated_view` to match `content_view`'s
+  // preferred size with animation.
+  views::View* animated_view = AddChildView(std::make_unique<views::View>());
+  views::AnimatingLayoutManager* animating_layout =
+      animated_view->SetLayoutManager(
+          std::make_unique<views::AnimatingLayoutManager>());
+  animating_layout
+      ->SetBoundsAnimationMode(
+          views::AnimatingLayoutManager::BoundsAnimationMode::kAnimateMainAxis)
+      .SetOrientation(views::LayoutOrientation::kVertical);
+  // Using `FlexLayout` because `AnimatingLayoutManager` doesn't work properly
+  // with `FillLayout`.
+  auto* flex_layout = animating_layout->SetTargetLayoutManager(
+      std::make_unique<views::FlexLayout>());
+  flex_layout->SetOrientation(views::LayoutOrientation::kVertical);
+  animated_view->AddChildView(std::move(content_view));
 
   SetButtons(ui::DIALOG_BUTTON_NONE);
 
@@ -312,10 +337,6 @@ void SigninViewControllerDelegateViews::DisplayModal() {
   // dialog has a chance to be displayed.
   if (!host_web_contents)
     return;
-
-  // Ownership of this and the content view is transferred to the view
-  // hierarchy, through `modal_signin_widget_`.
-  owned_content_view_.release();
 
   gfx::NativeWindow window = host_web_contents->GetTopLevelNativeWindow();
   switch (GetModalType()) {

@@ -54,7 +54,7 @@ class DefaultAlarmDelegate : public AlarmManager::Delegate {
     args->Append(alarm.js_alarm->ToValue());
     std::unique_ptr<Event> event(
         new Event(events::ALARMS_ON_ALARM, alarms::OnAlarm::kEventName,
-                  std::move(*args).TakeList(), browser_context_));
+                  std::move(*args).TakeListDeprecated(), browser_context_));
     EventRouter::Get(browser_context_)
         ->DispatchEventToExtension(extension_id, std::move(event));
   }
@@ -334,7 +334,7 @@ void AlarmManager::ReadFromStorage(const std::string& extension_id,
                                    std::unique_ptr<base::Value> value) {
   if (value.get() && value->is_list()) {
     AlarmList alarm_states =
-        AlarmsFromValue(extension_id, is_unpacked, value->GetList());
+        AlarmsFromValue(extension_id, is_unpacked, value->GetListDeprecated());
     for (auto& alarm : alarm_states)
       AddAlarmImpl(extension_id, std::move(alarm));
   }

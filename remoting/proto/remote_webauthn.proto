@@ -10,8 +10,16 @@ package remoting.protocol;
 
 // Composite message type for messages sent over the remote-webauthn data
 // channel.
-// Next ID: 6
+// Next ID: 10
 message RemoteWebAuthn {
+  // Message that represents a DOMException, yielded by the remote request
+  // during a Create or Get request.
+  // Next ID: 3
+  message ExceptionDetails {
+    optional string name = 1;
+    optional string message = 2;
+  }
+
   // Requests the client to handle a call to
   // PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().
   message IsUvpaaRequest {}
@@ -35,8 +43,8 @@ message RemoteWebAuthn {
     // has yielded `null`, which is still a valid response according to the
     // spec.
     oneof result {
-      // The `name` property of the `DOMException`, if any.
-      string error_name = 1;
+      // The `DOMException`, if any, yielded by the remote request.
+      ExceptionDetails error = 1;
 
       // A JSON serialized representation of the `PublicKeyCredential`
       // (https://w3c.github.io/webauthn/#publickeycredential), if any.
@@ -44,7 +52,45 @@ message RemoteWebAuthn {
     }
   }
 
-  // Unique ID used to multiplex requests.
+  // Requests the client to handle a navigator.credentials.get() call.
+  // Next ID: 2
+  message GetRequest {
+    // A JSON serialized representation of CredentialRequestOptions passed to
+    // navigator.credentials.get().
+    optional string request_details_json = 1;
+  }
+
+  // Response for GetRequest.
+  // Next ID: 3
+  message GetResponse {
+    // If neither of the fields is set, it means that the remote get() call
+    // has yielded `null`, which is still a valid response according to the
+    // spec.
+    oneof result {
+      // The `DOMException`, if any, yielded by the remote request.
+      ExceptionDetails error = 1;
+
+      // A JSON serialized representation of the `PublicKeyCredential`
+      // (https://w3c.github.io/webauthn/#publickeycredential), if any.
+      string response_json = 2;
+    }
+  }
+
+  // Requests the client to abort an ongoing Create or Get request.
+  // The |id| field of this message should be set to the same value as the
+  // to-be-canceled GetRequest/CreateRequest's |id| field.
+  message CancelRequest {}
+
+  // Response for CancelRequest.
+  // Next ID: 2
+  message CancelResponse {
+    // Boolean indicating whether the request has been successfully canceled.
+    // If this is true, no future CreateResponse/GetResponse will be delivered
+    // for the same |id|.
+    optional bool was_canceled = 1;
+  }
+
+  // ID used to multiplex requests.
   optional uint64 id = 1;
 
   oneof message {
@@ -53,5 +99,11 @@ message RemoteWebAuthn {
 
     CreateRequest create_request = 4;
     CreateResponse create_response = 5;
+
+    CancelRequest cancel_request = 6;
+    CancelResponse cancel_response = 7;
+
+    GetRequest get_request = 8;
+    GetResponse get_response = 9;
   }
 }

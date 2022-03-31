@@ -18,7 +18,8 @@
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/frame/web_feature_forward.h"
 #include "third_party/blink/renderer/core/style/grid_area.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace blink {
 
@@ -54,6 +55,7 @@ enum class TrackListType {
   kGridTemplateSubgrid
 };
 enum class UnitlessQuirk { kAllow, kForbid };
+enum class AllowedColorKeywords { kAllowSystemColor, kNoSystemColor };
 
 using ConsumeAnimationItemValue = CSSValue* (*)(CSSPropertyID,
                                                 CSSParserTokenRange&,
@@ -152,9 +154,11 @@ cssvalue::CSSURIValue* ConsumeUrl(CSSParserTokenRange&,
 CSSValue* ConsumeSelectorFunction(CSSParserTokenRange&);
 CORE_EXPORT CSSValue* ConsumeIdSelector(CSSParserTokenRange&);
 
-CSSValue* ConsumeColor(CSSParserTokenRange&,
-                       const CSSParserContext&,
-                       bool accept_quirky_colors = false);
+CORE_EXPORT CSSValue* ConsumeColor(CSSParserTokenRange&,
+                                   const CSSParserContext&,
+                                   bool accept_quirky_colors = false,
+                                   AllowedColorKeywords allowed_keywords =
+                                       AllowedColorKeywords::kAllowSystemColor);
 
 CSSValue* ConsumeLineWidth(CSSParserTokenRange&,
                            const CSSParserContext&,
@@ -262,6 +266,7 @@ CORE_EXPORT bool IsCSSWideKeyword(StringView);
 bool IsRevertKeyword(StringView);
 bool IsDefaultKeyword(StringView);
 bool IsHashIdentifier(const CSSParserToken&);
+CORE_EXPORT bool IsDashedIdent(const CSSParserToken&);
 
 // This function returns false for CSS-wide keywords, 'default', and any
 // template parameters provided.
@@ -477,6 +482,8 @@ CSSValue* ConsumeBorderWidth(CSSParserTokenRange&,
 CSSValue* ConsumeSVGPaint(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ParseSpacing(CSSParserTokenRange&, const CSSParserContext&);
 
+CSSValue* ConsumeSingleContainerName(CSSParserTokenRange&,
+                                     const CSSParserContext&);
 CSSValue* ConsumeContainerName(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ConsumeContainerType(CSSParserTokenRange&);
 

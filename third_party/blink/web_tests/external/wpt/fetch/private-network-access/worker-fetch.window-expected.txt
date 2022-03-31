@@ -9,7 +9,7 @@ FAIL treat-as-public to local: failure. assert_equals: fetch error expected (str
 PASS treat-as-public to private: failure.
 PASS treat-as-public to public: success.
 PASS private https to local: failure.
-PASS pubiic https to local: failure.
+PASS public https to private: failure.
 PASS public https to local: failure.
 Harness: the test ran to completion.
 

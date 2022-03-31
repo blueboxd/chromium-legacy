@@ -33,6 +33,7 @@
 #include "components/reporting/storage/storage_configuration.h"
 #include "components/reporting/storage/storage_queue.h"
 #include "components/reporting/storage/storage_uploader_interface.h"
+#include "components/reporting/util/file.h"
 #include "components/reporting/util/status.h"
 #include "components/reporting/util/status_macros.h"
 #include "components/reporting/util/statusor.h"
@@ -345,7 +346,7 @@ class Storage::KeyInStorage {
       if (full_name == signed_encryption_key_result.value().first) {
         continue;  // This file is used.
       }
-      base::DeleteFile(full_name);  // Ignore errors, if any.
+      DeleteFileWarnIfFailed(full_name);  // Ignore errors, if any.
     }
 
     // Return the key.
@@ -413,40 +414,32 @@ class Storage::KeyInStorage {
   // Enumerates key files and deletes those with index lower than
   // |new_file_index|. Called during key upload.
   void RemoveKeyFilesWithLowerIndexes(uint64_t new_file_index) {
-    base::flat_set<base::FilePath> key_files_to_remove;
     base::FileEnumerator dir_enum(
         directory_,
         /*recursive=*/false, base::FileEnumerator::FILES,
         base::StrCat({kEncryptionKeyFilePrefix, FILE_PATH_LITERAL("*")}));
-    base::FilePath full_name;
-    while (full_name = dir_enum.Next(), !full_name.empty()) {
-      const auto result = key_files_to_remove.emplace(full_name);
-      if (!result.second) {
-        // Duplicate file name. Should not happen.
-        continue;
-      }
-      const auto extension = full_name.Extension();
-      if (extension.empty()) {
-        // Should not happen, will remove this file.
-        continue;
-      }
-      uint64_t file_index = 0;
-      if (!base::StringToUint64(extension.substr(1), &file_index)) {
-        // Bad extension - not a number. Should not happen, will remove this
-        // file.
-        continue;
-      }
-      if (file_index < new_file_index) {
-        // Lower index file, will remove it.
-        continue;
-      }
-      // Keep this file - drop it from erase list.
-      key_files_to_remove.erase(result.first);
-    }
-    // Delete all files assigned for deletion.
-    for (const auto& file_to_remove : key_files_to_remove) {
-      base::DeleteFile(file_to_remove);  // Ignore errors, if any.
-    }
+    DeleteFilesWarnIfFailed(
+        dir_enum,
+        base::BindRepeating(
+            [](uint64_t new_file_index, const base::FilePath& full_name) {
+              const auto extension = full_name.Extension();
+              if (extension.empty()) {
+                // Should not happen, will remove this file.
+                return true;
+              }
+              uint64_t file_index = 0;
+              if (!base::StringToUint64(extension.substr(1), &file_index)) {
+                // Bad extension - not a number. Should not happen, will remove
+                // this file.
+                return true;
+              }
+              if (file_index < new_file_index) {
+                // Lower index file, will remove it.
+                return true;
+              }
+              return false;
+            },
+            new_file_index));
   }
 
   // Enumerates possible key files, collects the ones that have valid name,

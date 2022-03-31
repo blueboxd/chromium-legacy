@@ -79,12 +79,14 @@ class DragDropOperation : public DataSourceObserver,
 
   // aura::client::DragDropClientObserver:
   void OnDragStarted() override;
-  void OnDragEnded() override;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   void OnDragActionsChanged(int actions) override;
 
   // ExtendedDragSource::Observer:
   void OnExtendedDragSourceDestroying(ExtendedDragSource* source) override;
+
+  // Used by DragDropOperationTest to verify exchange data.
+  ui::OSExchangeData* GetOSExchangeDataForTesting() const;
 #endif
 
  private:
@@ -101,6 +103,15 @@ class DragDropOperation : public DataSourceObserver,
   ~DragDropOperation() override;
 
   void OnDragIconCaptured(const SkBitmap& icon_bitmap);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Called when the focused window is a Lacros window and a source
+  // DataTransferEndpoint is found in the available MIME types. This
+  // is currently used to synchronize drag source metadata from
+  // Lacros to Ash.
+  void OnDataTransferEndpointRead(const std::string& mime_type,
+                                  std::u16string data);
+#endif
 
   void OnTextRead(const std::string& mime_type, std::u16string data);
   void OnHTMLRead(const std::string& mime_type, std::u16string data);

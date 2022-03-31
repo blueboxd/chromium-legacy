@@ -253,7 +253,7 @@ Channel GetStatefulLacrosChannel() {
 }
 
 static_assert(
-    crosapi::mojom::Crosapi::Version_ == 61,
+    crosapi::mojom::Crosapi::Version_ == 66,
     "if you add a new crosapi, please add it to kInterfaceVersionEntries");
 
 }  // namespace
@@ -478,8 +478,8 @@ bool IsAshWebBrowserEnabled() {
 }
 
 bool IsAshWebBrowserEnabled(Channel channel) {
-  // If Lacros is not allowed or is not enabled, Ash browser is always enabled.
-  if (!IsLacrosEnabled(channel))
+  // If Lacros is not a primary browser, Ash browser is always enabled.
+  if (!IsLacrosPrimaryBrowser(channel))
     return true;
 
   switch (GetLaunchSwitch()) {
@@ -493,7 +493,7 @@ bool IsAshWebBrowserEnabled(Channel channel) {
       return false;
   }
 
-  return true;
+  return !base::FeatureList::IsEnabled(chromeos::features::kLacrosOnly);
 }
 
 bool IsLacrosPrimaryBrowser() {
@@ -560,8 +560,34 @@ bool IsLacrosPrimaryFlagAllowed(Channel channel) {
          (GetLaunchSwitch() == LacrosLaunchSwitch::kUserChoice);
 }
 
+bool IsLacrosOnlyBrowserAllowed(Channel channel) {
+  if (!IsLacrosAllowedToBeEnabled(channel))
+    return false;
+
+  switch (GetLaunchSwitch()) {
+    case LacrosLaunchSwitch::kLacrosDisallowed:
+      DCHECK_EQ(channel, Channel::UNKNOWN);
+      return false;
+    case LacrosLaunchSwitch::kLacrosOnly:
+      // Forcibly allow to use Lacros as a Primary respecting the policy.
+      return true;
+    case LacrosLaunchSwitch::kUserChoice:
+    case LacrosLaunchSwitch::kSideBySide:
+    case LacrosLaunchSwitch::kLacrosPrimary:
+      // Fallback others.
+      break;
+  }
+
+  return true;
+}
+
+bool IsLacrosOnlyFlagAllowed(Channel channel) {
+  return IsLacrosOnlyBrowserAllowed(channel) &&
+         (GetLaunchSwitch() == LacrosLaunchSwitch::kUserChoice);
+}
+
 bool IsLacrosAllowedToLaunch() {
-  return user_manager::UserManager::Get()->GetLoggedInUsers().size() <= 1;
+  return user_manager::UserManager::Get()->GetLoggedInUsers().size() == 1;
 }
 
 bool IsLacrosChromeAppsEnabled() {

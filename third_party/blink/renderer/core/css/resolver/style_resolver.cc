@@ -928,8 +928,7 @@ scoped_refptr<ComputedStyle> StyleResolver::ResolveStyle(
   if (Element* animating_element = state.GetAnimatingElement())
     SetAnimationUpdateIfNeeded(style_recalc_context, state, *animating_element);
 
-  if (state.Style()->HasViewportUnits())
-    GetDocument().SetHasViewportUnits();
+  GetDocument().AddViewportUnitFlags(state.StyleRef().ViewportUnitFlags());
 
   if (state.Style()->HasContainerRelativeUnits()) {
     state.Style()->SetDependsOnContainerQueries(true);
@@ -1155,7 +1154,7 @@ void StyleResolver::ApplyBaseStyle(
     if (collector.MatchedResult().DependsOnContainerQueries())
       state.Style()->SetDependsOnContainerQueries(true);
     if (collector.MatchedResult().DependsOnViewportContainerQueries())
-      state.Style()->SetHasViewportUnits(true);
+      state.Style()->SetHasStaticViewportUnits();
     if (collector.MatchedResult().DependsOnRemContainerQueries())
       state.Style()->SetHasRemUnits();
     if (collector.MatchedResult().ConditionallyAffectsAnimations())
@@ -1608,18 +1607,19 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
                                     matched_property_cache_inherited_hit, 1);
 
       EInsideLink link_status = state.Style()->InsideLink();
-      unsigned dynamic_restyle_flags_for_has =
-          state.Style()->DynamicRestyleFlagsForHas();
+      unsigned dynamic_restyle_flags_for_subject_has =
+          state.Style()->DynamicRestyleFlagsForSubjectHas();
       // If the cache item parent style has identical inherited properties to
       // the current parent style then the resulting style will be identical
       // too. We copy the inherited properties over from the cache and are done.
       state.Style()->InheritFrom(*cached_matched_properties->computed_style);
 
-      // Unfortunately the 'link status' and 'dynamic restyle flags for has' are
-      // treated like an inherited property. We need to explicitly restore it.
+      // Unfortunately the 'link status' and 'dynamic restyle flags for subject
+      // has' are treated like an inherited property. We need to explicitly
+      // restore it.
       state.Style()->SetInsideLink(link_status);
-      state.Style()->SetDynamicRestyleFlagsForHas(
-          dynamic_restyle_flags_for_has);
+      state.Style()->SetDynamicRestyleFlagsForSubjectHas(
+          dynamic_restyle_flags_for_subject_has);
 
       is_inherited_cache_hit = true;
     }

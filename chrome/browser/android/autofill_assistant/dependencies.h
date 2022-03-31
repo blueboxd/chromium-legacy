@@ -20,15 +20,19 @@ namespace autofill_assistant {
 // and dependencies to the starter.
 class Dependencies {
  public:
-  static std::unique_ptr<Dependencies> CreateFromJavaObject(
-      base::android::ScopedJavaGlobalRef<jobject> java_object);
+  static std::unique_ptr<Dependencies> CreateFromJavaStaticDependencies(
+      const base::android::JavaRef<jobject>& jstatic_dependencies);
 
-  base::android::ScopedJavaGlobalRef<jobject> GetJavaObject() const;
+  static std::unique_ptr<Dependencies> CreateFromJavaDependencies(
+      const base::android::JavaRef<jobject>& jdependencies);
 
-  static base::android::ScopedJavaGlobalRef<jobject> CreateInfoPageUtil(
-      const base::android::ScopedJavaGlobalRef<jobject>& java_object);
-
+  base::android::ScopedJavaGlobalRef<jobject> GetJavaStaticDependencies() const;
+  base::android::ScopedJavaGlobalRef<jobject> CreateInfoPageUtil() const;
   base::android::ScopedJavaGlobalRef<jobject> CreateAccessTokenUtil() const;
+  base::android::ScopedJavaGlobalRef<jobject> CreateImageFetcher() const;
+  base::android::ScopedJavaGlobalRef<jobject> CreateIconBridge() const;
+
+  bool IsAccessibilityEnabled() const;
 
   virtual ~Dependencies();
 
@@ -40,15 +44,18 @@ class Dependencies {
   virtual std::string GetChromeSignedInEmailAddress(
       content::WebContents* web_contents) const = 0;
 
-  virtual AnnotateDomModelService* GetAnnotateDomModelService(
+  virtual AnnotateDomModelService* GetOrCreateAnnotateDomModelService(
       content::BrowserContext* browser_context) const = 0;
 
+  virtual bool IsCustomTab(const content::WebContents& web_contents) const = 0;
+
  protected:
-  Dependencies(JNIEnv* env,
-               const base::android::JavaParamRef<jobject>& java_object);
+  Dependencies(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jstatic_dependencies);
 
  private:
-  const base::android::ScopedJavaGlobalRef<jobject> java_object_;
+  const base::android::ScopedJavaGlobalRef<jobject> jstatic_dependencies_;
 };
 
 }  // namespace autofill_assistant

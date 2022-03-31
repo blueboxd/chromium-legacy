@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_whats_new_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
+#import "ios/chrome/common/material_timing.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -27,9 +28,11 @@
 // List of all UITapGestureRecognizers created for the Most Visisted tiles.
 @property(nonatomic, strong)
     NSMutableArray<UITapGestureRecognizer*>* mostVisitedTapRecognizers;
-// The UITapGestureRecognizer for the Return To Recent Tab tile.
+// The UILongPressGestureRecognizer for the Return To Recent Tab tile.
 @property(nonatomic, strong)
     UITapGestureRecognizer* returnToRecentTabTapRecognizer;
+@property(nonatomic, strong)
+    UILongPressGestureRecognizer* returnToRecentTabLongPressRecognizer;
 // The UITapGestureRecognizer for the NTP promo view.
 @property(nonatomic, strong) UITapGestureRecognizer* promoTapRecognizer;
 
@@ -66,6 +69,16 @@
     [returnToRecentTabTile
         addGestureRecognizer:self.returnToRecentTabTapRecognizer];
     self.returnToRecentTabTapRecognizer.enabled = YES;
+    // Add long press functionality for the Return to Recent Tab tile.
+    self.returnToRecentTabLongPressRecognizer =
+        [[UILongPressGestureRecognizer alloc]
+            initWithTarget:self.tapTarget
+                    action:@selector(contentSuggestionsElementTapped:)];
+    self.returnToRecentTabLongPressRecognizer.minimumPressDuration =
+        ios::material::kDuration8;
+    self.returnToRecentTabLongPressRecognizer.enabled = YES;
+    [returnToRecentTabTile
+        addGestureRecognizer:self.returnToRecentTabLongPressRecognizer];
     [cell addUIElement:returnToRecentTabTile
         withCustomBottomSpacing:content_suggestions::
                                     kReturnToRecentTabSectionBottomMargin];
@@ -96,6 +109,7 @@
       [whatsNewView.heightAnchor constraintEqualToConstant:size.height]
     ]];
   }
+  NSUInteger index = 0;
   if (self.mostVisitedItems) {
     UIStackView* stackView = [[UIStackView alloc] init];
     stackView.axis = UILayoutConstraintAxisHorizontal;
@@ -106,6 +120,11 @@
       ContentSuggestionsMostVisitedTileView* view =
           [[ContentSuggestionsMostVisitedTileView alloc]
               initWithConfiguration:item];
+      view.accessibilityIdentifier = [NSString
+          stringWithFormat:
+              @"%@%li",
+              kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix,
+              index];
       view.menuProvider = self.menuProvider;
       UITapGestureRecognizer* tapRecognizer = [[UITapGestureRecognizer alloc]
           initWithTarget:self.tapTarget
@@ -113,6 +132,7 @@
       [view addGestureRecognizer:tapRecognizer];
       [self.mostVisitedTapRecognizers addObject:tapRecognizer];
       [stackView addArrangedSubview:view];
+      index++;
     }
     [cell addUIElement:stackView
         withCustomBottomSpacing:kMostVisitedBottomMargin];
@@ -135,12 +155,18 @@
       ContentSuggestionsShortcutTileView* view =
           [[ContentSuggestionsShortcutTileView alloc]
               initWithConfiguration:item];
+      view.accessibilityIdentifier = [NSString
+          stringWithFormat:
+              @"%@%li",
+              kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix,
+              index];
       UITapGestureRecognizer* tapRecognizer = [[UITapGestureRecognizer alloc]
           initWithTarget:self.tapTarget
                   action:@selector(contentSuggestionsElementTapped:)];
       [view addGestureRecognizer:tapRecognizer];
       [self.mostVisitedTapRecognizers addObject:tapRecognizer];
       [stackView addArrangedSubview:view];
+      index++;
     }
 
     [cell addUIElement:stackView

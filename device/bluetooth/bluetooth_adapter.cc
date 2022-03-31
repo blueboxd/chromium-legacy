@@ -323,6 +323,14 @@ void BluetoothAdapter::NotifyDevicePairedChanged(BluetoothDevice* device,
   for (auto& observer : observers_)
     observer.DevicePairedChanged(this, device, new_paired_status);
 }
+
+void BluetoothAdapter::NotifyDeviceConnectedStateChanged(
+    BluetoothDevice* device,
+    bool is_connected) {
+  for (auto& observer : observers_) {
+    observer.DeviceConnectedStateChanged(this, device, is_connected);
+  }
+}
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
@@ -463,6 +471,15 @@ void BluetoothAdapter::NotifyGattDescriptorValueChanged(
   for (auto& observer : observers_)
     observer.GattDescriptorValueChanged(this, descriptor, value);
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+void BluetoothAdapter::
+    NotifyLowEnergyScanSessionHardwareOffloadingStatusChanged(
+        LowEnergyScanSessionHardwareOffloadingStatus status) {
+  for (auto& observer : observers_)
+    observer.LowEnergyScanSessionHardwareOffloadingStatusChanged(status);
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 BluetoothAdapter::SetPoweredCallbacks::SetPoweredCallbacks() = default;
 BluetoothAdapter::SetPoweredCallbacks::~SetPoweredCallbacks() = default;

@@ -76,8 +76,9 @@ enum class IntelGpuSeriesType {
   kRocketlake = 24,
   kDG1 = 25,
   kAlderlake = 22,
+  kAlchemist = 26,
   // Please also update |gpu_series_map| in process_json.py.
-  kMaxValue = kDG1,
+  kMaxValue = kAlchemist,
 };
 
 // Video profile.  This *must* match media::VideoCodecProfile.
@@ -262,6 +263,12 @@ struct GPU_EXPORT GPUInfo {
     CHROME_LUID luid;
 #endif  // BUILDFLAG(IS_WIN)
 
+#if BUILDFLAG(IS_MAC)
+    // The registry ID of an IOGraphicsAccelerator2 or AGXAccelerator matches
+    // the ID used for GPU selection by ANGLE_platform_angle_device_id.
+    uint64_t register_id = 0ULL;
+#endif  // BUILDFLAG(IS_MAC)
+
     // Whether this GPU is the currently used one.
     // Currently this field is only supported and meaningful on OS X and on
     // Windows using Angle with D3D11.
@@ -381,6 +388,13 @@ struct GPU_EXPORT GPUInfo {
   // present. Threaded mailbox sharing is used on Android only, so this check
   // is only implemented on Android.
   bool can_support_threaded_texture_mailbox = false;
+
+// Whether the browser was built with ASAN or not.
+#if defined(ADDRESS_SANITIZER)
+  bool is_asan = true;
+#else
+  bool is_asan = false;
+#endif
 
 #if BUILDFLAG(IS_MAC)
   // Enum describing which texture target is used for native GpuMemoryBuffers on

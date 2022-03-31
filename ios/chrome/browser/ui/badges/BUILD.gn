@@ -12,6 +12,7 @@ source_set("public") {
     "badges_histograms.h",
     "badges_histograms.mm",
   ]
+  deps = [ "//ios/chrome/browser/infobars:badge_state_public" ]
 }
 
 source_set("util") {
@@ -69,6 +70,7 @@ source_set("badges") {
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/fullscreen:ui",
+    "//ios/chrome/browser/ui/infobars/resources:infobar_permissions_camera",
     "//ios/chrome/browser/ui/infobars/resources:infobar_reading_list",
     "//ios/chrome/browser/ui/infobars/resources:infobar_save_card_icon",
     "//ios/chrome/browser/ui/infobars/resources:infobar_settings_icon",
@@ -83,6 +85,7 @@ source_set("badges") {
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/util",
     "//ios/web/public",
+    "//ios/web/public/permissions",
     "//ui/base",
   ]
 }
@@ -136,7 +139,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/infobars:badge",
-    "//ios/chrome/browser/infobars:badge_public",
+    "//ios/chrome/browser/infobars:badge_state_public",
     "//ios/chrome/browser/infobars/test",
     "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/overlays",

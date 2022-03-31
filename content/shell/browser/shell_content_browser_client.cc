@@ -170,6 +170,15 @@ class ShellVariationsServiceClient
   bool IsEnterprise() override { return false; }
 };
 
+// Returns the full user agent string for the content shell.
+std::string GetShellFullUserAgent() {
+  std::string product = "Chrome/" CONTENT_SHELL_VERSION;
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kUseMobileUserAgent))
+    product += " Mobile";
+  return BuildUserAgentFromProduct(product);
+}
+
 // Returns the reduced user agent string for the content shell.
 std::string GetShellReducedUserAgent() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -195,14 +204,13 @@ class ShellContentBrowserClient::ShellFieldTrials
 };
 
 std::string GetShellUserAgent() {
+  if (base::FeatureList::IsEnabled(blink::features::kFullUserAgent))
+    return GetShellFullUserAgent();
+
   if (base::FeatureList::IsEnabled(blink::features::kReduceUserAgent))
     return GetShellReducedUserAgent();
 
-  std::string product = "Chrome/" CONTENT_SHELL_VERSION;
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kUseMobileUserAgent))
-    product += " Mobile";
-  return BuildUserAgentFromProduct(product);
+  return GetShellFullUserAgent();
 }
 
 std::string GetShellLanguage() {
@@ -222,6 +230,7 @@ blink::UserAgentMetadata GetShellUserAgentMetadata() {
   metadata.model = BuildModelInfo();
 
   metadata.bitness = GetLowEntropyCpuBitness();
+  metadata.wow64 = content::IsWoW64();
 
   return metadata;
 }
@@ -330,6 +339,15 @@ WebContentsViewDelegate* ShellContentBrowserClient::GetWebContentsViewDelegate(
   performance_manager::PerformanceManagerRegistry::GetInstance()
       ->MaybeCreatePageNodeForWebContents(web_contents);
   return CreateShellWebContentsViewDelegate(web_contents);
+}
+
+bool ShellContentBrowserClient::ShouldUrlUseApplicationIsolationLevel(
+    BrowserContext* browser_context,
+    const GURL& url) {
+  // Enable application isolation level to allow restricted APIs in WPT.
+  // Note that this will not turn on application isolation for all URLs; the
+  // content layer will still run its own checks.
+  return true;
 }
 
 scoped_refptr<content::QuotaPermissionContext>
@@ -478,6 +496,10 @@ ShellContentBrowserClient::GetSandboxedStorageServiceDataDirectory() {
 
 std::string ShellContentBrowserClient::GetUserAgent() {
   return GetShellUserAgent();
+}
+
+std::string ShellContentBrowserClient::GetFullUserAgent() {
+  return GetShellFullUserAgent();
 }
 
 std::string ShellContentBrowserClient::GetReducedUserAgent() {
@@ -680,6 +702,10 @@ void ShellContentBrowserClient::OnNetworkServiceCreated(
     network_service->UpdateCtLogList(
         std::vector<network::mojom::CTLogInfoPtr>(), base::Time::Now());
   }
+
+  // Network service receives an empty First-Party Sets file when component
+  // updater is disabled.
+  network_service->SetFirstPartySets(base::File());
 }
 
 }  // namespace content

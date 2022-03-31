@@ -7,20 +7,31 @@
 #include "ash/public/cpp/personalization_app/user_display_info.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "ash/webui/personalization_app/mojom/personalization_app_mojom_traits.h"
+#include "base/containers/span.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/camera_presence_notifier.h"
 #include "chrome/browser/ash/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/default_user_image/default_user_images.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/user_manager/user_info.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "services/data_decoder/public/cpp/decode_image.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
 namespace {
+
+using ash::personalization_app::GetAccountId;
+using ash::personalization_app::GetUser;
 
 GURL GetUserImageDataUrl(const user_manager::User& user) {
   if (user.GetImage().isNull())
@@ -32,7 +43,12 @@ GURL GetUserImageDataUrl(const user_manager::User& user) {
 
 PersonalizationAppUserProviderImpl::PersonalizationAppUserProviderImpl(
     content::WebUI* web_ui)
-    : profile_(Profile::FromWebUI(web_ui)) {}
+    : profile_(Profile::FromWebUI(web_ui)) {
+  ash::UserImageManager* user_image_manager =
+      ash::ChromeUserManager::Get()->GetUserImageManager(
+          GetAccountId(profile_));
+  user_image_manager->DownloadProfileImage();
+}
 
 PersonalizationAppUserProviderImpl::~PersonalizationAppUserProviderImpl() =
     default;
@@ -56,13 +72,24 @@ void PersonalizationAppUserProviderImpl::SetUserImageObserver(
     user_manager_observer_.Observe(user_manager);
 
   // Call it manually the first time.
-  OnUserImageChanged(*ash::ProfileHelper::Get()->GetUserByProfile(profile_));
+  OnUserImageChanged(*GetUser(profile_));
+
+  ash::UserImageManager* user_image_manager =
+      ash::ChromeUserManager::Get()->GetUserImageManager(
+          GetAccountId(profile_));
+  const gfx::ImageSkia& profile_image =
+      user_image_manager->DownloadedProfileImage();
+  OnUserProfileImageUpdated(*GetUser(profile_), profile_image);
+
+  // Always unbind and rebind the camera check observer to trigger an immediate
+  // |OnCameraPresenceCheckDone|.
+  camera_observer_.Reset();
+  camera_observer_.Observe(ash::CameraPresenceNotifier::GetInstance());
 }
 
 void PersonalizationAppUserProviderImpl::GetUserInfo(
     GetUserInfoCallback callback) {
-  const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
+  const user_manager::User* user = GetUser(profile_);
   DCHECK(user);
   std::move(callback).Run(ash::personalization_app::UserDisplayInfo(*user));
 }
@@ -81,17 +108,38 @@ void PersonalizationAppUserProviderImpl::SelectDefaultImage(int index) {
   }
 
   auto* user_image_manager = ash::ChromeUserManager::Get()->GetUserImageManager(
-      chromeos::ProfileHelper::Get()
-          ->GetUserByProfile(profile_)
-          ->GetAccountId());
+      GetAccountId(profile_));
 
   user_image_manager->SaveUserDefaultImageIndex(index);
 }
 
+void PersonalizationAppUserProviderImpl::SelectProfileImage() {
+  ash::UserImageManager* user_image_manager =
+      ash::ChromeUserManager::Get()->GetUserImageManager(
+          GetAccountId(profile_));
+  user_image_manager->SaveUserImageFromProfileImage();
+}
+
+void PersonalizationAppUserProviderImpl::SelectCameraImage(
+    ::mojo_base::BigBuffer data) {
+  // Make a copy of the data.
+  auto ref_counted =
+      base::MakeRefCounted<base::RefCountedBytes>(data.data(), data.size());
+  // Get a view of the same data copied above.
+  auto as_span = base::make_span(ref_counted->front(), ref_counted->size());
+
+  data_decoder::DecodeImageIsolated(
+      as_span, data_decoder::mojom::ImageCodec::kPng,
+      /*shrink_to_fit=*/true, data_decoder::kDefaultMaxSizeInBytes,
+      /*desired_image_frame_size=*/gfx::Size(),
+      base::BindOnce(&PersonalizationAppUserProviderImpl::OnCameraImageDecoded,
+                     image_decode_weak_ptr_factory_.GetWeakPtr(),
+                     std::move(ref_counted)));
+}
+
 void PersonalizationAppUserProviderImpl::OnUserImageChanged(
     const user_manager::User& user) {
-  const user_manager::User* desired_user =
-      ash::ProfileHelper::Get()->GetUserByProfile(profile_);
+  const user_manager::User* desired_user = GetUser(profile_);
   DCHECK(desired_user);
 
   if (user.GetAccountId() != desired_user->GetAccountId())
@@ -106,4 +154,42 @@ void PersonalizationAppUserProviderImpl::OnUserImageChanged(
   }
   // All other cases.
   user_image_observer_remote_->OnUserImageChanged(GetUserImageDataUrl(user));
+}
+
+void PersonalizationAppUserProviderImpl::OnUserProfileImageUpdated(
+    const user_manager::User& user,
+    const gfx::ImageSkia& profile_image) {
+  const user_manager::User* desired_user = GetUser(profile_);
+  DCHECK(desired_user);
+
+  if (user.GetAccountId() != desired_user->GetAccountId())
+    return;
+
+  user_image_observer_remote_->OnUserProfileImageUpdated(
+      GURL(webui::GetBitmapDataUrl(*profile_image.bitmap())));
+}
+
+void PersonalizationAppUserProviderImpl::OnCameraPresenceCheckDone(
+    bool is_camera_present) {
+  user_image_observer_remote_->OnCameraPresenceCheckDone(is_camera_present);
+}
+
+void PersonalizationAppUserProviderImpl::OnCameraImageDecoded(
+    scoped_refptr<base::RefCountedBytes> bytes,
+    const SkBitmap& decoded_bitmap) {
+  if (decoded_bitmap.isNull()) {
+    LOG(WARNING) << "Camera image failed decoding";
+    return;
+  }
+
+  auto user_image = std::make_unique<user_manager::UserImage>(
+      gfx::ImageSkia::CreateFrom1xBitmap(decoded_bitmap), std::move(bytes),
+      user_manager::UserImage::ImageFormat::FORMAT_PNG);
+  // Image was successfully decoded so it is valid png data.
+  user_image->MarkAsSafe();
+
+  auto* user_image_manager = ash::ChromeUserManager::Get()->GetUserImageManager(
+      GetAccountId(profile_));
+
+  user_image_manager->SaveUserImage(std::move(user_image));
 }

@@ -45,10 +45,9 @@ std::string StripQuotations(const std::string& in_str) {
 void InvokeErrorCallback(const std::string& service_path,
                          network_handler::ErrorCallback error_callback,
                          const std::string& error_name) {
-  std::string error_msg = "Config Error: " + error_name;
-  NET_LOG(ERROR) << error_msg << " For: " << NetworkPathId(service_path);
-  network_handler::RunErrorCallback(std::move(error_callback), service_path,
-                                    error_name, error_msg);
+  NET_LOG(ERROR) << "Config Error: " << error_name
+                 << " For: " << NetworkPathId(service_path);
+  network_handler::RunErrorCallback(std::move(error_callback), error_name);
 }
 
 void SetNetworkProfileErrorCallback(
@@ -663,13 +662,13 @@ void NetworkConfigurationHandler::ClearPropertiesSuccessCallback(
     base::OnceClosure callback,
     const base::ListValue& result) {
   const std::string kClearPropertiesFailedError("Error.ClearPropertiesFailed");
-  DCHECK(names.size() == result.GetList().size())
+  DCHECK(names.size() == result.GetListDeprecated().size())
       << "Incorrect result size from ClearProperties.";
 
-  for (size_t i = 0; i < result.GetList().size(); ++i) {
+  for (size_t i = 0; i < result.GetListDeprecated().size(); ++i) {
     bool success = false;
-    if (result.GetList()[i].is_bool())
-      success = result.GetList()[i].GetBool();
+    if (result.GetListDeprecated()[i].is_bool())
+      success = result.GetListDeprecated()[i].GetBool();
     if (!success) {
       // If a property was cleared that has never been set, the clear will fail.
       // We do not track which properties have been set, so just log the error.

@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ipc/ipc_message.h"
 #include "ipc/ipc_message_attachment.h"
 #include "ipc/ipc_message_attachment_set.h"
 #include "ipc/ipc_mojo_param_traits.h"
@@ -134,8 +135,8 @@ void WriteValue(base::Pickle* m, const base::Value* value, int recursion) {
     }
     case base::Value::Type::LIST: {
       const base::ListValue* list = static_cast<const base::ListValue*>(value);
-      WriteParam(m, base::checked_cast<int>(list->GetList().size()));
-      for (const auto& entry : list->GetList()) {
+      WriteParam(m, base::checked_cast<int>(list->GetListDeprecated().size()));
+      for (const auto& entry : list->GetListDeprecated()) {
         WriteValue(m, &entry, recursion + 1);
       }
       break;
@@ -1324,7 +1325,7 @@ void ParamTraits<base::UnguessableToken>::Log(const param_type& p,
 
 void ParamTraits<IPC::ChannelHandle>::Write(base::Pickle* m,
                                             const param_type& p) {
-#if defined(OS_NACL)
+#if BUILDFLAG(IS_NACL)
   WriteParam(m, p.socket);
 #else
   WriteParam(m, p.mojo_handle);
@@ -1334,7 +1335,7 @@ void ParamTraits<IPC::ChannelHandle>::Write(base::Pickle* m,
 bool ParamTraits<IPC::ChannelHandle>::Read(const base::Pickle* m,
                                            base::PickleIterator* iter,
                                            param_type* r) {
-#if defined(OS_NACL)
+#if BUILDFLAG(IS_NACL)
   return ReadParam(m, iter, &r->socket);
 #else
   return ReadParam(m, iter, &r->mojo_handle);
@@ -1344,7 +1345,7 @@ bool ParamTraits<IPC::ChannelHandle>::Read(const base::Pickle* m,
 void ParamTraits<IPC::ChannelHandle>::Log(const param_type& p,
                                           std::string* l) {
   l->append("ChannelHandle(");
-#if defined(OS_NACL)
+#if BUILDFLAG(IS_NACL)
   ParamTraits<base::FileDescriptor>::Log(p.socket, l);
 #else
   LogParam(p.mojo_handle, l);
@@ -1474,6 +1475,6 @@ void ParamTraits<MSG>::Log(const param_type& p, std::string* l) {
   l->append("<MSG>");
 }
 
-#endif  // OS_WIN
+#endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace IPC

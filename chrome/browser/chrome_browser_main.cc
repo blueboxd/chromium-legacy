@@ -63,8 +63,10 @@
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/chrome_browser_field_trials.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
+#include "chrome/browser/component_updater/first_party_sets_component_installer.h"
 #include "chrome/browser/component_updater/registration.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/enterprise/browser_management/management_service_factory.h"
 #include "chrome/browser/first_party_sets/first_party_sets_util.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
@@ -140,6 +142,7 @@
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/offline_pages/buildflags/buildflags.h"
+#include "components/policy/core/common/management/management_service.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -473,27 +476,16 @@ void ProcessSingletonNotificationCallbackImpl(
     GoogleUpdateSettings::SetLastRunTime();
 }
 
-bool ProcessSingletonNotificationCallback(
-    const base::CommandLine& command_line,
-    const base::FilePath& current_directory) {
-  // Drop the request if the browser process is already shutting down.
-  // Note that we're going to post an async task below. Even if the browser
-  // process isn't shutting down right now, it could be by the time the task
-  // starts running. So, an additional check needs to happen when it starts.
-  // But regardless of any future check, there is no reason to post the task
-  // now if we know we're already shutting down.
-  if (!g_browser_process || g_browser_process->IsShuttingDown())
-    return false;
-
-  // In order to handle this request on Windows, there is platform specific
-  // code in browser_finder.cc that requires making outbound COM calls to
-  // cross-apartment shell objects (via IVirtualDesktopManager). That is not
-  // allowed within a SendMessage handler, which this function is a part of.
-  // So, we post a task to asynchronously finish the command line processing.
-  return base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&ProcessSingletonNotificationCallbackImpl,
-                                command_line, current_directory));
+bool ShouldInstallSodaDuringPostProfileInit(
+    const base::CommandLine& command_line) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  return base::FeatureList::IsEnabled(
+      ash::features::kOnDeviceSpeechRecognition);
+#else
+  return !command_line.HasSwitch(switches::kDisableComponentUpdate);
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 }
+
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace
@@ -673,7 +665,8 @@ void ChromeBrowserMainParts::SetupOriginTrialsCommandLine(
         embedder_support::prefs::kOriginTrialDisabledFeatures);
     if (override_disabled_feature_list) {
       std::vector<base::StringPiece> disabled_features;
-      for (const auto& item : override_disabled_feature_list->GetList()) {
+      for (const auto& item :
+           override_disabled_feature_list->GetListDeprecated()) {
         if (item.is_string())
           disabled_features.push_back(item.GetString());
       }
@@ -692,7 +685,7 @@ void ChromeBrowserMainParts::SetupOriginTrialsCommandLine(
         embedder_support::prefs::kOriginTrialDisabledTokens);
     if (disabled_token_list) {
       std::vector<base::StringPiece> disabled_tokens;
-      for (const auto& item : disabled_token_list->GetList()) {
+      for (const auto& item : disabled_token_list->GetListDeprecated()) {
         if (item.is_string())
           disabled_tokens.push_back(item.GetString());
       }
@@ -855,6 +848,12 @@ int ChromeBrowserMainParts::OnLocalStateLoaded(
   if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir_))
     return chrome::RESULT_CODE_MISSING_DATA;
 
+  auto* platform_management_service =
+      policy::ManagementServiceFactory::GetForPlatform();
+  platform_management_service->UsePrefServiceAsCache(
+      browser_process_->local_state());
+  platform_management_service->RefreshCache(base::NullCallback());
+
 #if BUILDFLAG(IS_WIN)
   if (first_run::IsChromeFirstRun()) {
     bool stats_default;
@@ -954,7 +953,8 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 #if !BUILDFLAG(IS_ANDROID)
   process_singleton_ = std::make_unique<ChromeProcessSingleton>(
       user_data_dir_,
-      base::BindRepeating(&ProcessSingletonNotificationCallback));
+      base::BindRepeating(
+          &ChromeBrowserMainParts::ProcessSingletonNotificationCallback));
 
   // Cache first run state early.
   first_run::IsChromeFirstRun();
@@ -1202,6 +1202,68 @@ void ChromeBrowserMainParts::PostProfileInit(Profile* profile,
 
   for (auto& chrome_extra_part : chrome_extra_parts_)
     chrome_extra_part->PostProfileInit(profile, is_initial_profile);
+
+#if BUILDFLAG(IS_WIN)
+  // Verify that the profile is not on a network share and if so prepare to show
+  // notification to the user.
+  if (NetworkProfileBubble::ShouldCheckNetworkProfile(profile)) {
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock()},
+        base::BindOnce(&NetworkProfileBubble::CheckNetworkProfile,
+                       profile->GetPath()));
+  }
+
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+  // Create the spellcheck service. This will asynchronously retrieve the
+  // Windows platform spellcheck dictionary language tags used to populate the
+  // context menu for editable content.
+  if (spellcheck::UseBrowserSpellChecker() &&
+      profile->GetPrefs()->GetBoolean(spellcheck::prefs::kSpellCheckEnable) &&
+      !base::FeatureList::IsEnabled(
+          spellcheck::kWinDelaySpellcheckServiceInit)) {
+    SpellcheckServiceFactory::GetForContext(profile);
+  }
+#endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+#endif  // BUILDFLAG(IS_WIN)
+
+#if !BUILDFLAG(IS_ANDROID)
+  if (ShouldInstallSodaDuringPostProfileInit(parsed_command_line())) {
+    speech::SodaInstaller::GetInstance()->Init(profile->GetPrefs(),
+                                               browser_process_->local_state());
+  }
+#endif  // !BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(ENABLE_RLZ) && !BUILDFLAG(IS_CHROMEOS_ASH)
+  if (is_initial_profile) {
+    // Init the RLZ library. This just binds the dll and schedules a task on the
+    // file thread to be run sometime later. If this is the first run we record
+    // the installation event.
+    int ping_delay =
+        profile->GetPrefs()->GetInteger(prefs::kRlzPingDelaySeconds);
+    // Negative ping delay means to send ping immediately after a first search
+    // is recorded.
+    rlz::RLZTracker::SetRlzDelegate(
+        std::make_unique<ChromeRLZTrackerDelegate>());
+    rlz::RLZTracker::InitRlzDelayed(
+        first_run::IsChromeFirstRun(), ping_delay < 0,
+        base::Seconds(abs(ping_delay)),
+        ChromeRLZTrackerDelegate::IsGoogleDefaultSearch(profile),
+        ChromeRLZTrackerDelegate::IsGoogleHomepage(profile),
+        ChromeRLZTrackerDelegate::IsGoogleInStartpages(profile));
+  }
+#endif  // BUILDFLAG(ENABLE_RLZ) && !BUILDFLAG(IS_CHROMEOS_ASH)
+
+  language::LanguageUsageMetrics::RecordAcceptLanguages(
+      profile->GetPrefs()->GetString(language::prefs::kAcceptLanguages));
+  language::LanguageUsageMetrics::RecordApplicationLanguage(
+      browser_process_->GetApplicationLocale());
+  translate::TranslateMetricsLoggerImpl::LogApplicationStartMetrics(
+      ChromeTranslateClient::CreateTranslatePrefs(profile->GetPrefs()));
+// On ChromeOS results in a crash. https://crbug.com/1151558
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  language::LanguageUsageMetrics::RecordPageLanguages(
+      *UrlLanguageHistogramFactory::GetForBrowserContext(profile));
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void ChromeBrowserMainParts::PreBrowserStart() {
@@ -1495,19 +1557,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   if (profile_info.mode == StartupProfileMode::kError)
     return content::RESULT_CODE_NORMAL_EXIT;
 
-#if BUILDFLAG(IS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  // Create the spellcheck service. This will asynchronously retrieve the
-  // Windows platform spellcheck dictionary language tags used to populate the
-  // context menu for editable content.
-  if (profile_info.mode == StartupProfileMode::kBrowserWindow &&
-      spellcheck::UseBrowserSpellChecker() &&
-      profile->GetPrefs()->GetBoolean(spellcheck::prefs::kSpellCheckEnable) &&
-      !base::FeatureList::IsEnabled(
-          spellcheck::kWinDelaySpellcheckServiceInit)) {
-    SpellcheckServiceFactory::GetForContext(profile);
-  }
-#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-
 #if !BUILDFLAG(IS_ANDROID)
   // The first run sentinel must be created after the process singleton was
   // grabbed and no early return paths were otherwise hit above.
@@ -1545,6 +1594,15 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   g_browser_process->CreateDevToolsProtocolHandler();
   if (parsed_command_line().HasSwitch(::switches::kAutoOpenDevToolsForTabs))
     g_browser_process->CreateDevToolsAutoOpener();
+
+  // Needs to be done before PostProfileInit, since the SODA Installer setup is
+  // called inside PostProfileInit and depends on it.
+  if (!parsed_command_line().HasSwitch(switches::kDisableComponentUpdate)) {
+    component_updater::RegisterComponentsForUpdate();
+  } else {
+    component_updater::FirstPartySetsComponentInstallerPolicy::
+        SendFileToNetworkService(base::File());
+  }
 
   // TODO(stevenjb): Move WIN and MACOSX specific code to appropriate Parts.
   // (requires supporting early exit).
@@ -1588,33 +1646,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     ChromeBrowserMainPartsWin::RegisterApplicationRestart(
         parsed_command_line());
   }
-
-  // Verify that the profile is not on a network share and if so prepare to show
-  // notification to the user.
-  if (NetworkProfileBubble::ShouldCheckNetworkProfile(profile)) {
-    base::ThreadPool::PostTask(
-        FROM_HERE, {base::MayBlock()},
-        base::BindOnce(&NetworkProfileBubble::CheckNetworkProfile,
-                       profile->GetPath()));
-  }
 #endif  // BUILDFLAG(IS_WIN)
-
-#if BUILDFLAG(ENABLE_RLZ) && !BUILDFLAG(IS_CHROMEOS_ASH)
-  // Init the RLZ library. This just binds the dll and schedules a task on the
-  // file thread to be run sometime later. If this is the first run we record
-  // the installation event.
-  int ping_delay = profile->GetPrefs()->GetInteger(prefs::kRlzPingDelaySeconds);
-  // Negative ping delay means to send ping immediately after a first search is
-  // recorded.
-  rlz::RLZTracker::SetRlzDelegate(
-      base::WrapUnique(new ChromeRLZTrackerDelegate));
-  rlz::RLZTracker::InitRlzDelayed(
-      first_run::IsChromeFirstRun(), ping_delay < 0,
-      base::Seconds(abs(ping_delay)),
-      ChromeRLZTrackerDelegate::IsGoogleDefaultSearch(profile),
-      ChromeRLZTrackerDelegate::IsGoogleHomepage(profile),
-      ChromeRLZTrackerDelegate::IsGoogleInStartpages(profile));
-#endif  // BUILDFLAG(ENABLE_RLZ) && !BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(ChromeNetResourceProvider);
@@ -1649,18 +1681,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif
 
   HandleTestParameters(parsed_command_line());
-
-  language::LanguageUsageMetrics::RecordAcceptLanguages(
-      profile->GetPrefs()->GetString(language::prefs::kAcceptLanguages));
-  language::LanguageUsageMetrics::RecordApplicationLanguage(
-      browser_process_->GetApplicationLocale());
-  translate::TranslateMetricsLoggerImpl::LogApplicationStartMetrics(
-      ChromeTranslateClient::CreateTranslatePrefs(profile->GetPrefs()));
-// On ChromeOS results in a crash. https://crbug.com/1151558
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-  language::LanguageUsageMetrics::RecordPageLanguages(
-      *UrlLanguageHistogramFactory::GetForBrowserContext(profile));
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // On mobile, the need for a clean shutdown arises only when the application
 // comes to the foreground (i.e. when MetricsService::OnAppEnterForeground() is
@@ -1697,37 +1717,20 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   PreBrowserStart();
 
-  if (!parsed_command_line().HasSwitch(switches::kDisableComponentUpdate)) {
-    component_updater::RegisterComponentsForUpdate();
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
-    // Exclude Android: SODA is not supported.
-    // Exclude ChromeOS: SODA is independent of Component Updater.
-    speech::SodaInstaller::GetInstance()->Init(profile->GetPrefs(),
-                                               browser_process_->local_state());
-#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
-
-    // Only read and update the persisted sets when First-Party Sets component
-    // will be installed.
-    if (base::FeatureList::IsEnabled(features::kFirstPartySets)) {
-      FirstPartySetsUtil::GetInstance()->SendAndUpdatePersistedSets(
-          user_data_dir_,
-          /*send_sets=*/
-          base::BindOnce(
-              [](base::OnceCallback<void(const std::string&)> callback,
-                 const std::string& sets) {
-                content::GetNetworkService()
-                    ->SetPersistedFirstPartySetsAndGetCurrentSets(
-                        sets, std::move(callback));
-              }));
-    }
+  // Only read and update the persisted sets when First-Party Sets component
+  // will be installed.
+  if (!parsed_command_line().HasSwitch(switches::kDisableComponentUpdate) &&
+      base::FeatureList::IsEnabled(features::kFirstPartySets)) {
+    FirstPartySetsUtil::GetInstance()->SendAndUpdatePersistedSets(
+        user_data_dir_,
+        /*send_sets=*/
+        base::BindOnce([](base::OnceCallback<void(const std::string&)> callback,
+                          const std::string& sets) {
+          content::GetNetworkService()
+              ->SetPersistedFirstPartySetsAndGetCurrentSets(
+                  sets, std::move(callback));
+        }));
   }
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (base::FeatureList::IsEnabled(ash::features::kOnDeviceSpeechRecognition)) {
-    speech::SodaInstaller::GetInstance()->Init(profile->GetPrefs(),
-                                               browser_process_->local_state());
-  }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   variations::VariationsService* variations_service =
       browser_process_->variations_service();
@@ -1883,10 +1886,7 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   for (auto& chrome_extra_part : chrome_extra_parts_)
     chrome_extra_part->PostMainMessageLoopRun();
 
-  // Some tests don't set parameters.ui_task, so they started translate
-  // language fetch that was never completed so we need to cleanup here
-  // otherwise it will be done by the destructor in a wrong thread.
-  TranslateService::Shutdown(!parameters_.ui_task);
+  TranslateService::Shutdown();
 
   if (notify_result_ == ProcessSingleton::PROCESS_NONE)
     process_singleton_->Cleanup();
@@ -1978,4 +1978,28 @@ std::unique_ptr<base::RunLoop> ChromeBrowserMainParts::TakeRunLoopForTest() {
   DCHECK(GetMainRunLoopInstance());
   return std::move(GetMainRunLoopInstance());
 }
+
+// static
+bool ChromeBrowserMainParts::ProcessSingletonNotificationCallback(
+    const base::CommandLine& command_line,
+    const base::FilePath& current_directory) {
+  // Drop the request if the browser process is already shutting down.
+  // Note that we're going to post an async task below. Even if the browser
+  // process isn't shutting down right now, it could be by the time the task
+  // starts running. So, an additional check needs to happen when it starts.
+  // But regardless of any future check, there is no reason to post the task
+  // now if we know we're already shutting down.
+  if (!g_browser_process || g_browser_process->IsShuttingDown())
+    return false;
+
+  // In order to handle this request on Windows, there is platform specific
+  // code in browser_finder.cc that requires making outbound COM calls to
+  // cross-apartment shell objects (via IVirtualDesktopManager). That is not
+  // allowed within a SendMessage handler, which this function is a part of.
+  // So, we post a task to asynchronously finish the command line processing.
+  return base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&ProcessSingletonNotificationCallbackImpl,
+                                command_line, current_directory));
+}
+
 #endif

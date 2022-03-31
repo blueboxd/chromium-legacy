@@ -14,12 +14,25 @@ namespace content {
 // Authentication API requests.
 class WebAuthenticationRequestProxy {
  public:
+  // RequestId uniquely identifies a proxied request when invoking a response
+  // callback or cancelling.
+  using RequestId = int32_t;
+
   // CreateCallback is the response callback type for `SignalCreateRequest`. It
+  // receives either the error or the response that resulted from the proxied
+  // request.
+  using CreateCallback = base::OnceCallback<void(
+      RequestId,
+      blink::mojom::WebAuthnDOMExceptionDetailsPtr,
+      blink::mojom::MakeCredentialAuthenticatorResponsePtr)>;
+
+  // GetCallback is the response callback type for `SignalCreateRequest`. It
   // is invoked with the status and optional response that resulted from the
   // proxied request.
-  using CreateCallback = base::OnceCallback<void(
-      blink::mojom::AuthenticatorStatus,
-      blink::mojom::MakeCredentialAuthenticatorResponsePtr)>;
+  using GetCallback = base::OnceCallback<void(
+      RequestId,
+      blink::mojom::WebAuthnDOMExceptionDetailsPtr,
+      blink::mojom::GetAssertionAuthenticatorResponsePtr)>;
 
   // IsUvpaaCallback is the response callback type for `SignalIsUvpaaRequest`.
   // It is invoked with the result of the proxied request.
@@ -33,14 +46,24 @@ class WebAuthenticationRequestProxy {
 
   // SignalCreateRequest is invoked when a Web Authentication API
   // `navigator.credentials.create()` request occurs.
-  virtual void SignalCreateRequest(
+  virtual RequestId SignalCreateRequest(
       const blink::mojom::PublicKeyCredentialCreationOptionsPtr& options,
       CreateCallback callback) = 0;
+
+  // SignalGetRequest is invoked when a Web Authentication API
+  // `navigator.credentials.get()` request occurs.
+  virtual RequestId SignalGetRequest(
+      const blink::mojom::PublicKeyCredentialRequestOptionsPtr& options,
+      GetCallback callback) = 0;
 
   // SignalIsUvpaaRequest is invoked when a
   // PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable() (aka
   // `IsUvpaa`) request occurs.
-  virtual void SignalIsUvpaaRequest(IsUvpaaCallback callback) = 0;
+  virtual RequestId SignalIsUvpaaRequest(IsUvpaaCallback callback) = 0;
+
+  // CancelRequest cancels processing of the request with the
+  // given `request_id`.
+  virtual void CancelRequest(RequestId request_id) = 0;
 };
 
 }  // namespace content

@@ -81,5 +81,10 @@ const char kWebSQLInThirdPartyContextEnabled[] =
 const char kUserAgentClientHintsGREASEUpdateEnabled[] =
     "policy.user_agent_client_hints_grease_update_enabled";
 
+// Boolean policy to enable/disable Direct Sockets API.
+// If true, the default API behavior is observed (secure context / cli flags
+// required). If false, the API gets blocked unconditionally.
+const char kEnableDirectSockets[] = "policy.enable_direct_sockets";
+
 }  // namespace policy_prefs
 }  // namespace policy

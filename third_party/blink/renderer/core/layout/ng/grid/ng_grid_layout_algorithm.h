@@ -40,13 +40,8 @@ class CORE_EXPORT NGGridLayoutAlgorithm
  public:
   explicit NGGridLayoutAlgorithm(const NGLayoutAlgorithmParams& params);
 
-  scoped_refptr<const NGLayoutResult> Layout() override;
+  const NGLayoutResult* Layout() override;
   MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesFloatInput&) override;
-
-  static GridItemData InitializeGridItem(
-      const NGBlockNode node,
-      const ComputedStyle& container_style,
-      const WritingMode container_writing_mode);
 
   // Computes the containing block rect of out of flow items from stored data in
   // |NGGridLayoutData|.
@@ -55,7 +50,6 @@ class CORE_EXPORT NGGridLayoutAlgorithm
       const NGGridLayoutData& layout_data,
       const NGBoxStrut& borders,
       const LogicalSize& border_box_size,
-      const LayoutUnit block_size,
       GridItemData* out_of_flow_item);
 
   // Helper that computes tracks sizes in a given range.
@@ -67,7 +61,7 @@ class CORE_EXPORT NGGridLayoutAlgorithm
  private:
   friend class NGGridLayoutAlgorithmTest;
 
-  scoped_refptr<const NGLayoutResult> LayoutInternal();
+  const NGLayoutResult* LayoutInternal();
 
   LayoutUnit Baseline(const NGGridGeometry& grid_geometry,
                       const GridItemData& grid_item,
@@ -95,11 +89,8 @@ class CORE_EXPORT NGGridLayoutAlgorithm
   wtf_size_t ComputeAutomaticRepetitions(
       const GridTrackSizingDirection track_direction) const;
 
-  void ConstructAndAppendGridItems(GridItems* grid_items,
-                                   NGGridPlacement* grid_placement) const;
-
   void BuildBlockTrackCollections(
-      const NGGridPlacement& grid_placement,
+      const NGGridPlacementData& placement_data,
       GridItems* grid_items,
       NGGridBlockTrackCollection* column_track_collection,
       NGGridBlockTrackCollection* row_track_collection) const;
@@ -204,8 +195,8 @@ class CORE_EXPORT NGGridLayoutAlgorithm
   // of each item before fragmentation occurs.
   void PlaceGridItems(const GridItems& grid_items,
                       const NGGridGeometry& grid_geometry,
-                      Vector<GridItemOffsets>* out_offsets = nullptr,
-                      Vector<EBreakBetween>* out_row_break_between = nullptr);
+                      Vector<EBreakBetween>* out_row_break_between,
+                      Vector<GridItemOffsets>* out_offsets = nullptr);
 
   // Layout the |grid_items| for fragmentation (when there is a known
   // fragmentainer size).
@@ -232,7 +223,6 @@ class CORE_EXPORT NGGridLayoutAlgorithm
       LayoutUnit* start_offset,
       LayoutUnit* size) const;
 
-  LogicalSize border_box_size_;
   LogicalSize grid_available_size_;
   LogicalSize grid_min_available_size_;
   LogicalSize grid_max_available_size_;

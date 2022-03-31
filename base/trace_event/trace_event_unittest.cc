@@ -216,10 +216,10 @@ void TraceEventTestFixture::OnTraceDataCollected(
   }
 
   ASSERT_TRUE(root->is_list());
-  Value::ListStorage root_storage = std::move(*root).TakeList();
+  Value::ListStorage root_storage = std::move(*root).TakeListDeprecated();
 
   // Move items into our aggregate collection
-  Value::ListStorage storage = std::move(trace_parsed_).TakeList();
+  Value::ListStorage storage = std::move(trace_parsed_).TakeListDeprecated();
   storage.reserve(storage.size() + root_storage.size());
   std::move(root_storage.begin(), root_storage.end(),
             std::back_inserter(storage));
@@ -271,7 +271,7 @@ static bool IsAllKeyValueInDict(const JsonKeyValue* key_values,
 const Value* TraceEventTestFixture::FindMatchingTraceEntry(
     const JsonKeyValue* key_values) {
   // Scan all items
-  for (const Value& value : trace_parsed_.GetList()) {
+  for (const Value& value : trace_parsed_.GetListDeprecated()) {
     if (!value.is_dict())
       continue;
 
@@ -282,7 +282,7 @@ const Value* TraceEventTestFixture::FindMatchingTraceEntry(
 }
 
 void TraceEventTestFixture::DropTracedMetadataRecords() {
-  Value::ListStorage storage = std::move(trace_parsed_).TakeList();
+  Value::ListStorage storage = std::move(trace_parsed_).TakeListDeprecated();
   base::EraseIf(storage, [](const Value& value) {
     if (!value.is_dict())
       return false;
@@ -349,7 +349,7 @@ const Value* FindTraceEntry(const Value& trace_parsed,
                             const char* string_to_match,
                             const Value* match_after_this_item = nullptr) {
   // Scan all items
-  for (const Value& value : trace_parsed.GetList()) {
+  for (const Value& value : trace_parsed.GetListDeprecated()) {
     if (match_after_this_item) {
       if (&value == match_after_this_item)
         match_after_this_item = nullptr;
@@ -367,7 +367,7 @@ const Value* FindTraceEntry(const Value& trace_parsed,
 std::vector<const Value*> FindTraceEntries(const Value& trace_parsed,
                                            const char* string_to_match) {
   std::vector<const Value*> hits;
-  for (const Value& value : trace_parsed.GetList()) {
+  for (const Value& value : trace_parsed.GetListDeprecated()) {
     if (!value.is_dict())
       continue;
 
@@ -837,7 +837,7 @@ void ValidateInstantEventPresentOnEveryThread(const Value& trace_parsed,
                                               int num_events) {
   std::map<int, std::map<int, bool>> results;
 
-  for (const Value& value : trace_parsed.GetList()) {
+  for (const Value& value : trace_parsed.GetListDeprecated()) {
     if (!value.is_dict())
       continue;
 
@@ -895,7 +895,7 @@ TEST_F(TraceEventTestFixture, DataDiscarded) {
 
   CancelTrace();
 
-  EXPECT_TRUE(trace_parsed_.GetList().empty());
+  EXPECT_TRUE(trace_parsed_.GetListDeprecated().empty());
 }
 
 class MockEnabledStateChangedObserver :
@@ -1195,7 +1195,7 @@ TEST_F(TraceEventTestFixture, Categories) {
   TRACE_EVENT_INSTANT0("cat2", "name", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
   DropTracedMetadataRecords();
-  EXPECT_TRUE(trace_parsed_.GetList().empty());
+  EXPECT_TRUE(trace_parsed_.GetListDeprecated().empty());
 
   // Include existent category -> only events of that category
   Clear();
@@ -1352,24 +1352,20 @@ TEST_F(TraceEventTestFixture, StaticStringVsString) {
   {
     BeginTrace();
     // Test that string arguments are copied.
-    TraceEventHandle handle1 =
+    [[maybe_unused]] TraceEventHandle handle1 =
         trace_event_internal::AddTraceEvent(
             TRACE_EVENT_PHASE_INSTANT, category_group_enabled, "name1",
-            trace_event_internal::kGlobalScope, trace_event_internal::kNoId,
-            0, trace_event_internal::kNoId,
-            "arg1", std::string("argval"), "arg2", std::string("argval"));
+            trace_event_internal::kGlobalScope, trace_event_internal::kNoId, 0,
+            trace_event_internal::kNoId, "arg1", std::string("argval"), "arg2",
+            std::string("argval"));
     // Test that static TRACE_STR_COPY string arguments are copied.
-    TraceEventHandle handle2 =
+    [[maybe_unused]] TraceEventHandle handle2 =
         trace_event_internal::AddTraceEvent(
             TRACE_EVENT_PHASE_INSTANT, category_group_enabled, "name2",
-            trace_event_internal::kGlobalScope, trace_event_internal::kNoId,
-            0, trace_event_internal::kNoId,
-            "arg1", TRACE_STR_COPY("argval"),
+            trace_event_internal::kGlobalScope, trace_event_internal::kNoId, 0,
+            trace_event_internal::kNoId, "arg1", TRACE_STR_COPY("argval"),
             "arg2", TRACE_STR_COPY("argval"));
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
-    (void)handle1;
-    (void)handle2;
-#else   // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
     EXPECT_GT(tracer->GetStatus().event_count, 1u);
     const TraceEvent* event1 = tracer->GetEventByHandle(handle1);
     const TraceEvent* event2 = tracer->GetEventByHandle(handle2);
@@ -1388,26 +1384,21 @@ TEST_F(TraceEventTestFixture, StaticStringVsString) {
   {
     BeginTrace();
     // Test that static literal string arguments are not copied.
-    TraceEventHandle handle1 =
+    [[maybe_unused]] TraceEventHandle handle1 =
         trace_event_internal::AddTraceEvent(
             TRACE_EVENT_PHASE_INSTANT, category_group_enabled, "name1",
-            trace_event_internal::kGlobalScope, trace_event_internal::kNoId,
-            0, trace_event_internal::kNoId,
-            "arg1", "argval", "arg2", "argval");
+            trace_event_internal::kGlobalScope, trace_event_internal::kNoId, 0,
+            trace_event_internal::kNoId, "arg1", "argval", "arg2", "argval");
     // Test that static TRACE_STR_COPY NULL string arguments are not copied.
     const char* str1 = nullptr;
     const char* str2 = nullptr;
-    TraceEventHandle handle2 =
+    [[maybe_unused]] TraceEventHandle handle2 =
         trace_event_internal::AddTraceEvent(
             TRACE_EVENT_PHASE_INSTANT, category_group_enabled, "name2",
-            trace_event_internal::kGlobalScope, trace_event_internal::kNoId,
-            0, trace_event_internal::kNoId,
-            "arg1", TRACE_STR_COPY(str1),
-            "arg2", TRACE_STR_COPY(str2));
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
-    (void)handle1;
-    (void)handle2;
-#else   // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+            trace_event_internal::kGlobalScope, trace_event_internal::kNoId, 0,
+            trace_event_internal::kNoId, "arg1", TRACE_STR_COPY(str1), "arg2",
+            TRACE_STR_COPY(str2));
+#if !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
     EXPECT_GT(tracer->GetStatus().event_count, 1u);
     const TraceEvent* event1 = tracer->GetEventByHandle(handle1);
     const TraceEvent* event2 = tracer->GetEventByHandle(handle2);
@@ -2184,8 +2175,8 @@ TEST_F(TraceEventTestFixture, TraceBufferVectorReportFull) {
   // Test that buffer_limit_reached_timestamp's value is between the timestamp
   // of the last trace event and current time.
   DropTracedMetadataRecords();
-  ASSERT_TRUE(!trace_parsed_.GetList().empty());
-  const Value& last_trace_event = trace_parsed_.GetList().back();
+  ASSERT_TRUE(!trace_parsed_.GetListDeprecated().empty());
+  const Value& last_trace_event = trace_parsed_.GetListDeprecated().back();
   EXPECT_TRUE(last_trace_event.is_dict());
   absl::optional<double> maybe_last_trace_event_timestamp =
       last_trace_event.FindDoubleKey("ts");
@@ -2566,7 +2557,7 @@ TEST_F(TraceEventTestFixture, TimeOffset) {
   double end_time = static_cast<double>(
       (TimeTicks::Now() - time_offset).ToInternalValue());
   double last_timestamp = 0;
-  for (const Value& item : trace_parsed_.GetList()) {
+  for (const Value& item : trace_parsed_.GetListDeprecated()) {
     EXPECT_TRUE(item.is_dict());
     absl::optional<double> timestamp = item.FindDoubleKey("ts");
     EXPECT_TRUE(timestamp.has_value());

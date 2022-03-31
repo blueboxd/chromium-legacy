@@ -19,7 +19,7 @@
 
 #if !defined(PA_HAS_64_BITS_POINTERS)
 
-namespace base {
+namespace partition_alloc {
 
 namespace internal {
 
@@ -146,12 +146,14 @@ class BASE_EXPORT AddressPoolManagerBitmap {
                std::memory_order_relaxed) == 0;
 #endif  // BUILDFLAG(NEVER_REMOVE_FROM_BRP_POOL_BLOCKLIST)
   }
+
+  static void IncrementBlocklistHitCount() { ++blocklist_hit_count_; }
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 
  private:
   friend class AddressPoolManager;
 
-  static PartitionLock& GetLock();
+  static Lock& GetLock();
 
   static std::bitset<kRegularPoolBits> regular_pool_bits_ GUARDED_BY(GetLock());
   static std::bitset<kBRPPoolBits> brp_pool_bits_ GUARDED_BY(GetLock());
@@ -163,6 +165,7 @@ class BASE_EXPORT AddressPoolManagerBitmap {
   static std::array<std::atomic_uint32_t, kAddressSpaceSize / kSuperPageSize>
       super_page_refcount_map_;
 #endif
+  static std::atomic_size_t blocklist_hit_count_;
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 };
 
@@ -204,6 +207,24 @@ ALWAYS_INLINE bool IsConfigurablePoolAvailable() {
   // The Configurable Pool is only available on 64-bit builds.
   return false;
 }
+
+}  // namespace partition_alloc
+
+namespace base {
+
+// TODO(https://crbug.com/1288247): Remove these 'using' declarations once
+// the migration to the new namespaces gets done.
+using ::partition_alloc::IsConfigurablePoolAvailable;
+using ::partition_alloc::IsManagedByPartitionAlloc;
+using ::partition_alloc::IsManagedByPartitionAllocBRPPool;
+using ::partition_alloc::IsManagedByPartitionAllocConfigurablePool;
+using ::partition_alloc::IsManagedByPartitionAllocRegularPool;
+
+namespace internal {
+
+using ::partition_alloc::internal::AddressPoolManagerBitmap;
+
+}  // namespace internal
 
 }  // namespace base
 

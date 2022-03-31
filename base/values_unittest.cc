@@ -215,18 +215,18 @@ TEST(ValuesTest, ConstructListFromStorage) {
   {
     ListValue value(storage);
     EXPECT_EQ(Value::Type::LIST, value.type());
-    EXPECT_EQ(1u, value.GetList().size());
-    EXPECT_EQ(Value::Type::STRING, value.GetList()[0].type());
-    EXPECT_EQ("foo", value.GetList()[0].GetString());
+    EXPECT_EQ(1u, value.GetListDeprecated().size());
+    EXPECT_EQ(Value::Type::STRING, value.GetListDeprecated()[0].type());
+    EXPECT_EQ("foo", value.GetListDeprecated()[0].GetString());
   }
 
   storage.back() = base::Value("bar");
   {
     ListValue value(std::move(storage));
     EXPECT_EQ(Value::Type::LIST, value.type());
-    EXPECT_EQ(1u, value.GetList().size());
-    EXPECT_EQ(Value::Type::STRING, value.GetList()[0].type());
-    EXPECT_EQ("bar", value.GetList()[0].GetString());
+    EXPECT_EQ(1u, value.GetListDeprecated().size());
+    EXPECT_EQ(Value::Type::STRING, value.GetListDeprecated()[0].type());
+    EXPECT_EQ("bar", value.GetListDeprecated()[0].GetString());
   }
 }
 
@@ -239,7 +239,7 @@ TEST(ValuesTest, HardenTests) {
   EXPECT_DEATH_IF_SUPPORTED(value.GetString(), "");
   EXPECT_DEATH_IF_SUPPORTED(value.GetBlob(), "");
   EXPECT_DEATH_IF_SUPPORTED(value.DictItems(), "");
-  EXPECT_DEATH_IF_SUPPORTED(value.GetList(), "");
+  EXPECT_DEATH_IF_SUPPORTED(value.GetListDeprecated(), "");
 }
 
 // Group of tests for the copy constructors and copy-assigmnent. For equality
@@ -455,7 +455,7 @@ TEST(ValuesTest, TakeDict) {
   Value value(std::move(storage));
 
   // Take ownership of the dict and make sure its contents are what we expect.
-  auto dict = std::move(value).TakeDict();
+  auto dict = std::move(value).TakeDictDeprecated();
   EXPECT_EQ(8u, dict.size());
   EXPECT_TRUE(dict["null"].is_none());
   EXPECT_TRUE(dict["bool"].is_bool());
@@ -476,12 +476,12 @@ TEST(ValuesTest, MoveList) {
   Value value(storage);
   Value moved_value(std::move(value));
   EXPECT_EQ(Value::Type::LIST, moved_value.type());
-  EXPECT_EQ(123, moved_value.GetList().back().GetInt());
+  EXPECT_EQ(123, moved_value.GetListDeprecated().back().GetInt());
 
   Value blank;
   blank = Value(std::move(storage));
   EXPECT_EQ(Value::Type::LIST, blank.type());
-  EXPECT_EQ(123, blank.GetList().back().GetInt());
+  EXPECT_EQ(123, blank.GetListDeprecated().back().GetInt());
 }
 
 TEST(ValuesTest, TakeList) {
@@ -497,7 +497,7 @@ TEST(ValuesTest, TakeList) {
   value.Append(Value(Value::Type::DICTIONARY));
 
   // Take ownership of the list and make sure its contents are what we expect.
-  auto list = std::move(value).TakeList();
+  auto list = std::move(value).TakeListDeprecated();
   EXPECT_EQ(8u, list.size());
   EXPECT_TRUE(list[0].is_none());
   EXPECT_TRUE(list[1].is_bool());
@@ -509,59 +509,83 @@ TEST(ValuesTest, TakeList) {
   EXPECT_TRUE(list[7].is_dict());
 
   // Validate that |value| no longer contains values.
-  EXPECT_TRUE(value.GetList().empty());
+  EXPECT_TRUE(value.GetListDeprecated().empty());
 }
 
 TEST(ValuesTest, Append) {
   ListValue value;
   value.Append(true);
-  EXPECT_TRUE(value.GetList().back().is_bool());
+  EXPECT_TRUE(value.GetListDeprecated().back().is_bool());
 
   value.Append(123);
-  EXPECT_TRUE(value.GetList().back().is_int());
+  EXPECT_TRUE(value.GetListDeprecated().back().is_int());
 
   value.Append(3.14);
-  EXPECT_TRUE(value.GetList().back().is_double());
+  EXPECT_TRUE(value.GetListDeprecated().back().is_double());
 
   std::string str = "foo";
   value.Append(str.c_str());
-  EXPECT_TRUE(value.GetList().back().is_string());
+  EXPECT_TRUE(value.GetListDeprecated().back().is_string());
 
   value.Append(StringPiece(str));
-  EXPECT_TRUE(value.GetList().back().is_string());
+  EXPECT_TRUE(value.GetListDeprecated().back().is_string());
 
   value.Append(std::move(str));
-  EXPECT_TRUE(value.GetList().back().is_string());
+  EXPECT_TRUE(value.GetListDeprecated().back().is_string());
 
   std::u16string str16 = u"bar";
   value.Append(str16.c_str());
-  EXPECT_TRUE(value.GetList().back().is_string());
+  EXPECT_TRUE(value.GetListDeprecated().back().is_string());
 
   value.Append(base::StringPiece16(str16));
-  EXPECT_TRUE(value.GetList().back().is_string());
+  EXPECT_TRUE(value.GetListDeprecated().back().is_string());
 
   value.Append(Value());
-  EXPECT_TRUE(value.GetList().back().is_none());
+  EXPECT_TRUE(value.GetListDeprecated().back().is_none());
 
   value.Append(Value(Value::Type::DICTIONARY));
-  EXPECT_TRUE(value.GetList().back().is_dict());
+  EXPECT_TRUE(value.GetListDeprecated().back().is_dict());
 
   value.Append(Value(Value::Type::LIST));
-  EXPECT_TRUE(value.GetList().back().is_list());
+  EXPECT_TRUE(value.GetListDeprecated().back().is_list());
 }
 
 TEST(ValuesTest, Insert) {
   ListValue value;
-  auto GetList = [&value]() -> decltype(auto) { return value.GetList(); };
-  auto GetConstList = [&value] { return as_const(value).GetList(); };
+  auto GetListDeprecated = [&value]() -> decltype(auto) {
+    return value.GetListDeprecated();
+  };
+  auto GetConstList = [&value] { return as_const(value).GetListDeprecated(); };
 
-  auto storage_iter = value.Insert(GetList().end(), Value(true));
-  EXPECT_TRUE(GetList().begin() == storage_iter);
+  auto storage_iter = value.Insert(GetListDeprecated().end(), Value(true));
+  EXPECT_TRUE(GetListDeprecated().begin() == storage_iter);
   EXPECT_TRUE(storage_iter->is_bool());
 
   auto span_iter = value.Insert(GetConstList().begin(), Value(123));
   EXPECT_TRUE(GetConstList().begin() == span_iter);
   EXPECT_TRUE(span_iter->is_int());
+
+  Value::List& list = value.GetList();
+  auto list_iter = list.Insert(list.begin() + 1, Value("Hello world!"));
+  EXPECT_TRUE(list.begin() + 1 == list_iter);
+  EXPECT_TRUE(list_iter->is_string());
+}
+
+// TODO(dcheng): Add more tests directly exercising the updated dictionary and
+// list APIs. For now, most of the updated APIs are tested indirectly via the
+// legacy APIs that are largely backed by the updated APIs.
+TEST(ValuesTest, ListErase) {
+  Value::List list;
+  list.Append(1);
+  list.Append(2);
+  list.Append(3);
+
+  auto next_it = list.erase(list.begin() + 1);
+  ASSERT_EQ(2u, list.size());
+  EXPECT_EQ(list[0], Value(1));
+  EXPECT_EQ(list[1], Value(3));
+  EXPECT_EQ(*next_it, Value(3));
+  EXPECT_EQ(next_it + 1, list.end());
 }
 
 TEST(ValuesTest, EraseListIter) {
@@ -570,19 +594,19 @@ TEST(ValuesTest, EraseListIter) {
   value.Append(2);
   value.Append(3);
 
-  EXPECT_TRUE(value.EraseListIter(value.GetList().begin() + 1));
-  EXPECT_EQ(2u, value.GetList().size());
-  EXPECT_EQ(1, value.GetList()[0].GetInt());
-  EXPECT_EQ(3, value.GetList()[1].GetInt());
+  EXPECT_TRUE(value.EraseListIter(value.GetListDeprecated().begin() + 1));
+  EXPECT_EQ(2u, value.GetListDeprecated().size());
+  EXPECT_EQ(1, value.GetListDeprecated()[0].GetInt());
+  EXPECT_EQ(3, value.GetListDeprecated()[1].GetInt());
 
-  EXPECT_TRUE(value.EraseListIter(value.GetList().begin()));
-  EXPECT_EQ(1u, value.GetList().size());
-  EXPECT_EQ(3, value.GetList()[0].GetInt());
+  EXPECT_TRUE(value.EraseListIter(value.GetListDeprecated().begin()));
+  EXPECT_EQ(1u, value.GetListDeprecated().size());
+  EXPECT_EQ(3, value.GetListDeprecated()[0].GetInt());
 
-  EXPECT_TRUE(value.EraseListIter(value.GetList().begin()));
-  EXPECT_TRUE(value.GetList().empty());
+  EXPECT_TRUE(value.EraseListIter(value.GetListDeprecated().begin()));
+  EXPECT_TRUE(value.GetListDeprecated().empty());
 
-  EXPECT_FALSE(value.EraseListIter(value.GetList().begin()));
+  EXPECT_FALSE(value.EraseListIter(value.GetListDeprecated().begin()));
 }
 
 TEST(ValuesTest, EraseListValue) {
@@ -593,16 +617,16 @@ TEST(ValuesTest, EraseListValue) {
   value.Append(3);
 
   EXPECT_EQ(2u, value.EraseListValue(Value(2)));
-  EXPECT_EQ(2u, value.GetList().size());
-  EXPECT_EQ(1, value.GetList()[0].GetInt());
-  EXPECT_EQ(3, value.GetList()[1].GetInt());
+  EXPECT_EQ(2u, value.GetListDeprecated().size());
+  EXPECT_EQ(1, value.GetListDeprecated()[0].GetInt());
+  EXPECT_EQ(3, value.GetListDeprecated()[1].GetInt());
 
   EXPECT_EQ(1u, value.EraseListValue(Value(1)));
-  EXPECT_EQ(1u, value.GetList().size());
-  EXPECT_EQ(3, value.GetList()[0].GetInt());
+  EXPECT_EQ(1u, value.GetListDeprecated().size());
+  EXPECT_EQ(3, value.GetListDeprecated()[0].GetInt());
 
   EXPECT_EQ(1u, value.EraseListValue(Value(3)));
-  EXPECT_TRUE(value.GetList().empty());
+  EXPECT_TRUE(value.GetListDeprecated().empty());
 
   EXPECT_EQ(0u, value.EraseListValue(Value(3)));
 }
@@ -616,11 +640,11 @@ TEST(ValuesTest, EraseListValueIf) {
 
   EXPECT_EQ(3u, value.EraseListValueIf(
                     [](const auto& val) { return val >= Value(2); }));
-  EXPECT_EQ(1u, value.GetList().size());
-  EXPECT_EQ(1, value.GetList()[0].GetInt());
+  EXPECT_EQ(1u, value.GetListDeprecated().size());
+  EXPECT_EQ(1, value.GetListDeprecated()[0].GetInt());
 
   EXPECT_EQ(1u, value.EraseListValueIf([](const auto& val) { return true; }));
-  EXPECT_TRUE(value.GetList().empty());
+  EXPECT_TRUE(value.GetListDeprecated().empty());
 
   EXPECT_EQ(0u, value.EraseListValueIf([](const auto& val) { return true; }));
 }
@@ -630,14 +654,14 @@ TEST(ValuesTest, ClearList) {
   value.Append(1);
   value.Append(2);
   value.Append(3);
-  EXPECT_EQ(3u, value.GetList().size());
+  EXPECT_EQ(3u, value.GetListDeprecated().size());
 
   value.ClearList();
-  EXPECT_TRUE(value.GetList().empty());
+  EXPECT_TRUE(value.GetListDeprecated().empty());
 
   // ClearList() should be idempotent.
   value.ClearList();
-  EXPECT_TRUE(value.GetList().empty());
+  EXPECT_TRUE(value.GetListDeprecated().empty());
 }
 
 TEST(ValuesTest, FindKey) {
@@ -1133,12 +1157,8 @@ TEST(ValuesTest, FindPath) {
   Value root(Value::Type::DICTIONARY);
   root.SetKey("foo", std::move(foo));
 
-  // No key (stupid but well-defined and takes work to prevent).
-  Value* found = root.FindPath("");
-  EXPECT_EQ(&root, found);
-
   // Double key, second not found.
-  found = root.FindPath("foo.notfound");
+  Value* found = root.FindPath("foo.notfound");
   EXPECT_FALSE(found);
 
   // Double key, found.
@@ -1369,8 +1389,8 @@ TEST(ValuesTest, Basic) {
 
   Value* bookmark_list = settings.FindPath("global.toolbar.bookmarks");
   ASSERT_TRUE(bookmark_list);
-  ASSERT_EQ(1U, bookmark_list->GetList().size());
-  Value* bookmark = &bookmark_list->GetList()[0];
+  ASSERT_EQ(1U, bookmark_list->GetListDeprecated().size());
+  Value* bookmark = &bookmark_list->GetListDeprecated()[0];
   ASSERT_TRUE(bookmark);
   ASSERT_TRUE(bookmark->is_dict());
   const std::string* bookmark_name = bookmark->FindStringKey("name");
@@ -1388,7 +1408,7 @@ TEST(ValuesTest, List) {
   mixed_list.Append(88.8);
   mixed_list.Append("foo");
 
-  Value::ConstListView list_view = mixed_list.GetList();
+  Value::ConstListView list_view = mixed_list.GetListDeprecated();
   ASSERT_EQ(4u, list_view.size());
 
   ASSERT_FALSE(list_view[0].is_int());
@@ -1443,36 +1463,19 @@ TEST(ValuesTest, StringValue) {
   ASSERT_TRUE(utf16_value.get());
   ASSERT_TRUE(utf16_value->is_string());
 
-  // Test overloaded GetAsString.
-  std::string narrow = "http://google.com";
-  std::u16string utf16 = u"http://google.com";
-  const Value* string_value = nullptr;
-  ASSERT_TRUE(narrow_value->GetAsString(&narrow));
-  ASSERT_TRUE(narrow_value->GetAsString(&utf16));
-  ASSERT_TRUE(narrow_value->GetAsString(&string_value));
-  ASSERT_EQ(std::string("narrow"), narrow);
-  ASSERT_EQ(u"narrow", utf16);
-  ASSERT_EQ(string_value->GetString(), narrow);
+  ASSERT_TRUE(narrow_value->is_string());
+  ASSERT_EQ(std::string("narrow"), narrow_value->GetString());
 
-  ASSERT_TRUE(utf16_value->GetAsString(&narrow));
-  ASSERT_TRUE(utf16_value->GetAsString(&utf16));
-  ASSERT_TRUE(utf16_value->GetAsString(&string_value));
-  ASSERT_EQ(std::string("utf16"), narrow);
-  ASSERT_EQ(u"utf16", utf16);
-  ASSERT_EQ(string_value->GetString(), narrow);
-
-  // Don't choke on NULL values.
-  ASSERT_TRUE(narrow_value->GetAsString(static_cast<std::u16string*>(nullptr)));
-  ASSERT_TRUE(narrow_value->GetAsString(static_cast<std::string*>(nullptr)));
-  ASSERT_TRUE(narrow_value->GetAsString(static_cast<const Value**>(nullptr)));
+  ASSERT_TRUE(utf16_value->is_string());
+  ASSERT_EQ(std::string("utf16"), utf16_value->GetString());
 }
 
 TEST(ValuesTest, ListDeletion) {
   ListValue list;
   list.Append(std::make_unique<Value>());
-  EXPECT_FALSE(list.GetList().empty());
+  EXPECT_FALSE(list.GetListDeprecated().empty());
   list.ClearList();
-  EXPECT_TRUE(list.GetList().empty());
+  EXPECT_TRUE(list.GetListDeprecated().empty());
 }
 
 TEST(ValuesTest, DictionaryDeletion) {
@@ -1549,8 +1552,8 @@ TEST(ValuesTest, DictionaryWithoutPathExpansion) {
   dict.Set("this.is.expanded", std::make_unique<Value>());
   dict.SetKey("this.isnt.expanded", Value());
 
-  EXPECT_FALSE(dict.HasKey("this.is.expanded"));
-  EXPECT_TRUE(dict.HasKey("this"));
+  EXPECT_FALSE(dict.FindKey("this.is.expanded"));
+  EXPECT_TRUE(dict.FindKey("this"));
   Value* value1;
   EXPECT_TRUE(dict.Get("this", &value1));
   DictionaryValue* value2;
@@ -1558,7 +1561,7 @@ TEST(ValuesTest, DictionaryWithoutPathExpansion) {
   EXPECT_EQ(value1, value2);
   EXPECT_EQ(1U, value2->DictSize());
 
-  EXPECT_TRUE(dict.HasKey("this.isnt.expanded"));
+  EXPECT_TRUE(dict.FindKey("this.isnt.expanded"));
   Value* value3;
   EXPECT_FALSE(dict.Get("this.isnt.expanded", &value3));
   Value* value4 = dict.FindKey("this.isnt.expanded");
@@ -1573,8 +1576,8 @@ TEST(ValuesTest, DictionaryWithoutPathExpansionDeprecated) {
   dict.Set("this.is.expanded", std::make_unique<Value>());
   dict.SetWithoutPathExpansion("this.isnt.expanded", std::make_unique<Value>());
 
-  EXPECT_FALSE(dict.HasKey("this.is.expanded"));
-  EXPECT_TRUE(dict.HasKey("this"));
+  EXPECT_FALSE(dict.FindKey("this.is.expanded"));
+  EXPECT_TRUE(dict.FindKey("this"));
   Value* value1;
   EXPECT_TRUE(dict.Get("this", &value1));
   DictionaryValue* value2;
@@ -1582,7 +1585,7 @@ TEST(ValuesTest, DictionaryWithoutPathExpansionDeprecated) {
   EXPECT_EQ(value1, value2);
   EXPECT_EQ(1U, value2->DictSize());
 
-  EXPECT_TRUE(dict.HasKey("this.isnt.expanded"));
+  EXPECT_TRUE(dict.FindKey("this.isnt.expanded"));
   Value* value3;
   EXPECT_FALSE(dict.Get("this.isnt.expanded", &value3));
   Value* value4 = dict.FindKey("this.isnt.expanded");
@@ -1606,8 +1609,6 @@ TEST(ValuesTest, DeepCopy) {
   storage.emplace_back(0);
   storage.emplace_back(1);
   Value* list_weak = original_dict.SetKey("list", Value(std::move(storage)));
-  Value* list_element_0_weak = &list_weak->GetList()[0];
-  Value* list_element_1_weak = &list_weak->GetList()[1];
 
   Value* dict_weak = original_dict.SetKey(
       "dictionary", base::Value(base::Value::Type::DICTIONARY));
@@ -1649,22 +1650,14 @@ TEST(ValuesTest, DeepCopy) {
   ASSERT_TRUE(copy_string);
   ASSERT_NE(copy_string, string_weak);
   ASSERT_TRUE(copy_string->is_string());
-  std::string copy_string_value;
-  std::u16string copy_string16_value;
-  ASSERT_TRUE(copy_string->GetAsString(&copy_string_value));
-  ASSERT_TRUE(copy_string->GetAsString(&copy_string16_value));
-  ASSERT_EQ(std::string("hello"), copy_string_value);
-  ASSERT_EQ(u"hello", copy_string16_value);
+  ASSERT_EQ(std::string("hello"), copy_string->GetString());
 
   Value* copy_string16 = nullptr;
   ASSERT_TRUE(copy_dict->Get("string16", &copy_string16));
   ASSERT_TRUE(copy_string16);
   ASSERT_NE(copy_string16, string16_weak);
   ASSERT_TRUE(copy_string16->is_string());
-  ASSERT_TRUE(copy_string16->GetAsString(&copy_string_value));
-  ASSERT_TRUE(copy_string16->GetAsString(&copy_string16_value));
-  ASSERT_EQ(std::string("hello16"), copy_string_value);
-  ASSERT_EQ(u"hello16", copy_string16_value);
+  ASSERT_EQ(std::string("hello16"), copy_string16->GetString());
 
   Value* copy_binary = nullptr;
   ASSERT_TRUE(copy_dict->Get("binary", &copy_binary));
@@ -1682,21 +1675,7 @@ TEST(ValuesTest, DeepCopy) {
   ListValue* copy_list = nullptr;
   ASSERT_TRUE(copy_value->GetAsList(&copy_list));
   ASSERT_TRUE(copy_list);
-  ASSERT_EQ(2U, copy_list->GetList().size());
-
-  Value* copy_list_element_0;
-  ASSERT_TRUE(copy_list->Get(0, &copy_list_element_0));
-  ASSERT_TRUE(copy_list_element_0);
-  ASSERT_NE(copy_list_element_0, list_element_0_weak);
-  ASSERT_TRUE(copy_list_element_0->is_int());
-  ASSERT_EQ(0, copy_list_element_0->GetInt());
-
-  Value* copy_list_element_1;
-  ASSERT_TRUE(copy_list->Get(1, &copy_list_element_1));
-  ASSERT_TRUE(copy_list_element_1);
-  ASSERT_NE(copy_list_element_1, list_element_1_weak);
-  ASSERT_TRUE(copy_list_element_1->is_int());
-  ASSERT_EQ(1, copy_list_element_1->GetInt());
+  ASSERT_EQ(2U, copy_list->GetListDeprecated().size());
 
   copy_value = nullptr;
   ASSERT_TRUE(copy_dict->Get("dictionary", &copy_value));
@@ -1706,7 +1685,7 @@ TEST(ValuesTest, DeepCopy) {
   DictionaryValue* copy_nested_dictionary = nullptr;
   ASSERT_TRUE(copy_value->GetAsDictionary(&copy_nested_dictionary));
   ASSERT_TRUE(copy_nested_dictionary);
-  EXPECT_TRUE(copy_nested_dictionary->HasKey("key"));
+  EXPECT_TRUE(copy_nested_dictionary->FindKey("key"));
 }
 
 TEST(ValuesTest, Equals) {
@@ -1985,10 +1964,11 @@ TEST(ValuesTest, RemoveEmptyChildren) {
 
     ListValue* inner_value;
     EXPECT_TRUE(root->GetList("list_with_empty_children", &inner_value));
-    ASSERT_EQ(1U, inner_value->GetList().size());  // Dictionary was pruned.
-    const Value& inner_value2 = inner_value->GetList()[0];
+    ASSERT_EQ(
+        1U, inner_value->GetListDeprecated().size());  // Dictionary was pruned.
+    const Value& inner_value2 = inner_value->GetListDeprecated()[0];
     ASSERT_TRUE(inner_value2.is_list());
-    EXPECT_EQ(1U, inner_value2.GetList().size());
+    EXPECT_EQ(1U, inner_value2.GetListDeprecated().size());
   }
 }
 
@@ -2274,15 +2254,6 @@ TEST(ValuesTest, GetWithNullOutValue) {
   EXPECT_FALSE(main_dict.GetListWithoutPathExpansion("dict", nullptr));
   EXPECT_TRUE(main_dict.GetListWithoutPathExpansion("list", nullptr));
   EXPECT_FALSE(main_dict.GetListWithoutPathExpansion("DNE", nullptr));
-
-  EXPECT_TRUE(main_list.Get(0, nullptr));
-  EXPECT_TRUE(main_list.Get(1, nullptr));
-  EXPECT_TRUE(main_list.Get(2, nullptr));
-  EXPECT_TRUE(main_list.Get(3, nullptr));
-  EXPECT_TRUE(main_list.Get(4, nullptr));
-  EXPECT_TRUE(main_list.Get(5, nullptr));
-  EXPECT_TRUE(main_list.Get(6, nullptr));
-  EXPECT_FALSE(main_list.Get(7, nullptr));
 
   EXPECT_FALSE(main_list.GetDictionary(0, nullptr));
   EXPECT_FALSE(main_list.GetDictionary(1, nullptr));

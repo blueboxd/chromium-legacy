@@ -102,12 +102,15 @@ std::string FormatToString(media::AudioParameters::Format format) {
       return "ac3";
     case media::AudioParameters::AUDIO_BITSTREAM_EAC3:
       return "eac3";
+    case media::AudioParameters::AUDIO_BITSTREAM_DTS:
+      return "dts";
+    case media::AudioParameters::AUDIO_BITSTREAM_DTS_HD:
+      return "dtshd";
+    case media::AudioParameters::AUDIO_BITSTREAM_IEC61937:
+      return "iec61937";
     case media::AudioParameters::AUDIO_FAKE:
       return "fake";
   }
-
-  NOTREACHED();
-  return "unknown";
 }
 
 const char kAudioLogStatusKey[] = "status";
@@ -400,22 +403,13 @@ static bool ConvertEventToUpdate(int render_process_id,
     }
     case media::MediaLogRecord::Type::kMediaStatus:
       dict.SetStringKey("type", "PIPELINE_ERROR");
+      base::Value wrapped_parameters(base::Value::Type::DICTIONARY);
+      wrapped_parameters.SetKey("error", std::move(cloned_params));
+      cloned_params = std::move(wrapped_parameters);
       break;
   }
 
-  // Convert PipelineStatus to human readable string
-  if (event.type == media::MediaLogRecord::Type::kMediaStatus) {
-    absl::optional<int> status = event.params.FindIntKey("pipeline_error");
-    if (!status || *status < static_cast<int>(media::PIPELINE_OK) ||
-        *status > static_cast<int>(media::PIPELINE_STATUS_MAX)) {
-      return false;
-    }
-    media::PipelineStatus error = static_cast<media::PipelineStatus>(*status);
-    dict.SetStringPath("params.pipeline_error",
-                       media::PipelineStatusToString(error));
-  } else {
-    dict.SetKey("params", std::move(cloned_params));
-  }
+  dict.SetKey("params", std::move(cloned_params));
 
   *update = SerializeUpdate("media.onMediaEvent", &dict);
   return true;

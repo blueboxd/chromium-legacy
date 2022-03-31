@@ -76,6 +76,12 @@ template("rust_target") {
       _configs += invoker.library_configs
     }
   }
+  if (invoker.target_type == "rust_proc_macro") {
+    _rustflags += [
+      "--extern",
+      "proc_macro",
+    ]
+  }
 
   _deps_for_rust_targets = []
   if (defined(invoker.mutually_dependent_target)) {
@@ -84,6 +90,14 @@ template("rust_target") {
   _deps = []
   if (defined(invoker.deps)) {
     _deps += invoker.deps
+  }
+
+  # Always consume `invoker.test_deps`, even if `_test_deps` might end up not
+  # being used below.  It must be used somewhere along all code branches or GN
+  # produces an error that it's unused.
+  _test_deps = []
+  if (defined(invoker.test_deps)) {
+    _test_deps += invoker.test_deps
   }
   _build_unit_tests = build_rust_unit_tests
   if (defined(invoker.skip_unit_tests) && invoker.skip_unit_tests == true) {
@@ -112,19 +126,24 @@ template("rust_target") {
   # TODO(crbug.com/1256930) - verify this is correct
   assert(defined(invoker.sources), "sources must be listed")
 
+  _create_cpp_groups = false
+  if (defined(invoker.create_cpp_groups)) {
+    _create_cpp_groups = invoker.create_cpp_groups
+  }
+
   # If this code may be linked by both C++ and Rust, make differing
   # groups of deps for each of them, because unfortunately there are
   # differences in what they need to link against.
   main_target_suffix = ""
-  if (invoker.create_cpp_groups) {
+  if (_create_cpp_groups) {
     assert(invoker.target_type == "rust_library")
     main_target_suffix = "__rlib"
 
     # Downstream Rust targets should include this in their deps.
     group(target_name) {
+      forward_variables_from(invoker, TESTONLY_AND_VISIBILITY)
       deps = [ ":${_target_name}${main_target_suffix}" ]
       deps += _deps_for_rust_targets
-      forward_variables_from(invoker, [ "visibility" ])
     }
 
     # Downstream C++ targets should include this in their deps.
@@ -137,9 +156,12 @@ template("rust_target") {
                              # binary by the C++ linker.
       ]
       if (defined(invoker.mutually_dependent_target)) {
+        forward_variables_from(invoker,
+                               TESTONLY_AND_VISIBILITY,
+                               [ "visibility" ])
         visibility = [ invoker.mutually_dependent_target ]
       } else {
-        forward_variables_from(invoker, [ "visibility" ])
+        forward_variables_from(invoker, TESTONLY_AND_VISIBILITY)
       }
       if (defined(_cxx_bindings)) {
         public_deps = [ ":${_target_name}_cxx" ]
@@ -184,7 +206,7 @@ template("rust_target") {
     if (defined(invoker.rustenv)) {
       rustenv += invoker.rustenv
     }
-    if (invoker.create_cpp_groups) {
+    if (_create_cpp_groups) {
       visibility = [
         ":${_target_name}",
         ":${_target_name}_cpp_bindings",
@@ -204,16 +226,15 @@ template("rust_target") {
       forward_variables_from(invoker, [ "sources" ])
       crate_root = _crate_root
       rustflags = _rustflags
-      deps = _deps
+      deps = _deps + _test_deps
       if (defined(invoker.executable_configs)) {
         configs = []
         configs = invoker.executable_configs
       }
-      if (defined(invoker.test_deps)) {
-        deps += invoker.test_deps
-      }
       deps += _deps_for_rust_targets
     }
+  } else {
+    not_needed([ "_test_deps" ])
   }
 
   if (defined(_cxx_bindings)) {
@@ -226,16 +247,5 @@ template("rust_target") {
 
 set_defaults("rust_target") {
   executable_configs = default_executable_configs
-
-  # lld currently eats a section which Rust executables need to
-  # determine their command line arguments. These lines work around this
-  # by retaining all sections.
-  # TODO(crbug/1281664) - remove these lines when this is fixed.
-  executable_configs -= [ "//build/config/compiler:default_optimization" ]
-  executable_configs += [
-    "//build/config/compiler:no_optimize",
-    "//build/rust:keep_sections",
-  ]
-
   library_configs = default_compiler_configs
 }

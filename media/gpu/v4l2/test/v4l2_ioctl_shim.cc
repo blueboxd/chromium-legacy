@@ -386,7 +386,7 @@ bool V4L2IoctlShim::QBuf(const std::unique_ptr<V4L2Queue>& queue,
     v4l2_buffer.flags |= V4L2_BUF_FLAG_REQUEST_FD;
     v4l2_buffer.request_fd = queue->media_request_fd();
     v4l2_buffer.timestamp.tv_usec =
-        static_cast<__suseconds_t>(buffer->reference_id());
+        base::checked_cast<__suseconds_t>(buffer->frame_number());
   }
 
   return Ioctl(VIDIOC_QBUF, &v4l2_buffer);
@@ -396,6 +396,8 @@ bool V4L2IoctlShim::DQBuf(const std::unique_ptr<V4L2Queue>& queue,
                           uint32_t* index) const {
   LOG_ASSERT(queue->memory() == V4L2_MEMORY_MMAP)
       << "Only V4L2_MEMORY_MMAP is currently supported.";
+
+  LOG_ASSERT(index != nullptr) << "|index| check failed.";
 
   struct v4l2_buffer v4l2_buffer;
   std::vector<v4l2_plane> planes(VIDEO_MAX_PLANES);
@@ -428,8 +430,12 @@ bool V4L2IoctlShim::DQBuf(const std::unique_ptr<V4L2Queue>& queue,
       num_tries = kMaxRetryCount;
     }
 
-    if (index)
-      *index = v4l2_buffer.index;
+    // Frame number was used to setup |v4l2_buffer.timestamp.tv_usec| field of
+    // the OUTPUT queue for VIDIOC_QBUF ioctl call. Then, |tv_usec| is copied to
+    // |tv_usec| in the CAPTURE queue during VIDIOC_DQBUF ioctl call.
+    queue->GetBuffer(v4l2_buffer.index)->set_buffer_id(v4l2_buffer.index);
+
+    *index = v4l2_buffer.index;
 
     return true;
   }
@@ -553,8 +559,6 @@ bool V4L2IoctlShim::QueryAndMmapQueueBuffers(
 
   MmapedBuffers buffers;
 
-  constexpr size_t kTimeStampToNanoSecs = 1000;
-
   for (uint32_t i = 0; i < queue->num_buffers(); ++i) {
     struct v4l2_buffer v4l_buffer;
     std::vector<v4l2_plane> planes(VIDEO_MAX_PLANES);
@@ -570,19 +574,6 @@ bool V4L2IoctlShim::QueryAndMmapQueueBuffers(
 
     buffers.emplace_back(base::MakeRefCounted<MmapedBuffer>(
         decode_fd_.GetPlatformFile(), v4l_buffer));
-
-    // Converts buffer ID to reference ID. Reference ID of a frame can be specified
-    // by converting its timestamp into nanoseconds. Buffer ID is used as timestamp
-    // |tv_usec| and |kTimeStampToNanoSecs = 1000| is multipied to the timestamp to
-    // get reference ID. v4l2_timeval_to_ns() is suggested to be used for timestamp
-    // to nanoseconds conversion.
-    // https://www.kernel.org/doc/html/v5.10/userspace-api/media/v4l/dev-stateless-decoder.html#buffer-management-while-decoding
-    // However, the main purpose of this conversion is to have unique reference IDs,
-    // so multiplying microseconds part of timestamp by 1000 to make it nanoseconds
-    // will be good enough for the purpose. This is also how it is implemented in
-    // v4l2 video decode accelerator tests.
-
-    buffers[i]->set_reference_id(i * kTimeStampToNanoSecs);
   }
 
   queue->set_buffers(buffers);

@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/autofill_assistant/browser/action_value.pb.h"
-#include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_dom.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_input.h"
@@ -30,8 +29,10 @@
 #include "components/autofill_assistant/browser/web/element_finder.h"
 #include "components/autofill_assistant/browser/web/element_position_getter.h"
 #include "components/autofill_assistant/browser/web/element_rect_getter.h"
+#include "components/autofill_assistant/browser/web/selector_observer.h"
 #include "components/autofill_assistant/browser/web/send_keyboard_input_worker.h"
 #include "components/autofill_assistant/browser/web/web_controller_worker.h"
+#include "components/autofill_assistant/content/browser/annotate_dom_model_service.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/icu/source/common/unicode/umachine.h"
 #include "url/gurl.h"
@@ -63,18 +64,22 @@ namespace autofill_assistant {
 // multiple operations, whether in sequence or in parallel.
 class WebController {
  public:
-  // Create web controller for a given |web_contents|. |user_data| must be valid
+  // Create web controller for a given |web_contents|. |user_data|, |log_info|
+  // and |annotate_dom_model_service| (if not nullptr) must be valid
   // for the lifetime of the controller.
   static std::unique_ptr<WebController> CreateForWebContents(
       content::WebContents* web_contents,
       const UserData* user_data,
-      ProcessedActionStatusDetailsProto* log_info);
+      ProcessedActionStatusDetailsProto* log_info,
+      AnnotateDomModelService* annotate_dom_model_service);
 
-  // |web_contents| and |user_data| must outlive this web controller.
+  // |web_contents|, |user_data|, |log_info| and |annotate_dom_model_service|
+  // (if not nullptr) must outlive this web controller.
   WebController(content::WebContents* web_contents,
                 std::unique_ptr<DevtoolsClient> devtools_client,
                 const UserData* user_data,
-                ProcessedActionStatusDetailsProto* log_info);
+                ProcessedActionStatusDetailsProto* log_info,
+                AnnotateDomModelService* annotate_dom_model_service);
 
   WebController(const WebController&) = delete;
   WebController& operator=(const WebController&) = delete;
@@ -105,6 +110,13 @@ class WebController {
   // will be ELEMENT_RESOLUTION_FAILED.
   virtual void FindAllElements(const Selector& selector,
                                ElementFinder::Callback callback);
+
+  virtual ClientStatus ObserveSelectors(
+      const std::vector<SelectorObserver::ObservableSelector>& selectors,
+      base::TimeDelta timeout_ms,
+      base::TimeDelta periodic_check_interval,
+      base::TimeDelta extra_timeout,
+      SelectorObserver::Callback callback);
 
   // Scroll the |element| into view. |animation| defines the transition
   // animation, |vertical_alignment| defines the vertical alignment,
@@ -363,10 +375,18 @@ class WebController {
   virtual void DispatchJsEvent(
       base::OnceCallback<void(const ClientStatus&)> callback);
 
+  // Execute an arbitrary JS snippet on the |element|. `this` in the snippet
+  // will refer to the |element|.
+  virtual void ExecuteJS(
+      const std::string& js_snippet,
+      const ElementFinder::Result& element,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+
   virtual base::WeakPtr<WebController> GetWeakPtr() const;
 
  private:
   friend class WebControllerBrowserTest;
+  friend class BatchElementCheckerBrowserTest;
 
   void OnJavaScriptResult(
       base::OnceCallback<void(const ClientStatus&)> callback,
@@ -386,11 +406,15 @@ class WebController {
                               const std::vector<std::string>&)> callback,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
-  void ExecuteVoidJsWithoutArguments(
+  void ExecuteJsWithoutArguments(
       const ElementFinder::Result& element,
       const std::string& js_snippet,
       WebControllerErrorInfoProto::WebAction web_action,
       base::OnceCallback<void(const ClientStatus&)> callback);
+  void OnExecuteJsWithoutArguments(
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      const DevtoolsClient::ReplyStatus& reply_status,
+      std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnScrollWindow(base::OnceCallback<void(const ClientStatus&)> callback,
                       const DevtoolsClient::ReplyStatus& reply_status,
                       std::unique_ptr<runtime::EvaluateResult> result);
@@ -414,6 +438,8 @@ class WebController {
                            ElementFinder::Callback callback,
                            const ClientStatus& status,
                            std::unique_ptr<ElementFinder::Result> result);
+
+  void OnSelectorObserverFinished(SelectorObserver* observer);
   void OnFindElementForRetrieveElementFormAndFieldData(
       base::OnceCallback<void(const ClientStatus&,
                               const autofill::FormData& form_data,
@@ -511,6 +537,8 @@ class WebController {
   // Must not be |nullptr| and outlive this web controller.
   const raw_ptr<const UserData> user_data_;
   const raw_ptr<ProcessedActionStatusDetailsProto> log_info_;
+  // Can be |nullptr|, if not must outlive this web controller.
+  const raw_ptr<AnnotateDomModelService> annotate_dom_model_service_;
 
   // Currently running workers.
   std::vector<std::unique_ptr<WebControllerWorker>> pending_workers_;

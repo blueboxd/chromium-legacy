@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
+#include "base/cpu_reduction_experiment.h"
 #include "base/cxx17_backports.h"
 #include "base/dcheck_is_on.h"
 #include "base/files/file_path.h"
@@ -717,9 +718,22 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
       InitializeOnMainThread();
 #endif
 
-  base::HangWatcher::InitializeOnMainThread();
+  // Initialize the HangWatcher.
+  base::HangWatcher::ProcessType hang_watcher_process_type;
+  if (process_type.empty()) {
+    hang_watcher_process_type = base::HangWatcher::ProcessType::kBrowserProcess;
+  } else if (process_type == switches::kGpuProcess) {
+    hang_watcher_process_type = base::HangWatcher::ProcessType::kGPUProcess;
+  } else if (process_type == switches::kRendererProcess) {
+    hang_watcher_process_type =
+        base::HangWatcher::ProcessType::kRendererProcess;
+  } else {
+    hang_watcher_process_type = base::HangWatcher::ProcessType::kUnknownProcess;
+  }
+  base::HangWatcher::InitializeOnMainThread(hang_watcher_process_type);
 
   base::internal::TimerBase::InitializeFeatures();
+  base::InitializeCpuReductionExperiment();
   base::sequence_manager::internal::SequenceManagerImpl::InitializeFeatures();
 }
 
@@ -1092,8 +1106,9 @@ void ChromeMainDelegate::PreSandboxStartup() {
       locale = ash::startup_settings_cache::ReadAppLocale();
     }
 
-    ui::ResourceBundle::SetParseLottieAsStillImage(
-        &lottie::ParseLottieAsStillImage);
+    ui::ResourceBundle::SetLottieParsingFunctions(
+        &lottie::ParseLottieAsStillImage,
+        &lottie::ParseLottieAsThemedStillImage);
 #endif
 #if BUILDFLAG(IS_ANDROID)
     // The renderer sandbox prevents us from accessing our .pak files directly.

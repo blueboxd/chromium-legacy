@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/containers/adapters.h"
-#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
@@ -25,7 +24,6 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/color/color_provider_manager.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/screen.h"
@@ -39,7 +37,6 @@
 #include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/image_model_utils.h"
 #include "ui/views/views_delegate.h"
-#include "ui/views/views_features.h"
 #include "ui/views/widget/any_widget_observer_singleton.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/root_view.h"
@@ -379,6 +376,9 @@ void Widget::Init(InitParams params) {
     params.delegate->WidgetInitializing(this);
 
   ownership_ = params.ownership;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  background_elevation_ = params.background_elevation;
+#endif
   native_widget_ = CreateNativeWidget(params, this)->AsNativeWidgetPrivate();
   root_view_.reset(CreateRootView());
 
@@ -850,7 +850,11 @@ bool Widget::IsVisible() const {
 }
 
 const ui::ThemeProvider* Widget::GetThemeProvider() const {
-  const Widget* root_widget = GetTopLevelWidget();
+  // The theme provider is provided by the very top widget in the ownership
+  // chain, which may include parenting, anchoring, etc. Use
+  // GetPrimaryWindowWidget() rather than GetTopLevelWidget() for this purpose
+  // (see description of those methods to learn more).
+  const Widget* const root_widget = GetPrimaryWindowWidget();
   return (root_widget && root_widget != this) ? root_widget->GetThemeProvider()
                                               : nullptr;
 }
@@ -1750,8 +1754,12 @@ void Widget::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
 // Widget, ui::ColorProviderSource:
 
 const ui::ColorProvider* Widget::GetColorProvider() const {
-  return ui::ColorProviderManager::Get().GetColorProviderFor(
-      GetNativeTheme()->GetColorProviderKey(GetCustomTheme()));
+  ui::ColorProviderManager::Key key =
+      GetNativeTheme()->GetColorProviderKey(GetCustomTheme());
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  key.elevation_mode = background_elevation_;
+#endif
+  return ui::ColorProviderManager::Get().GetColorProviderFor(key);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1780,9 +1788,7 @@ const ui::NativeTheme* Widget::GetNativeTheme() const {
   if (native_theme_)
     return native_theme_;
 
-  if (base::FeatureList::IsEnabled(
-          features::kInheritNativeThemeFromParentWidget) &&
-      parent_)
+  if (parent_)
     return parent_->GetNativeTheme();
 
 #if BUILDFLAG(IS_LINUX)

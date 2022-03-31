@@ -11,19 +11,14 @@
 #include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/document_transition/document_transition_request.h"
 #include "third_party/blink/renderer/core/document_transition/document_transition_style_tracker.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/graphics/document_transition_shared_element_id.h"
+#include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
-
-namespace cc {
-class DocumentTransitionRequest;
-}
-
-namespace viz {
-class SharedElementResourceId;
-}
 
 namespace blink {
 
@@ -33,6 +28,7 @@ class DocumentTransitionPrepareOptions;
 class DocumentTransitionStartOptions;
 class Element;
 class ExceptionState;
+class LayoutObject;
 class PseudoElement;
 class ScriptPromise;
 class ScriptPromiseResolver;
@@ -41,12 +37,11 @@ class ScriptState;
 class CORE_EXPORT DocumentTransition
     : public ScriptWrappable,
       public ActiveScriptWrappable<DocumentTransition>,
-      public ExecutionContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver,
+      public LocalFrameView::LifecycleNotificationObserver {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  using Request = cc::DocumentTransitionRequest;
-
   explicit DocumentTransition(Document*);
 
   // GC functionality.
@@ -67,18 +62,22 @@ class CORE_EXPORT DocumentTransition
                       ExceptionState&);
 
   // This uses std::move semantics to take the request from this object.
-  std::unique_ptr<Request> TakePendingRequest();
+  std::unique_ptr<DocumentTransitionRequest> TakePendingRequest();
 
-  // Returns true if the given element is active in this transition.
-  bool IsActiveElement(const Element*) const;
+  // Returns true if this object participates in an active transition (if there
+  // is one).
+  bool IsTransitionParticipant(const LayoutObject& object) const;
 
-  // Populates |shared_element_id| and |resource_id| with identifiers for the
-  // shared element. Note that the element must be active (i.e.
-  // `IsActive(element)` must be true).
-  void PopulateSharedElementAndResourceId(
-      const Element*,
-      DocumentTransitionSharedElementId* shared_element_id,
-      viz::SharedElementResourceId* resource_id) const;
+  // Updates an effect node. This effect populates the shared element id and the
+  // shared element resource id. The return value is a result of updating the
+  // effect node.
+  PaintPropertyChangeType UpdateEffect(
+      const LayoutObject& object,
+      const EffectPaintPropertyNodeOrAlias& current_effect,
+      const TransformPaintPropertyNodeOrAlias* current_transform);
+
+  // Returns the effect. One needs to first call UpdateEffect().
+  EffectPaintPropertyNode* GetEffect(const LayoutObject& object) const;
 
   // We require shared elements to be contained. This check verifies that and
   // removes it from the shared list if it isn't. See
@@ -102,6 +101,9 @@ class CORE_EXPORT DocumentTransition
   // DocumentTransition finishes. This is used to capture a static version of
   // the last rendered frame.
   void DisableEndTransition() { disable_end_transition_ = true; }
+
+  // LifecycleNotificationObserver overrides.
+  void WillStartLifecycleUpdate(const LocalFrameView&) override;
 
  private:
   friend class DocumentTransitionTest;
@@ -129,6 +131,15 @@ class CORE_EXPORT DocumentTransition
 
   void Abort(AbortSignal* signal);
 
+  // Resets internal state, called in both abort situations and transition
+  // finished situations.
+  void ResetState(bool abort_style_tracker = true);
+
+  PaintPropertyChangeType UpdateEffectWithoutStyleTracker(
+      Element* element,
+      EffectPaintPropertyNode::State state,
+      const EffectPaintPropertyNodeOrAlias& current_effect);
+
   Member<Document> document_;
 
   State state_ = State::kIdle;
@@ -148,11 +159,14 @@ class CORE_EXPORT DocumentTransition
   HeapVector<Member<Element>> active_shared_elements_;
   wtf_size_t prepare_shared_element_count_ = 0u;
 
+  HeapHashMap<Member<Element>, scoped_refptr<EffectPaintPropertyNode>>
+      effect_nodes_;
+
   // Created conditionally if renderer based SharedElementTransitions is
   // enabled.
   Member<DocumentTransitionStyleTracker> style_tracker_;
 
-  std::unique_ptr<Request> pending_request_;
+  std::unique_ptr<DocumentTransitionRequest> pending_request_;
 
   uint32_t last_prepare_sequence_id_ = 0u;
   uint32_t last_start_sequence_id_ = 0u;
@@ -169,7 +183,6 @@ class CORE_EXPORT DocumentTransition
   bool deferring_commits_ = false;
 
   // Set only for tests.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_testing_;
   bool disable_end_transition_ = false;
 };
 

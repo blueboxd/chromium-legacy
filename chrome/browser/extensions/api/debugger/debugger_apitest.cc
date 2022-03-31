@@ -125,7 +125,7 @@ testing::AssertionResult DebuggerApiTest::RunAttachFunction(
   const base::ListValue& targets = base::Value::AsListValue(*value);
 
   std::string debugger_target_id;
-  for (const base::Value& target_value : targets.GetList()) {
+  for (const base::Value& target_value : targets.GetListDeprecated()) {
     EXPECT_TRUE(target_value.is_dict());
     absl::optional<int> id = target_value.FindIntKey("tabId");
     if (id == tab_id) {
@@ -479,6 +479,10 @@ IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest,
 
 IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, AttachToEmptyUrls) {
   ASSERT_TRUE(RunExtensionTest("debugger_attach_to_empty_urls")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(DebuggerExtensionApiTest, AttachToPdf) {
+  ASSERT_TRUE(RunExtensionTest("debugger_attach_to_pdf")) << message_;
 }
 
 // Tests that navigation to a forbidden URL is properly denied and

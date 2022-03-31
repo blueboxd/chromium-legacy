@@ -12,6 +12,9 @@ function navigateTab(url, callback) {
 }
 
 var matchedRules = [];
+var documentIds = [];
+var nextDocumentId = 1;
+
 var onRuleMatchedDebugCallback = (rule) => {
   matchedRules.push(rule);
   expectedCallback(tab);
@@ -36,8 +39,29 @@ function verifyExpectedRuleInfo(expectedRuleInfo) {
   chrome.test.assertTrue(matchedRule.request.hasOwnProperty('requestId'));
   delete matchedRule.request.requestId;
 
+  // Since the documentId/parentDocumentId is a unique random identifier it is
+  // not useful to tests. Normalize them so that test cases can assert
+  // against a fixed number.
+  if ('parentDocumentId' in matchedRule.request) {
+    if (documentIds[matchedRule.request.parentDocumentId] === undefined) {
+      documentIds[matchedRule.request.parentDocumentId] = nextDocumentId++;
+    }
+    matchedRule.request.parentDocumentId =
+      documentIds[matchedRule.request.parentDocumentId];
+  }
+  if ('documentId' in matchedRule.request) {
+    if (documentIds[matchedRule.request.documentId] === undefined) {
+      documentIds[matchedRule.request.documentId] = nextDocumentId++;
+    }
+    matchedRule.request.documentId =
+      documentIds[matchedRule.request.documentId];
+  }
+
   chrome.test.assertEq(expectedRuleInfo, matchedRule);
 }
+
+// Opaque initiators serialize to "null".
+const kOpaqueInitiator = "null";
 
 var tests = [
   function setup() {
@@ -60,9 +84,13 @@ var tests = [
     navigateTab(url, (tab) => {
       const expectedRuleInfo = {
         request: {
-          initiator: getServerURL('a.com'),
+          initiator: mparchEnabled ? kOpaqueInitiator : getServerURL('a.com'),
           method: 'GET',
+          documentId: 2,
           frameId: mparchEnabled ? 5 : 4,
+          documentLifecycle: 'active',
+          frameType: 'fenced_frame',
+          parentDocumentId: 1,
           parentFrameId: 0,
           type: 'sub_frame',
           tabId: tab.id,
@@ -76,7 +104,8 @@ var tests = [
   },
 
   // Makes sure rule 4 for subframes applies and not rule 2 for main frames
-  // or rule 3 for thirdParty domains.
+  // or rule 3 for thirdParty domains. Note for shadowDOM the initiator is
+  // not opaque so the initiator is available and a rule 3 applies.
   function testAllowRule() {
     resetMatchedRules();
 
@@ -87,15 +116,19 @@ var tests = [
     navigateTab(url, (tab) => {
       const expectedRuleInfo = {
         request: {
-          initiator: getServerURL('a.com'),
+          initiator: mparchEnabled ? kOpaqueInitiator : getServerURL('a.com'),
           method: 'GET',
+          documentId: 4,
           frameId: mparchEnabled ? 7 : 5,
+          documentLifecycle: 'active',
+          frameType: 'fenced_frame',
+          parentDocumentId: 3,
           parentFrameId: 0,
           type: 'sub_frame',
           tabId: tab.id,
           url: fencedFrameUrl
         },
-        rule: {ruleId: 4, rulesetId: 'rules'}
+        rule: {ruleId: mparchEnabled ? 4 : 3, rulesetId: 'rules'}
       };
       verifyExpectedRuleInfo(expectedRuleInfo);
       chrome.test.succeed();
@@ -115,7 +148,11 @@ var tests = [
         request: {
           initiator: getServerURL('a.com'),
           method: 'GET',
+          documentId: 6,
           frameId: mparchEnabled ? 9 : 6,
+          documentLifecycle: 'active',
+          frameType: 'fenced_frame',
+          parentDocumentId: 5,
           parentFrameId: 0,
           type: 'image',
           tabId: tab.id,
@@ -141,7 +178,11 @@ var tests = [
         request: {
           initiator: getServerURL('a.com'),
           method: 'GET',
+          documentId: 8,
           frameId: mparchEnabled ? 11 : 7,
+          documentLifecycle: 'active',
+          frameType: 'fenced_frame',
+          parentDocumentId: 7,
           parentFrameId: 0,
           type: 'image',
           tabId: tab.id,

@@ -84,10 +84,6 @@ id AXTextMarkerRangeFrom(id anchor_text_marker, id focus_text_marker);
 // from browserAccessibility_.
 - (ax::mojom::Role)internalRole;
 
-// Convenience method to get the BrowserAccessibilityDelegate from
-// the manager.
-- (content::BrowserAccessibilityDelegate*)delegate;
-
 // Get the BrowserAccessibility that this object wraps.
 - (content::BrowserAccessibility*)owner;
 
@@ -128,25 +124,18 @@ id AXTextMarkerRangeFrom(id anchor_text_marker, id focus_text_marker);
 @property(nonatomic, readonly) id disclosedByRow;
 @property(nonatomic, readonly) NSNumber* disclosureLevel;
 @property(nonatomic, readonly) id disclosedRows;
-// Returns the object at the root of the current edit field, if any.
-@property(nonatomic, readonly) id editableAncestor;
 @property(nonatomic, readonly) NSNumber* enabled;
 // Returns a text marker that points to the last character in the document that
 // can be selected with Voiceover.
 @property(nonatomic, readonly) id endTextMarker;
 @property(nonatomic, readonly) NSNumber* expanded;
 @property(nonatomic, readonly) NSNumber* focused;
-@property(nonatomic, readonly) NSNumber* grabbed;
 @property(nonatomic, readonly) id header;
 @property(nonatomic, readonly) NSString* help;
-// isIgnored returns whether or not the accessibility object
-// should be ignored by the accessibility hierarchy.
-@property(nonatomic, readonly, getter=isIgnored) BOOL ignored;
 // Index of a row, column, or tree item.
 @property(nonatomic, readonly) NSNumber* index;
 @property(nonatomic, readonly) NSNumber* treeItemRowIndex;
 @property(nonatomic, readonly) NSNumber* insertionPointLineNumber;
-@property(nonatomic, readonly) NSNumber* isMultiSelectable;
 @property(nonatomic, readonly) NSNumber* loaded;
 @property(nonatomic, readonly) NSNumber* loadingProgress;
 @property(nonatomic, readonly) NSNumber* maxValue;
@@ -186,7 +175,6 @@ id AXTextMarkerRangeFrom(id anchor_text_marker, id focus_text_marker);
 @property(nonatomic, readonly) NSArray* visibleChildren;
 @property(nonatomic, readonly) NSArray* visibleColumns;
 @property(nonatomic, readonly) NSArray* visibleRows;
-@property(nonatomic, readonly) NSNumber* visited;
 @property(nonatomic, readonly) id window;
 @end
 

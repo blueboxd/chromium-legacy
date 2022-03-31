@@ -18,16 +18,11 @@ import '../site_favicon.js';
 import {ListPropertyUpdateMixin} from 'chrome://resources/js/list_property_update_mixin.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SiteSettingsMixin} from './site_settings_mixin.js';
 import {ZoomLevelEntry} from './site_settings_prefs_browser_proxy.js';
-
-interface RepeaterEvent {
-  model: {
-    index: number,
-  }
-}
+import {getTemplate} from './zoom_levels.html.js';
 
 export interface ZoomLevelsElement {
   $: {
@@ -46,7 +41,7 @@ export class ZoomLevelsElement extends ZoomLevelsElementBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -90,7 +85,7 @@ export class ZoomLevelsElement extends ZoomLevelsElementBase {
   /**
    * A handler for when a zoom level for a site is deleted.
    */
-  private removeZoomLevel_(event: RepeaterEvent) {
+  private removeZoomLevel_(event: DomRepeatEvent<ZoomLevelEntry>) {
     const site = this.sites_[event.model.index];
     this.browserProxy.removeZoomLevel(site.origin);
   }

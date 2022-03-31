@@ -151,7 +151,6 @@ struct WebPreferences {
   bool webgl_errors_to_console_enabled;
   bool hide_scrollbars;
   bool accelerated_2d_canvas_enabled;
-  bool canvas_context_lost_in_background_enabled;
   bool new_canvas_2d_api_enabled;
   bool canvas_2d_layers_enabled;
   bool antialiased_2d_canvas_disabled;
@@ -420,7 +419,6 @@ struct WebPreferences {
       lazy_frame_loading_distance_thresholds_px;
   map<EffectiveConnectionType, int32>
       lazy_image_loading_distance_thresholds_px;
-  map<EffectiveConnectionType, int32> lazy_image_first_k_fully_load;
 
   // Setting to false disables upgrades to HTTPS for HTTP resources in HTTPS
   // sites.

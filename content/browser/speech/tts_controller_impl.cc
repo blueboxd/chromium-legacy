@@ -701,8 +701,9 @@ void TtsControllerImpl::StripSSML(
 
   // Parse using safe, out-of-process Xml Parser.
   data_decoder::DataDecoder::ParseXmlIsolated(
-      utterance, base::BindOnce(&TtsControllerImpl::StripSSMLHelper, utterance,
-                                std::move(on_ssml_parsed)));
+      utterance, data_decoder::mojom::XmlParser::WhitespaceBehavior::kIgnore,
+      base::BindOnce(&TtsControllerImpl::StripSSMLHelper, utterance,
+                     std::move(on_ssml_parsed)));
 }
 
 // Called when ParseXml finishes.
@@ -751,10 +752,10 @@ void TtsControllerImpl::PopulateParsedText(std::string* parsed_text,
   if (!children || !children->is_list())
     return;
 
-  for (size_t i = 0; i < children->GetList().size(); ++i) {
+  for (size_t i = 0; i < children->GetListDeprecated().size(); ++i) {
     // We need to iterate over all children because some text elements are
     // nested within other types of elements, such as <emphasis> tags.
-    PopulateParsedText(parsed_text, &children->GetList()[i]);
+    PopulateParsedText(parsed_text, &children->GetListDeprecated()[i]);
   }
 }
 

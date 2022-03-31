@@ -127,8 +127,8 @@ void ExtensionProtocolTestResourcesHandler(const base::FilePath& test_dir_root,
   }
 
   // Strip the '_test_resources/' prefix from |relative_path|.
-  std::vector<base::FilePath::StringType> components;
-  relative_path->GetComponents(&components);
+  std::vector<base::FilePath::StringType> components =
+      relative_path->GetComponents();
   DCHECK_GT(components.size(), 1u);
   base::FilePath new_relative_path;
   for (size_t i = 1u; i < components.size(); ++i)
@@ -207,7 +207,7 @@ bool ModifyManifestForManifestVersion3(base::DictionaryValue& manifest_dict) {
     return false;
   }
 
-  manifest_dict.SetInteger(manifest_keys::kManifestVersion, 3);
+  manifest_dict.SetIntPath(manifest_keys::kManifestVersion, 3);
   return true;
 }
 
@@ -251,7 +251,8 @@ bool ModifyExtensionForServiceWorker(const base::FilePath& extension_root,
   }
 
   // Number of JS scripts must be >= 1.
-  base::Value::ConstListView scripts_list = background_scripts_list->GetList();
+  base::Value::ConstListView scripts_list =
+      background_scripts_list->GetListDeprecated();
   if (scripts_list.size() < 1) {
     ADD_FAILURE() << extension_root.value()
                   << ": Only event pages with JS script(s) can be loaded "
@@ -512,7 +513,7 @@ const Extension* ExtensionBrowserTest::LoadAndLaunchApp(
   params.command_line = *base::CommandLine::ForCurrentProcess();
   apps::AppServiceProxyFactory::GetForProfile(profile())
       ->BrowserAppLauncher()
-      ->LaunchAppWithParams(std::move(params));
+      ->LaunchAppWithParamsForTesting(std::move(params));
   app_loaded_observer.Wait();
 
   return app;

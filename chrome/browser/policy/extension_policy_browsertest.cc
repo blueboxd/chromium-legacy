@@ -39,7 +39,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
-#include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
@@ -409,9 +409,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallRemovedPolicy) {
 
   // Should uninstall good_v1.crx.
   base::DictionaryValue dict_value;
-  dict_value.SetString(std::string(kGoodCrxId) + "." +
-                           extensions::schema_constants::kInstallationMode,
-                       extensions::schema_constants::kRemoved);
+  dict_value.SetStringPath(std::string(kGoodCrxId) + "." +
+                               extensions::schema_constants::kInstallationMode,
+                           extensions::schema_constants::kRemoved);
   PolicyMap policies;
   policies.Set(key::kExtensionSettings, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, dict_value.Clone(),
@@ -433,7 +433,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionWildcardRemovedPolicy) {
 
   // Should uninstall good_v1.crx.
   base::DictionaryValue dict_value;
-  dict_value.SetString(
+  dict_value.SetStringPath(
       std::string("*") + "." + extensions::schema_constants::kInstallationMode,
       extensions::schema_constants::kRemoved);
   PolicyMap policies;
@@ -1529,9 +1529,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
 
   // Step 4: Check that we are going to reinstall the extension and wait for
   // extension reinstall.
-  EXPECT_TRUE(
-      service->pending_extension_manager()->IsReinstallForCorruptionExpected(
-          kGoodCrxId));
+  EXPECT_TRUE(service->corrupted_extension_reinstaller()
+                  ->IsReinstallForCorruptionExpected(kGoodCrxId));
   registry_observer.WaitForExtensionWillBeInstalled();
 
   // Extension was reloaded, old extension object is invalid.
@@ -1613,9 +1612,8 @@ IN_PROC_BROWSER_TEST_F(
 
   // Step 4: Check that we are going to reinstall the extension and wait for
   // extension reinstall.
-  EXPECT_TRUE(
-      service->pending_extension_manager()->IsReinstallForCorruptionExpected(
-          kGoodCrxId));
+  EXPECT_TRUE(service->corrupted_extension_reinstaller()
+                  ->IsReinstallForCorruptionExpected(kGoodCrxId));
   observer.WaitForExtensionWillBeInstalled();
 
   // Extension was reloaded, old extension object is invalid.
@@ -1689,12 +1687,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
 
   // Step 4: Check that we are not going to reinstall the extension, but we have
   // detected a corruption.
-  EXPECT_FALSE(
-      service->pending_extension_manager()->IsReinstallForCorruptionExpected(
-          kGoodCrxId));
+  EXPECT_FALSE(service->corrupted_extension_reinstaller()
+                   ->IsReinstallForCorruptionExpected(kGoodCrxId));
   histogram_tester.ExpectUniqueSample(
       "Extensions.CorruptPolicyExtensionDetected3",
-      extensions::PendingExtensionManager::PolicyReinstallReason::
+      extensions::CorruptedExtensionReinstaller::PolicyReinstallReason::
           NO_UNSIGNED_HASHES_FOR_NON_WEBSTORE_SKIP,
       1);
 }
@@ -1867,10 +1864,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
 
   // Setting the forcelist extension should install "good_v1.crx".
   base::DictionaryValue dict_value;
-  dict_value.SetString(std::string(kGoodCrxId) + "." +
-                           extensions::schema_constants::kInstallationMode,
-                       extensions::schema_constants::kNormalInstalled);
-  dict_value.SetString(
+  dict_value.SetStringPath(std::string(kGoodCrxId) + "." +
+                               extensions::schema_constants::kInstallationMode,
+                           extensions::schema_constants::kNormalInstalled);
+  dict_value.SetStringPath(
       std::string(kGoodCrxId) + "." + extensions::schema_constants::kUpdateUrl,
       url.spec());
   PolicyMap policies;
@@ -2381,7 +2378,8 @@ IN_PROC_BROWSER_TEST_F(
     StartUpInstallationPlaceholderFallbackName) {
   const web_app::WebAppRegistrar& registrar =
       web_app::WebAppProvider::GetForTest(browser()->profile())->registrar();
-  web_app::WebAppTestInstallObserver install_observer(browser()->profile());
+  web_app::WebAppTestInstallWithOsHooksObserver install_observer(
+      browser()->profile());
   absl::optional<web_app::AppId> app_id =
       registrar.FindAppWithUrlInScope(policy_app_url_);
   if (!app_id)

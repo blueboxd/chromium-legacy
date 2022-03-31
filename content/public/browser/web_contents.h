@@ -83,6 +83,7 @@ class InterfaceProvider;
 namespace ui {
 struct AXPropertyFilter;
 struct AXTreeUpdate;
+class ColorProvider;
 class ColorProviderSource;
 }
 
@@ -495,6 +496,10 @@ class WebContents : public PageNavigator,
   // source's ColorProvider changes.
   virtual void SetColorProviderSource(ui::ColorProviderSource* source) = 0;
 
+  // Returns the ColorProvider instance for this WebContents object. This will
+  // always return a valid ColorProvider instance.
+  virtual const ui::ColorProvider& GetColorProvider() const = 0;
+
   // Returns the committed WebUI if one exists.
   virtual WebUI* GetWebUI() = 0;
 
@@ -704,6 +709,9 @@ class WebContents : public PageNavigator,
 
   // Indicates whether a video is in Picture-in-Picture for |this|.
   virtual bool HasPictureInPictureVideo() = 0;
+
+  // Indicates whether a document is in Picture-in-Picture for |this|.
+  virtual bool HasPictureInPictureDocument() = 0;
 
   // Indicates whether this tab should be considered crashed. This becomes false
   // again when the renderer process is recreated after a crash in order to
@@ -1031,13 +1039,13 @@ class WebContents : public PageNavigator,
   // Returns false if the request is no longer valid, otherwise true.
   virtual bool GotResponseToKeyboardLockRequest(bool allowed) = 0;
 
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC)
   // Called when the user has selected a color in the color chooser.
   virtual void DidChooseColorInColorChooser(SkColor color) = 0;
 
   // Called when the color chooser has ended.
   virtual void DidEndColorChooser() = 0;
-#endif
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC)
 
   // Returns true if the location bar should be focused by default rather than
   // the page contents. The view calls this function when the tab is focused
@@ -1337,10 +1345,19 @@ class WebContents : public PageNavigator,
   // destruction. If the prerendering failed to start (e.g. if prerendering is
   // disabled, failure happened or because this URL is already being
   // prerendered), this function returns a nullptr.
+  // `url_match_predicate` allows embedders to define their own predicates for
+  // matching same-origin URLs during prerendering activation; it would be
+  // useful if embedders want Prerender2 to ignore some parameter mismatches.
+  // Note that if the mismatched prerender URL will be activated due to the
+  // predicate returning true, the last committed URL in the prerendered
+  // RenderFrameHost will be activated.
   virtual std::unique_ptr<PrerenderHandle> StartPrerendering(
       const GURL& prerendering_url,
       PrerenderTriggerType trigger_type,
-      const std::string& embedder_histogram_suffix) = 0;
+      const std::string& embedder_histogram_suffix,
+      ui::PageTransition page_transition,
+      absl::optional<base::RepeatingCallback<bool(const GURL&)>>
+          url_match_predicate = absl::nullopt) = 0;
 
  private:
   // This interface should only be implemented inside content.

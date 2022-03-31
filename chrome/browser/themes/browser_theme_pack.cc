@@ -41,6 +41,7 @@
 #include "ui/base/resource/data_pack.h"
 #include "ui/color/color_mixer.h"
 #include "ui/color/color_provider.h"
+#include "ui/color/color_recipe.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_analysis.h"
@@ -96,7 +97,7 @@ constexpr int kTallestFrameHeight = kTallestTabHeight + 19;
 // changed default theme assets, if you need themes to recreate their generated
 // images (which are cached), if you changed how missing values are
 // generated, or if you changed any constants.
-const int kThemePackVersion = 79;
+const int kThemePackVersion = 83;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -617,12 +618,17 @@ SkColor GetContrastingColorForBackground(SkColor bg_color,
 }  // namespace internal
 
 BrowserThemePack::~BrowserThemePack() {
-  if (data_pack_) {
-    auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
-        {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
-    DCHECK(task_runner);
-    task_runner->DeleteSoon(FROM_HERE, data_pack_.release());
+  DCHECK(!data_pack_ || using_data_pack_);
+
+  if (using_data_pack_) {
+    if (data_pack_) {
+      auto task_runner = base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+      DCHECK(task_runner);
+      task_runner->DeleteSoon(FROM_HERE, std::move(data_pack_));
+    }
   } else {
+    // When not using a data_pack, the memory is allocated and must be freed.
     delete header_;
     delete [] tints_;
     delete [] colors_;
@@ -750,17 +756,24 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
   scoped_refptr<BrowserThemePack> pack(
       new BrowserThemePack(ThemeType::EXTENSION));
   pack->set_extension_id(expected_id);
+
+  // The data pack is loaded in a local variable to be released synchronously
+  // in case of failures (see https://crbug.com/1292632).
   // Scale factor parameter is moot as data pack has image resources for all
   // supported scale factors.
-  pack->data_pack_ = std::make_unique<ui::DataPack>(ui::kScaleFactorNone);
+  std::unique_ptr<ui::DataPack> data_pack =
+      std::make_unique<ui::DataPack>(ui::kScaleFactorNone);
 
-  if (!pack->data_pack_->LoadFromPath(path)) {
+  // The browser theme pack is using a data pack.
+  pack->using_data_pack_ = true;
+
+  if (!data_pack->LoadFromPath(path)) {
     LOG(ERROR) << "Failed to load theme data pack.";
     return nullptr;
   }
 
   base::StringPiece pointer;
-  if (!pack->data_pack_->GetStringPiece(kHeaderID, &pointer))
+  if (!data_pack->GetStringPiece(kHeaderID, &pointer))
     return nullptr;
   pack->header_ = reinterpret_cast<BrowserThemePackHeader*>(const_cast<char*>(
       pointer.data()));
@@ -778,27 +791,27 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
     return nullptr;
   }
 
-  if (!pack->data_pack_->GetStringPiece(kTintsID, &pointer))
+  if (!data_pack->GetStringPiece(kTintsID, &pointer))
     return nullptr;
   pack->tints_ = reinterpret_cast<TintEntry*>(const_cast<char*>(
       pointer.data()));
 
-  if (!pack->data_pack_->GetStringPiece(kColorsID, &pointer))
+  if (!data_pack->GetStringPiece(kColorsID, &pointer))
     return nullptr;
   pack->colors_ =
       reinterpret_cast<ColorPair*>(const_cast<char*>(pointer.data()));
 
-  if (!pack->data_pack_->GetStringPiece(kDisplayPropertiesID, &pointer))
+  if (!data_pack->GetStringPiece(kDisplayPropertiesID, &pointer))
     return nullptr;
   pack->display_properties_ = reinterpret_cast<DisplayPropertyPair*>(
       const_cast<char*>(pointer.data()));
 
-  if (!pack->data_pack_->GetStringPiece(kSourceImagesID, &pointer))
+  if (!data_pack->GetStringPiece(kSourceImagesID, &pointer))
     return nullptr;
   pack->source_images_ = reinterpret_cast<int*>(
       const_cast<char*>(pointer.data()));
 
-  if (!pack->data_pack_->GetStringPiece(kScaleFactorsID, &pointer))
+  if (!data_pack->GetStringPiece(kScaleFactorsID, &pointer))
     return nullptr;
 
   if (!InputScalesValid(pointer, pack->scale_factors_)) {
@@ -806,7 +819,11 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
                 << "from those supported by platform.";
     return nullptr;
   }
+
+  // The loaded pack is valid and can be used as a theme pack.
+  pack->data_pack_ = std::move(data_pack);
   pack->is_valid_ = true;
+
   return pack;
 }
 
@@ -1053,27 +1070,54 @@ void BrowserThemePack::AddColorMixers(
     int property_id;
     int color_id;
   } kThemePropertiesMap[] = {
-      {TP::COLOR_BOOKMARK_TEXT, kColorBookmarkText},
+      {TP::COLOR_BOOKMARK_TEXT, kColorBookmarkBarForeground},
       {TP::COLOR_DOWNLOAD_SHELF, kColorDownloadShelf},
+      {TP::COLOR_FRAME_ACTIVE, ui::kColorFrameActive},
+      {TP::COLOR_FRAME_INACTIVE, ui::kColorFrameInactive},
       {TP::COLOR_OMNIBOX_TEXT, kColorOmniboxText},
       {TP::COLOR_OMNIBOX_BACKGROUND, kColorOmniboxBackground},
+      {TP::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE,
+       kColorTabBackgroundActiveFrameActive},
+      {TP::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_INACTIVE,
+       kColorTabBackgroundActiveFrameInactive},
+      {TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE,
+       kColorTabBackgroundInactiveFrameActive},
+      {TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE,
+       kColorTabBackgroundInactiveFrameInactive},
       {TP::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE,
        kColorTabForegroundActiveFrameActive},
       {TP::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_INACTIVE,
        kColorTabForegroundActiveFrameInactive},
+      {TP::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_ACTIVE,
+       kColorTabForegroundInactiveFrameActive},
+      {TP::COLOR_TAB_FOREGROUND_INACTIVE_FRAME_INACTIVE,
+       kColorTabForegroundInactiveFrameInactive},
+      {TP::COLOR_TAB_THROBBER_SPINNING, ui::kColorThrobber},
+      {TP::COLOR_TAB_THROBBER_WAITING, ui::kColorThrobberPreconnect},
       {TP::COLOR_TOOLBAR, kColorToolbar},
+      {TP::COLOR_TOOLBAR_BUTTON_ICON, kColorToolbarButtonIcon},
       {TP::COLOR_TOOLBAR_TEXT, kColorToolbarText},
+      /* Tab Group Colors */
+      {TP::COLOR_TAB_GROUP_CONTEXT_MENU_GREY, kColorTabGroupContextMenuGrey},
+      {TP::COLOR_TAB_GROUP_CONTEXT_MENU_BLUE, kColorTabGroupContextMenuBlue},
+      {TP::COLOR_TAB_GROUP_CONTEXT_MENU_RED, kColorTabGroupContextMenuRed},
+      {TP::COLOR_TAB_GROUP_CONTEXT_MENU_YELLOW,
+       kColorTabGroupContextMenuYellow},
+      {TP::COLOR_TAB_GROUP_CONTEXT_MENU_GREEN, kColorTabGroupContextMenuGreen},
+      {TP::COLOR_TAB_GROUP_CONTEXT_MENU_PINK, kColorTabGroupContextMenuPink},
+      {TP::COLOR_TAB_GROUP_CONTEXT_MENU_PURPLE,
+       kColorTabGroupContextMenuPurple},
+      {TP::COLOR_TAB_GROUP_CONTEXT_MENU_CYAN, kColorTabGroupContextMenuCyan},
+      {TP::COLOR_TAB_GROUP_CONTEXT_MENU_ORANGE,
+       kColorTabGroupContextMenuOrange},
   };
 
-  ui::ColorSet::ColorMap theme_colors;
-  SkColor color;
+  ui::ColorMixer& mixer = provider->AddMixer();
   for (const auto& entry : kThemePropertiesMap) {
+    SkColor color;
     if (GetColor(entry.property_id, &color))
-      theme_colors.insert({entry.color_id, color});
+      mixer[entry.color_id] = {color};
   }
-  if (theme_colors.empty())
-    return;
-  provider->AddMixer().AddSet({kColorSetCustomTheme, std::move(theme_colors)});
 }
 
 // private:
@@ -1220,7 +1264,7 @@ void BrowserThemePack::SetTintsFromJSON(
     if (!iter.value().is_list())
       continue;
 
-    base::Value::ConstListView tint_list = iter.value().GetList();
+    base::Value::ConstListView tint_list = iter.value().GetListDeprecated();
     if (tint_list.size() != 3)
       continue;
 
@@ -1276,7 +1320,7 @@ void BrowserThemePack::ReadColorsFromJSON(const base::Value* colors_value,
   for (const auto iter : colors_value->DictItems()) {
     if (!iter.second.is_list())
       continue;
-    base::Value::ConstListView color_list = iter.second.GetList();
+    base::Value::ConstListView color_list = iter.second.GetListDeprecated();
     if (!(color_list.size() == 3 || color_list.size() == 4))
       continue;
 
@@ -1517,9 +1561,20 @@ void BrowserThemePack::SetFrameAndToolbarRelatedColors() {
     SetColorIfUnspecified(TP::COLOR_TOOLBAR_TEXT, toolbar_text_color);
   }
   SkColor toolbar_button_icon_color;
+  color_utils::HSL button_tint;
   if (GetColor(TP::COLOR_TOOLBAR_BUTTON_ICON, &toolbar_button_icon_color)) {
     SetColor(TP::COLOR_TOOLBAR_BUTTON_ICON_HOVERED, toolbar_button_icon_color);
     SetColor(TP::COLOR_TOOLBAR_BUTTON_ICON_PRESSED, toolbar_button_icon_color);
+    SetColor(TP::COLOR_TAB_THROBBER_SPINNING, toolbar_button_icon_color);
+    SetColor(TP::COLOR_TAB_THROBBER_WAITING, toolbar_button_icon_color);
+  } else if (GetTint(TP::TINT_BUTTONS, &button_tint)) {
+    // Duplicate how COLOR_TOOLBAR_BUTTON_ICON will be computed.
+    // TODO(pkasting): Should this code be shared with
+    // ThemeHelper::GetDefaultColor() somehow?
+    const SkColor button_color =
+        color_utils::HSLShift(gfx::kChromeIconGrey, button_tint);
+    SetColor(TP::COLOR_TAB_THROBBER_SPINNING, button_color);
+    SetColor(TP::COLOR_TAB_THROBBER_WAITING, button_color);
   }
   SkColor toolbar_text_color;
   if (GetColor(TP::COLOR_TOOLBAR_TEXT, &toolbar_text_color)) {

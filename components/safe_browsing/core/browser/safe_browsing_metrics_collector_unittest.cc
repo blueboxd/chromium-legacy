@@ -11,9 +11,11 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,7 +60,8 @@ class SafeBrowsingMetricsCollectorTest : public ::testing::Test {
   }
 
   bool IsSortedInChronologicalOrder(const base::Value* ts) {
-    return std::is_sorted(ts->GetList().begin(), ts->GetList().end(),
+    return std::is_sorted(ts->GetListDeprecated().begin(),
+                          ts->GetListDeprecated().end(),
                           [](const base::Value& ts_a, const base::Value& ts_b) {
                             return base::ValueToInt64(ts_a).value_or(0) <
                                    base::ValueToInt64(ts_b).value_or(0);
@@ -198,6 +201,8 @@ TEST_F(SafeBrowsingMetricsCollectorTest,
 
 TEST_F(SafeBrowsingMetricsCollectorTest,
        AddSafeBrowsingEventToPref_OldestTsRemoved) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kEnhancedProtection);
   SetSafeBrowsingState(&pref_service_, SafeBrowsingState::ENHANCED_PROTECTION);
   metrics_collector_->AddSafeBrowsingEventToPref(
       EventType::DATABASE_INTERSTITIAL_BYPASS);
@@ -210,23 +215,27 @@ TEST_F(SafeBrowsingMetricsCollectorTest,
 
   const base::Value* timestamps = GetTsFromUserStateAndEventType(
       UserState::kEnhancedProtection, EventType::DATABASE_INTERSTITIAL_BYPASS);
-  EXPECT_EQ(30u, timestamps->GetList().size());
+  EXPECT_EQ(30u, timestamps->GetListDeprecated().size());
   EXPECT_TRUE(IsSortedInChronologicalOrder(timestamps));
 
   task_environment_.FastForwardBy(base::Days(1));
   metrics_collector_->AddSafeBrowsingEventToPref(
       EventType::DATABASE_INTERSTITIAL_BYPASS);
 
-  EXPECT_EQ(30u, timestamps->GetList().size());
+  EXPECT_EQ(30u, timestamps->GetListDeprecated().size());
   EXPECT_TRUE(IsSortedInChronologicalOrder(timestamps));
   // The oldest timestamp should be removed.
-  EXPECT_EQ(timestamps->GetList()[0], timestamps->GetList()[1]);
+  EXPECT_EQ(timestamps->GetListDeprecated()[0],
+            timestamps->GetListDeprecated()[1]);
   // The newest timestamp should be added as the last element.
-  EXPECT_NE(timestamps->GetList()[28], timestamps->GetList()[29]);
+  EXPECT_NE(timestamps->GetListDeprecated()[28],
+            timestamps->GetListDeprecated()[29]);
 }
 
 TEST_F(SafeBrowsingMetricsCollectorTest,
        AddSafeBrowsingEventToPref_SafeBrowsingManaged) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kEnhancedProtection);
   SetSafeBrowsingState(&pref_service_, SafeBrowsingState::ENHANCED_PROTECTION);
   metrics_collector_->AddSafeBrowsingEventToPref(
       EventType::DATABASE_INTERSTITIAL_BYPASS);
@@ -239,15 +248,17 @@ TEST_F(SafeBrowsingMetricsCollectorTest,
 
   const base::Value* enhanced_timestamps = GetTsFromUserStateAndEventType(
       UserState::kEnhancedProtection, EventType::DATABASE_INTERSTITIAL_BYPASS);
-  EXPECT_EQ(1u, enhanced_timestamps->GetList().size());
+  EXPECT_EQ(1u, enhanced_timestamps->GetListDeprecated().size());
   const base::Value* managed_timestamps = GetTsFromUserStateAndEventType(
       UserState::kManaged, EventType::DATABASE_INTERSTITIAL_BYPASS);
-  EXPECT_EQ(2u, managed_timestamps->GetList().size());
+  EXPECT_EQ(2u, managed_timestamps->GetListDeprecated().size());
 }
 
 TEST_F(SafeBrowsingMetricsCollectorTest,
        LogEnhancedProtectionDisabledMetrics_GetLastBypassEventType) {
   base::HistogramTester histograms;
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kEnhancedProtection);
   SetSafeBrowsingState(&pref_service_, SafeBrowsingState::ENHANCED_PROTECTION);
 
   FastForwardAndAddEvent(base::Hours(1),
@@ -331,6 +342,8 @@ TEST_F(SafeBrowsingMetricsCollectorTest,
 TEST_F(SafeBrowsingMetricsCollectorTest,
        LogEnhancedProtectionDisabledMetrics_GetLastSecuritySensitiveEventType) {
   base::HistogramTester histograms;
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kEnhancedProtection);
   SetSafeBrowsingState(&pref_service_, SafeBrowsingState::ENHANCED_PROTECTION);
 
   FastForwardAndAddEvent(
@@ -561,6 +574,8 @@ TEST_F(SafeBrowsingMetricsCollectorTest,
 TEST_F(SafeBrowsingMetricsCollectorTest,
        LogEnhancedProtectionDisabledMetrics_NotLoggedIfHitQuotaLimit) {
   base::HistogramTester histograms;
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kEnhancedProtection);
   SetSafeBrowsingState(&pref_service_, SafeBrowsingState::ENHANCED_PROTECTION);
 
   FastForwardAndAddEvent(base::Hours(1),
@@ -614,6 +629,8 @@ TEST_F(SafeBrowsingMetricsCollectorTest,
 TEST_F(SafeBrowsingMetricsCollectorTest, LogDailyEventMetrics_LoggedDaily) {
   base::HistogramTester histograms;
   SetSafeBrowsingMetricsLastLogTime(base::Time::Now());
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kEnhancedProtection);
   SetSafeBrowsingState(&pref_service_, SafeBrowsingState::ENHANCED_PROTECTION);
   metrics_collector_->StartLogging();
   FastForwardAndAddEvent(base::Hours(1),
@@ -700,6 +717,8 @@ TEST_F(SafeBrowsingMetricsCollectorTest,
        LogDailyEventMetrics_DoesNotCountOldEvent) {
   base::HistogramTester histograms;
   SetSafeBrowsingMetricsLastLogTime(base::Time::Now());
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kEnhancedProtection);
   SetSafeBrowsingState(&pref_service_, SafeBrowsingState::ENHANCED_PROTECTION);
   metrics_collector_->StartLogging();
   FastForwardAndAddEvent(base::Hours(1),
@@ -742,6 +761,8 @@ TEST_F(SafeBrowsingMetricsCollectorTest,
        LogDailyEventMetrics_SwitchBetweenDifferentUserState) {
   base::HistogramTester histograms;
   SetSafeBrowsingMetricsLastLogTime(base::Time::Now());
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kEnhancedProtection);
   SetSafeBrowsingState(&pref_service_, SafeBrowsingState::ENHANCED_PROTECTION);
   metrics_collector_->StartLogging();
   FastForwardAndAddEvent(base::Hours(1),
@@ -780,15 +801,15 @@ TEST_F(SafeBrowsingMetricsCollectorTest,
   const base::Value* db_timestamps = GetTsFromUserStateAndEventType(
       UserState::kStandardProtection, EventType::DATABASE_INTERSTITIAL_BYPASS);
   // The event is removed from pref because it was logged more than 30 days.
-  EXPECT_EQ(0u, db_timestamps->GetList().size());
+  EXPECT_EQ(0u, db_timestamps->GetListDeprecated().size());
   const base::Value* csd_timestamps = GetTsFromUserStateAndEventType(
       UserState::kStandardProtection, EventType::CSD_INTERSTITIAL_BYPASS);
   // The CSD event is still in pref because it was logged less than 30 days.
-  EXPECT_EQ(1u, csd_timestamps->GetList().size());
+  EXPECT_EQ(1u, csd_timestamps->GetListDeprecated().size());
 
   task_environment_.FastForwardBy(base::Days(1));
   // The CSD event is also removed because it was logged more than 30 days now.
-  EXPECT_EQ(0u, csd_timestamps->GetList().size());
+  EXPECT_EQ(0u, csd_timestamps->GetListDeprecated().size());
 
   histograms.ExpectUniqueSample("SafeBrowsing.MetricsCollector.IsPrefValid",
                                 /* sample */ 1,
@@ -796,6 +817,8 @@ TEST_F(SafeBrowsingMetricsCollectorTest,
 }
 
 TEST_F(SafeBrowsingMetricsCollectorTest, GetUserState) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kEnhancedProtection);
   SetSafeBrowsingState(&pref_service_, SafeBrowsingState::ENHANCED_PROTECTION);
   EXPECT_EQ(UserState::kEnhancedProtection, metrics_collector_->GetUserState());
 

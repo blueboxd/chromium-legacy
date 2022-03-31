@@ -106,6 +106,7 @@ class ContentAnalysisDialog : public views::DialogDelegate,
 
   // content::WebContentsObserver:
   void WebContentsDestroyed() override;
+  void PrimaryPageChanged(content::Page& page) override;
 
   // Updates the dialog with the result, and simply delete it from memory if
   // nothing should be shown.
@@ -229,6 +230,9 @@ class ContentAnalysisDialog : public views::DialogDelegate,
 
   std::u16string GetCustomMessage() const;
 
+  // Helper that indicates if the dialog corresponds to a print scan.
+  bool is_print_scan() const;
+
   void AcceptButtonCallback();
   void CancelButtonCallback();
   void LearnMoreLinkClickedCallback(const ui::Event& event);
@@ -254,6 +258,7 @@ class ContentAnalysisDialog : public views::DialogDelegate,
   raw_ptr<views::Link> learn_more_link_ = nullptr;
   raw_ptr<views::Label> justification_text_label_ = nullptr;
   raw_ptr<views::Textarea> bypass_justification_ = nullptr;
+  raw_ptr<views::Label> bypass_justification_text_length_ = nullptr;
 
   base::TimeTicks first_shown_timestamp_;
 

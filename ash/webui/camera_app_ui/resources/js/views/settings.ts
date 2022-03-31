@@ -2,12 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assertInstanceof} from '../assert.js';
-import {
-  PhotoConstraintsPreferrer,
-  VideoConstraintsPreferrer,
-} from '../device/constraints_preferrer.js';
-import {DeviceInfoUpdater} from '../device/device_info_updater.js';
+import {assert, assertExists, assertInstanceof} from '../assert.js';
+import {CameraConfig, CameraManager} from '../device/index.js';
 import * as dom from '../dom.js';
 import {reportError} from '../error.js';
 import {setExpertMode} from '../expert.js';
@@ -20,13 +16,14 @@ import {
   ErrorLevel,
   ErrorType,
   Facing,
+  Mode,
   Resolution,
   ResolutionList,
   ViewName,
 } from '../type.js';
 import * as util from '../util.js';
 
-import {View} from './view.js';
+import {LeaveCondition, View} from './view.js';
 
 /**
  * Object of device id, preferred capture resolution and all
@@ -88,9 +85,9 @@ export class BaseSettings extends View {
     this.focusElement.focus();
   }
 
-  leaving(): boolean {
+  leaving(condition: LeaveCondition): boolean {
     this.focusElement = this.defaultFocus;
-    return super.leaving();
+    return super.leaving(condition);
   }
 
   /**
@@ -98,13 +95,20 @@ export class BaseSettings extends View {
    * @param opener The DOM element triggering the open.
    * @param name Name of settings view.
    */
-  protected openSubSettings(opener: HTMLElement, name: ViewName): void {
+  protected async openSubSettings(opener: HTMLElement, name: ViewName):
+      Promise<void> {
     this.focusElement = opener;
     // Dismiss primary-settings if sub-settings was dismissed by background
     // click.
-    nav.open(name).then((cond) => cond && cond['bkgnd'] && this.leave(cond));
+    const cond = await nav.open(name);
+    if (cond.kind === 'BACKGROUND_CLICKED') {
+      this.leave(cond);
+    }
   }
 }
+
+const helpUrl =
+    'https://support.google.com/chromebook/?p=camera_usage_on_chromebook';
 
 /**
  * Controller of primary settings view.
@@ -114,15 +118,13 @@ export class PrimarySettings extends BaseSettings {
   private headerClickedCount = 0;
   private headerClickedLastTime: number|null = null;
 
-  constructor(
-      infoUpdater: DeviceInfoUpdater, photoPreferrer: PhotoConstraintsPreferrer,
-      videoPreferrer: VideoConstraintsPreferrer) {
+  constructor(cameraManager: CameraManager) {
     super(
         ViewName.SETTINGS,
         // Use an IIFE here since TypeScript doesn't allow any statement
         // before super() call if we have property initializers.
         (() => {
-          const openHandler = (openerId, viewName) => {
+          const openHandler = (openerId: string, viewName: ViewName) => {
             const opener = dom.get(`#${openerId}`, HTMLElement);
             return {[openerId]: () => this.openSubSettings(opener, viewName)};
           };
@@ -139,7 +141,9 @@ export class PrimarySettings extends BaseSettings {
                   loadTimeData.getI18nMessage(
                       I18nString.FEEDBACK_DESCRIPTION_PLACEHOLDER));
             },
-            'settings-help': () => util.openHelp(),
+            'settings-help': () => {
+              ChromeHelper.getInstance().openUrlInBrowser(helpUrl);
+            },
           };
         })(),
     );
@@ -147,7 +151,7 @@ export class PrimarySettings extends BaseSettings {
     this.subViews = [
       new BaseSettings(ViewName.GRID_SETTINGS),
       new BaseSettings(ViewName.TIMER_SETTINGS),
-      new ResolutionSettings(infoUpdater, photoPreferrer, videoPreferrer),
+      new ResolutionSettings(cameraManager),
       new BaseSettings(ViewName.EXPERT_SETTINGS),
     ];
 
@@ -214,6 +218,7 @@ export class ResolutionSettings extends BaseSettings {
   private readonly resMenu: HTMLDivElement;
   private readonly videoResMenu: HTMLDivElement;
   private readonly photoResMenu: HTMLDivElement;
+  private cameraAvailble = false;
 
   /**
    * Device setting of external cameras.
@@ -226,9 +231,7 @@ export class ResolutionSettings extends BaseSettings {
   private openedSettingDeviceId: string|null = null;
 
   constructor(
-      infoUpdater: DeviceInfoUpdater,
-      private readonly photoPreferrer: PhotoConstraintsPreferrer,
-      private readonly videoPreferrer: VideoConstraintsPreferrer,
+      private readonly cameraManager: CameraManager,
   ) {
     super(
         ViewName.RESOLUTION_SETTINGS,
@@ -275,70 +278,96 @@ export class ResolutionSettings extends BaseSettings {
     this.photoResMenu = dom.getFrom(
         this.photoResolutionSettings.root, 'div.menu', HTMLDivElement);
 
-    infoUpdater.addDeviceChangeListener((updater) => {
-      const devices = updater.getCamera3DevicesInfo();
-      if (devices === null) {
-        state.set(state.State.NO_RESOLUTION_SETTINGS, true);
-        return;
-      }
-
-      this.frontSetting = this.backSetting = null;
-      this.externalSettings = [];
-
-      devices.forEach(({deviceId, facing}) => {
-        const photoResols =
-            this.photoPreferrer.getSupportedResolutions(deviceId);
-        const videoResols =
-            this.videoPreferrer.getSupportedResolutions(deviceId);
-        const deviceSetting: DeviceSetting = {
-          deviceId,
-          photo: {
-            prefResol: photoPreferrer.getPrefResolution(deviceId),
-            resols:
-                /* Filter out resolutions of megapixels < 0.1 i.e. megapixels
-                 * 0.0*/
-                photoResols.filter((r) => r.area >= 100000),
-          },
-          video: {
-            prefResol: videoPreferrer.getPrefResolution(deviceId),
-            resols: videoResols,
-          },
-        };
-        switch (facing) {
-          case Facing.USER:
-            this.frontSetting = deviceSetting;
-            break;
-          case Facing.ENVIRONMENT:
-            this.backSetting = deviceSetting;
-            break;
-          case Facing.EXTERNAL:
-            this.externalSettings.push(deviceSetting);
-            break;
-          default:
-            reportError(
-                ErrorType.UNKNOWN_FACING, ErrorLevel.ERROR,
-                new Error(`Ignore device of unknown facing: ${facing}`));
-        }
-      });
-      this.updateResolutions();
+    state.addObserver(state.State.TAKING, () => {
+      this.updateOptionAvailability();
     });
 
-    this.photoPreferrer.setPreferredResolutionChangeListener(
-        (...args) => this.updateSelectedPhotoResolution(...args));
-    this.videoPreferrer.setPreferredResolutionChangeListener(
-        (...args) => this.updateSelectedVideoResolution(...args));
+    cameraManager.registerCameraUI({
+      onCameraUnavailable: () => {
+        if (state.get(state.State.NO_RESOLUTION_SETTINGS)) {
+          return;
+        }
+        this.cameraAvailble = false;
+        this.updateOptionAvailability();
+      },
+      onCameraAvailble: () => {
+        if (state.get(state.State.NO_RESOLUTION_SETTINGS)) {
+          return;
+        }
+        this.cameraAvailble = true;
+        this.updateOptionAvailability();
+      },
+      onUpdateCapability: (cameraInfo) => {
+        const devices = cameraInfo.camera3DevicesInfo;
+        if (devices === null) {
+          state.set(state.State.NO_RESOLUTION_SETTINGS, true);
+          return;
+        }
 
-    // Flips 'disabled' of resolution options.
-    for (const s of [state.State.CAMERA_CONFIGURING, state.State.TAKING]) {
-      state.addObserver(s, () => {
-        dom.getAll('.resolution-option>input', HTMLInputElement)
-            .forEach((e) => {
-              e.disabled = state.get(state.State.CAMERA_CONFIGURING) ||
-                  state.get(state.State.TAKING);
-            });
-      });
-    }
+        this.frontSetting = this.backSetting = null;
+        this.externalSettings = [];
+
+        devices.forEach(({deviceId, facing, photoResols, videoResols}) => {
+          const /** !DeviceSetting */ deviceSetting = {
+            deviceId,
+            photo: {
+              prefResol: assertInstanceof(
+                  cameraManager.getPrefPhotoResolution(deviceId), Resolution),
+              resols:
+                  /* Filter out resolutions of megapixels < 0.1 i.e. megapixels
+                   * 0.0*/
+                  photoResols.filter((r) => r.area >= 100000),
+            },
+            video: {
+              prefResol: assertInstanceof(
+                  cameraManager.getPrefVideoResolution(deviceId), Resolution),
+              resols: videoResols,
+            },
+          };
+          switch (facing) {
+            case Facing.USER:
+              this.frontSetting = deviceSetting;
+              break;
+            case Facing.ENVIRONMENT:
+              this.backSetting = deviceSetting;
+              break;
+            case Facing.EXTERNAL:
+              this.externalSettings.push(deviceSetting);
+              break;
+            default:
+              reportError(
+                  ErrorType.UNKNOWN_FACING, ErrorLevel.ERROR,
+                  new Error(`Ignore device of unknown facing: ${facing}`));
+          }
+        });
+        this.updateResolutions();
+      },
+      onUpdateConfig: (config: CameraConfig) => {
+        if (state.get(state.State.NO_RESOLUTION_SETTINGS)) {
+          return;
+        }
+        const deviceId = config.deviceId;
+        if (config.mode === Mode.VIDEO) {
+          const prefResol = cameraManager.getPrefVideoResolution(deviceId);
+          if (prefResol !== null) {
+            this.updateSelectedVideoResolution(deviceId, prefResol);
+          }
+        } else {
+          const prefResol = cameraManager.getPrefPhotoResolution(deviceId);
+          if (prefResol !== null) {
+            this.updateSelectedPhotoResolution(deviceId, prefResol);
+          }
+        }
+      },
+    });
   }
+
+  private updateOptionAvailability(): void {
+    dom.getAll('.resolution-option>input', HTMLInputElement).forEach((e) => {
+      e.disabled = !this.cameraAvailble || state.get(state.State.TAKING);
+    });
+  }
+
 
   getSubViews(): View[] {
     return [
@@ -439,10 +468,12 @@ export class ResolutionSettings extends BaseSettings {
         `.external-camera.title-item[data-device-id="${prevFId}"]`);
     const focusedId = focusIdx === -1 ? null : prevFId;
 
-    dom.getAllFrom(this.resMenu, '.menu-item.external-camera', HTMLElement)
-        .forEach(
-            (element) => element.dataset['deviceId'] !== focusedId &&
-                element.parentNode.removeChild(element));
+    for (const element of dom.getAllFrom(
+             this.resMenu, '.menu-item.external-camera', HTMLElement)) {
+      if (element.dataset['deviceId'] !== focusedId) {
+        assertExists(element.parentNode).removeChild(element);
+      }
+    }
 
     this.externalSettings.forEach((config, index) => {
       const {deviceId} = config;
@@ -477,6 +508,7 @@ export class ResolutionSettings extends BaseSettings {
           this.resMenu.appendChild(extItem);
         }
       } else {
+        assert(fTitle !== null);
         titleItem = fTitle;
         photoItem = assertInstanceof(fTitle.nextElementSibling, HTMLElement);
         videoItem = assertInstanceof(photoItem.nextElementSibling, HTMLElement);
@@ -504,7 +536,7 @@ export class ResolutionSettings extends BaseSettings {
    */
   private updateSelectedPhotoResolution(
       deviceId: string, resolution: Resolution) {
-    const {photo} = this.getDeviceSetting(deviceId);
+    const {photo} = assertExists(this.getDeviceSetting(deviceId));
     photo.prefResol = resolution;
     let photoItem: HTMLElement;
     if (this.frontSetting && this.frontSetting.deviceId === deviceId) {
@@ -539,7 +571,7 @@ export class ResolutionSettings extends BaseSettings {
    */
   private updateSelectedVideoResolution(
       deviceId: string, resolution: Resolution) {
-    const {video} = this.getDeviceSetting(deviceId);
+    const {video} = assertExists(this.getDeviceSetting(deviceId));
     video.prefResol = resolution;
     let videoItem: HTMLElement;
     if (this.frontSetting && this.frontSetting.deviceId === deviceId) {
@@ -578,7 +610,7 @@ export class ResolutionSettings extends BaseSettings {
     this.openedSettingDeviceId = deviceId;
     this.updateMenu(
         resolItem, this.photoResMenu, this.photoOptTextTempl,
-        (r) => this.photoPreferrer.changePreferredResolution(deviceId, r),
+        (r) => this.cameraManager.setPrefPhotoResolution(deviceId, r),
         photo.resols, photo.prefResol);
     this.openSubSettings(resolItem, ViewName.PHOTO_RESOLUTION_SETTINGS);
   }
@@ -594,7 +626,7 @@ export class ResolutionSettings extends BaseSettings {
     this.openedSettingDeviceId = deviceId;
     this.updateMenu(
         resolItem, this.videoResMenu, this.videoOptTextTempl,
-        (r) => this.videoPreferrer.changePreferredResolution(deviceId, r),
+        (r) => this.cameraManager.setPrefVideoResolution(deviceId, r),
         video.resols, video.prefResol);
     this.openSubSettings(resolItem, ViewName.VIDEO_RESOLUTION_SETTINGS);
   }
@@ -624,7 +656,7 @@ export class ResolutionSettings extends BaseSettings {
     captionText.textContent = '';
     for (const element of dom.getAllFrom(
              menu, '.menu-item', HTMLLabelElement)) {
-      element.parentNode.removeChild(element);
+      assertExists(element.parentNode).removeChild(element);
     }
 
     for (const r of resolutions) {
@@ -632,7 +664,7 @@ export class ResolutionSettings extends BaseSettings {
       const input = dom.getFrom(item, 'input', HTMLInputElement);
       dom.getFrom(item, 'span', HTMLSpanElement).textContent =
           optTextTempl(r, resolutions);
-      input.name = menu.dataset[I18nString.NAME];
+      input.name = assertExists(menu.dataset[I18nString.NAME]);
       input.dataset['width'] = r.width.toString();
       input.dataset['height'] = r.height.toString();
       if (r.equals(selectedR)) {

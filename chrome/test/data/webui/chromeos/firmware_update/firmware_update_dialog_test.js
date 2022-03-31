@@ -47,6 +47,14 @@ export function firmwareUpdateDialogTest() {
     return flushTasks();
   }
 
+  /**
+   * @suppress {visibility}
+   * @param {boolean} inflight
+   */
+  function setIsInitiallyInflight(inflight) {
+    updateDialogElement.isInitiallyInflight_ = inflight;
+  }
+
   test('DialogStateUpdatesCorrectly', async () => {
     // Start update.
     await setInstallationProgress(1, UpdateState.kUpdating);
@@ -101,5 +109,79 @@ export function firmwareUpdateDialogTest() {
         updateDialogElement.shadowRoot.querySelector('#progress')
             .textContent.trim(),
         loadTimeData.getString('restartingFooterText'));
+    // Check that the indeterminate progress is shown.
+    assertTrue(!!updateDialogElement.shadowRoot.querySelector(
+        '#indeterminateProgressBar'));
+    // No percentage progress bar.
+    assertFalse(
+        !!updateDialogElement.shadowRoot.querySelector('#updateProgressBar'));
+  });
+
+  test('UpdateDialogContent', async () => {
+    // Start update.
+    await setInstallationProgress(1, UpdateState.kUpdating);
+    assertTrue(
+        updateDialogElement.shadowRoot.querySelector('#updateDialog').open);
+
+    // Check dialog contents
+    assertEquals(
+        updateDialogElement.shadowRoot.querySelector('#updateDialogTitle')
+            .textContent.trim(),
+        loadTimeData.getStringF(
+            'updating',
+            mojoString16ToString(updateDialogElement.update.deviceName)));
+    assertEquals(
+        updateDialogElement.shadowRoot.querySelector('#updateDialogBody')
+            .textContent.trim(),
+        loadTimeData.getString('updatingInfo'));
+    const percentBarStatus =
+        updateDialogElement.shadowRoot.querySelector('#updateProgressBar')
+            .value;
+    assertEquals(1, percentBarStatus);
+
+    // Dialog remains open while the device is restarting.
+    await setInstallationProgress(70, UpdateState.kRestarting);
+    assertTrue(
+        updateDialogElement.shadowRoot.querySelector('#updateDialog').open);
+
+    // Correct text is shown.
+    assertEquals(
+        updateDialogElement.shadowRoot.querySelector('#updateDialogTitle')
+            .textContent.trim(),
+        loadTimeData.getStringF(
+            'restartingTitleText',
+            mojoString16ToString(updateDialogElement.update.deviceName)));
+    assertEquals(
+        updateDialogElement.shadowRoot.querySelector('#updateDialogBody')
+            .textContent.trim(),
+        loadTimeData.getString('restartingBodyText'));
+    assertEquals(
+        updateDialogElement.shadowRoot.querySelector('#progress')
+            .textContent.trim(),
+        loadTimeData.getString('restartingFooterText'));
+    // Check that the indeterminate progress is shown.
+    assertTrue(!!updateDialogElement.shadowRoot.querySelector(
+        '#indeterminateProgressBar'));
+    // No percentage progress bar.
+    assertFalse(
+        !!updateDialogElement.shadowRoot.querySelector('#updateProgressBar'));
+  });
+
+  test('ProgressBarAppears', async () => {
+    // Simulate update inflight, but restarting. Idle state during inflight
+    // is equivalent as a restart phase.
+    setIsInitiallyInflight(/*inflight=*/ true);
+    await flushTasks();
+    await setInstallationProgress(0, UpdateState.kIdle);
+    assertTrue(
+        updateDialogElement.shadowRoot.querySelector('#updateDialog').open);
+    assertTrue(!!updateDialogElement.shadowRoot.querySelector(
+        '#indeterminateProgressBar'));
+
+    // Set inflight to false, expect no progress bar.
+    setIsInitiallyInflight(/*inflight=*/ false);
+    await flushTasks();
+    assertFalse(!!updateDialogElement.shadowRoot.querySelector(
+        '#indeterminateProgressBar'));
   });
 }

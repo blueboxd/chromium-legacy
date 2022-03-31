@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/app_list/search/omnibox_result.h"
 
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/search/common/icon_constants.h"
 #include "chrome/browser/ui/app_list/search/omnibox_util.h"
 #include "chrome/browser/ui/app_list/search/search_tags_util.h"
 #include "chrome/grit/generated_resources.h"
@@ -28,7 +28,6 @@
 #include "extensions/common/image_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "url/gurl.h"
@@ -39,17 +38,20 @@ using bookmarks::BookmarkModel;
 namespace app_list {
 namespace {
 
-constexpr SkColor kListIconColor = gfx::kGoogleGrey700;
+// Priority numbers for deduplication. Higher numbers indicate higher priority.
+constexpr int kRichEntityPriority = 2;
+constexpr int kHistoryPriority = 1;
+constexpr int kDefaultPriority = 0;
 
-// Types of generic icon to show with a result.
-enum class IconType {
+// Subtype for generic results.
+enum class Subtype {
   kDomain,
   kSearch,
   kHistory,
   kCalculator,
 };
 
-const IconType MatchTypeToIconType(AutocompleteMatchType::Type type) {
+Subtype MatchTypeToSubtype(AutocompleteMatchType::Type type) {
   switch (type) {
     case AutocompleteMatchType::URL_WHAT_YOU_TYPED:
     case AutocompleteMatchType::HISTORY_URL:
@@ -65,7 +67,7 @@ const IconType MatchTypeToIconType(AutocompleteMatchType::Type type) {
     case AutocompleteMatchType::TAB_SEARCH_DEPRECATED:
     case AutocompleteMatchType::DOCUMENT_SUGGESTION:
     case AutocompleteMatchType::PEDAL_DEPRECATED:
-      return IconType::kDomain;
+      return Subtype::kDomain;
 
     case AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED:
     case AutocompleteMatchType::SEARCH_SUGGEST:
@@ -77,34 +79,35 @@ const IconType MatchTypeToIconType(AutocompleteMatchType::Type type) {
     case AutocompleteMatchType::VOICE_SUGGEST:
     case AutocompleteMatchType::CLIPBOARD_TEXT:
     case AutocompleteMatchType::CLIPBOARD_IMAGE:
-      return IconType::kSearch;
+      return Subtype::kSearch;
 
     case AutocompleteMatchType::SEARCH_HISTORY:
     case AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED:
-      return IconType::kHistory;
+      return Subtype::kHistory;
 
     case AutocompleteMatchType::CALCULATOR:
-      return IconType::kCalculator;
+      return Subtype::kCalculator;
 
     case AutocompleteMatchType::EXTENSION_APP_DEPRECATED:
     case AutocompleteMatchType::TILE_SUGGESTION:
     case AutocompleteMatchType::TILE_NAVSUGGEST:
+    case AutocompleteMatchType::OPEN_TAB:
     case AutocompleteMatchType::NUM_TYPES:
       NOTREACHED();
-      return IconType::kDomain;
+      return Subtype::kDomain;
   }
 }
 
 // AutocompleteMatchType::Type to vector icon, used for app list.
 const gfx::VectorIcon& TypeToVectorIcon(AutocompleteMatchType::Type type) {
-  switch (MatchTypeToIconType(type)) {
-    case IconType::kDomain:
+  switch (MatchTypeToSubtype(type)) {
+    case Subtype::kDomain:
       return ash::kOmniboxGenericIcon;
-    case IconType::kSearch:
+    case Subtype::kSearch:
       return ash::kSearchIcon;
-    case IconType::kHistory:
+    case Subtype::kHistory:
       return ash::kHistoryIcon;
-    case IconType::kCalculator:
+    case Subtype::kCalculator:
       return ash::kEqualIcon;
   }
 }
@@ -115,6 +118,7 @@ OmniboxResult::OmniboxResult(Profile* profile,
                              AppListControllerDelegate* list_controller,
                              AutocompleteController* autocomplete_controller,
                              FaviconCache* favicon_cache,
+                             const AutocompleteInput& input,
                              const AutocompleteMatch& match,
                              bool is_zero_suggestion)
     : profile_(profile),
@@ -130,30 +134,30 @@ OmniboxResult::OmniboxResult(Profile* profile,
   SetDisplayType(DisplayType::kList);
   SetResultType(ResultType::kOmnibox);
   SetMetricsType(GetSearchResultType());
+
+  if (match_.stripped_destination_url.spec().empty()) {
+    match_.ComputeStrippedDestinationURL(
+        input, autocomplete_controller_->autocomplete_provider_client()
+                   ->GetTemplateURLService());
+  }
   set_id(match_.stripped_destination_url.spec());
 
   // Omnibox results are categorized as Search and Assistant if they are search
   // suggestions, and Web otherwise.
-  switch (match_.type) {
-    case AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED:
-    case AutocompleteMatchType::SEARCH_SUGGEST:
-    case AutocompleteMatchType::SEARCH_SUGGEST_ENTITY:
-    case AutocompleteMatchType::SEARCH_SUGGEST_TAIL:
-    case AutocompleteMatchType::SEARCH_SUGGEST_PROFILE:
-    case AutocompleteMatchType::SEARCH_OTHER_ENGINE:
-    case AutocompleteMatchType::CONTACT_DEPRECATED:
-    case AutocompleteMatchType::VOICE_SUGGEST:
-    case AutocompleteMatchType::CLIPBOARD_TEXT:
-    case AutocompleteMatchType::CLIPBOARD_IMAGE:
-      SetCategory(Category::kSearchAndAssistant);
-      break;
-    default:
-      SetCategory(Category::kWeb);
-      break;
-  }
+  SetCategory(MatchTypeToSubtype(match_.type) == Subtype::kSearch
+                  ? Category::kSearchAndAssistant
+                  : Category::kWeb);
 
   // Derive relevance from omnibox relevance and normalize it to [0, 1].
   set_relevance(match_.relevance / kMaxOmniboxScore);
+
+  if (IsRichEntity()) {
+    dedup_priority_ = kRichEntityPriority;
+  } else if (MatchTypeToSubtype(match_.type) == Subtype::kHistory) {
+    dedup_priority_ = kHistoryPriority;
+  } else {
+    dedup_priority_ = kDefaultPriority;
+  }
 
   const bool is_omnibox_search = AutocompleteMatch::IsSearchType(match_.type);
   SetIsOmniboxSearch(is_omnibox_search);
@@ -178,7 +182,6 @@ void OmniboxResult::Open(int event_flags) {
 }
 
 void OmniboxResult::Remove() {
-  // TODO(jennyz): add RecordHistogram.
   autocomplete_controller_->DeleteMatch(match_);
 }
 
@@ -245,6 +248,7 @@ ash::SearchResultType OmniboxResult::GetSearchResultType() const {
     case AutocompleteMatchType::HISTORY_BODY:
     case AutocompleteMatchType::TILE_SUGGESTION:
     case AutocompleteMatchType::TILE_NAVSUGGEST:
+    case AutocompleteMatchType::OPEN_TAB:
     case AutocompleteMatchType::NUM_TYPES:
       return ash::SEARCH_RESULT_TYPE_BOUNDARY;
   }
@@ -259,14 +263,12 @@ void OmniboxResult::UpdateIcon() {
   // Use a favicon if eligible. If the result should have a favicon but
   // there isn't one in the cache, fall through to using a generic icon
   // instead.
-  if (favicon_cache_ && MatchTypeToIconType(match_.type) == IconType::kDomain) {
+  if (favicon_cache_ && MatchTypeToSubtype(match_.type) == Subtype::kDomain) {
     const auto icon = favicon_cache_->GetFaviconForPageUrl(
         match_.destination_url, base::BindOnce(&OmniboxResult::OnFaviconFetched,
                                                weak_factory_.GetWeakPtr()));
     if (!icon.IsEmpty()) {
-      SetIcon(
-          IconInfo(icon.AsImageSkia(), ash::SharedAppListConfig::instance()
-                                           .search_list_favicon_dimension()));
+      SetIcon(IconInfo(icon.AsImageSkia(), kFaviconDimension));
       return;
     }
   }
@@ -277,22 +279,19 @@ void OmniboxResult::UpdateIcon() {
       BookmarkModelFactory::GetForBrowserContext(profile_);
   if (bookmark_model && bookmark_model->IsBookmarked(match_.destination_url)) {
     SetIcon(IconInfo(
-        gfx::CreateVectorIcon(
-            omnibox::kBookmarkIcon,
-            ash::SharedAppListConfig::instance().search_list_icon_dimension(),
-            kListIconColor),
-        ash::SharedAppListConfig::instance().search_list_icon_dimension()));
+        gfx::CreateVectorIcon(omnibox::kBookmarkIcon, kSystemIconDimension,
+                              GetGenericIconColor()),
+        kSystemIconDimension));
   } else {
     SetIcon(IconInfo(
-        gfx::CreateVectorIcon(
-            TypeToVectorIcon(match_.type),
-            ash::SharedAppListConfig::instance().search_list_icon_dimension(),
-            kListIconColor),
-        ash::SharedAppListConfig::instance().search_list_icon_dimension()));
+        gfx::CreateVectorIcon(TypeToVectorIcon(match_.type),
+                              kSystemIconDimension, GetGenericIconColor()),
+        kSystemIconDimension));
   }
 }
 
 void OmniboxResult::UpdateTitleAndDetails() {
+  // TODO(crbug.com/1258415): We can remove the tags logic.
   if (!IsUrlResultWithDescription()) {
     SetTitle(match_.contents);
     ChromeSearchResult::Tags title_tags;
@@ -360,19 +359,15 @@ void OmniboxResult::OnFetchComplete(const GURL& url, const SkBitmap* bitmap) {
   if (!bitmap)
     return;
 
-  IconInfo icon_info(gfx::ImageSkia::CreateFrom1xBitmap(*bitmap));
-  icon_info.dimension =
-      ash::SharedAppListConfig::instance().search_list_image_icon_dimension();
-  icon_info.shape = IconShape::kRoundedRectangle;
+  IconInfo icon_info(gfx::ImageSkia::CreateFrom1xBitmap(*bitmap),
+                     GetImageIconDimension(), IconShape::kRoundedRectangle);
   SetIcon(icon_info);
 }
 
 void OmniboxResult::OnFaviconFetched(const gfx::Image& icon) {
   // By contract, this is never called with an empty |icon|.
   DCHECK(!icon.IsEmpty());
-  SetIcon(IconInfo(
-      icon.AsImageSkia(),
-      ash::SharedAppListConfig::instance().search_list_favicon_dimension()));
+  SetIcon(IconInfo(icon.AsImageSkia(), kFaviconDimension));
 }
 
 void OmniboxResult::InitializeButtonActions(
@@ -382,20 +377,21 @@ void OmniboxResult::InitializeButtonActions(
     gfx::ImageSkia button_image;
     std::u16string button_tooltip;
     bool visible_on_hover = false;
-    const int kImageButtonIconSize =
-        ash::SharedAppListConfig::instance().search_list_icon_dimension();
+    const int kImageButtonIconSize = kSystemIconDimension;
 
     switch (button_action) {
       case ash::SearchResultActionType::kRemove:
-        button_image = gfx::CreateVectorIcon(
-            ash::kSearchResultRemoveIcon, kImageButtonIconSize, kListIconColor);
+        button_image =
+            gfx::CreateVectorIcon(ash::kSearchResultRemoveIcon,
+                                  kImageButtonIconSize, GetGenericIconColor());
         button_tooltip = l10n_util::GetStringFUTF16(
             IDS_APP_LIST_REMOVE_SUGGESTION_ACCESSIBILITY_NAME, title());
         visible_on_hover = true;  // visible upon hovering
         break;
       case ash::SearchResultActionType::kAppend:
-        button_image = gfx::CreateVectorIcon(
-            ash::kSearchResultAppendIcon, kImageButtonIconSize, kListIconColor);
+        button_image =
+            gfx::CreateVectorIcon(ash::kSearchResultAppendIcon,
+                                  kImageButtonIconSize, GetGenericIconColor());
         button_tooltip = l10n_util::GetStringFUTF16(
             IDS_APP_LIST_APPEND_SUGGESTION_ACCESSIBILITY_NAME, title());
         visible_on_hover = false;  // always visible

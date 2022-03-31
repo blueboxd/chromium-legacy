@@ -15,6 +15,9 @@ using ResultType = ash::AppListSearchResultType;
 // The type of a search provider as a whole. This is currently just the 'main'
 // ResultType returned by the provider.
 using ProviderType = ash::AppListSearchResultType;
+// The display type of a search result, indicating which UI section it belongs
+// to.
+using DisplayType = ash::SearchResultDisplayType;
 
 // Note: Results and ResultsMap should be defined here, but are defined in
 // SearchController to avoid an include loop.
@@ -22,19 +25,21 @@ using ProviderType = ash::AppListSearchResultType;
 // All score information for a single result. This is stored with a result, and
 // incrementally updated by rankers as needed. Generally, each ranker should
 // control one score.
-//
-// TODO(crbug.com/1199206): Remove defunct members from this struct.
 struct Scoring {
+  // = Members used to compute the display score of a result ===================
   bool filter = false;
-  // The rank (0, 1, 2, ...) of this result within the Best Match collection of
-  // results, or -1 if this result is not a Best Match.
-  int best_match_rank = -1;
-  double normalized_relevance = 0.0f;
-  double category_item_score = 0.0f;
-  double category_usage_score = 0.0f;
+  double normalized_relevance = 0.0;
   double ftrl_result_score = 0.0;
-  double usage_score = 0.0f;
+  // Used only for results in the Continue section. Continue results are first
+  // ordered by |continue_rank|, and then by their display score. -1 indicates
+  // this is unset.
+  int continue_rank = -1;
 
+  // = Members used for sorting in SearchController ============================
+  // The rank (0, 1, 2, ...) of this result within
+  // the Best Match collection of results, or -1 if this result is not a Best
+  // Match.
+  int best_match_rank = -1;
   // A counter for the burn-in iteration number, where 0 signifies the
   // pre-burn-in state, and 1 and above signify the post-burn-in state.
   // Incremented during the post-burn-in period each time a provider

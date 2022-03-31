@@ -35,7 +35,7 @@ suite('<emoji-picker>', () => {
 
     emojiPicker =
         /** @type {!EmojiPicker} */ (document.createElement('emoji-picker'));
-    emojiPicker.emojiDataUrl = '/emoji_test_ordering.json';
+    emojiPicker.emojiDataUrl = '/emoji_test_ordering';
 
     findInEmojiPicker = (...path) => deepQuerySelector(emojiPicker, path);
 
@@ -149,9 +149,10 @@ suite('<emoji-picker>', () => {
                 'button'));
 
         // check text is correct.
-        const recentText = recentlyUsed.innerText;
-        await navigator.clipboard.readText().then(
-            text => assertEquals(String.fromCodePoint(128512), text));
+        await (waitForCondition(async () => {
+          const clipboardtext = await navigator.clipboard.readText();
+          return clipboardtext === String.fromCodePoint(128512);
+        }));
       });
 
   test('recently-used should have variants for variant emoji', async () => {

@@ -117,20 +117,23 @@ bool ParseUrlHandler(const std::string& handler_id,
   UrlHandlerInfo handler;
   handler.id = handler_id;
 
-  if (!handler_info.GetString(mkeys::kUrlHandlerTitle, &handler.title)) {
+  if (const std::string* ptr =
+          handler_info.FindStringKey(mkeys::kUrlHandlerTitle)) {
+    handler.title = *ptr;
+  } else {
     *error = merrors::kInvalidURLHandlerTitle;
     return false;
   }
 
   const base::ListValue* manif_patterns = NULL;
   if (!handler_info.GetList(mkeys::kMatches, &manif_patterns) ||
-      manif_patterns->GetList().size() == 0) {
+      manif_patterns->GetListDeprecated().size() == 0) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
         merrors::kInvalidURLHandlerPattern, handler_id);
     return false;
   }
 
-  for (const auto& entry : manif_patterns->GetList()) {
+  for (const auto& entry : manif_patterns->GetListDeprecated()) {
     std::string str_pattern =
         entry.is_string() ? entry.GetString() : std::string();
     // TODO(sergeygs): Limit this to non-top-level domains.

@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread.h"
 #include "media/base/limits.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,6 +22,7 @@
 #include "third_party/blink/renderer/platform/testing/video_frame_utils.h"
 #include "third_party/webrtc_overrides/metronome_provider.h"
 #include "third_party/webrtc_overrides/metronome_source.h"
+#include "third_party/webrtc_overrides/webrtc_timer.h"
 
 namespace blink {
 
@@ -310,27 +312,6 @@ class VideoTrackAdapterFixtureTest : public ::testing::Test {
     frame_monitoring_stopped.Wait();
   }
 
-  bool IsMetronomeSourceActive(
-      scoped_refptr<MetronomeSource> metronome_source) {
-    bool is_active;
-    base::WaitableEvent event;
-    // It's possible to check IsActive() from any thread, but because stopping
-    // a timer unsubscibes from the metronome asynchronously, checking for
-    // activity on the IO thread ensures any pending listeners have been
-    // removed before getting the status.
-    platform_support_->GetIOTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(
-                       [](scoped_refptr<MetronomeSource> metronome_source,
-                          bool* is_active, base::WaitableEvent* event) {
-                         *is_active = metronome_source->IsActive();
-                         event->Signal();
-                       },
-                       metronome_source, base::Unretained(&is_active),
-                       base::Unretained(&event)));
-    event.Wait();
-    return is_active;
-  }
-
   void SetFrameValidationCallback(VideoCaptureDeliverFrameCB callback) {
     frame_validation_callback_ = std::move(callback);
   }
@@ -389,19 +370,23 @@ class VideoTrackAdapterFixtureTest : public ::testing::Test {
 // mute detection logic that is based on this frame monitoring, see
 // MediaStreamVideoSourceTest.MutedSource instead.
 TEST_F(VideoTrackAdapterFixtureTest, MetronomeIsUsedWhileFrameMonitoring) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kWebRtcTimerUsesMetronome);
+
   scoped_refptr<MetronomeSource> metronome_source =
-      base::MakeRefCounted<MetronomeSource>(base::Hertz(64));
+      base::MakeRefCounted<MetronomeSource>(base::TimeTicks::Now(),
+                                            base::Hertz(64));
   metronome_provider_->OnStartUsingMetronome(metronome_source);
 
   const media::VideoCaptureFormat stream_format(gfx::Size(1280, 960), 30.0,
                                                 media::PIXEL_FORMAT_NV12);
   CreateAdapter(stream_format);
 
-  EXPECT_FALSE(IsMetronomeSourceActive(metronome_source));
+  EXPECT_FALSE(metronome_provider_->HasListeners());
   StartFrameMonitoring();
-  EXPECT_TRUE(IsMetronomeSourceActive(metronome_source));
+  EXPECT_TRUE(metronome_provider_->HasListeners());
   StopFrameMonitoring();
-  EXPECT_FALSE(IsMetronomeSourceActive(metronome_source));
+  EXPECT_FALSE(metronome_provider_->HasListeners());
 }
 
 TEST_F(VideoTrackAdapterFixtureTest, DeliverFrame_GpuMemoryBuffer) {

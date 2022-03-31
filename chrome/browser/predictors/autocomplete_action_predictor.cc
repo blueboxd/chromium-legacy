@@ -12,7 +12,7 @@
 #include "base/containers/contains.h"
 #include "base/guid.h"
 #include "base/i18n/case_conversion.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -21,6 +21,7 @@
 #include "chrome/browser/predictors/predictor_database_factory.h"
 #include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/prefetch/prefetch_prefs.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
@@ -29,8 +30,10 @@
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
+#include "components/omnibox/browser/base_search_provider.h"
 #include "components/omnibox/browser/omnibox_log.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents_delegate.h"
 
 namespace {
 
@@ -63,20 +66,19 @@ enum class DatabaseAction {
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class PredictionStatus {
-  // The no state prefetch/prerender was not started at all for this omnibox
-  // interaction.
+  // The no state prefetch was not started at all for this omnibox interaction.
   kNotStarted = 0,
-  // The no state prefetch/prerender was cancelled because the user did not
-  // select a URL in the omnibox.
+  // The no state prefetch was cancelled because the user did not select a URL
+  // in the omnibox.
   kCancelled = 1,
-  // The no state prefetch/prerender was unused because the user navigated to a
-  // different URL.
+  // The no state prefetch was unused because the user navigated to a different
+  // URL.
   kUnused = 2,
-  // The no state prefetch/prerender was used and had time to finish before the
-  // user selected a URL.
+  // The no state prefetch was used and had time to finish before the user
+  // selected a URL.
   kHitFinished = 3,
-  // The no state prefetch/prerender was used but had not completed before the
-  // user selected a URL.
+  // The no state prefetch was used but had not completed before the user
+  // selected a URL.
   kHitUnfinished = 4,
   kMaxValue = kHitUnfinished,
 };
@@ -180,26 +182,46 @@ void AutocompleteActionPredictor::CancelPrerender() {
   // If the prefetch has already been abandoned, leave it to its own timeout;
   // this normally gets called immediately after OnOmniboxOpenedUrl.
   if (no_state_prefetch_handle_ && !no_state_prefetch_handle_->IsAbandoned()) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "AutocompleteActionPredictor.NoStatePrefetchStatus",
-        PredictionStatus::kCancelled);
     no_state_prefetch_handle_->OnCancel();
     no_state_prefetch_handle_.reset();
   }
 }
 
 void AutocompleteActionPredictor::StartPrerendering(
-    const GURL& url,
+    const AutocompleteMatch& match,
     content::WebContents& web_contents,
     const gfx::Size& size) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (prerender_utils::IsDirectUrlInputPrerenderEnabled()) {
+  const GURL url = match.destination_url;
+
+  // TODO:(crbug.com/1297441): Refactor this logic.
+  if (AutocompleteMatch::IsSearchType(match.type) &&
+      prerender_utils::IsSearchSuggestionPrerenderEnabled()) {
+    DCHECK(BaseSearchProvider::ShouldPrerender(match));
     // Check whether preloading is enabled. If users disable this
     // setting, it means users do not want to preload pages.
-    // TODO(https://crbug.com/1269204): Move this check into
-    // WebContentsDelegate::IsPrerender2Supported after exposing TriggerType to
-    // embedders.
-    if (!prefetch::IsSomePreloadingEnabled(*profile_->GetPrefs())) {
+    // TODO(https://crbug.com/1292422): Move this check into
+    // content::PrerenderHostRegistry::CreateAndStartHost().
+    content::WebContentsDelegate* web_contents_delegate =
+        web_contents.GetDelegate();
+    if (!web_contents_delegate ||
+        !web_contents_delegate->IsPrerender2Supported(web_contents)) {
+      return;
+    }
+
+    PrerenderManager::CreateForWebContents(&web_contents);
+    auto* prerender_manager = PrerenderManager::FromWebContents(&web_contents);
+    search_prerender_handle_ =
+        prerender_manager->StartPrerenderAutocompleteMatch(match);
+  } else if (prerender_utils::IsDirectUrlInputPrerenderEnabled()) {
+    // Check whether preloading is enabled. If users disable this
+    // setting, it means users do not want to preload pages.
+    // TODO(https://crbug.com/1292422): Move this check into
+    // content::PrerenderHostRegistry::CreateAndStartHost().
+    content::WebContentsDelegate* web_contents_delegate =
+        web_contents.GetDelegate();
+    if (!web_contents_delegate ||
+        !web_contents_delegate->IsPrerender2Supported(web_contents)) {
       return;
     }
 
@@ -207,29 +229,42 @@ void AutocompleteActionPredictor::StartPrerendering(
     // activation/cancellation. There is a case that a user input the same url
     // after activation/cancellation, and this mechanism prevents the user from
     // starting a new prerendering.
-    if (prerender_handle_) {
+    PrerenderManager::CreateForWebContents(&web_contents);
+    auto* prerender_manager = PrerenderManager::FromWebContents(&web_contents);
+    if (direct_url_input_prerender_handle_) {
       // `url` has already been prerendered. Avoid starting new prerendering.
-      if (prerender_handle_->GetInitialPrerenderingUrl() == url) {
+      if (direct_url_input_prerender_handle_->GetInitialPrerenderingUrl() ==
+          url) {
         return;
       }
-      // `url` does not matched with previously prerendered url. Reset the
+      // `url` does not match with previously prerendered url. Reset the
       // handle to trigger cancellation.
-      UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.PrerenderStatus",
-                                PredictionStatus::kCancelled);
-      prerender_handle_.reset();
+      base::UmaHistogramEnumeration(
+          "AutocompleteActionPredictor.PrerenderStatus",
+          PrerenderPredictionStatus::kCancelled);
+      prerender_manager->CancelPrerenderDirectUrlInput();
     }
 
-    prerender_handle_ = web_contents.StartPrerendering(
-        url, content::PrerenderTriggerType::kEmbedder,
-        prerender_utils::kDirectUrlInputMetricSuffix);
+    DCHECK(!direct_url_input_prerender_handle_);
+    direct_url_input_prerender_handle_ =
+        prerender_manager->StartPrerenderDirectUrlInput(url);
   } else if (base::FeatureList::IsEnabled(
                  features::kOmniboxTriggerForNoStatePrefetch)) {
     content::SessionStorageNamespace* session_storage_namespace =
         web_contents.GetController().GetDefaultSessionStorageNamespace();
-    // Only cancel the old prefetch after starting the new one, so if the URLs
-    // are the same, the underlying prefetcher will be reused.
-    std::unique_ptr<prerender::NoStatePrefetchHandle>
-        old_no_state_prefetch_handle = std::move(no_state_prefetch_handle_);
+    if (no_state_prefetch_handle_) {
+      if (no_state_prefetch_handle_->prerender_url() == url) {
+        // We've already started a prefetch for the target URL. Nothing to do.
+        return;
+      }
+      // `url` does not match with previously prefetched url. Reset the
+      // handle to trigger cancellation.
+      base::UmaHistogramEnumeration(
+          "AutocompleteActionPredictor.NoStatePrefetchStatus",
+          PredictionStatus::kCancelled);
+      no_state_prefetch_handle_->OnCancel();
+      no_state_prefetch_handle_.reset();
+    }
     prerender::NoStatePrefetchManager* no_state_prefetch_manager =
         prerender::NoStatePrefetchManagerFactory::GetForBrowserContext(
             profile_);
@@ -238,8 +273,6 @@ void AutocompleteActionPredictor::StartPrerendering(
           no_state_prefetch_manager->StartPrefetchingFromOmnibox(
               url, session_storage_namespace, size);
     }
-    if (old_no_state_prefetch_handle)
-      old_no_state_prefetch_handle->OnCancel();
   }
 }
 
@@ -251,11 +284,12 @@ AutocompleteActionPredictor::RecommendAction(
   const double confidence = CalculateConfidence(user_text, match, &is_in_db);
   DCHECK(confidence >= 0.0 && confidence <= 1.0);
 
-  UMA_HISTOGRAM_BOOLEAN("AutocompleteActionPredictor.MatchIsInDb", is_in_db);
+  base::UmaHistogramBoolean("AutocompleteActionPredictor.MatchIsInDb",
+                            is_in_db);
 
   if (is_in_db) {
-    UMA_HISTOGRAM_COUNTS_100("AutocompleteActionPredictor.Confidence",
-                             confidence * 100);
+    base::UmaHistogramCounts100("AutocompleteActionPredictor.Confidence",
+                                confidence * 100);
   }
 
   // Map the confidence to an action.
@@ -308,42 +342,58 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(const OmniboxLog& log) {
   // Abandon the current prefetch. If it is to be used, it will be used very
   // soon, so use the lower timeout.
   if (no_state_prefetch_handle_) {
-    if (no_state_prefetch_handle_->contents() &&
-        no_state_prefetch_handle_->contents()->prerender_url() == opened_url) {
-      if (no_state_prefetch_handle_->IsFinishedLoading()) {
-        UMA_HISTOGRAM_ENUMERATION(
+    if (no_state_prefetch_handle_->prerender_url() == opened_url) {
+      if (no_state_prefetch_handle_->IsFinishedLoading()
+          // If the handle doesn't have its contents anymore we don't know if it
+          // complete successfully or not, but we know it's no longer active, so
+          // we log this as kHitFinished.
+          || !no_state_prefetch_handle_->contents()) {
+        base::UmaHistogramEnumeration(
             "AutocompleteActionPredictor.NoStatePrefetchStatus",
             PredictionStatus::kHitFinished);
       } else {
-        UMA_HISTOGRAM_ENUMERATION(
+        base::UmaHistogramEnumeration(
             "AutocompleteActionPredictor.NoStatePrefetchStatus",
             PredictionStatus::kHitUnfinished);
       }
     } else {
-      UMA_HISTOGRAM_ENUMERATION(
+      base::UmaHistogramEnumeration(
           "AutocompleteActionPredictor.NoStatePrefetchStatus",
           PredictionStatus::kUnused);
     }
     no_state_prefetch_handle_->OnNavigateAway();
     // Don't release |no_state_prefetch_handle_| so it is canceled if it
     // survives to the next StartPrerendering call.
-  } else if (prerender_handle_) {
-    if (prerender_handle_->GetInitialPrerenderingUrl() == opened_url) {
-      UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.PrerenderStatus",
-                                PredictionStatus::kHitFinished);
+  } else if (direct_url_input_prerender_handle_) {
+    // TODO(crbug.com/1295188): consider to move metric mechanism to
+    // PrerenderManager.
+    if (direct_url_input_prerender_handle_->GetInitialPrerenderingUrl() ==
+        opened_url) {
+      base::UmaHistogramEnumeration(
+          "AutocompleteActionPredictor.PrerenderStatus",
+          PrerenderPredictionStatus::kHitFinished);
     } else {
-      UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.PrerenderStatus",
-                                PredictionStatus::kUnused);
+      base::UmaHistogramEnumeration(
+          "AutocompleteActionPredictor.PrerenderStatus",
+          PrerenderPredictionStatus::kUnused);
     }
-    // Don't release `prerender_handle_` here as prerender activation is still
-    // ongoing at this point. The handle will be reset in
-    // AutocompleteActionPredictor::OnFinishedNavigation().
   } else {
-    UMA_HISTOGRAM_ENUMERATION(
+    base::UmaHistogramEnumeration(
         "AutocompleteActionPredictor.NoStatePrefetchStatus",
         PredictionStatus::kNotStarted);
-    UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.PrerenderStatus",
-                              PredictionStatus::kNotStarted);
+    base::UmaHistogramEnumeration("AutocompleteActionPredictor.PrerenderStatus",
+                                  PrerenderPredictionStatus::kNotStarted);
+  }
+
+  // TODO:(crbug.com/1297441): Move this logic outside
+  // AutocompleteActionPredictor.
+  // Record the value if prerender for search suggestion was not started. Other
+  // values (kHitFinished, kUnused, kCancelled) are recorded in
+  // PrerenderManager.
+  if (!search_prerender_handle_) {
+    base::UmaHistogramEnumeration(
+        internal::kHistogramPrerenderPredictionStatusDefaultSearchEngine,
+        PrerenderPredictionStatus::kNotStarted);
   }
 
   UpdateDatabaseFromTransitionalMatches(opened_url);
@@ -415,8 +465,8 @@ void AutocompleteActionPredictor::DeleteAllRows() {
                        table_));
   }
 
-  UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.DatabaseAction",
-                            DatabaseAction::kDeleteAll);
+  base::UmaHistogramEnumeration("AutocompleteActionPredictor.DatabaseAction",
+                                DatabaseAction::kDeleteAll);
 }
 
 void AutocompleteActionPredictor::DeleteRowsFromCaches(
@@ -454,8 +504,8 @@ void AutocompleteActionPredictor::AddAndUpdateRows(
 
     db_cache_[key] = value;
     db_id_cache_[key] = it->id;
-    UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.DatabaseAction",
-                              DatabaseAction::kAdd);
+    base::UmaHistogramEnumeration("AutocompleteActionPredictor.DatabaseAction",
+                                  DatabaseAction::kAdd);
   }
   for (auto it = rows_to_update.begin(); it != rows_to_update.end(); ++it) {
     const DBCacheKey key = { it->user_text, it->url };
@@ -466,8 +516,8 @@ void AutocompleteActionPredictor::AddAndUpdateRows(
 
     db_it->second.number_of_hits = it->number_of_hits;
     db_it->second.number_of_misses = it->number_of_misses;
-    UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.DatabaseAction",
-                              DatabaseAction::kUpdate);
+    base::UmaHistogramEnumeration("AutocompleteActionPredictor.DatabaseAction",
+                                  DatabaseAction::kUpdate);
   }
 
   if (table_.get()) {
@@ -633,6 +683,8 @@ void AutocompleteActionPredictor::FinishInitialization() {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!initialized_);
   initialized_ = true;
+  for (Observer& obs : observers_)
+    obs.OnInitialized();
 }
 
 double AutocompleteActionPredictor::CalculateConfidence(
@@ -692,8 +744,8 @@ void AutocompleteActionPredictor::OnURLsDeleted(
                                   table_, std::move(id_list)));
   }
 
-  UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.DatabaseAction",
-                            DatabaseAction::kDeleteSome);
+  base::UmaHistogramEnumeration("AutocompleteActionPredictor.DatabaseAction",
+                                DatabaseAction::kDeleteSome);
 }
 
 void AutocompleteActionPredictor::OnHistoryServiceLoaded(
@@ -702,14 +754,15 @@ void AutocompleteActionPredictor::OnHistoryServiceLoaded(
     TryDeleteOldEntries(history_service);
 }
 
-void AutocompleteActionPredictor::OnFinishedNavigation() {
-  // Do not record AutocompleteActionPredictor.PrerenderStatus here because
-  // it is already recorded at OnOmniboxOpenedUrl().
-  prerender_handle_.reset();
+void AutocompleteActionPredictor::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
 }
 
-AutocompleteActionPredictor::TransitionalMatch::TransitionalMatch() {
+void AutocompleteActionPredictor::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
+
+AutocompleteActionPredictor::TransitionalMatch::TransitionalMatch() = default;
 
 AutocompleteActionPredictor::TransitionalMatch::TransitionalMatch(
     const std::u16string in_user_text)

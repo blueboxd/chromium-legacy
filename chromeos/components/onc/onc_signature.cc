@@ -85,15 +85,16 @@ const OncFieldSignature ipsec_fields[] = {
     {::onc::client_cert::kClientCertType, &kStringSignature},
     {::onc::ipsec::kGroup, &kStringSignature},
     {::onc::ipsec::kIKEVersion, &kIntegerSignature},
+    {::onc::ipsec::kLocalIdentity, &kStringSignature},
     {::onc::ipsec::kPSK, &kStringSignature},
+    {::onc::ipsec::kRemoteIdentity, &kStringSignature},
     {::onc::vpn::kSaveCredentials, &kBoolSignature},
     // Used internally. Not officially supported.
     {::onc::ipsec::kServerCAPEMs, &kStringListSignature},
     {::onc::ipsec::kServerCARef, &kStringSignature},
     {::onc::ipsec::kServerCARefs, &kStringListSignature},
     {::onc::ipsec::kXAUTH, &kXAUTHSignature},
-    // Not yet supported.
-    //  { ipsec::kEAP, &kEAPSignature },
+    {::onc::ipsec::kEAP, &kEAPSignature},
     {nullptr}};
 
 const OncFieldSignature xauth_fields[] = {

@@ -26,7 +26,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -35,15 +37,19 @@
 #include "components/services/storage/dom_storage/dom_storage_database.h"
 #include "components/services/storage/dom_storage/local_storage_database.pb.h"
 #include "components/services/storage/public/cpp/constants.h"
+#include "components/services/storage/public/mojom/local_storage_control.mojom.h"
+#include "components/services/storage/public/mojom/partition.mojom.h"
+#include "components/services/storage/public/mojom/storage_service.mojom.h"
+#include "components/services/storage/storage_service_impl.h"
 #include "content/browser/aggregation_service/aggregation_service_impl.h"
 #include "content/browser/aggregation_service/aggregation_service_test_utils.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
-#include "content/browser/attribution_reporting/storable_trigger.h"
+#include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/code_cache/generated_code_cache.h"
 #include "content/browser/code_cache/generated_code_cache_context.h"
 #include "content/browser/gpu/shader_cache_factory.h"
-#include "content/browser/interest_group/interest_group_manager.h"
+#include "content/browser/interest_group/interest_group_manager_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -51,6 +57,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/trust_tokens.mojom.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
@@ -234,10 +241,12 @@ class RemoveInterestGroupTester {
   bool ContainsInterestGroupOwner(const url::Origin& origin) {
     get_interest_group_success_ = false;
     EXPECT_TRUE(storage_partition_->GetInterestGroupManager());
-    storage_partition_->GetInterestGroupManager()->GetInterestGroupsForOwner(
-        origin,
-        base::BindOnce(&RemoveInterestGroupTester::GetInterestGroupsCallback,
-                       base::Unretained(this)));
+    static_cast<InterestGroupManagerImpl*>(
+        storage_partition_->GetInterestGroupManager())
+        ->GetInterestGroupsForOwner(
+            origin, base::BindOnce(
+                        &RemoveInterestGroupTester::GetInterestGroupsCallback,
+                        base::Unretained(this)));
     await_completion_.BlockUntilNotified();
     return get_interest_group_success_;
   }
@@ -248,8 +257,9 @@ class RemoveInterestGroupTester {
     group.owner = origin;
     group.name = "Name";
     group.expiry = base::Time::Now() + base::Days(30);
-    storage_partition_->GetInterestGroupManager()->JoinInterestGroup(
-        group, origin.GetURL());
+    static_cast<InterestGroupManagerImpl*>(
+        storage_partition_->GetInterestGroupManager())
+        ->JoinInterestGroup(group, origin.GetURL());
   }
 
  private:
@@ -905,6 +915,11 @@ class StoragePartitionImplTest : public testing::Test {
   StoragePartitionImplTest()
       : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         browser_context_(new TestBrowserContext()) {
+    // Prevent test flakiness as a result of randomized responses in the
+    // Attribution Reporting API.
+    command_line_.GetProcessCommandLine()->AppendSwitch(
+        switches::kConversionsDebugMode);
+
     // Configures the Conversion API to run in memory to speed up its
     // initialization and avoid timeouts. See https://crbug.com/1080764.
     AttributionManagerImpl::RunInMemoryForTesting();
@@ -926,9 +941,7 @@ class StoragePartitionImplTest : public testing::Test {
       mojo::PendingRemote<storage::mojom::QuotaClient> quota_client;
       mojo::MakeSelfOwnedReceiver(
           std::make_unique<storage::MockQuotaClient>(
-              quota_manager_->proxy(),
-              base::span<const storage::MockStorageKeyData>(),
-              storage::QuotaClientType::kFileSystem),
+              quota_manager_->proxy(), storage::QuotaClientType::kFileSystem),
           quota_client.InitWithNewPipeAndPassReceiver());
       quota_manager_->proxy()->RegisterClient(
           std::move(quota_client), storage::QuotaClientType::kFileSystem,
@@ -945,6 +958,7 @@ class StoragePartitionImplTest : public testing::Test {
   }
 
  private:
+  base::test::ScopedCommandLine command_line_;
   base::test::ScopedFeatureList feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestBrowserContext> browser_context_;
@@ -1966,8 +1980,8 @@ TEST_F(StoragePartitionImplTest, ConversionsClearDataForOrigin) {
 
   base::RunLoop run_loop;
   partition->ClearData(StoragePartition::REMOVE_DATA_MASK_CONVERSIONS, 0,
-                       source.impression_origin().GetURL(), now, now,
-                       run_loop.QuitClosure());
+                       source.common_info().impression_origin().GetURL(), now,
+                       now, run_loop.QuitClosure());
   run_loop.Run();
 
   EXPECT_TRUE(
@@ -1994,8 +2008,8 @@ TEST_F(StoragePartitionImplTest, ConversionsClearDataWrongMask) {
   // Arbitrary non-conversions mask.
   base::RunLoop run_loop;
   partition->ClearData(StoragePartition::REMOVE_DATA_MASK_COOKIES, 0,
-                       source.impression_origin().GetURL(), now, now,
-                       run_loop.QuitClosure());
+                       source.common_info().impression_origin().GetURL(), now,
+                       now, run_loop.QuitClosure());
   run_loop.Run();
   EXPECT_FALSE(
       GetAttributionsToReportForTesting(attribution_manager, base::Time::Max())
@@ -2376,6 +2390,47 @@ TEST_F(StoragePartitionImplTest, RemoveAggregationServiceData) {
       .WillOnce(testing::Invoke(invoke_callback));
   partition->ClearData(kTestClearMask, kTestQuotaClearMask, GURL(), kBeginTime,
                        kEndTime, base::DoNothing());
+}
+
+// https://crbug.com/1221382
+// Make sure StorageServiceImpl can be stored in a SequenceLocalStorageSlot and
+// that it can be safely destroyed when the thread terminates.
+TEST(StorageServiceImplOnSequenceLocalStorage, ThreadDestructionDoesNotFail) {
+  mojo::Remote<storage::mojom::StorageService> remote_service;
+  mojo::Remote<storage::mojom::Partition> persistent_partition;
+  mojo::Remote<storage::mojom::LocalStorageControl> storage_control;
+  // These remotes must outlive the thread, otherwise PartitionImpl cleanup will
+  // not happen in the ~StorageServiceImpl but on the mojo error handler.
+  {
+    // When this variable gets out of scope the IO thread will be destroyed
+    // along with all objects stored in a SequenceLocalStorageSlot.
+    content::BrowserTaskEnvironment task_environment(
+        content::BrowserTaskEnvironment::REAL_IO_THREAD);
+
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](mojo::PendingReceiver<storage::mojom::StorageService> receiver) {
+              DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+              static base::SequenceLocalStorageSlot<
+                  std::unique_ptr<storage::StorageServiceImpl>>
+                  service_storage_slot;
+              service_storage_slot.GetOrCreateValue() =
+                  std::make_unique<storage::StorageServiceImpl>(
+                      std::move(receiver),
+                      /*io_task_runner=*/nullptr);
+            },
+            remote_service.BindNewPipeAndPassReceiver()));
+
+    // Make sure PartitionImpl gets to destroy a LocalStorageImpl object.
+    base::ScopedTempDir temp_dir;
+    CHECK(temp_dir.CreateUniqueTempDir());
+    remote_service->BindPartition(
+        temp_dir.GetPath(), persistent_partition.BindNewPipeAndPassReceiver());
+    persistent_partition->BindLocalStorageControl(
+        storage_control.BindNewPipeAndPassReceiver());
+    storage_control.FlushForTesting();
+  }
 }
 
 }  // namespace content

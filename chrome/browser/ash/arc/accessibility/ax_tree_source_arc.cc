@@ -247,21 +247,6 @@ void AXTreeSourceArc::NotifyAccessibilityEventInternal(
 
   update_ids.push_back(node_id_to_clear);
 
-  {
-    // TODO(crbug/1211039): This block is added temporary to debug
-    // http://crbug/1211039. Once the issue is resolved, this block should be
-    // removed.
-    std::string error_string;
-    ui::AXTreeSourceChecker<AccessibilityInfoDataWrapper*> checker(this);
-    if (!checker.CheckAndGetErrorString(&error_string)) {
-      LOG(ERROR) << "Failed to validate the tree source\n"
-                 << "Event: " << events[0].ToString() << "\n"
-                 << "window size: " << event_data.window_data->size() << ", "
-                 << "node size: " << event_data.node_data.size() << "\n"
-                 << "Error: " << error_string;
-    }
-  }
-
   for (const int32_t update_id : update_ids)
     current_tree_serializer_->InvalidateSubtree(GetFromId(update_id));
 
@@ -440,9 +425,12 @@ bool AXTreeSourceArc::UpdateAndroidFocusedId(const AXEventData& event_data) {
       android_focused_id_ = new_focus->GetId();
   }
 
-  if (android_focused_id_ && !GetFromId(*android_focused_id_)) {
-    // We lost focus. Reset it.
-    android_focused_id_.reset();
+  if (!android_focused_id_ || !GetFromId(*android_focused_id_)) {
+    // Because we only handle events from the focused window, let's reset the
+    // focus to the root window.
+    AccessibilityInfoDataWrapper* root = GetRoot();
+    DCHECK(IsValid(root));
+    android_focused_id_ = root_id_;
   }
 
   if (android_focused_id_.has_value()) {

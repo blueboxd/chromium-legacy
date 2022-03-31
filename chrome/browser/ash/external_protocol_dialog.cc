@@ -5,10 +5,10 @@
 #include "chrome/browser/ash/external_protocol_dialog.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ash/arc/intent_helper/arc_external_protocol_dialog.h"
+#include "chrome/browser/ash/arc/intent_helper/arc_intent_helper_mojo_ash.h"
 #include "chrome/browser/ash/guest_os/guest_os_external_protocol_handler.h"
+#include "chrome/browser/chromeos/arc/arc_external_protocol_dialog.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
-#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/external_protocol_dialog.h"
 #include "chrome/grit/chromium_strings.h"
@@ -34,15 +34,12 @@ const int kMessageWidth = 400;
 void OnArcHandled(const GURL& url,
                   const absl::optional<url::Origin>& initiating_origin,
                   content::WeakDocumentPtr initiator_document,
-                  int render_process_host_id,
-                  int routing_id,
+                  base::WeakPtr<WebContents> web_contents,
                   bool handled) {
   if (handled)
     return;
 
   // If WebContents have been destroyed, do not show any dialog.
-  WebContents* web_contents =
-      tab_util::GetWebContentsByID(render_process_host_id, routing_id);
   if (!web_contents)
     return;
 
@@ -52,15 +49,17 @@ void OnArcHandled(const GURL& url,
     return;
 
   // Display the standard ExternalProtocolDialog if Guest OS has a handler.
+  // Otherwise, if there is no handler and the URL is a Tel-link, show the No
+  // Handler Tel Scheme dialog
   absl::optional<guest_os::GuestOsRegistryService::Registration> registration =
       guest_os::GetHandler(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()), url);
   if (registration) {
-    new ExternalProtocolDialog(web_contents, url,
+    new ExternalProtocolDialog(web_contents.get(), url,
                                base::UTF8ToUTF16(registration->Name()),
                                initiating_origin, initiator_document);
-  } else {
-    new ash::ExternalProtocolNoHandlersDialog(parent_window, url);
+  } else if (url.scheme() == url::kTelScheme) {
+    new ash::ExternalProtocolNoHandlersTelSchemeDialog(parent_window);
   }
 }
 
@@ -79,32 +78,24 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
     content::WeakDocumentPtr initiator_document) {
   // First, check if ARC version of the dialog is available and run ARC version
   // when possible.
-  // TODO(ellyjones): Refactor arc::RunArcExternalProtocolDialog() to take a
-  // web_contents directly, which will mean sorting out how lifetimes work in
-  // that code. Same for OnArcHandled() (crbug.com/1136237).
-  int render_process_host_id =
-      web_contents->GetRenderViewHost()->GetProcess()->GetID();
-  int routing_id = web_contents->GetRenderViewHost()->GetRoutingID();
   arc::RunArcExternalProtocolDialog(
-      url, initiating_origin, render_process_host_id, routing_id,
-      page_transition, has_user_gesture,
+      url, initiating_origin, web_contents->GetWeakPtr(), page_transition,
+      has_user_gesture, std::make_unique<arc::ArcIntentHelperMojoAsh>(),
       base::BindOnce(&OnArcHandled, url, initiating_origin,
-                     std::move(initiator_document), render_process_host_id,
-                     routing_id));
+                     std::move(initiator_document),
+                     web_contents->GetWeakPtr()));
 }
 
 namespace ash {
 
 ///////////////////////////////////////////////////////////////////////////////
-// ExternalProtocolNoHandlersDialog
+// ExternalProtocolNoHandlersTelSchemeDialog
 
-ExternalProtocolNoHandlersDialog::ExternalProtocolNoHandlersDialog(
-    aura::Window* parent_window,
-    const GURL& url)
-    : creation_time_(base::TimeTicks::Now()), scheme_(url.scheme()) {
+ExternalProtocolNoHandlersTelSchemeDialog::
+    ExternalProtocolNoHandlersTelSchemeDialog(aura::Window* parent_window)
+    : creation_time_(base::TimeTicks::Now()) {
   DCHECK(parent_window);
   SetOwnedByWidget(true);
-
   views::DialogDelegate::SetButtons(ui::DIALOG_BUTTON_OK);
   views::DialogDelegate::SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
@@ -119,27 +110,26 @@ ExternalProtocolNoHandlersDialog::ExternalProtocolNoHandlersDialog(
       chrome::DialogIdentifier::EXTERNAL_PROTOCOL_CHROMEOS);
 }
 
-ExternalProtocolNoHandlersDialog::~ExternalProtocolNoHandlersDialog() = default;
+ExternalProtocolNoHandlersTelSchemeDialog::
+    ~ExternalProtocolNoHandlersTelSchemeDialog() = default;
 
-std::u16string ExternalProtocolNoHandlersDialog::GetWindowTitle() const {
-  // If this dialog is shown for a tel link, we display a message to the user on
-  // how to use the Click to Call feature.
-  if (scheme_ == url::kTelScheme) {
-    return l10n_util::GetStringUTF16(
-        IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES);
-  }
-  return l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_NO_HANDLER_TITLE);
+std::u16string ExternalProtocolNoHandlersTelSchemeDialog::GetWindowTitle()
+    const {
+  // We display a message to the user on how to use the Click to Call feature.
+  return l10n_util::GetStringUTF16(
+      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES);
 }
 
-views::View* ExternalProtocolNoHandlersDialog::GetContentsView() {
+views::View* ExternalProtocolNoHandlersTelSchemeDialog::GetContentsView() {
   return message_box_view_;
 }
 
-const views::Widget* ExternalProtocolNoHandlersDialog::GetWidget() const {
+const views::Widget* ExternalProtocolNoHandlersTelSchemeDialog::GetWidget()
+    const {
   return message_box_view_->GetWidget();
 }
 
-views::Widget* ExternalProtocolNoHandlersDialog::GetWidget() {
+views::Widget* ExternalProtocolNoHandlersTelSchemeDialog::GetWidget() {
   return message_box_view_->GetWidget();
 }
 

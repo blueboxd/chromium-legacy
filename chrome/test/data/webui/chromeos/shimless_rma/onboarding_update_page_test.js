@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {FakeShimlessRmaService} from 'chrome://shimless-rma/fake_shimless_rma_service.js';
 import {setShimlessRmaServiceForTesting} from 'chrome://shimless-rma/mojo_interface_provider.js';
 import {OnboardingUpdatePageElement} from 'chrome://shimless-rma/onboarding_update_page.js';
 import {OsUpdateOperation} from 'chrome://shimless-rma/shimless_rma_types.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {flushTasks} from '../../test_util.js';
+import {flushTasks, isVisible} from '../../test_util.js';
 
 export function onboardingUpdatePageTest() {
   /** @type {?OnboardingUpdatePageElement} */
@@ -146,6 +147,10 @@ export function onboardingUpdatePageTest() {
 
     return initializeUpdatePage(version, update)
         .then(() => {
+          component.addEventListener('disable-all-buttons', (e) => {
+            component.allButtonsDisabled = e.detail;
+          });
+
           component.networkAvailable = true;
           return flushTasks();
         })
@@ -217,5 +222,78 @@ export function onboardingUpdatePageTest() {
     document.body.appendChild(component);
     await flushTasks();
     assertEquals('skipButtonLabel', buttonLabelKey);
+  });
+
+  test('UpdatePageShowHideLinkWithoutError', () => {
+    const version = '90.1.2.3';
+    const update = true;
+
+    return initializeUpdatePage(version, update)
+        .then(() => {
+          service.triggerHardwareVerificationStatusObserver(true, '', 0);
+          return flushTasks();
+        })
+        .then(() => {
+          assertFalse(isVisible(component.shadowRoot.querySelector(
+              '#unqualifiedComponentsLink')));
+        });
+  });
+
+  test('UpdatePageShowLinkOpenDialogOnError', () => {
+    const version = '90.1.2.3';
+    const update = true;
+    const failedComponent = 'Keyboard';
+
+    return initializeUpdatePage(version, update)
+        .then(() => {
+          service.triggerHardwareVerificationStatusObserver(
+              false, failedComponent, 0);
+          return flushTasks();
+        })
+        .then(() => {
+          const unqualifiedComponentsLink =
+              component.shadowRoot.querySelector('#unqualifiedComponentsLink');
+          assertTrue(isVisible(unqualifiedComponentsLink));
+          unqualifiedComponentsLink.click();
+
+          assertTrue(
+              component.shadowRoot.querySelector('#unqualifiedComponentsDialog')
+                  .open);
+          assertEquals(
+              failedComponent,
+              component.shadowRoot.querySelector('#dialogBody')
+                  .textContent.trim());
+        });
+  });
+
+  test('UpdatePageUpdateFailedToStartButtonsEnabled', () => {
+    const version = '90.1.2.3';
+    const update = true;
+
+    const resolver = new PromiseResolver();
+    service.updateOs = () => {
+      return resolver.promise;
+    };
+
+    return initializeUpdatePage(version, update).then(() => {
+      component.networkAvailable = true;
+
+      let allButtonsDisabled = false;
+      component.addEventListener('disable-all-buttons', (e) => {
+        allButtonsDisabled = e.detail;
+      });
+
+      return clickPerformUpdateButton()
+          .then(() => {
+            // All buttons should be disabled when the update starts.
+            assertTrue(allButtonsDisabled);
+            resolver.resolve({updateStarted: false});
+            return flushTasks();
+          })
+          .then(() => {
+            // When the update fails, all the buttons should be re-enabled.
+            assertFalse(allButtonsDisabled);
+          });
+    });
   });
 }

@@ -10,16 +10,23 @@ import "url/mojom/url.mojom";
 //
 // Proposal: https://github.com/WICG/WebID
 
+// Represents the fetch result from a federated authentication request. Should
+// be updated alongside FederatedAuthRequestIssueReason in
+// third_party/blink/public/devtools_protocol/browser_protocol.pdl, which
+// includes all cases except for kSuccess.
+// TODO(npm): Refactor RequestIdTokenStatus to only send generic messages to the
+// renderer and have a separate enum that has detailed messages in content/.
+// Don't change the meaning or the order of these values before it's in place.
 enum RequestIdTokenStatus {
   kSuccess,
   kApprovalDeclined,
   kErrorTooManyRequests,
-  kErrorFetchingWellKnownHttpNotFound,
-  kErrorFetchingWellKnownNoResponse,
-  kErrorFetchingWellKnownInvalidResponse,
-  kErrorFetchingClientIdMetadataHttpNotFound,
-  kErrorFetchingClientIdMetadataNoResponse,
-  kErrorFetchingClientIdMetadataInvalidResponse,
+  kErrorFetchingManifestHttpNotFound,
+  kErrorFetchingManifestNoResponse,
+  kErrorFetchingManifestInvalidResponse,
+  kErrorFetchingClientMetadataHttpNotFound,
+  kErrorFetchingClientMetadataNoResponse,
+  kErrorFetchingClientMetadataInvalidResponse,
   kErrorFetchingAccountsHttpNotFound,
   kErrorFetchingAccountsNoResponse,
   kErrorFetchingAccountsInvalidResponse,
@@ -33,7 +40,7 @@ enum RequestIdTokenStatus {
   kError,
 };
 
-enum LogoutStatus {
+enum LogoutRpsStatus {
   kSuccess,
   kErrorTooManyRequests,
   kError,
@@ -50,7 +57,7 @@ enum RequestMode {
 };
 
 // The details of a single logout request from an identity provider.
-struct LogoutRequest {
+struct LogoutRpsRequest {
   // URL to which the request will be sent. The origin is validated to
   // have an associated active session.
   url.mojom.Url url;
@@ -88,5 +95,5 @@ interface FederatedAuthRequest {
 
   // Contact the list of Relying Party logout endpoints and account IDs to
   // attempt to initiate user logout.
-  Logout(array<LogoutRequest> rp_logout_requests) => (LogoutStatus status);
+  LogoutRps(array<LogoutRpsRequest> rp_logout_requests) => (LogoutRpsStatus status);
 };

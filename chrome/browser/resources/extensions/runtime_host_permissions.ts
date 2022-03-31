@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
 import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
@@ -18,28 +20,21 @@ import './shared_style.js';
 import './strings.m.js';
 
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
+import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {DomRepeatEvent, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ItemDelegate} from './item.js';
+import {getFaviconUrl} from './url_util.js';
 
-/** Event interface for dom-repeat. */
-interface RepeaterEvent extends CustomEvent {
-  model: {
-    item: string,
-  };
-}
-
-interface ExtensionsRuntimeHostPermissionsElement {
+export interface ExtensionsRuntimeHostPermissionsElement {
   $: {
     hostActionMenu: CrActionMenuElement,
-    'host-access': HTMLSelectElement,
   };
 }
 
-class ExtensionsRuntimeHostPermissionsElement extends PolymerElement {
+export class ExtensionsRuntimeHostPermissionsElement extends PolymerElement {
   static get is() {
     return 'extensions-runtime-host-permissions';
   }
@@ -65,6 +60,15 @@ class ExtensionsRuntimeHostPermissionsElement extends PolymerElement {
        * Whether the dialog to add a new host permission is shown.
        */
       showHostDialog_: Boolean,
+
+      /**
+       * Whether the dialog warning the user that the list of sites added will
+       * be removed is shown.
+       */
+      showRemoveSiteDialog_: {
+        type: Boolean,
+        value: false,
+      },
 
       /**
        * The current site of the entry that the host dialog is editing, if the
@@ -135,6 +139,7 @@ class ExtensionsRuntimeHostPermissionsElement extends PolymerElement {
   delegate: ItemDelegate;
   enableEnhancedSiteControls: boolean;
   private showHostDialog_: boolean;
+  private showRemoveSiteDialog_: boolean;
   private hostDialogModel_: string|null;
   private hostDialogAnchorElement_: HTMLElement|null;
   private actionMenuModel_: string|null;
@@ -142,8 +147,19 @@ class ExtensionsRuntimeHostPermissionsElement extends PolymerElement {
   private oldHostAccess_: string|null;
   private revertingHostAccess_: boolean;
 
+  getSelectMenu(): HTMLSelectElement {
+    const selectMenuId =
+        this.enableEnhancedSiteControls ? '#newHostAccess' : '#hostAccess';
+    return this.shadowRoot!.querySelector<HTMLSelectElement>(selectMenuId)!;
+  }
+
+  getRemoveSiteDialog(): CrDialogElement {
+    return this.shadowRoot!.querySelector<CrDialogElement>(
+        '#removeSitesDialog')!;
+  }
+
   private onHostAccessChange_() {
-    const selectMenu = this.$['host-access'];
+    const selectMenu = this.getSelectMenu();
     const access = selectMenu.value as chrome.developerPrivate.HostAccess;
 
     // Log a user action when the host access selection is changed by the user,
@@ -165,9 +181,10 @@ class ExtensionsRuntimeHostPermissionsElement extends PolymerElement {
       }
     }
 
-    if (access === chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES &&
-        this.permissions.hostAccess !==
-            chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES) {
+    const kOnSpecificSites =
+        chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES;
+    if (access === kOnSpecificSites &&
+        this.permissions.hostAccess !== kOnSpecificSites) {
       // If the user is transitioning to the "on specific sites" option, show
       // the "add host" dialog. This serves two purposes:
       // - The user is prompted to add a host immediately, since otherwise
@@ -178,22 +195,22 @@ class ExtensionsRuntimeHostPermissionsElement extends PolymerElement {
       //   is properly calculated.
       this.oldHostAccess_ = this.permissions.hostAccess;
       this.doShowHostDialog_(selectMenu, null);
+    } else if (
+        this.enableEnhancedSiteControls && access !== kOnSpecificSites &&
+        this.permissions.hostAccess === kOnSpecificSites) {
+      // If the user is transitioning from the "on specific sites" option to
+      // another one, show a dialog asking the user to confirm the transition
+      // because in C++, only the "on specific sites" option will store sites
+      // the user has added and transitioning away from it will clear these
+      // sites.
+      this.showRemoveSiteDialog_ = true;
     } else {
       this.delegate.setItemHostAccess(this.itemId, access);
     }
   }
 
-  private getHostPermissionsHeading_(): string {
-    return loadTimeData.getString(
-        this.enableEnhancedSiteControls ? 'newHostPermissionsHeading' :
-                                          'hostPermissionsHeading');
-  }
-
   private showSpecificSites_(): boolean {
-    // TODO(crbug.com/1253673): Show a different "customize for each site" menu
-    // for the new site access menu.
-    return !this.enableEnhancedSiteControls &&
-        this.permissions.hostAccess ===
+    return this.permissions.hostAccess ===
         chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES;
   }
 
@@ -240,14 +257,14 @@ class ExtensionsRuntimeHostPermissionsElement extends PolymerElement {
   }
 
   private onHostDialogCancel_() {
-    // The user canceled the dialog. Set host-access back to the old value,
+    // The user canceled the dialog. Set hostAccess back to the old value,
     // if the dialog was shown when just transitioning to a new state.
     chrome.metricsPrivate.recordUserAction(
         'Extensions.Settings.Hosts.AddHostDialogCanceled');
     if (this.oldHostAccess_) {
       assert(this.permissions.hostAccess === this.oldHostAccess_);
       this.revertingHostAccess_ = true;
-      this.$['host-access'].value = this.oldHostAccess_;
+      this.getSelectMenu().value = this.oldHostAccess_;
       this.revertingHostAccess_ = false;
       this.oldHostAccess_ = null;
     }
@@ -257,7 +274,7 @@ class ExtensionsRuntimeHostPermissionsElement extends PolymerElement {
     return !!this.oldHostAccess_;
   }
 
-  private onEditHostClick_(e: RepeaterEvent) {
+  private onOpenEditHostClick_(e: DomRepeatEvent<string>) {
     chrome.metricsPrivate.recordUserAction(
         'Extensions.Settings.Hosts.ActionMenuOpened');
     this.actionMenuModel_ = e.model.item;
@@ -298,6 +315,44 @@ class ExtensionsRuntimeHostPermissionsElement extends PolymerElement {
   private onLearnMoreClick_() {
     chrome.metricsPrivate.recordUserAction(
         'Extensions.Settings.Hosts.LearnMoreActivated');
+  }
+
+  private onEditHostClick_(e: DomRepeatEvent<string>) {
+    this.doShowHostDialog_(e.target as HTMLElement, e.model.item);
+  }
+
+  private onDeleteHostClick_(e: DomRepeatEvent<string>) {
+    this.delegate.removeRuntimeHostPermission(this.itemId, e.model.item);
+  }
+
+  private getFaviconUrl_(url: string): string {
+    return getFaviconUrl(url);
+  }
+
+  private onRemoveSitesWarningConfirm_() {
+    this.delegate.setItemHostAccess(
+        this.itemId,
+        this.getSelectMenu().value as chrome.developerPrivate.HostAccess);
+    this.getRemoveSiteDialog().close();
+    this.showRemoveSiteDialog_ = false;
+  }
+
+  private onRemoveSitesWarningCancel_() {
+    assert(
+        this.permissions.hostAccess ===
+        chrome.developerPrivate.HostAccess.ON_SPECIFIC_SITES);
+    this.revertingHostAccess_ = true;
+    this.getSelectMenu().value = this.permissions.hostAccess;
+    this.revertingHostAccess_ = false;
+    this.getRemoveSiteDialog().close();
+    this.showRemoveSiteDialog_ = false;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'extensions-runtime-host-permissions':
+        ExtensionsRuntimeHostPermissionsElement;
   }
 }
 

@@ -13,9 +13,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-namespace autofill {
-
-namespace payments {
+namespace autofill::payments {
 
 namespace {
 // Base64 encoding of "This is a test challenge".
@@ -34,7 +32,7 @@ TestPaymentsClient::TestPaymentsClient(
   unmask_details_.unmask_auth_method = AutofillClient::UnmaskAuthMethod::kCvc;
 }
 
-TestPaymentsClient::~TestPaymentsClient() {}
+TestPaymentsClient::~TestPaymentsClient() = default;
 
 void TestPaymentsClient::GetUnmaskDetails(
     base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
@@ -62,11 +60,13 @@ void TestPaymentsClient::GetUploadDetails(
                             std::unique_ptr<base::Value>,
                             std::vector<std::pair<int, int>>)> callback,
     const int billable_service_number,
+    const int64_t billing_customer_number,
     PaymentsClient::UploadCardSource upload_card_source) {
   upload_details_addresses_ = addresses;
   detected_values_ = detected_values;
   active_experiments_ = active_experiments;
   billable_service_number_ = billable_service_number;
+  billing_customer_number_ = billing_customer_number;
   upload_card_source_ = upload_card_source;
   std::move(callback).Run(
       app_locale == "en-US"
@@ -109,6 +109,23 @@ void TestPaymentsClient::SelectChallengeOption(
   }
   std::move(callback).Run(AutofillClient::PaymentsRpcResult::kSuccess,
                           "context_token from SelectChallengeOption");
+}
+
+void TestPaymentsClient::GetVirtualCardEnrollmentDetails(
+    const GetDetailsForEnrollmentRequestDetails& request_details,
+    base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
+                            const payments::PaymentsClient::
+                                GetDetailsForEnrollmentResponseDetails&)>
+        callback) {
+  get_details_for_enrollment_request_details_ = std::move(request_details);
+}
+
+void TestPaymentsClient::UpdateVirtualCardEnrollment(
+    const TestPaymentsClient::UpdateVirtualCardEnrollmentRequestDetails&
+        request_details,
+    base::OnceCallback<void(AutofillClient::PaymentsRpcResult)> callback) {
+  update_virtual_card_enrollment_request_details_ = std::move(request_details);
+  std::move(callback).Run(AutofillClient::PaymentsRpcResult::kSuccess);
 }
 
 void TestPaymentsClient::ShouldReturnUnmaskDetailsImmediately(
@@ -212,5 +229,4 @@ std::unique_ptr<base::Value> TestPaymentsClient::LegalMessage() {
   }
 }
 
-}  // namespace payments
-}  // namespace autofill
+}  // namespace autofill::payments

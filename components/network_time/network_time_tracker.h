@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "components/network_time/historical_latencies_container.h"
 #include "url/gurl.h"
 
 class PrefRegistrySimple;
@@ -156,11 +157,13 @@ class NetworkTimeTracker {
 
   GURL GetTimeServerURLForTesting() const;
 
-  bool QueryTimeServiceForTesting();
+  bool QueryTimeServiceForTesting(bool on_demand = true);
 
   void WaitForFetchForTesting(uint32_t nonce);
 
   void OverrideNonceForTesting(uint32_t nonce);
+
+  void OverrideUMANoiseFactorForTesting(double noise_factor);
 
   base::TimeDelta GetTimerDelayForTesting() const;
 
@@ -177,12 +180,13 @@ class NetworkTimeTracker {
 
   // Updates network time from a time server response, returning true
   // if successful.
-  bool UpdateTimeFromResponse(std::unique_ptr<std::string> response_body);
+  bool UpdateTimeFromResponse(CheckTimeType check_type,
+                              std::unique_ptr<std::string> response_body);
 
   // Records histograms related to clock skew. All of these histograms are
   // currently local-only. See https://crbug.com/1258624.
   void RecordClockSkewHistograms(base::Time current_time,
-                                 base::TimeDelta fetch_latency) const;
+                                 base::TimeDelta fetch_latency);
 
   // Called to process responses from the secure time service.
   void OnURLLoaderComplete(CheckTimeType check_type,
@@ -244,6 +248,15 @@ class NetworkTimeTracker {
 
   // Callbacks to run when the in-progress time fetch completes.
   std::vector<base::OnceClosure> fetch_completion_callbacks_;
+
+  // Computes statistics over a sliding window of the most recent fetch
+  // latencies.
+  HistoricalLatenciesContainer historical_latencies_;
+
+  // Clock skews reported to UMA will have ±`uma_noise_factor_` noise (relative
+  // to the clock skew itself) for privacy reasons. For example, specifying 0.1
+  // here means ±10% noise.
+  double uma_noise_factor_ = 0.1;
 
   base::ThreadChecker thread_checker_;
 };

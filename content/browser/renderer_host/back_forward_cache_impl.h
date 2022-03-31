@@ -66,6 +66,11 @@ const base::Feature kBackForwardCacheMediaSessionPlaybackStateChange{
     "BackForwardCacheMediaSessionPlaybackStateChange",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable back/forward cache for screen reader users. This flag should be
+// removed once the https://crbug.com/1271450 is resolved.
+const base::Feature kEnableBackForwardCacheForScreenReader{
+    "EnableBackForwardCacheForScreenReader", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Combines a flattened list and a tree of the reasons why each document cannot
 // enter the back/forward cache (might be empty if it can). The tree saves the
 // reasons for each document in the tree (including those without the reasons)
@@ -189,6 +194,9 @@ class CONTENT_EXPORT BackForwardCacheImpl
   // Returns whether MediaSession's service is allowed for the BackForwardCache.
   static bool IsMediaSessionServiceAllowed();
 
+  // Returns whether back/forward cache is enabled for screen reader users.
+  static bool IsScreenReaderAllowed();
+
   // Returns the reasons (if any) why this document and its children cannot
   // enter the back/forward cache. Depends on the |render_frame_host| and its
   // children's state. Should only be called after we've navigated away from
@@ -302,6 +310,7 @@ class CONTENT_EXPORT BackForwardCacheImpl
 
   // BackForwardCache overrides:
   void Flush() override;
+  void Prune(size_t limit) override;
   void DisableForTesting(DisableForTestingReason reason) override;
 
   // RenderProcessHostInternalObserver methods
@@ -506,6 +515,10 @@ class CONTENT_EXPORT BackForwardCacheCanStoreTreeResult {
 
   // The URL of the document corresponding to this subtree's root document.
   const GURL& GetUrl() const { return url_; }
+
+  // Creates and returns an empty tree.
+  static std::unique_ptr<BackForwardCacheCanStoreTreeResult> CreateEmptyTree(
+      RenderFrameHostImpl* rfh);
 
  private:
   BackForwardCacheCanStoreTreeResult(

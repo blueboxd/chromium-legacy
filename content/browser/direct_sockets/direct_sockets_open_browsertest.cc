@@ -40,6 +40,7 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 #include "services/network/test/test_network_context.h"
+#include "services/network/test/test_udp_socket.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -292,7 +293,7 @@ class MockNetworkContext : public network::TestNetworkContext {
   std::unique_ptr<network::mojom::UDPSocket> udp_socket_;
 };
 
-class MockUDPSocket : public network::mojom::UDPSocket {
+class MockUDPSocket : public network::TestUDPSocket {
  public:
   typedef net::IPAddress IPAddress;
   typedef net::IPEndPoint IPEndPoint;
@@ -310,12 +311,6 @@ class MockUDPSocket : public network::mojom::UDPSocket {
   ~MockUDPSocket() override = default;
 
   // network::mojom::UDPSocket:
-  void Bind(const IPEndPoint& local_addr,
-            network::mojom::UDPSocketOptionsPtr options,
-            BindCallback callback) override {
-    NOTIMPLEMENTED();
-  }
-
   void Connect(const IPEndPoint& remote_addr,
                network::mojom::UDPSocketOptionsPtr socket_options,
                ConnectCallback callback) override {
@@ -334,54 +329,6 @@ class MockUDPSocket : public network::mojom::UDPSocket {
         FROM_HERE, base::BindOnce(std::move(callback), result,
                                   /*local_addr_out=*/absl::nullopt));
   }
-
-  void SetBroadcast(bool broadcast, SetBroadcastCallback callback) override {
-    NOTIMPLEMENTED();
-  }
-
-  void SetSendBufferSize(int32_t send_buffer_size,
-                         SetSendBufferSizeCallback callback) override {
-    NOTIMPLEMENTED();
-  }
-
-  void SetReceiveBufferSize(int32_t receive_buffer_size,
-                            SetSendBufferSizeCallback callback) override {
-    NOTIMPLEMENTED();
-  }
-
-  void JoinGroup(const IPAddress& group_address,
-                 JoinGroupCallback callback) override {
-    NOTIMPLEMENTED();
-  }
-
-  void LeaveGroup(const IPAddress& group_address,
-                  LeaveGroupCallback callback) override {
-    NOTIMPLEMENTED();
-  }
-
-  void ReceiveMore(uint32_t num_additional_datagrams) override {
-    NOTIMPLEMENTED();
-  }
-
-  void ReceiveMoreWithBufferSize(uint32_t num_additional_datagrams,
-                                 uint32_t buffer_size) override {
-    NOTIMPLEMENTED();
-  }
-
-  void SendTo(const IPEndPoint& dest_addr,
-              base::span<const uint8_t> data,
-              const MutableNetworkTrafficAnnotationTag& traffic_annotation,
-              SendToCallback callback) override {
-    NOTIMPLEMENTED();
-  }
-
-  void Send(base::span<const uint8_t> data,
-            const MutableNetworkTrafficAnnotationTag& traffic_annotation,
-            SendCallback callback) override {
-    NOTIMPLEMENTED();
-  }
-
-  void Close() override { NOTIMPLEMENTED(); }
 
   const raw_ptr<MockNetworkContext> network_context_;
   mojo::Receiver<network::mojom::UDPSocket> receiver_{this};
@@ -406,9 +353,6 @@ net::Error UnconditionallyPermitConnection(
 
 class DirectSocketsOpenBrowserTest : public ContentBrowserTest {
  public:
-  DirectSocketsOpenBrowserTest() {
-    feature_list_.InitAndEnableFeature(features::kDirectSockets);
-  }
   ~DirectSocketsOpenBrowserTest() override = default;
 
   GURL GetTestOpenPageURL() {
@@ -450,9 +394,6 @@ class DirectSocketsOpenBrowserTest : public ContentBrowserTest {
 
  protected:
   void SetUp() override {
-    DirectSocketsServiceImpl::SetConnectionDialogBypassForTesting(true);
-    DirectSocketsServiceImpl::SetEnterpriseManagedForTesting(false);
-
     embedded_test_server()->AddDefaultHandlers(GetTestDataFilePath());
     ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -529,29 +470,6 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenTcp_CannotEvadeCors) {
       blink::mojom::DirectSocketFailureType::kCORS, 1);
 }
 
-// Permission Denied failures(user dialog) should be triggered if connection
-// dialog is not accepted.
-IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
-                       OpenTcp_ConnectionDialogNotAccepted) {
-  EXPECT_TRUE(NavigateToURL(shell(), GetTestOpenPageURL()));
-
-  base::HistogramTester histogram_tester;
-  histogram_tester.ExpectBucketCount(
-      kPermissionDeniedHistogramName,
-      blink::mojom::DirectSocketFailureType::kUserDialog, 0);
-
-  DirectSocketsServiceImpl::SetConnectionDialogBypassForTesting(false);
-
-  const std::string script =
-      "openTcp({remoteAddress: '127.0.0.1', remotePort: 993})";
-
-  EXPECT_EQ("openTcp failed: NetworkError: Network error.",
-            EvalJs(shell(), script));
-  histogram_tester.ExpectBucketCount(
-      kPermissionDeniedHistogramName,
-      blink::mojom::DirectSocketFailureType::kUserDialog, 1);
-}
-
 // Remote address should be provided or TEST will fail with NotAllowedError. In
 // actual use scenario, it can be obtained from the user's input in connection
 // dialog.
@@ -561,41 +479,77 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
 
   const std::string script = "openTcp({remotePort: 993})";
 
-  EXPECT_EQ("openTcp failed: NetworkError: Network error.",
-            EvalJs(shell(), script));
+  const std::string expected_result =
+      "openTcp failed: TypeError: Failed to execute 'openTCPSocket' on "
+      "'Navigator': Incomplete remote address specified.";
+  EXPECT_EQ(expected_result, EvalJs(shell(), script));
 }
 
 IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
-                       OpenTcp_RemotePortCurrentlyRequired) {
+                       OpenTcp_CompleteRemoteAddressRequired) {
   EXPECT_TRUE(NavigateToURL(shell(), GetTestOpenPageURL()));
 
   const std::string script = "openTcp({})";
 
-  EXPECT_EQ(
+  const std::string expected_result =
       "openTcp failed: TypeError: Failed to execute 'openTCPSocket' on "
-      "'Navigator': remotePort was not specified.",
-      EvalJs(shell(), script));
+      "'Navigator': Complete remote address is always required for TCP.";
+  EXPECT_EQ(expected_result, EvalJs(shell(), script));
 }
 
 IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
-                       OpenTcp_RestrictedByEnterprisePolicies) {
+                       OpenTcp_LocalAddressInsufficient) {
   EXPECT_TRUE(NavigateToURL(shell(), GetTestOpenPageURL()));
 
-  base::HistogramTester histogram_tester;
-  histogram_tester.ExpectBucketCount(
-      kPermissionDeniedHistogramName,
-      blink::mojom::DirectSocketFailureType::kEnterprisePolicy, 0);
+  const std::string script =
+      "openTcp({localAddress: '127.0.0.1', localPort: 228})";
 
-  DirectSocketsServiceImpl::SetEnterpriseManagedForTesting(true);
+  const std::string expected_result =
+      "openTcp failed: TypeError: Failed to execute 'openTCPSocket' on "
+      "'Navigator': Complete remote address is always required for TCP.";
+  EXPECT_EQ(expected_result, EvalJs(shell(), script));
+}
+
+IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
+                       OpenTcp_KeepAliveOptionsDelayMissingOnKeepAliveTrue) {
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestOpenPageURL()));
 
   const std::string script =
-      "openTcp({remoteAddress: '127.0.0.1', remotePort: 993})";
+      "openTcp({remoteAddress: '127.0.0.1', remotePort: 228, keepAlive: true})";
 
-  EXPECT_EQ("openTcp failed: NetworkError: Network error.",
-            EvalJs(shell(), script));
-  histogram_tester.ExpectBucketCount(
-      kPermissionDeniedHistogramName,
-      blink::mojom::DirectSocketFailureType::kEnterprisePolicy, 1);
+  const std::string expected_result =
+      "openTcp failed: TypeError: Failed to execute 'openTCPSocket' on "
+      "'Navigator': keepAliveDelay must be set when keepAlive = true.";
+  EXPECT_EQ(expected_result, EvalJs(shell(), script));
+}
+
+IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
+                       OpenTcp_KeepAliveOptionsDelayLessThanASecond) {
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestOpenPageURL()));
+
+  const std::string script =
+      "openTcp({remoteAddress: '127.0.0.1', remotePort: 228, keepAlive: true, "
+      "keepAliveDelay: 950})";
+
+  const std::string expected_result =
+      "openTcp failed: TypeError: Failed to execute 'openTCPSocket' on "
+      "'Navigator': keepAliveDelay must be no less than one second.";
+  EXPECT_EQ(expected_result, EvalJs(shell(), script));
+}
+
+IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
+                       OpenTcp_KeepAliveOptionsDelaySetOnKeepAliveFalse) {
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestOpenPageURL()));
+
+  const std::string script =
+      "openTcp({remoteAddress: '127.0.0.1', remotePort: 228, keepAlive: false, "
+      "keepAliveDelay: 10_000})";
+
+  const std::string expected_result =
+      "openTcp failed: TypeError: Failed to execute 'openTCPSocket' on "
+      "'Navigator': keepAliveDelay must not be set when keepAlive = false or "
+      "missing.";
+  EXPECT_EQ(expected_result, EvalJs(shell(), script));
 }
 
 IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
@@ -811,29 +765,6 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest, OpenUdp_CannotEvadeCors) {
       blink::mojom::DirectSocketFailureType::kCORS, 1);
 }
 
-// Permission Denied failures(user dialog) should be triggered if connection
-// dialog is not accepted.
-IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
-                       OpenUdp_ConnectionDialogNotAccepted) {
-  EXPECT_TRUE(NavigateToURL(shell(), GetTestOpenPageURL()));
-
-  base::HistogramTester histogram_tester;
-  histogram_tester.ExpectBucketCount(
-      kPermissionDeniedHistogramName,
-      blink::mojom::DirectSocketFailureType::kUserDialog, 0);
-
-  DirectSocketsServiceImpl::SetConnectionDialogBypassForTesting(false);
-
-  const std::string script =
-      "openUdp({remoteAddress: '127.0.0.1', remotePort: 993})";
-
-  EXPECT_EQ("openUdp failed: NetworkError: Network error.",
-            EvalJs(shell(), script));
-  histogram_tester.ExpectBucketCount(
-      kPermissionDeniedHistogramName,
-      blink::mojom::DirectSocketFailureType::kUserDialog, 1);
-}
-
 // Remote address should be provided or TEST will fail with NotAllowedError. In
 // actual use scenario, it can be obtained from the user's input in connection
 // dialog.
@@ -843,8 +774,11 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
 
   const std::string script = "openUdp({remotePort: 993})";
 
-  EXPECT_EQ("openUdp failed: NetworkError: Network error.",
-            EvalJs(shell(), script));
+  const std::string expected_result =
+      "openUdp failed: TypeError: Failed to execute 'openUDPSocket' on "
+      "'Navigator': Incomplete remote address specified.";
+
+  EXPECT_EQ(expected_result, EvalJs(shell(), script));
 }
 
 IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
@@ -853,31 +787,27 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
 
   const std::string script = "openUdp({remoteAddress: '127.0.0.1'})";
 
-  EXPECT_EQ(
+  const std::string expected_result =
       "openUdp failed: TypeError: Failed to execute 'openUDPSocket' on "
-      "'Navigator': remotePort was not specified.",
-      EvalJs(shell(), script));
+      "'Navigator': Incomplete remote address specified.";
+
+  EXPECT_EQ(expected_result, EvalJs(shell(), script));
 }
 
 IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,
-                       OpenUdp_RestrictedByEnterprisePolicies) {
+                       OpenUdp_EitherRemoteAddressOrLocalAddress) {
   EXPECT_TRUE(NavigateToURL(shell(), GetTestOpenPageURL()));
 
-  base::HistogramTester histogram_tester;
-  histogram_tester.ExpectBucketCount(
-      kPermissionDeniedHistogramName,
-      blink::mojom::DirectSocketFailureType::kEnterprisePolicy, 0);
-
-  DirectSocketsServiceImpl::SetEnterpriseManagedForTesting(true);
-
   const std::string script =
-      "openUdp({remoteAddress: '127.0.0.1', remotePort: 993})";
+      "openUdp({remoteAddress: '127.0.0.1', remotePort: 993, localAddress: "
+      "'127.0.0.1', localPort: 993})";
 
-  EXPECT_EQ("openUdp failed: NetworkError: Network error.",
-            EvalJs(shell(), script));
-  histogram_tester.ExpectBucketCount(
-      kPermissionDeniedHistogramName,
-      blink::mojom::DirectSocketFailureType::kEnterprisePolicy, 1);
+  const std::string expected_result =
+      "openUdp failed: TypeError: Failed to execute 'openUDPSocket' on "
+      "'Navigator': Both remote address and local address specified -- "
+      "please choose only one.";
+
+  EXPECT_EQ(expected_result, EvalJs(shell(), script));
 }
 
 IN_PROC_BROWSER_TEST_F(DirectSocketsOpenBrowserTest,

@@ -4,6 +4,7 @@
 
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
 
+import {getSizeStats} from '../../common/js/api.js';
 import {AsyncUtil} from '../../common/js/async_util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {xfm} from '../../common/js/xfm.js';
@@ -19,6 +20,7 @@ import {TAG_NAME as DriveLowSpaceBanner} from './ui/banners/drive_low_space_bann
 import {TAG_NAME as DriveOfflinePinningBannerTagName} from './ui/banners/drive_offline_pinning_banner.js';
 import {TAG_NAME as DriveWelcomeBannerTagName} from './ui/banners/drive_welcome_banner.js';
 import {TAG_NAME as HoldingSpaceWelcomeBannerTagName} from './ui/banners/holding_space_welcome_banner.js';
+import {TAG_NAME as InvalidUSBFileSystemBanner} from './ui/banners/invalid_usb_filesystem_banner.js';
 import {TAG_NAME as LocalDiskLowSpaceBannerTagName} from './ui/banners/local_disk_low_space_banner.js';
 import {TAG_NAME as PhotosWelcomeBannerTagName} from './ui/banners/photos_welcome_banner.js';
 import {TAG_NAME as SharedWithCrostiniPluginVmBanner} from './ui/banners/shared_with_crostini_pluginvm_banner.js';
@@ -268,6 +270,7 @@ export class BannerController extends EventTarget {
         PhotosWelcomeBannerTagName,
       ]);
       this.setStateBannersInOrder([
+        InvalidUSBFileSystemBanner,
         SharedWithCrostiniPluginVmBanner,
         TrashBannerTagName,
       ]);
@@ -305,6 +308,13 @@ export class BannerController extends EventTarget {
           remainingSize:
               this.volumeSizeStats_[this.currentVolume_.volumeId].remainingSize
         })
+      });
+
+      // Register a custom filter that checks if the removable device has an
+      // error and show the invalid USB file system banner.
+      this.registerCustomBannerFilter_(InvalidUSBFileSystemBanner, {
+        shouldShow: () => !!(this.currentVolume_ && this.currentVolume_.error),
+        context: () => ({error: this.currentVolume_.error}),
       });
     }
 
@@ -899,18 +909,6 @@ export function isBelowThreshold(threshold, sizeStats) {
     return false;
   }
   return true;
-}
-
-/**
- * Wrap the chrome.fileManagerPrivate.getSizeStats function in an async/await
- * compatible style.
- * @param {string} volumeId The volumeId to retrieve the size stats for.
- * @returns {!Promise<(!chrome.fileManagerPrivate.MountPointSizeStats|undefined)>}
- */
-async function getSizeStats(volumeId) {
-  return new Promise((resolve) => {
-    chrome.fileManagerPrivate.getSizeStats(volumeId, resolve);
-  });
 }
 
 /**

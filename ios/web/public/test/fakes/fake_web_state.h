@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_TEST_FAKES_FAKE_WEB_STATE_H_
 #define IOS_WEB_PUBLIC_TEST_FAKES_FAKE_WEB_STATE_H_
 
+#import <Foundation/Foundation.h>
+
 #include <stdint.h>
 
 #include <memory>
@@ -22,8 +24,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
-@class NSURLRequest;
-@class NSURLResponse;
 class SessionCertificatePolicyCache;
 
 namespace web {
@@ -46,6 +46,7 @@ class FakeWebState : public WebState {
   UIView* GetView() override;
   void DidCoverWebContent() override;
   void DidRevealWebContent() override;
+  base::Time GetLastActiveTime() const final;
   void WasShown() override;
   void WasHidden() override;
   void SetKeepRenderProcessAlive(bool keep_alive) override;
@@ -78,9 +79,9 @@ class FakeWebState : public WebState {
   bool IsBeingDestroyed() const override;
   const FaviconStatus& GetFaviconStatus() const final;
   void SetFaviconStatus(const FaviconStatus& favicon_status) final;
+  int GetNavigationItemCount() const override;
   const GURL& GetVisibleURL() const override;
   const GURL& GetLastCommittedURL() const override;
-  const base::Time GetLastCommittedTimestamp() const override;
   GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const override;
   base::CallbackListSubscription AddScriptCommandCallback(
       const ScriptCommandCallback& callback,
@@ -101,6 +102,8 @@ class FakeWebState : public WebState {
   void SetStateForPermission(PermissionState state,
                              Permission permission) override
       API_AVAILABLE(ios(15.0));
+  NSDictionary<NSNumber*, NSNumber*>* GetStatesForAllPermissions()
+      const override API_AVAILABLE(ios(15.0));
 
   void AddPolicyDecider(WebStatePolicyDecider* decider) override;
   void RemovePolicyDecider(WebStatePolicyDecider* decider) override;
@@ -113,6 +116,7 @@ class FakeWebState : public WebState {
   void CloseMediaPresentations() override;
 
   // Setters for test data.
+  void SetLastActiveTime(base::Time time);
   void SetBrowserState(BrowserState* browser_state);
   void SetIsRealized(bool value);
   void SetJSInjectionReceiver(CRWJSInjectionReceiver* injection_receiver);
@@ -121,7 +125,7 @@ class FakeWebState : public WebState {
   void SetContentsMimeType(const std::string& mime_type);
   void SetLoading(bool is_loading);
   void SetCurrentURL(const GURL& url);
-  void SetCurrentTimestamp(const base::Time& timestamp);
+  void SetNavigationItemCount(int count);
   void SetVisibleURL(const GURL& url);
   void SetTrustLevel(URLVerificationTrustLevel trust_level);
   void SetNavigationManager(
@@ -181,9 +185,10 @@ class FakeWebState : public WebState {
   bool has_opener_ = false;
   bool can_take_snapshot_ = false;
   bool is_closed_ = false;
+  base::Time last_active_time_ = base::Time::Now();
+  int navigation_item_count_ = 0;
   FaviconStatus favicon_status_;
   GURL url_;
-  base::Time timestamp_;
   std::u16string title_;
   std::u16string last_executed_javascript_;
   URLVerificationTrustLevel trust_level_ = kAbsolute;
@@ -197,9 +202,8 @@ class FakeWebState : public WebState {
   base::RepeatingCallbackList<ScriptCommandCallbackSignature> callback_list_;
   absl::optional<ScriptCommandCallback> last_added_callback_;
   std::string last_command_prefix_;
-  PermissionState camera_permission_state_ = PermissionState::NOT_ACCESSIBLE;
-  PermissionState microphone_permission_state_ =
-      PermissionState::NOT_ACCESSIBLE;
+  PermissionState camera_permission_state_ = PermissionStateNotAccessible;
+  PermissionState microphone_permission_state_ = PermissionStateNotAccessible;
 
   // A list of observers notified when page state changes. Weak references.
   base::ObserverList<WebStateObserver, true>::Unchecked observers_;

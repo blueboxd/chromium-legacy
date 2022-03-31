@@ -132,23 +132,6 @@ const user_manager::User* GetUserFromBrowserContext(
   return user;
 }
 
-ash::WallpaperType GetWallpaperType(wallpaper_private::WallpaperSource source) {
-  switch (source) {
-    case wallpaper_private::WALLPAPER_SOURCE_ONLINE:
-      return ash::WallpaperType::kOnline;
-    case wallpaper_private::WALLPAPER_SOURCE_DAILY:
-      return ash::WallpaperType::kDaily;
-    case wallpaper_private::WALLPAPER_SOURCE_CUSTOM:
-      return ash::WallpaperType::kCustomized;
-    case wallpaper_private::WALLPAPER_SOURCE_OEM:
-      return ash::WallpaperType::kDefault;
-    case wallpaper_private::WALLPAPER_SOURCE_THIRDPARTY:
-      return ash::WallpaperType::kThirdParty;
-    default:
-      return ash::WallpaperType::kOnline;
-  }
-}
-
 // Helper function to parse the data from a |backdrop::Image| object and save it
 // to |image_info_out|.
 void ParseImageInfo(
@@ -170,7 +153,7 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
 #define SET_STRING(id, idr) \
-  dict->SetString(id, l10n_util::GetStringUTF16(idr))
+  dict->SetStringKey(id, l10n_util::GetStringUTF8(idr))
   SET_STRING("webFontFamily", IDS_WEB_FONT_FAMILY);
   SET_STRING("webFontSize", IDS_WEB_FONT_SIZE);
   SET_STRING("wallpaperAppName", IDS_WALLPAPER_MANAGER_APP_NAME);
@@ -212,18 +195,18 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, dict.get());
 
-  dict->SetBoolean("isOEMDefaultWallpaper", IsOEMDefaultWallpaper());
-  dict->SetString("canceledWallpaper",
-                  wallpaper_api_util::kCancelWallpaperMessage);
-  dict->SetString(
+  dict->SetBoolKey("isOEMDefaultWallpaper", IsOEMDefaultWallpaper());
+  dict->SetStringKey("canceledWallpaper",
+                     wallpaper_api_util::kCancelWallpaperMessage);
+  dict->SetStringKey(
       "highResolutionSuffix",
       ash::WallpaperController::Get()->GetBackdropWallpaperSuffix());
 
   auto info =
       WallpaperControllerClientImpl::Get()->GetActiveUserWallpaperInfo();
-  dict->SetString("currentWallpaper", info.location);
-  dict->SetString("currentWallpaperLayout",
-                  wallpaper_api_util::GetLayoutString(info.layout));
+  dict->SetStringKey("currentWallpaper", info.location);
+  dict->SetStringKey("currentWallpaperLayout",
+                     wallpaper_api_util::GetLayoutString(info.layout));
 
   return RespondNow(
       OneArgument(base::Value::FromUniquePtrValue(std::move(dict))));
@@ -246,7 +229,7 @@ void WallpaperPrivateGetSyncSettingFunction::CheckSyncServiceStatus() {
     // It's most likely that the wallpaper synchronization is enabled (It's
     // enabled by default so unless the user disables it explicitly it remains
     // enabled).
-    dict->SetBoolean(kSyncThemes, true);
+    dict->SetBoolKey(kSyncThemes, true);
     Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(dict))));
     return;
   }
@@ -256,7 +239,7 @@ void WallpaperPrivateGetSyncSettingFunction::CheckSyncServiceStatus() {
       SyncServiceFactory::GetForProfile(profile);
   if (!sync_service) {
     // Sync flag is disabled (perhaps prohibited by policy).
-    dict->SetBoolean(kSyncThemes, false);
+    dict->SetBoolKey(kSyncThemes, false);
     Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(dict))));
     return;
   }
@@ -267,14 +250,14 @@ void WallpaperPrivateGetSyncSettingFunction::CheckSyncServiceStatus() {
     // "themes sync is on" && "apps sync is on".
     bool os_wallpaper_sync_enabled = profile->GetPrefs()->GetBoolean(
         chromeos::settings::prefs::kSyncOsWallpaper);
-    dict->SetBoolean(kSyncThemes, os_wallpaper_sync_enabled);
+    dict->SetBoolKey(kSyncThemes, os_wallpaper_sync_enabled);
     Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(dict))));
     return;
   }
 
   if (!sync_service->CanSyncFeatureStart()) {
     // Sync-the-feature is disabled.
-    dict->SetBoolean(kSyncThemes, false);
+    dict->SetBoolKey(kSyncThemes, false);
     Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(dict))));
     return;
   }
@@ -282,7 +265,7 @@ void WallpaperPrivateGetSyncSettingFunction::CheckSyncServiceStatus() {
   if (sync_service->GetUserSettings()->IsFirstSetupComplete()) {
     // When sync settings categorization is disabled, wallpaper is synced as a
     // group with browser themes.
-    dict->SetBoolean(kSyncThemes,
+    dict->SetBoolKey(kSyncThemes,
                      sync_service->GetUserSettings()->GetSelectedTypes().Has(
                          syncer::UserSelectableType::kThemes));
     Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(dict))));

@@ -47,6 +47,7 @@ class SignalStorageConfigs;
 
 struct Config;
 class DatabaseMaintenanceImpl;
+class FeatureListQueryProcessor;
 class HistogramSignalHandler;
 class ModelExecutionManager;
 class ModelExecutionSchedulerImpl;
@@ -57,6 +58,8 @@ class SignalDatabaseImpl;
 class SignalFilterProcessor;
 class SignalStorageConfig;
 class SegmentScoreProvider;
+class TrainingDataCollector;
+class UkmDataManager;
 class UserActionSignalHandler;
 
 // Qualifiers used to indicate service status. One or more qualifiers can
@@ -82,6 +85,7 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
       optimization_guide::OptimizationGuideModelProvider* model_provider,
       leveldb_proto::ProtoDatabaseProvider* db_provider,
       const base::FilePath& storage_dir,
+      UkmDataManager* ukm_data_manager,
       PrefService* pref_service,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
       base::Clock* clock,
@@ -95,6 +99,7 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
           signal_db,
       std::unique_ptr<leveldb_proto::ProtoDatabase<proto::SignalStorageConfigs>>
           signal_storage_config_db,
+      UkmDataManager* ukm_data_manager,
       optimization_guide::OptimizationGuideModelProvider* model_provider,
       PrefService* pref_service,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
@@ -152,10 +157,19 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
   std::unique_ptr<SignalStorageConfig> signal_storage_config_;
   std::unique_ptr<SegmentationResultPrefs> segmentation_result_prefs_;
 
+  // The data manager is owned by the database client and is guaranteed to be
+  // kept alive until all profiles (keyed services) are destroyed. Refer to the
+  // description of UkmDataManager to know the lifetime of the objects usable
+  // from the manager.
+  raw_ptr<UkmDataManager> ukm_data_manager_;
+
   // Signal processing.
   std::unique_ptr<UserActionSignalHandler> user_action_signal_handler_;
   std::unique_ptr<HistogramSignalHandler> histogram_signal_handler_;
   std::unique_ptr<SignalFilterProcessor> signal_filter_processor_;
+
+  // Training/inference input data generation.
+  std::unique_ptr<FeatureListQueryProcessor> feature_list_query_processor_;
 
   // Segment selection.
   // TODO(shaktisahu): Determine safe destruction ordering between
@@ -165,6 +179,9 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
 
   // Segment results.
   std::unique_ptr<SegmentScoreProvider> segment_score_provider_;
+
+  // Traing data collection logic.
+  std::unique_ptr<TrainingDataCollector> training_data_collector_;
 
   // Model execution scheduling logic.
   std::unique_ptr<ModelExecutionSchedulerImpl> model_execution_scheduler_;

@@ -16,6 +16,8 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/new_window_delegate.h"
+#include "ash/public/cpp/style/color_provider.h"
+#include "ash/public/cpp/style/scoped_light_mode_as_default.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -81,6 +83,7 @@
 #include "storage/common/file_system/file_system_types.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/chromeos/styles/cros_styles.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "url/gurl.h"
 
@@ -207,6 +210,11 @@ std::string Redact(const base::FilePath& path) {
   return Redact(path.value());
 }
 
+std::string SkColorToHexString(const SkColor color) {
+  return base::StringPrintf("#%02x%02x%02x", SkColorGetR(color),
+                            SkColorGetG(color), SkColorGetB(color));
+}
+
 }  // namespace
 
 ExtensionFunction::ResponseAction
@@ -245,7 +253,8 @@ FileManagerPrivateGetPreferencesFunction::Run() {
       service->GetBoolean(arc::prefs::kArcHasAccessToRemovableMedia);
   std::vector<std::string> folder_shortcuts;
   const auto& value_list =
-      service->GetList(ash::prefs::kFilesAppFolderShortcuts)->GetList();
+      service->GetList(ash::prefs::kFilesAppFolderShortcuts)
+          ->GetListDeprecated();
   for (const base::Value& value : value_list) {
     folder_shortcuts.push_back(value.is_string() ? value.GetString() : "");
   }
@@ -979,16 +988,16 @@ FileManagerPrivateInternalGetCrostiniSharedPathsFunction::Run() {
       continue;
     }
     auto entry = std::make_unique<base::DictionaryValue>();
-    entry->SetString(
+    entry->SetStringKey(
         "fileSystemRoot",
         storage::GetExternalFileSystemRootURIString(source_url(), mount_name));
-    entry->SetString("fileSystemName", file_system_name);
-    entry->SetString("fileFullPath", full_path);
+    entry->SetStringKey("fileSystemName", file_system_name);
+    entry->SetStringKey("fileFullPath", full_path);
     // All shared paths should be directories.  Even if this is not true,
     // it is fine for foreground/js/crostini.js class to think so. We
     // verify that the paths are in fact valid directories before calling
     // seneschal/9p in GuestOsSharePath::CallSeneschalSharePath().
-    entry->SetBoolean("fileIsDirectory", true);
+    entry->SetBoolKey("fileIsDirectory", true);
     entries->Append(std::move(entry));
   }
   return RespondNow(
@@ -1265,6 +1274,20 @@ void FileManagerPrivateInternalGetRecentFilesFunction::
           *entry_definition_list))));
 }
 
+// TODO(crbug.com/1212768): Remove this once Files app SWA has fully launched.
+ExtensionFunction::ResponseAction
+FileManagerPrivateGetFrameColorFunction::Run() {
+  ash::ScopedLightModeAsDefault scoped_light_mode_as_default;
+  auto* color_provider = ash::ColorProvider::Get();
+  std::string frame_color = SkColorToHexString(SK_ColorWHITE);
+  if (color_provider) {
+    frame_color = SkColorToHexString(cros_styles::ResolveColor(
+        cros_styles::ColorName::kBgColor, color_provider->IsDarkModeEnabled(),
+        /*use_debug_color=*/false));
+  }
+  return RespondNow(OneArgument(base::Value(frame_color)));
+}
+
 ExtensionFunction::ResponseAction
 FileManagerPrivateIsTabletModeEnabledFunction::Run() {
   ash::TabletMode* tablet_mode = ash::TabletMode::Get();
@@ -1282,8 +1305,8 @@ ExtensionFunction::ResponseAction FileManagerPrivateOpenURLFunction::Run() {
     return RespondNow(
         Error("Could not get NewWindowDelegate's primary browser"));
   }
-  ash::NewWindowDelegate::GetPrimary()->OpenUrl(url,
-                                                /*from_user_interaction=*/true);
+  ash::NewWindowDelegate::GetPrimary()->OpenUrl(
+      url, ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction);
 
   return RespondNow(NoArguments());
 }

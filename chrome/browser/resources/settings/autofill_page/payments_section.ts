@@ -19,13 +19,14 @@ import '../prefs/prefs.js';
 import './credit_card_edit_dialog.js';
 import './passwords_shared_css.js';
 import './payments_list.js';
+import './virtual_card_unenroll_dialog.js';
 
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SettingsToggleButtonElement} from '../controls/settings_toggle_button.js';
 import {loadTimeData} from '../i18n_setup.js';
@@ -33,6 +34,7 @@ import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_br
 
 import {PersonalDataChangedListener} from './autofill_manager_proxy.js';
 import {PaymentsManagerImpl, PaymentsManagerProxy} from './payments_manager_proxy.js';
+import {getTemplate} from './payments_section.html.js';
 
 
 type DotsCardMenuiClickEvent = CustomEvent<{
@@ -55,6 +57,8 @@ export interface SettingsPaymentsSectionElement {
     menuClearCreditCard: HTMLElement,
     menuEditCreditCard: HTMLElement,
     menuRemoveCreditCard: HTMLElement,
+    menuAddVirtualCard: HTMLElement,
+    menuRemoveVirtualCard: HTMLElement,
     migrateCreditCards: HTMLElement,
     paymentsList: HTMLElement,
   };
@@ -69,7 +73,7 @@ export class SettingsPaymentsSectionElement extends
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -109,6 +113,7 @@ export class SettingsPaymentsSectionElement extends
       activeCreditCard_: Object,
 
       showCreditCardDialog_: Boolean,
+      showVirtualCardUnenrollDialog_: Boolean,
       migratableCreditCardsInfo_: String,
 
       /**
@@ -121,6 +126,17 @@ export class SettingsPaymentsSectionElement extends
         },
         readOnly: true,
       },
+
+      /**
+       * Whether virtual card enroll management on settings page is enabled.
+       */
+      virtualCardEnrollmentEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('virtualCardEnrollmentEnabled');
+        },
+        readOnly: true,
+      },
     };
   }
 
@@ -130,8 +146,10 @@ export class SettingsPaymentsSectionElement extends
   private userIsFidoVerifiable_: boolean;
   private activeCreditCard_: chrome.autofillPrivate.CreditCardEntry|null;
   private showCreditCardDialog_: boolean;
+  private showVirtualCardUnenrollDialog_: boolean;
   private migratableCreditCardsInfo_: string;
   private migrationEnabled_: boolean;
+  private virtualCardEnrollmentEnabled_: boolean;
   private activeDialogAnchor_: HTMLElement|null;
   private paymentsManager_: PaymentsManagerProxy =
       PaymentsManagerImpl.getInstance();
@@ -152,9 +170,10 @@ export class SettingsPaymentsSectionElement extends
 
     this.addEventListener('save-credit-card', this.saveCreditCard_);
     this.addEventListener(
-        'dots-card-menu-click', this.onCreditCardDotsMenuTap_);
+        'dots-card-menu-click', this.onCreditCardDotsMenuClick_);
     this.addEventListener(
-        'remote-card-menu-click', this.onRemoteEditCreditCardTap_);
+        'remote-card-menu-click', this.onRemoteEditCreditCardClick_);
+    this.addEventListener('unenroll-virtual-card', this.unenrollVirtualCard_);
   }
 
   connectedCallback() {
@@ -210,7 +229,7 @@ export class SettingsPaymentsSectionElement extends
   /**
    * Opens the credit card action menu.
    */
-  private onCreditCardDotsMenuTap_(e: DotsCardMenuiClickEvent) {
+  private onCreditCardDotsMenuClick_(e: DotsCardMenuiClickEvent) {
     // Copy item so dialog won't update model on cancel.
     this.activeCreditCard_ = e.detail.creditCard;
 
@@ -219,9 +238,9 @@ export class SettingsPaymentsSectionElement extends
   }
 
   /**
-   * Handles tapping on the "Add credit card" button.
+   * Handles clicking on the "Add credit card" button.
    */
-  private onAddCreditCardTap_(e: Event) {
+  private onAddCreditCardClick_(e: Event) {
     e.preventDefault();
     const date = new Date();  // Default to current month/year.
     const expirationMonth = date.getMonth() + 1;  // Months are 0 based.
@@ -241,40 +260,59 @@ export class SettingsPaymentsSectionElement extends
   }
 
   /**
-   * Handles tapping on the "Edit" credit card button.
+   * Handles clicking on the "Edit" credit card button.
    */
-  private onMenuEditCreditCardTap_(e: Event) {
+  private onMenuEditCreditCardClick_(e: Event) {
     e.preventDefault();
 
     if (this.activeCreditCard_!.metadata!.isLocal) {
       this.showCreditCardDialog_ = true;
     } else {
-      this.onRemoteEditCreditCardTap_();
+      this.onRemoteEditCreditCardClick_();
     }
 
     this.$.creditCardSharedMenu.close();
   }
 
-  private onRemoteEditCreditCardTap_() {
+  private onRemoteEditCreditCardClick_() {
     this.paymentsManager_.logServerCardLinkClicked();
     window.open(loadTimeData.getString('manageCreditCardsUrl'));
   }
 
   /**
-   * Handles tapping on the "Remove" credit card button.
+   * Handles clicking on the "Remove" credit card button.
    */
-  private onMenuRemoveCreditCardTap_() {
+  private onMenuRemoveCreditCardClick_() {
     this.paymentsManager_.removeCreditCard(this.activeCreditCard_!.guid!);
     this.$.creditCardSharedMenu.close();
     this.activeCreditCard_ = null;
   }
 
   /**
-   * Handles tapping on the "Clear copy" button for cached credit cards.
+   * Handles clicking on the "Clear copy" button for cached credit cards.
    */
-  private onMenuClearCreditCardTap_() {
+  private onMenuClearCreditCardClick_() {
     this.paymentsManager_.clearCachedCreditCard(this.activeCreditCard_!.guid!);
     this.$.creditCardSharedMenu.close();
+    this.activeCreditCard_ = null;
+  }
+
+
+  private onMenuAddVirtualCardClick_() {
+    this.paymentsManager_.addVirtualCard(this.activeCreditCard_!.guid!);
+    this.$.creditCardSharedMenu.close();
+    this.activeCreditCard_ = null;
+  }
+
+  private onMenuRemoveVirtualCardClick_() {
+    this.showVirtualCardUnenrollDialog_ = true;
+    this.$.creditCardSharedMenu.close();
+  }
+
+  private onVirtualCardUnenrollDialogClose_() {
+    this.showVirtualCardUnenrollDialog_ = false;
+    focusWithoutInk(assert(this.activeDialogAnchor_!));
+    this.activeDialogAnchor_ = null;
     this.activeCreditCard_ = null;
   }
 
@@ -351,6 +389,39 @@ export class SettingsPaymentsSectionElement extends
         this.i18n('migratableCardsInfoMultiple');
 
     return true;
+  }
+
+  private getMenuEditCardText_(isLocalCard: boolean): string {
+    return this.i18n(isLocalCard ? 'edit' : 'editServerCard');
+  }
+
+  private shouldShowAddVirtualCardButton_(): boolean {
+    if (!this.virtualCardEnrollmentEnabled_ ||
+        this.activeCreditCard_ === null ||
+        this.activeCreditCard_.metadata === null) {
+      return false;
+    }
+    return !!this.activeCreditCard_!.metadata!
+                 .isVirtualCardEnrollmentEligible &&
+        !this.activeCreditCard_!.metadata!.isVirtualCardEnrolled;
+  }
+
+  private shouldShowRemoveVirtualCardButton_(): boolean {
+    if (!this.virtualCardEnrollmentEnabled_ ||
+        this.activeCreditCard_ === null ||
+        this.activeCreditCard_.metadata === null) {
+      return false;
+    }
+    return !!this.activeCreditCard_!.metadata!
+                 .isVirtualCardEnrollmentEligible &&
+        !!this.activeCreditCard_!.metadata!.isVirtualCardEnrolled;
+  }
+
+  /**
+   * Listens for the unenroll-virtual-card event, and calls the private API.
+   */
+  private unenrollVirtualCard_(event: CustomEvent<string>) {
+    this.paymentsManager_.removeVirtualCard(event.detail);
   }
 }
 

@@ -40,8 +40,10 @@
 #import "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_inserter.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_tab_helper.h"
+#import "ios/chrome/browser/infobars/overlays/permissions_overlay_tab_helper.h"
 #import "ios/chrome/browser/infobars/overlays/translate_overlay_tab_helper.h"
 #import "ios/chrome/browser/itunes_urls/itunes_urls_handler_tab_helper.h"
+#import "ios/chrome/browser/language/url_language_histogram_factory.h"
 #import "ios/chrome/browser/link_to_text/link_to_text_tab_helper.h"
 #import "ios/chrome/browser/metrics/pageload_foreground_duration_tab_helper.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
@@ -53,6 +55,7 @@
 #import "ios/chrome/browser/passwords/well_known_change_password_tab_helper.h"
 #import "ios/chrome/browser/policy/policy_features.h"
 #import "ios/chrome/browser/policy_url_blocking/policy_url_blocking_tab_helper.h"
+#import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_query_manager.h"
@@ -208,4 +211,13 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
 
   WebSessionStateTabHelper::CreateForWebState(web_state);
   WebPerformanceMetricsTabHelper::CreateForWebState(web_state);
+
+  OfflinePageTabHelper::CreateForWebState(
+      web_state, ReadingListModelFactory::GetForBrowserState(browser_state));
+  PermissionsOverlayTabHelper::CreateForWebState(web_state);
+
+  language::IOSLanguageDetectionTabHelper::CreateForWebState(
+      web_state,
+      UrlLanguageHistogramFactory::GetForBrowserState(browser_state));
+  ChromeIOSTranslateClient::CreateForWebState(web_state);
 }

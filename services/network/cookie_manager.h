@@ -41,7 +41,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
   // `url_request_context->cookie_store()`.
   CookieManager(
       net::URLRequestContext* url_request_context,
-      const FirstPartySets* first_party_sets,
+      FirstPartySets* const first_party_sets,
       scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store,
       mojom::CookieManagerParamsPtr params);
 
@@ -154,6 +154,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
       DeleteCanonicalCookieCallback callback,
       absl::optional<net::CookiePartitionKey> cookie_partition_key,
       absl::optional<net::CookiePartitionKey> fps_cookie_partition_key);
+
+  void OnGotCookiePartitionKeyCollection(
+      const GURL& url,
+      const net::CookieOptions& cookie_options,
+      GetCookieListCallback callback,
+      net::CookiePartitionKeyCollection cookie_partition_key_collection);
 
   const raw_ptr<net::CookieStore> cookie_store_;
   scoped_refptr<SessionCleanupCookieStore> session_cleanup_cookie_store_;

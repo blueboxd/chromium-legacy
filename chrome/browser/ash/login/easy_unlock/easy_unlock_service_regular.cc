@@ -264,10 +264,10 @@ void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
     device_list->Append(std::move(dict));
   }
 
-  if (device_list->GetList().size() != 2u) {
+  if (device_list->GetListDeprecated().size() != 2u) {
     PA_LOG(ERROR) << "There should only be 2 devices persisted, the host and "
                      "the client, but there are: "
-                  << device_list->GetList().size();
+                  << device_list->GetListDeprecated().size();
     NOTREACHED();
   }
 
@@ -282,7 +282,7 @@ void EasyUnlockServiceRegular::SetStoredRemoteDevices(
 
   DictionaryPrefUpdate pairing_update(profile()->GetPrefs(),
                                       prefs::kEasyUnlockPairing);
-  if (devices.GetList().empty())
+  if (devices.GetListDeprecated().empty())
     pairing_update->RemoveKey(kKeyDevices);
   else
     pairing_update->SetKey(kKeyDevices, devices.Clone());
@@ -362,16 +362,12 @@ void EasyUnlockServiceRegular::InitializeInternal() {
   multidevice_setup_client_->AddObserver(this);
   StartFeatureUsageMetrics();
 
-  proximity_auth::ScreenlockBridge::Get()->AddObserver(this);
-
   LoadRemoteDevices();
 }
 
 void EasyUnlockServiceRegular::ShutdownInternal() {
   pref_manager_.reset();
   notification_controller_.reset();
-
-  proximity_auth::ScreenlockBridge::Get()->RemoveObserver(this);
 
   registrar_.RemoveAll();
 
@@ -508,6 +504,8 @@ void EasyUnlockServiceRegular::ShowNotificationIfNewDevicePresent(
 
 void EasyUnlockServiceRegular::OnScreenDidLock(
     proximity_auth::ScreenlockBridge::LockHandler::ScreenType screen_type) {
+  EasyUnlockService::OnScreenDidLock(screen_type);
+
   set_will_authenticate_using_easy_unlock(false);
   lock_screen_last_shown_timestamp_ = base::TimeTicks::Now();
 }

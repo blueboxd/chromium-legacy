@@ -60,7 +60,7 @@ int NumberOfProcessors() {
 
   int num_cpus = static_cast<int>(res);
 
-#if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX)
   // Restrict the CPU count based on the process's CPU affinity mask, if
   // available.
   cpu_set_t* cpu_set = CPU_ALLOC(num_cpus);
@@ -70,7 +70,7 @@ int NumberOfProcessors() {
     num_cpus = CPU_COUNT_S(cpu_set_size, cpu_set);
   }
   CPU_FREE(cpu_set);
-#endif  // BUILDFLAG(IS_LINUX) && !defined(OS_CHROMEOS
+#endif  // BUILDFLAG(IS_LINUX)
 
   return num_cpus;
 }
@@ -158,10 +158,16 @@ int64_t SysInfo::AmountOfVirtualMemory() {
 int64_t SysInfo::AmountOfFreeDiskSpace(const FilePath& path) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
+#if BUILDFLAG(IS_CHROMEOS)
+  int64_t ret = GetFreeDiskSpaceFromSpaced(path);
+  if (ret != -1)
+    return ret;
+#endif
 
   int64_t available;
   if (!GetDiskSpaceInfo(path, &available, nullptr))
     return -1;
+
   return available;
 }
 
@@ -170,9 +176,16 @@ int64_t SysInfo::AmountOfTotalDiskSpace(const FilePath& path) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
+#if BUILDFLAG(IS_CHROMEOS)
+  int64_t ret = GetTotalDiskSpaceFromSpaced(path);
+  if (ret != -1)
+    return ret;
+#endif
+
   int64_t total;
   if (!GetDiskSpaceInfo(path, nullptr, &total))
     return -1;
+
   return total;
 }
 

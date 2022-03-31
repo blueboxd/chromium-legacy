@@ -187,6 +187,13 @@ Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
           gfx::Rect(), profile, true /* user_gesture */)));
 }
 
+void SetWebContentsActingAsApp(content::WebContents* contents,
+                               const AppId& app_id) {
+  auto* helper = WebAppTabHelper::FromWebContents(contents);
+  helper->SetAppId(app_id);
+  helper->set_acting_as_app(true);
+}
+
 void SetAppPrefsForWebContents(content::WebContents* web_contents) {
   web_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
   web_contents->SyncRendererPrefs();
@@ -216,8 +223,8 @@ std::unique_ptr<AppBrowserController> MaybeCreateAppBrowserController(
           provider->system_web_app_manager().GetSystemApp(*system_app_type);
     }
     const bool has_tab_strip =
-        (system_app && system_app->ShouldHaveTabStrip()) ||
-        (base::FeatureList::IsEnabled(features::kDesktopPWAsTabStrip) &&
+        !browser->is_type_app_popup() &&
+        ((system_app && system_app->ShouldHaveTabStrip()) ||
          provider->registrar().IsTabbedWindowModeEnabled(app_id));
     controller = std::make_unique<WebAppBrowserController>(
         *provider, browser, app_id, system_app, has_tab_strip);
@@ -262,6 +269,7 @@ Browser* CreateWebApplicationWindow(Profile* profile,
   browser_params.omit_from_session_restore = omit_from_session_restore;
   browser_params.can_resize = can_resize;
   browser_params.can_maximize = can_maximize;
+  browser_params.are_tab_groups_enabled = false;
   return Browser::Create(browser_params);
 }
 
@@ -323,7 +331,7 @@ content::WebContents* NavigateWebAppUsingParams(const std::string& app_id,
       nav_params.navigated_or_inserted_contents;
 
   if (web_contents) {
-    WebAppTabHelper::FromWebContents(web_contents)->SetAppId(app_id);
+    SetWebContentsActingAsApp(web_contents, app_id);
     SetAppPrefsForWebContents(web_contents);
   }
 

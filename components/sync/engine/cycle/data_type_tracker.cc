@@ -12,8 +12,8 @@
 #include "base/check.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
+#include "components/sync/base/features.h"
 #include "components/sync/engine/polling_constants.h"
-#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/protocol/data_type_progress_marker.pb.h"
 
 namespace syncer {
@@ -164,7 +164,7 @@ DataTypeTracker::DataTypeTracker(ModelType type)
   DCHECK_GE(local_change_nudge_delay_, kMinLocalChangeNudgeDelay);
 
   if (CanGetCommitsFromExtensions(type) &&
-      base::FeatureList::IsEnabled(switches::kSyncExtensionTypesThrottling)) {
+      base::FeatureList::IsEnabled(kSyncExtensionTypesThrottling)) {
     quota_ = std::make_unique<CommitQuota>(kInitialQuotaForExtensionTypes,
                                            kRefillIntervalForExtensionTypes);
   }

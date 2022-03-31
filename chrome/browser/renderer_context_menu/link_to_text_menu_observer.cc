@@ -73,7 +73,8 @@ std::vector<std::string> GetAggregatedSelectors(
 // static
 std::unique_ptr<LinkToTextMenuObserver> LinkToTextMenuObserver::Create(
     RenderViewContextMenuProxy* proxy,
-    content::RenderFrameHost* render_frame_host) {
+    content::RenderFrameHost* render_frame_host,
+    CompletionCallback callback) {
   // WebContents can be null in tests.
   content::WebContents* web_contents = proxy->GetWebContents();
   if (web_contents && extensions::ProcessManager::Get(
@@ -84,20 +85,23 @@ std::unique_ptr<LinkToTextMenuObserver> LinkToTextMenuObserver::Create(
   }
 
   DCHECK(render_frame_host);
-  return base::WrapUnique(new LinkToTextMenuObserver(proxy, render_frame_host));
+  return base::WrapUnique(new LinkToTextMenuObserver(proxy, render_frame_host,
+                                                     std::move(callback)));
 }
 
 LinkToTextMenuObserver::LinkToTextMenuObserver(
     RenderViewContextMenuProxy* proxy,
-    content::RenderFrameHost* render_frame_host) {
-  proxy_ = proxy;
-  render_frame_host_ = render_frame_host;
-}
+    content::RenderFrameHost* render_frame_host,
+    CompletionCallback callback)
+    : proxy_(proxy),
+      render_frame_host_(render_frame_host),
+      completion_callback_(std::move(callback)) {}
+
 LinkToTextMenuObserver::~LinkToTextMenuObserver() = default;
 
 void LinkToTextMenuObserver::InitMenu(
     const content::ContextMenuParams& params) {
-  link_needs_generation_ = !params.selection_text.empty();
+  open_from_new_selection_ = !params.selection_text.empty();
   raw_url_ = params.page_url;
   if (params.page_url.has_ref()) {
     GURL::Replacements replacements;
@@ -107,23 +111,28 @@ void LinkToTextMenuObserver::InitMenu(
     url_ = params.page_url;
   }
 
-  proxy_->AddMenuItem(
-      IDC_CONTENT_CONTEXT_COPYLINKTOTEXT,
-      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_COPYLINKTOTEXT));
-  if (params.opened_from_highlight) {
+  // It is possible that there is a new text selection on top of a highlight, in
+  // which case, both open_from_new_selection_ and opened_from_highlight are
+  // true. Consequently, a context menu for new text selection is created.
+  if (open_from_new_selection_) {
+    proxy_->AddMenuItem(
+        IDC_CONTENT_CONTEXT_COPYLINKTOTEXT,
+        l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_COPYLINKTOTEXT));
+    RequestLinkGeneration();
+  } else if (params.opened_from_highlight) {
+    proxy_->AddMenuItem(
+        IDC_CONTENT_CONTEXT_RESHARELINKTOTEXT,
+        l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_RESHARELINKTOTEXT));
     proxy_->AddMenuItem(
         IDC_CONTENT_CONTEXT_REMOVELINKTOTEXT,
         l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_REMOVELINKTOTEXT));
-  }
-
-  if (link_needs_generation_) {
-    RequestLinkGeneration();
   }
 }
 
 bool LinkToTextMenuObserver::IsCommandIdSupported(int command_id) {
   return command_id == IDC_CONTENT_CONTEXT_COPYLINKTOTEXT ||
-         command_id == IDC_CONTENT_CONTEXT_REMOVELINKTOTEXT;
+         command_id == IDC_CONTENT_CONTEXT_REMOVELINKTOTEXT ||
+         command_id == IDC_CONTENT_CONTEXT_RESHARELINKTOTEXT;
 }
 
 bool LinkToTextMenuObserver::IsCommandIdEnabled(int command_id) {
@@ -132,7 +141,7 @@ bool LinkToTextMenuObserver::IsCommandIdEnabled(int command_id) {
 
   // If a link generation was needed, only enable the command if a link was
   // successfully generated.
-  if (link_needs_generation_) {
+  if (open_from_new_selection_) {
     return generated_link_.has_value();
   }
 
@@ -144,15 +153,20 @@ void LinkToTextMenuObserver::ExecuteCommand(int command_id) {
   // This should only be called for the command for copying link to text.
   DCHECK(IsCommandIdSupported(command_id));
 
+  execute_command_pending_ = false;
+
   if (command_id == IDC_CONTENT_CONTEXT_COPYLINKTOTEXT) {
-    if (!link_needs_generation_) {
-      ReshareLink();
-    } else {
-      CopyLinkToClipboard();
-    }
+    ExecuteCopyLinkToText();
+  } else if (command_id == IDC_CONTENT_CONTEXT_RESHARELINKTOTEXT) {
+    ReshareLink();
   } else if (command_id == IDC_CONTENT_CONTEXT_REMOVELINKTOTEXT) {
     RemoveHighlights();
   }
+}
+
+void LinkToTextMenuObserver::OnMenuClosed() {
+  is_menu_closed_ = true;
+  NotifyLinkToTextMenuCompleted();
 }
 
 void LinkToTextMenuObserver::OnRequestLinkGenerationCompleted(
@@ -166,10 +180,11 @@ void LinkToTextMenuObserver::OnRequestLinkGenerationCompleted(
   shared_highlighting::LogLinkRequestedBeforeStatus(status, ready_status);
   if (status == LinkGenerationStatus::kSuccess) {
     DCHECK_EQ(error, LinkGenerationError::kNone);
-    shared_highlighting::LogRequestedSuccessMetrics();
+    shared_highlighting::LogRequestedSuccessMetrics(
+        render_frame_host_->GetPageUkmSourceId());
   } else {
     DCHECK_NE(error, LinkGenerationError::kNone);
-    shared_highlighting::LogRequestedFailureMetrics(error);
+    CompleteWithError(error);
 
     // If there is no valid selector, leave the menu item disabled.
     return;
@@ -220,9 +235,9 @@ void LinkToTextMenuObserver::StartLinkGenerationRequestWithTimeout() {
   base::TimeDelta timeout_length_ms = base::Milliseconds(
       shared_highlighting::GetPreemptiveLinkGenTimeoutLengthMs());
 
-  // Make a call to the renderer to generate a string that uniquely represents
-  // the selected text and any context around the text to distinguish it from
-  // the rest of the contents. |RequestSelector| will call a
+  // Make a call to the renderer to request generated selector that uniquely
+  // represents the selected text and any context around the text to distinguish
+  // it from the rest of the contents. |RequestSelector| will call a
   // |OnRequestLinkGenerationCompleted| callback with the generated string if it
   // succeeds or an empty string if it fails, along with error code and whether
   // the generation was completed at the time of the request.
@@ -236,16 +251,10 @@ void LinkToTextMenuObserver::StartLinkGenerationRequestWithTimeout() {
       timeout_length_ms);
 }
 
-void LinkToTextMenuObserver::CopyLinkToClipboard() {
-  std::unique_ptr<ui::DataTransferEndpoint> data_transfer_endpoint =
-      !render_frame_host_->GetBrowserContext()->IsOffTheRecord()
-          ? std::make_unique<ui::DataTransferEndpoint>(
-                render_frame_host_->GetMainFrame()->GetLastCommittedOrigin())
-          : nullptr;
+void LinkToTextMenuObserver::ExecuteCopyLinkToText() {
+  DCHECK(generated_link_.has_value());
 
-  ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste,
-                                std::move(data_transfer_endpoint));
-  scw.WriteText(base::UTF8ToUTF16(generated_link_.value()));
+  CopyTextToClipboard(generated_link_.value());
 
   LogDesktopLinkGenerationCopiedLinkType(
       shared_highlighting::LinkGenerationCopiedLinkType::
@@ -255,6 +264,9 @@ void LinkToTextMenuObserver::CopyLinkToClipboard() {
   feature_engagement::TrackerFactory::GetForBrowserContext(
       proxy_->GetWebContents()->GetBrowserContext())
       ->NotifyEvent("iph_desktop_shared_highlighting_used");
+
+  execute_command_pending_ = false;
+  NotifyLinkToTextMenuCompleted();
 }
 
 void LinkToTextMenuObserver::Timeout() {
@@ -269,7 +281,11 @@ void LinkToTextMenuObserver::Timeout() {
 
 void LinkToTextMenuObserver::CompleteWithError(LinkGenerationError error) {
   is_generation_complete_ = true;
-  shared_highlighting::LogRequestedFailureMetrics(error);
+  shared_highlighting::LogRequestedFailureMetrics(
+      render_frame_host_->GetPageUkmSourceId(), error);
+
+  execute_command_pending_ = false;
+  NotifyLinkToTextMenuCompleted();
 }
 
 void LinkToTextMenuObserver::ReshareLink() {
@@ -327,31 +343,28 @@ void LinkToTextMenuObserver::ReshareLink() {
 
 void LinkToTextMenuObserver::OnGetExistingSelectorsComplete(
     const std::vector<std::string>& aggregated_selectors) {
-  std::unique_ptr<ui::DataTransferEndpoint> data_transfer_endpoint =
-      !render_frame_host_->GetBrowserContext()->IsOffTheRecord()
-          ? std::make_unique<ui::DataTransferEndpoint>(
-                render_frame_host_->GetMainFrame()->GetLastCommittedOrigin())
-          : nullptr;
-
-  ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste,
-                                std::move(data_transfer_endpoint));
-
   GURL url_to_share =
       shared_highlighting::RemoveFragmentSelectorDirectives(url_);
   url_to_share =
       shared_highlighting::AppendSelectors(url_to_share, aggregated_selectors);
 
-  scw.WriteText(base::UTF8ToUTF16(url_to_share.spec()));
+  CopyTextToClipboard(url_to_share.spec());
 
   LogDesktopLinkGenerationCopiedLinkType(
       shared_highlighting::LinkGenerationCopiedLinkType::
           kCopiedFromExistingHighlight);
+
+  execute_command_pending_ = false;
+  NotifyLinkToTextMenuCompleted();
 }
 
 void LinkToTextMenuObserver::RemoveHighlights() {
   // Remove highlights from all frames in the primary page.
   proxy_->GetWebContents()->GetMainFrame()->ForEachRenderFrameHost(
       base::BindRepeating(RemoveHighlightsInFrame));
+
+  execute_command_pending_ = false;
+  NotifyLinkToTextMenuCompleted();
 }
 
 mojo::Remote<blink::mojom::TextFragmentReceiver>&
@@ -361,4 +374,25 @@ LinkToTextMenuObserver::GetRemote() {
         remote_.BindNewPipeAndPassReceiver());
   }
   return remote_;
+}
+
+void LinkToTextMenuObserver::CopyTextToClipboard(const std::string& text) {
+  std::unique_ptr<ui::DataTransferEndpoint> data_transfer_endpoint =
+      !render_frame_host_->GetBrowserContext()->IsOffTheRecord()
+          ? std::make_unique<ui::DataTransferEndpoint>(
+                render_frame_host_->GetMainFrame()->GetLastCommittedOrigin())
+          : nullptr;
+
+  ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste,
+                                std::move(data_transfer_endpoint));
+  scw.WriteText(base::UTF8ToUTF16(text));
+}
+
+void LinkToTextMenuObserver::NotifyLinkToTextMenuCompleted() {
+  // LinkToTextMenuObserver is not needed anymore if menu is closed and no
+  // commands are being executed.
+  if (is_menu_closed_ && !execute_command_pending_) {
+    // Calling completion callback will destroy this object.
+    std::move(completion_callback_).Run();
+  }
 }

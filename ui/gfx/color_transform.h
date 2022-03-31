@@ -9,12 +9,12 @@
 #include <string>
 
 #include "ui/gfx/color_space.h"
+#include "ui/gfx/color_space_export.h"
 #include "ui/gfx/geometry/point3_f.h"
-#include "ui/gfx/gfx_export.h"
 
 namespace gfx {
 
-class GFX_EXPORT ColorTransform {
+class COLOR_SPACE_EXPORT ColorTransform {
  public:
   struct Options {
     // Used in testing to verify that optimizations have no effect.
@@ -23,6 +23,12 @@ class GFX_EXPORT ColorTransform {
     // Used to adjust the transfer and range adjust matrices.
     uint32_t src_bit_depth = kDefaultBitDepth;
     uint32_t dst_bit_depth = kDefaultBitDepth;
+
+    // If set to true, then PQ and HLS inputs are tone mapped to fit into
+    // the SDR range.
+    // TODO(https://crbug.com/1286076): Make this take into account
+    // `dst_max_luminance_relative`.
+    bool tone_map_pq_and_hlg_to_sdr = false;
 
     // Used for tone mapping and for interpreting color spaces whose
     // definition depends on an SDR white point.

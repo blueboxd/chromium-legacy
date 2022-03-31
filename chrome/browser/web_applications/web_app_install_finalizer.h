@@ -12,12 +12,13 @@
 #include "base/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
-#include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_system_web_app_data.h"
 #include "chrome/browser/web_applications/web_app_uninstall_job.h"
+#include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -33,8 +34,10 @@ class WebAppSyncBridge;
 class WebAppUiManager;
 class WebApp;
 class WebAppIconManager;
+class WebAppInstallManager;
 class WebAppPolicyManager;
 class WebAppRegistrar;
+class WebAppTranslationManager;
 class WebAppUninstallJob;
 enum class WebAppUninstallJobResult;
 
@@ -44,7 +47,9 @@ enum class WebAppUninstallJobResult;
 class WebAppInstallFinalizer {
  public:
   using InstallFinalizedCallback =
-      base::OnceCallback<void(const AppId& app_id, InstallResultCode code)>;
+      base::OnceCallback<void(const AppId& app_id,
+                              webapps::InstallResultCode code,
+                              OsHooksErrors os_hooks_errors)>;
   using UninstallWebAppCallback = base::OnceCallback<void(bool uninstalled)>;
   using RepeatingUninstallCallback =
       base::RepeatingCallback<void(const AppId& app_id, bool uninstalled)>;
@@ -62,11 +67,19 @@ class WebAppInstallFinalizer {
     absl::optional<WebAppChromeOsData> chromeos_data;
     absl::optional<WebAppSystemWebAppData> system_web_app_data;
     absl::optional<AppId> parent_app_id;
+
+    // If true, OsIntegrationManager::InstallOsHooks won't be called at all,
+    // meaning that all other OS Hooks related parameters below will be ignored.
+    bool bypass_os_hooks = false;
+
+    // These OS shortcut fields can't be true if |locally_installed| is false.
+    // They only have an effect when |bypass_os_hooks| is false.
+    bool add_to_applications_menu = true;
+    bool add_to_desktop = true;
+    bool add_to_quick_launch_bar = true;
   };
 
-  WebAppInstallFinalizer(Profile* profile,
-                         WebAppIconManager* icon_manager,
-                         WebAppPolicyManager* policy_manager);
+  explicit WebAppInstallFinalizer(Profile* profile);
   WebAppInstallFinalizer(const WebAppInstallFinalizer&) = delete;
   WebAppInstallFinalizer& operator=(const WebAppInstallFinalizer&) = delete;
   virtual ~WebAppInstallFinalizer();
@@ -138,10 +151,14 @@ class WebAppInstallFinalizer {
   void Start();
   void Shutdown();
 
-  void SetSubsystems(WebAppRegistrar* registrar,
+  void SetSubsystems(WebAppInstallManager* install_manager,
+                     WebAppRegistrar* registrar,
                      WebAppUiManager* ui_manager,
                      WebAppSyncBridge* sync_bridge,
-                     OsIntegrationManager* os_integration_manager);
+                     OsIntegrationManager* os_integration_manager,
+                     WebAppIconManager* icon_manager,
+                     WebAppPolicyManager* policy_manager,
+                     WebAppTranslationManager* translation_manager);
 
   virtual void SetRemoveSourceCallbackForTesting(
       base::RepeatingCallback<void(const AppId&)>);
@@ -174,14 +191,24 @@ class WebAppInstallFinalizer {
       std::unique_ptr<WebApp> web_app,
       CommitCallback commit_callback);
 
-  void OnIconsDataWritten(
-      CommitCallback commit_callback,
-      std::unique_ptr<WebApp> web_app,
-      bool success);
+  void WriteTranslations(const AppId& app_id,
+                         const WebAppInstallInfo& web_app_info,
+                         CommitCallback commit_callback,
+                         bool success);
+
+  void CommitToSyncBridge(std::unique_ptr<WebApp> web_app,
+                          CommitCallback commit_callback,
+                          bool success);
 
   void OnDatabaseCommitCompletedForInstall(InstallFinalizedCallback callback,
                                            AppId app_id,
+                                           FinalizeOptions finalize_options,
                                            bool success);
+
+  void OnInstallHooksFinished(InstallFinalizedCallback callback,
+                              AppId app_id,
+                              web_app::OsHooksErrors os_hooks_errors);
+  void NotifyWebAppInstalledWithOsHooks(AppId app_id);
 
   bool ShouldUpdateOsHooks(const AppId& app_id);
 
@@ -189,7 +216,6 @@ class WebAppInstallFinalizer {
       InstallFinalizedCallback callback,
       AppId app_id,
       std::string old_name,
-      bool should_update_os_hooks,
       FileHandlerUpdateAction file_handlers_need_os_update,
       const WebAppInstallInfo& web_app_info,
       bool success);
@@ -207,14 +233,16 @@ class WebAppInstallFinalizer {
       const AppId& app_id,
       const WebAppInstallInfo& new_web_app_info);
 
+  raw_ptr<WebAppInstallManager> install_manager_ = nullptr;
   raw_ptr<WebAppRegistrar> registrar_ = nullptr;
   raw_ptr<WebAppSyncBridge> sync_bridge_ = nullptr;
   raw_ptr<WebAppUiManager> ui_manager_ = nullptr;
   raw_ptr<OsIntegrationManager> os_integration_manager_ = nullptr;
+  raw_ptr<WebAppIconManager> icon_manager_ = nullptr;
+  raw_ptr<WebAppPolicyManager> policy_manager_ = nullptr;
+  raw_ptr<WebAppTranslationManager> translation_manager_ = nullptr;
 
   const raw_ptr<Profile> profile_;
-  const raw_ptr<WebAppIconManager> icon_manager_;
-  raw_ptr<WebAppPolicyManager> policy_manager_;
   bool started_ = false;
 
   base::flat_map<AppId, std::unique_ptr<WebAppUninstallJob>>

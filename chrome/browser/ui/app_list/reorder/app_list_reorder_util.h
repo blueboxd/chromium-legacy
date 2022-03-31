@@ -40,7 +40,7 @@ struct ReorderParam {
 template <typename T>
 struct SyncItemWrapper {
   explicit SyncItemWrapper(const AppListSyncableService::SyncItem& sync_item);
-  explicit SyncItemWrapper(const ChromeAppListItem& app_list_item);
+  explicit SyncItemWrapper(const ash::AppListItemMetadata& metadata);
 
   std::string id;
   syncer::StringOrdinal item_ordinal;
@@ -91,16 +91,21 @@ std::vector<SyncItemWrapper<T>> GenerateWrappersFromSyncItems(
   return wrappers;
 }
 
-// Gets a list of sync item wrappers based on the given app list items.
+// Gets a list of sync item wrappers based on the given app list items. The item
+// with the ignored id should not be included in the return list.
 template <typename T>
 std::vector<SyncItemWrapper<T>> GenerateWrappersFromAppListItems(
-    const std::vector<const ChromeAppListItem*>& app_list_items) {
+    const std::vector<const ChromeAppListItem*>& app_list_items,
+    const absl::optional<std::string>& ignored_id) {
   std::vector<SyncItemWrapper<T>> wrappers;
   for (const auto* app_list_item : app_list_items) {
     if (app_list_item->is_page_break())
       continue;
 
-    wrappers.emplace_back(*app_list_item);
+    if (ignored_id && *ignored_id == app_list_item->id())
+      continue;
+
+    wrappers.emplace_back(app_list_item->metadata());
   }
   return wrappers;
 }
@@ -112,7 +117,7 @@ SyncItemWrapper<std::u16string>::SyncItemWrapper(
     const AppListSyncableService::SyncItem& sync_item);
 template <>
 SyncItemWrapper<std::u16string>::SyncItemWrapper(
-    const ChromeAppListItem& app_list_item);
+    const ash::AppListItemMetadata& metadata);
 
 // SyncItemWrapper<ash::IconColor> ---------------------------------------------
 
@@ -121,7 +126,7 @@ SyncItemWrapper<ash::IconColor>::SyncItemWrapper(
     const AppListSyncableService::SyncItem& sync_item);
 template <>
 SyncItemWrapper<ash::IconColor>::SyncItemWrapper(
-    const ChromeAppListItem& app_list_item);
+    const ash::AppListItemMetadata& metadata);
 
 // Color sorting utility methods -----------------------------------------------
 

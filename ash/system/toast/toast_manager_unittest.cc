@@ -38,7 +38,8 @@ class DummyEvent : public ui::Event {
 
 class ToastManagerImplTest : public AshTestBase {
  public:
-  ToastManagerImplTest() = default;
+  ToastManagerImplTest()
+      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   ToastManagerImplTest(const ToastManagerImplTest&) = delete;
   ToastManagerImplTest& operator=(const ToastManagerImplTest&) = delete;
@@ -98,7 +99,7 @@ class ToastManagerImplTest : public AshTestBase {
   }
 
   std::string ShowToast(const std::string& text,
-                        int32_t duration,
+                        base::TimeDelta duration,
                         bool visible_on_lock_screen = false) {
     std::string id = "TOAST_ID_" + base::NumberToString(serial_++);
     manager()->Show(ToastData(id, ToastCatalogName::kToastManagerUnittest,
@@ -109,7 +110,7 @@ class ToastManagerImplTest : public AshTestBase {
 
   std::string ShowToastWithDismiss(
       const std::string& text,
-      int32_t duration,
+      base::TimeDelta duration,
       const absl::optional<std::string>& dismiss_text) {
     absl::optional<std::u16string> localized_dismiss;
     if (dismiss_text.has_value())
@@ -127,7 +128,7 @@ class ToastManagerImplTest : public AshTestBase {
 
   void ReplaceToast(const std::string& id,
                     const std::string& text,
-                    int32_t duration,
+                    base::TimeDelta duration,
                     bool visible_on_lock_screen = false) {
     manager()->Show(ToastData(id, ToastCatalogName::kToastManagerUnittest,
                               base::ASCIIToUTF16(text), duration,
@@ -147,12 +148,12 @@ class ToastManagerImplTest : public AshTestBase {
 };
 
 TEST_F(ToastManagerImplTest, ShowAndCloseAutomatically) {
-  ShowToast("DUMMY", 10);
+  ShowToast("DUMMY", base::Milliseconds(10));
 
   EXPECT_EQ(1, GetToastSerial());
 
-  while (GetCurrentOverlay() != nullptr)
-    base::RunLoop().RunUntilIdle();
+  task_environment()->FastForwardBy(base::Milliseconds(1000));
+  EXPECT_FALSE(GetCurrentOverlay());
 }
 
 TEST_F(ToastManagerImplTest, ShowAndCloseManually) {
@@ -191,16 +192,17 @@ TEST_F(ToastManagerImplTest, DISABLED_ShowAndCloseManuallyDuringAnimation) {
 
 // TODO(crbug.com/959781): Test is flaky.
 TEST_F(ToastManagerImplTest, DISABLED_NullMessageHasNoDismissButton) {
-  ShowToastWithDismiss("DUMMY", 10, absl::optional<std::string>());
+  ShowToastWithDismiss("DUMMY", base::Milliseconds(10),
+                       absl::optional<std::string>());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetDismissButton());
 }
 
 // TODO(crbug.com/959781): Test is flaky.
 TEST_F(ToastManagerImplTest, DISABLED_QueueMessage) {
-  ShowToast("DUMMY1", 10);
-  ShowToast("DUMMY2", 10);
-  ShowToast("DUMMY3", 10);
+  ShowToast("DUMMY1", base::Milliseconds(10));
+  ShowToast("DUMMY2", base::Milliseconds(10));
+  ShowToast("DUMMY3", base::Milliseconds(10));
 
   EXPECT_EQ(1, GetToastSerial());
   EXPECT_EQ(u"DUMMY1", GetCurrentText());
@@ -508,6 +510,46 @@ TEST_F(ToastManagerImplTest, ReplaceContentsOfCurrentToast) {
   CancelToast(id1);
 
   // Confirm that the second toast is now showing.
+  EXPECT_EQ(u"TEXT2", GetCurrentText());
+  EXPECT_EQ(3, GetToastSerial());
+}
+
+TEST_F(ToastManagerImplTest,
+       ReplaceContentsOfCurrentToastBeforePriorReplacementFinishes) {
+  // By default, the animation duration is zero in tests. Set the animation
+  // duration to non-zero so that toasts don't immediately close.
+  ui::ScopedAnimationDurationScaleMode animation_duration(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  std::string id1 = ShowToast(/*text=*/"TEXT1", ToastData::kInfiniteDuration);
+  std::string id2 = ShowToast(/*text=*/"TEXT2", ToastData::kInfiniteDuration);
+
+  // Confirm that the first toast is shown.
+  EXPECT_EQ(u"TEXT1", GetCurrentText());
+  EXPECT_EQ(1, GetToastSerial());
+
+  // Replace the contents of the current toast showing. This will start the
+  // animation to close the current toast.
+  ReplaceToast(id1, /*text=*/"TEXT1_updated", ToastData::kInfiniteDuration);
+
+  // Before the current toast's closing animation has finished, replace the
+  // toast with another toast.
+  ReplaceToast(id1, /*text=*/"TEXT1_updated2", ToastData::kInfiniteDuration);
+
+  // Wait until the first toast's closing animation has finished.
+  task_environment()->FastForwardBy(base::Seconds(1));
+
+  // Confirm that the most recent toast content is visible. The toast serial
+  // should be different, indicating the original toast's timeout won't close
+  // the new toast's.
+  EXPECT_EQ(u"TEXT1_updated2", GetCurrentText());
+  EXPECT_EQ(2, GetToastSerial());
+
+  // Cancel the shown toast and wait for the animation to finish.
+  CancelToast(id1);
+  task_environment()->FastForwardBy(base::Seconds(1));
+
+  // Confirm that the toast now showing corresponds with id2.
   EXPECT_EQ(u"TEXT2", GetCurrentText());
   EXPECT_EQ(3, GetToastSerial());
 }

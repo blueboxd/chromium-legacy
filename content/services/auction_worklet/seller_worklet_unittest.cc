@@ -10,10 +10,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
@@ -27,6 +29,7 @@
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
 #include "url/gurl.h"
 
@@ -51,16 +54,19 @@ const char kTrustedScoringSignalsResponse[] = R"(
   }
 )";
 
-// Creates seller a script with scoreAd() returning the specified expression.
+// Creates a seller script with scoreAd() returning the specified expression.
 // Allows using scoreAd() arguments, arbitrary values, incorrect types, etc.
-std::string CreateScoreAdScript(const std::string& raw_return_value) {
+std::string CreateScoreAdScript(const std::string& raw_return_value,
+                                const std::string& extra_code = "") {
   constexpr char kSellAdScript[] = R"(
     function scoreAd(adMetadata, bid, auctionConfig, trustedScoringSignals,
         browserSignals) {
+      %s;
       return %s;
     }
   )";
-  return base::StringPrintf(kSellAdScript, raw_return_value.c_str());
+  return base::StringPrintf(kSellAdScript, extra_code.c_str(),
+                            raw_return_value.c_str());
 }
 
 // Returns a working script, primarily for testing failure cases where it
@@ -89,16 +95,26 @@ std::string CreateReportToScript(const std::string& raw_return_value,
 
 class SellerWorkletTest : public testing::Test {
  public:
-  SellerWorkletTest() {
-    SetDefaultParameters();
+  SellerWorkletTest() { SetDefaultParameters(); }
+
+  ~SellerWorkletTest() override = default;
+
+  void SetUp() override {
+    // v8_helper_ needs to be created here instead of the constructor, because
+    // this test fixture has a subclass that initializes a ScopedFeatureList in
+    // in their constructor, which needs to be done BEFORE other threads are
+    // started in multithreaded test environments so that no other threads use
+    // it when it's being initiated.
+    // https://source.chromium.org/chromium/chromium/src/+/main:base/test/scoped_feature_list.h;drc=60124005e97ae2716b0fb34187d82da6019b571f;l=37
     v8_helper_ = AuctionV8Helper::Create(AuctionV8Helper::CreateTaskRunner());
   }
 
-  ~SellerWorkletTest() override {
+  void TearDown() override {
     // Release the V8 helper and process all pending tasks. This is to make sure
     // there aren't any pending tasks between the V8 thread and the main thread
     // that will result in UAFs. These lines are not necessary for any test to
-    // pass.
+    // pass. This needs to be done before a subclass resets ScopedFeatureList,
+    // so no thread queries it while it's being modified.
     v8_helper_.reset();
     task_environment_.RunUntilIdle();
 
@@ -133,9 +149,16 @@ class SellerWorkletTest : public testing::Test {
       const std::string& raw_return_value,
       double expected_score,
       const std::vector<std::string>& expected_errors =
-          std::vector<std::string>()) {
+          std::vector<std::string>(),
+      absl::optional<uint32_t> expected_data_version = {},
+      const absl::optional<GURL>& expected_debug_loss_report_url =
+          absl::nullopt,
+      const absl::optional<GURL>& expected_debug_win_report_url =
+          absl::nullopt) {
     RunScoreAdWithJavascriptExpectingResult(
-        CreateScoreAdScript(raw_return_value), expected_score, expected_errors);
+        CreateScoreAdScript(raw_return_value), expected_score, expected_errors,
+        expected_data_version, expected_debug_loss_report_url,
+        expected_debug_win_report_url);
   }
 
   // Behaves just like RunScoreAdWithReturnValueExpectingResult(), but
@@ -149,14 +172,21 @@ class SellerWorkletTest : public testing::Test {
       const std::string& raw_return_value,
       double expected_score,
       base::TimeDelta expected_duration,
-      const std::vector<std::string>& expected_errors = {}) {
+      const std::vector<std::string>& expected_errors = {},
+      absl::optional<uint32_t> expected_data_version = {},
+      const absl::optional<GURL>& expected_debug_loss_report_url =
+          absl::nullopt,
+      const absl::optional<GURL>& expected_debug_win_report_url =
+          absl::nullopt) {
     AddJavascriptResponse(&url_loader_factory_, decision_logic_url_,
                           CreateScoreAdScript(raw_return_value));
     auto seller_worklet = CreateWorklet();
 
     base::RunLoop run_loop;
-    RunScoreAdOnWorkletAsync(seller_worklet.get(), expected_score,
-                             expected_errors, run_loop.QuitClosure());
+    RunScoreAdOnWorkletAsync(
+        seller_worklet.get(), expected_score, expected_errors,
+        expected_data_version, expected_debug_loss_report_url,
+        expected_debug_win_report_url, run_loop.QuitClosure());
     task_environment_.FastForwardBy(expected_duration - kTinyTime);
     EXPECT_FALSE(run_loop.AnyQuitCalled());
     task_environment_.FastForwardBy(kTinyTime);
@@ -170,32 +200,58 @@ class SellerWorkletTest : public testing::Test {
       const std::string& javascript,
       double expected_score,
       const std::vector<std::string>& expected_errors =
-          std::vector<std::string>()) {
+          std::vector<std::string>(),
+      absl::optional<uint32_t> expected_data_version = {},
+      const absl::optional<GURL>& expected_debug_loss_report_url =
+          absl::nullopt,
+      const absl::optional<GURL>& expected_debug_win_report_url =
+          absl::nullopt) {
     SCOPED_TRACE(javascript);
     AddJavascriptResponse(&url_loader_factory_, decision_logic_url_,
                           javascript);
-    RunScoreAdExpectingResult(expected_score, expected_errors);
+    RunScoreAdExpectingResult(
+        expected_score, expected_errors, expected_data_version,
+        expected_debug_loss_report_url, expected_debug_win_report_url);
   }
 
   // Runs score_ad() script, checking result and invoking provided closure
   // when done. Something else must spin the event loop.
-  void RunScoreAdOnWorkletAsync(mojom::SellerWorklet* seller_worklet,
-                                double expected_score,
-                                const std::vector<std::string>& expected_errors,
-                                base::OnceClosure done_closure) {
+  void RunScoreAdOnWorkletAsync(
+      mojom::SellerWorklet* seller_worklet,
+      double expected_score,
+      const std::vector<std::string>& expected_errors,
+      absl::optional<uint32_t> expected_data_version,
+      const absl::optional<GURL>& expected_debug_loss_report_url,
+      const absl::optional<GURL>& expected_debug_win_report_url,
+      base::OnceClosure done_closure) {
     seller_worklet->ScoreAd(
         ad_metadata_, bid_, auction_ad_config_non_shared_params_.Clone(),
         browser_signal_interest_group_owner_, browser_signal_render_url_,
         browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
         base::BindOnce(
-            [](double expected_score, std::vector<std::string> expected_errors,
+            [](double expected_score,
+               absl::optional<uint32_t> expected_data_version,
+               const absl::optional<GURL>& expected_debug_loss_report_url,
+               const absl::optional<GURL>& expected_debug_win_report_url,
+               std::vector<std::string> expected_errors,
                base::OnceClosure done_closure, double score,
+               uint32_t data_version, bool has_data_version,
+               const absl::optional<GURL>& debug_loss_report_url,
+               const absl::optional<GURL>& debug_win_report_url,
                const std::vector<std::string>& errors) {
+              absl::optional<uint32_t> maybe_data_version;
+              if (has_data_version)
+                maybe_data_version = data_version;
               EXPECT_EQ(expected_score, score);
+              EXPECT_EQ(expected_debug_loss_report_url, debug_loss_report_url);
+              EXPECT_EQ(expected_debug_win_report_url, debug_win_report_url);
+              EXPECT_EQ(expected_data_version, maybe_data_version);
               EXPECT_EQ(expected_errors, errors);
               std::move(done_closure).Run();
             },
-            expected_score, expected_errors, std::move(done_closure)));
+            expected_score, expected_data_version,
+            expected_debug_loss_report_url, expected_debug_win_report_url,
+            expected_errors, std::move(done_closure)));
   }
 
   void RunScoreAdOnWorkletExpectingCallbackNeverInvoked(
@@ -204,10 +260,13 @@ class SellerWorkletTest : public testing::Test {
         ad_metadata_, bid_, auction_ad_config_non_shared_params_.Clone(),
         browser_signal_interest_group_owner_, browser_signal_render_url_,
         browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
-        base::BindOnce(
-            [](double score, const std::vector<std::string>& errors) {
-              ADD_FAILURE() << "This should not be invoked";
-            }));
+        base::BindOnce([](double score, uint32_t data_version,
+                          bool has_data_version,
+                          const absl::optional<GURL>& debug_loss_report_url,
+                          const absl::optional<GURL>& debug_win_report_url,
+                          const std::vector<std::string>& errors) {
+          ADD_FAILURE() << "This should not be invoked";
+        }));
   }
 
   // Loads and runs a scode_ad() script, expecting the supplied result.
@@ -215,10 +274,17 @@ class SellerWorkletTest : public testing::Test {
       mojom::SellerWorklet* seller_worklet,
       double expected_score,
       const std::vector<std::string>& expected_errors =
-          std::vector<std::string>()) {
+          std::vector<std::string>(),
+      absl::optional<uint32_t> expected_data_version = absl::nullopt,
+      const absl::optional<GURL>& expected_debug_loss_report_url =
+          absl::nullopt,
+      const absl::optional<GURL>& expected_debug_win_report_url =
+          absl::nullopt) {
     base::RunLoop run_loop;
-    RunScoreAdOnWorkletAsync(seller_worklet, expected_score, expected_errors,
-                             run_loop.QuitClosure());
+    RunScoreAdOnWorkletAsync(
+        seller_worklet, expected_score, expected_errors, expected_data_version,
+        expected_debug_loss_report_url, expected_debug_win_report_url,
+        run_loop.QuitClosure());
     run_loop.Run();
   }
 
@@ -226,11 +292,18 @@ class SellerWorkletTest : public testing::Test {
   void RunScoreAdExpectingResult(
       double expected_score,
       const std::vector<std::string>& expected_errors =
-          std::vector<std::string>()) {
+          std::vector<std::string>(),
+      absl::optional<uint32_t> expected_data_version = absl::nullopt,
+      const absl::optional<GURL>& expected_debug_loss_report_url =
+          absl::nullopt,
+      const absl::optional<GURL>& expected_debug_win_report_url =
+          absl::nullopt) {
     auto seller_worklet = CreateWorklet();
     ASSERT_TRUE(seller_worklet);
     RunScoreAdExpectingResultOnWorklet(seller_worklet.get(), expected_score,
-                                       expected_errors);
+                                       expected_errors, expected_data_version,
+                                       expected_debug_loss_report_url,
+                                       expected_debug_win_report_url);
   }
 
   // Configures `url_loader_factory_` to return a report_result() script created
@@ -276,7 +349,8 @@ class SellerWorkletTest : public testing::Test {
     seller_worklet->ReportResult(
         auction_ad_config_non_shared_params_.Clone(),
         browser_signal_interest_group_owner_, browser_signal_render_url_, bid_,
-        browser_signal_desireability_,
+        browser_signal_desireability_, browser_signal_data_version_.value_or(0),
+        browser_signal_data_version_.has_value(),
         base::BindOnce(
             [](const absl::optional<std::string>& expected_signals_for_winner,
                const absl::optional<GURL>& expected_report_url,
@@ -292,6 +366,20 @@ class SellerWorkletTest : public testing::Test {
             },
             expected_signals_for_winner, expected_report_url, expected_errors,
             std::move(done_closure)));
+  }
+
+  void RunReportResultExpectingCallbackNeverInvoked(
+      mojom::SellerWorklet* seller_worklet) {
+    seller_worklet->ReportResult(
+        auction_ad_config_non_shared_params_.Clone(),
+        browser_signal_interest_group_owner_, browser_signal_render_url_, bid_,
+        browser_signal_desireability_, browser_signal_data_version_.value_or(0),
+        browser_signal_data_version_.has_value(),
+        base::BindOnce([](const absl::optional<std::string>& signals_for_winner,
+                          const absl::optional<GURL>& report_url,
+                          const std::vector<std::string>& errors) {
+          ADD_FAILURE() << "This should not be invoked";
+        }));
   }
 
   // Loads and runs a report_result() script, expecting the supplied result.
@@ -393,6 +481,7 @@ class SellerWorkletTest : public testing::Test {
   std::vector<GURL> browser_signal_ad_components_;
   uint32_t browser_signal_bidding_duration_msecs_;
   double browser_signal_desireability_;
+  absl::optional<uint32_t> browser_signal_data_version_;
 
   // Reuseable run loop for disconnection errors.
   std::unique_ptr<base::RunLoop> disconnect_run_loop_;
@@ -466,27 +555,13 @@ TEST_F(SellerWorkletTest, ScoreAd) {
   // Throw exception.
   RunScoreAdWithReturnValueExpectingResult(
       "shrimp", 0,
-      {"https://url.test/:4 Uncaught ReferenceError: shrimp is not defined."});
+      {"https://url.test/:5 Uncaught ReferenceError: shrimp is not defined."});
 }
 
 TEST_F(SellerWorkletTest, ScoreAdDateNotAvailable) {
   RunScoreAdWithReturnValueExpectingResult(
       "Date.parse(Date().toString())", 0,
-      {"https://url.test/:4 Uncaught ReferenceError: Date is not defined."});
-}
-
-TEST_F(SellerWorkletTest, ScoreAdLogAndError) {
-  const char kScript[] = R"(
-    function scoreAd() {
-      console.log("Logging");
-      return "hello";
-    }
-  )";
-
-  RunScoreAdWithJavascriptExpectingResult(
-      kScript, 0,
-      {"https://url.test/ [Log]: Logging",
-       "https://url.test/ scoreAd() did not return a valid number."});
+      {"https://url.test/:5 Uncaught ReferenceError: Date is not defined."});
 }
 
 TEST_F(SellerWorkletTest, ScoreAdMedata) {
@@ -496,6 +571,10 @@ TEST_F(SellerWorkletTest, ScoreAdMedata) {
 
   ad_metadata_ = "[1]";
   RunScoreAdWithReturnValueExpectingResult(R"(adMetadata[0] === 1 ? 4 : 0)", 4);
+
+  // If adMetadata is invalid, score should be 0.
+  ad_metadata_ = "{invalid_json";
+  RunScoreAdWithReturnValueExpectingResult("1", 0);
 }
 
 TEST_F(SellerWorkletTest, ScoreAdTopWindowOrigin) {
@@ -610,8 +689,8 @@ TEST_F(SellerWorkletTest, ScoreAdTrustedScoringSignals) {
 
   // Successful download case.
 
-  AddJsonResponse(&url_loader_factory_, kNoComponentSignalsUrl,
-                  kTrustedScoringSignalsResponse);
+  AddVersionedJsonResponse(&url_loader_factory_, kNoComponentSignalsUrl,
+                           kTrustedScoringSignalsResponse, /*data_version=*/1);
 
   // Each call should cause the clock to advance exactly `kAutoSendDelay`
   // milliseconds before the request is send over the wire, waiting for other
@@ -619,10 +698,12 @@ TEST_F(SellerWorkletTest, ScoreAdTrustedScoringSignals) {
   RunScoreAdWithReturnValueExpectingResultInExactTime(
       "trustedScoringSignals.renderUrl['https://render.url.test/']",
       4 /* Magic value in trustedScoringSignals */,
-      TrustedSignalsRequestManager::kAutoSendDelay);
+      TrustedSignalsRequestManager::kAutoSendDelay, /*expected_errors=*/{},
+      /*expected_data_version=*/1);
   RunScoreAdWithReturnValueExpectingResultInExactTime(
       "trustedScoringSignals.adComponentRenderUrls === undefined ? 1 : 0", 1,
-      TrustedSignalsRequestManager::kAutoSendDelay);
+      TrustedSignalsRequestManager::kAutoSendDelay, /*expected_errors=*/{},
+      /*expected_data_version=*/1);
 
   // A network error when fetching the scoring signals results in null
   // `trustedScoringSignals`. This case is just before the component ad test
@@ -640,33 +721,52 @@ TEST_F(SellerWorkletTest, ScoreAdTrustedScoringSignals) {
 
   browser_signal_ad_components_ = {GURL("https://component1.test/"),
                                    GURL("https://component2.test/")};
-  AddJsonResponse(
+  AddVersionedJsonResponse(
       &url_loader_factory_,
       GURL("https://url.test/trusted_scoring_signals?hostname=window.test"
            "&renderUrls=https%3A%2F%2Frender.url.test%2F"
            "&adComponentRenderUrls=https%3A%2F%2Fcomponent1.test%2F,"
            "https%3A%2F%2Fcomponent2.test%2F"),
-      kTrustedScoringSignalsResponse);
+      kTrustedScoringSignalsResponse, /*data_version=*/5);
 
   RunScoreAdWithReturnValueExpectingResultInExactTime(
       "trustedScoringSignals.renderUrl['https://render.url.test/']",
       4 /* Magic value in trustedScoringSignals */,
-      TrustedSignalsRequestManager::kAutoSendDelay);
+      TrustedSignalsRequestManager::kAutoSendDelay, /*expected_errors=*/{},
+      /*expected_data_version=*/5);
   RunScoreAdWithReturnValueExpectingResultInExactTime(
       "trustedScoringSignals.adComponentRenderUrls['https://component1.test/']",
       1 /* Magic value in trustedScoringSignals */,
-      TrustedSignalsRequestManager::kAutoSendDelay);
+      TrustedSignalsRequestManager::kAutoSendDelay, /*expected_errors=*/{},
+      /*expected_data_version=*/5);
   RunScoreAdWithReturnValueExpectingResultInExactTime(
       "trustedScoringSignals.adComponentRenderUrls['https://component2.test/']",
       2 /* Magic value in trustedScoringSignals */,
-      TrustedSignalsRequestManager::kAutoSendDelay);
+      TrustedSignalsRequestManager::kAutoSendDelay, /*expected_errors=*/{},
+      /*expected_data_version=*/5);
+}
+
+TEST_F(SellerWorkletTest, ScoreAdDataVersion) {
+  trusted_scoring_signals_url_ =
+      GURL("https://url.test/trusted_scoring_signals");
+  // Trusted scoring signals URL without any component ads.
+  const GURL kNoComponentSignalsUrl = GURL(
+      "https://url.test/trusted_scoring_signals?hostname=window.test"
+      "&renderUrls=https%3A%2F%2Frender.url.test%2F");
+
+  // Successful download case.
+  AddVersionedJsonResponse(&url_loader_factory_, kNoComponentSignalsUrl,
+                           kTrustedScoringSignalsResponse,
+                           /*data_version=*/100);
+  RunScoreAdWithReturnValueExpectingResult("browserSignals.dataVersion", 100,
+                                           /*expected_errors=*/{},
+                                           /*expected_data_version=*/100);
 }
 
 // Test the case of a bunch of ScoreAd() calls in parallel, all started before
 // the worklet script has loaded.
 TEST_F(SellerWorkletTest, ScoreAdParallelBeforeLoadComplete) {
-  mojo::Remote<mojom::SellerWorklet> seller_worklet =
-      CreateWorklet(/*pause_for_debugger_on_start=*/false);
+  auto seller_worklet = CreateWorklet(/*pause_for_debugger_on_start=*/false);
 
   const size_t kNumWorklets = 10;
   size_t num_completed_worklets = 0;
@@ -675,6 +775,9 @@ TEST_F(SellerWorkletTest, ScoreAdParallelBeforeLoadComplete) {
     browser_signal_render_url_ = GURL(base::StringPrintf("https://foo/%zu", i));
     RunScoreAdOnWorkletAsync(seller_worklet.get(), /*expected_score=*/i,
                              /*expected_errors=*/std::vector<std::string>(),
+                             /*expected_data_version=*/absl::nullopt,
+                             /*expected_debug_loss_report_url=*/absl::nullopt,
+                             /*expected_debug_win_report_url=*/absl::nullopt,
                              base::BindLambdaForTesting([&]() {
                                ++num_completed_worklets;
                                if (num_completed_worklets == kNumWorklets)
@@ -712,6 +815,9 @@ TEST_F(SellerWorkletTest, ScoreAdParallelAfterLoadComplete) {
     browser_signal_render_url_ = GURL(base::StringPrintf("https://foo/%zu", i));
     RunScoreAdOnWorkletAsync(seller_worklet.get(), /*expected_score=*/i,
                              /*expected_errors=*/std::vector<std::string>(),
+                             /*expected_data_version=*/absl::nullopt,
+                             /*expected_debug_loss_report_url=*/absl::nullopt,
+                             /*expected_debug_win_report_url=*/absl::nullopt,
                              base::BindLambdaForTesting([&]() {
                                ++num_completed_worklets;
                                if (num_completed_worklets == kNumWorklets)
@@ -724,7 +830,7 @@ TEST_F(SellerWorkletTest, ScoreAdParallelAfterLoadComplete) {
 // Test the case of a bunch of ScoreAd() calls in parallel, all started before
 // the worklet script fails to load.
 TEST_F(SellerWorkletTest, ScoreAdParallelLoadFails) {
-  mojo::Remote<mojom::SellerWorklet> seller_worklet = CreateWorklet();
+  auto seller_worklet = CreateWorklet();
 
   for (size_t i = 0; i < 10; ++i) {
     browser_signal_render_url_ = GURL(base::StringPrintf("https://foo/%zu", i));
@@ -771,6 +877,9 @@ TEST_F(SellerWorkletTest, ScoreAdParallelTrustedScoringSignalsNotBatched) {
     browser_signal_render_url_ = GURL(base::StringPrintf("https://foo/%zu", i));
     RunScoreAdOnWorkletAsync(seller_worklet.get(), /*expected_score=*/2 * i,
                              /*expected_errors=*/std::vector<std::string>(),
+                             /*expected_data_version=*/i,
+                             /*expected_debug_loss_report_url=*/absl::nullopt,
+                             /*expected_debug_win_report_url=*/absl::nullopt,
                              base::BindLambdaForTesting([&]() {
                                ++num_completed_worklets;
                                if (num_completed_worklets == kNumWorklets)
@@ -791,8 +900,8 @@ TEST_F(SellerWorkletTest, ScoreAdParallelTrustedScoringSignalsNotBatched) {
         top_window_origin_.host().c_str(), i));
     std::string response_body = base::StringPrintf(
         R"({"renderUrls": {"https://foo/%zu": %zu}})", i, 2 * i);
-    AddJsonResponse(&url_loader_factory_, trusted_scoring_signals,
-                    response_body);
+    AddVersionedJsonResponse(&url_loader_factory_, trusted_scoring_signals,
+                             response_body, /*data_version=*/i);
   }
   run_loop.Run();
 
@@ -833,6 +942,9 @@ TEST_F(SellerWorkletTest, ScoreAdParallelTrustedScoringSignalsBatched1) {
     browser_signal_render_url_ = GURL(base::StringPrintf("https://foo/%zu", i));
     RunScoreAdOnWorkletAsync(seller_worklet.get(), /*expected_score=*/2 * i,
                              /*expected_errors=*/std::vector<std::string>(),
+                             /*expected_data_version=*/absl::nullopt,
+                             /*expected_debug_loss_report_url=*/absl::nullopt,
+                             /*expected_debug_win_report_url=*/absl::nullopt,
                              base::BindLambdaForTesting([&]() {
                                ++num_completed_worklets;
                                if (num_completed_worklets == kNumWorklets)
@@ -875,7 +987,7 @@ TEST_F(SellerWorkletTest, ScoreAdParallelTrustedScoringSignalsBatched1) {
 TEST_F(SellerWorkletTest, ScoreAdParallelTrustedScoringSignalsBatched2) {
   trusted_scoring_signals_url_ =
       GURL("https://url.test/trusted_scoring_signals");
-  mojo::Remote<mojom::SellerWorklet> seller_worklet = CreateWorklet();
+  auto seller_worklet = CreateWorklet();
 
   // Start scoring a bunch of worklets. Don't provide JSON responses, to make
   // sure they all reside in the worklet's task list at once.
@@ -886,6 +998,9 @@ TEST_F(SellerWorkletTest, ScoreAdParallelTrustedScoringSignalsBatched2) {
     browser_signal_render_url_ = GURL(base::StringPrintf("https://foo/%zu", i));
     RunScoreAdOnWorkletAsync(seller_worklet.get(), /*expected_score=*/2 * i,
                              /*expected_errors=*/std::vector<std::string>(),
+                             /*expected_data_version=*/10,
+                             /*expected_debug_loss_report_url=*/absl::nullopt,
+                             /*expected_debug_win_report_url=*/absl::nullopt,
                              base::BindLambdaForTesting([&]() {
                                ++num_completed_worklets;
                                if (num_completed_worklets == kNumWorklets)
@@ -921,7 +1036,8 @@ TEST_F(SellerWorkletTest, ScoreAdParallelTrustedScoringSignalsBatched2) {
   }
   response_body =
       base::StringPrintf(R"({"renderUrls": {%s}})", response_body.c_str());
-  AddJsonResponse(&url_loader_factory_, GURL(request_url), response_body);
+  AddVersionedJsonResponse(&url_loader_factory_, GURL(request_url),
+                           response_body, /*data_version=*/10);
 
   // All ScoreAd() calls should succeed with the expected scores.
   run_loop.Run();
@@ -936,7 +1052,7 @@ TEST_F(SellerWorkletTest, ScoreAdParallelTrustedScoringSignalsBatched2) {
 TEST_F(SellerWorkletTest, ScoreAdParallelTrustedScoringSignalsBatched3) {
   trusted_scoring_signals_url_ =
       GURL("https://url.test/trusted_scoring_signals");
-  mojo::Remote<mojom::SellerWorklet> seller_worklet = CreateWorklet();
+  auto seller_worklet = CreateWorklet();
 
   // Start scoring a bunch of worklets. Don't provide JSON responses, to make
   // sure they all reside in the worklet's task list at once.
@@ -947,6 +1063,9 @@ TEST_F(SellerWorkletTest, ScoreAdParallelTrustedScoringSignalsBatched3) {
     browser_signal_render_url_ = GURL(base::StringPrintf("https://foo/%zu", i));
     RunScoreAdOnWorkletAsync(seller_worklet.get(), /*expected_score=*/2 * i,
                              /*expected_errors=*/std::vector<std::string>(),
+                             /*expected_data_version=*/10,
+                             /*expected_debug_loss_report_url=*/absl::nullopt,
+                             /*expected_debug_win_report_url=*/absl::nullopt,
                              base::BindLambdaForTesting([&]() {
                                ++num_completed_worklets;
                                if (num_completed_worklets == kNumWorklets)
@@ -974,7 +1093,8 @@ TEST_F(SellerWorkletTest, ScoreAdParallelTrustedScoringSignalsBatched3) {
   }
   response_body =
       base::StringPrintf(R"({"renderUrls": {%s}})", response_body.c_str());
-  AddJsonResponse(&url_loader_factory_, GURL(request_url), response_body);
+  AddVersionedJsonResponse(&url_loader_factory_, GURL(request_url),
+                           response_body, /*data_version=*/10);
 
   // Spin run loop so the response is handled. No ScoreAdCalls should complete
   // yet.
@@ -990,6 +1110,73 @@ TEST_F(SellerWorkletTest, ScoreAdParallelTrustedScoringSignalsBatched3) {
 
   // All ScoreAd() calls should succeed with the expected scores.
   run_loop.Run();
+}
+
+// Test multiple ReportWin() calls on a single worklet, in parallel. Do this
+// twice, once before the worklet has loaded its Javascript, and once after, to
+// make sure both cases work.
+TEST_F(SellerWorkletTest, ReportResultParallel) {
+  auto seller_worklet = CreateWorklet();
+
+  // For the first loop iteration, call ReportResult() repeatedly before
+  // providing the seller script, then provide the seller script. For the second
+  // loop iteration, reuse the seller worklet from the first iteration, so the
+  // Javascript is loaded from the start.
+  for (bool report_result_invoked_before_worklet_script_loaded :
+       {false, true}) {
+    SCOPED_TRACE(report_result_invoked_before_worklet_script_loaded);
+
+    base::RunLoop run_loop;
+    const size_t kNumReportResultCalls = 10;
+    size_t num_report_result_calls = 0;
+    for (size_t i = 0; i < kNumReportResultCalls; ++i) {
+      // Differentiate each call based on the bid.
+      bid_ = i + 1;
+      RunReportResultExpectingResultAsync(
+          seller_worklet.get(),
+          /*expected_signals_for_winner=*/base::NumberToString(bid_),
+          /*expected_report_url=*/
+          GURL("https://" + base::NumberToString(bid_)),
+          /*expected_errors=*/{},
+          base::BindLambdaForTesting([&run_loop, &num_report_result_calls]() {
+            ++num_report_result_calls;
+            if (num_report_result_calls == kNumReportResultCalls)
+              run_loop.Quit();
+          }));
+    }
+
+    // If this is the first loop iteration, wait for all the Mojo calls to
+    // settle, and then provide the Javascript response body.
+    if (report_result_invoked_before_worklet_script_loaded == false) {
+      task_environment_.RunUntilIdle();
+      EXPECT_FALSE(run_loop.AnyQuitCalled());
+      AddJavascriptResponse(
+          &url_loader_factory_, decision_logic_url_,
+          CreateReportToScript(
+              /*raw_return_value=*/"browserSignals.bid",
+              /*extra_code=*/
+              R"(sendReportTo("https://" + browserSignals.bid))"));
+    }
+
+    run_loop.Run();
+    EXPECT_EQ(kNumReportResultCalls, num_report_result_calls);
+  }
+}
+
+// Test multiple ReportResult() calls on a single worklet, in parallel, in the
+// case the worklet script fails to load.
+TEST_F(SellerWorkletTest, ReportResultParallelLoadFails) {
+  auto seller_worklet = CreateWorklet();
+
+  for (size_t i = 0; i < 10; ++i) {
+    RunReportResultExpectingCallbackNeverInvoked(seller_worklet.get());
+  }
+
+  url_loader_factory_.AddResponse(decision_logic_url_.spec(), "Response body",
+                                  net::HTTP_NOT_FOUND);
+
+  EXPECT_EQ("Failed to load https://url.test/ HTTP status = 404 Not Found.",
+            WaitForDisconnect());
 }
 
 // Tests parsing of return values.
@@ -1016,7 +1203,7 @@ TEST_F(SellerWorkletTest, ReportResult) {
       "shrimp", std::string() /* extra_code */,
       absl::nullopt /* expected_signals_for_winner */,
       absl::nullopt /* expected_render_url */,
-      {"https://url.test/:9 Uncaught ReferenceError: "
+      {"https://url.test/:10 Uncaught ReferenceError: "
        "shrimp is not defined."});
 }
 
@@ -1034,13 +1221,13 @@ TEST_F(SellerWorkletTest, ReportResultSendReportTo) {
       "1", R"(sendReportTo("http://foo.test/"))",
       absl::nullopt /* expected_signals_for_winner */,
       absl::nullopt /* expected_render_url */,
-      {"https://url.test/:8 Uncaught TypeError: "
+      {"https://url.test/:9 Uncaught TypeError: "
        "sendReportTo must be passed a valid HTTPS url."});
   RunReportResultCreatedScriptExpectingResult(
       "1", R"(sendReportTo("file:///foo/"))",
       absl::nullopt /* expected_signals_for_winner */,
       absl::nullopt /* expected_render_url */,
-      {"https://url.test/:8 Uncaught TypeError: "
+      {"https://url.test/:9 Uncaught TypeError: "
        "sendReportTo must be passed a valid HTTPS url."});
 
   // Multiple calls.
@@ -1049,7 +1236,7 @@ TEST_F(SellerWorkletTest, ReportResultSendReportTo) {
       R"(sendReportTo("https://foo.test/"); sendReportTo("https://foo.test/"))",
       absl::nullopt /* expected_signals_for_winner */,
       absl::nullopt /* expected_render_url */,
-      {"https://url.test/:8 Uncaught TypeError: "
+      {"https://url.test/:9 Uncaught TypeError: "
        "sendReportTo may be called at most once."});
 
   // No message if caught, but still no URL.
@@ -1065,19 +1252,19 @@ TEST_F(SellerWorkletTest, ReportResultSendReportTo) {
       "1", R"(sendReportTo("France"))",
       absl::nullopt /* expected_signals_for_winner */,
       absl::nullopt /* expected_render_url */,
-      {"https://url.test/:8 Uncaught TypeError: "
+      {"https://url.test/:9 Uncaught TypeError: "
        "sendReportTo must be passed a valid HTTPS url."});
   RunReportResultCreatedScriptExpectingResult(
       "1", R"(sendReportTo(null))",
       absl::nullopt /* expected_signals_for_winner */,
       absl::nullopt /* expected_render_url */,
-      {"https://url.test/:8 Uncaught TypeError: "
+      {"https://url.test/:9 Uncaught TypeError: "
        "sendReportTo requires 1 string parameter."});
   RunReportResultCreatedScriptExpectingResult(
       "1", R"(sendReportTo([5]))",
       absl::nullopt /* expected_signals_for_winner */,
       absl::nullopt /* expected_render_url */,
-      {"https://url.test/:8 Uncaught TypeError: "
+      {"https://url.test/:9 Uncaught TypeError: "
        "sendReportTo requires 1 string parameter."});
 }
 
@@ -1086,7 +1273,7 @@ TEST_F(SellerWorkletTest, ReportResultDateNotAvailable) {
       "1", R"(sendReportTo("https://foo.test/" + Date().toString()))",
       absl::nullopt /* expected_signals_for_winner */,
       absl::nullopt /* expected_render_url */,
-      {"https://url.test/:8 Uncaught ReferenceError: Date is not defined."});
+      {"https://url.test/:9 Uncaught ReferenceError: Date is not defined."});
 }
 
 TEST_F(SellerWorkletTest, ReportResultTopWindowOrigin) {
@@ -1154,9 +1341,9 @@ TEST_F(SellerWorkletTest, ReportResultAuctionConfigParam) {
 
   // Everything filled in.
   decision_logic_url_ = GURL("https://example.com/auction.js");
-  auction_ad_config_non_shared_params_->interest_group_buyers =
-      blink::mojom::InterestGroupBuyers::NewAllBuyers(
-          blink::mojom::AllBuyers::New());
+  auction_ad_config_non_shared_params_->interest_group_buyers = {
+      url::Origin::Create(GURL("https://buyer1.com")),
+      url::Origin::Create(GURL("https://another-buyer.com"))};
   auction_ad_config_non_shared_params_->auction_signals =
       R"({"is_auction_signals": true})";
   auction_ad_config_non_shared_params_->seller_signals =
@@ -1172,7 +1359,7 @@ TEST_F(SellerWorkletTest, ReportResultAuctionConfigParam) {
   const char kExpectedJson[] =
       R"({"seller":"https://example.com",)"
       R"("decisionLogicUrl":"https://example.com/auction.js",)"
-      R"("interestGroupBuyers":"*",)"
+      R"("interestGroupBuyers":["https://buyer1.com","https://another-buyer.com"],)"
       R"("auctionSignals":{"is_auction_signals":true},)"
       R"("sellerSignals":{"is_seller_signals":true},)"
       R"("perBuyerSignals":{"https://a.com":{"signals_a":"A"},)"
@@ -1180,23 +1367,13 @@ TEST_F(SellerWorkletTest, ReportResultAuctionConfigParam) {
   RunReportResultCreatedScriptExpectingResult(
       "auctionConfig", std::string() /* extra_code */, kExpectedJson,
       absl::nullopt /* expected_report_url */);
+}
 
-  // Array option for interest_group_buyers. Everything else optional
-  // unpopulated.
-  std::vector<url::Origin> buyers;
-  buyers.push_back(url::Origin::Create(GURL("https://buyer1.com")));
-  buyers.push_back(url::Origin::Create(GURL("https://another-buyer.com")));
-  auction_ad_config_non_shared_params_ =
-      blink::mojom::AuctionAdConfigNonSharedParams::New();
-  decision_logic_url_ = GURL("https://example.com/auction.js");
-  auction_ad_config_non_shared_params_->interest_group_buyers =
-      blink::mojom::InterestGroupBuyers::NewBuyers(std::move(buyers));
-  const char kExpectedJson2[] =
-      R"({"seller":"https://example.com",)"
-      R"("decisionLogicUrl":"https://example.com/auction.js",)"
-      R"("interestGroupBuyers":["https://buyer1.com","https://another-buyer.com"]})";
+TEST_F(SellerWorkletTest, ReportResultDataVersion) {
+  browser_signal_data_version_ = 20;
   RunReportResultCreatedScriptExpectingResult(
-      "auctionConfig", std::string() /* extra_code */, kExpectedJson2,
+      "browserSignals.dataVersion", std::string() /* extra_code */,
+      "20" /* expected_signals_for_winner */,
       absl::nullopt /* expected_report_url */);
 }
 
@@ -1237,9 +1414,13 @@ TEST_F(SellerWorkletTest, ScriptIsolation) {
           browser_signal_interest_group_owner_, browser_signal_render_url_,
           browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
           base::BindLambdaForTesting(
-              [&run_loop](double score,
+              [&run_loop](double score, uint32_t data_version,
+                          bool has_data_version,
+                          const absl::optional<GURL>& debug_loss_report_url,
+                          const absl::optional<GURL>& debug_win_report_url,
                           const std::vector<std::string>& errors) {
                 EXPECT_EQ(2, score);
+                EXPECT_FALSE(has_data_version);
                 EXPECT_TRUE(errors.empty());
                 run_loop.Quit();
               }));
@@ -1252,6 +1433,8 @@ TEST_F(SellerWorkletTest, ScriptIsolation) {
           auction_ad_config_non_shared_params_.Clone(),
           browser_signal_interest_group_owner_, browser_signal_render_url_,
           bid_, browser_signal_desireability_,
+          browser_signal_data_version_.value_or(0),
+          browser_signal_data_version_.has_value(),
           base::BindLambdaForTesting(
               [&run_loop](const absl::optional<std::string>& signals_for_winner,
                           const absl::optional<GURL>& report_url,
@@ -1276,7 +1459,11 @@ TEST_F(SellerWorkletTest, DeleteBeforeScoreAdCallback) {
       ad_metadata_, bid_, auction_ad_config_non_shared_params_.Clone(),
       browser_signal_interest_group_owner_, browser_signal_render_url_,
       browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
-      base::BindOnce([](double score, const std::vector<std::string>& errors) {
+      base::BindOnce([](double score, uint32_t data_version,
+                        bool has_data_version,
+                        const absl::optional<GURL>& debug_loss_report_url,
+                        const absl::optional<GURL>& debug_win_report_url,
+                        const std::vector<std::string>& errors) {
         ADD_FAILURE() << "Callback should not be invoked since worklet deleted";
       }));
   base::RunLoop().RunUntilIdle();
@@ -1297,7 +1484,8 @@ TEST_F(SellerWorkletTest, DeleteBeforeReportResultCallback) {
   seller_worklet->ReportResult(
       auction_ad_config_non_shared_params_.Clone(),
       browser_signal_interest_group_owner_, browser_signal_render_url_, bid_,
-      browser_signal_desireability_,
+      browser_signal_desireability_, browser_signal_data_version_.value_or(0),
+      browser_signal_data_version_.has_value(),
       base::BindOnce([](const absl::optional<std::string>& signals_for_winner,
                         const absl::optional<GURL>& report_url,
                         const std::vector<std::string>& errors) {
@@ -1322,8 +1510,11 @@ TEST_F(SellerWorkletTest, PauseOnStart) {
   // Queue a ScoreAd() call, which should not happen immediately since loading
   // is paused.
   base::RunLoop run_loop;
-  RunScoreAdOnWorkletAsync(worklet.get(), /*expected_score=*/10,
-                           /*expected_errors=*/{}, run_loop.QuitClosure());
+  RunScoreAdOnWorkletAsync(
+      worklet.get(), /*expected_score=*/10, /*expected_errors=*/{},
+      /*expected_data_version=*/absl::nullopt,
+      /*expected_debug_loss_report_url=*/absl::nullopt,
+      /*expected_debug_win_report_url=*/absl::nullopt, run_loop.QuitClosure());
 
   // Give it a chance to fetch.
   task_environment_.RunUntilIdle();
@@ -1398,16 +1589,22 @@ TEST_F(SellerWorkletTest, BasicV8Debug) {
   auto worklet1 = CreateWorklet(
       /*pause_for_debugger_on_start=*/true, &worklet_impl1);
   base::RunLoop run_loop1;
-  RunScoreAdOnWorkletAsync(worklet1.get(), /*expected_score=*/1,
-                           /*expected_errors=*/{}, run_loop1.QuitClosure());
+  RunScoreAdOnWorkletAsync(
+      worklet1.get(), /*expected_score=*/1,
+      /*expected_errors=*/{}, /*expected_data_version=*/absl::nullopt,
+      /*expected_debug_loss_report_url=*/absl::nullopt,
+      /*expected_debug_win_report_url=*/absl::nullopt, run_loop1.QuitClosure());
 
   decision_logic_url_ = kUrl2;
   SellerWorklet* worklet_impl2 = nullptr;
   auto worklet2 = CreateWorklet(
       /*pause_for_debugger_on_start=*/true, &worklet_impl2);
   base::RunLoop run_loop2;
-  RunScoreAdOnWorkletAsync(worklet2.get(), /*expected_score=*/2,
-                           /*expected_errors=*/{}, run_loop2.QuitClosure());
+  RunScoreAdOnWorkletAsync(
+      worklet2.get(), /*expected_score=*/2,
+      /*expected_errors=*/{}, /*expected_data_version=*/absl::nullopt,
+      /*expected_debug_loss_report_url=*/absl::nullopt,
+      /*expected_debug_win_report_url=*/absl::nullopt, run_loop2.QuitClosure());
 
   int id1 = worklet_impl1->context_group_id_for_testing();
   int id2 = worklet_impl2->context_group_id_for_testing();
@@ -1518,7 +1715,10 @@ TEST_F(SellerWorkletTest, BasicDevToolsDebug) {
   decision_logic_url_ = GURL(kUrl1);
   auto worklet1 = CreateWorklet(true /* pause_for_debugger_on_start */);
   base::RunLoop run_loop1;
-  RunScoreAdOnWorkletAsync(worklet1.get(), 100.5, {}, run_loop1.QuitClosure());
+  RunScoreAdOnWorkletAsync(
+      worklet1.get(), 100.5, {}, /*expected_data_version=*/absl::nullopt,
+      /*expected_debug_loss_report_url=*/absl::nullopt,
+      /*expected_debug_win_report_url=*/absl::nullopt, run_loop1.QuitClosure());
 
   decision_logic_url_ = GURL(kUrl2);
   auto worklet2 = CreateWorklet(true /* pause_for_debugger_on_start */);
@@ -1526,11 +1726,13 @@ TEST_F(SellerWorkletTest, BasicDevToolsDebug) {
   RunScoreAdOnWorkletAsync(
       worklet2.get(), 0,
       {"http://example.org/second.js scoreAd() did not return a valid number."},
-      run_loop2.QuitClosure());
+      /*expected_data_version=*/absl::nullopt,
+      /*expected_debug_loss_report_url=*/absl::nullopt,
+      /*expected_debug_win_report_url=*/absl::nullopt, run_loop2.QuitClosure());
 
-  mojo::Remote<blink::mojom::DevToolsAgent> agent1, agent2;
-  worklet1->ConnectDevToolsAgent(agent1.BindNewPipeAndPassReceiver());
-  worklet2->ConnectDevToolsAgent(agent2.BindNewPipeAndPassReceiver());
+  mojo::AssociatedRemote<blink::mojom::DevToolsAgent> agent1, agent2;
+  worklet1->ConnectDevToolsAgent(agent1.BindNewEndpointAndPassReceiver());
+  worklet2->ConnectDevToolsAgent(agent2.BindNewEndpointAndPassReceiver());
 
   TestDevToolsAgentClient debug1(std::move(agent1), "123",
                                  true /* use_binary_protocol */);
@@ -1591,7 +1793,7 @@ TEST_F(SellerWorkletTest, BasicDevToolsDebug) {
       breakpoint_hit1.value.FindListPath("params.hitBreakpoints");
   ASSERT_TRUE(hit_breakpoints1);
   base::Value::ConstListView hit_breakpoints_list1 =
-      hit_breakpoints1->GetList();
+      hit_breakpoints1->GetListDeprecated();
   ASSERT_EQ(1u, hit_breakpoints_list1.size());
   ASSERT_TRUE(hit_breakpoints_list1[0].is_string());
   EXPECT_EQ("1:2:0:http://example.com/first.js",
@@ -1661,10 +1863,13 @@ TEST_F(SellerWorkletTest, InstrumentationBreakpoints) {
   decision_logic_url_ = GURL(kUrl);
   auto worklet = CreateWorklet(true /* pause_for_debugger_on_start */);
   base::RunLoop run_loop;
-  RunScoreAdOnWorkletAsync(worklet.get(), 1.0, {}, run_loop.QuitClosure());
+  RunScoreAdOnWorkletAsync(
+      worklet.get(), 1.0, {}, /*expected_data_version=*/absl::nullopt,
+      /*expected_debug_loss_report_url=*/absl::nullopt,
+      /*expected_debug_win_report_url=*/absl::nullopt, run_loop.QuitClosure());
 
-  mojo::Remote<blink::mojom::DevToolsAgent> agent;
-  worklet->ConnectDevToolsAgent(agent.BindNewPipeAndPassReceiver());
+  mojo::AssociatedRemote<blink::mojom::DevToolsAgent> agent;
+  worklet->ConnectDevToolsAgent(agent.BindNewEndpointAndPassReceiver());
 
   TestDevToolsAgentClient debug(std::move(agent), "123",
                                 true /* use_binary_protocol */);
@@ -1730,7 +1935,10 @@ TEST_F(SellerWorkletTest, InstrumentationBreakpoints) {
   // Running another scoreAd will trigger the breakpoint again, since we didn't
   // remove it.
   base::RunLoop run_loop3;
-  RunScoreAdOnWorkletAsync(worklet.get(), 1.0, {}, run_loop3.QuitClosure());
+  RunScoreAdOnWorkletAsync(
+      worklet.get(), 1.0, {}, /*expected_data_version=*/absl::nullopt,
+      /*expected_debug_loss_report_url=*/absl::nullopt,
+      /*expected_debug_win_report_url=*/absl::nullopt, run_loop3.QuitClosure());
 
   TestDevToolsAgentClient::Event breakpoint_hit3 =
       debug.WaitForMethodNotification("Debugger.paused");
@@ -1761,8 +1969,8 @@ TEST_F(SellerWorkletTest, UnloadWhilePaused) {
   auto worklet = CreateWorklet(/*pause_for_debugger_on_start=*/true);
   RunScoreAdOnWorkletExpectingCallbackNeverInvoked(worklet.get());
 
-  mojo::Remote<blink::mojom::DevToolsAgent> agent;
-  worklet->ConnectDevToolsAgent(agent.BindNewPipeAndPassReceiver());
+  mojo::AssociatedRemote<blink::mojom::DevToolsAgent> agent;
+  worklet->ConnectDevToolsAgent(agent.BindNewEndpointAndPassReceiver());
 
   TestDevToolsAgentClient debug(std::move(agent), "123",
                                 /*use_binary_protocol=*/true);
@@ -1786,10 +1994,12 @@ TEST_F(SellerWorkletTest, UnloadWhilePaused) {
       "Runtime.runIfWaitingForDebugger",
       R"({"id":4,"method":"Runtime.runIfWaitingForDebugger","params":{}})");
 
-  RunScoreAdOnWorkletAsync(worklet.get(), 1.0, {}, base::BindOnce([]() {
-                             ADD_FAILURE()
-                                 << "scoreAd shouldn't actually get to finish.";
-                           }));
+  RunScoreAdOnWorkletAsync(
+      worklet.get(), 1.0, {}, /*expected_data_version=*/absl::nullopt,
+      /*expected_debug_loss_report_url=*/absl::nullopt,
+      /*expected_debug_win_report_url=*/absl::nullopt, base::BindOnce([]() {
+        ADD_FAILURE() << "scoreAd shouldn't actually get to finish.";
+      }));
 
   debug.WaitForMethodNotification("Debugger.paused");
 
@@ -1798,6 +2008,223 @@ TEST_F(SellerWorkletTest, UnloadWhilePaused) {
 
   // This won't terminate if the V8 thread is still blocked in debugger.
   task_environment_.RunUntilIdle();
+}
+
+TEST_F(SellerWorkletTest, ForDebuggingOnlyReportsDisabled) {
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript(
+          "1", R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url"))"),
+      1, /*expected_errors=*/{},
+      /*expected_debug_loss_report_url=*/absl::nullopt,
+      /*expected_debug_win_report_url=*/absl::nullopt);
+
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript(
+          "1", R"(forDebuggingOnly.reportAdAuctionWin("https://win.url"))"),
+      1, /*expected_errors=*/{},
+      /*expected_debug_loss_report_url=*/absl::nullopt,
+      /*expected_debug_win_report_url=*/absl::nullopt);
+}
+
+class SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest
+    : public SellerWorkletTest {
+ public:
+  SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest() {
+    feature_list_.InitAndEnableFeature(
+        blink::features::kBiddingAndScoringDebugReportingAPI);
+  }
+
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Test forDebuggingOnly.reportAdAuctionLoss() and
+// forDebuggingOnly.reportAdAuctionWin() called in scoreAd().
+TEST_F(SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
+       ForDebuggingOnlyReports) {
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript(
+          "1",
+          R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url");
+            forDebuggingOnly.reportAdAuctionWin("https://win.url"))"),
+      1, /*expected_errors=*/{}, /*expected_data_version=*/absl::nullopt,
+      GURL("https://loss.url"), GURL("https://win.url"));
+
+  // Should keep debug report URLs when score <= 0.
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript(
+          "-1",
+          R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url");
+            forDebuggingOnly.reportAdAuctionWin("https://win.url"))"),
+      0, /*expected_errors=*/{}, /*expected_data_version=*/absl::nullopt,
+      GURL("https://loss.url"), GURL("https://win.url"));
+
+  // It's OK to call one API but not the other.
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript(
+          "1", R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url"))"),
+      1, /*expected_errors=*/{}, /*expected_data_version=*/absl::nullopt,
+      GURL("https://loss.url"));
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript(
+          "1", R"(forDebuggingOnly.reportAdAuctionWin("https://win.url"))"),
+      1, /*expected_errors=*/{}, /*expected_data_version=*/absl::nullopt,
+      /*expected_debug_loss_report_url=*/absl::nullopt,
+      GURL("https://win.url"));
+
+  // There should be no debugging report URLs when scoreAd() returns invalid
+  // value type.
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript(
+          "\"invalid_score\"",
+          R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url");
+            forDebuggingOnly.reportAdAuctionWin("https://win.url"))"),
+      0, {"https://url.test/ scoreAd() did not return a valid number."},
+      /*expected_data_version=*/absl::nullopt,
+      /*expected_debug_loss_report_url=*/absl::nullopt,
+      /*expected_debug_win_report_url=*/absl::nullopt);
+}
+
+// Debugging loss/win report URLs should be nullopt if scoreAd() pareamters are
+// invalid.
+TEST_F(SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
+       ForDebuggingOnlyReportsInvalidScoreAdParameter) {
+  // Auction config param is invalid.
+  auction_ad_config_non_shared_params_->auction_signals = "{invalid json";
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript(
+          "1",
+          R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url");
+            forDebuggingOnly.reportAdAuctionWin("https://win.url"))"),
+      0);
+  // Setting it back to default value to avoid affecting following tests.
+  auction_ad_config_non_shared_params_->auction_signals =
+      R"({"is_auction_signals": true})";
+
+  // `ad_metadata_` is an invalid json.
+  ad_metadata_ = "{invalid_json";
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript(
+          "1",
+          R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url");
+            forDebuggingOnly.reportAdAuctionWin("https://win.url"))"),
+      0);
+}
+
+TEST_F(SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
+       ForDebuggingOnlyReportsInvalidParameter) {
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript("1", R"(forDebuggingOnly.reportAdAuctionLoss(null))"),
+      0,
+      {"https://url.test/:4 Uncaught TypeError: "
+       "reportAdAuctionLoss requires 1 string parameter."});
+
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript("1", R"(forDebuggingOnly.reportAdAuctionWin([5]))"),
+      0,
+      {"https://url.test/:4 Uncaught TypeError: "
+       "reportAdAuctionWin requires 1 string parameter."});
+
+  std::vector<std::string> non_https_urls = {"http://report.url",
+                                             "file:///foo/", "Not a URL"};
+  for (const auto& url : non_https_urls) {
+    RunScoreAdWithJavascriptExpectingResult(
+        CreateScoreAdScript(
+            "1",
+            base::StringPrintf(R"(forDebuggingOnly.reportAdAuctionLoss("%s"))",
+                               url.c_str())),
+        0,
+        {"https://url.test/:4 Uncaught TypeError: "
+         "reportAdAuctionLoss must be passed a valid HTTPS url."});
+
+    RunScoreAdWithJavascriptExpectingResult(
+        CreateScoreAdScript(
+            "1",
+            base::StringPrintf(R"(forDebuggingOnly.reportAdAuctionWin("%s"))",
+                               url.c_str())),
+        0,
+        {"https://url.test/:4 Uncaught TypeError: "
+         "reportAdAuctionWin must be passed a valid HTTPS url."});
+  }
+
+  // No message if caught, but still no debug report URLs.
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript(
+          "1",
+          R"(try {forDebuggingOnly.reportAdAuctionLoss("http://loss.url")}
+            catch (e) {})"),
+      1, /*expected_errors=*/{});
+}
+
+TEST_F(SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
+       ForDebuggingOnlyReportsMultiCalls) {
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript(
+          "1",
+          R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url");
+            forDebuggingOnly.reportAdAuctionLoss("https://loss.url2"))"),
+      0,
+      {"https://url.test/:5 Uncaught TypeError: "
+       "reportAdAuctionLoss may be called at most once."});
+
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript(
+          "1",
+          R"(forDebuggingOnly.reportAdAuctionWin("https://win.url");
+            forDebuggingOnly.reportAdAuctionWin("https://win.url2"))"),
+      0,
+      {"https://url.test/:5 Uncaught TypeError: "
+       "reportAdAuctionWin may be called at most once."});
+}
+
+// Subsequent runs of the same script should not affect each other.
+TEST_F(SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
+       ForDebuggingOnlyReportsScriptIsolation) {
+  AddJavascriptResponse(&url_loader_factory_, decision_logic_url_,
+                        R"(
+        function scoreAd(adMetadata, bid, auctionConfig, trustedScoringSignals,
+            browserSignals) {
+          if (bid === 1) {
+            forDebuggingOnly.reportAdAuctionLoss("https://loss.url");
+            forDebuggingOnly.reportAdAuctionWin("https://win.url");
+          }
+          return bid;
+        }
+
+        function reportResult() {}
+      )");
+  auto seller_worklet = CreateWorklet();
+  ASSERT_TRUE(seller_worklet);
+
+  // Run the same script twice, and only call debugging report in the first run.
+  // Only the first run will have debugging report URLs.
+  for (int i = 0; i < 2; ++i) {
+    base::RunLoop run_loop;
+    seller_worklet->ScoreAd(
+        ad_metadata_, i + 1, auction_ad_config_non_shared_params_.Clone(),
+        browser_signal_interest_group_owner_, browser_signal_render_url_,
+        browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
+        base::BindLambdaForTesting(
+            [&run_loop](double score, uint32_t data_version,
+                        bool has_data_version,
+                        const absl::optional<GURL>& debug_loss_report_url,
+                        const absl::optional<GURL>& debug_win_report_url,
+                        const std::vector<std::string>& errors) {
+              if (score == 1) {
+                EXPECT_TRUE(debug_loss_report_url.has_value());
+                EXPECT_TRUE(debug_win_report_url.has_value());
+                EXPECT_EQ(GURL("https://loss.url"),
+                          debug_loss_report_url.value());
+                EXPECT_EQ(GURL("https://win.url"),
+                          debug_win_report_url.value());
+              } else {
+                EXPECT_EQ(absl::nullopt, debug_loss_report_url);
+                EXPECT_EQ(absl::nullopt, debug_win_report_url);
+              }
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+  }
 }
 
 }  // namespace

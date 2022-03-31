@@ -23,6 +23,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
+#include "components/enterprise/browser/reporting/chrome_profile_request_generator.h"
 #include "components/enterprise/browser/reporting/common_pref_names.h"
 #include "components/enterprise/browser/reporting/real_time_report_generator.h"
 #include "components/enterprise/browser/reporting/real_time_uploader.h"
@@ -32,12 +33,14 @@
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/reporting/client/report_queue_provider.h"
 #include "components/reporting/proto/synced/record_constants.pb.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/version_info/version_info.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/enterprise/reporting/report_scheduler_android.h"
 #include "chrome/browser/enterprise/reporting/reporting_delegate_factory_android.h"
 #else
 #include "chrome/browser/enterprise/reporting/report_scheduler_desktop.h"
@@ -60,7 +63,8 @@ namespace {
 
 constexpr char kDMToken[] = "dm_token";
 constexpr char kClientId[] = "client_id";
-constexpr base::TimeDelta kDefaultUploadInterval = base::Hours(24);
+constexpr base::TimeDelta kUploadFrequency = base::Hours(12);
+constexpr base::TimeDelta kNewUploadFrequency = base::Hours(10);
 
 #if !BUILDFLAG(IS_ANDROID)
 constexpr char kUploadTriggerMetricName[] =
@@ -73,6 +77,13 @@ ACTION_P(ScheduleGeneratorCallback, request_number) {
   ReportRequestQueue requests;
   for (int i = 0; i < request_number; i++)
     requests.push(std::make_unique<ReportRequest>(ReportType::kFull));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(arg0), std::move(requests)));
+}
+
+ACTION(ScheduleProfileRequestGeneratorCallback) {
+  ReportRequestQueue requests;
+  requests.push(std::make_unique<ReportRequest>(ReportType::kProfileReport));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(arg0), std::move(requests)));
 }
@@ -140,6 +151,23 @@ class MockRealTimeUploader : public RealTimeUploader {
                     EnqueueCallback& callback));
 };
 
+class MockChromeProfileRequestGenerator : public ChromeProfileRequestGenerator {
+ public:
+#if BUILDFLAG(IS_ANDROID)
+  explicit MockChromeProfileRequestGenerator(
+      ReportingDelegateFactoryAndroid* delegate_factory)
+#else
+  explicit MockChromeProfileRequestGenerator(
+      ReportingDelegateFactoryDesktop* delegate_factory)
+#endif  // BUILDFLAG(IS_ANDROID)
+      : ChromeProfileRequestGenerator(/*profile_path=*/base::FilePath(),
+                                      /*profile_name*/ std::string(),
+                                      delegate_factory) {
+  }
+  void Generate(ReportCallback callback) override { OnGenerate(callback); }
+  MOCK_METHOD1(OnGenerate, void(ReportCallback& callback));
+};
+
 class ReportSchedulerTest : public ::testing::Test {
  public:
   ReportSchedulerTest()
@@ -168,6 +196,11 @@ class ReportSchedulerTest : public ::testing::Test {
     extension_request_uploader_ptr_ = std::make_unique<MockRealTimeUploader>();
     extension_request_uploader_ = extension_request_uploader_ptr_.get();
 
+    profile_request_generator_ptr_ =
+        std::make_unique<MockChromeProfileRequestGenerator>(
+            &report_delegate_factory_);
+    profile_request_generator_ = profile_request_generator_ptr_.get();
+
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
     SetLastUploadVersion(chrome::kChromeVersion);
 #endif
@@ -185,18 +218,41 @@ class ReportSchedulerTest : public ::testing::Test {
   }
 
   void CreateScheduler() {
-    scheduler_ = std::make_unique<ReportScheduler>(
-        client_, std::move(generator_ptr_), std::move(real_time_generator_ptr_),
-        &report_delegate_factory_);
+    ReportScheduler::CreateParams params;
+    params.client = client_;
+    params.delegate = report_delegate_factory_.GetReportSchedulerDelegate();
+    params.report_generator = std::move(generator_ptr_);
+    params.real_time_report_generator = std::move(real_time_generator_ptr_);
+    scheduler_ = std::make_unique<ReportScheduler>(std::move(params));
     scheduler_->SetReportUploaderForTesting(std::move(uploader_ptr_));
     scheduler_->SetExtensionRequestUploaderForTesting(
         std::move(extension_request_uploader_ptr_));
+  }
+
+  void CreateSchedulerForProfileReporting(Profile* profile) {
+    ReportScheduler::CreateParams params;
+    params.client = client_;
+    client_->SetDMToken("dm-token");
+    params.delegate =
+#if BUILDFLAG(IS_ANDROID)
+        std::make_unique<ReportSchedulerAndroid>(profile->GetPrefs());
+#else
+        std::make_unique<ReportSchedulerDesktop>(profile, profile->GetPrefs());
+#endif  // BUILDFLAG(IS_ANDROID)
+    params.profile_request_generator =
+        std::move(profile_request_generator_ptr_);
+    scheduler_ = std::make_unique<ReportScheduler>(std::move(params));
+    scheduler_->SetReportUploaderForTesting(std::move(uploader_ptr_));
   }
 
   void SetLastUploadInHour(base::TimeDelta gap) {
     previous_set_last_upload_timestamp_ = base::Time::Now() - gap;
     local_state_.Get()->SetTime(kLastUploadTimestamp,
                                 previous_set_last_upload_timestamp_);
+  }
+
+  void SetReportFrequency(base::TimeDelta frequency) {
+    local_state_.Get()->SetTimeDelta(kCloudReportingUploadFrequency, frequency);
   }
 
   void ToggleCloudReport(bool enabled) {
@@ -275,6 +331,7 @@ class ReportSchedulerTest : public ::testing::Test {
   raw_ptr<MockReportUploader> uploader_;
   raw_ptr<MockRealTimeReportGenerator> real_time_generator_;
   raw_ptr<MockRealTimeUploader> extension_request_uploader_;
+  raw_ptr<MockChromeProfileRequestGenerator> profile_request_generator_;
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   policy::FakeBrowserDMTokenStorage storage_;
 #endif
@@ -287,6 +344,8 @@ class ReportSchedulerTest : public ::testing::Test {
   std::unique_ptr<MockReportUploader> uploader_ptr_;
   std::unique_ptr<MockRealTimeReportGenerator> real_time_generator_ptr_;
   std::unique_ptr<MockRealTimeUploader> extension_request_uploader_ptr_;
+  std::unique_ptr<MockChromeProfileRequestGenerator>
+      profile_request_generator_ptr_;
 };
 
 TEST_F(ReportSchedulerTest, NoReportWithoutPolicy) {
@@ -329,6 +388,31 @@ TEST_F(ReportSchedulerTest, UploadReportSucceeded) {
 
   ::testing::Mock::VerifyAndClearExpectations(client_);
   ::testing::Mock::VerifyAndClearExpectations(generator_);
+}
+
+TEST_F(ReportSchedulerTest, UploadReportSucceededForProfileReporting) {
+  EXPECT_CALL(*profile_request_generator_, OnGenerate(_))
+      .WillOnce(WithArgs<0>(ScheduleProfileRequestGeneratorCallback()));
+  EXPECT_CALL(*uploader_, SetRequestAndUpload(ReportType::kProfileReport, _, _))
+      .WillOnce(RunOnceCallback<2>(ReportUploader::kSuccess));
+
+  TestingProfile* profile = profile_manager_.CreateTestingProfile("profile");
+  profile->GetTestingPrefService()->SetManagedPref(
+      kCloudProfileReportingEnabled, std::make_unique<base::Value>(true));
+  CreateSchedulerForProfileReporting(profile);
+  EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
+
+  // Run pending task.
+  task_environment_.FastForwardBy(base::TimeDelta());
+
+  // Next report is scheduled.
+  EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
+  auto current_last_upload_timestamp =
+      profile->GetPrefs()->GetTime(kLastUploadTimestamp);
+  EXPECT_EQ(base::Time::Now(), current_last_upload_timestamp);
+
+  ::testing::Mock::VerifyAndClearExpectations(client_);
+  ::testing::Mock::VerifyAndClearExpectations(profile_request_generator_);
 }
 
 TEST_F(ReportSchedulerTest, UploadReportTransientError) {
@@ -406,6 +490,7 @@ TEST_F(ReportSchedulerTest, NoReportGenerate) {
 TEST_F(ReportSchedulerTest, TimerDelayWithLastUploadTimestamp) {
   const base::TimeDelta gap = base::Hours(10);
   SetLastUploadInHour(gap);
+  SetReportFrequency(kUploadFrequency);
 
   EXPECT_CALL_SetupRegistration();
   EXPECT_CALL(*generator_, OnGenerate(ReportType::kFull, _))
@@ -416,7 +501,7 @@ TEST_F(ReportSchedulerTest, TimerDelayWithLastUploadTimestamp) {
   CreateScheduler();
   EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
 
-  base::TimeDelta next_report_delay = kDefaultUploadInterval - gap;
+  base::TimeDelta next_report_delay = kUploadFrequency - gap;
   task_environment_.FastForwardBy(next_report_delay - base::Seconds(1));
   ExpectLastUploadTimestampUpdated(false);
   task_environment_.FastForwardBy(base::Seconds(1));
@@ -441,6 +526,36 @@ TEST_F(ReportSchedulerTest, TimerDelayWithoutLastUploadTimestamp) {
   ExpectLastUploadTimestampUpdated(true);
 
   ::testing::Mock::VerifyAndClearExpectations(client_);
+}
+
+TEST_F(ReportSchedulerTest, TimerDelayUpdate) {
+  const base::TimeDelta gap = base::Hours(5);
+  SetLastUploadInHour(gap);
+  SetReportFrequency(kUploadFrequency);
+
+  EXPECT_CALL_SetupRegistration();
+  EXPECT_CALL(*generator_, OnGenerate(ReportType::kFull, _))
+      .WillOnce(WithArgs<1>(ScheduleGeneratorCallback(1)));
+  EXPECT_CALL(*uploader_, SetRequestAndUpload(ReportType::kFull, _, _))
+      .WillOnce(RunOnceCallback<2>(ReportUploader::kSuccess));
+
+  CreateScheduler();
+  EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
+
+  SetReportFrequency(kNewUploadFrequency);
+
+  // The report should be re-scheduled, moving the time forward with the new
+  // interval.
+  EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
+
+  base::TimeDelta next_report_delay = kNewUploadFrequency - gap;
+  task_environment_.FastForwardBy(next_report_delay - base::Seconds(1));
+  ExpectLastUploadTimestampUpdated(false);
+  task_environment_.FastForwardBy(base::Seconds(1));
+  ExpectLastUploadTimestampUpdated(true);
+
+  ::testing::Mock::VerifyAndClearExpectations(client_);
+  ::testing::Mock::VerifyAndClearExpectations(generator_);
 }
 
 TEST_F(ReportSchedulerTest,

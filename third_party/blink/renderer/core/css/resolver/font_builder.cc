@@ -73,9 +73,11 @@ FontFamily FontBuilder::StandardFontFamily() const {
 }
 
 AtomicString FontBuilder::StandardFontFamilyName() const {
-  Settings* settings = document_->GetSettings();
-  if (settings)
-    return settings->GetGenericFontFamilySettings().Standard();
+  if (document_) {
+    Settings* settings = document_->GetSettings();
+    if (settings)
+      return settings->GetGenericFontFamilySettings().Standard();
+  }
   return AtomicString();
 }
 
@@ -87,7 +89,9 @@ AtomicString FontBuilder::GenericFontFamilyName(
       [[fallthrough]];
     case FontDescription::kNoFamily:
       return AtomicString();
-    case FontDescription::kStandardFamily:
+    // While the intention is to phase out kWebkitBodyFamily, it should still
+    // map to the standard font from user preference.
+    case FontDescription::kWebkitBodyFamily:
       return StandardFontFamilyName();
     case FontDescription::kSerifFamily:
       return font_family_names::kSerif;

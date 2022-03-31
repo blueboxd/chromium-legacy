@@ -41,7 +41,10 @@
 #include "chromeos/crosapi/mojom/image_writer.mojom.h"
 #include "chromeos/crosapi/mojom/keystore_service.mojom.h"
 #include "chromeos/crosapi/mojom/kiosk_session_service.mojom.h"
+#include "chromeos/crosapi/mojom/launcher_search.mojom.h"
 #include "chromeos/crosapi/mojom/local_printer.mojom.h"
+#include "chromeos/crosapi/mojom/login.mojom.h"
+#include "chromeos/crosapi/mojom/login_screen_storage.mojom.h"
 #include "chromeos/crosapi/mojom/login_state.mojom.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
 #include "chromeos/crosapi/mojom/metrics_reporting.mojom.h"
@@ -54,6 +57,7 @@
 #include "chromeos/crosapi/mojom/resource_manager.mojom.h"
 #include "chromeos/crosapi/mojom/screen_manager.mojom.h"
 #include "chromeos/crosapi/mojom/select_file.mojom.h"
+#include "chromeos/crosapi/mojom/sharesheet.mojom.h"
 #include "chromeos/crosapi/mojom/system_display.mojom.h"
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
 #include "chromeos/crosapi/mojom/test_controller.mojom.h"
@@ -293,6 +297,12 @@ LacrosService::LacrosService()
   ConstructRemote<crosapi::mojom::LocalPrinter,
                   &crosapi::mojom::Crosapi::BindLocalPrinter,
                   Crosapi::MethodMinVersions::kBindLocalPrinterMinVersion>();
+  ConstructRemote<crosapi::mojom::Login, &crosapi::mojom::Crosapi::BindLogin,
+                  Crosapi::MethodMinVersions::kBindLoginMinVersion>();
+  ConstructRemote<
+      crosapi::mojom::LoginScreenStorage,
+      &crosapi::mojom::Crosapi::BindLoginScreenStorage,
+      Crosapi::MethodMinVersions::kBindLoginScreenStorageMinVersion>();
   ConstructRemote<crosapi::mojom::LoginState,
                   &crosapi::mojom::Crosapi::BindLoginState,
                   Crosapi::MethodMinVersions::kBindLoginStateMinVersion>();
@@ -329,6 +339,13 @@ LacrosService::LacrosService()
   ConstructRemote<crosapi::mojom::SelectFile,
                   &crosapi::mojom::Crosapi::BindSelectFile,
                   Crosapi::MethodMinVersions::kBindSelectFileMinVersion>();
+  ConstructRemote<
+      crosapi::mojom::SearchControllerRegistry,
+      &crosapi::mojom::Crosapi::BindSearchControllerRegistry,
+      Crosapi::MethodMinVersions::kBindSearchControllerRegistryMinVersion>();
+  ConstructRemote<crosapi::mojom::Sharesheet,
+                  &crosapi::mojom::Crosapi::BindSharesheet,
+                  Crosapi::MethodMinVersions::kBindSharesheetMinVersion>();
   ConstructRemote<
       crosapi::mojom::StructuredMetricsService,
       &crosapi::mojom::Crosapi::BindStructuredMetricsService,

@@ -7,7 +7,7 @@
 #include "base/time/time.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
-#include "content/browser/attribution_reporting/storable_source.h"
+#include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/common/url_utils.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_utils.h"
@@ -25,7 +25,6 @@ using testing::_;
 using testing::AllOf;
 using testing::IsNull;
 using testing::Pointee;
-using testing::Property;
 using testing::Return;
 
 const char kPackageName[] = "org.chromium.chrome.test";
@@ -54,11 +53,10 @@ TEST_F(AttributionReporterTest, ValidImpression_Allowed) {
 
   EXPECT_CALL(
       mock_manager_,
-      HandleSource(AllOf(Property(&StorableSource::impression_origin,
-                                  OriginFromAndroidPackageName(kPackageName)),
-                         Property(&StorableSource::source_type,
-                                  StorableSource::SourceType::kEvent),
-                         Property(&StorableSource::impression_time, time))));
+      HandleSource(
+          AllOf(ImpressionOriginIs(OriginFromAndroidPackageName(kPackageName)),
+                SourceTypeIs(CommonSourceInfo::SourceType::kEvent),
+                ImpressionTimeIs(time))));
 
   attribution_reporter_android::ReportAppImpression(
       mock_manager_, nullptr, kPackageName, kEventId, kConversionUrl,
@@ -68,10 +66,9 @@ TEST_F(AttributionReporterTest, ValidImpression_Allowed) {
 TEST_F(AttributionReporterTest, ValidImpression_Allowed_NoOptionals) {
   EXPECT_CALL(
       mock_manager_,
-      HandleSource(AllOf(Property(&StorableSource::impression_origin,
-                                  OriginFromAndroidPackageName(kPackageName)),
-                         Property(&StorableSource::source_type,
-                                  StorableSource::SourceType::kEvent))));
+      HandleSource(
+          AllOf(ImpressionOriginIs(OriginFromAndroidPackageName(kPackageName)),
+                SourceTypeIs(CommonSourceInfo::SourceType::kEvent))));
 
   attribution_reporter_android::ReportAppImpression(
       mock_manager_, nullptr, kPackageName, kEventId, kConversionUrl, "", 0,

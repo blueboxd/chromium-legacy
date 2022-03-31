@@ -265,6 +265,23 @@ class IntegrationTest : public ::testing::Test {
     test_commands_->CallServiceUpdate(app_id, policy_same_version_update);
   }
 
+  void SetupFakeLegacyUpdaterData() {
+    test_commands_->SetupFakeLegacyUpdaterData();
+  }
+
+  void ExpectLegacyUpdaterDataMigrated() {
+    test_commands_->ExpectLegacyUpdaterDataMigrated();
+  }
+
+  void RunRecoveryComponent(const std::string& app_id,
+                            const base::Version& version) {
+    test_commands_->RunRecoveryComponent(app_id, version);
+  }
+
+  void ExpectLastChecked() { test_commands_->ExpectLastChecked(); }
+
+  void ExpectLastStarted() { test_commands_->ExpectLastStarted(); }
+
   scoped_refptr<IntegrationTestCommands> test_commands_;
 
  private:
@@ -416,6 +433,8 @@ TEST_F(IntegrationTest, UpdateApp) {
   Update(kAppId);
   WaitForUpdaterExit();
   ExpectAppVersion(kAppId, v2);
+  ExpectLastChecked();
+  ExpectLastStarted();
 
   Uninstall();
   Clean();
@@ -592,9 +611,9 @@ TEST_F(IntegrationTest, UnregisterUnownedApp) {
 }
 #endif  // BUILDFLAG(IS_MAC)
 
-// Windows and Google-branded builds will eventually support this test, but for
-// now only Chromium-branded macOS updaters are available in third_party.
-#if BUILDFLAG(IS_MAC) && BUILDFLAG(CHROMIUM_BRANDING)
+#if BUILDFLAG(CHROMIUM_BRANDING) || BUILDFLAG(GOOGLE_CHROME_BRANDING)
+// TODO(crbug.com/1268555): Even on Windows, component builds do not work.
+#if !defined(COMPONENT_BUILD)
 TEST_F(IntegrationTest, SelfUpdateFromOldReal) {
   ScopedServer test_server(test_commands_);
   ExpectRegistrationEvent(&test_server, kUpdaterAppId);
@@ -619,6 +638,7 @@ TEST_F(IntegrationTest, SelfUpdateFromOldReal) {
   ExpectVersionActive(kUpdaterVersion);
   Uninstall();
 }
+#endif
 #endif
 
 TEST_F(IntegrationTest, UpdateServiceStress) {
@@ -666,6 +686,25 @@ TEST_F(IntegrationTest, SameVersionUpdate) {
       response);
   CallServiceUpdate(app_id,
                     UpdateService::PolicySameVersionUpdate::kNotAllowed);
+  Uninstall();
+}
+
+TEST_F(IntegrationTest, MigrateLegacyUpdater) {
+  SetupFakeLegacyUpdaterData();
+  Install();
+  ExpectInstalled();
+  ExpectLegacyUpdaterDataMigrated();
+  Uninstall();
+}
+
+TEST_F(IntegrationTest, RecoveryNoUpdater) {
+  const std::string appid = "test1";
+  const base::Version version("0.1");
+  RunRecoveryComponent(appid, version);
+  WaitForUpdaterExit();
+  ExpectInstalled();
+  ExpectActiveUpdater();
+  ExpectAppVersion(appid, version);
   Uninstall();
 }
 

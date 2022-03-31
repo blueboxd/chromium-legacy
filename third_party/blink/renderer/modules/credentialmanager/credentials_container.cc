@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -64,6 +65,7 @@
 #include "third_party/blink/renderer/modules/credentialmanager/password_credential.h"
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential.h"
 #include "third_party/blink/renderer/modules/credentialmanager/scoped_promise_resolver.h"
+#include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -88,6 +90,7 @@ using mojom::blink::CredentialInfoPtr;
 using mojom::blink::CredentialManagerError;
 using mojom::blink::CredentialMediationRequirement;
 using mojom::blink::PaymentCredentialInstrument;
+using mojom::blink::WebAuthnDOMExceptionDetailsPtr;
 using MojoPublicKeyCredentialCreationOptions =
     mojom::blink::PublicKeyCredentialCreationOptions;
 using mojom::blink::MakeCredentialAuthenticatorResponsePtr;
@@ -186,6 +189,13 @@ bool CheckSecurityRequirementsBeforeRequest(
   // The API is not exposed in non-secure context.
   SECURITY_CHECK(resolver->GetExecutionContext()->IsSecureContext());
 
+  if (resolver->DomWindow()->GetFrame()->IsInFencedFrameTree()) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotAllowedError,
+        "The credential operation is not allowed in a fenced frame tree."));
+    return false;
+  }
+
   switch (required_origin_type) {
     case RequiredOriginType::kSecure:
       // This has already been checked.
@@ -217,7 +227,8 @@ bool CheckSecurityRequirementsBeforeRequest(
             "document. Permissions Policy may be used to delegate Web "
             "Authentication capabilities to cross-origin child frames."));
         return false;
-      } else {
+      } else if (!IsSameOriginWithAncestors(
+                     resolver->DomWindow()->GetFrame())) {
         UseCounter::Count(
             resolver->GetExecutionContext(),
             WebFeature::kCredentialManagerCrossOriginPublicKeyGetRequest);
@@ -344,119 +355,137 @@ DOMException* CredentialManagerErrorToDOMException(
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kInvalidStateError,
           "A request is already pending.");
-    case CredentialManagerError::PENDING_REQUEST_WEBAUTHN:
-      // WebAuthn's PENDING_REQUEST is mapped to a different
-      // |CredentialManagerError| because WebAuthn wants kInvalidStateError to
-      // be distinctive so that sites can recognise it as
-      // |CREDENTIAL_EXCLUDED|.
-      return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kOperationError, "A request is already pending.");
     case CredentialManagerError::PASSWORD_STORE_UNAVAILABLE:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError,
           "The password store is unavailable.");
-    case CredentialManagerError::NOT_ALLOWED:
+    case CredentialManagerError::UNKNOWN:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotReadableError,
+          "An unknown error occurred while talking "
+          "to the credential manager.");
+    case CredentialManagerError::SUCCESS:
+      NOTREACHED();
+      break;
+  }
+  return nullptr;
+}
+
+DOMException* AuthenticatorStatusToDOMException(
+    AuthenticatorStatus status,
+    const WebAuthnDOMExceptionDetailsPtr& dom_exception_details) {
+  DCHECK_EQ(status != AuthenticatorStatus::ERROR_WITH_DOM_EXCEPTION_DETAILS,
+            dom_exception_details.is_null());
+  switch (status) {
+    case AuthenticatorStatus::SUCCESS:
+      NOTREACHED();
+      break;
+    case AuthenticatorStatus::PENDING_REQUEST:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kOperationError, "A request is already pending.");
+    case AuthenticatorStatus::NOT_ALLOWED_ERROR:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotAllowedError,
           "The operation either timed out or was not allowed. See: "
           "https://www.w3.org/TR/webauthn-2/"
           "#sctn-privacy-considerations-client.");
-    case CredentialManagerError::INVALID_DOMAIN:
+    case AuthenticatorStatus::INVALID_DOMAIN:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kSecurityError, "This is an invalid domain.");
-    case CredentialManagerError::INVALID_ICON_URL:
+    case AuthenticatorStatus::INVALID_ICON_URL:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kSecurityError, "The icon should be a secure URL");
-    case CredentialManagerError::CREDENTIAL_EXCLUDED:
+    case AuthenticatorStatus::CREDENTIAL_EXCLUDED:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kInvalidStateError,
           "The user attempted to register an authenticator that contains one "
           "of the credentials already registered with the relying party.");
-    case CredentialManagerError::NOT_IMPLEMENTED:
+    case AuthenticatorStatus::NOT_IMPLEMENTED:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError, "Not implemented");
-    case CredentialManagerError::NOT_FOCUSED:
+    case AuthenticatorStatus::NOT_FOCUSED:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotAllowedError,
           "The operation is not allowed at this time "
           "because the page does not have focus.");
-    case CredentialManagerError::RESIDENT_CREDENTIALS_UNSUPPORTED:
+    case AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError,
           "Resident credentials or empty "
           "'allowCredentials' lists are not supported "
           "at this time.");
-    case CredentialManagerError::PROTECTION_POLICY_INCONSISTENT:
-      return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotSupportedError,
-          "Requested protection policy is inconsistent or incongruent with "
-          "other requested parameters.");
-    case CredentialManagerError::ANDROID_ALGORITHM_UNSUPPORTED:
-      return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotSupportedError,
-          "None of the algorithms specified in "
-          "`pubKeyCredParams` are supported by "
-          "this device.");
-    case CredentialManagerError::ANDROID_EMPTY_ALLOW_CREDENTIALS:
-      return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotSupportedError,
-          "Use of an empty `allowCredentials` list is "
-          "not supported on this device.");
-    case CredentialManagerError::ANDROID_NOT_SUPPORTED_ERROR:
-      return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotSupportedError,
-          "Either the device has received unexpected "
-          "request parameters, or the device "
-          "cannot support this request.");
-    case CredentialManagerError::ANDROID_USER_VERIFICATION_UNSUPPORTED:
+    case AuthenticatorStatus::USER_VERIFICATION_UNSUPPORTED:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError,
           "The specified `userVerification` "
           "requirement cannot be fulfilled by "
           "this device unless the device is secured "
           "with a screen lock.");
-    case CredentialManagerError::ABORT:
+    case AuthenticatorStatus::ALGORITHM_UNSUPPORTED:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "None of the algorithms specified in "
+          "`pubKeyCredParams` are supported by "
+          "this device.");
+    case AuthenticatorStatus::EMPTY_ALLOW_CREDENTIALS:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "Use of an empty `allowCredentials` list is "
+          "not supported on this device.");
+    case AuthenticatorStatus::ANDROID_NOT_SUPPORTED_ERROR:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "Either the device has received unexpected "
+          "request parameters, or the device "
+          "cannot support this request.");
+    case AuthenticatorStatus::PROTECTION_POLICY_INCONSISTENT:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "Requested protection policy is inconsistent or incongruent with "
+          "other requested parameters.");
+    case AuthenticatorStatus::ABORT_ERROR:
       return MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
                                                 "Request has been aborted.");
-    case CredentialManagerError::OPAQUE_DOMAIN:
+    case AuthenticatorStatus::OPAQUE_DOMAIN:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotAllowedError,
           "The current origin is an opaque origin and hence not allowed to "
           "access 'PublicKeyCredential' objects.");
-    case CredentialManagerError::INVALID_PROTOCOL:
+    case AuthenticatorStatus::INVALID_PROTOCOL:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kSecurityError,
           "Public-key credentials are only available to HTTPS origin or HTTP "
           "origins that fall under 'localhost'. See https://crbug.com/824383");
-    case CredentialManagerError::BAD_RELYING_PARTY_ID:
+    case AuthenticatorStatus::BAD_RELYING_PARTY_ID:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kSecurityError,
           "The relying party ID is not a registrable domain suffix of, nor "
           "equal to the current domain.");
-    case CredentialManagerError::CANNOT_READ_AND_WRITE_LARGE_BLOB:
+    case AuthenticatorStatus::CANNOT_READ_AND_WRITE_LARGE_BLOB:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError,
           "Only one of the 'largeBlob' extension's 'read' and 'write' "
           "parameters is allowed at a time");
-    case CredentialManagerError::INVALID_ALLOW_CREDENTIALS_FOR_LARGE_BLOB:
+    case AuthenticatorStatus::INVALID_ALLOW_CREDENTIALS_FOR_LARGE_BLOB:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError,
           "The 'largeBlob' extension's 'write' parameter can only be used "
           "with a single credential present on 'allowCredentials'");
-    case CredentialManagerError::UNKNOWN:
-      return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotReadableError,
-          "An unknown error occurred while talking "
-          "to the credential manager.");
-    case CredentialManagerError::
+    case AuthenticatorStatus::
         FAILED_TO_SAVE_CREDENTIAL_ID_FOR_PAYMENT_EXTENSION:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotReadableError,
           "Failed to save the credential identifier for the 'payment' "
           "extension.");
-    case CredentialManagerError::SUCCESS:
-      NOTREACHED();
-      break;
+    case AuthenticatorStatus::ERROR_WITH_DOM_EXCEPTION_DETAILS:
+      return DOMException::Create(
+          /*message=*/dom_exception_details->message,
+          /*name=*/dom_exception_details->name);
+    case AuthenticatorStatus::UNKNOWN_ERROR:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotReadableError,
+          "An unknown error occurred while talking "
+          "to the credential manager.");
   }
   return nullptr;
 }
@@ -548,13 +577,14 @@ void OnMakePublicKeyCredentialComplete(
     std::unique_ptr<ScopedPromiseResolver> scoped_resolver,
     RequiredOriginType required_origin_type,
     AuthenticatorStatus status,
-    MakeCredentialAuthenticatorResponsePtr credential) {
+    MakeCredentialAuthenticatorResponsePtr credential,
+    WebAuthnDOMExceptionDetailsPtr dom_exception_details) {
   auto* resolver = scoped_resolver->Release();
   AssertSecurityRequirementsBeforeResponse(resolver, required_origin_type);
   if (status != AuthenticatorStatus::SUCCESS) {
     DCHECK(!credential);
-    resolver->Reject(CredentialManagerErrorToDOMException(
-        mojo::ConvertTo<CredentialManagerError>(status)));
+    resolver->Reject(
+        AuthenticatorStatusToDOMException(status, dom_exception_details));
     return;
   }
   DCHECK(credential);
@@ -587,8 +617,6 @@ void OnMakePublicKeyCredentialComplete(
     extension_outputs->setHmacCreateSecret(credential->hmac_create_secret);
   }
   if (credential->echo_cred_props) {
-    DCHECK(RuntimeEnabledFeatures::
-               WebAuthenticationResidentKeyRequirementEnabled());
     CredentialPropertiesOutput* cred_props_output =
         CredentialPropertiesOutput::Create();
     if (credential->has_cred_props_rk) {
@@ -633,7 +661,7 @@ void OnSaveCredentialIdForPaymentExtension(
   OnMakePublicKeyCredentialComplete(
       std::move(scoped_resolver),
       RequiredOriginType::kSecureWithPaymentPermissionPolicy, status,
-      std::move(credential));
+      std::move(credential), /*dom_exception_details=*/nullptr);
 }
 
 void OnMakePublicKeyCredentialWithPaymentExtensionComplete(
@@ -641,7 +669,8 @@ void OnMakePublicKeyCredentialWithPaymentExtensionComplete(
     const String& rp_id_for_payment_extension,
     const WTF::Vector<uint8_t>& user_id_for_payment_extension,
     AuthenticatorStatus status,
-    MakeCredentialAuthenticatorResponsePtr credential) {
+    MakeCredentialAuthenticatorResponsePtr credential,
+    WebAuthnDOMExceptionDetailsPtr dom_exception_details) {
   auto* resolver = scoped_resolver->Release();
   const auto required_origin_type =
       RequiredOriginType::kSecureWithPaymentPermissionPolicy;
@@ -649,8 +678,8 @@ void OnMakePublicKeyCredentialWithPaymentExtensionComplete(
   AssertSecurityRequirementsBeforeResponse(resolver, required_origin_type);
   if (status != AuthenticatorStatus::SUCCESS) {
     DCHECK(!credential);
-    resolver->Reject(CredentialManagerErrorToDOMException(
-        mojo::ConvertTo<CredentialManagerError>(status)));
+    resolver->Reject(
+        AuthenticatorStatusToDOMException(status, dom_exception_details));
     return;
   }
 
@@ -669,7 +698,8 @@ void OnMakePublicKeyCredentialWithPaymentExtensionComplete(
 void OnGetAssertionComplete(
     std::unique_ptr<ScopedPromiseResolver> scoped_resolver,
     AuthenticatorStatus status,
-    GetAssertionAuthenticatorResponsePtr credential) {
+    GetAssertionAuthenticatorResponsePtr credential,
+    WebAuthnDOMExceptionDetailsPtr dom_exception_details) {
   auto* resolver = scoped_resolver->Release();
   const auto required_origin_type = RequiredOriginType::kSecure;
 
@@ -730,8 +760,8 @@ void OnGetAssertionComplete(
     return;
   }
   DCHECK(!credential);
-  resolver->Reject(CredentialManagerErrorToDOMException(
-      mojo::ConvertTo<CredentialManagerError>(status)));
+  resolver->Reject(
+      AuthenticatorStatusToDOMException(status, dom_exception_details));
 }
 
 void OnSmsReceive(ScriptPromiseResolver* resolver,
@@ -854,99 +884,6 @@ void OnRequestIdToken(ScriptPromiseResolver* resolver,
           "one time."));
       return;
     }
-    case RequestIdTokenStatus::kErrorFetchingWellKnownHttpNotFound: {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNetworkError,
-          "The provider's .well-known configuration cannot be found."));
-      return;
-    }
-    case RequestIdTokenStatus::kErrorFetchingWellKnownNoResponse: {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNetworkError,
-          "The response body is empty when fetching the provider's .well-known "
-          "configuration."));
-      return;
-    }
-    case RequestIdTokenStatus::kErrorFetchingWellKnownInvalidResponse: {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kInvalidStateError,
-          "Provider's .well-known configuration is invalid."));
-      return;
-    }
-    case RequestIdTokenStatus::kErrorFetchingClientIdMetadataHttpNotFound: {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNetworkError,
-          "The provider's client metadata endpoint cannot be found."));
-      return;
-    }
-    case RequestIdTokenStatus::kErrorFetchingClientIdMetadataNoResponse: {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNetworkError,
-          "The response body is empty when fetching the provider's client "
-          "metadata."));
-      return;
-    }
-    case RequestIdTokenStatus::kErrorFetchingClientIdMetadataInvalidResponse: {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kInvalidStateError,
-          "Provider's client metadata is invalid."));
-      return;
-    }
-    case RequestIdTokenStatus::kErrorFetchingSignin: {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNetworkError,
-          "Error attempting to reach the provider's sign-in endpoint."));
-      return;
-    }
-    case RequestIdTokenStatus::kErrorInvalidSigninResponse: {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kInvalidStateError,
-          "Provider's sign-in response is invalid."));
-      return;
-    }
-    case RequestIdTokenStatus::kErrorFetchingAccountsHttpNotFound: {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNetworkError,
-          "The provider's accounts list endpoint cannot be found."));
-      return;
-    }
-    case RequestIdTokenStatus::kErrorFetchingAccountsNoResponse: {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNetworkError,
-          "The response body is empty when fetching the provider's accounts "
-          "list."));
-      return;
-    }
-    case RequestIdTokenStatus::kErrorFetchingAccountsInvalidResponse: {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kInvalidStateError,
-          "Provider's accounts list is invalid."));
-      return;
-    }
-    case RequestIdTokenStatus::kErrorFetchingIdTokenHttpNotFound: {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNetworkError,
-          "The provider's id token endpoint cannot be found."));
-      return;
-    }
-    case RequestIdTokenStatus::kErrorFetchingIdTokenNoResponse: {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNetworkError,
-          "The response body is empty when fetching the provider's id token."));
-      return;
-    }
-    case RequestIdTokenStatus::kErrorFetchingIdTokenInvalidResponse: {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kInvalidStateError,
-          "Provider's id token is invalid."));
-      return;
-    }
-    case RequestIdTokenStatus::kErrorFetchingIdTokenInvalidRequest: {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kInvalidStateError,
-          "The id token fetching request is invalid."));
-      return;
-    }
     case RequestIdTokenStatus::kErrorCanceled: {
       resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kAbortError, "The request has been aborted."));
@@ -960,6 +897,9 @@ void OnRequestIdToken(ScriptPromiseResolver* resolver,
     case RequestIdTokenStatus::kSuccess: {
       resolver->Resolve(id_token);
       return;
+    }
+    default: {
+      NOTREACHED();
     }
   }
 }
@@ -986,6 +926,7 @@ ScriptPromise CredentialsContainer::get(
     const CredentialRequestOptions* options) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
+  ExecutionContext* context = ExecutionContext::From(script_state);
 
   auto required_origin_type = RequiredOriginType::kSecureAndSameWithAncestors;
   // hasPublicKey() implies that this is a WebAuthn request.
@@ -1001,29 +942,32 @@ ScriptPromise CredentialsContainer::get(
     return promise;
   }
 
-  if (options->hasFederated()) {
-    UseCounter::Count(resolver->GetExecutionContext(),
+  // |kCredentialManagerGetFederatedCredential| was introduced to measure the
+  // use of |FederatedCredential|. FedCM API reuses |FederatedCredential| with a
+  // non-string type |provider|. Therefore, we need to update the use counter to
+  // consistently measure the string type of |provider| usage.
+  if (options->hasFederated() && !options->federated()->hasProviders()) {
+    UseCounter::Count(context,
                       WebFeature::kCredentialManagerGetFederatedCredential);
-  } else if (options->hasPassword()) {
-    UseCounter::Count(resolver->GetExecutionContext(),
+  }
+  if (!options->hasFederated() && options->hasPassword()) {
+    UseCounter::Count(context,
                       WebFeature::kCredentialManagerGetPasswordCredential);
   }
 
   if (options->hasPublicKey()) {
     auto cryptotoken_origin = SecurityOrigin::Create(KURL(kCryptotokenOrigin));
-    if (!cryptotoken_origin->IsSameOriginWith(
-            resolver->GetExecutionContext()->GetSecurityOrigin())) {
+    if (!cryptotoken_origin->IsSameOriginWith(context->GetSecurityOrigin())) {
       // Cryptotoken requests are recorded as kU2FCryptotokenSign from within
       // the extension.
-      UseCounter::Count(resolver->GetExecutionContext(),
+      UseCounter::Count(context,
                         WebFeature::kCredentialManagerGetPublicKeyCredential);
     }
 
 #if BUILDFLAG(IS_ANDROID)
     if (options->publicKey()->hasExtensions() &&
         options->publicKey()->extensions()->hasUvm()) {
-      UseCounter::Count(resolver->GetExecutionContext(),
-                        WebFeature::kCredentialManagerGetWithUVM);
+      UseCounter::Count(context, WebFeature::kCredentialManagerGetWithUVM);
     }
 #endif
 
@@ -1089,8 +1033,7 @@ ScriptPromise CredentialsContainer::get(
             "creating a credential"));
         return promise;
       }
-      if (RuntimeEnabledFeatures::SecurePaymentConfirmationEnabled(
-              resolver->GetExecutionContext()) &&
+      if (RuntimeEnabledFeatures::SecurePaymentConfirmationEnabled(context) &&
           options->publicKey()->extensions()->hasPayment()) {
         resolver->Reject(MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kNotAllowedError,
@@ -1141,8 +1084,7 @@ ScriptPromise CredentialsContainer::get(
     if (mojo_options) {
       mojo_options->is_conditional = is_conditional_ui_request;
       if (!mojo_options->relying_party_id) {
-        mojo_options->relying_party_id =
-            resolver->GetExecutionContext()->GetSecurityOrigin()->Domain();
+        mojo_options->relying_party_id = context->GetSecurityOrigin()->Domain();
       }
       auto* authenticator =
           CredentialManagerProxy::From(script_state)->Authenticator();
@@ -1186,8 +1128,13 @@ ScriptPromise CredentialsContainer::get(
 
   Vector<KURL> providers;
   if (options->hasFederated() && options->federated()->hasProviders()) {
+    ContentSecurityPolicy* policy =
+        resolver->GetExecutionContext()
+            ->GetContentSecurityPolicyForCurrentWorld();
     for (const auto& provider : options->federated()->providers()) {
       if (provider->IsString()) {
+        UseCounter::Count(context,
+                          WebFeature::kCredentialManagerGetFederatedCredential);
         KURL url = KURL(NullURL(), provider->GetAsString());
         if (url.IsValid())
           providers.push_back(std::move(url));
@@ -1195,11 +1142,13 @@ ScriptPromise CredentialsContainer::get(
         // TODO(yigu): Ideally the logic should be handled in CredentialManager
         // via Get. However currently it's only for password management and we
         // should refactor the logic to make it generic.
-        if (!RuntimeEnabledFeatures::WebIDEnabled()) {
+        if (!RuntimeEnabledFeatures::WebIDEnabled(context)) {
           resolver->Reject(MakeGarbageCollected<DOMException>(
               DOMExceptionCode::kNotSupportedError, "Invalid provider entry"));
           return promise;
         }
+        // Log the UseCounter only when the WebID flag is enabled.
+        UseCounter::Count(context, WebFeature::kFederatedCredentialManagement);
         // TODO(kenrb): Add some renderer-side validation here, such as
         // validating |provider|, and making sure the calling context is legal.
         // Some of this has not been spec'd yet.
@@ -1214,6 +1163,17 @@ ScriptPromise CredentialsContainer::get(
           resolver->Reject(MakeGarbageCollected<DOMException>(
               DOMExceptionCode::kInvalidStateError,
               "Provided provider information is incomplete."));
+          return promise;
+        }
+        // We disallow redirects (in idp_network_request_manager.cc), so it is
+        // enough to check the initial URL here.
+        if (!policy->AllowConnectToSource(provider_url, provider_url,
+                                          RedirectStatus::kNoRedirect)) {
+          WTF::String error =
+              "Refused to connect to '" + provider_url.ElidedString() +
+              "' because it violates the document's Content Security Policy.";
+          resolver->Reject(MakeGarbageCollected<DOMException>(
+              DOMExceptionCode::kNetworkError, error));
           return promise;
         }
         DCHECK(options->federated()->hasPreferAutoSignIn());
@@ -1246,16 +1206,16 @@ ScriptPromise CredentialsContainer::get(
     return promise;
   }
   if (options->mediation() == "silent") {
-    UseCounter::Count(ExecutionContext::From(script_state),
+    UseCounter::Count(context,
                       WebFeature::kCredentialManagerGetMediationSilent);
     requirement = CredentialMediationRequirement::kSilent;
   } else if (options->mediation() == "optional") {
-    UseCounter::Count(ExecutionContext::From(script_state),
+    UseCounter::Count(context,
                       WebFeature::kCredentialManagerGetMediationOptional);
     requirement = CredentialMediationRequirement::kOptional;
   } else {
     DCHECK_EQ("required", options->mediation());
-    UseCounter::Count(ExecutionContext::From(script_state),
+    UseCounter::Count(context,
                       WebFeature::kCredentialManagerGetMediationRequired);
     requirement = CredentialMediationRequirement::kRequired;
   }

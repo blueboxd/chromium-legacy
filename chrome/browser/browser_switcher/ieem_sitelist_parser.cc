@@ -81,7 +81,7 @@ void ParseIeFileVersionOne(const base::Value& xml,
 
   DCHECK(data_decoder::IsXmlElementNamed(xml, kSchema1RulesElement));
   for (const base::Value& node :
-       data_decoder::GetXmlElementChildren(xml)->GetList()) {
+       data_decoder::GetXmlElementChildren(xml)->GetListDeprecated()) {
     // Skip over anything that is not a <emie> or <docMode> element.
     if (!data_decoder::IsXmlElementNamed(node, kSchema1EmieElement) &&
         !data_decoder::IsXmlElementNamed(node, kSchema1DocModeElement)) {
@@ -227,7 +227,8 @@ void ParseIeemXml(const std::string& xml,
                   ParsingMode parsing_mode,
                   base::OnceCallback<void(ParsedXml)> callback) {
   data_decoder::DataDecoder::ParseXmlIsolated(
-      xml, base::BindOnce(&RawXmlParsed, parsing_mode, std::move(callback)));
+      xml, data_decoder::mojom::XmlParser::WhitespaceBehavior::kIgnore,
+      base::BindOnce(&RawXmlParsed, parsing_mode, std::move(callback)));
 }
 
 }  // namespace browser_switcher

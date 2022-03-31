@@ -227,11 +227,17 @@
 }
 
 - (void)getAppStatesWithReply:(void (^_Nonnull)(CRUAppStatesWrapper*))reply {
+  [self getAppStatesWithReply:reply restrictedView:NO];
+}
+
+- (void)getAppStatesWithReply:(void (^_Nonnull)(CRUAppStatesWrapper*))reply
+               restrictedView:(bool)restrictedView {
   auto cb = base::BindOnce(base::RetainBlock(
       ^(const std::vector<updater::UpdateService::AppState>& states) {
         if (reply) {
           base::scoped_nsobject<CRUAppStatesWrapper> appStatesWrapper(
-              [[CRUAppStatesWrapper alloc] initWithAppStates:states]);
+              [[CRUAppStatesWrapper alloc] initWithAppStates:states
+                                              restrictedView:restrictedView]);
           reply(appStatesWrapper);
         }
 
@@ -290,7 +296,7 @@
   // This function may only be called by the same user.
   VLOG(1) << "Rejecting cross-user attempt to call " << __func__;
   if (reply)
-    reply(updater::kPermissionDeniedError);
+    reply(updater::kErrorPermissionDenied);
 }
 
 - (void)checkForUpdateWithAppID:(NSString* _Nonnull)appID
@@ -317,16 +323,12 @@
   // This function may only be called by the same user.
   VLOG(1) << "Rejecting cross-user attempt to call " << __func__;
   if (reply)
-    reply(updater::kPermissionDeniedError);
+    reply(updater::kErrorPermissionDenied);
 }
 
 - (void)getAppStatesWithReply:(void (^_Nonnull)(CRUAppStatesWrapper*))reply {
-  // This function may only be called by the same user.
-  VLOG(1) << "Rejecting cross-user attempt to call " << __func__;
-  if (reply) {
-    reply(base::scoped_nsobject<CRUAppStatesWrapper>(
-        [[CRUAppStatesWrapper alloc] initWithAppStates:{}]));
-  }
+  // Cross-user gets a restricted view of the app states.
+  [_service getAppStatesWithReply:reply restrictedView:YES];
 }
 @end
 

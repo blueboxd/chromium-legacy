@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/ash/input_method/assistive_suggester_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -119,12 +120,7 @@ void RecordSuggestionsMatch(const std::vector<TextSuggestion>& suggestions) {
 }
 
 bool IsUsEnglishEngine(const std::string& engine_id) {
-  return (engine_id == "xkb:us::eng" || engine_id == "xkb:us:altgr-intl:eng" ||
-          engine_id == "xkb:us:colemak:eng" ||
-          engine_id == "xkb:us:dvorak:eng" || engine_id == "xkb:us:dvp:eng" ||
-          engine_id == "xkb:us:intl:eng" || engine_id == "xkb:us:intl_pc:eng" ||
-          engine_id == "xkb:us:workman-intl:eng" ||
-          engine_id == "xkb:us:workman:eng");
+  return engine_id == "xkb:us::eng";
 }
 
 bool IsLacrosEnabled() {
@@ -134,16 +130,6 @@ bool IsLacrosEnabled() {
 void RecordTextInputStateMetric(AssistiveTextInputState state) {
   base::UmaHistogramEnumeration("InputMethod.Assistive.MultiWord.InputState",
                                 state);
-}
-
-bool IsPredictiveWritingEnabled(PrefService* pref_service,
-                                const std::string& engine_id) {
-  const base::Value* input_method_settings = pref_service->GetDictionary(
-      ::prefs::kLanguageInputMethodSpecificSettings);
-  absl::optional<bool> predictive_writing_setting =
-      input_method_settings->FindBoolPath(
-          engine_id + ".physicalKeyboardEnablePredictiveWriting");
-  return predictive_writing_setting && *predictive_writing_setting;
 }
 
 void RecordMultiWordTextInputState(PrefService* pref_service,
@@ -165,7 +151,7 @@ void RecordMultiWordTextInputState(PrefService* pref_service,
     return;
   }
 
-  if (!IsPredictiveWritingEnabled(pref_service, engine_id)) {
+  if (!IsPredictiveWritingPrefEnabled(pref_service, engine_id)) {
     RecordTextInputStateMetric(
         AssistiveTextInputState::kFeatureBlockedByPreference);
     return;
@@ -229,8 +215,9 @@ bool AssistiveSuggester::IsEnhancedEmojiSuggestEnabled() {
 }
 
 bool AssistiveSuggester::IsMultiWordSuggestEnabled() {
-  return (features::IsAssistiveMultiWordEnabled() &&
-          IsPredictiveWritingEnabled(profile_->GetPrefs(), active_engine_id_));
+  return features::IsAssistiveMultiWordEnabled() &&
+         IsPredictiveWritingPrefEnabled(profile_->GetPrefs(),
+                                        active_engine_id_);
 }
 
 bool AssistiveSuggester::IsExpandedMultiWordSuggestEnabled() {
@@ -515,7 +502,7 @@ void AssistiveSuggester::OnActivate(const std::string& engine_id) {
   if (features::IsAssistiveMultiWordEnabled()) {
     active_engine_id_ = engine_id;
     RecordAssistiveUserPrefForMultiWord(
-        IsPredictiveWritingEnabled(profile_->GetPrefs(), engine_id));
+        IsPredictiveWritingPrefEnabled(profile_->GetPrefs(), engine_id));
   }
 }
 

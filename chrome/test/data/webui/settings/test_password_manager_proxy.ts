@@ -109,6 +109,8 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
       'isAccountStoreDefault',
       'getUrlCollection',
       'addPassword',
+      'muteInsecureCredential',
+      'unmuteInsecureCredential',
     ]);
 
     /** @private {!PasswordManagerExpectations} */
@@ -379,6 +381,16 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
   addPasswordsFileExportProgressListener(
       listener: PasswordsFileExportProgressListener) {
     this.lastCallback.addPasswordsFileExportProgressListener = listener;
+  }
+
+  muteInsecureCredential(insecureCredential:
+                             chrome.passwordsPrivate.InsecureCredential) {
+    this.methodCalled('muteInsecureCredential', insecureCredential);
+  }
+
+  unmuteInsecureCredential(insecureCredential:
+                               chrome.passwordsPrivate.InsecureCredential) {
+    this.methodCalled('unmuteInsecureCredential', insecureCredential);
   }
 
   cancelExportPasswords() {}

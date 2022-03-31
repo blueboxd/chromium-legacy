@@ -25,6 +25,11 @@
 #include "chrome/browser/ui/webui/settings/ash/app_management/app_management_uma.h"
 #endif
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_FUCHSIA)
+#include "chrome/browser/web_applications/web_app_utils.h"
+#endif
+
 namespace signin {
 enum class ConsentLevel;
 }  // namespace signin
@@ -157,6 +162,8 @@ void ShowSafeBrowsingEnhancedProtection(Browser* browser);
 void ShowImportDialog(Browser* browser);
 void ShowAboutChrome(Browser* browser);
 void ShowSearchEngineSettings(Browser* browser);
+void ShowWebStore(Browser* browser);
+void ShowPrivacySandboxSettings(Browser* browser);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Shows the enterprise management info page in a browser tab.
@@ -191,6 +198,14 @@ void ShowBrowserSignin(Browser* browser,
 // otherwise initiates signin in a new browser tab.
 void ShowBrowserSigninOrSettings(Browser* browser,
                                  signin_metrics::AccessPoint access_point);
+#endif
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_FUCHSIA)
+// Show chrome://app-settings/<app-id> page.
+void ShowWebAppSettings(Browser* browser,
+                        const std::string& app_id,
+                        web_app::AppSettingsPageEntryPoint entry_point);
 #endif
 
 }  // namespace chrome

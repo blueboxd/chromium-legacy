@@ -168,6 +168,8 @@ class AutocompleteProvider
     TYPE_MOST_VISITED_SITES = 1 << 13,
     TYPE_VERBATIM_MATCH = 1 << 14,
     TYPE_VOICE_SUGGEST = 1 << 15,
+    TYPE_HISTORY_FUZZY = 1 << 16,
+    TYPE_OPEN_TAB = 1 << 17,
   };
 
   explicit AutocompleteProvider(Type type);

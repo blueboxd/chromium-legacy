@@ -10,8 +10,12 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/ash/file_manager/file_manager_browsertest_base.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
+#include "chrome/browser/chromeos/policy/dlp/mock_dlp_rules_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/dbus/dlp/dlp_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -126,13 +130,13 @@ struct TestCase {
     return *this;
   }
 
-  TestCase& EnableBannersFramework() {
-    options.enable_banners_framework = true;
+  TestCase& EnableDlp() {
+    options.enable_dlp_files_restriction = true;
     return *this;
   }
 
-  TestCase& DisableBannersFramework() {
-    options.enable_banners_framework = false;
+  TestCase& EnableWebDriveOffice() {
+    options.enable_web_drive_office = true;
     return *this;
   }
 
@@ -168,9 +172,6 @@ struct TestCase {
 
     if (options.enable_trash)
       full_name += "_Trash";
-
-    if (options.enable_banners_framework)
-      full_name += "_BannersFramework";
 
     return full_name;
   }
@@ -237,6 +238,52 @@ IN_PROC_BROWSER_TEST_P(ExtendedFilesAppBrowserTest, PRE_Test) {
 }
 
 IN_PROC_BROWSER_TEST_P(ExtendedFilesAppBrowserTest, Test) {
+  StartTest();
+}
+
+// A version of FilesAppBrowserTest that supports DLP files restrictions.
+class DlpFilesAppBrowserTest : public FilesAppBrowserTest {
+ protected:
+  DlpFilesAppBrowserTest() = default;
+
+  DlpFilesAppBrowserTest(const DlpFilesAppBrowserTest&) = delete;
+  DlpFilesAppBrowserTest& operator=(const DlpFilesAppBrowserTest&) = delete;
+
+  ~DlpFilesAppBrowserTest() override = default;
+
+  std::unique_ptr<KeyedService> SetDlpRulesManager(
+      content::BrowserContext* context) {
+    auto dlp_rules_manager =
+        std::make_unique<testing::NiceMock<policy::MockDlpRulesManager>>();
+    mock_rules_manager_ = dlp_rules_manager.get();
+    return dlp_rules_manager;
+  }
+
+  void SetUpOnMainThread() override {
+    FilesAppBrowserTest::SetUpOnMainThread();
+    policy::DlpRulesManagerFactory::GetInstance()->SetTestingFactory(
+        profile(),
+        base::BindRepeating(&DlpFilesAppBrowserTest::SetDlpRulesManager,
+                            base::Unretained(this)));
+  }
+
+  // MockDlpRulesManager is owned by KeyedService and is guaranteed to outlive
+  // this class.
+  policy::MockDlpRulesManager* mock_rules_manager_ = nullptr;
+};
+
+IN_PROC_BROWSER_TEST_P(DlpFilesAppBrowserTest, Test) {
+  chromeos::DlpClient::Get()->GetTestInterface()->SetFakeSource("example1.com");
+
+  ASSERT_TRUE(policy::DlpRulesManagerFactory::GetForPrimaryProfile());
+  ON_CALL(*mock_rules_manager_, IsRestricted)
+      .WillByDefault(::testing::Return(policy::DlpRulesManager::Level::kAllow));
+  ON_CALL(*mock_rules_manager_, GetReportingManager)
+      .WillByDefault(::testing::Return(nullptr));
+  EXPECT_CALL(*mock_rules_manager_, IsRestrictedDestination)
+      .WillRepeatedly(
+          ::testing::Return(policy::DlpRulesManager::Level::kBlock));
+
   StartTest();
 }
 
@@ -598,23 +645,36 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Toolbar, /* toolbar.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("toolbarDeleteWithMenuItemNoEntrySelected"),
-                      TestCase("toolbarDeleteButtonOpensDeleteConfirmDialog"),
-                      TestCase("toolbarDeleteButtonKeepFocus"),
-                      TestCase("toolbarDeleteEntry").InGuestMode(),
-                      TestCase("toolbarDeleteEntry").InGuestMode().FilesSwa(),
-                      TestCase("toolbarDeleteEntry"),
-                      TestCase("toolbarDeleteEntry").FilesSwa(),
-                      TestCase("toolbarDeleteEntry").EnableTrash(),
-                      TestCase("toolbarDeleteEntry").EnableTrash().FilesSwa(),
-                      TestCase("toolbarRefreshButtonWithSelection")
-                          .EnableGenericDocumentsProvider(),
-                      TestCase("toolbarAltACommand"),
-                      TestCase("toolbarRefreshButtonHiddenInRecents"),
-                      TestCase("toolbarMultiMenuFollowsButton"),
-                      TestCase("toolbarSharesheetButtonWithSelection"),
-                      TestCase("toolbarSharesheetContextMenuWithSelection"),
-                      TestCase("toolbarSharesheetNoEntrySelected")));
+    ::testing::Values(
+        TestCase("toolbarDeleteWithMenuItemNoEntrySelected"),
+        TestCase("toolbarDeleteWithMenuItemNoEntrySelected").FilesSwa(),
+        TestCase("toolbarDeleteButtonOpensDeleteConfirmDialog"),
+        TestCase("toolbarDeleteButtonOpensDeleteConfirmDialog").FilesSwa(),
+        TestCase("toolbarDeleteButtonKeepFocus"),
+        TestCase("toolbarDeleteButtonKeepFocus").FilesSwa(),
+        TestCase("toolbarDeleteEntry"),
+        TestCase("toolbarDeleteEntry").FilesSwa(),
+        TestCase("toolbarDeleteEntry").InGuestMode(),
+        TestCase("toolbarDeleteEntry").InGuestMode().FilesSwa(),
+        TestCase("toolbarDeleteEntry").EnableTrash(),
+        TestCase("toolbarDeleteEntry").EnableTrash().FilesSwa(),
+        TestCase("toolbarRefreshButtonWithSelection")
+            .EnableGenericDocumentsProvider(),
+        TestCase("toolbarRefreshButtonWithSelection")
+            .EnableGenericDocumentsProvider()
+            .FilesSwa(),
+        TestCase("toolbarAltACommand"),
+        TestCase("toolbarAltACommand").FilesSwa(),
+        TestCase("toolbarRefreshButtonHiddenInRecents"),
+        TestCase("toolbarRefreshButtonHiddenInRecents").FilesSwa(),
+        TestCase("toolbarMultiMenuFollowsButton"),
+        TestCase("toolbarMultiMenuFollowsButton").FilesSwa(),
+        TestCase("toolbarSharesheetButtonWithSelection"),
+        TestCase("toolbarSharesheetButtonWithSelection").FilesSwa(),
+        TestCase("toolbarSharesheetContextMenuWithSelection"),
+        TestCase("toolbarSharesheetContextMenuWithSelection").FilesSwa(),
+        TestCase("toolbarSharesheetNoEntrySelected"),
+        TestCase("toolbarSharesheetNoEntrySelected").FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     QuickView, /* quick_view.js */
@@ -662,12 +722,21 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewVideo").FilesSwa(),
         TestCase("openQuickViewVideoOnDrive"),
         TestCase("openQuickViewVideoOnDrive").FilesSwa(),
+#if !defined(ADDRESS_SANITIZER) || !defined(NDEBUG)
+        // TODO(http://crbug.com/1291090): Flaky on ASan non-DEBUG.
         TestCase("openQuickViewPdf"),
+#endif
         TestCase("openQuickViewPdf").FilesSwa(),
+#if !defined(ADDRESS_SANITIZER) || !defined(NDEBUG)
+        // TODO(http://crbug.com/1291090): Flaky on ASan non-DEBUG.
         TestCase("openQuickViewPdfPopup"),
+#endif
         TestCase("openQuickViewPdfPopup").FilesSwa(),
         TestCase("openQuickViewPdfPreviewsDisabled"),
+#if !defined(ADDRESS_SANITIZER) || !defined(NDEBUG)
+        // TODO(http://crbug.com/1291090): Flaky on ASan non-DEBUG.
         TestCase("openQuickViewPdfPreviewsDisabled").FilesSwa(),
+#endif
         TestCase("openQuickViewKeyboardUpDownChangesView"),
         TestCase("openQuickViewKeyboardUpDownChangesView").FilesSwa(),
         TestCase("openQuickViewKeyboardLeftRightChangesView"),
@@ -943,16 +1012,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveLinkToDirectory"),
         TestCase("driveLinkOpenFileThroughLinkedDirectory").MediaSwa(),
         TestCase("driveLinkOpenFileThroughTransitiveLink").MediaSwa(),
-        TestCase("driveWelcomeBanner").EnableBannersFramework(),
-        TestCase("driveWelcomeBanner").DisableBannersFramework(),
-        TestCase("driveOfflineInfoBanner")
-            .EnableDriveDssPin()
-            .EnableBannersFramework(),
-        TestCase("driveOfflineInfoBanner")
-            .EnableDriveDssPin()
-            .DisableBannersFramework(),
-        TestCase("driveOfflineInfoBannerWithoutFlag").EnableBannersFramework(),
-        TestCase("driveOfflineInfoBannerWithoutFlag").DisableBannersFramework(),
+        TestCase("driveWelcomeBanner"),
+        TestCase("driveOfflineInfoBanner").EnableDriveDssPin(),
+        TestCase("driveOfflineInfoBannerWithoutFlag"),
         TestCase("driveEnableDocsOfflineDialog"),
         TestCase("driveEnableDocsOfflineDialogWithoutWindow"),
         TestCase("driveEnableDocsOfflineDialogMultipleWindows"),
@@ -962,45 +1024,15 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     HoldingSpace, /* holding_space.js */
     FilesAppBrowserTest,
     ::testing::Values(
-        TestCase("holdingSpaceWelcomeBanner").EnableBannersFramework(),
-        TestCase("holdingSpaceWelcomeBanner").DisableBannersFramework(),
-        TestCase("holdingSpaceWelcomeBanner")
-            .EnableBannersFramework()
-            .FilesSwa(),
-        TestCase("holdingSpaceWelcomeBanner")
-            .DisableBannersFramework()
-            .FilesSwa(),
-        TestCase("holdingSpaceWelcomeBannerWontShowAfterBeingDismissed")
-            .DisableBannersFramework(),
-        TestCase("holdingSpaceWelcomeBannerWontShowForModalDialogs")
-            .WithBrowser()
-            .DisableBannersFramework(),
+        TestCase("holdingSpaceWelcomeBanner"),
+        TestCase("holdingSpaceWelcomeBanner").FilesSwa(),
+        TestCase("holdingSpaceWelcomeBannerWillShowForModalDialogs")
+            .WithBrowser(),
         TestCase("holdingSpaceWelcomeBannerWillShowForModalDialogs")
             .WithBrowser()
-            .EnableBannersFramework(),
-        TestCase("holdingSpaceWelcomeBannerWillShowForModalDialogs")
-            .WithBrowser()
-            .EnableBannersFramework()
             .FilesSwa(),
-        TestCase("holdingSpaceWelcomeBannerWontShowForModalDialogs")
-            .WithBrowser()
-            .DisableBannersFramework()
-            .FilesSwa(),
-        TestCase("holdingSpaceWelcomeBannerWontShowOnDrive")
-            .DisableBannersFramework(),
-        TestCase("holdingSpaceWelcomeBannerWontShowOnDrive")
-            .DisableBannersFramework()
-            .FilesSwa(),
-        TestCase("holdingSpaceWelcomeBannerOnTabletModeChanged")
-            .EnableBannersFramework(),
-        TestCase("holdingSpaceWelcomeBannerOnTabletModeChanged")
-            .DisableBannersFramework(),
-        TestCase("holdingSpaceWelcomeBannerOnTabletModeChanged")
-            .EnableBannersFramework()
-            .FilesSwa(),
-        TestCase("holdingSpaceWelcomeBannerOnTabletModeChanged")
-            .DisableBannersFramework()
-            .FilesSwa()));
+        TestCase("holdingSpaceWelcomeBannerOnTabletModeChanged"),
+        TestCase("holdingSpaceWelcomeBannerOnTabletModeChanged").FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Transfer, /* transfer.js */
@@ -1094,6 +1126,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("transferShowPendingMessageForZeroRemainingTime")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
+    Transfer, /* transfer.js */
+    DlpFilesAppBrowserTest,
+    ::testing::Values(TestCase("transferShowDlpToast").EnableDlp()));
+
+WRAPPED_INSTANTIATE_TEST_SUITE_P(
     RestorePrefs, /* restore_prefs.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("restoreSortColumn").InGuestMode(),
@@ -1166,29 +1203,12 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("tabindexSearchBoxFocus"),
-        TestCase("tabindexFocus").DisableBannersFramework(),
-        TestCase("tabindexFocus").EnableBannersFramework(),
-        TestCase("tabindexFocusDownloads").DisableBannersFramework(),
-        TestCase("tabindexFocusDownloads").EnableBannersFramework(),
-        TestCase("tabindexFocusDownloads")
-            .DisableBannersFramework()
-            .InGuestMode(),
-        TestCase("tabindexFocusDirectorySelected").DisableBannersFramework(),
-        TestCase("tabindexFocusDirectorySelected").EnableBannersFramework(),
-        TestCase("tabindexOpenDialogDownloads")
-            .WithBrowser()
-            .DisableBannersFramework(),
-        TestCase("tabindexOpenDialogDownloads")
-            .WithBrowser()
-            .EnableBannersFramework(),
-        TestCase("tabindexOpenDialogDownloads")
-            .WithBrowser()
-            .DisableBannersFramework()
-            .InGuestMode(),
-        TestCase("tabindexOpenDialogDownloads")
-            .WithBrowser()
-            .EnableBannersFramework()
-            .InGuestMode()
+        TestCase("tabindexFocus"),
+        TestCase("tabindexFocusDownloads"),
+        TestCase("tabindexFocusDownloads").InGuestMode(),
+        TestCase("tabindexFocusDirectorySelected"),
+        TestCase("tabindexOpenDialogDownloads").WithBrowser(),
+        TestCase("tabindexOpenDialogDownloads").WithBrowser().InGuestMode()
         // TODO(crbug.com/1236842): Remove flakiness and enable this test.
         //      ,
         //      TestCase("tabindexSaveFileDialogDrive").WithBrowser(),
@@ -1337,8 +1357,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(TestCase("showGridViewDownloads").InGuestMode(),
                       TestCase("showGridViewDownloads"),
-                      TestCase("showGridViewDrive").EnableBannersFramework(),
-                      TestCase("showGridViewDrive").DisableBannersFramework(),
+                      TestCase("showGridViewDrive"),
                       TestCase("showGridViewButtonSwitches"),
                       TestCase("showGridViewButtonSwitches").FilesSwa(),
                       TestCase("showGridViewKeyboardSelectionA11y"),
@@ -1424,14 +1443,12 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Crostini, /* crostini.js */
     FilesAppBrowserTest,
-    ::testing::Values(
-        TestCase("mountCrostini"),
-        TestCase("enableDisableCrostini"),
-        TestCase("sharePathWithCrostini").EnableBannersFramework(),
-        TestCase("sharePathWithCrostini").DisableBannersFramework(),
-        TestCase("pluginVmDirectoryNotSharedErrorDialog"),
-        TestCase("pluginVmFileOnExternalDriveErrorDialog"),
-        TestCase("pluginVmFileDropFailErrorDialog")));
+    ::testing::Values(TestCase("mountCrostini"),
+                      TestCase("enableDisableCrostini"),
+                      TestCase("sharePathWithCrostini"),
+                      TestCase("pluginVmDirectoryNotSharedErrorDialog"),
+                      TestCase("pluginVmFileOnExternalDriveErrorDialog"),
+                      TestCase("pluginVmFileDropFailErrorDialog")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     MyFiles, /* my_files.js */
@@ -1504,7 +1521,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(TestCase("metricsRecordEnum"),
                       TestCase("metricsRecordEnum").FilesSwa(),
-                      TestCase("metricsOpenSwa").FilesSwa()));
+                      TestCase("metricsOpenSwa").FilesSwa(),
+                      TestCase("metricsRecordDirectoryListLoad")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Breadcrumbs, /* breadcrumbs.js */
@@ -1560,12 +1578,17 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     AndroidPhotos, /* android_photos.js */
     FilesAppBrowserTest,
     ::testing::Values(
-        // TODO(crbug.com/1228128): Remove disabled test when framework is live.
-        TestCase("androidPhotosBanner")
-            .EnablePhotosDocumentsProvider()
-            .EnableBannersFramework(),
-        TestCase("androidPhotosBanner")
-            .EnablePhotosDocumentsProvider()
-            .DisableBannersFramework()));
+        TestCase("androidPhotosBanner").EnablePhotosDocumentsProvider()));
+
+WRAPPED_INSTANTIATE_TEST_SUITE_P(
+    Office, /* office.js */
+    FilesAppBrowserTest,
+    ::testing::Values(
+        TestCase("openOfficeFile").EnableWebDriveOffice(),
+        TestCase("openOfficeFile").EnableWebDriveOffice().FilesSwa(),
+        TestCase("openOfficeFromMyFiles").EnableWebDriveOffice(),
+        TestCase("openOfficeFromMyFiles").EnableWebDriveOffice().FilesSwa(),
+        TestCase("openOfficeFromDrive").EnableWebDriveOffice(),
+        TestCase("openOfficeFromDrive").EnableWebDriveOffice().FilesSwa()));
 
 }  // namespace file_manager

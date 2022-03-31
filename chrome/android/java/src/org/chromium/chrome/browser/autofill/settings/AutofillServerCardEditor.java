@@ -10,7 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.R;
@@ -18,7 +21,13 @@ import org.chromium.chrome.browser.ChromeStringConstants;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.payments.SettingsAutofillAndPaymentsObserver;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.autofill.VirtualCardEnrollmentState;
+import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
 
 /**
  * Server credit card settings.
@@ -26,9 +35,18 @@ import org.chromium.chrome.browser.payments.SettingsAutofillAndPaymentsObserver;
 public class AutofillServerCardEditor extends AutofillCreditCardEditor {
     private View mLocalCopyLabel;
     private View mClearLocalCopy;
+    private TextView mVirtualCardEnrollmentButton;
+    private boolean mVirtualCardEnrollmentButtonShowsUnenroll;
+    private AutofillPaymentMethodsDelegate mDelegate;
 
     @UsedByReflection("AutofillPaymentMethodsFragment.java")
     public AutofillServerCardEditor() {}
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mDelegate = new AutofillPaymentMethodsDelegate(Profile.getLastUsedRegularProfile());
+    }
 
     @Override
     public View onCreateView(
@@ -42,13 +60,44 @@ public class AutofillServerCardEditor extends AutofillCreditCardEditor {
         ((TextView) v.findViewById(R.id.title)).setText(mCard.getObfuscatedNumber());
         ((TextView) v.findViewById(R.id.summary))
                 .setText(mCard.getFormattedExpirationDate(getActivity()));
-        v.findViewById(R.id.edit_server_card).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                CustomTabActivity.showInfoPage(
-                        getActivity(), ChromeStringConstants.AUTOFILL_MANAGE_WALLET_CARD_URL);
-            }
-        });
+        v.findViewById(R.id.edit_server_card)
+                .setOnClickListener(view
+                        -> CustomTabActivity.showInfoPage(getActivity(),
+                                ChromeStringConstants.AUTOFILL_MANAGE_WALLET_CARD_URL));
+
+        final LinearLayout virtualCardContainerLayout =
+                (LinearLayout) v.findViewById(R.id.virtual_card_ui);
+        mVirtualCardEnrollmentButton = v.findViewById(R.id.virtual_card_enrollment_button);
+        if (showVirtualCardEnrollmentButton()) {
+            virtualCardContainerLayout.setVisibility(View.VISIBLE);
+            setVirtualCardEnrollmentButtonLabel(
+                    mCard.getVirtualCardEnrollmentState() == VirtualCardEnrollmentState.ENROLLED);
+            mVirtualCardEnrollmentButton.setOnClickListener(view -> {
+                if (!mVirtualCardEnrollmentButtonShowsUnenroll) {
+                    // TODO (crbug/1281695): Implement enroll dialog.
+                    mDelegate.offerVirtualCardEnrollment(mCard.getInstrumentId());
+
+                    // Change button label and behavior to Unenroll.
+                    setVirtualCardEnrollmentButtonLabel(true);
+                } else {
+                    final ModalDialogManager modalDialogManager = new ModalDialogManager(
+                            new AppModalPresenter(getActivity()), ModalDialogType.APP);
+                    AutofillVirtualCardUnenrollmentDialog dialog =
+                            new AutofillVirtualCardUnenrollmentDialog(
+                                    getActivity(), modalDialogManager, unenrollRequested -> {
+                                        if (unenrollRequested) {
+                                            mDelegate.unenrollVirtualCard(mCard.getInstrumentId());
+
+                                            // Change button label and behavior to Enroll.
+                                            setVirtualCardEnrollmentButtonLabel(false);
+                                        }
+                                    });
+                    dialog.show();
+                }
+            });
+        } else {
+            virtualCardContainerLayout.setVisibility(View.GONE);
+        }
 
         mLocalCopyLabel = v.findViewById(R.id.local_copy_label);
         mClearLocalCopy = v.findViewById(R.id.clear_local_copy);
@@ -69,12 +118,36 @@ public class AutofillServerCardEditor extends AutofillCreditCardEditor {
         return v;
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // Ensure that the native AutofillPaymentMethodsDelegateMobile instance is cleaned up.
+        mDelegate.cleanup();
+    }
+
     private void removeLocalCopyViews() {
         ViewGroup parent = (ViewGroup) mClearLocalCopy.getParent();
         if (parent == null) return;
 
         parent.removeView(mLocalCopyLabel);
         parent.removeView(mClearLocalCopy);
+    }
+
+    private boolean showVirtualCardEnrollmentButton() {
+        return (ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.AUTOFILL_ENABLE_UPDATE_VIRTUAL_CARD_ENROLLMENT)
+                && (mCard.getVirtualCardEnrollmentState() == VirtualCardEnrollmentState.ENROLLED
+                        || mCard.getVirtualCardEnrollmentState()
+                                == VirtualCardEnrollmentState.UNENROLLED_AND_ELIGIBLE));
+    }
+
+    /**
+     * Updates the Virtual Card Enrollment button label.
+     */
+    private void setVirtualCardEnrollmentButtonLabel(boolean isEnrolled) {
+        mVirtualCardEnrollmentButtonShowsUnenroll = isEnrolled;
+        mVirtualCardEnrollmentButton.setText(
+                mVirtualCardEnrollmentButtonShowsUnenroll ? R.string.remove : R.string.add);
     }
 
     @Override

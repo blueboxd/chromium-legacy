@@ -93,10 +93,6 @@ namespace ui {
 struct SelectedFileInfo;
 }
 
-namespace viz {
-class SurfaceId;
-}
-
 namespace web_app {
 class AppBrowserController;
 }
@@ -199,6 +195,7 @@ class Browser : public TabStripModelObserver,
     kUnknown,
     kSessionRestore,
     kStartupCreator,
+    kLastAndUrlsStartupPref,
   };
 
   // The default value for a browser's `restore_id` param.
@@ -258,6 +255,9 @@ class Browser : public TabStripModelObserver,
     // Whether the window is visible on all workspaces initially, if the
     // platform supports it.
     bool initial_visible_on_all_workspaces_state = false;
+
+    // Whether to enable the tab group feature in the tab strip.
+    bool are_tab_groups_enabled = true;
 
     ui::WindowShowState initial_show_state = ui::SHOW_STATE_DEFAULT;
 
@@ -662,12 +662,10 @@ class Browser : public TabStripModelObserver,
       const GURL& initiator_url,
       blink::mojom::NavigationBlockedReason reason) override;
   content::PictureInPictureResult EnterPictureInPicture(
-      content::WebContents* web_contents,
-      const viz::SurfaceId&,
-      const gfx::Size&) override;
+      content::WebContents* web_contents) override;
   void ExitPictureInPicture() override;
   bool IsBackForwardCacheSupported() override;
-  bool IsPrerender2Supported() override;
+  bool IsPrerender2Supported(content::WebContents& web_contents) override;
   std::unique_ptr<content::WebContents> ActivatePortalWebContents(
       content::WebContents* predecessor_contents,
       std::unique_ptr<content::WebContents> portal_contents) override;
@@ -819,7 +817,7 @@ class Browser : public TabStripModelObserver,
       const GURL& opener_url,
       const std::string& frame_name,
       const GURL& target_url,
-      const content::StoragePartitionId& partition_id,
+      const content::StoragePartitionConfig& partition_config,
       content::SessionStorageNamespace* session_storage_namespace) override;
   void WebContentsCreated(content::WebContents* source_contents,
                           int opener_render_process_id,
@@ -843,6 +841,13 @@ class Browser : public TabStripModelObserver,
   content::JavaScriptDialogManager* GetJavaScriptDialogManager(
       content::WebContents* source) override;
   bool GuestSaveFrame(content::WebContents* guest_web_contents) override;
+#if BUILDFLAG(IS_MAC)
+  std::unique_ptr<content::ColorChooser> OpenColorChooser(
+      content::WebContents* web_contents,
+      SkColor color,
+      const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions)
+      override;
+#endif  // BUILDFLAG(IS_MAC)
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
                       scoped_refptr<content::FileSelectListener> listener,
                       const blink::mojom::FileChooserParams& params) override;
@@ -1100,7 +1105,7 @@ class Browser : public TabStripModelObserver,
       bool is_new_browsing_instance,
       const std::string& frame_name,
       const GURL& target_url,
-      const content::StoragePartitionId& partition_id,
+      const content::StoragePartitionConfig& partition_config,
       content::SessionStorageNamespace* session_storage_namespace);
 
   // Data members /////////////////////////////////////////////////////////////

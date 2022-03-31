@@ -53,6 +53,9 @@ class BackendDelegate : public HistoryBackend::Delegate {
                                       KeywordID keyword_id,
                                       const std::u16string& term) override {}
   void NotifyKeywordSearchTermDeleted(URLID url_id) override {}
+  void NotifyContentModelAnnotationModified(
+      const URLRow& row,
+      const VisitContentModelAnnotations& model_annotations) override {}
   void DBLoaded() override {}
 
  private:
@@ -128,6 +131,7 @@ bool HistoryBackendDBBaseTest::AddDownload(uint32_t id,
   download.url_chain.push_back(GURL("foo-url"));
   download.referrer_url = GURL("http://referrer.example.com/");
   download.site_url = GURL("http://site-url.example.com");
+  download.embedder_download_data = "embedder_download_data";
   download.tab_url = GURL("http://tab-url.example.com/");
   download.tab_referrer_url = GURL("http://tab-referrer-url.example.com/");
   download.http_method = std::string();

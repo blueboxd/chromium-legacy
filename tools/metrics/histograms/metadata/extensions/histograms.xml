@@ -37,6 +37,82 @@ chromium-metrics-reviews@google.com.
   <variant name=".Tab" summary="A port opened to a tab context."/>
 </variants>
 
+<histogram name="ExtensionBlacklist.BlacklistInstalled"
+    enum="ExtensionLocation" expires_after="2022-11-18">
+  <owner>anunoy@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <summary>
+    The number of extensions that were blocklisted when already installed,
+    grouped by Extension::Location. Logged when ExtensionService blockists and
+    unloads an installed extension.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionBlacklist.BlockCRX" enum="ExtensionLocation"
+    expires_after="2022-11-18">
+  <owner>anunoy@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <summary>
+    The number of extensions that have been blocked from installing grouped by
+    Extension::Location. Logged when ExtensionService refuses to install a
+    blocklisted extension.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionBlacklist.SilentInstall" enum="ExtensionLocation"
+    expires_after="2022-11-18">
+  <owner>anunoy@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <summary>
+    The number of extensions that have been silently installed in a blocklisted
+    state, grouped by Extension::Location. Logged when ExtensionService installs
+    a blocklisted extension without blocking it (ExtensionBlacklist.BlockCRX
+    would be logged otherwise). Typically this will be when a user has a
+    blocklisted extension synced.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionBlacklist.UnblacklistInstalled"
+    enum="ExtensionLocation" expires_after="2022-11-18">
+  <owner>anunoy@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <summary>
+    The number of extensions that were unblocklisted when installed, grouped by
+    Extension::Location. Logged when ExtensionService unblocklists and loads a
+    blocklisted extension.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionContentHashFetcher.CreateHashesTime" units="ms"
+    expires_after="never">
+<!-- expires-never: Used for monitoring extension content verification latency. -->
+
+  <owner>lazyboy@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <summary>
+    The time taken to create the computed_hashes.json file for an extension.
+    This happens once for each extension after we get signed values of the
+    expected root node of a tree hashes for each file from the webstore; we then
+    compute the individual block level hashes of the actual files and cache them
+    in computed_hashes.json (assuming we don't detect any mismatches).
+  </summary>
+</histogram>
+
+<histogram name="ExtensionContentVerifyJob.TimeSpentUS" units="microseconds"
+    expires_after="2020-11-30">
+  <owner>lazyboy@chromium.org</owner>
+  <summary>
+    The time taken in computation (hashing actual bytes read and comparing
+    against expected computed hashes values) during an extension resource load.
+
+    Warning: This metric may include reports from clients with low-resolution
+    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
+    will cause this metric to have an abnormal distribution. When considering
+    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
+    solution.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.ActionSetIconFailureType"
     enum="ExtensionActionSetIconFailureType" expires_after="M88">
   <owner>rdevlin.cronin@chromium.org</owner>
@@ -211,7 +287,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.BookmarkAppLaunchContainer"
-    enum="AppLaunchContainer" expires_after="2022-06-12">
+    enum="AppLaunchContainer" expires_after="2022-08-14">
   <owner>phillis@chromium.org</owner>
   <owner>benwells@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
@@ -379,6 +455,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Extensions.CorruptedExtensionLocation"
     enum="ExtensionLocation" expires_after="2022-01-01">
+  <obsolete>
+    Obsolete in M100.
+  </obsolete>
   <owner>ydago@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -653,7 +732,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.DeclarativeNetRequest.RequestHeaderRemoved"
-    enum="WebRequest.RequestHeader" expires_after="2022-06-01">
+    enum="WebRequest.RequestHeader" expires_after="2022-07-31">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>kelvinjiang@chromium.org</owner>
   <owner>src/extensions/OWNERS</owner>
@@ -701,7 +780,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.DeclarativeNetRequest.RulesetReindexSuccessful"
-    enum="BooleanSuccess" expires_after="2022-06-01">
+    enum="BooleanSuccess" expires_after="2022-07-31">
   <owner>lazyboy@chromium.org</owner>
   <owner>src/extensions/OWNERS</owner>
   <summary>
@@ -1279,21 +1358,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Extensions.ForceInstalledAndBlackListed" units="count"
+<histogram name="Extensions.ForceInstalledAndBlockListed" units="count"
     expires_after="2022-06-12">
   <owner>swapnilgupta@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
   <summary>
     Number of enterprise policy forced extensions that are blacklisted and thus
-    not loaded after 5 minutes if at least one of policy forced extensions is
-    not yet enabled.
+    not loaded 5 minutes after profile creation if at least one of policy forced
+    extensions is not yet enabled.
   </summary>
 </histogram>
 
 <histogram name="Extensions.ForceInstalledCacheStatus"
     enum="ExtensionInstallationDownloadingCacheStatus"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>swapnilgupta@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>poromov@chromium.org</owner>
@@ -1304,7 +1383,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledCreationStage"
-    enum="ExtensionInstallCreationStage" expires_after="2022-06-05">
+    enum="ExtensionInstallCreationStage" expires_after="2022-08-07">
   <owner>swapnilgupta@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1319,7 +1398,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledDownloadingStage"
-    enum="ExtensionInstallationDownloadingStage" expires_after="2022-06-12">
+    enum="ExtensionInstallationDownloadingStage" expires_after="2022-08-14">
   <owner>burunduk@chromium.org</owner>
   <owner>swapnilgupta@google.com</owner>
   <owner>managed-devices@google.com</owner>
@@ -1335,7 +1414,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Extensions.ForceInstalledFailureCacheStatus"
     enum="ExtensionInstallationDownloadingCacheStatus"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>burunduk@chromium.org</owner>
   <owner>swapnilgupta@google.com</owner>
   <owner>managed-devices@google.com</owner>
@@ -1349,7 +1428,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledFailureCrxInstallError"
-    enum="ExtensionInstallationCrxInstallError" expires_after="2022-06-12">
+    enum="ExtensionInstallationCrxInstallError" expires_after="2022-08-14">
   <owner>burunduk@chromium.org</owner>
   <owner>swapnilgupta@google.com</owner>
   <owner>managed-devices@google.com</owner>
@@ -1362,7 +1441,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledFailureManifestInvalidAppStatusError"
-    enum="ManifestInvalidAppStatusError" expires_after="2022-06-05">
+    enum="ManifestInvalidAppStatusError" expires_after="2022-08-07">
   <owner>swapnilgupta@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1392,7 +1471,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledFailureReason3"
-    enum="ExtensionInstallationFailureReason" expires_after="2022-06-12">
+    enum="ExtensionInstallationFailureReason" expires_after="2022-08-14">
 <!-- Name completed by histogram_suffixes name="ExtensionSource" -->
 
   <owner>burunduk@chromium.org</owner>
@@ -1411,7 +1490,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledFailureSandboxUnpackFailureReason2"
-    enum="ExtensionUnpackFailureReason" expires_after="2022-06-05">
+    enum="ExtensionUnpackFailureReason" expires_after="2022-08-07">
   <owner>burunduk@chromium.org</owner>
   <owner>swapnilgupta@google.com</owner>
   <owner>managed-devices@google.com</owner>
@@ -1452,7 +1531,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Extensions.ForceInstalledFailureStuckInInitialCreationStageAreExtensionsEnabled"
-    enum="BooleanEnabled" expires_after="2022-06-12">
+    enum="BooleanEnabled" expires_after="2022-08-14">
   <owner>swapnilgupta@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1472,7 +1551,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Extensions.ForceInstalledFailureWithCrxHeaderInvalidIsCWS"
     enum="IsForceInstalledExtensionFailedWithCrxHeaderInvalidFromCWSBoolean"
-    expires_after="2022-06-05">
+    expires_after="2022-08-07">
   <owner>swapnilgupta@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1486,7 +1565,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Extensions.ForceInstalledFailureWithCrxHeaderInvalidIsFromCache"
-    enum="BooleanCacheHit" expires_after="2022-06-05">
+    enum="BooleanCacheHit" expires_after="2022-08-07">
   <owner>swapnilgupta@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1499,7 +1578,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledLoadTime" units="ms"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>burunduk@chromium.org</owner>
   <owner>swapnilgupta@google.com</owner>
   <owner>managed-devices@google.com</owner>
@@ -1510,7 +1589,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledNotLoadedDisableReason"
-    enum="ExtensionDisableReason" expires_after="2022-06-12">
+    enum="ExtensionDisableReason" expires_after="2022-08-14">
   <owner>swapnilgupta@google.com</owner>
   <owner>burunduk@chromium.org</owner>
   <owner>managed-devices@google.com</owner>
@@ -1535,7 +1614,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Extensions.ForceInstalledSessionsWithNonMisconfigurationFailureOccured"
-    enum="Boolean" expires_after="2022-06-12">
+    enum="Boolean" expires_after="2022-08-14">
   <owner>burunduk@chromium.org</owner>
   <owner>swapnilgupta@google.com</owner>
   <owner>managed-devices@google.com</owner>
@@ -1569,7 +1648,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledTimedOutAndNotInstalledCount"
-    units="units" expires_after="2022-06-12">
+    units="units" expires_after="2022-08-14">
   <owner>burunduk@chromium.org</owner>
   <owner>swapnilgupta@google.com</owner>
   <owner>managed-devices@google.com</owner>
@@ -1580,7 +1659,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledTimedOutCount" units="units"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>burunduk@chromium.org</owner>
   <owner>swapnilgupta@google.com</owner>
   <owner>managed-devices@google.com</owner>
@@ -1623,7 +1702,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ForceInstalledTotalCandidateCount" units="units"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>burunduk@chromium.org</owner>
   <owner>swapnilgupta@google.com</owner>
   <owner>managed-devices@google.com</owner>
@@ -2192,7 +2271,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.InstallPrompt.Type2"
-    enum="ExtensionInstallPromptType" expires_after="2022-06-05">
+    enum="ExtensionInstallPromptType" expires_after="2022-08-07">
   <owner>meacer@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
@@ -2416,7 +2495,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.LoadType" enum="ExtensionType"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -2801,7 +2880,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ProcessManagerStartupHostsTime2" units="ms"
-    expires_after="2022-06-05">
+    expires_after="2022-08-07">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -3047,6 +3126,17 @@ chromium-metrics-reviews@google.com.
   <summary>
     The number of enabled extensions with startup page overrides specified in
     their manifest. Recorded once per profile at profile initialization.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.SyncBlockedByDefaultWebAppMigration"
+    units="Boolean" expires_after="2022-06-30">
+  <owner>alancutter@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <summary>
+    Records true whenever an extension sync install attempt was blocked because
+    it was a default Chrome app that has been migrated over to a web app. Never
+    records false.
   </summary>
 </histogram>
 
@@ -3591,6 +3681,46 @@ chromium-metrics-reviews@google.com.
     <variant name="ManifestFetchRetry"
         summary="MANIFEST_DOWNLOAD_RETRY stage."/>
   </token>
+</histogram>
+
+<histogram name="ExtensionToolbarModel.BrowserActionsCount" units="actions"
+    expires_after="never">
+<!-- expires-never: Monitoring core user behavior with extensions. -->
+
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <owner>extensions-core@chromium.org</owner>
+  <summary>
+    The total number of extensions that have an icon in the extension toolbar,
+    including those that are unpinned and only show in the extensions menu.
+    Measured once per startup per (non-incognito) profile.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionUrlRequest.Latency" units="ms"
+    expires_after="2020-11-30">
+  <owner>lazyboy@chromium.org</owner>
+  <summary>The time taken to complete an extension url request.</summary>
+</histogram>
+
+<histogram name="ExtensionUrlRequest.SeekPosition" units="units"
+    expires_after="2020-11-30">
+  <owner>lazyboy@chromium.org</owner>
+  <summary>
+    When fetching a chrome-extension:// URL, this indicates the first byte
+    position we read from. This will be greater than 0 in cases such as XHR's
+    with a Range header, but will normally be 0 in the typical case of reading
+    the entire file. This helps identify how frequently partial file reads are
+    taking place.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionUrlRequest.TotalKbRead" units="KB"
+    expires_after="2020-11-30">
+  <owner>lazyboy@chromium.org</owner>
+  <summary>
+    The total number of bytes read for a chrome-extension:// URL, logged when
+    the job is finished (either successfully or not).
+  </summary>
 </histogram>
 
 </histograms>

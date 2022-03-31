@@ -28,6 +28,8 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
       cros_healthd::mojom::DiagnosticRoutineEnum::kPrimeSearch,
       cros_healthd::mojom::DiagnosticRoutineEnum::kCpuStress,
       cros_healthd::mojom::DiagnosticRoutineEnum::kMemory,
+      cros_healthd::mojom::DiagnosticRoutineEnum::kNvmeWearLevel,
+      cros_healthd::mojom::DiagnosticRoutineEnum::kSmartctlCheck,
   });
 
   CreateExtensionAndRunServiceWorker(R"(
@@ -46,7 +48,9 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
               "cpu_floating_point_accuracy",
               "cpu_prime_search",
               "cpu_stress",
-              "memory"
+              "memory",
+              "nvme_wear_level",
+              "smartctl_check"
             ]
           }, response);
         chrome.test.succeed();
@@ -182,9 +186,8 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
             cros_healthd::mojom::DiagnosticRoutineEnum::kBatteryCapacity);
 }
 
-// Crashes on ChromeOS: crbug.com/1274591
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
-                       DISABLED_RunBatteryChargeRoutineSuccess) {
+                       RunBatteryChargeRoutineSuccess) {
   CreateExtensionAndRunServiceWorker(R"(
     chrome.test.runTests([
       async function runBatteryChargeRoutine() {
@@ -335,6 +338,42 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
   )");
   EXPECT_EQ(cros_healthd::FakeCrosHealthdClient::Get()->GetLastRunRoutine(),
             cros_healthd::mojom::DiagnosticRoutineEnum::kMemory);
+}
+
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
+                       RunNvmeWearLevelRoutineSuccess) {
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function runNvmeWearLevelRoutine() {
+        const response =
+          await chrome.os.diagnostics.runNvmeWearLevelRoutine(
+            {
+              wear_level_threshold: 80
+            }
+          );
+        chrome.test.assertEq({id: 0, status: "ready"}, response);
+        chrome.test.succeed();
+      }
+    ]);
+  )");
+  EXPECT_EQ(cros_healthd::FakeCrosHealthdClient::Get()->GetLastRunRoutine(),
+            cros_healthd::mojom::DiagnosticRoutineEnum::kNvmeWearLevel);
+}
+
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
+                       RunSmartctlCheckRoutineSuccess) {
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function runSmartctlCheckRoutine() {
+        const response =
+          await chrome.os.diagnostics.runSmartctlCheckRoutine();
+        chrome.test.assertEq({id: 0, status: "ready"}, response);
+        chrome.test.succeed();
+      }
+    ]);
+  )");
+  EXPECT_EQ(cros_healthd::FakeCrosHealthdClient::Get()->GetLastRunRoutine(),
+            cros_healthd::mojom::DiagnosticRoutineEnum::kSmartctlCheck);
 }
 
 }  // namespace chromeos

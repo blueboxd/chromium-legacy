@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ash/login/quick_unlock/pin_storage_cryptohome.h"
 
+#include "ash/components/cryptohome/cryptohome_parameters.h"
+#include "ash/components/cryptohome/cryptohome_util.h"
+#include "ash/components/cryptohome/system_salt_getter.h"
+#include "ash/components/cryptohome/userdataauth_util.h"
 #include "ash/components/login/auth/cryptohome_key_constants.h"
 #include "ash/components/login/auth/user_context.h"
 #include "ash/constants/ash_pref_names.h"
@@ -11,31 +15,31 @@
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/login/quick_unlock/pin_backend.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/cryptohome/cryptohome_util.h"
-#include "chromeos/cryptohome/system_salt_getter.h"
-#include "chromeos/cryptohome/userdataauth_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/known_user.h"
 
-namespace ash {
-namespace quick_unlock {
+namespace ash::quick_unlock {
 namespace {
 
 // Read the salt from local state.
 std::string GetSalt(const AccountId& account_id) {
-  std::string salt;
-  user_manager::known_user::GetStringPref(account_id,
-                                          prefs::kQuickUnlockPinSalt, &salt);
-  return salt;
+  user_manager::KnownUser known_user(g_browser_process->local_state());
+  if (const std::string* salt =
+          known_user.FindStringPath(account_id, prefs::kQuickUnlockPinSalt)) {
+    return *salt;
+  }
+  return std::string();
 }
 
 // Write the salt to local state.
 void WriteSalt(const AccountId& account_id, const std::string& salt) {
-  user_manager::known_user::SetStringPref(account_id,
-                                          prefs::kQuickUnlockPinSalt, salt);
+  if (!g_browser_process->local_state())
+    return;
+  user_manager::KnownUser known_user(g_browser_process->local_state());
+  known_user.SetStringPref(account_id, prefs::kQuickUnlockPinSalt, salt);
 }
 
 template <typename ReplyType>
@@ -288,5 +292,4 @@ void PinStorageCryptohome::TryAuthenticate(const AccountId& account_id,
                      std::move(result)));
 }
 
-}  // namespace quick_unlock
-}  // namespace ash
+}  // namespace ash::quick_unlock

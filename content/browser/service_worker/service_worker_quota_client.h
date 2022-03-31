@@ -10,18 +10,18 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/thread_annotations.h"
-#include "components/services/storage/public/cpp/storage_key_quota_client.h"
+#include "components/services/storage/public/mojom/quota_client.mojom.h"
 #include "storage/browser/quota/quota_client_type.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
-namespace blink {
-class StorageKey;
-}  // namespace blink
+namespace storage {
+struct BucketLocator;
+}  // namespace storage
 
 namespace content {
 class ServiceWorkerContextCore;
 
-class ServiceWorkerQuotaClient : public storage::StorageKeyQuotaClient {
+class ServiceWorkerQuotaClient : public storage::mojom::QuotaClient {
  public:
   // `context` must outlive this instance. This is true because `context` owns
   // this instance.
@@ -38,18 +38,13 @@ class ServiceWorkerQuotaClient : public storage::StorageKeyQuotaClient {
     context_ = &new_context;
   }
 
-  // storage::StorageKeyQuotaClient override methods.
-  void GetStorageKeyUsage(const blink::StorageKey& storage_key,
-                          blink::mojom::StorageType type,
-                          GetStorageKeyUsageCallback callback) override;
+  // storage::mojom::QuotaClient override methods.
+  void GetBucketUsage(const storage::BucketLocator& bucket,
+                      GetBucketUsageCallback callback) override;
   void GetStorageKeysForType(blink::mojom::StorageType type,
                              GetStorageKeysForTypeCallback callback) override;
-  void GetStorageKeysForHost(blink::mojom::StorageType type,
-                             const std::string& host,
-                             GetStorageKeysForHostCallback callback) override;
-  void DeleteStorageKeyData(const blink::StorageKey& storage_key,
-                            blink::mojom::StorageType type,
-                            DeleteStorageKeyDataCallback callback) override;
+  void DeleteBucketData(const storage::BucketLocator& bucket,
+                        DeleteBucketDataCallback callback) override;
   void PerformStorageCleanup(blink::mojom::StorageType type,
                              PerformStorageCleanupCallback callback) override;
 

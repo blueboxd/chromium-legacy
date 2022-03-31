@@ -12,13 +12,15 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 
 import {navigation, Page} from './navigation_helper.js';
 
-interface ExtensionsSidebarElement {
+export interface ExtensionsSidebarElement {
   $: {
     sectionMenu: IronSelectorElement,
+    sectionsExtensions: HTMLElement,
+    sectionsShortcuts: HTMLElement,
   };
 }
 
-class ExtensionsSidebarElement extends PolymerElement {
+export class ExtensionsSidebarElement extends PolymerElement {
   static get is() {
     return 'extensions-sidebar';
   }
@@ -45,7 +47,8 @@ class ExtensionsSidebarElement extends PolymerElement {
 
     const page = navigation.getCurrentPage().page;
     let selectIndex = 0;
-    if (page === Page.SITE_PERMISSIONS) {
+    if (page === Page.SITE_PERMISSIONS ||
+        page === Page.SITE_PERMISSIONS_ALL_SITES) {
       selectIndex = 1;
     } else if (page === Page.SHORTCUTS) {
       selectIndex = 2;
@@ -63,6 +66,12 @@ class ExtensionsSidebarElement extends PolymerElement {
 
   private onMoreExtensionsTap_() {
     chrome.metricsPrivate.recordUserAction('Options_GetMoreExtensions');
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'extensions-sidebar': ExtensionsSidebarElement;
   }
 }
 

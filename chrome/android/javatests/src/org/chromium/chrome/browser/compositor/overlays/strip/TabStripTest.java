@@ -25,7 +25,10 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.layouts.LayoutTestUtils;
+import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
@@ -35,6 +38,7 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.TabStripUtils;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.LocalizationUtils;
@@ -851,6 +855,73 @@ public class TabStripTest {
                 2);
 
         assertWaitForKeyboardStatus(false);
+    }
+
+    /**
+     * Tests strip scrim when overview mode shows-up.
+     */
+    @Test
+    @LargeTest
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
+    @Feature({"TabStrip"})
+    @Features.EnableFeatures(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS)
+    public void testStripScrimOnShowingOverviewMode() throws Throwable {
+        // Create second tab. Second tab is active.
+        ChromeTabUtils.newTabFromMenu(
+                InstrumentationRegistry.getInstrumentation(), sActivityTestRule.getActivity());
+        // Enter overview.
+        enterOverviewMode();
+
+        final StripLayoutHelperManager manager =
+                TabStripUtils.getStripLayoutHelperManager(sActivityTestRule.getActivity());
+
+        // Verify scrim is visible.
+        Assert.assertTrue(manager.getStripScrim().isVisible());
+
+        // Try to click first tab.
+        TabStripUtils.clickTab(
+                TabStripUtils.findStripLayoutTab(sActivityTestRule.getActivity(), false,
+                        sActivityTestRule.getActivity().getCurrentTabModel().getTabAt(0).getId()),
+                InstrumentationRegistry.getInstrumentation(), sActivityTestRule.getActivity());
+
+        // Verify first tab not selectable
+        Assert.assertNotEquals("The first tab should not be selected",
+                sActivityTestRule.getActivity().getCurrentTabModel().index(), 0);
+    }
+
+    /**
+     * Tests strip scrim disappears when overview mode is hidden.
+     */
+    @Test
+    @LargeTest
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
+    @Feature({"TabStrip"})
+    @Features.EnableFeatures(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS)
+    public void testStripScrimOnHidingOverviewMode() throws Throwable {
+        // Enter overview.
+        enterOverviewMode();
+
+        final StripLayoutHelperManager manager =
+                TabStripUtils.getStripLayoutHelperManager(sActivityTestRule.getActivity());
+
+        // Verify scrim is visible.
+        Assert.assertTrue(manager.getStripScrim().isVisible());
+
+        // Exit overview.
+        exitOverviewMode();
+
+        // Verify scrim is invisible.
+        Assert.assertTrue(!manager.getStripScrim().isVisible());
+    }
+
+    private void exitOverviewMode() {
+        LayoutTestUtils.startShowingAndWaitForLayout(
+                sActivityTestRule.getActivity().getLayoutManager(), LayoutType.BROWSING, false);
+    }
+
+    private void enterOverviewMode() {
+        LayoutTestUtils.startShowingAndWaitForLayout(
+                sActivityTestRule.getActivity().getLayoutManager(), LayoutType.TAB_SWITCHER, false);
     }
 
     /**

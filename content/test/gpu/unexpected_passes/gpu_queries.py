@@ -65,6 +65,16 @@ WITH
     builder_type=constants.BuilderTypes.CI),
            final_selector_query=FINAL_SELECTOR_QUERY)
 
+SUBMITTED_BUILDS_SUBQUERY = """\
+  submitted_builds AS (
+{chromium_builds}
+    UNION ALL
+{angle_builds}
+  ),""".format(chromium_builds=queries_module.SUBMITTED_BUILDS_TEMPLATE.format(
+    project_view='chromium'),
+               angle_builds=queries_module.SUBMITTED_BUILDS_TEMPLATE.format(
+                   project_view='angle'))
+
 # Same as GPU_CI_BQ_QUERY_TEMPLATE, but for tryjobs. Only data from builds that
 # were used for CL submission is considered.
 GPU_TRY_BQ_QUERY_TEMPLATE = """\
@@ -86,7 +96,7 @@ WITH
   ),
 {results_subquery}
 {final_selector_query}
-""".format(submitted_builds_subquery=queries_module.SUBMITTED_BUILDS_SUBQUERY,
+""".format(submitted_builds_subquery=SUBMITTED_BUILDS_SUBQUERY,
            results_subquery=RESULTS_SUBQUERY.format(
                builder_type=constants.BuilderTypes.TRY),
            final_selector_query=FINAL_SELECTOR_QUERY)
@@ -126,7 +136,7 @@ WITH
       AND status != "SKIP"
       AND REGEXP_CONTAINS(
         test_id,
-        r"gpu_tests\.{suite}\.")
+        r"gpu_tests\\.{suite}\\.")
   )
 SELECT DISTINCT r.test_id
 FROM results r
@@ -213,7 +223,7 @@ class GpuBigQueryQuerier(queries_module.BigQueryQuerier):
           builder, """\
         AND REGEXP_CONTAINS(
           test_id,
-          r"gpu_tests\.%s\.")""" % self._suite)
+          r"gpu_tests\\.%s\\.")""" % self._suite)
 
     query = TEST_FILTER_QUERY_TEMPLATE.format(
         builder_project=builder.project,
@@ -232,8 +242,7 @@ class GpuBigQueryQuerier(queries_module.BigQueryQuerier):
     # Only consider specific test cases that were found to have active
     # expectations in the above query. Also perform any initial query splitting.
     target_num_ids = queries_module.TARGET_RESULTS_PER_QUERY / self._num_samples
-    return GpuSplitQueryGenerator(builder.builder_type, test_ids,
-                                  target_num_ids)
+    return GpuSplitQueryGenerator(builder, test_ids, target_num_ids)
 
   def _GetRelevantExpectationFilesForQueryResult(self, _):
     # Only one expectation file is ever used for the GPU tests, so just use

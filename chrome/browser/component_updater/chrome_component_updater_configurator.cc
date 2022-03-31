@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
+#include "chrome/browser/component_updater/updater_state.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "chrome/common/channel_info.h"
@@ -80,6 +81,7 @@ class ChromeConfigurator : public update_client::Configurator {
   std::unique_ptr<update_client::ProtocolHandlerFactory>
   GetProtocolHandlerFactory() const override;
   absl::optional<bool> IsMachineExternallyManaged() const override;
+  update_client::UpdaterStateProvider GetUpdaterStateProvider() const override;
 
  private:
   friend class base::RefCountedThreadSafe<ChromeConfigurator>;
@@ -242,6 +244,15 @@ ChromeConfigurator::GetProtocolHandlerFactory() const {
 
 absl::optional<bool> ChromeConfigurator::IsMachineExternallyManaged() const {
   return configurator_impl_.IsMachineExternallyManaged();
+}
+
+update_client::UpdaterStateProvider
+ChromeConfigurator::GetUpdaterStateProvider() const {
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  return base::BindRepeating(&UpdaterState::GetState);
+#else
+  return configurator_impl_.GetUpdaterStateProvider();
+#endif
 }
 
 }  // namespace

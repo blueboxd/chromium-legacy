@@ -135,6 +135,7 @@ class WebStateImpl::RealizedWebState final : public NavigationManagerDelegate {
   UIView* GetView();
   void DidCoverWebContent();
   void DidRevealWebContent();
+  base::Time GetLastActiveTime() const;
   void WasShown();
   void WasHidden();
   void SetKeepRenderProcessAlive(bool keep_alive);
@@ -159,9 +160,9 @@ class WebStateImpl::RealizedWebState final : public NavigationManagerDelegate {
   bool IsEvicted() const;
   const FaviconStatus& GetFaviconStatus() const;
   void SetFaviconStatus(const FaviconStatus& favicon_status);
+  int GetNavigationItemCount() const;
   const GURL& GetVisibleURL() const;
   const GURL& GetLastCommittedURL() const;
-  const base::Time GetLastCommittedTimestamp() const;
   GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const;
   id<CRWWebViewProxy> GetWebViewProxy() const;
   void DidChangeVisibleSecurityState();
@@ -178,6 +179,8 @@ class WebStateImpl::RealizedWebState final : public NavigationManagerDelegate {
   PermissionState GetStateForPermission(Permission permission) const
       API_AVAILABLE(ios(15.0));
   void SetStateForPermission(PermissionState state, Permission permission)
+      API_AVAILABLE(ios(15.0));
+  NSDictionary<NSNumber*, NSNumber*>* GetStatesForAllPermissions() const
       API_AVAILABLE(ios(15.0));
   void OnStateChangedForPermission(Permission permission)
       API_AVAILABLE(ios(15.0));
@@ -262,6 +265,10 @@ class WebStateImpl::RealizedWebState final : public NavigationManagerDelegate {
   // Whether this WebState has an opener.  See
   // WebState::CreateParams::created_with_opener_ for more details.
   bool created_with_opener_ = false;
+
+  // The time that this WebState was last made active. The initial value is
+  // the WebState's creation time.
+  base::Time last_active_time_ = base::Time::Now();
 
   // The most recently restored session history that has not yet committed in
   // the WKWebView. This is reset in OnNavigationItemCommitted().

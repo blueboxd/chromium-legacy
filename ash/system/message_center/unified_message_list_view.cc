@@ -115,14 +115,7 @@ class UnifiedMessageListView::MessageViewContainer
         message_view()->notification_id());
     if (!notification)
       return base::Milliseconds(0);
-    if (message_view()->GetClassName() == AshNotificationView::kViewClassName) {
-      return static_cast<const AshNotificationView*>(message_view())
-          ->GetBoundsAnimationDuration(*notification);
-    }
-    // TODO(crbug/1278483): ARC notifications will require different animation
-    // durations. Default to kLargeImageExpandAndCollapseAnimationDuration for
-    // now.
-    return base::Milliseconds(kLargeImageExpandAndCollapseAnimationDuration);
+    return message_view()->GetBoundsAnimationDuration(*notification);
   }
 
   // Update the border and background corners based on if the notification is
@@ -829,7 +822,10 @@ MessageView* UnifiedMessageListView::CreateMessageView(
   auto* view =
       MessageViewFactory::Create(notification, /*shown_in_popup=*/false)
           .release();
-  view->SetIsNested();
+  // Setting grouped notifications as nested is handled in
+  // `AshNotificationView`.
+  if (!notification.group_child())
+    view->SetIsNested();
   view->AddObserver(this);
   message_center_view_->ConfigureMessageView(view);
   return view;

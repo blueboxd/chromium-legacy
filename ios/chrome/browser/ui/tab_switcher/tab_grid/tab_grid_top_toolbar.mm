@@ -61,6 +61,11 @@ const int kSearchBarTrailingSpace = 40;
 - (void)setMode:(TabGridMode)mode {
   if (_mode == mode)
     return;
+  // Reset search state when exiting search mode.
+  if (IsTabsSearchEnabled() && _mode == TabGridModeSearch) {
+    _searchBar.text = @"";
+    [_searchBar resignFirstResponder];
+  }
   _mode = mode;
   // Reset selected tabs count when mode changes.
   self.selectedTabsCount = 0;

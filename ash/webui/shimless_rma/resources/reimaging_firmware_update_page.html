@@ -1,14 +1,19 @@
 <style include="cr-shared-style shimless-rma-shared">
 </style>
-
-<base-page orientation="column">
-  <div slot="header">
+<base-page>
+  <iron-icon slot="optional-icon" icon="shimless-icon:warning"
+      class="warning-icon" hidden="[[!shouldShowWarning_]]">
+  </iron-icon>
+  <div slot="left-pane">
     <h1>[[i18n('firmwareUpdatePageTitleText')]]</h1>
-    <div id="firmwareUpdateStatus">[[statusString_]]</div>
+    <div id="firmwareUpdateStatus" class="instructions">
+      [[getStatusString_(status_)]]
+    </div>
   </div>
-  <div slot="body">
-    <!-- TODO(gavindodd): Replace with spinner -->
-    <iron-icon icon="shimless:shimless-placeholder"
-        class="large-icon"></iron-icon>
+  <div slot="right-pane">
+    <img src="[[getImgSrc_(status_)]]" hidden$="[[shouldShowSpinner_]]">
+    <paper-spinner-lite class="large-spinner" hidden$="[[!shouldShowSpinner_]]"
+        active>
+    </paper-spinner-lite>
   </div>
 </base-page>

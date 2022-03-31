@@ -1198,12 +1198,13 @@ PhysicalRect NGPhysicalBoxFragment::ComputeSelfInkOverflow() const {
 
   if (style.HasOutline() && IsOutlineOwner()) {
     Vector<PhysicalRect> outline_rects;
+    LayoutObject::OutlineInfo info;
     // The result rects are in coordinates of this object's border box.
     AddSelfOutlineRects(PhysicalOffset(),
                         style.OutlineRectsShouldIncludeBlockVisualOverflow(),
-                        &outline_rects);
+                        &outline_rects, &info);
     PhysicalRect rect = UnionRect(outline_rects);
-    rect.Inflate(LayoutUnit(OutlinePainter::OutlineOutsetExtent(style)));
+    rect.Inflate(LayoutUnit(OutlinePainter::OutlineOutsetExtent(style, info)));
     ink_overflow.Unite(rect);
   }
   return ink_overflow;
@@ -1218,7 +1219,15 @@ void NGPhysicalBoxFragment::InvalidateInkOverflow() {
 void NGPhysicalBoxFragment::AddSelfOutlineRects(
     const PhysicalOffset& additional_offset,
     NGOutlineType outline_type,
-    Vector<PhysicalRect>* outline_rects) const {
+    Vector<PhysicalRect>* outline_rects,
+    LayoutObject::OutlineInfo* info) const {
+  if (info) {
+    if (IsSvgText())
+      *info = LayoutObject::OutlineInfo::GetUnzoomedFromStyle(Style());
+    else
+      *info = LayoutObject::OutlineInfo::GetFromStyle(Style());
+  }
+
   AddOutlineRects(additional_offset, outline_type,
                   /* container_relative */ false, outline_rects);
 }
@@ -1753,14 +1762,12 @@ void NGPhysicalBoxFragment::AssertFragmentTreeSelf() const {
 }
 
 void NGPhysicalBoxFragment::AssertFragmentTreeChildren(
-    bool allow_destroyed) const {
+    bool allow_destroyed_or_moved) const {
   if (const NGFragmentItems* items = Items()) {
     for (NGInlineCursor cursor(*this, *items); cursor; cursor.MoveToNext()) {
       const NGFragmentItem& item = *cursor.Current();
       if (item.IsLayoutObjectDestroyedOrMoved()) {
-        DCHECK(allow_destroyed);
-        DCHECK(!item.BoxFragment() ||
-               item.BoxFragment()->IsLayoutObjectDestroyedOrMoved());
+        DCHECK(allow_destroyed_or_moved);
         continue;
       }
       if (const auto* box = item.BoxFragment()) {
@@ -1773,7 +1780,7 @@ void NGPhysicalBoxFragment::AssertFragmentTreeChildren(
 
   for (const NGLink& child : Children()) {
     if (child->IsLayoutObjectDestroyedOrMoved()) {
-      DCHECK(allow_destroyed);
+      DCHECK(allow_destroyed_or_moved);
       continue;
     }
     if (const auto* box = DynamicTo<NGPhysicalBoxFragment>(child.fragment))

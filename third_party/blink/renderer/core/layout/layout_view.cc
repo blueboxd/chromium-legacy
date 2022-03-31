@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
@@ -129,6 +130,7 @@ void LayoutView::Trace(Visitor* visitor) const {
   visitor->Trace(frame_view_);
   visitor->Trace(fragmentation_context_);
   visitor->Trace(layout_quote_head_);
+  visitor->Trace(svg_text_descendants_);
   visitor->Trace(hit_test_cache_);
   LayoutBlockFlow::Trace(visitor);
 }
@@ -463,6 +465,12 @@ LogicalSize LayoutView::InitialContainingBlockSize() const {
                      LayoutUnit(ViewLogicalHeightForBoxSizing()));
 }
 
+TrackedDescendantsMap& LayoutView::SvgTextDescendantsMap() {
+  if (!svg_text_descendants_)
+    svg_text_descendants_ = MakeGarbageCollected<TrackedDescendantsMap>();
+  return *svg_text_descendants_;
+}
+
 void LayoutView::Paint(const PaintInfo& paint_info) const {
   NOT_DESTROYED();
   ViewPainter(*this).Paint(paint_info);
@@ -663,25 +671,9 @@ void LayoutView::CalculateScrollbarModes(
   if (!frame)
     RETURN_SCROLLBAR_MODE(mojom::blink::ScrollbarMode::kAlwaysOff);
 
-  // ClipsContent() is false means that the client wants to paint the whole
-  // contents of the frame without scrollbars, which is for printing etc.
-  if (!frame->ClipsContent()) {
-    bool disable_scrollbars = true;
-#if BUILDFLAG(IS_ANDROID)
-    // However, Android WebView has a setting recordFullDocument. When it's set
-    // to true, ClipsContent() is false here, while WebView still expects blink
-    // to provide scrolling mechanism. The flag can be set through WebView API,
-    // or is forced if the app's target SDK version < LOLLIPOP.
-    // Synchronous compositing indicates Android WebView.
-    if (Platform::Current()
-            ->IsSynchronousCompositingEnabledForAndroidWebView() &&
-        !GetDocument().IsPrintingOrPaintingPreview()) {
-      disable_scrollbars = false;
-    }
-#endif
-    if (disable_scrollbars)
-      RETURN_SCROLLBAR_MODE(mojom::blink::ScrollbarMode::kAlwaysOff);
-  }
+  // ClipsContent() is false for the root printing frame, etc.
+  if (!frame->ClipsContent())
+    RETURN_SCROLLBAR_MODE(mojom::blink::ScrollbarMode::kAlwaysOff);
 
   if (FrameOwner* owner = frame->Owner()) {
     // Setting scrolling="no" on an iframe element disables scrolling.
@@ -863,6 +855,24 @@ gfx::SizeF LayoutView::ViewportSizeForViewportUnits() const {
                         : gfx::SizeF();
 }
 
+gfx::SizeF LayoutView::SmallViewportSizeForViewportUnits() const {
+  NOT_DESTROYED();
+  return GetFrameView() ? GetFrameView()->SmallViewportSizeForViewportUnits()
+                        : gfx::SizeF();
+}
+
+gfx::SizeF LayoutView::LargeViewportSizeForViewportUnits() const {
+  NOT_DESTROYED();
+  return GetFrameView() ? GetFrameView()->LargeViewportSizeForViewportUnits()
+                        : gfx::SizeF();
+}
+
+gfx::SizeF LayoutView::DynamicViewportSizeForViewportUnits() const {
+  NOT_DESTROYED();
+  return GetFrameView() ? GetFrameView()->DynamicViewportSizeForViewportUnits()
+                        : gfx::SizeF();
+}
+
 void LayoutView::WillBeDestroyed() {
   NOT_DESTROYED();
   // TODO(wangxianzhu): This is a workaround of crbug.com/570706.
@@ -879,6 +889,23 @@ void LayoutView::UpdateFromStyle() {
   // LayoutView of the main frame is responsible for painting base background.
   if (GetFrameView()->ShouldPaintBaseBackgroundColor())
     SetHasBoxDecorationBackground(true);
+}
+
+void LayoutView::StyleDidChange(StyleDifference diff,
+                                const ComputedStyle* old_style) {
+  NOT_DESTROYED();
+  LayoutBlockFlow::StyleDidChange(diff, old_style);
+
+  LocalFrame& frame = GetFrameView()->GetFrame();
+  if (frame.IsMainFrame()) {
+    // |VisualViewport::UsedColorScheme| depends on the LayoutView's used
+    // color scheme.
+    if (!old_style ||
+        old_style->UsedColorScheme() !=
+            frame.GetPage()->GetVisualViewport().UsedColorScheme()) {
+      frame.GetPage()->GetVisualViewport().UsedColorSchemeChanged();
+    }
+  }
 }
 
 RecalcLayoutOverflowResult LayoutView::RecalcLayoutOverflow() {

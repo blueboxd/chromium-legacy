@@ -69,7 +69,7 @@ suite('PrivacyPage', function() {
 
   suiteSetup(function() {
     loadTimeData.overrideValues({
-      privacyReviewEnabled: false,
+      privacyGuideEnabled: false,
     });
   });
 
@@ -102,6 +102,7 @@ suite('PrivacyPage', function() {
           {mode: {value: SecureDnsMode.AUTOMATIC}, templates: {value: ''}},
       privacy_sandbox: {
         apis_enabled: {value: true},
+        apis_enabled_v2: {value: true},
       },
       privacy_guide: {
         viewed: {
@@ -139,8 +140,8 @@ suite('PrivacyPage', function() {
     assertEquals(page.$.cookiesLinkRow.subLabel, testLabels[1]);
   });
 
-  test('privacyReviewRowNotVisible', function() {
-    assertFalse(isChildVisible(page, '#privacyReviewLinkRow'));
+  test('privacyGuideRowNotVisible', function() {
+    assertFalse(isChildVisible(page, '#privacyGuideLinkRow'));
   });
 
   test('ContentSettingsVisibility', async function() {
@@ -181,7 +182,9 @@ suite('PrivacyPage', function() {
   });
 
   test('privacySandboxRowSublabel', async function() {
+    loadTimeData.overrideValues({privacySandboxSettings3Enabled: false});
     page.set('prefs.privacy_sandbox.apis_enabled.value', true);
+    page.set('prefs.privacy_sandbox.apis_enabled_v2.value', true);
     await flushTasks();
     assertEquals(
         loadTimeData.getString('privacySandboxTrialsEnabled'),
@@ -191,6 +194,20 @@ suite('PrivacyPage', function() {
     await flushTasks();
     assertEquals(
         loadTimeData.getString('privacySandboxTrialsDisabled'),
+        page.$.privacySandboxLinkRow.subLabel);
+
+    loadTimeData.overrideValues({privacySandboxSettings3Enabled: true});
+    page.set('prefs.privacy_sandbox.apis_enabled.value', true);
+    page.set('prefs.privacy_sandbox.apis_enabled_v2.value', false);
+    await flushTasks();
+    assertEquals(
+        loadTimeData.getString('privacySandboxTrialsDisabled'),
+        page.$.privacySandboxLinkRow.subLabel);
+
+    page.set('prefs.privacy_sandbox.apis_enabled_v2.value', true);
+    await flushTasks();
+    assertEquals(
+        loadTimeData.getString('privacySandboxTrialsEnabled'),
         page.$.privacySandboxLinkRow.subLabel);
   });
 
@@ -203,7 +220,7 @@ suite('PrivacyPage', function() {
   });
 });
 
-suite('PrivacyReviewEnabled', function() {
+suite('PrivacyGuideEnabled', function() {
   let page: SettingsPrivacyPageElement;
   let metricsBrowserProxy: TestMetricsBrowserProxy;
 
@@ -216,6 +233,7 @@ suite('PrivacyReviewEnabled', function() {
       // Need privacy_sandbox pref for the page's setup.
       privacy_sandbox: {
         apis_enabled: {value: true},
+        apis_enabled_v2: {value: true},
       },
       privacy_guide: {
         viewed: {
@@ -238,49 +256,49 @@ suite('PrivacyReviewEnabled', function() {
     return flushTasks();
   });
 
-  test('privacyReviewRowVisibleChildAccount', function() {
-    assertTrue(isChildVisible(page, '#privacyReviewLinkRow'));
+  test('privacyGuideRowVisibleChildAccount', function() {
+    assertTrue(isChildVisible(page, '#privacyGuideLinkRow'));
 
-    // The user signs in to a child user account. This hides the privacy review
+    // The user signs in to a child user account. This hides the privacy guide
     // entry point.
     const syncStatus:
         SyncStatus = {childUser: true, statusAction: StatusAction.NO_ACTION};
     webUIListenerCallback('sync-status-changed', syncStatus);
     flush();
-    assertFalse(isChildVisible(page, '#privacyReviewLinkRow'));
+    assertFalse(isChildVisible(page, '#privacyGuideLinkRow'));
 
     // The user is no longer signed in to a child user account. This doesn't
     // show the entry point.
     syncStatus.childUser = false;
     webUIListenerCallback('sync-status-changed', syncStatus);
     flush();
-    assertFalse(isChildVisible(page, '#privacyReviewLinkRow'));
+    assertFalse(isChildVisible(page, '#privacyGuideLinkRow'));
   });
 
-  test('privacyReviewRowVisibleManaged', function() {
-    assertTrue(isChildVisible(page, '#privacyReviewLinkRow'));
+  test('privacyGuideRowVisibleManaged', function() {
+    assertTrue(isChildVisible(page, '#privacyGuideLinkRow'));
 
-    // The user becomes managed. This hides the privacy review entry point.
+    // The user becomes managed. This hides the privacy guide entry point.
     webUIListenerCallback('is-managed-changed', true);
     flush();
-    assertFalse(isChildVisible(page, '#privacyReviewLinkRow'));
+    assertFalse(isChildVisible(page, '#privacyGuideLinkRow'));
 
     // The user is no longer managed. This doesn't show the entry point.
     webUIListenerCallback('is-managed-changed', false);
     flush();
-    assertFalse(isChildVisible(page, '#privacyReviewLinkRow'));
+    assertFalse(isChildVisible(page, '#privacyGuideLinkRow'));
   });
 
-  test('privacyReviewRowClick', async function() {
+  test('privacyGuideRowClick', async function() {
     page.shadowRoot!.querySelector<HTMLElement>(
-                        '#privacyReviewLinkRow')!.click();
+                        '#privacyGuideLinkRow')!.click();
 
     const result = await metricsBrowserProxy.whenCalled(
         'recordPrivacyGuideEntryExitHistogram');
     assertEquals(PrivacyGuideInteractions.SETTINGS_LINK_ROW_ENTRY, result);
 
     // Ensure the correct Settings page is shown.
-    assertEquals(routes.PRIVACY_REVIEW, Router.getInstance().getCurrentRoute());
+    assertEquals(routes.PRIVACY_GUIDE, Router.getInstance().getCurrentRoute());
   });
 });
 

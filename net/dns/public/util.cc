@@ -4,20 +4,14 @@
 
 #include "net/dns/public/util.h"
 
-#include <set>
-#include <unordered_map>
-
 #include "base/check.h"
 #include "base/notreached.h"
-#include "base/strings/string_piece.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "net/base/ip_address.h"
 #include "net/dns/public/dns_protocol.h"
-#include "net/third_party/uri_template/uri_template.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
-#include "url/third_party/mozilla/url_parse.h"
-#include "url/url_canon.h"
-#include "url/url_canon_stdstring.h"
+#include "url/scheme_host_port.h"
 #include "url/url_constants.h"
 
 namespace net {
@@ -32,63 +26,9 @@ IPEndPoint GetMdnsIPEndPoint(const char* address) {
                     dns_protocol::kDefaultPortMulticast);
 }
 
-absl::optional<std::string> GetHttpsHost(const std::string& url) {
-  // This code is used to compute a static initializer, so it runs before GURL's
-  // scheme registry is initialized.  Since GURL is not ready yet, we need to
-  // duplicate some of its functionality here.
-  url::Parsed parsed;
-  url::ParseStandardURL(url.data(), url.size(), &parsed);
-  std::string canonical;
-  url::StdStringCanonOutput output(&canonical);
-  url::Parsed canonical_parsed;
-  bool is_valid =
-      url::CanonicalizeStandardURL(url.data(), url.size(), parsed,
-                                   url::SchemeType::SCHEME_WITH_HOST_AND_PORT,
-                                   nullptr, &output, &canonical_parsed);
-  if (!is_valid)
-    return absl::nullopt;
-  const url::Component& scheme_range = canonical_parsed.scheme;
-  base::StringPiece scheme =
-      base::StringPiece(canonical).substr(scheme_range.begin, scheme_range.len);
-  if (scheme != url::kHttpsScheme)
-    return absl::nullopt;
-  const url::Component& host_range = canonical_parsed.host;
-  return canonical.substr(host_range.begin, host_range.len);
-}
-
 }  // namespace
 
 namespace dns_util {
-
-bool IsValidDohTemplate(base::StringPiece server_template,
-                        std::string* server_method) {
-  std::string url_string;
-  std::string test_query = "this_is_a_test_query";
-  std::unordered_map<std::string, std::string> template_params(
-      {{"dns", test_query}});
-  std::set<std::string> vars_found;
-  bool valid_template = uri_template::Expand(
-      std::string(server_template), template_params, &url_string, &vars_found);
-  if (!valid_template) {
-    // The URI template is malformed.
-    return false;
-  }
-  absl::optional<std::string> host = GetHttpsHost(url_string);
-  if (!host) {
-    // The expanded template must be a valid HTTPS URL.
-    return false;
-  }
-  if (host->find(test_query) != std::string::npos) {
-    // The dns variable may not be part of the hostname.
-    return false;
-  }
-  // If the template contains a dns variable, use GET, otherwise use POST.
-  if (server_method) {
-    *server_method =
-        (vars_found.find("dns") == vars_found.end()) ? "POST" : "GET";
-  }
-  return true;
-}
 
 IPEndPoint GetMdnsGroupEndPoint(AddressFamily address_family) {
   switch (address_family) {
@@ -130,6 +70,41 @@ IPEndPoint GetMdnsReceiveEndPoint(AddressFamily address_family) {
   // specific multicast group should bind to that group address.
   return GetMdnsGroupEndPoint(address_family);
 #endif  // !(BUILDFLAG(IS_WIN) || BUILDFLAG(IS_FUCHSIA)) || BUILDFLAG(IS_APPLE)
+}
+
+std::string GetNameForHttpsQuery(const url::SchemeHostPort& scheme_host_port) {
+  DCHECK(!scheme_host_port.host().empty() &&
+         scheme_host_port.host().front() != '.');
+
+  // Normalize ws/wss schemes to http/https. Note that this behavior is not
+  // indicated by the draft-ietf-dnsop-svcb-https-08 spec.
+  base::StringPiece normalized_scheme = scheme_host_port.scheme();
+  if (normalized_scheme == url::kWsScheme) {
+    normalized_scheme = url::kHttpScheme;
+  } else if (normalized_scheme == url::kWssScheme) {
+    normalized_scheme = url::kHttpsScheme;
+  }
+
+  // For http-schemed hosts, request the corresponding upgraded https host
+  // per the rules in draft-ietf-dnsop-svcb-https-08, Section 9.5.
+  uint16_t port = scheme_host_port.port();
+  if (normalized_scheme == url::kHttpScheme) {
+    normalized_scheme = url::kHttpsScheme;
+    if (port == 80)
+      port = 443;
+  }
+
+  // Scheme should always end up normalized to "https" to create HTTPS
+  // transactions.
+  DCHECK_EQ(normalized_scheme, url::kHttpsScheme);
+
+  // Per the rules in draft-ietf-dnsop-svcb-https-08, Section 9.1 and 2.3,
+  // encode scheme and port in the transaction hostname, unless the port is
+  // the default 443.
+  if (port == 443)
+    return scheme_host_port.host();
+  return base::StrCat({"_", base::NumberToString(scheme_host_port.port()),
+                       "._https.", scheme_host_port.host()});
 }
 
 }  // namespace dns_util

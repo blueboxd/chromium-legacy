@@ -103,7 +103,7 @@ void DeviceOperationHandler::EnqueueOperation(Operation operation,
                                               OperationCallback callback) {
   BLUETOOTH_LOG(DEBUG) << "Device with id: " << device_id
                        << " enqueueing operation: " << operation << " ("
-                       << (queue_.size() + 1) << " operations already queued)";
+                       << queue_.size() << " operations already queued)";
   device::BluetoothDevice* device = FindDevice(device_id);
   device::BluetoothTransport type =
       device ? device->GetType()
@@ -138,7 +138,7 @@ void DeviceOperationHandler::PerformNextOperation() {
         << current_operation_->device_id;
     RecordUserInitiatedReconnectionMetrics(
         device::BluetoothTransport::BLUETOOTH_TRANSPORT_INVALID,
-        /*reconnection_attempt_start=*/absl::nullopt,
+        base::Time::Now(),
         device::BluetoothDevice::ConnectErrorCode::ERROR_FAILED);
     HandleFinishedOperation(/*success=*/false);
     return;

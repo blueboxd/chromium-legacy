@@ -129,8 +129,11 @@ class DlpFilesControllerTest : public testing::Test {
     testing::Mock::VerifyAndClearExpectations(&add_file_cb);
 
     file_url1_ = CreateFileSystemURL(file1.value());
+    ASSERT_TRUE(file_url1_.is_valid());
     file_url2_ = CreateFileSystemURL(file2.value());
+    ASSERT_TRUE(file_url2_.is_valid());
     file_url3_ = CreateFileSystemURL(file3.value());
+    ASSERT_TRUE(file_url3_.is_valid());
   }
 
   content::BrowserTaskEnvironment task_environment_;
@@ -218,16 +221,19 @@ class DlpFilesExternalDestinationTest
     DlpFilesControllerTest::SetUp();
 
     mount_points_ = storage::ExternalMountPoints::GetSystemInstance();
+    ASSERT_TRUE(mount_points_);
 
-    mount_points_->RegisterFileSystem(
+    mount_points_->RevokeAllFileSystems();
+
+    ASSERT_TRUE(mount_points_->RegisterFileSystem(
         file_manager::util::GetAndroidFilesMountPointName(),
         storage::kFileSystemTypeLocal, storage::FileSystemMountOption(),
-        base::FilePath(file_manager::util::kAndroidFilesPath));
+        base::FilePath(file_manager::util::kAndroidFilesPath)));
 
-    mount_points_->RegisterFileSystem(
+    ASSERT_TRUE(mount_points_->RegisterFileSystem(
         chromeos::kSystemMountNameRemovable, storage::kFileSystemTypeLocal,
         storage::FileSystemMountOption(),
-        base::FilePath(file_manager::util::kRemovableMediaPath));
+        base::FilePath(file_manager::util::kRemovableMediaPath)));
 
     // Setup for Crostini.
     crostini::FakeCrostiniFeatures crostini_features;
@@ -241,16 +247,17 @@ class DlpFilesExternalDestinationTest
 
     crostini::CrostiniManager* crostini_manager =
         crostini::CrostiniManager::GetForProfile(profile_.get());
+    ASSERT_TRUE(crostini_manager);
     crostini_manager->AddRunningVmForTesting(crostini::kCrostiniDefaultVmName);
     crostini_manager->AddRunningContainerForTesting(
         crostini::kCrostiniDefaultVmName,
         crostini::ContainerInfo(crostini::kCrostiniDefaultContainerName,
                                 "testuser", "/home/testuser",
                                 "PLACEHOLDER_IP"));
-    mount_points_->RegisterFileSystem(
+    ASSERT_TRUE(mount_points_->RegisterFileSystem(
         file_manager::util::GetCrostiniMountPointName(profile_.get()),
         storage::kFileSystemTypeLocal, storage::FileSystemMountOption(),
-        file_manager::util::GetCrostiniMountDirectory(profile_.get()));
+        file_manager::util::GetCrostiniMountDirectory(profile_.get())));
 
     // Setup for DriveFS.
     profile_->GetPrefs()->SetString(drive::prefs::kDriveFsProfileSalt, "a");
@@ -260,9 +267,9 @@ class DlpFilesExternalDestinationTest
         drive::DriveIntegrationServiceFactory::GetForProfile(profile_.get());
     ASSERT_TRUE(integration_service);
     base::FilePath mount_point_drive = integration_service->GetMountPointPath();
-    mount_points_->RegisterFileSystem(
+    ASSERT_TRUE(mount_points_->RegisterFileSystem(
         mount_point_drive.BaseName().value(), storage::kFileSystemTypeLocal,
-        storage::FileSystemMountOption(), mount_point_drive);
+        storage::FileSystemMountOption(), mount_point_drive));
   }
 
   void TearDown() override {
@@ -298,10 +305,7 @@ INSTANTIATE_TEST_SUITE_P(
                         DlpRulesManager::Component::kDrive)));
 
 TEST_P(DlpFilesExternalDestinationTest, GetDisallowedTransfers_Component) {
-  std::string mount_name;
-  std::string path;
-  DlpRulesManager::Component expected_component;
-  std::tie(mount_name, path, expected_component) = GetParam();
+  auto [mount_name, path, expected_component] = GetParam();
 
   AddFilesToDlpClient();
 
@@ -318,6 +322,7 @@ TEST_P(DlpFilesExternalDestinationTest, GetDisallowedTransfers_Component) {
 
   auto dst_url = mount_points_->CreateExternalFileSystemURL(
       blink::StorageKey(), mount_name, base::FilePath(path));
+  ASSERT_TRUE(dst_url.is_valid());
 
   base::test::TestFuture<std::vector<storage::FileSystemURL>> future;
   files_controller_.GetDisallowedTransfers(transferred_files, dst_url,

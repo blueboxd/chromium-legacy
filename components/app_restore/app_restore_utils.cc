@@ -22,6 +22,8 @@ namespace {
 
 const char kCrxAppPrefix[] = "_crx_";
 
+static int32_t session_id_counter = kArcSessionIdOffsetForRestoredLaunching;
+
 // Always use the full restore ARC data if ARC apps for desks templates is not
 // enabled.
 bool ShouldUseFullRestoreArcData() {
@@ -32,6 +34,16 @@ bool ShouldUseFullRestoreArcData() {
 }
 
 }  // namespace
+
+bool IsArcWindow(aura::Window* window) {
+  return window->GetProperty(aura::client::kAppType) ==
+         static_cast<int>(ash::AppType::ARC_APP);
+}
+
+bool IsLacrosWindow(aura::Window* window) {
+  return window->GetProperty(aura::client::kAppType) ==
+         static_cast<int>(ash::AppType::LACROS);
+}
 
 void ApplyProperties(app_restore::WindowInfo* window_info,
                      ui::PropertyHandler* property_handler) {
@@ -64,9 +76,6 @@ void ApplyProperties(app_restore::WindowInfo* window_info,
 
 void ModifyWidgetParams(int32_t restore_window_id,
                         views::Widget::InitParams* out_params) {
-  if (!full_restore::features::IsFullRestoreEnabled())
-    return;
-
   DCHECK(out_params);
 
   const bool is_arc_app =
@@ -128,9 +137,6 @@ void ModifyWidgetParams(int32_t restore_window_id,
 }
 
 int32_t FetchRestoreWindowId(const std::string& app_id) {
-  if (!full_restore::features::IsFullRestoreEnabled())
-    return 0;
-
   // If full restore is not running, check if desk templates can get a viable
   // window id, otherwise default to checking full restore.
   auto* full_restore_read_handler =
@@ -146,12 +152,14 @@ int32_t FetchRestoreWindowId(const std::string& app_id) {
       ->FetchRestoreWindowId(app_id);
 }
 
-int32_t GetArcSessionId() {
-  if (ShouldUseFullRestoreArcData()) {
-    return full_restore::FullRestoreReadHandler::GetInstance()
-        ->GetArcSessionId();
+int32_t CreateArcSessionId() {
+  // ARC session id offset start counting from a large number. When the counter
+  // overflow, it will less the start number.
+  if (session_id_counter < kArcSessionIdOffsetForRestoredLaunching) {
+    LOG(WARNING) << "ARC session id is overflow: " << session_id_counter;
+    session_id_counter = kArcSessionIdOffsetForRestoredLaunching;
   }
-  return DeskTemplateReadHandler::Get()->GetArcSessionId();
+  return ++session_id_counter;
 }
 
 void SetArcSessionIdForWindowId(int32_t arc_session_id, int32_t window_id) {
@@ -164,9 +172,6 @@ void SetArcSessionIdForWindowId(int32_t arc_session_id, int32_t window_id) {
 }
 
 int32_t GetArcRestoreWindowIdForTaskId(int32_t task_id) {
-  if (!full_restore::features::IsFullRestoreEnabled())
-    return 0;
-
   if (ShouldUseFullRestoreArcData()) {
     return full_restore::FullRestoreReadHandler::GetInstance()
         ->GetArcRestoreWindowIdForTaskId(task_id);
@@ -176,9 +181,6 @@ int32_t GetArcRestoreWindowIdForTaskId(int32_t task_id) {
 }
 
 int32_t GetArcRestoreWindowIdForSessionId(int32_t session_id) {
-  if (!full_restore::features::IsFullRestoreEnabled())
-    return 0;
-
   if (ShouldUseFullRestoreArcData()) {
     return full_restore::FullRestoreReadHandler::GetInstance()
         ->GetArcRestoreWindowIdForSessionId(session_id);
@@ -201,13 +203,16 @@ const std::string GetLacrosWindowId(aura::Window* window) {
   return *lacros_window_id;
 }
 
+int32_t GetLacrosRestoreWindowId(const std::string& lacros_window_id) {
+  return full_restore::FullRestoreReadHandler::GetInstance()
+      ->GetLacrosRestoreWindowId(lacros_window_id);
+}
+
 void OnLacrosWindowAdded(aura::Window* const window,
                          uint32_t browser_session_id,
                          uint32_t restored_browser_session_id) {
-  if (window->GetProperty(aura::client::kAppType) !=
-      static_cast<int>(ash::AppType::LACROS)) {
+  if (!IsLacrosWindow(window))
     return;
-  }
 
   full_restore::FullRestoreReadHandler::GetInstance()
       ->OnLacrosBrowserWindowAdded(window, restored_browser_session_id);

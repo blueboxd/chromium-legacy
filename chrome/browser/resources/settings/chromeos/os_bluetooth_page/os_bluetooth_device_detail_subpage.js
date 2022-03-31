@@ -12,6 +12,7 @@ import '../../settings_shared_css.js';
 import '//resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import '//resources/cr_elements/policy/cr_tooltip_icon.m.js';
 import './os_bluetooth_change_device_name_dialog.js';
+import './os_bluetooth_true_wireless_images.js';
 import 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_device_battery_info.js';
 
 import {BluetoothUiSurface, recordBluetoothUiSurfaceMetrics} from '//resources/cr_components/chromeos/bluetooth/bluetooth_metrics_utils.js';
@@ -19,7 +20,7 @@ import {assertNotReached} from '//resources/js/assert.m.js';
 import {I18nBehavior, I18nBehaviorInterface} from '//resources/js/i18n_behavior.m.js';
 import {html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {BatteryType} from 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_types.js';
-import {getBatteryPercentage, getDeviceName, hasAnyDetailedBatteryInfo} from 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_utils.js';
+import {getBatteryPercentage, getDeviceName, hasAnyDetailedBatteryInfo, hasTrueWirelessImages} from 'chrome://resources/cr_components/chromeos/bluetooth/bluetooth_utils.js';
 import {getBluetoothConfig} from 'chrome://resources/cr_components/chromeos/bluetooth/cros_bluetooth_config.js';
 
 import {loadTimeData} from '../../i18n_setup.js';
@@ -143,6 +144,7 @@ class SettingsBluetoothDeviceDetailSubpageElement extends
 
     this.deviceId_ = '';
     this.pageState_ = PageState.DISCONNECTED;
+    this.device_ = null;
 
     const queryParams = Router.getInstance().getQueryParameters();
     const deviceId = queryParams.get('id') || '';
@@ -201,11 +203,8 @@ class SettingsBluetoothDeviceDetailSubpageElement extends
    * @private
    */
   getBluetoothConnectDisconnectBtnLabel_() {
-    if (this.pageState_ === PageState.CONNECTED) {
-      return this.i18n('bluetoothDisconnect');
-    }
-
-    return this.i18n('bluetoothConnect');
+    return this.isDeviceConnected_ ? this.i18n('bluetoothDisconnect') :
+                                     this.i18n('bluetoothConnect');
   }
 
   /**
@@ -260,6 +259,10 @@ class SettingsBluetoothDeviceDetailSubpageElement extends
     }
     this.parentNode.pageTitle = getDeviceName(this.device_);
 
+    // Special case a where user is still on detail page and has
+    // tried to connect to device but failed. The current |pageState_|
+    // is CONNECTION_FAILED, but another device property not
+    // |connectionState| has changed.
     if (this.pageState_ === PageState.CONNECTION_FAILED &&
         this.device_.deviceProperties.connectionState ===
             mojom.DeviceConnectionState.kNotConnected) {
@@ -469,13 +472,38 @@ class SettingsBluetoothDeviceDetailSubpageElement extends
       return false;
     }
 
+    // Don't show the inline Battery Info if we are showing the True
+    // Wireless Images component.
+    if (this.shouldShowTrueWirelessImages_()) {
+      return false;
+    }
+
     if (getBatteryPercentage(
             this.device_.deviceProperties, BatteryType.DEFAULT) !== undefined) {
       return true;
     }
 
-
     return hasAnyDetailedBatteryInfo(this.device_.deviceProperties);
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowTrueWirelessImages_() {
+    if (!this.device_) {
+      return false;
+    }
+
+    // Don't show True Wireless Images component if the device has no
+    // detailed battery info to display. This doesn't matter if the device
+    // is not connected.
+    if (!hasAnyDetailedBatteryInfo(this.device_.deviceProperties) &&
+        this.isDeviceConnected_) {
+      return false;
+    }
+
+    return hasTrueWirelessImages(this.device_.deviceProperties);
   }
 
   /**

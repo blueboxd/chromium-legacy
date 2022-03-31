@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/trees/commit_state.h"
+#include "components/viz/common/frame_sinks/copy_output_request.h"
 
 namespace cc {
 
@@ -56,8 +57,10 @@ EventListenerProperties CommitState::GetEventListenerProperties(
   return event_listener_properties[static_cast<size_t>(listener_class)];
 }
 
-ThreadUnsafeCommitState::ThreadUnsafeCommitState(MutatorHost* mh)
-    : mutator_host(mh) {}
+ThreadUnsafeCommitState::ThreadUnsafeCommitState(
+    MutatorHost* mh,
+    const ProtectedSequenceSynchronizer& synchronizer)
+    : mutator_host(mh), property_trees(synchronizer) {}
 
 ThreadUnsafeCommitState::~ThreadUnsafeCommitState() = default;
 

@@ -27,19 +27,21 @@ class LacrosDataMigrationScreen extends LacrosDataMigrationScreenElementBase {
   constructor() {
     super();
     this.progressValue_ = 0;
-    this.canCancel_ = false;
+    this.canSkip_ = false;
+    this.lowBatteryStatus_ = false;
   }
 
   static get properties() {
     return {
       progressValue_: {type: Number},
 
-      canCancel_: {type: Boolean}
+      canSkip_: {type: Boolean},
+      lowBatteryStatus_: {type: Boolean}
     };
   }
 
   get EXTERNAL_API() {
-    return ['setProgressValue', 'showSkipButton'];
+    return ['setProgressValue', 'showSkipButton', 'setLowBatteryStatus'];
   }
 
   /**
@@ -54,7 +56,16 @@ class LacrosDataMigrationScreen extends LacrosDataMigrationScreenElementBase {
    * Called to make the skip button visible.
    */
   showSkipButton() {
-    this.canCancel_ = true;
+    this.canSkip_ = true;
+  }
+
+  /**
+   * Called on updating low battery status.
+   * @param {boolean} status Whether or not low-battery UI should
+   *   show. Specifically, if battery is low and no charger is connected.
+   */
+  setLowBatteryStatus(status) {
+    this.lowBatteryStatus_ = status;
   }
 
   ready() {
@@ -64,9 +75,9 @@ class LacrosDataMigrationScreen extends LacrosDataMigrationScreenElementBase {
     });
   }
 
-  onCancelButtonClicked_() {
-    assert(this.canCancel_);
-    this.userActed('cancel');
+  onSkipButtonClicked_() {
+    assert(this.canSkip_);
+    this.userActed('skip');
   }
 }
 

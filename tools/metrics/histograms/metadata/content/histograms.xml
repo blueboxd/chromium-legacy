@@ -171,7 +171,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.AllowStorageAccessSync" units="ms"
-    expires_after="2022-06-05">
+    expires_after="2022-08-07">
   <owner>cduvall@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -654,19 +654,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="ContentSuggestions.Feed.LoadTime" units="ms"
-    expires_after="M89">
-  <obsolete>
-    Removed along with FeedV1 in M89
-  </obsolete>
-  <owner>carlosk@chromium.org</owner>
-  <owner>harringtond@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <summary>
-    The time it takes for the Feed to load entries from the storage.
-  </summary>
-</histogram>
-
 <histogram
     name="ContentSuggestions.Feed.Network.CompressedResponseSizeKB{NetworkRequestType}"
     units="KB" expires_after="2023-03-01">
@@ -683,7 +670,7 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="ContentSuggestions.Feed.Network.Duration.{NetworkEvent}"
+<histogram name="ContentSuggestions.Feed.Network.Duration{NetworkEvent}"
     units="ms" expires_after="2023-03-01">
   <owner>sczs@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
@@ -745,19 +732,6 @@ chromium-metrics-reviews@google.com.
     The HTTP response status for a network request made by the Feed component.
   </summary>
   <token key="Type" variants="FeedNetworkRequestType"/>
-</histogram>
-
-<histogram name="ContentSuggestions.Feed.Network.TokenDuration" units="ms"
-    expires_after="M89">
-  <obsolete>
-    Removed along with FeedV1 in M89
-  </obsolete>
-  <owner>carlosk@chromium.org</owner>
-  <owner>harringtond@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <summary>
-    The amount of time it takes to get an access token for signed in users.
-  </summary>
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.Network.TokenFetchStatus"
@@ -1166,6 +1140,18 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="ContentSuggestions.Feed.UserSettingsOnStart"
+    enum="FeedUserSettingsOnStart" expires_after="2023-03-01">
+  <owner>carlosk@chromium.org</owner>
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    The state of some account settings that affect Feed users. Reported once at
+    startup (to a single bucket), for all users. Note that this histogram uses
+    data cached from the last time the Feed was fetched. Android only.
+  </summary>
+</histogram>
+
 <histogram name="ContentSuggestions.Feed.VisibilityLoggingEnabled"
     enum="Boolean" expires_after="2023-03-01">
   <owner>freedjm@google.com</owner>
@@ -1236,6 +1222,20 @@ chromium-metrics-reviews@google.com.
     Android: The result of following a WebFeed when the Web Feed ID is NOT
     known. Reported when the follow is attempted, once per request. Triggered by
     a user's request to follow a Web Feed.
+  </summary>
+</histogram>
+
+<histogram name="ContentSuggestions.Feed.WebFeed.GetRssLinksRendererTime"
+    units="microseconds" expires_after="2023-03-01">
+  <owner>carlosk@chromium.org</owner>
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: The time spent by the renderer main thread to collect and send back
+    to the browser process a list of RSS/Atom links embedded in a web page. This
+    is recorded every time the renderer fulfills a request for these links,
+    currently only requested by the web feeds system. This histogram is only
+    logged in platforms with high-resolution clocks.
   </summary>
 </histogram>
 
@@ -1378,7 +1378,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.{PlayType}Video.InitializationError"
-    enum="FeedVideoInitializationError" expires_after="M96">
+    enum="FeedVideoInitializationError" expires_after="2023-01-20">
   <owner>jianli@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1396,7 +1396,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.{PlayType}Video.PlayError"
-    enum="FeedVideoPlayError" expires_after="M96">
+    enum="FeedVideoPlayError" expires_after="2023-01-20">
   <owner>jianli@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1411,7 +1411,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.{PlayType}Video.PlayEvent"
-    enum="FeedVideoPlayEvent" expires_after="M96">
+    enum="FeedVideoPlayEvent" expires_after="2023-01-20">
   <owner>jianli@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>

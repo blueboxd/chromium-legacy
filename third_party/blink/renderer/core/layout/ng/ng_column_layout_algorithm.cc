@@ -222,7 +222,7 @@ NGColumnLayoutAlgorithm::NGColumnLayoutAlgorithm(
   }
 }
 
-scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
+const NGLayoutResult* NGColumnLayoutAlgorithm::Layout() {
   const LogicalSize border_box_size = container_builder_.InitialBorderBoxSize();
   // TODO(mstensho): This isn't the content-box size, as
   // |BorderScrollbarPadding()| has been adjusted for fragmentation. Verify
@@ -314,6 +314,11 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
     container_builder_.CheckNoBlockFragmentation();
 #endif
   }
+
+  // TODO(mstensho): We need to do more here (vertical alignment, for instance),
+  // if this is a table cell.
+  if (ConstraintSpace().IsTableCell())
+    container_builder_.SetIsTableNGPart();
 
   NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), &container_builder_).Run();
 
@@ -421,7 +426,7 @@ NGBreakStatus NGColumnLayoutAlgorithm::LayoutChildren() {
     // break token, we wouldn't be able to resume layout after the any initial
     // spanners.
     if (!entry.spanner) {
-      scoped_refptr<const NGLayoutResult> result =
+      const NGLayoutResult* result =
           LayoutRow(child_break_token, &margin_strut);
 
       if (!result) {
@@ -447,7 +452,7 @@ NGBreakStatus NGColumnLayoutAlgorithm::LayoutChildren() {
         }
         // Otherwise we have nothing here, and need to break before the multicol
         // container. No fragment will be produced.
-        DCHECK(!BreakToken());
+        DCHECK(!IsResumingLayout(BreakToken()));
         return NGBreakStatus::kBrokeBefore;
       }
 
@@ -544,7 +549,24 @@ NGBreakStatus NGColumnLayoutAlgorithm::LayoutChildren() {
   return NGBreakStatus::kContinue;
 }
 
-scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
+struct ResultWithOffset {
+  DISALLOW_NEW();
+
+ public:
+  Member<const NGLayoutResult> result;
+  LogicalOffset offset;
+
+  ResultWithOffset(const NGLayoutResult* result, LogicalOffset offset)
+      : result(result), offset(offset) {}
+
+  const NGPhysicalBoxFragment& Fragment() const {
+    return To<NGPhysicalBoxFragment>(result->PhysicalFragment());
+  }
+
+  void Trace(Visitor* visitor) const { visitor->Trace(result); }
+};
+
+const NGLayoutResult* NGColumnLayoutAlgorithm::LayoutRow(
     const NGBlockBreakToken* next_column_token,
     NGMarginStrut* margin_strut) {
   LogicalSize column_size(column_inline_size_, column_block_size_);
@@ -625,19 +647,8 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
   // (colum balancing). Keep them in this list, and add them to the fragment
   // builder when we have the final column fragments. Or clear the list and
   // retry otherwise.
-  struct ResultWithOffset {
-    scoped_refptr<const NGLayoutResult> result;
-    LogicalOffset offset;
+  HeapVector<ResultWithOffset, 16> new_columns;
 
-    ResultWithOffset(scoped_refptr<const NGLayoutResult> result,
-                     LogicalOffset offset)
-        : result(result), offset(offset) {}
-
-    const NGPhysicalBoxFragment& Fragment() const {
-      return To<NGPhysicalBoxFragment>(result->PhysicalFragment());
-    }
-  };
-  Vector<ResultWithOffset, 16> new_columns;
   bool is_empty_spanner_parent = false;
 
   // Avoid suboptimal breaks (and overflow from monolithic content) inside a
@@ -651,33 +662,13 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
   if (may_resume_in_next_outer_fragmentainer) {
     if (intrinsic_block_size_) {
       may_have_more_space_in_next_outer_fragmentainer = true;
-    } else {
-      if (ConstraintSpace().FragmentainerOffsetAtBfc() > LayoutUnit()) {
-        if (!BreakToken()) {
-          may_have_more_space_in_next_outer_fragmentainer = true;
-        } else {
-          // We have already added a break for this multicol container, but we
-          // think that we're not at the start of the fragmentainer. This may be
-          // the case if we have a nested floated multicol container with a
-          // non-zero block-start margin. Float margins are unbreakable and are
-          // never truncated. So we may have broken before it, and kept the
-          // margin for the next fragmentainer (as we should), but since a
-          // fragmentainer offset is a border-box offset, we'll now think that
-          // we're past the fragmentainer start (the margin edge is at the
-          // start, but the border edge isn't). This is not ideal, but for now
-          // just avoid breaking before *again*, which would cause an infinite
-          // loop with no content progress. DCHECK that this is the situation.
-          // TODO(mstensho): Find a solution to this. We may have added an
-          // unnecessary break now. Pushing the float to the next fragmentainer
-          // may not have solved anything.
-          DCHECK(Node().IsFloating());
-          DCHECK(BreakToken()->IsBreakBefore());
-        }
-      }
+    } else if (!ConstraintSpace().IsAtFragmentainerStart()) {
+      DCHECK(!IsResumingLayout(BreakToken()));
+      may_have_more_space_in_next_outer_fragmentainer = true;
     }
   }
 
-  scoped_refptr<const NGLayoutResult> result;
+  const NGLayoutResult* result = nullptr;
   absl::optional<NGBreakAppeal> min_break_appeal;
 
   do {
@@ -936,7 +927,7 @@ NGBreakStatus NGColumnLayoutAlgorithm::LayoutSpanner(
   if (UNLIKELY(early_break_))
     early_break_in_child = EnterEarlyBreakInChild(spanner_node, *early_break_);
 
-  auto result =
+  auto* result =
       spanner_node.Layout(spanner_space, break_token, early_break_in_child);
 
   if (ConstraintSpace().HasBlockFragmentation() && !early_break_) {
@@ -947,9 +938,8 @@ NGBreakStatus NGColumnLayoutAlgorithm::LayoutSpanner(
         ConstraintSpace().FragmentainerOffsetAtBfc() + block_offset;
 
     NGBreakStatus break_status = BreakBeforeChildIfNeeded(
-        ConstraintSpace(), spanner_node, *result.get(),
-        fragmentainer_block_offset, has_processed_first_child_,
-        &container_builder_);
+        ConstraintSpace(), spanner_node, *result, fragmentainer_block_offset,
+        has_processed_first_child_, &container_builder_);
 
     if (break_status != NGBreakStatus::kContinue) {
       // We need to break, either before the spanner, or even earlier.
@@ -1000,7 +990,7 @@ void NGColumnLayoutAlgorithm::AttemptToPositionListMarker(
   if (!baseline)
     return;
 
-  scoped_refptr<const NGLayoutResult> layout_result = marker.Layout(
+  const NGLayoutResult* layout_result = marker.Layout(
       ConstraintSpace(), container_builder_.Style(), baseline_type);
   DCHECK(layout_result);
 
@@ -1023,7 +1013,7 @@ void NGColumnLayoutAlgorithm::PositionAnyUnclaimedListMarker() {
 
   // Lay out the list marker.
   FontBaseline baseline_type = Style().GetFontBaseline();
-  scoped_refptr<const NGLayoutResult> layout_result =
+  const NGLayoutResult* layout_result =
       marker.Layout(ConstraintSpace(), Style(), baseline_type);
   DCHECK(layout_result);
   // Position the list marker without aligning with line boxes.
@@ -1152,7 +1142,7 @@ LayoutUnit NGColumnLayoutAlgorithm::CalculateBalancedColumnBlockSize(
     NGBlockLayoutAlgorithm balancing_algorithm(
         {Node(), fragment_geometry, space, break_token});
     balancing_algorithm.SetBoxType(NGPhysicalFragment::kColumnBox);
-    scoped_refptr<const NGLayoutResult> result = balancing_algorithm.Layout();
+    const NGLayoutResult* result = balancing_algorithm.Layout();
 
     // This algorithm should never abort.
     DCHECK_EQ(result->Status(), NGLayoutResult::kSuccess);
@@ -1277,14 +1267,16 @@ LayoutUnit NGColumnLayoutAlgorithm::ConstrainColumnBlockSize(
       ConstraintSpace(), style, BorderPadding(), style.LogicalMinHeight());
   max = std::max(max, min);
 
-  // If this multicol container is nested inside another fragmentation
-  // context, we need to subtract the space consumed in previous fragments.
-  if (BreakToken())
-    max -= BreakToken()->ConsumedBlockSize();
+  if (max != LayoutUnit::Max()) {
+    // If this multicol container is nested inside another fragmentation
+    // context, we need to subtract the space consumed in previous fragments.
+    if (BreakToken())
+      max -= BreakToken()->ConsumedBlockSize();
 
-  // We may already have used some of the available space in earlier column rows
-  // or spanners.
-  max -= CurrentContentBlockOffset(row_offset);
+    // We may already have used some of the available space in earlier column
+    // rows or spanners.
+    max -= CurrentContentBlockOffset(row_offset);
+  }
 
   // Constrain and convert the value back to content-box.
   size = std::min(size, max);
@@ -1296,6 +1288,7 @@ NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForBalancing(
   NGConstraintSpaceBuilder space_builder(
       ConstraintSpace(), Style().GetWritingDirection(), /* is_new_fc */ true);
   space_builder.SetFragmentationType(kFragmentColumn);
+  space_builder.SetShouldPropagateChildBreakValues();
   space_builder.SetAvailableSize({column_size.inline_size, kIndefiniteSize});
   space_builder.SetInlineAutoBehavior(NGAutoBehavior::kStretchImplicit);
   space_builder.SetPercentageResolutionSize(ColumnPercentageResolutionSize());
@@ -1344,3 +1337,5 @@ NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForMinMax()
 }
 
 }  // namespace blink
+
+WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(blink::ResultWithOffset)

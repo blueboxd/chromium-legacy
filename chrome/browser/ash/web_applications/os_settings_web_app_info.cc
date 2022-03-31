@@ -75,3 +75,11 @@ std::vector<web_app::AppId>
 OSSettingsSystemAppDelegate::GetAppIdsToUninstallAndReplace() const {
   return {web_app::kSettingsAppId, ash::kInternalAppIdSettings};
 }
+
+bool OSSettingsSystemAppDelegate::PreferManifestBackgroundColor() const {
+  return true;
+}
+
+bool OSSettingsSystemAppDelegate::ShouldAnimateThemeChanges() const {
+  return ash::features::IsSettingsAppThemeChangeAnimationEnabled();
+}

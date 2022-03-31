@@ -22,6 +22,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/wm/container_finder.h"
 #include "base/bind.h"
@@ -33,6 +34,7 @@
 #include "base/time/time.h"
 #include "chromeos/services/assistant/public/cpp/assistant_enums.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
@@ -208,6 +210,8 @@ void AppListBubblePresenter::OnZeroStateSearchDone(int64_t display_id) {
     base::TimeTicks time_shown = base::TimeTicks::Now();
 
     bubble_widget_ = CreateBubbleWidget(root_window);
+    bubble_widget_->GetNativeWindow()->SetTitle(l10n_util::GetStringUTF16(
+        IDS_APP_LIST_LAUNCHER_ACCESSIBILITY_ANNOUNCEMENT));
     bubble_widget_->GetNativeWindow()->SetEventTargeter(
         std::make_unique<AppListEventTargeter>(controller_));
     bubble_view_ = bubble_widget_->SetContentsView(
@@ -257,9 +261,8 @@ void AppListBubblePresenter::OnZeroStateSearchDone(int64_t display_id) {
   // The page must be set before triggering the show animation so the correct
   // animations are triggered.
   bubble_view_->ShowPage(target_page_);
-  if (features::IsProductivityLauncherAnimationEnabled()) {
-    bubble_view_->StartShowAnimation();
-  }
+  const bool is_side_shelf = !shelf->IsHorizontalAlignment();
+  bubble_view_->StartShowAnimation(is_side_shelf);
   controller_->OnVisibilityChanged(/*visible=*/true, display_id);
 }
 
@@ -296,17 +299,15 @@ void AppListBubblePresenter::Dismiss() {
 
   controller_->ViewClosing();
   controller_->OnVisibilityWillChange(/*visible=*/false, display_id);
-  if (features::IsProductivityLauncherAnimationEnabled()) {
-    if (bubble_view_) {
-      bubble_view_->StartHideAnimation(
-          base::BindOnce(&AppListBubblePresenter::OnHideAnimationEnded,
-                         weak_factory_.GetWeakPtr()));
-    }
-  } else {
-    // Check for widget because the code could be waiting for zero-state search
-    // results before first show.
-    if (bubble_widget_)
-      OnHideAnimationEnded();
+  if (bubble_view_) {
+    aura::Window* bubble_window = bubble_view_->GetWidget()->GetNativeWindow();
+    DCHECK(bubble_window);
+    Shelf* shelf = Shelf::ForWindow(bubble_window);
+    const bool is_side_shelf = !shelf->IsHorizontalAlignment();
+    bubble_view_->StartHideAnimation(
+        is_side_shelf,
+        base::BindOnce(&AppListBubblePresenter::OnHideAnimationEnded,
+                       weak_factory_.GetWeakPtr()));
   }
   controller_->OnVisibilityChanged(/*visible=*/false, display_id);
 

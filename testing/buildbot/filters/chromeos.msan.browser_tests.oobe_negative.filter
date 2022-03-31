@@ -26,8 +26,10 @@
 -All/SAMLPasswordAttributesTest.*
 -All/SAMLPolicyTest.*
 -All/SamlTestWithFeatures.*
+-All/SmartPrivacyProtectionScreenTest.*
 -All/SshWarningTest.*
 -All/SyncConsentPolicyDisabledTest.*
+-All/SyncConsentTestWithModesParams.*
 -All/SyncConsentTestWithParams.*
 -All/WebviewCloseViewLoginTest.*
 -All/WebviewLoginWithIframeTest.*

@@ -23,6 +23,7 @@
 #include "components/offline_pages/core/offline_page_model.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/browsing_data_remover_delegate.h"
+#include "device/fido/platform_credential_store.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -44,8 +45,7 @@ class WebRtcEventLogManager;
 // as the embedder.
 class ChromeBrowsingDataRemoverDelegate
     : public content::BrowsingDataRemoverDelegate,
-      public KeyedService
-{
+      public KeyedService {
  public:
   explicit ChromeBrowsingDataRemoverDelegate(
       content::BrowserContext* browser_context);
@@ -137,7 +137,9 @@ class ChromeBrowsingDataRemoverDelegate
     kAccountCompromisedCredentials = 39,
     kFaviconCacheExpiration = 40,
     kSecurePaymentConfirmationCredentials = 41,
-    kMaxValue = kSecurePaymentConfirmationCredentials,
+    kWebAppHistory = 42,
+    kWebAuthnCredentials = 43,
+    kMaxValue = kWebAuthnCredentials,
   };
 
   // Called by CreateTaskCompletionClosure().
@@ -182,6 +184,8 @@ class ChromeBrowsingDataRemoverDelegate
                                base::WaitableEvent* waitable_event);
 #endif
 
+  std::unique_ptr<device::fido::PlatformCredentialStore> MakeCredentialStore();
+
   // The profile for which the data will be deleted.
   raw_ptr<Profile> profile_;
 
@@ -220,6 +224,8 @@ class ChromeBrowsingDataRemoverDelegate
 #endif
 
   bool should_clear_password_account_storage_settings_ = false;
+
+  std::unique_ptr<device::fido::PlatformCredentialStore> credential_store_;
 
   base::WeakPtrFactory<ChromeBrowsingDataRemoverDelegate> weak_ptr_factory_{
       this};

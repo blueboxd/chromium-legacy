@@ -46,10 +46,6 @@ class BlinkRootsHandler final : public v8::EmbedderRootsHandler {
       return true;
     }
 
-    if (ToScriptWrappable(traced)->HasEventListeners()) {
-      return true;
-    }
-
     return false;
   }
 
@@ -206,6 +202,11 @@ void ThreadState::CollectAllGarbageForTesting(StackState stack_state) {
     }
     previous_live_bytes = live_bytes;
   }
+}
+
+void ThreadState::CollectGarbageInYoungGenerationForTesting(
+    StackState stack_state) {
+  cpp_heap().CollectGarbageInYoungGenerationForTesting(stack_state);
 }
 
 namespace {

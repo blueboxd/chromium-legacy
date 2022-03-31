@@ -7,6 +7,7 @@
 
 #include "base/component_export.h"
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 
@@ -44,6 +45,10 @@ extern const base::Feature kAutofillAllowDuplicateFormSubmissions;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillAllowNonHttpActivation;
 COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillComplementCountryCodeOnImport;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillConsiderVariationCountryCodeForPhoneNumbers;
+COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillCreateDataForTest;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillDelayPopupControllerDeletion;
@@ -62,9 +67,6 @@ COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillEnableHideSuggestionsUI;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillEnableImportWhenMultiplePhoneNumbers;
-COMPONENT_EXPORT(AUTOFILL)
-extern const base::Feature
-    kAutofillEnablePasswordInfoBarAccountIndicationFooter;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillEnableSupportForApartmentNumbers;
 COMPONENT_EXPORT(AUTOFILL)
@@ -89,6 +91,8 @@ COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillTypeSpecificPopupWidth;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillFixFillableFieldTypes;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillFixServerQueriesIfPasswordManagerIsEnabled;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillIgnoreAutocompleteForImport;
 COMPONENT_EXPORT(AUTOFILL)
@@ -126,11 +130,7 @@ extern const base::Feature kAutofillPreventOverridingPrefilledValues;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillProbableFormSubmissionInBrowser;
 COMPONENT_EXPORT(AUTOFILL)
-extern const base::Feature kAutofillProfileClientValidation;
-COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillProfileImportFromUnfocusableFields;
-COMPONENT_EXPORT(AUTOFILL)
-extern const base::Feature kAutofillProfileServerValidation;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillRetrieveOverallPredictionsFromCache;
 COMPONENT_EXPORT(AUTOFILL) extern const base::Feature kAutofillSaveAndFillVPA;

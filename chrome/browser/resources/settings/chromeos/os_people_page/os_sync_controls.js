@@ -23,6 +23,15 @@ import {RouteObserverBehavior} from '../route_observer_behavior.js';
 
 import {OsSyncBrowserProxy, OsSyncBrowserProxyImpl, OsSyncPrefs} from './os_sync_browser_proxy.m.js';
 
+/**
+ * Names of the radio buttons which allow the user to choose their data sync
+ * mechanism.
+ * @enum {string}
+ */
+const RadioButtonNames = {
+  SYNC_EVERYTHING: 'sync-everything',
+  CUSTOMIZE_SYNC: 'customize-sync',
+};
 
 /**
  * Names of the individual data type properties to be cached from
@@ -40,6 +49,7 @@ const SyncPrefsIndividualDataTypes = [
 ];
 
 /**
+ * TODO(https://crbug.com/1294178): Consider merging this with sync_controls.
  * @fileoverview
  * 'os-sync-controls' contains all OS sync data type controls.
  */
@@ -61,31 +71,6 @@ Polymer({
       computed: 'syncControlsHidden_(osSyncPrefs)',
       reflectToAttribute: true,
     },
-
-    /**
-     * Injected sync system status. Undefined until the parent component injects
-     * the value.
-     * @type {SyncStatus|undefined}
-     */
-    syncStatus: Object,
-
-    /**
-     * Injected profile icon URL, usually a data:image/png URL.
-     * @private
-     */
-    profileIconUrl: String,
-
-    /**
-     * Injected profile name, e.g. "John Cena".
-     * @private
-     */
-    profileName: String,
-
-    /**
-     * Injected profile email address, e.g. "john.cena@gmail.com".
-     * @private
-     */
-    profileEmail: String,
 
     /**
      * The current OS sync preferences. Cached so we can restore individual
@@ -150,73 +135,6 @@ Polymer({
   },
 
   /**
-   * @return {string} The top label for the account row.
-   * @private
-   */
-  getAccountTitle_() {
-    if (!this.syncStatus) {
-      return '';
-    }
-    return this.syncStatus.hasError ? this.i18n('syncNotWorking') :
-                                      this.profileName;
-  },
-
-  /**
-   * @return {string} The bottom label for the account row.
-   * @private
-   */
-  getAccountSubtitle_() {
-    if (!this.syncStatus) {
-      return '';
-    }
-    return !this.syncStatus.hasError ?
-        this.i18n('syncingTo', this.profileEmail) :
-        this.profileEmail;
-  },
-
-  /**
-   * Returns the CSS class for the sync status icon.
-   * @return {string}
-   * @private
-   */
-  getSyncIconStyle_() {
-    if (!this.syncStatus) {
-      return 'sync';
-    }
-    if (this.syncStatus.disabled) {
-      return 'sync-disabled';
-    }
-    if (!this.syncStatus.hasError) {
-      return 'sync';
-    }
-    // Specific error cases below.
-    if (this.syncStatus.hasUnrecoverableError) {
-      return 'sync-problem';
-    }
-    if (this.syncStatus.statusAction === StatusAction.REAUTHENTICATE) {
-      return 'sync-paused';
-    }
-    return 'sync-problem';
-  },
-
-  /**
-   * Returns the image to use for the sync status icon. The value must match
-   * one of iron-icon's settings:(*) icon names.
-   * @return {string}
-   * @private
-   */
-  getSyncIcon_() {
-    switch (this.getSyncIconStyle_()) {
-      case 'sync-problem':
-        return 'settings:sync-problem';
-      case 'sync-paused':
-        return 'settings:sync-disabled';
-      default:
-        return 'cr:sync';
-    }
-  },
-
-  /**
    * Handler for when the sync preferences are updated.
    * @private
    */
@@ -230,14 +148,23 @@ Polymer({
   },
 
   /**
-   * Handler for when the sync all data types checkbox is changed.
-   * @param {!Event} event
+   * Computed binding returning the selected sync data radio button.
    * @private
    */
-  onSyncAllOsTypesChanged_(event) {
-    if (event.target.checked) {
-      this.set('osSyncPrefs.syncAllOsTypes', true);
+  selectedSyncDataRadio_() {
+    return this.osSyncPrefs.syncAllOsTypes ? RadioButtonNames.SYNC_EVERYTHING :
+                                             RadioButtonNames.CUSTOMIZE_SYNC;
+  },
 
+  /**
+   * Called when the sync data radio button selection changes.
+   * @private
+   */
+  onSyncDataRadioSelectionChanged_(event) {
+    const syncAllDataTypes =
+        event.detail.value === RadioButtonNames.SYNC_EVERYTHING;
+    this.set('osSyncPrefs.syncAllOsTypes', syncAllDataTypes);
+    if (syncAllDataTypes) {
       // Cache the previously selected preference before checking every box.
       this.cachedOsSyncPrefs_ = {};
       for (const dataType of SyncPrefsIndividualDataTypes) {

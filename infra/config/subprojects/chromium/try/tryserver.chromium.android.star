@@ -40,7 +40,7 @@ try_.orchestrator_builder(
     main_list_view = "try",
     # TODO(crbug.com/1137474): Fully enable once it works fine
     tryjob = try_.job(
-        experiment_percentage = 5,
+        experiment_percentage = 10,
     ),
 )
 
@@ -61,6 +61,12 @@ try_.builder(
 
 try_.builder(
     name = "android-bfcache-rel",
+)
+
+try_.builder(
+    name = "android-clang-tidy-rel",
+    executable = "recipe:tricium_clang_tidy_wrapper",
+    goma_jobs = goma.jobs.J150,
 )
 
 try_.builder(
@@ -329,7 +335,7 @@ try_.builder(
 )
 
 try_.builder(
-    name = "android-web-platform-pie-x86-fyi-rel",
+    name = "android-chrome-pie-x86-wpt-fyi-rel",
 )
 
 try_.builder(
@@ -387,11 +393,6 @@ try_.builder(
 
 try_.builder(
     name = "android_blink_rel",
-)
-
-try_.builder(
-    name = "android_cfi_rel_ng",
-    cores = 32,
 )
 
 try_.builder(

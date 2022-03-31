@@ -16,7 +16,6 @@
 #include "chrome/android/chrome_jni_headers/ContextMenuHelper_jni.h"
 #include "chrome/browser/performance_hints/performance_hints_observer.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/embedder_support/android/contextmenu/context_menu_builder.h"
 #include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/render_frame_host.h"
@@ -67,6 +66,11 @@ void ContextMenuHelper::ShowContextMenu(
       context_menu::BuildJavaContextMenuParams(context_menu_params_),
       render_frame_host.GetJavaRenderFrameHost(), view->GetContainerView(),
       view->content_offset() * view->GetDipScale());
+}
+
+void ContextMenuHelper::DismissContextMenu() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_ContextMenuHelper_dismissContextMenu(env, java_obj_);
 }
 
 void ContextMenuHelper::OnContextMenuClosed(

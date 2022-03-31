@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/user_education/browser_feature_promo_snooze_service.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
 #include "chrome/browser/ui/views/intent_picker_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
+#include "chrome/browser/ui/views/user_education/browser_feature_promo_controller.h"
 #include "chrome/common/buildflags.h"
 #include "components/infobars/core/infobar_container.h"
 #include "components/webapps/browser/banners/app_banner_manager.h"
@@ -64,12 +66,12 @@ class BookmarkBarView;
 class Browser;
 class ContentsLayoutManager;
 class ExclusiveAccessBubbleViews;
-class FeaturePromoControllerViews;
 class FullscreenControlHost;
 class InfoBarContainerView;
 class LocationBarView;
 class SidePanel;
 class SidePanelCoordinator;
+class SidePanelRegistry;
 class StatusBubbleViews;
 class TabSearchBubbleHost;
 class TabStrip;
@@ -221,6 +223,10 @@ class BrowserView : public BrowserWindow,
   views::Widget* contents_border_widget() {
     return GetBrowserViewLayout()->contents_border_widget();
   }
+  void SetContentBorderBounds(
+      const absl::optional<gfx::Rect>& region_capture_rect) {
+    GetBrowserViewLayout()->SetContentBorderBounds(region_capture_rect);
+  }
 
   TabStripRegionView* tab_strip_region_view() const {
     return tab_strip_region_view_;
@@ -255,7 +261,7 @@ class BrowserView : public BrowserWindow,
   }
 
   // Accessor for the contents WebView.
-  views::WebView* contents_web_view() { return contents_web_view_; }
+  ContentsWebView* contents_web_view() { return contents_web_view_; }
 
   base::WeakPtr<BrowserView> GetAsWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -353,10 +359,6 @@ class BrowserView : public BrowserWindow,
     return toolbar_button_provider_;
   }
 
-  FeaturePromoControllerViews* feature_promo_controller() {
-    return feature_promo_controller_.get();
-  }
-
   // Callback for listening for link-opening-from-gesture events (i.e. only
   // those resulting from direct user action).
   using OnLinkOpeningFromGestureCallback =
@@ -403,7 +405,9 @@ class BrowserView : public BrowserWindow,
   bool DoBrowserControlsShrinkRendererSize(
       const content::WebContents* contents) const override;
   ui::NativeTheme* GetNativeTheme() override;
+  const ui::ThemeProvider* GetThemeProvider() const override;
   const ui::ColorProvider* GetColorProvider() const override;
+  ui::ElementContext GetElementContext() override;
   int GetTopControlsHeight() const override;
   void SetTopControlsGestureScrollInProgress(bool in_progress) override;
   StatusBubble* GetStatusBubble() override;
@@ -446,6 +450,8 @@ class BrowserView : public BrowserWindow,
   bool ShouldHideUIForFullscreen() const override;
   bool IsFullscreen() const override;
   bool IsFullscreenBubbleVisible() const override;
+  bool IsForceFullscreen() const override;
+  void SetForceFullscreen(bool force_fullscreen) override;
   void UpdatePageActionIcon(PageActionIconType type) override;
   autofill::AutofillBubbleHandler* GetAutofillBubbleHandler() override;
   void ExecutePageActionIconForTesting(PageActionIconType type) override;
@@ -478,7 +484,7 @@ class BrowserView : public BrowserWindow,
       std::vector<IntentPickerBubbleView::AppInfo> app_info,
       bool show_stay_in_chrome,
       bool show_remember_selection,
-      PageActionIconType icon_type,
+      apps::IntentPickerBubbleType bubble_type,
       const absl::optional<url::Origin>& initiating_origin,
       IntentPickerResponse callback) override;
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override;
@@ -560,7 +566,19 @@ class BrowserView : public BrowserWindow,
   BookmarkBarView* GetBookmarkBarView() const;
   LocationBarView* GetLocationBarView() const;
 
-  FeaturePromoController* GetFeaturePromoController() override;
+  BrowserFeaturePromoController* GetFeaturePromoController() override;
+  bool IsFeaturePromoActive(
+      const base::Feature& iph_feature,
+      bool include_continued_promos = false) const override;
+  bool MaybeShowFeaturePromo(
+      const base::Feature& iph_feature,
+      FeaturePromoSpecification::StringReplacements body_text_replacements = {},
+      FeaturePromoController::BubbleCloseCallback close_callback =
+          base::DoNothing()) override;
+  bool CloseFeaturePromo(const base::Feature& iph_feature) override;
+  FeaturePromoController::PromoHandle CloseFeaturePromoAndContinue(
+      const base::Feature& iph_feature) override;
+  void NotifyFeatureEngagementEvent(const char* event_name) override;
 
   void ShowIncognitoClearBrowsingDataDialog() override;
 
@@ -970,6 +988,8 @@ class BrowserView : public BrowserWindow,
 
   std::unique_ptr<SidePanelCoordinator> side_panel_coordinator_;
 
+  std::unique_ptr<SidePanelRegistry> global_side_panel_registry_;
+
   // TODO(pbos): Move this functionality into SidePanel when multiple "panels"
   // are managed within the same object.
   // Observer object managing the button highlight of the side-panel button
@@ -1017,6 +1037,10 @@ class BrowserView : public BrowserWindow,
   bool in_process_fullscreen_ = false;
 
   std::unique_ptr<ExclusiveAccessBubbleViews> exclusive_access_bubble_;
+
+  // True when we do not want to allow exiting fullscreen, e.g. in Chrome OS
+  // Kiosk session.
+  bool force_fullscreen_ = false;
 
   // The timer used to update frames for tab-loading animations.
   base::RepeatingTimer loading_animation_timer_;
@@ -1079,7 +1103,10 @@ class BrowserView : public BrowserWindow,
 
   std::unique_ptr<AccessibilityFocusHighlight> accessibility_focus_highlight_;
 
-  std::unique_ptr<FeaturePromoControllerViews> feature_promo_controller_;
+  std::unique_ptr<BrowserFeaturePromoSnoozeService>
+      feature_promo_snooze_service_ = nullptr;
+  std::unique_ptr<BrowserFeaturePromoController> feature_promo_controller_ =
+      nullptr;
 
   OnLinkOpeningFromGestureCallbackList link_opened_from_gesture_callbacks_;
 

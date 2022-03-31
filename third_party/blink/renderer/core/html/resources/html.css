@@ -1204,15 +1204,11 @@ input[type="week" i]::-webkit-calendar-picker-indicator {
   background-origin: content-box;
   background-repeat: no-repeat;
   background-size: contain;
-  height: 1.2em;
-  margin-inline-start: 24px;
+  height: 1.0em;
+  width: 1.0em;
   opacity: 1;
   outline: none;
-  padding-bottom: 2px;
-  padding-inline-start: 3px;
-  padding-inline-end: 3px;
-  padding-top: 2px;
-  width: 1.2em;
+  padding: 2px;
 }
 
 input[type="date" i]::-webkit-calendar-picker-indicator:focus-visible,
@@ -1271,7 +1267,7 @@ input::-webkit-datetime-edit-hour-field[disabled],
 input::-webkit-datetime-edit-millisecond-field[disabled],
 input::-webkit-datetime-edit-minute-field[disabled],
 input::-webkit-datetime-edit-second-field[disabled] {
-    color: -internal-light-dark(GrayText, #000000);
+    color: -internal-light-dark(GrayText, rgb(165, 165, 165));
 }
 
 a:-webkit-any-link {
@@ -1320,6 +1316,10 @@ frameset {
 }
 
 iframe {
+    border: 2px inset
+}
+
+fencedframe {
     border: 2px inset
 }
 

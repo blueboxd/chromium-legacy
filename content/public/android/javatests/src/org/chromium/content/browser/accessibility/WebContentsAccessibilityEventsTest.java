@@ -8,7 +8,6 @@ import static org.chromium.content.browser.accessibility.AccessibilityContentShe
 import static org.chromium.content.browser.accessibility.AccessibilityContentShellActivityTestRule.RESULTS_NULL;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.os.Build;
 
 import androidx.test.filters.SmallTest;
@@ -28,9 +27,8 @@ import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
  */
 @RunWith(ContentJUnit4ClassRunner.class)
 @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 @SuppressLint("VisibleForTests")
-@Batch(Batch.UNIT_TESTS)
+@Batch(Batch.PER_CLASS)
 public class WebContentsAccessibilityEventsTest {
     // File path that holds all the relevant tests.
     private static final String BASE_FILE_PATH = "content/test/data/accessibility/event/";
@@ -146,6 +144,12 @@ public class WebContentsAccessibilityEventsTest {
     public void test_addAlertWithRoleChange() {
         performTest("add-alert-with-role-change.html",
                 "add-alert-with-role-change-expected-android.txt");
+    }
+
+    @Test
+    @SmallTest
+    public void test_addAlertContent() {
+        performTest("add-alert-content.html", "add-alert-content-expected-android.txt");
     }
 
     @Test
@@ -839,6 +843,12 @@ public class WebContentsAccessibilityEventsTest {
     @SmallTest
     public void test_menuOpenedClosed() {
         performTest("menu-opened-closed.html", EMPTY_EXPECTATIONS_FILE);
+    }
+
+    @Test
+    @SmallTest
+    public void test_menuOpenedClosedViaInnerText() {
+        performTest("menu-opened-closed-via-inner-text.html", EMPTY_EXPECTATIONS_FILE);
     }
 
     @Test

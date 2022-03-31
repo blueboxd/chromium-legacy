@@ -10,10 +10,12 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/task/current_thread.h"
+#include "base/test/test_future.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -58,6 +60,7 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/policy/policy_constants.h"
+#include "components/policy/proto/cloud_policy.pb.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -73,7 +76,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/test_extension_registry_observer.h"
-#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/test_root_certs.h"
@@ -416,12 +418,11 @@ class MultiProfilePolicyProviderHelper {
 int VerifyTestServerCertInStoragePartition(
     content::StoragePartition* storage_partition,
     const scoped_refptr<net::X509Certificate>& certificate) {
-  mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-  int result = net::OK;
+  base::test::TestFuture<int> future;
   storage_partition->GetNetworkContext()->VerifyCertificateForTesting(
       certificate, "127.0.0.1", /*ocsp_response=*/std::string(),
-      /*sct_list=*/std::string(), &result);
-  return result;
+      /*sct_list=*/std::string(), future.GetCallback());
+  return future.Get();
 }
 
 // Verifies |certificate| with the CertVerifier for |profile|'s default
@@ -562,6 +563,17 @@ class PolicyProvidedCertsRegularUserTest : public InProcessBrowserTest {
   crypto::ScopedTestNSSDB test_nssdb_;
   std::unique_ptr<net::NSSCertDatabase> test_nss_cert_db_;
 };
+
+IN_PROC_BROWSER_TEST_F(PolicyProvidedCertsRegularUserTest, NoTrustAnchor) {
+  ASSERT_NO_FATAL_FAILURE(multi_profile_policy_helper_.CreateSecondProfile());
+
+  EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
+            VerifyTestServerCert(multi_profile_policy_helper_.profile_1(),
+                                 user_policy_certs_helper_.server_cert()));
+  EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID,
+            VerifyTestServerCert(multi_profile_policy_helper_.profile_2(),
+                                 user_policy_certs_helper_.server_cert()));
+}
 
 IN_PROC_BROWSER_TEST_F(PolicyProvidedCertsRegularUserTest, TrustAnchorApplied) {
   user_policy_certs_helper_.SetRootCertONCUserPolicy(
@@ -782,10 +794,10 @@ class PolicyProvidedCertsOnUserSessionInitTest : public LoginPolicyTestBase {
  protected:
   PolicyProvidedCertsOnUserSessionInitTest() {}
 
-  void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override {
+  void GetPolicySettings(
+      enterprise_management::CloudPolicySettings* policy) const override {
     std::string user_policy_blob = GetTestCertsFileContents(kRootCaCertOnc);
-    policy->SetKey(key::kOpenNetworkConfiguration,
-                   base::Value(user_policy_blob));
+    policy->mutable_opennetworkconfiguration()->set_value(user_policy_blob);
   }
 
   Profile* active_user_profile() {

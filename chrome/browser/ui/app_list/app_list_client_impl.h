@@ -33,7 +33,7 @@ class SearchController;
 }  // namespace app_list
 
 class AppListClientWithProfileTest;
-class AppListNotifierImpl;
+class AppListNotifier;
 class AppListModelUpdater;
 class AppSyncUIStateWatcher;
 class Profile;
@@ -80,7 +80,6 @@ class AppListClientImpl
   void StartSearch(const std::u16string& trimmed_query) override;
   void OpenSearchResult(int profile_id,
                         const std::string& result_id,
-                        ash::AppListSearchResultType result_type,
                         int event_flags,
                         ash::AppListLaunchedFrom launched_from,
                         ash::AppListLaunchType launch_type,
@@ -95,7 +94,8 @@ class AppListClientImpl
   void ViewShown(int64_t display_id) override;
   void ActivateItem(int profile_id,
                     const std::string& id,
-                    int event_flags) override;
+                    int event_flags,
+                    ash::AppListLaunchedFrom launched_from) override;
   void GetContextMenuModel(int profile_id,
                            const std::string& id,
                            bool add_sort_options,
@@ -174,6 +174,12 @@ class AppListClientImpl
     // Indicates whether the metric to track whether the user took action when
     // the launcher was first shown was recorded.
     bool first_open_success_recorded = false;
+
+    // Whether the user entered a query into the search box.
+    bool started_search = false;
+    // Whether the result that the user launched during their first search
+    // attempt got recorder.
+    bool first_search_result_recorded = false;
   };
 
   // session_manager::SessionManagerObserver:
@@ -228,7 +234,7 @@ class AppListClientImpl
 
   ash::AppListController* app_list_controller_ = nullptr;
 
-  std::unique_ptr<AppListNotifierImpl> app_list_notifier_;
+  std::unique_ptr<ash::AppListNotifier> app_list_notifier_;
 
   // Records the app list state for the session started by a new user. It
   // gets reset when:

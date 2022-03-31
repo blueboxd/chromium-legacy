@@ -212,18 +212,7 @@ KleeneValue MediaQueryEvaluator::EvalFeature(const MediaQueryExp& expr,
 }
 
 bool MediaQueryEvaluator::DidResultsChange(
-    const MediaQueryResultList& results) const {
-  base::AutoReset<bool> skip(&skip_ukm_reporting_, true);
-  for (auto& result : results) {
-    if (Eval(result.Expression()) != result.Result())
-      return true;
-  }
-  return false;
-}
-
-bool MediaQueryEvaluator::DidResultsChange(
     const Vector<MediaQuerySetResult>& results) const {
-  base::AutoReset<bool> skip(&skip_ukm_reporting_, true);
   for (const auto& result : results) {
     if (result.Result() != Eval(result.MediaQueries()))
       return true;
@@ -281,7 +270,7 @@ static bool CompareAspectRatioValue(const MediaQueryExpValue& value,
 static bool NumberValue(const MediaQueryExpValue& value, float& result) {
   if (value.IsNumeric() &&
       value.Unit() == CSSPrimitiveValue::UnitType::kNumber) {
-    result = value.Value();
+    result = ClampTo<float>(value.Value());
     return true;
   }
   return false;

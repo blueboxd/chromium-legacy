@@ -23,7 +23,7 @@
 #include "net/base/ip_endpoint.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/nearby/src/cpp/platform/api/wifi_lan.h"
+#include "third_party/nearby/src/internal/platform/implementation/wifi_lan.h"
 
 namespace ash {
 namespace nearby {
@@ -70,25 +70,33 @@ class WifiLanMedium : public api::WifiLanMedium {
       int port,
       CancellationFlag* cancellation_flag) override;
   std::unique_ptr<api::WifiLanServerSocket> ListenForService(int port) override;
+  absl::optional<std::pair<std::int32_t, std::int32_t>> GetDynamicPortRange()
+      override;
 
  private:
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum class ConnectResult {
-    kSuccess,
-    kCanceled,
-    kErrorFailedToCreateTcpSocket,
+    kSuccess = 0,
+    kCanceled = 1,
+    kErrorFailedToCreateTcpSocket = 2,
+    kMaxValue = kErrorFailedToCreateTcpSocket,
   };
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum class ListenResult {
-    kSuccess,
-    kCanceled,
-    kErrorInvalidPort,
-    kErrorFetchIpFailedToGetNetworkStateList,
-    kErrorFetchIpFailedToGetManagedProperties,
-    kErrorFetchIpMissingIpConfigs,
-    kErrorFetchIpNoValidLocalIpAddress,
-    kErrorFailedToCreateTcpServerSocket,
-    kErrorUnexpectedTcpServerSocketIpEndpoint,
-    kErrorFailedToCreateFirewallHole,
+    kSuccess = 0,
+    kCanceled = 1,
+    kErrorInvalidPort = 2,
+    kErrorFetchIpFailedToGetNetworkStateList = 3,
+    kErrorFetchIpFailedToGetManagedProperties = 4,
+    kErrorFetchIpMissingIpConfigs = 5,
+    kErrorFetchIpNoValidLocalIpAddress = 6,
+    kErrorFailedToCreateTcpServerSocket = 7,
+    kErrorUnexpectedTcpServerSocketIpEndpoint = 8,
+    kErrorFailedToCreateFirewallHole = 9,
+    kMaxValue = kErrorFailedToCreateFirewallHole,
   };
 
   /*==========================================================================*/
@@ -157,8 +165,6 @@ class WifiLanMedium : public api::WifiLanMedium {
   bool StartDiscovery(const std::string& service_type,
                       DiscoveredServiceCallback callback) override;
   bool StopDiscovery(const std::string& service_type) override;
-  absl::optional<std::pair<std::int32_t, std::int32_t>> GetDynamicPortRange()
-      override;
   /*==========================================================================*/
 
   // Removes |event| from the set of pending events and signals |event|. Calls

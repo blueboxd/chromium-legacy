@@ -85,6 +85,7 @@ crosapi::mojom::WindowOpenDisposition ConvertWindowOpenDispositionToCrosapi(
     case WindowOpenDisposition::NEW_WINDOW:
       return crosapi::mojom::WindowOpenDisposition::kNewWindow;
     case WindowOpenDisposition::SINGLETON_TAB:
+    case WindowOpenDisposition::NEW_PICTURE_IN_PICTURE:
     case WindowOpenDisposition::NEW_POPUP:
     case WindowOpenDisposition::SAVE_TO_DISK:
     case WindowOpenDisposition::OFF_THE_RECORD:
@@ -214,7 +215,6 @@ apps::AppLaunchParams CreateAppLaunchParamsForIntent(
       app_id, event_flags, launch_source, display_id, fallback_container);
 
   if (intent->url.has_value()) {
-    params.launch_source = apps::mojom::LaunchSource::kFromIntentUrl;
     params.override_url = intent->url.value();
   }
 
@@ -398,7 +398,6 @@ apps::AppLaunchParams ConvertCrosapiToLaunchParams(
   }
 
   if (crosapi_params->intent->url.has_value()) {
-    params.launch_source = apps::mojom::LaunchSource::kFromIntentUrl;
     params.override_url = crosapi_params->intent->url.value();
   }
 

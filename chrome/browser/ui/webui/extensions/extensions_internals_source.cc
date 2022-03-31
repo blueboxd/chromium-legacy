@@ -441,7 +441,7 @@ void AddEventListenerData(extensions::EventRouter* event_router,
   }
 
   // Move all of the entries from the map into the output data.
-  for (auto& output_entry : data->GetList()) {
+  for (auto& output_entry : data->GetListDeprecated()) {
     const base::Value* const value = output_entry.FindKey(kInternalsIdKey);
     CHECK(value && value->is_string());
     const auto it = listeners_map.find(value->GetString());
@@ -453,9 +453,9 @@ void AddEventListenerData(extensions::EventRouter* event_router,
                              base::Value(base::Value::Type::LIST));
     } else {
       // Set the count and the events values.
-      event_listeners.SetKey(
-          kCountKey,
-          base::Value(base::checked_cast<int>(it->second.GetList().size())));
+      event_listeners.SetKey(kCountKey,
+                             base::Value(base::checked_cast<int>(
+                                 it->second.GetListDeprecated().size())));
       event_listeners.SetKey(kListenersKey, std::move(it->second));
     }
     output_entry.SetKey(kEventsListenersKey, std::move(event_listeners));

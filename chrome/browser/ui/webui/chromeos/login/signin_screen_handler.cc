@@ -56,9 +56,7 @@
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_metrics.h"
-#include "chrome/browser/ui/ash/ime_controller_client_impl.h"
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
-#include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
@@ -92,10 +90,6 @@
 #include "extensions/browser/api/extensions_api_client.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/base/ime/ash/ime_keyboard.h"
-#include "ui/base/ime/ash/input_method_descriptor.h"
-#include "ui/base/ime/ash/input_method_manager.h"
-#include "ui/base/ime/ash/input_method_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -211,9 +205,6 @@ SigninScreenHandler::SigninScreenHandler(
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
-  // Ash maybe released before us.
-  if (ImeControllerClientImpl::Get())  // Can be null in tests.
-    ImeControllerClientImpl::Get()->SetImesManagedByPolicy(false);
   weak_factory_.InvalidateWeakPtrs();
   if (delegate_)
     delegate_->SetWebUIHandler(nullptr);
@@ -274,8 +265,6 @@ void SigninScreenHandler::RegisterMessages() {
   // TODO(crbug.com/1100910): migrate logic to dedicated test api.
   AddCallback("toggleEnrollmentScreen",
               &SigninScreenHandler::HandleToggleEnrollmentScreen);
-  AddCallback("openInternetDetailDialog",
-              &SigninScreenHandler::HandleOpenInternetDetailDialog);
   AddCallback("loginVisible", &SigninScreenHandler::HandleLoginVisible);
 
   // TODO(crbug.com/1168114): This is also called by GAIA screen,
@@ -286,11 +275,8 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleShowLoadingTimeoutError);
 }
 
-void SigninScreenHandler::Show(bool oobe_ui) {
+void SigninScreenHandler::Show() {
   CHECK(delegate_);
-
-  // Just initialize internal fields from context and call ShowImpl().
-  oobe_ui_ = oobe_ui;
 
   ShowImpl();
   histogram_helper_->OnScreenShow();
@@ -322,9 +308,6 @@ void SigninScreenHandler::ShowImpl() {
     show_on_init_ = true;
     return;
   }
-
-  if (!ime_state_.get())
-    ime_state_ = input_method::InputMethodManager::Get()->GetActiveIMEState();
 
   gaia_screen_handler_->OnShowAddUser();
 }
@@ -504,6 +487,7 @@ void SigninScreenHandler::Initialize() {
 }
 
 void SigninScreenHandler::RegisterPrefs(PrefRegistrySimple* registry) {
+  // The pref is deprecated. Remove around 09/2022 (https://crbug.com/1297407)
   registry->RegisterDictionaryPref(prefs::kUsersLastInputMethod);
 }
 
@@ -626,11 +610,6 @@ void SigninScreenHandler::HandleToggleKioskAutolaunchScreen() {
     delegate_->ShowKioskAutolaunchScreen();
 }
 
-void SigninScreenHandler::HandleOpenInternetDetailDialog() {
-  // Empty string opens the internet detail dialog for the default network.
-  InternetDetailDialog::ShowDialog("");
-}
-
 void SigninScreenHandler::HandleLoginVisible(const std::string& source) {
   VLOG(1) << "Login WebUI >> loginVisible, src: " << source << ", "
           << "webui_visible_: " << webui_visible_;
@@ -669,10 +648,6 @@ void SigninScreenHandler::HandleLoginUIStateChanged(const std::string& source,
 
 void SigninScreenHandler::HandleShowLoadingTimeoutError() {
   UpdateState(NetworkError::ERROR_REASON_LOADING_TIMEOUT);
-}
-
-void SigninScreenHandler::HandleNoPodFocused() {
-  focused_pod_account_id_.reset();
 }
 
 bool SigninScreenHandler::IsGaiaVisible() {

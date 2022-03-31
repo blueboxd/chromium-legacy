@@ -18,9 +18,8 @@
 #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
@@ -34,6 +33,7 @@
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
+#include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_manager.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
@@ -420,6 +420,9 @@ bool ManifestUpdateTask::IsUpdateNeededForManifest() const {
   if (web_application_info_->launch_handler != app->launch_handler())
     return true;
 
+  if (web_application_info_->permissions_policy != app->permissions_policy())
+    return true;
+
   // TODO(crbug.com/1212849): Handle changes to is_storage_isolated.
 
   // TODO(crbug.com/926083): Check more manifest fields.
@@ -733,9 +736,9 @@ void ManifestUpdateTask::OnAllAppWindowsClosed() {
       base::BindOnce(&ManifestUpdateTask::OnInstallationComplete, AsWeakPtr()));
 }
 
-void ManifestUpdateTask::OnInstallationComplete(
-    const AppId& app_id,
-    InstallResultCode code) {
+void ManifestUpdateTask::OnInstallationComplete(const AppId& app_id,
+                                                webapps::InstallResultCode code,
+                                                OsHooksErrors os_hooks_errors) {
   DCHECK_EQ(stage_, Stage::kPendingInstallation);
 
   if (!IsSuccess(code)) {
@@ -745,7 +748,7 @@ void ManifestUpdateTask::OnInstallationComplete(
 
   DCHECK_EQ(app_id_, app_id);
   DCHECK(!IsUpdateNeededForManifest());
-  DCHECK_EQ(code, InstallResultCode::kSuccessAlreadyInstalled);
+  DCHECK_EQ(code, webapps::InstallResultCode::kSuccessAlreadyInstalled);
 
   sync_bridge_->SetAppManifestUpdateTime(app_id, base::Time::Now());
 

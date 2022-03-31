@@ -88,14 +88,14 @@
 #include "chrome/browser/ash/plugin_vm/plugin_vm_installer_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
+#include "chrome/browser/ash/printing/cups_printers_manager.h"
+#include "chrome/browser/ash/printing/cups_printers_manager_factory.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/stats_reporting_controller.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/printing/cups_printers_manager.h"
-#include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/chrome_policy_conversions_client.h"
@@ -271,12 +271,12 @@ std::string ConvertToString(message_center::NotificationType type) {
 std::unique_ptr<base::DictionaryValue> MakeDictionaryFromNotification(
     const message_center::Notification& notification) {
   auto result = std::make_unique<base::DictionaryValue>();
-  result->SetString("id", notification.id());
-  result->SetString("type", ConvertToString(notification.type()));
-  result->SetString("title", notification.title());
-  result->SetString("message", notification.message());
-  result->SetInteger("priority", notification.priority());
-  result->SetInteger("progress", notification.progress());
+  result->SetStringKey("id", notification.id());
+  result->SetStringKey("type", ConvertToString(notification.type()));
+  result->SetStringKey("title", notification.title());
+  result->SetStringKey("message", notification.message());
+  result->SetIntKey("priority", notification.priority());
+  result->SetIntKey("progress", notification.progress());
   return result;
 }
 
@@ -1300,20 +1300,20 @@ ExtensionFunction::ResponseAction AutotestPrivateLoginStatusFunction::Run() {
       ash::ScreenLocker::default_screen_locker()->locked();
 
   if (user_manager) {
-    result->SetBoolean("isLoggedIn", user_manager->IsUserLoggedIn());
-    result->SetBoolean("isOwner", user_manager->IsCurrentUserOwner());
-    result->SetBoolean("isScreenLocked", is_screen_locked);
-    result->SetBoolean("isReadyForPassword",
+    result->SetBoolKey("isLoggedIn", user_manager->IsUserLoggedIn());
+    result->SetBoolKey("isOwner", user_manager->IsCurrentUserOwner());
+    result->SetBoolKey("isScreenLocked", is_screen_locked);
+    result->SetBoolKey("isReadyForPassword",
                        ash::LoginScreen::Get()->IsReadyForPassword());
     if (user_manager->IsUserLoggedIn()) {
-      result->SetBoolean("isRegularUser",
+      result->SetBoolKey("isRegularUser",
                          user_manager->IsLoggedInAsUserWithGaiaAccount());
-      result->SetBoolean("isGuest", user_manager->IsLoggedInAsGuest());
-      result->SetBoolean("isKiosk", user_manager->IsLoggedInAsKioskApp());
+      result->SetBoolKey("isGuest", user_manager->IsLoggedInAsGuest());
+      result->SetBoolKey("isKiosk", user_manager->IsLoggedInAsKioskApp());
 
       const user_manager::User* user = user_manager->GetActiveUser();
-      result->SetString("email", user->GetAccountId().GetUserEmail());
-      result->SetString("displayEmail", user->display_email());
+      result->SetStringKey("email", user->GetAccountId().GetUserEmail());
+      result->SetStringKey("displayEmail", user->display_email());
 
       std::string user_image;
       switch (user->image_index()) {
@@ -1329,10 +1329,10 @@ ExtensionFunction::ResponseAction AutotestPrivateLoginStatusFunction::Run() {
           user_image = base::NumberToString(user->image_index());
           break;
       }
-      result->SetString("userImage", user_image);
+      result->SetStringKey("userImage", user_image);
 
       if (user->HasGaiaAccount()) {
-        result->SetBoolean("hasValidOauth2Token",
+        result->SetBoolKey("hasValidOauth2Token",
                            user->oauth_token_status() ==
                                user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
       }
@@ -1426,14 +1426,14 @@ AutotestPrivateGetExtensionsInfoFunction::Run() {
     std::string id = extension->id();
     std::unique_ptr<base::DictionaryValue> extension_value(
         new base::DictionaryValue);
-    extension_value->SetString("id", id);
-    extension_value->SetString("version", extension->VersionString());
-    extension_value->SetString("name", extension->name());
-    extension_value->SetString("publicKey", extension->public_key());
-    extension_value->SetString("description", extension->description());
-    extension_value->SetString(
+    extension_value->SetStringKey("id", id);
+    extension_value->SetStringKey("version", extension->VersionString());
+    extension_value->SetStringKey("name", extension->name());
+    extension_value->SetStringKey("publicKey", extension->public_key());
+    extension_value->SetStringKey("description", extension->description());
+    extension_value->SetStringKey(
         "backgroundUrl", BackgroundInfo::GetBackgroundURL(extension).spec());
-    extension_value->SetString(
+    extension_value->SetStringKey(
         "optionsUrl", OptionsPageInfo::GetOptionsPage(extension).spec());
 
     extension_value->SetKey("hostPermissions",
@@ -1443,19 +1443,19 @@ AutotestPrivateGetExtensionsInfoFunction::Run() {
     extension_value->SetKey("apiPermissions", GetAPIPermissions(extension));
 
     ManifestLocation location = extension->location();
-    extension_value->SetBoolean("isComponent",
+    extension_value->SetBoolKey("isComponent",
                                 location == ManifestLocation::kComponent);
-    extension_value->SetBoolean("isInternal",
+    extension_value->SetBoolKey("isInternal",
                                 location == ManifestLocation::kInternal);
-    extension_value->SetBoolean("isUserInstalled",
+    extension_value->SetBoolKey("isUserInstalled",
                                 location == ManifestLocation::kInternal ||
                                     Manifest::IsUnpackedLocation(location));
-    extension_value->SetBoolean("isEnabled", service->IsExtensionEnabled(id));
-    extension_value->SetBoolean(
+    extension_value->SetBoolKey("isEnabled", service->IsExtensionEnabled(id));
+    extension_value->SetBoolKey(
         "allowedInIncognito", util::IsIncognitoEnabled(id, browser_context()));
     const ExtensionAction* action =
         extension_action_manager->GetExtensionAction(*extension);
-    extension_value->SetBoolean(
+    extension_value->SetBoolKey(
         "hasPageAction",
         action && action->action_type() == ActionInfo::TYPE_PAGE);
 
@@ -1765,6 +1765,51 @@ AutotestPrivateGetPlayStoreStateFunction::Run() {
       OneArgument(base::Value::FromUniquePtrValue(play_store_state.ToValue())));
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateStartArcFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateStartArcFunction::~AutotestPrivateStartArcFunction() = default;
+
+ExtensionFunction::ResponseAction AutotestPrivateStartArcFunction::Run() {
+  DVLOG(1) << "AutotestPrivateStartArcFunction";
+
+  arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
+  if (!arc_session_manager)
+    return RespondNow(Error("Could not find ARC session manager"));
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  if (!arc::IsArcAllowedForProfile(profile))
+    return RespondNow(Error("ARC cannot be started for the current user"));
+
+  if (arc_session_manager->enable_requested())
+    return RespondNow(Error("ARC is already started"));
+
+  arc_session_manager->RequestEnable();
+
+  return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateStopArcFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateStopArcFunction::~AutotestPrivateStopArcFunction() = default;
+
+ExtensionFunction::ResponseAction AutotestPrivateStopArcFunction::Run() {
+  DVLOG(1) << "AutotestPrivateStopArcFunction";
+
+  arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
+  if (!arc_session_manager)
+    return RespondNow(Error("Could not find ARC session manager"));
+
+  if (!arc_session_manager->enable_requested())
+    return RespondNow(Error("ARC is already stopped"));
+
+  arc_session_manager->RequestDisable();
+
+  return RespondNow(NoArguments());
+}
 ///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateSetPlayStoreEnabledFunction
 ///////////////////////////////////////////////////////////////////////////////
@@ -2617,7 +2662,7 @@ ExtensionFunction::ResponseAction AutotestPrivateGetPrinterListFunction::Run() {
   DVLOG(1) << "AutotestPrivateGetPrinterListFunction";
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  printers_manager_ = chromeos::CupsPrintersManager::Create(profile);
+  printers_manager_ = ash::CupsPrintersManager::Create(profile);
   printers_manager_->AddObserver(this);
 
   // Set up a timer to finish waiting after 10 seconds
@@ -2734,8 +2779,7 @@ ExtensionFunction::ResponseAction AutotestPrivateUpdatePrinterFunction::Run() {
       LOG(ERROR) << "Invalid ppd path: " << *js_printer.printer_ppd;
   }
   auto* printers_manager =
-      chromeos::CupsPrintersManagerFactory::GetForBrowserContext(
-          browser_context());
+      ash::CupsPrintersManagerFactory::GetForBrowserContext(browser_context());
   printers_manager->SavePrinter(printer);
   return RespondNow(NoArguments());
 }
@@ -2754,8 +2798,7 @@ ExtensionFunction::ResponseAction AutotestPrivateRemovePrinterFunction::Run() {
   DVLOG(1) << "AutotestPrivateRemovePrinterFunction " << params->printer_id;
 
   auto* printers_manager =
-      chromeos::CupsPrintersManagerFactory::GetForBrowserContext(
-          browser_context());
+      ash::CupsPrintersManagerFactory::GetForBrowserContext(browser_context());
   printers_manager->RemoveSavedPrinter(params->printer_id);
   return RespondNow(NoArguments());
 }
@@ -4255,29 +4298,33 @@ class AutotestPrivateInstallPWAForCurrentURLFunction::PWABannerObserver
 };
 
 // Used to notify when a WPA is installed.
-class AutotestPrivateInstallPWAForCurrentURLFunction::PWARegistrarObserver
-    : public web_app::AppRegistrarObserver {
+class AutotestPrivateInstallPWAForCurrentURLFunction::PWAInstallManagerObserver
+    : public web_app::WebAppInstallManagerObserver {
  public:
-  PWARegistrarObserver(Profile* profile,
-                       base::OnceCallback<void(const web_app::AppId&)> callback)
+  PWAInstallManagerObserver(
+      Profile* profile,
+      base::OnceCallback<void(const web_app::AppId&)> callback)
       : callback_(std::move(callback)) {
     observation_.Observe(
-        &web_app::WebAppProvider::GetForTest(profile)->registrar());
+        &web_app::WebAppProvider::GetForTest(profile)->install_manager());
   }
 
-  PWARegistrarObserver(const PWARegistrarObserver&) = delete;
-  PWARegistrarObserver& operator=(const PWARegistrarObserver&) = delete;
+  PWAInstallManagerObserver(const PWAInstallManagerObserver&) = delete;
+  PWAInstallManagerObserver& operator=(const PWAInstallManagerObserver&) =
+      delete;
 
-  ~PWARegistrarObserver() override {}
+  ~PWAInstallManagerObserver() override {}
 
   void OnWebAppInstalled(const web_app::AppId& app_id) override {
     observation_.Reset();
     std::move(callback_).Run(app_id);
   }
 
+  void OnWebAppInstallManagerDestroyed() override { observation_.Reset(); }
+
  private:
-  base::ScopedObservation<web_app::WebAppRegistrar,
-                          web_app::AppRegistrarObserver>
+  base::ScopedObservation<web_app::WebAppInstallManager,
+                          web_app::WebAppInstallManagerObserver>
       observation_{this};
   base::OnceCallback<void(const web_app::AppId&)> callback_;
 };
@@ -4328,7 +4375,7 @@ void AutotestPrivateInstallPWAForCurrentURLFunction::PWALoaded() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
   Browser* browser = GetFirstRegularBrowser();
 
-  registrar_observer_ = std::make_unique<PWARegistrarObserver>(
+  install_mananger_observer_ = std::make_unique<PWAInstallManagerObserver>(
       profile,
       base::BindOnce(
           &AutotestPrivateInstallPWAForCurrentURLFunction::PWAInstalled, this));
@@ -4412,6 +4459,18 @@ AutotestPrivateWaitForLauncherStateFunction::Run() {
       api::autotest_private::WaitForLauncherState::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   auto target_state = ToAppListViewState(params->launcher_state);
+  // The method is only implemented for fullscreen launcher, for bubble
+  // launcher, tests use automation APIs to wait for launcher visibility
+  // changes.
+  // Exceptionally, allow waiting for kClosed state in clamshell mode, so tests
+  // can wait for fullscreen launcher state change to finish when exiting tablet
+  // mode.
+  if (ash::features::IsProductivityLauncherEnabled() &&
+      !ash::TabletMode::Get()->InTabletMode() &&
+      target_state != ash::AppListViewState::kClosed) {
+    return RespondNow(Error("Not supported for bubble launcher"));
+  }
+
   if (WaitForLauncherState(
           target_state,
           base::BindOnce(&AutotestPrivateWaitForLauncherStateFunction::Done,

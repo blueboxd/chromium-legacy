@@ -572,7 +572,7 @@ Status ExecuteSendKeysToElement(Session* session,
     }
     // Compress array into a single string.
     std::string paths_string;
-    for (const base::Value& i : key_list->GetList()) {
+    for (const base::Value& i : key_list->GetListDeprecated()) {
       const std::string* path_part = i.GetIfString();
       if (!path_part)
         return Status(kInvalidArgument, "'value' is invalid");
@@ -612,8 +612,8 @@ Status ExecuteSendKeysToElement(Session* session,
       return Status(kInvalidArgument,
                     "the element can not hold multiple files");
 
-    std::unique_ptr<base::DictionaryValue> element(CreateElement(element_id));
-    return web_view->SetFileInputFiles(session->GetCurrentFrameId(), *element,
+    base::Value element = CreateElement(element_id);
+    return web_view->SetFileInputFiles(session->GetCurrentFrameId(), element,
                                        paths, multiple);
   } else if (session->w3c_compliant && is_input && is_nontypeable) {
     // Special handling for non-typeable inputs is only included in W3C Spec

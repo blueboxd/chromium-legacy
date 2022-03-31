@@ -15,6 +15,7 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -42,6 +43,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/ash/app_restore/full_restore_service.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator.h"
+#include "chrome/browser/ash/crosapi/browser_data_migrator_util.h"
 #include "chrome/browser/ash/crosapi/browser_loader.h"
 #include "chrome/browser/ash/crosapi/browser_service_host_ash.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
@@ -57,12 +59,14 @@
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/component_updater/cros_component_manager.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/common/channel_info.h"
 #include "chromeos/crosapi/cpp/crosapi_constants.h"
 #include "chromeos/crosapi/cpp/lacros_startup_state.h"
 #include "chromeos/startup/startup_switches.h"
+#include "components/crash/core/app/crashpad.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -144,19 +148,6 @@ BrowserManager* g_instance = nullptr;
 constexpr char kLacrosCannotLaunchNotificationID[] =
     "lacros_cannot_launch_notification_id";
 constexpr char kLacrosLauncherNotifierID[] = "lacros_launcher";
-
-// To be sure the lacros is running with neutral priority
-class ThreadPriorityDelegate : public base::LaunchOptions::PreExecDelegate {
- public:
-  void RunAsyncSafe() override {
-    // TODO(crbug.com/1289736): Currently, this is causing some deadlock issue.
-    // It looks like inside the function, we seem to call async unsafe API.
-    // For the mitigation, disabling this temporarily.
-    // We should revisit here, and see the impact of performance.
-    // base::PlatformThread::SetCurrentThreadPriority(
-    //   base::ThreadPriority::NORMAL);
-  }
-};
 
 base::FilePath LacrosLogPath() {
   return browser_util::GetUserDataDir().Append("lacros.log");
@@ -389,6 +380,12 @@ bool BrowserManager::IsRunningOrWillRun() const {
 
 void BrowserManager::NewWindow(bool incognito,
                                bool should_trigger_session_restore) {
+  if (incognito) {
+    Profile* profile = ProfileManager::GetPrimaryUserProfile();
+    if (!profile || !IncognitoModePrefs::IsIncognitoAllowed(profile))
+      return;
+  }
+
   // If `should_trigger_session_restore` is set to true the new lacros window
   // should be treated like the start of a new session. Ensure this is the case
   // by deferring to the browser startup preferences. Otherwise we open the
@@ -481,6 +478,23 @@ void BrowserManager::NewFullscreenWindow(const GURL& url,
   browser_service_->service->NewFullscreenWindow(url, std::move(callback));
 }
 
+void BrowserManager::NewGuestWindow() {
+  auto result = MaybeStart(browser_util::InitialBrowserAction(
+      mojom::InitialBrowserAction::kOpenGuestWindow));
+  if (result != MaybeStartResult::kRunning)
+    return;
+
+  if (!browser_service_.has_value()) {
+    LOG(ERROR) << "BrowserService was disconnected";
+    return;
+  }
+
+  if (!NewFullscreenWindowSupported())
+    return;
+
+  browser_service_->service->NewGuestWindow(base::DoNothing());
+}
+
 void BrowserManager::NewTab() {
   auto result = MaybeStart(browser_util::InitialBrowserAction(
       mojom::InitialBrowserAction::kOpenNewTabPageWindow));
@@ -494,22 +508,18 @@ void BrowserManager::NewTab() {
   browser_service_->service->NewTab(base::DoNothing());
 }
 
-void BrowserManager::OpenUrl(const GURL& url) {
-  auto result = MaybeStart(browser_util::InitialBrowserAction(
-      mojom::InitialBrowserAction::kOpenWindowWithUrls, {url}));
-  if (result != MaybeStartResult::kRunning)
-    return;
+void BrowserManager::OpenUrl(const GURL& url,
+                             crosapi::mojom::OpenUrlFrom from) {
+  OpenUrlImpl(
+      url,
+      crosapi::mojom::OpenUrlParams::WindowOpenDisposition::kNewForegroundTab,
+      from);
+}
 
-  if (!browser_service_.has_value()) {
-    LOG(ERROR) << "BrowserService was disconnected";
-    return;
-  }
-  if (browser_service_->interface_version <
-      mojom::BrowserService::kOpenUrlMinVersion) {
-    LOG(ERROR) << "BrowserService does not support OpenUrl";
-    return;
-  }
-  browser_service_->service->OpenUrl(url, base::DoNothing());
+void BrowserManager::SwitchToTab(const GURL& url) {
+  OpenUrlImpl(
+      url, crosapi::mojom::OpenUrlParams::WindowOpenDisposition::kSwitchToTab,
+      crosapi::mojom::OpenUrlFrom::kUnspecified);
 }
 
 void BrowserManager::RestoreTab() {
@@ -581,7 +591,7 @@ void BrowserManager::InitializeAndStart() {
   // inside the profile data directory.
   base::ThreadPool::PostTask(
       FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&ash::BrowserDataMigratorImpl::DryRunToCollectUMA,
+      base::BindOnce(&ash::browser_data_migrator_util::DryRunToCollectUMA,
                      ProfileManager::GetPrimaryUserProfile()->GetPath()));
 }
 
@@ -825,12 +835,18 @@ void BrowserManager::StartWithLogFile(
   std::string chrome_path = lacros_path_.MaybeAsASCII() + "/chrome";
   LOG(WARNING) << "Launching lacros-chrome at " << chrome_path;
 
-  DCHECK(lacros_selection_.has_value());
-  version_info::Channel update_channel =
-      browser_util::GetLacrosSelectionUpdateChannel(lacros_selection_.value());
-  // If we don't have channel information, we default to the "dev" channel.
-  if (update_channel == version_info::Channel::UNKNOWN)
-    update_channel = browser_util::kLacrosDefaultChannel;
+  // If Ash is an unknown channel then this is not a production build and we
+  // should be using an unknown channel for Lacros as well. This prevents Lacros
+  // from picking up Finch experiments.
+  version_info::Channel update_channel = version_info::Channel::UNKNOWN;
+  if (chrome::GetChannel() != version_info::Channel::UNKNOWN) {
+    DCHECK(lacros_selection_.has_value());
+    update_channel = browser_util::GetLacrosSelectionUpdateChannel(
+        lacros_selection_.value());
+    // If we don't have channel information, we default to the "dev" channel.
+    if (update_channel == version_info::Channel::UNKNOWN)
+      update_channel = browser_util::kLacrosDefaultChannel;
+  }
 
   base::LaunchOptions options;
   options.environment["EGL_PLATFORM"] = "surfaceless";
@@ -872,7 +888,6 @@ void BrowserManager::StartWithLogFile(
                                    "--user-data-dir=" + user_data_dir,
                                    "--enable-gpu-rasterization",
                                    "--lang=" + locale,
-                                   "--enable-crashpad",
                                    "--enable-webgl-image-chromium",
                                    "--breakpad-dump-location=" + crash_dir};
 
@@ -944,6 +959,10 @@ void BrowserManager::StartWithLogFile(
   // Append a fake switch for backward compatibility.
   // TODO(crbug.com/1188020): Remove this after M93 Lacros is spread enough.
   command_line.AppendSwitchASCII(mojo::PlatformChannel::kHandleSwitch, "-1");
+
+  if (crash_reporter::IsCrashpadEnabled()) {
+    command_line.AppendSwitch(switches::kEnableCrashpad);
+  }
 
   // Create the lacros-chrome subprocess.
   base::RecordAction(base::UserMetricsAction("Lacros.Launch"));
@@ -1273,6 +1292,38 @@ void BrowserManager::RecordLacrosLaunchMode() {
 
   UMA_HISTOGRAM_ENUMERATION("Ash.Lacros.Launch.ModeAndSource",
                             lacros_mode_and_source);
+}
+
+void BrowserManager::OpenUrlImpl(
+    const GURL& url,
+    crosapi::mojom::OpenUrlParams::WindowOpenDisposition disposition,
+    crosapi::mojom::OpenUrlFrom from) {
+  auto result = MaybeStart(browser_util::InitialBrowserAction(
+      mojom::InitialBrowserAction::kOpenWindowWithUrls, {url}, from));
+  if (result != MaybeStartResult::kRunning)
+    return;
+
+  if (!browser_service_.has_value()) {
+    LOG(ERROR) << "BrowserService was disconnected";
+    return;
+  }
+  if (browser_service_->interface_version <
+      mojom::BrowserService::kOpenUrlMinVersion) {
+    LOG(ERROR) << "BrowserService does not support OpenUrl";
+    return;
+  }
+
+  using OpenUrlParams = crosapi::mojom::OpenUrlParams;
+  auto params = OpenUrlParams::New();
+  params->disposition = disposition;
+  params->from = from;
+  browser_service_->service->OpenUrl(url, std::move(params), base::DoNothing());
+}
+
+bool BrowserManager::IsNewGuestWindowSupported() const {
+  return browser_service_.has_value() &&
+         browser_service_->interface_version >=
+             crosapi::mojom::BrowserService::kNewGuestWindowMinVersion;
 }
 
 }  // namespace crosapi

@@ -8,7 +8,8 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
-#include "ui/gfx/text_elider.h"
+#include "ui/views/border.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/widget/widget.h"
@@ -17,8 +18,12 @@ namespace ash {
 
 namespace {
 
-// The font size increase for the template name view.
+// The font size increase for the template name view. The default font size is
+// 12, so this will make the template name view font size 16.
 constexpr int kNameFontSizeDeltaDp = 4;
+
+// The distance from between the name view and its associated focus ring.
+constexpr int kFocusRingGapDp = 2;
 
 #if DCHECK_IS_ON()
 bool IsDesksTemplatesGridWidget(const views::Widget* widget) {
@@ -43,7 +48,15 @@ bool IsDesksTemplatesGridWidget(const views::Widget* widget) {
 
 DesksTemplatesNameView::DesksTemplatesNameView() {
   SetFontList(GetFontList().Derive(kNameFontSizeDeltaDp, gfx::Font::NORMAL,
-                                   gfx::Font::Weight::BOLD));
+                                   gfx::Font::Weight::MEDIUM));
+  // This creates a 2dp gap between the text and the background set in
+  // `DesksTextfield`.
+  SetBorder(views::CreateEmptyBorder(gfx::Insets(0, 2, 0, 2)));
+
+  // The focus ring is created in `DesksTextfield`'s constructor.
+  views::FocusRing* focus_ring = views::FocusRing::Get(this);
+  DCHECK(focus_ring);
+  focus_ring->SetHaloInset(-kFocusRingGapDp);
 }
 
 DesksTemplatesNameView::~DesksTemplatesNameView() = default;
@@ -67,19 +80,19 @@ void DesksTemplatesNameView::OnContentsChanged() {
   PreferredSizeChanged();
 }
 
-void DesksTemplatesNameView::SetTextAndElideIfNeeded(
-    const std::u16string& text) {
-  SetText(gfx::ElideText(text, GetFontList(), GetAvailableWidth(),
-                         gfx::ELIDE_TAIL));
-  full_text_ = text;
-}
-
 gfx::Size DesksTemplatesNameView::CalculatePreferredSize() const {
   const gfx::Size preferred_size = DesksTextfield::CalculatePreferredSize();
   // Use the available width if it is larger than the preferred width.
   const int preferred_width =
       std::clamp(preferred_size.width(), 1, GetAvailableWidth());
   return gfx::Size(preferred_width, kTemplateNameViewHeight);
+}
+
+void DesksTemplatesNameView::OnGestureEvent(ui::GestureEvent* event) {
+  DesksTextfield::OnGestureEvent(event);
+  // Stop propagating this event so that the parent of `this`, which is a button
+  // does not get the event.
+  event->StopPropagation();
 }
 
 int DesksTemplatesNameView::GetAvailableWidth() const {

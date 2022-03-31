@@ -100,6 +100,8 @@ message DeviceRegisterRequest {
 
   // Enumerates different flavors of registration.
   enum Flavor {
+    reserved 12;
+
     // User manually enrolls a device for device management.
     FLAVOR_ENROLLMENT_MANUAL = 0;
     // User re-starts enrollment manually to recover from loss of policy.
@@ -135,8 +137,6 @@ message DeviceRegisterRequest {
     // mandatory, but it failed and we are doing a fallback to manual
     // enrollment.
     FLAVOR_ENROLLMENT_ATTESTATION_MANUAL_FALLBACK = 11;
-    // Enrollment triggered by USB pre-configuration
-    FLAVOR_ENROLLMENT_ATTESTATION_USB_ENROLLMENT = 12;
     // Device state downloaded from the server during OOBE indicates that
     // initial enrollment is mandatory.
     FLAVOR_ENROLLMENT_INITIAL_SERVER_FORCED = 13;
@@ -1459,15 +1459,16 @@ message DeviceStatusReportRequest {
   repeated NetworkState network_states = 11;
 
   // Samples of CPU utilization (0-100), sampled once every 120 seconds.
-  // To deprecate: Use CpuUtilizationInfo instead.
-  repeated int32 cpu_utilization_pct_samples = 12;
+  // Deprecated: Use CpuUtilizationInfo instead.
+  repeated int32 cpu_utilization_pct_samples = 12 [deprecated = true];
 
   // Total RAM on the device.
   // To deprecate: Use SystemFreeRamInfo instead.
   optional int64 system_ram_total = 14;
 
   // Samples of free RAM [in bytes] (unreliable due to GC).
-  repeated int64 system_ram_free_samples = 15;
+  // Deprecated: Use SystemRamFreeInfo instead.
+  repeated int64 system_ram_free_samples = 15 [deprecated = true];
 
   // Samples of CPU temperatures in Celsius, plus associated labels
   // identifying which CPU produced the temperature measurement.
@@ -4045,10 +4046,6 @@ message BrowserPublicKeyUploadResponse {
 //   * deviceid: MUST BE no more than 64-char in [\x21-\x7E].
 //   * agent: MUST BE no more than 64-char long.
 // * HTTP Authorization header MUST be in the following formats:
-//   * For register, ping, check_android_management
-//     requests with user authentication
-//     Authorization: GoogleLogin auth=<auth cookie for Mobile Sync>
-//
 //   * For register for Chrome browsers
 //     Authorization: GoogleEnrollmentToken token=<enrollment token>
 //
@@ -4061,9 +4058,10 @@ message BrowserPublicKeyUploadResponse {
 //
 //   * The Authorization header isn't used for enterprise_check,
 //     enterprise_psm_check, device_initial_enrollment_state or
-//     certificate_based_register requests, nor for register
-//     requests using OAuth. In the latter case, the OAuth
-//     token is passed in the "oauth" parameter.
+//     certificate_based_register requests.
+//     It is also not used for register requests and check_android_management
+//     requests - for these requests, the OAuth token is passed in the "oauth"
+//     HTTP query parameter.
 //
 // DeviceManagementRequest should only contain one request which matches the
 // HTTP query parameter - request, as mentioned in comments on the fields of the

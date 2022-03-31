@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "net/base/net_export.h"
 #include "net/base/schemeful_site.h"
 #include "net/cookies/canonical_cookie.h"
@@ -55,41 +56,68 @@ class NET_EXPORT CookieAccessDelegate {
   // If `top_frame_site` is nullptr, then `site` will be checked only against
   // `party_context`.
   //
-  // `callback` may be invoked synchronously or asynchronously.
-  virtual void ComputeFirstPartySetMetadataMaybeAsync(
+  // This may return a result synchronously, or asynchronously invoke `callback`
+  // with the result. The callback will be invoked iff the return value is
+  // nullopt; i.e. a result will be provided via return value or callback, but
+  // not both, and not neither.
+  [[nodiscard]] virtual absl::optional<FirstPartySetMetadata>
+  ComputeFirstPartySetMetadataMaybeAsync(
       const net::SchemefulSite& site,
       const net::SchemefulSite* top_frame_site,
       const std::set<net::SchemefulSite>& party_context,
       base::OnceCallback<void(FirstPartySetMetadata)> callback) const = 0;
 
-  // Returns the owner of a `site`'s First-Party Set if `site` is in a
-  // non-trivial set. Returns nullopt otherwise.
-  virtual absl::optional<net::SchemefulSite> FindFirstPartySetOwner(
-      const net::SchemefulSite& site) const = 0;
-
-  // Creates a CookiePartitionKey that takes whether the top-frame site is in a
-  // First-Party Set into account. If FPS are not enabled, it returns a cookie
-  // partition key that does not take FPS into account.
+  // Computes the owner of a `site`'s First-Party Set if `site` is in a
+  // non-trivial set; `nullopt` otherwise.
   //
-  // Should always return nullopt if partitioned cookies are disabled or if
-  // the NIK has no top-frame site.
-  static absl::optional<CookiePartitionKey> CreateCookiePartitionKey(
-      const CookieAccessDelegate* delegate,
-      const NetworkIsolationKey& network_isolation_key);
+  // This may return a result synchronously, or asynchronously invoke `callback`
+  // with the result. The callback will be invoked iff the return value is
+  // nullopt; i.e. a result will be provided via return value or callback, but
+  // not both, and not neither.
+  [[nodiscard]] virtual absl::optional<absl::optional<net::SchemefulSite>>
+  FindFirstPartySetOwner(
+      const net::SchemefulSite& site,
+      base::OnceCallback<void(absl::optional<net::SchemefulSite>)> callback)
+      const = 0;
+
+  // Computes the owners of a set of sites' First-Party Sets if the site are in
+  // non-trivial sets. If a given site is not in a non-trivial set, the output
+  // does not contain a corresponding owner.
+  //
+  // This may return a result synchronously, or asynchronously invoke `callback`
+  // with the result. The callback will be invoked iff the return value is
+  // nullopt; i.e. a result will be provided via return value or callback, but
+  // not both, and not neither.
+  [[nodiscard]] virtual absl::optional<
+      base::flat_map<net::SchemefulSite, net::SchemefulSite>>
+  FindFirstPartySetOwners(
+      const base::flat_set<net::SchemefulSite>& sites,
+      base::OnceCallback<void(
+          base::flat_map<net::SchemefulSite, net::SchemefulSite>)> callback)
+      const = 0;
 
   // Converts the CookiePartitionKey's site to its First-Party Set owner if
   // the site is in a nontrivial set.
   //
-  // May invoke `callback` either synchronously or asynchronously.
-  static void FirstPartySetifyPartitionKey(
+  // This may return a result synchronously, or asynchronously invoke `callback`
+  // with the result. The callback will be invoked iff the return value is
+  // nullopt; i.e. a result will be provided via return value or callback, but
+  // not both, and not neither.
+  [[nodiscard]] static absl::optional<CookiePartitionKey>
+  FirstPartySetifyPartitionKey(
       const CookieAccessDelegate* delegate,
       const CookiePartitionKey& cookie_partition_key,
-      base::OnceCallback<void(absl::optional<CookiePartitionKey>)> callback);
+      base::OnceCallback<void(CookiePartitionKey)> callback);
 
   // Computes the First-Party Sets.
   //
-  // May invoke `callback` either synchronously or asynchronously.
-  virtual void RetrieveFirstPartySets(
+  // This may return a result synchronously, or asynchronously invoke `callback`
+  // with the result. The callback will be invoked iff the return value is
+  // nullopt; i.e. a result will be provided via return value or callback, but
+  // not both, and not neither.
+  [[nodiscard]] virtual absl::optional<
+      base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>>
+  RetrieveFirstPartySets(
       base::OnceCallback<void(
           base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>)>
           callback) const = 0;

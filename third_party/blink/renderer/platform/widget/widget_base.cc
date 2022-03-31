@@ -52,7 +52,7 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/presentation_feedback.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 #include "third_party/blink/renderer/platform/widget/compositing/android_webview/synchronous_layer_tree_frame_sink.h"
 #endif
 
@@ -60,7 +60,7 @@ namespace blink {
 
 namespace {
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 // Unique identifier for each output surface created.
 uint32_t g_next_layer_tree_frame_sink_id = 1;
 #endif
@@ -402,10 +402,7 @@ void WidgetBase::UpdateVisualProperties(
       gfx::ScaleToCeiledSize(visual_properties.visible_viewport_size,
                              screen_info.device_scale_factor));
 
-  base::TimeTicks update_start = base::TimeTicks::Now();
   client_->UpdateVisualProperties(visual_properties);
-  base::TimeDelta update_duration = base::TimeTicks::Now() - update_start;
-  LayerTreeHost()->SetVisualPropertiesUpdateDuration(update_duration);
 }
 
 void WidgetBase::UpdateScreenRects(const gfx::Rect& widget_screen_rect,
@@ -434,6 +431,7 @@ void WidgetBase::WasHidden() {
 }
 
 void WidgetBase::WasShown(bool was_evicted,
+                          bool in_active_window,
                           mojom::blink::RecordContentToVisibleTimeRequestPtr
                               record_tab_switch_time_request) {
   // The frame must be attached to the frame tree (which makes it no longer
@@ -458,6 +456,8 @@ void WidgetBase::WasShown(bool was_evicted,
 
   client_->WasShown(was_evicted);
 }
+
+void WidgetBase::OnActiveWindowChanged(bool in_active_window) {}
 
 void WidgetBase::RequestPresentationTimeForNextFrame(
     mojom::blink::RecordContentToVisibleTimeRequestPtr visible_time_request) {
@@ -672,7 +672,7 @@ void WidgetBase::RequestNewLayerTreeFrameSink(
           attributes,
           viz::command_buffer_metrics::ContextType::RENDER_COMPOSITOR));
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (Platform::Current()->IsSynchronousCompositingEnabledForAndroidWebView() &&
       !is_for_child_local_root_) {
     // TODO(ericrk): Collapse with non-webview registration below.
@@ -835,6 +835,15 @@ void WidgetBase::AddPresentationCallback(
   layer_tree_view_->AddPresentationCallback(frame_token, std::move(callback));
 }
 
+#if BUILDFLAG(IS_MAC)
+void WidgetBase::AddCoreAnimationErrorCodeCallback(
+    uint32_t frame_token,
+    base::OnceCallback<void(gfx::CALayerResult)> callback) {
+  layer_tree_view_->AddCoreAnimationErrorCodeCallback(frame_token,
+                                                      std::move(callback));
+}
+#endif
+
 void WidgetBase::SetCursor(const ui::Cursor& cursor) {
   if (input_handler_.DidChangeCursor(cursor)) {
     widget_host_->SetCursor(cursor);
@@ -942,7 +951,7 @@ void WidgetBase::UpdateTextInputStateInternal(bool show_virtual_keyboard,
       params->ime_text_spans_info =
           frame_widget->GetImeTextSpansInfo(new_info.ime_text_spans);
     }
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     if (next_previous_flags_ == kInvalidNextPreviousFlagsValue) {
       // Due to a focus change, values will be reset by the frame.
       // That case we only need fresh NEXT/PREVIOUS information.
@@ -996,7 +1005,7 @@ void WidgetBase::UpdateTextInputStateInternal(bool show_virtual_keyboard,
       }
     }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
     // If we send a new TextInputStateChanged message, we must also deliver a
     // new RenderFrameMetadata, as the IME will need this info to be updated.
     // TODO(ericrk): Consider folding the above IPC into RenderFrameMetadata.
@@ -1019,7 +1028,7 @@ void WidgetBase::ClearTextInputState() {
 }
 
 void WidgetBase::ShowVirtualKeyboardOnElementFocus() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
   // On ChromeOS, virtual keyboard is triggered only when users leave the
   // mouse button or the finger and a text input element is focused at that
   // time. Focus event itself shouldn't trigger virtual keyboard.
@@ -1030,7 +1039,7 @@ void WidgetBase::ShowVirtualKeyboardOnElementFocus() {
 
 // TODO(rouslan): Fix ChromeOS and Windows 8 behavior of autofill popup with
 // virtual keyboard.
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID)
   client_->FocusChangeComplete();
 #endif
 }
@@ -1089,7 +1098,7 @@ void WidgetBase::UpdateCompositionInfo(bool immediate_request) {
 }
 
 void WidgetBase::ForceTextInputStateUpdate() {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   UpdateSelectionBounds();
   UpdateTextInputStateInternal(false, true /* reply_to_request */);
 #endif
@@ -1347,7 +1356,7 @@ void WidgetBase::CancelCompositionForPepper() {
           widget_input_handler_manager_->GetWidgetInputHandlerHost()) {
     host->ImeCancelComposition();
   }
-#if defined(OS_MAC) || defined(USE_AURA)
+#if BUILDFLAG(IS_MAC) || defined(USE_AURA)
   UpdateCompositionInfo(false /* not an immediate request */);
 #endif
 }
@@ -1366,7 +1375,7 @@ void WidgetBase::OnImeEventGuardFinish(ImeEventGuard* guard) {
   // are ignored. These must explicitly be updated once finished handling the
   // ime event.
   UpdateSelectionBounds();
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   if (guard->show_virtual_keyboard())
     ShowVirtualKeyboard();
   else
@@ -1534,7 +1543,7 @@ bool WidgetBase::ComputePreferCompositingToLCDText() {
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDisablePreferCompositingToLCDText))
     return false;
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
   // On Android, we never have subpixel antialiasing. On Chrome OS we prefer to
   // composite all scrollers for better scrolling performance.
   return true;

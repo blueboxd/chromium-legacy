@@ -454,7 +454,7 @@ class CrostiniManager::CrostiniRestarter
 
   // TODO(crbug/1153210): Better numbers for timeouts once we have data.
   std::map<mojom::InstallerState, base::TimeDelta> stage_timeouts_ = {
-      {mojom::InstallerState::kStart, base::Minutes(5)},
+      {mojom::InstallerState::kStart, base::Minutes(2)},
       {mojom::InstallerState::kInstallImageLoader,
        base::Hours(6)},  // May need to download DLC or component
       {mojom::InstallerState::kCreateDiskImage, base::Minutes(5)},
@@ -464,11 +464,10 @@ class CrostiniManager::CrostiniRestarter
       // messages that reset the countdown.
       {mojom::InstallerState::kCreateContainer, base::Minutes(5)},
       {mojom::InstallerState::kSetupContainer, base::Minutes(5)},
-      // StartContainer might need to do a UID remapping, which in the worst
-      // case can take a very long time.
-      // TODO(crbug/1197416) once the heartbeat change has landed in Tremplin
-      // and made it out, make this something shorter like a few minutes.
-      {mojom::InstallerState::kStartContainer, base::Days(5)},
+      // StartContainer sends heartbeat messages on a 30-second interval, but
+      // there's a bit of work that's not covered by heartbeat messages so to be
+      // safe set a 3 minute timeout.
+      {mojom::InstallerState::kStartContainer, base::Minutes(3)},
       // ConfigureContainer is special, it's not part of the restarter flow, so
       // it doesn't have a timeout.
       {mojom::InstallerState::kConfigureContainer, base::Hours(0)},
@@ -1105,8 +1104,7 @@ void CrostiniManager::InstallTermina(CrostiniResultCallback callback,
             std::move(callback).Run(res);
           },
           std::move(callback)),
-      // TODO(crbug/1228109): uncomment when Dlc issues are fixed.
-      /*is_initial_install=*/false);
+      is_initial_install);
 }
 
 void CrostiniManager::CancelInstallTermina() {
@@ -1469,6 +1467,29 @@ void CrostiniManager::StartLxdContainer(ContainerId container_id,
   GetCiceroneClient()->StartLxdContainer(
       std::move(request),
       base::BindOnce(&CrostiniManager::OnStartLxdContainer,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(container_id),
+                     std::move(callback)));
+}
+
+void CrostiniManager::StopLxdContainer(ContainerId container_id,
+                                       CrostiniResultCallback callback) {
+  if (container_id.vm_name.empty()) {
+    LOG(ERROR) << "vm_name is required";
+    std::move(callback).Run(CrostiniResult::CLIENT_ERROR);
+    return;
+  }
+  if (container_id.container_name.empty()) {
+    LOG(ERROR) << "container_name is required";
+    std::move(callback).Run(CrostiniResult::CLIENT_ERROR);
+    return;
+  }
+  vm_tools::cicerone::StopLxdContainerRequest request;
+  request.set_vm_name(container_id.vm_name);
+  request.set_container_name(container_id.container_name);
+  request.set_owner_id(owner_id_);
+  GetCiceroneClient()->StopLxdContainer(
+      std::move(request),
+      base::BindOnce(&CrostiniManager::OnStopLxdContainer,
                      weak_ptr_factory_.GetWeakPtr(), std::move(container_id),
                      std::move(callback)));
 }
@@ -2860,6 +2881,44 @@ void CrostiniManager::OnStartLxdContainer(
   }
 }
 
+void CrostiniManager::OnStopLxdContainer(
+    const ContainerId& container_id,
+    CrostiniResultCallback callback,
+    absl::optional<vm_tools::cicerone::StopLxdContainerResponse> response) {
+  if (!response) {
+    VLOG(1) << "Failed to stop lxd container in vm. Empty response.";
+    std::move(callback).Run(CrostiniResult::CONTAINER_STOP_FAILED);
+    return;
+  }
+
+  switch (response->status()) {
+    case vm_tools::cicerone::StopLxdContainerResponse::UNKNOWN:
+    case vm_tools::cicerone::StopLxdContainerResponse::FAILED:
+      LOG(ERROR) << "Failed to stop container: " << response->failure_reason();
+      std::move(callback).Run(CrostiniResult::CONTAINER_STOP_FAILED);
+      break;
+
+    case vm_tools::cicerone::StopLxdContainerResponse::STOPPED:
+      std::move(callback).Run(CrostiniResult::SUCCESS);
+      break;
+
+    case vm_tools::cicerone::StopLxdContainerResponse::STOPPING:
+      VLOG(1) << "Awaiting LxdContainerStoppingSignal for " << owner_id_ << ", "
+              << container_id;
+      stop_container_callbacks_.emplace(container_id, std::move(callback));
+      break;
+
+    case vm_tools::cicerone::StopLxdContainerResponse::DOES_NOT_EXIST:
+      VLOG(1) << "Container does not exist " << container_id;
+      std::move(callback).Run(CrostiniResult::CONTAINER_STOP_FAILED);
+      break;
+
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
 void CrostiniManager::OnSetUpLxdContainerUser(
     const ContainerId& container_id,
     BoolCallback callback,
@@ -3064,6 +3123,40 @@ void CrostiniManager::OnLxdContainerStarting(
   }
 
   InvokeAndErasePendingContainerCallbacks(&start_container_callbacks_,
+                                          container_id, result);
+}
+
+void CrostiniManager::OnLxdContainerStopping(
+    const vm_tools::cicerone::LxdContainerStoppingSignal& signal) {
+  if (signal.owner_id() != owner_id_)
+    return;
+  ContainerId container_id(signal.vm_name(), signal.container_name());
+  CrostiniResult result;
+  switch (signal.status()) {
+    case vm_tools::cicerone::LxdContainerStoppingSignal::UNKNOWN:
+      result = CrostiniResult::UNKNOWN_ERROR;
+      break;
+    case vm_tools::cicerone::LxdContainerStoppingSignal::CANCELLED:
+      result = CrostiniResult::CONTAINER_STOP_CANCELLED;
+      break;
+    case vm_tools::cicerone::LxdContainerStoppingSignal::STOPPED:
+      result = CrostiniResult::SUCCESS;
+      break;
+    case vm_tools::cicerone::LxdContainerStoppingSignal::STOPPING:
+      // No-op
+      return;
+    case vm_tools::cicerone::LxdContainerStoppingSignal::FAILED:
+      result = CrostiniResult::CONTAINER_STOP_FAILED;
+      break;
+    default:
+      result = CrostiniResult::UNKNOWN_ERROR;
+      break;
+  }
+  if (result != CrostiniResult::SUCCESS) {
+    LOG(ERROR) << "Failed to stop container. ID: " << container_id
+               << " reason: " << signal.failure_reason();
+  }
+  InvokeAndErasePendingContainerCallbacks(&stop_container_callbacks_,
                                           container_id, result);
 }
 

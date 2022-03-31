@@ -4,23 +4,27 @@
 
 #include "chrome/browser/sync/test/integration/apps_helper.h"
 
+#include "base/check.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/sync_app_helper.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
-#include "chrome/browser/sync/test/integration/sync_extension_installer.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/manifest.h"
 
 using sync_datatype_helper::test;
@@ -236,8 +240,8 @@ web_app::AppId InstallWebApp(Profile* profile, const WebAppInstallInfo& info) {
       webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON,
       base::BindLambdaForTesting(
           [&run_loop, &app_id](const web_app::AppId& new_app_id,
-                               web_app::InstallResultCode code) {
-            DCHECK_EQ(code, web_app::InstallResultCode::kSuccessNewInstall);
+                               webapps::InstallResultCode code) {
+            DCHECK_EQ(code, webapps::InstallResultCode::kSuccessNewInstall);
             app_id = new_app_id;
             run_loop.Quit();
           }));
@@ -252,13 +256,27 @@ web_app::AppId InstallWebApp(Profile* profile, const WebAppInstallInfo& info) {
 
 }  // namespace apps_helper
 
-AppsMatchChecker::AppsMatchChecker() : profiles_(test()->GetAllProfiles()) {
+AppsStatusChangeChecker::AppsStatusChangeChecker()
+    : profiles_(test()->GetAllProfiles()) {
   DCHECK_GE(profiles_.size(), 2U);
 
   for (Profile* profile : profiles_) {
-    // Begin mocking the installation of synced extensions from the web store.
-    synced_extension_installers_.push_back(
-        std::make_unique<SyncedExtensionInstaller>(profile));
+    InstallSyncedApps(profile);
+
+    // Fake the installation of synced apps from the web store.
+    CHECK(extensions::ExtensionSystem::Get(profile)
+              ->extension_service()
+              ->updater());
+    extensions::ExtensionSystem::Get(profile)
+        ->extension_service()
+        ->updater()
+        ->SetUpdatingStartedCallbackForTesting(base::BindLambdaForTesting(
+            [self = weak_ptr_factory_.GetWeakPtr(), profile]() {
+              base::ThreadTaskRunnerHandle::Get()->PostTask(
+                  FROM_HERE,
+                  base::BindOnce(&AppsStatusChangeChecker::InstallSyncedApps,
+                                 self, base::Unretained(profile)));
+            }));
 
     // Register as an observer of ExtensionsRegistry to receive notifications of
     // big events, like installs and uninstalls.
@@ -278,7 +296,7 @@ AppsMatchChecker::AppsMatchChecker() : profiles_(test()->GetAllProfiles()) {
   }
 }
 
-AppsMatchChecker::~AppsMatchChecker() {
+AppsStatusChangeChecker::~AppsStatusChangeChecker() {
   for (Profile* profile : profiles_) {
     extensions::ExtensionRegistry* registry =
         extensions::ExtensionRegistry::Get(profile);
@@ -288,6 +306,75 @@ AppsMatchChecker::~AppsMatchChecker() {
     prefs->RemoveObserver(this);
   }
 }
+
+void AppsStatusChangeChecker::OnExtensionLoaded(
+    content::BrowserContext* context,
+    const extensions::Extension* extension) {
+  CheckExitCondition();
+}
+
+void AppsStatusChangeChecker::OnExtensionUnloaded(
+    content::BrowserContext* context,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionReason reason) {
+  CheckExitCondition();
+}
+
+void AppsStatusChangeChecker::OnExtensionInstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    bool is_update) {
+  CheckExitCondition();
+}
+
+void AppsStatusChangeChecker::OnExtensionUninstalled(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UninstallReason reason) {
+  CheckExitCondition();
+}
+
+void AppsStatusChangeChecker::OnExtensionDisableReasonsChanged(
+    const std::string& extension_id,
+    int disabled_reasons) {
+  CheckExitCondition();
+}
+
+void AppsStatusChangeChecker::OnExtensionRegistered(
+    const std::string& extension_id,
+    const base::Time& install_time,
+    bool is_enabled) {
+  CheckExitCondition();
+}
+
+void AppsStatusChangeChecker::OnExtensionPrefsLoaded(
+    const std::string& extension_id,
+    const extensions::ExtensionPrefs* prefs) {
+  CheckExitCondition();
+}
+
+void AppsStatusChangeChecker::OnExtensionPrefsDeleted(
+    const std::string& extension_id) {
+  CheckExitCondition();
+}
+
+void AppsStatusChangeChecker::OnExtensionStateChanged(
+    const std::string& extension_id,
+    bool state) {
+  CheckExitCondition();
+}
+
+void AppsStatusChangeChecker::OnAppsReordered(
+    const absl::optional<std::string>& extension_id) {
+  CheckExitCondition();
+}
+
+void AppsStatusChangeChecker::InstallSyncedApps(Profile* profile) {
+  // Installs apps too.
+  SyncExtensionHelper::GetInstance()->InstallExtensionsPendingForSync(profile);
+}
+
+AppsMatchChecker::AppsMatchChecker() = default;
 
 bool AppsMatchChecker::IsExitConditionSatisfied(std::ostream* os) {
   *os << "Waiting for apps to match";
@@ -301,64 +388,4 @@ bool AppsMatchChecker::IsExitConditionSatisfied(std::ostream* os) {
     }
   }
   return true;
-}
-
-void AppsMatchChecker::OnExtensionLoaded(
-    content::BrowserContext* context,
-    const extensions::Extension* extension) {
-  CheckExitCondition();
-}
-
-void AppsMatchChecker::OnExtensionUnloaded(
-    content::BrowserContext* context,
-    const extensions::Extension* extension,
-    extensions::UnloadedExtensionReason reason) {
-  CheckExitCondition();
-}
-
-void AppsMatchChecker::OnExtensionInstalled(
-    content::BrowserContext* browser_context,
-    const extensions::Extension* extension,
-    bool is_update) {
-  CheckExitCondition();
-}
-
-void AppsMatchChecker::OnExtensionUninstalled(
-    content::BrowserContext* browser_context,
-    const extensions::Extension* extension,
-    extensions::UninstallReason reason) {
-  CheckExitCondition();
-}
-
-void AppsMatchChecker::OnExtensionDisableReasonsChanged(
-    const std::string& extension_id,
-    int disabled_reasons) {
-  CheckExitCondition();
-}
-
-void AppsMatchChecker::OnExtensionRegistered(const std::string& extension_id,
-                                             const base::Time& install_time,
-                                             bool is_enabled) {
-  CheckExitCondition();
-}
-
-void AppsMatchChecker::OnExtensionPrefsLoaded(
-    const std::string& extension_id,
-    const extensions::ExtensionPrefs* prefs) {
-  CheckExitCondition();
-}
-
-void AppsMatchChecker::OnExtensionPrefsDeleted(
-    const std::string& extension_id) {
-  CheckExitCondition();
-}
-
-void AppsMatchChecker::OnExtensionStateChanged(const std::string& extension_id,
-                                               bool state) {
-  CheckExitCondition();
-}
-
-void AppsMatchChecker::OnAppsReordered(
-    const absl::optional<std::string>& extension_id) {
-  CheckExitCondition();
 }

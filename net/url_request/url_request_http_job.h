@@ -23,6 +23,8 @@
 #include "net/base/net_export.h"
 #include "net/base/privacy_mode.h"
 #include "net/cookies/cookie_inclusion_status.h"
+#include "net/cookies/cookie_partition_key.h"
+#include "net/cookies/first_party_set_metadata.h"
 #include "net/http/http_request_info.h"
 #include "net/socket/connection_attempts.h"
 #include "net/url_request/url_request_job.h"
@@ -214,12 +216,14 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   // `override_response_info_::headers`.
   HttpResponseHeaders* GetResponseHeaders() const;
 
-  // Computes the cookie partition key for the request. Partitioned cookies
-  // should be set using this key and only partitioned cookies with this
-  // partition key should be sent.
-  // Returns nullopt if cookie partitioning is not enabled, if the NIK has no
-  // top-frame site, or if the instance has no cookie store.
-  absl::optional<CookiePartitionKey> ComputeCookiePartitionKey();
+  // Called after getting the FirstPartySetMetadata during Start for this job.
+  void OnGotFirstPartySetMetadata(
+      FirstPartySetMetadata first_party_set_metadata);
+
+  // Returns true iff this request leg should include the Cookie header. Note
+  // that cookies may still be eventually blocked by the CookieAccessDelegate
+  // even if this method returns true.
+  bool ShouldAddCookieHeader() const;
 
   // Returns true if partitioned cookies are enabled and can be accessed and/or
   // set.
@@ -294,11 +298,21 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   ResponseHeadersCallback early_response_headers_callback_;
   ResponseHeadersCallback response_headers_callback_;
 
-  // Partitioned cookies will be set using this key and only partitioned cookies
-  // with this partition key will be sent.
+  // The First-Party Set metadata associated with this job. Set when the job is
+  // started.
+  FirstPartySetMetadata first_party_set_metadata_;
+
+  // The cookie partition key for the request. Partitioned cookies should be set
+  // using this key and only partitioned cookies with this partition key should
+  // be sent. The cookie partition key is optional(nullopt) if cookie
+  // partitioning is not enabled, or if the NIK has no top-frame site.
   //
   // Unpartitioned cookies are unaffected by this field.
-  absl::optional<CookiePartitionKey> cookie_partition_key_;
+  //
+  // The two layers of `optional` are because the `cookie_partition_key_` is
+  // lazily computed, and might be "nothing". We want to be able to distinguish
+  // "uncomputed" from "nothing".
+  absl::optional<absl::optional<CookiePartitionKey>> cookie_partition_key_;
 
   base::WeakPtrFactory<URLRequestHttpJob> weak_factory_{this};
 };

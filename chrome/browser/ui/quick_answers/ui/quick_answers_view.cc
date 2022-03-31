@@ -15,6 +15,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -54,7 +56,6 @@ constexpr int kMarginDip = 10;
 
 constexpr gfx::Insets kMainViewInsets(4, 0);
 constexpr gfx::Insets kContentViewInsets(8, 0, 8, 16);
-constexpr float kHoverStateAlpha = 0.06f;
 constexpr int kMaxRows = 3;
 
 // Google icon.
@@ -76,13 +77,11 @@ constexpr int kLabelSpacingDip = 2;
 constexpr int kSettingsButtonMarginDip = 4;
 constexpr int kSettingsButtonSizeDip = 14;
 constexpr int kSettingsButtonBorderDip = 3;
-constexpr SkColor kSettingsButtonColor = gfx::kGoogleGrey500;
 
 // Phonetics audio button.
 constexpr gfx::Insets kPhoneticsAudioButtonMarginInsets(0, 4, 0, 4);
 constexpr int kPhoneticsAudioButtonSizeDip = 14;
 constexpr int kPhoneticsAudioButtonBorderDip = 3;
-constexpr SkColor kPhoneticsAudioButtonColor = gfx::kGoogleBlue600;
 
 // ReportQueryView.
 constexpr char kGoogleSansFont[] = "Google Sans";
@@ -140,6 +139,8 @@ class MainView : public views::Button {
   METADATA_HEADER(MainView);
 
   explicit MainView(PressedCallback callback) : Button(std::move(callback)) {
+    SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_ASH_QUICK_ANSWERS_VIEW_A11Y_NAME_TEXT));
     SetInstallFocusRingOnFocus(false);
     set_suppress_default_focus_handling();
 
@@ -159,6 +160,11 @@ class MainView : public views::Button {
   // views::View:
   void OnFocus() override { SetBackgroundState(true); }
   void OnBlur() override { SetBackgroundState(false); }
+  void OnThemeChanged() override {
+    views::Button::OnThemeChanged();
+    SetBackground(views::CreateSolidBackground(
+        GetColorProvider()->GetColor(ui::kColorPrimaryBackground)));
+  }
 
   // views::Button:
   void StateChanged(views::Button::ButtonState old_state) override {
@@ -172,10 +178,12 @@ class MainView : public views::Button {
     if (highlight) {
       SetBackground(views::CreateBackgroundFromPainter(
           views::Painter::CreateSolidRoundRectPainter(
-              SkColorSetA(SK_ColorBLACK, kHoverStateAlpha * 0xFF),
+              GetColorProvider()->GetColor(
+                  ui::kColorMenuItemBackgroundHighlighted),
               /*radius=*/0, kMainViewInsets)));
     } else {
-      SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
+      SetBackground(views::CreateSolidBackground(
+          GetColorProvider()->GetColor(ui::kColorPrimaryBackground)));
     }
   }
 };
@@ -192,39 +200,34 @@ class ReportQueryView : public views::Button {
     auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
     layout->SetOrientation(views::LayoutOrientation::kHorizontal)
         .SetMainAxisAlignment(views::LayoutAlignment::kStart);
-    SetBackground(views::CreateSolidBackground(gfx::kGoogleBlue050));
 
-    auto* dogfood_icon = AddChildView(std::make_unique<views::ImageView>());
-    dogfood_icon->SetBorder(
+    dogfood_icon_ = AddChildView(std::make_unique<views::ImageView>());
+    dogfood_icon_->SetBorder(
         views::CreateEmptyBorder(gfx::Insets(kDogfoodIconBorderDip)));
-    dogfood_icon->SetImage(gfx::CreateVectorIcon(
-        vector_icons::kDogfoodIcon, kDogfoodIconSizeDip, gfx::kGoogleBlue600));
 
-    auto* description_label = AddChildView(std::make_unique<Label>(
+    description_label_ = AddChildView(std::make_unique<Label>(
         l10n_util::GetStringUTF16(
             IDS_ASH_QUICK_ANSWERS_VIEW_REPORT_QUERY_INTERNAL_LABEL),
         Label::CustomFont{gfx::FontList({kGoogleSansFont}, gfx::Font::ITALIC,
                                         kReportQueryViewFontSize,
                                         gfx::Font::Weight::NORMAL)}));
-    description_label->SetHorizontalAlignment(
+    description_label_->SetHorizontalAlignment(
         gfx::HorizontalAlignment::ALIGN_LEFT);
-    description_label->SetEnabledColor(gfx::kGoogleBlue600);
 
-    auto* report_label = AddChildView(std::make_unique<Label>(
+    report_label_ = AddChildView(std::make_unique<Label>(
         l10n_util::GetStringUTF16(
             IDS_ASH_QUICK_ANSWERS_VIEW_REPORT_QUERY_REPORT_LABEL),
         Label::CustomFont{gfx::FontList({kGoogleSansFont}, gfx::Font::NORMAL,
                                         kReportQueryViewFontSize,
                                         gfx::Font::Weight::MEDIUM)}));
-    report_label->SetProperty(
+    report_label_->SetProperty(
         views::kFlexBehaviorKey,
         views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
                                  views::MaximumFlexSizeRule::kUnbounded)
             .WithAlignment(views::LayoutAlignment::kEnd));
-    report_label->SetProperty(
+    report_label_->SetProperty(
         views::kMarginsKey, gfx::Insets(/*top=*/0, /*left=*/0, /*bottom=*/0,
                                         /*right=*/kReportQueryButtonMarginDip));
-    report_label->SetEnabledColor(gfx::kGoogleBlue600);
   }
 
   // Disallow copy and assign.
@@ -232,6 +235,32 @@ class ReportQueryView : public views::Button {
   ReportQueryView& operator=(const ReportQueryView&) = delete;
 
   ~ReportQueryView() override = default;
+
+  // views::View:
+  void OnThemeChanged() override {
+    views::Button::OnThemeChanged();
+
+    const bool should_use_dark_colors = GetNativeTheme()->ShouldUseDarkColors();
+
+    // Hard code color for dark mode since we use special specs for this
+    // temporary view. Will remove the usage after we remove this view.
+    const auto background_color =
+        should_use_dark_colors ? SkColorSetA(gfx::kGoogleBlue300, 0x4C /*30%*/)
+                               : gfx::kGoogleBlue050;
+    const auto foreground_color =
+        should_use_dark_colors ? gfx::kGoogleBlue300 : gfx::kGoogleBlue600;
+
+    SetBackground(views::CreateSolidBackground(background_color));
+    dogfood_icon_->SetImage(gfx::CreateVectorIcon(
+        vector_icons::kDogfoodIcon, kDogfoodIconSizeDip, foreground_color));
+    description_label_->SetEnabledColor(foreground_color);
+    report_label_->SetEnabledColor(foreground_color);
+  }
+
+ private:
+  views::ImageView* dogfood_icon_ = nullptr;
+  views::Label* description_label_ = nullptr;
+  views::Label* report_label_ = nullptr;
 };
 
 BEGIN_METADATA(ReportQueryView, views::Button)
@@ -241,13 +270,12 @@ END_METADATA
 
 // QuickAnswersView -----------------------------------------------------------
 
-QuickAnswersView::QuickAnswersView(
-    const gfx::Rect& anchor_view_bounds,
-    const std::string& title,
-    bool is_internal,
-    base::WeakPtr<QuickAnswersUiController> controller)
+QuickAnswersView::QuickAnswersView(const gfx::Rect& anchor_view_bounds,
+                                   const std::string& title,
+                                   bool is_internal,
+                                   QuickAnswersUiController* controller)
     : anchor_view_bounds_(anchor_view_bounds),
-      controller_(std::move(controller)),
+      controller_(controller),
       title_(title),
       is_internal_(is_internal),
       quick_answers_view_handler_(
@@ -288,6 +316,19 @@ void QuickAnswersView::OnFocus() {
     NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
 }
 
+void QuickAnswersView::OnThemeChanged() {
+  views::View::OnThemeChanged();
+  SetBackground(views::CreateSolidBackground(
+      GetColorProvider()->GetColor(ui::kColorPrimaryBackground)));
+  if (settings_button_) {
+    settings_button_->SetImage(
+        views::Button::ButtonState::STATE_NORMAL,
+        gfx::CreateVectorIcon(
+            vector_icons::kSettingsOutlineIcon, kSettingsButtonSizeDip,
+            GetColorProvider()->GetColor(ui::kColorIconSecondary)));
+  }
+}
+
 views::FocusTraversable* QuickAnswersView::GetPaneFocusTraversable() {
   return focus_search_.get();
 }
@@ -296,9 +337,8 @@ void QuickAnswersView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // The view itself is not focused for retry-mode, so should not be announced
   // by the screen reader.
   if (retry_label_) {
-    node_data->role = ax::mojom::Role::kNone;
-    node_data->SetName(std::string());
-    node_data->SetDescription(std::string());
+    node_data->AddState(ax::mojom::State::kIgnored);
+    node_data->SetNameExplicitlyEmpty();
     return;
   }
 
@@ -308,8 +348,7 @@ void QuickAnswersView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void QuickAnswersView::SendQuickAnswersQuery() {
-  if (controller_)
-    controller_->OnQuickAnswersViewPressed();
+  controller_->OnQuickAnswersViewPressed();
 }
 
 void QuickAnswersView::UpdateAnchorViewBounds(
@@ -342,7 +381,7 @@ void QuickAnswersView::ShowRetryView() {
   std::vector<std::unique_ptr<QuickAnswerUiElement>> description_labels;
   description_labels.push_back(std::make_unique<QuickAnswerText>(
       l10n_util::GetStringUTF8(IDS_ASH_QUICK_ANSWERS_VIEW_NETWORK_ERROR),
-      gfx::kGoogleGrey700));
+      GetColorProvider()->GetColor(ui::kColorLabelForegroundSecondary)));
   auto* description_container =
       AddHorizontalUiElements(description_labels, content_view_);
 
@@ -350,9 +389,10 @@ void QuickAnswersView::ShowRetryView() {
   retry_label_ =
       description_container->AddChildView(std::make_unique<views::LabelButton>(
           base::BindRepeating(&QuickAnswersUiController::OnRetryLabelPressed,
-                              controller_),
+                              base::Unretained(controller_)),
           l10n_util::GetStringUTF16(IDS_ASH_QUICK_ANSWERS_VIEW_RETRY)));
-  retry_label_->SetEnabledTextColors(gfx::kGoogleBlue600);
+  retry_label_->SetEnabledTextColors(
+      GetColorProvider()->GetColor(ui::kColorProgressBar));
   retry_label_->SetRequestFocusOnPress(true);
   retry_label_->button_controller()->set_notify_action(
       views::ButtonController::NotifyAction::kOnPress);
@@ -366,7 +406,6 @@ void QuickAnswersView::ShowRetryView() {
 
 void QuickAnswersView::InitLayout() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
-  SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
 
   base_view_ = AddChildView(std::make_unique<View>());
   auto* base_layout =
@@ -436,11 +475,8 @@ void QuickAnswersView::AddSettingsButton() {
       .SetCrossAxisAlignment(views::LayoutAlignment::kEnd);
   settings_button_ = settings_view->AddChildView(
       std::make_unique<views::ImageButton>(base::BindRepeating(
-          &QuickAnswersUiController::OnSettingsButtonPressed, controller_)));
-  settings_button_->SetImage(
-      views::Button::ButtonState::STATE_NORMAL,
-      gfx::CreateVectorIcon(vector_icons::kSettingsOutlineIcon,
-                            kSettingsButtonSizeDip, kSettingsButtonColor));
+          &QuickAnswersUiController::OnSettingsButtonPressed,
+          base::Unretained(controller_))));
   settings_button_->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_ASH_QUICK_ANSWERS_SETTINGS_BUTTON_TOOLTIP_TEXT));
   settings_button_->SetBorder(
@@ -468,9 +504,9 @@ void QuickAnswersView::AddPhoneticsAudioButton(const GURL& phonetics_audio,
                               base::Unretained(this), phonetics_audio)));
   phonetics_audio_button_->SetImage(
       views::Button::ButtonState::STATE_NORMAL,
-      gfx::CreateVectorIcon(vector_icons::kVolumeUpIcon,
-                            kPhoneticsAudioButtonSizeDip,
-                            kPhoneticsAudioButtonColor));
+      gfx::CreateVectorIcon(
+          vector_icons::kVolumeUpIcon, kPhoneticsAudioButtonSizeDip,
+          GetColorProvider()->GetColor(ui::kColorButtonBackgroundProminent)));
   phonetics_audio_button_->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_ASH_QUICK_ANSWERS_PHONETICS_BUTTON_TOOLTIP_TEXT));
   phonetics_audio_button_->SetBorder(
@@ -591,7 +627,7 @@ void QuickAnswersView::UpdateQuickAnswerResult(
     report_query_view_ = base_view_->AddChildView(
         std::make_unique<ReportQueryView>(base::BindRepeating(
             &QuickAnswersUiController::OnReportQueryButtonPressed,
-            controller_)));
+            base::Unretained(controller_))));
   }
 }
 

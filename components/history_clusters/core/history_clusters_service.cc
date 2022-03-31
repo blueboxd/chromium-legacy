@@ -17,12 +17,10 @@
 #include "base/i18n/case_conversion.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/time/time_to_iso8601.h"
 #include "base/timer/elapsed_timer.h"
@@ -38,7 +36,6 @@
 #include "components/optimization_guide/core/entity_metadata_provider.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/site_engagement/core/site_engagement_score_provider.h"
-#include "components/url_formatter/url_formatter.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/time_format.h"
 
@@ -49,77 +46,6 @@
 namespace history_clusters {
 
 namespace {
-
-// Returns true if `find_nodes` matches `cluster`.
-// This is deliberately meant to closely mirror the History implementation..
-// TODO(tommycli): Merge with `URLDatabase::GetTextMatchesWithAlgorithm()`.
-bool DoesQueryMatchCluster(const query_parser::QueryNodeVector& find_nodes,
-                           const history::Cluster& cluster) {
-  query_parser::QueryWordVector find_in_words;
-
-  // All of the cluster's `keyword`s go into `find_in_words`.
-  // Each `keyword` may have multiple terms, so loop over them.
-  for (auto& keyword : cluster.keywords) {
-    query_parser::QueryParser::ExtractQueryWords(base::i18n::ToLower(keyword),
-                                                 &find_in_words);
-  }
-
-  // Also extract all of the visits' URLs and titles into `find_in_words`.
-  for (const auto& visit : cluster.visits) {
-    GURL gurl = visit.annotated_visit.url_row.url();
-
-    std::u16string url_lower =
-        base::i18n::ToLower(base::UTF8ToUTF16(gurl.possibly_invalid_spec()));
-    query_parser::QueryParser::ExtractQueryWords(url_lower, &find_in_words);
-
-    if (gurl.is_valid()) {
-      // Decode punycode to match IDN.
-      std::u16string ascii = base::ASCIIToUTF16(gurl.host());
-      std::u16string utf = url_formatter::IDNToUnicode(gurl.host());
-      if (ascii != utf)
-        query_parser::QueryParser::ExtractQueryWords(utf, &find_in_words);
-    }
-
-    std::u16string title_lower =
-        base::i18n::ToLower(visit.annotated_visit.url_row.title());
-    query_parser::QueryParser::ExtractQueryWords(title_lower, &find_in_words);
-  }
-
-  return query_parser::QueryParser::DoesQueryMatch(find_in_words, find_nodes);
-}
-
-// Filter `clusters` matching `query`. There are additional filters (e.g.
-// `max_time`) used when requesting `QueryClusters()`, but this function is only
-// responsible for matching `query`.
-void FilterClustersMatchingQuery(std::string query,
-                                 std::vector<history::Cluster>* clusters) {
-  DCHECK(clusters);
-  if (query.empty()) {
-    // For the empty-query state, only show clusters with
-    // `should_show_on_prominent_ui_surfaces` set to true. This restriction is
-    // NOT applied when the user is searching for a specific keyword.
-    clusters->erase(base::ranges::remove_if(
-                        *clusters,
-                        [](const history::Cluster& cluster) {
-                          return !cluster.should_show_on_prominent_ui_surfaces;
-                        }),
-                    clusters->end());
-    return;
-  }
-
-  // Extract query nodes from the query string.
-  query_parser::QueryNodeVector find_nodes;
-  query_parser::QueryParser::ParseQueryNodes(
-      base::UTF8ToUTF16(query),
-      query_parser::MatchingAlgorithm::ALWAYS_PREFIX_SEARCH, &find_nodes);
-
-  clusters->erase(base::ranges::remove_if(
-                      *clusters,
-                      [&find_nodes](const history::Cluster& cluster) {
-                        return !DoesQueryMatchCluster(find_nodes, cluster);
-                      }),
-                  clusters->end());
-}
 
 // Gets a loggable JSON representation of `visits`.
 std::string GetDebugJSONForVisits(
@@ -236,9 +162,6 @@ std::string GetDebugJSONForKeywordSet(
   return debug_string;
 }
 
-// TODO(tommycli): Explicitly link this number to what's in WebUI.
-constexpr int kMaxCountForKeywordCacheBatch = 10;
-
 }  // namespace
 
 VisitDeletionObserver::VisitDeletionObserver(
@@ -269,9 +192,7 @@ HistoryClustersService::HistoryClustersService(
     : is_journeys_enabled_(
           ::history_clusters::IsJourneysEnabled(application_locale)),
       history_service_(history_service),
-      visit_deletion_observer_(this),
-      post_processing_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})) {
+      visit_deletion_observer_(this) {
   DCHECK(history_service_);
 
   visit_deletion_observer_.AttachToHistoryService(history_service);
@@ -284,6 +205,10 @@ HistoryClustersService::HistoryClustersService(
 }
 
 HistoryClustersService::~HistoryClustersService() = default;
+
+base::WeakPtr<HistoryClustersService> HistoryClustersService::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
 
 void HistoryClustersService::Shutdown() {}
 
@@ -345,50 +270,39 @@ void HistoryClustersService::CompleteVisitContextAnnotationsIfReady(
 }
 
 void HistoryClustersService::QueryClusters(
-    const std::string& query,
+    ClusteringRequestSource clustering_request_source,
     base::Time begin_time,
     base::Time end_time,
-    const size_t max_count,
     QueryClustersCallback callback,
     base::CancelableTaskTracker* task_tracker) {
   NotifyDebugMessage("HistoryClustersService::QueryClusters()");
   NotifyDebugMessage("  end_time = " + (end_time.is_null()
                                             ? "null"
                                             : base::TimeToISO8601(end_time)));
-  NotifyDebugMessage("  max_count = " + base::NumberToString(max_count));
 
   if (!backend_) {
     NotifyDebugMessage(
         "HistoryClustersService::QueryClusters Error: ClusteringBackend is "
         "nullptr. Returning empty cluster vector.");
-    std::move(callback).Run({});
+    std::move(callback).Run({}, base::Time());
     return;
   }
 
   DCHECK(history_service_);
 
-  size_t max_visit_count = kMaxVisitsToCluster.Get();
-  if (max_count > 0) {
-    // As a primitive heuristic, fetch 3x the amount of visits as requested
-    // clusters. We don't know in advance how big the clusters will be.
-    max_visit_count = max_count * 3;
-  }
-
   NotifyDebugMessage("Starting History Query:");
   NotifyDebugMessage("  end_time = " + (end_time.is_null()
                                             ? "null"
                                             : base::TimeToISO8601(end_time)));
-  NotifyDebugMessage(base::StringPrintf("  max_count = %zu", max_count));
 
   // TODO(crbug/1243049) : Add timing metrics for the history service DB query.
   history_service_->ScheduleDBTask(
       FROM_HERE,
       std::make_unique<GetAnnotatedVisitsToCluster>(
           incomplete_visit_context_annotations_, begin_time, end_time,
-          max_visit_count,
           base::BindOnce(&HistoryClustersService::OnGotHistoryVisits,
-                         weak_ptr_factory_.GetWeakPtr(), query,
-                         std::move(callback))),
+                         weak_ptr_factory_.GetWeakPtr(),
+                         clustering_request_source, std::move(callback))),
       task_tracker);
 }
 
@@ -431,8 +345,8 @@ bool HistoryClustersService::DoesQueryMatchAnyCluster(
     //  solution will be to explicitly ask the backend for this bag of keywords.
     NotifyDebugMessage("Starting all_keywords_cache_ generation.");
     QueryClusters(
-        /*query=*/"", begin_time, /*end_time=*/
-        base::Time(), kMaxCountForKeywordCacheBatch,
+        ClusteringRequestSource::kKeywordCacheGeneration, begin_time,
+        /*end_time=*/base::Time(),
         base::BindOnce(&HistoryClustersService::PopulateClusterKeywordCache,
                        weak_ptr_factory_.GetWeakPtr(), begin_time,
                        std::make_unique<std::vector<std::u16string>>(),
@@ -455,9 +369,9 @@ bool HistoryClustersService::DoesQueryMatchAnyCluster(
 
     NotifyDebugMessage("Starting short_keywords_cache_ generation.");
     QueryClusters(
-        /*query=*/"",
+        ClusteringRequestSource::kKeywordCacheGeneration,
         /*begin_time=*/all_keywords_cache_timestamp_, /*end_time=*/
-        base::Time(), kMaxCountForKeywordCacheBatch,
+        base::Time(),
         base::BindOnce(&HistoryClustersService::PopulateClusterKeywordCache,
                        weak_ptr_factory_.GetWeakPtr(),
                        all_keywords_cache_timestamp_,
@@ -489,11 +403,17 @@ void HistoryClustersService::PopulateClusterKeywordCache(
     base::Time begin_time,
     std::unique_ptr<std::vector<std::u16string>> keyword_accumulator,
     KeywordSet* cache,
-    QueryClustersResult result) {
+    std::vector<history::Cluster> clusters,
+    base::Time continuation_end_time) {
   const size_t max_keyword_phrases = kMaxKeywordPhrases.Get();
 
   // Copy keywords from every cluster into a the accumulator set.
-  for (auto& cluster : result.clusters) {
+  for (auto& cluster : clusters) {
+    if (!cluster.should_show_on_prominent_ui_surfaces) {
+      // `clusters` doesn't have any post-processing, so we need to skip
+      // sensitive clusters here.
+      continue;
+    }
     if (cluster.visits.size() < 2) {
       // Only accept keywords from clusters with at least two visits. This is a
       // simple first-pass technique to avoid overtriggering the omnibox action.
@@ -521,12 +441,12 @@ void HistoryClustersService::PopulateClusterKeywordCache(
   // Make a continuation request to get the next page of clusters and their
   // keywords only if both 1) there is more clusters remaining, and 2) we
   // haven't reached the soft cap `max_keyword_phrases` (or there is no cap).
-  if (result.continuation_end_time &&
+  if (!continuation_end_time.is_null() &&
       (max_keyword_phrases == 0 ||
        keyword_accumulator->size() < max_keyword_phrases)) {
     QueryClusters(
-        /*query=*/"", begin_time, *result.continuation_end_time,
-        kMaxCountForKeywordCacheBatch,
+        ClusteringRequestSource::kKeywordCacheGeneration, begin_time,
+        continuation_end_time,
         base::BindOnce(&HistoryClustersService::PopulateClusterKeywordCache,
                        weak_ptr_factory_.GetWeakPtr(), begin_time,
                        // Pass on the accumulator set to the next callback.
@@ -561,7 +481,7 @@ void HistoryClustersService::PopulateClusterKeywordCache(
 }
 
 void HistoryClustersService::OnGotHistoryVisits(
-    const std::string& query,
+    ClusteringRequestSource clustering_request_source,
     QueryClustersCallback callback,
     std::vector<history::AnnotatedVisit> annotated_visits,
     base::Time continuation_end_time) const {
@@ -575,11 +495,7 @@ void HistoryClustersService::OnGotHistoryVisits(
 
   if (annotated_visits.empty()) {
     // Early exit without calling backend if there's no annotated visits.
-    QueryClustersResult result;
-    if (!continuation_end_time.is_null()) {
-      result.continuation_end_time = continuation_end_time;
-    }
-    std::move(callback).Run(std::move(result));
+    std::move(callback).Run({}, continuation_end_time);
     return;
   }
 
@@ -591,80 +507,29 @@ void HistoryClustersService::OnGotHistoryVisits(
                                static_cast<int>(annotated_visits.size()));
 
   backend_->GetClusters(
+      clustering_request_source,
       base::BindOnce(&HistoryClustersService::OnGotRawClusters,
-                     weak_ptr_factory_.GetWeakPtr(), query,
-                     continuation_end_time, base::TimeTicks::Now(),
-                     std::move(callback)),
+                     weak_ptr_factory_.GetWeakPtr(), continuation_end_time,
+                     base::TimeTicks::Now(), std::move(callback)),
       annotated_visits);
 }
 
 void HistoryClustersService::OnGotRawClusters(
-    const std::string& query,
     base::Time continuation_end_time,
     base::TimeTicks cluster_start_time,
     QueryClustersCallback callback,
     std::vector<history::Cluster> clusters) const {
   NotifyDebugMessage("HistoryClustersService::OnGotRawClusters()");
 
-  int clusters_from_backend_count = clusters.size();
   base::UmaHistogramTimes("History.Clusters.Backend.GetClustersLatency",
                           base::TimeTicks::Now() - cluster_start_time);
   base::UmaHistogramCounts1000("History.Clusters.Backend.NumClustersReturned",
-                               clusters_from_backend_count);
+                               clusters.size());
 
   NotifyDebugMessage("  Raw Clusters from Backend JSON follows:");
   NotifyDebugMessage(GetDebugJSONForClusters(clusters));
 
-  // Post-process the clusters (expensive task) on an anonymous thread to
-  // prevent janks.
-  base::ElapsedTimer post_processing_timer;  // Create here to time the task.
-  post_processing_task_runner_->PostTaskAndReplyWithResult(
-      FROM_HERE,
-      base::BindOnce(&HistoryClustersService::PostProcessClusters, query,
-                     continuation_end_time, std::move(clusters)),
-      base::BindOnce(&HistoryClustersService::OnProcessedClusters,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::move(post_processing_timer),
-                     clusters_from_backend_count, std::move(callback)));
-}
-
-// static
-QueryClustersResult HistoryClustersService::PostProcessClusters(
-    const std::string& query,
-    base::Time continuation_end_time,
-    std::vector<history::Cluster> raw_clusters) {
-  QueryClustersResult result;
-  if (!continuation_end_time.is_null()) {
-    result.continuation_end_time = continuation_end_time;
-  }
-
-  FilterClustersMatchingQuery(query, &raw_clusters);
-  result.clusters = raw_clusters;
-  return result;
-}
-
-void HistoryClustersService::OnProcessedClusters(
-    base::ElapsedTimer post_processing_timer,
-    size_t clusters_from_backend_count,
-    QueryClustersCallback callback,
-    QueryClustersResult result) const {
-  NotifyDebugMessage("HistoryClustersService::OnProcesedClusters()");
-
-  base::TimeDelta clustering_duration = post_processing_timer.Elapsed();
-  base::UmaHistogramLongTimes("History.Clusters.ProcessClustersDuration",
-                              clustering_duration);
-
-  if (clusters_from_backend_count > 0) {
-    // Log the percentage of clusters that get filtered (e.g., 100 - % of
-    // clusters that remain).
-    base::UmaHistogramCounts100(
-        "History.Clusters.PercentClustersFilteredByQuery",
-        static_cast<int>(100 - (result.clusters.size() /
-                                (1.0 * clusters_from_backend_count) * 100)));
-  }
-
-  NotifyDebugMessage("  Passing results back to original caller now.");
-  std::move(callback).Run(std::move(result));
+  std::move(callback).Run(clusters, continuation_end_time);
 }
 
 }  // namespace history_clusters

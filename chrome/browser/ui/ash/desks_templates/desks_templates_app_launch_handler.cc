@@ -9,6 +9,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "components/app_constants/constants.h"
 #include "components/app_restore/desk_template_read_handler.h"
 #include "components/app_restore/restore_data.h"
 #include "components/app_restore/window_info.h"
@@ -140,7 +142,7 @@ void DesksTemplatesAppLaunchHandler::LaunchBrowsers() {
   const auto& launch_list = restore_data()->app_id_to_launch_list();
   for (const auto& iter : launch_list) {
     const std::string& app_id = iter.first;
-    if (app_id != extension_misc::kChromeAppId)
+    if (app_id != app_constants::kChromeAppId)
       continue;
 
     for (const auto& window_iter : iter.second) {
@@ -182,10 +184,11 @@ void DesksTemplatesAppLaunchHandler::LaunchBrowsers() {
 
       absl::optional<int32_t> active_tab_index =
           app_restore_data->active_tab_index;
-      for (int i = 0; i < urls->size(); i++) {
-        chrome::AddTabAt(
-            browser, urls->at(i), /*index=*/-1,
-            /*foreground=*/(active_tab_index && i == *active_tab_index));
+      for (size_t i = 0; i < urls->size(); i++) {
+        chrome::AddTabAt(browser, urls->at(i), /*index=*/-1,
+                         /*foreground=*/
+                         (active_tab_index &&
+                          base::checked_cast<int32_t>(i) == *active_tab_index));
       }
 
       // We need to handle minimized windows separately since unlike other
@@ -199,7 +202,7 @@ void DesksTemplatesAppLaunchHandler::LaunchBrowsers() {
       browser->window()->ShowInactive();
     }
   }
-  restore_data()->RemoveApp(extension_misc::kChromeAppId);
+  restore_data()->RemoveApp(app_constants::kChromeAppId);
 }
 
 void DesksTemplatesAppLaunchHandler::MaybeLaunchArcApps() {

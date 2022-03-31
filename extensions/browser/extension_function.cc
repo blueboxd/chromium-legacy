@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <numeric>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -36,6 +37,7 @@
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/common/constants.h"
@@ -136,7 +138,7 @@ class ExtensionFunctionMemoryDumpProvider
 };
 
 void EnsureMemoryDumpProviderExists() {
-  ALLOW_UNUSED_LOCAL(ExtensionFunctionMemoryDumpProvider::GetInstance());
+  std::ignore = ExtensionFunctionMemoryDumpProvider::GetInstance();
 }
 
 // Logs UMA about the performance for a given extension function run.
@@ -474,7 +476,7 @@ bool ExtensionFunction::HasPermission() const {
   Feature::Availability availability =
       ExtensionAPI::GetSharedInstance()->IsAvailable(
           name_, extension_.get(), source_context_type_, source_url(),
-          extensions::CheckAliasStatus::ALLOWED);
+          extensions::CheckAliasStatus::ALLOWED, context_id_);
   return availability.is_available();
 }
 
@@ -524,7 +526,7 @@ void ExtensionFunction::OnQuotaExceeded(std::string violation_error) {
 void ExtensionFunction::SetArgs(base::Value args) {
   DCHECK(args.is_list());
   DCHECK(!args_.has_value());
-  args_ = std::move(args).TakeList();
+  args_ = std::move(args).TakeListDeprecated();
 }
 
 const base::ListValue* ExtensionFunction::GetResultList() const {
@@ -585,6 +587,7 @@ void ExtensionFunction::SetDispatcher(
     return;
   }
   browser_context_ = dispatcher_->browser_context();
+  context_id_ = extensions::util::GetBrowserContextId(browser_context_);
   shutdown_subscription_ =
       BrowserContextShutdownNotifierFactory::GetInstance()
           ->Get(browser_context_)

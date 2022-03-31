@@ -7,12 +7,12 @@
 
 #include <memory>
 
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/quick_answers/ui/quick_answers_focus_search.h"
 #include "chrome/browser/ui/quick_answers/ui/quick_answers_pre_target_handler.h"
 #include "ui/views/view.h"
 
 namespace views {
+class Label;
 class LabelButton;
 }  // namespace views
 
@@ -28,7 +28,7 @@ class UserConsentView : public views::View {
   UserConsentView(const gfx::Rect& anchor_view_bounds,
                   const std::u16string& intent_type,
                   const std::u16string& intent_text,
-                  base::WeakPtr<QuickAnswersUiController> controller);
+                  QuickAnswersUiController* ui_controller);
 
   // Disallow copy and assign.
   UserConsentView(const UserConsentView&) = delete;
@@ -40,6 +40,7 @@ class UserConsentView : public views::View {
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   void OnFocus() override;
+  void OnThemeChanged() override;
   views::FocusTraversable* GetPaneFocusTraversable() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
@@ -59,15 +60,17 @@ class UserConsentView : public views::View {
   // Cached bounds of the anchor this view is tied to.
   gfx::Rect anchor_view_bounds_;
   // Cached title text.
-  std::u16string title_;
+  std::u16string title_text_;
 
   QuickAnswersPreTargetHandler event_handler_;
-  base::WeakPtr<QuickAnswersUiController> controller_;
+  QuickAnswersUiController* const ui_controller_;
   QuickAnswersFocusSearch focus_search_;
 
   // Owned by view hierarchy.
   views::View* main_view_ = nullptr;
   views::View* content_ = nullptr;
+  views::Label* title_ = nullptr;
+  views::Label* desc_ = nullptr;
   views::LabelButton* no_thanks_button_ = nullptr;
   views::LabelButton* allow_button_ = nullptr;
 };

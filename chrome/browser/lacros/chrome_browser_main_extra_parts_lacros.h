@@ -22,7 +22,12 @@ class KioskSessionServiceLacros;
 class FieldTrialObserver;
 class StandaloneBrowserTestController;
 
+namespace arc {
+class ArcIconCacheDelegateProvider;
+}  // namespace arc
+
 namespace crosapi {
+class SearchControllerLacros;
 class TaskManagerLacros;
 class WebPageInfoProviderLacros;
 }  // namespace crosapi
@@ -53,6 +58,9 @@ class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
   // Handles browser action requests from ash-chrome.
   std::unique_ptr<BrowserServiceLacros> browser_service_;
 
+  // Handles search queries from ash-chrome.
+  std::unique_ptr<crosapi::SearchControllerLacros> search_controller_;
+
   // Handles task manager crosapi from ash for sending lacros tasks to ash.
   std::unique_ptr<crosapi::TaskManagerLacros> task_manager_provider_;
 
@@ -68,6 +76,10 @@ class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
   // Manages the resources used in the web Kiosk session, and sends window
   // status changes of lacros-chrome to ash when necessary.
   std::unique_ptr<KioskSessionServiceLacros> kiosk_session_service_;
+
+  // Provides ArcIconCache impl.
+  std::unique_ptr<arc::ArcIconCacheDelegateProvider>
+      arc_icon_cache_delegate_provider_;
 
   // Handles tab property requests from ash.
   std::unique_ptr<crosapi::WebPageInfoProviderLacros> web_page_info_provider_;

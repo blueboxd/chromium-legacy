@@ -10,40 +10,18 @@
 import './styles.js';
 import '/common/styles.js';
 
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import {afterNextRender, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {isNonEmptyArray} from '../../common/utils.js';
-import {WallpaperProviderInterface} from '../personalization_app.mojom-webui.js';
+import {isNonEmptyArray, isSelectionEvent} from '../../common/utils.js';
+import {CurrentWallpaper, GooglePhotosPhoto, WallpaperImage, WallpaperProviderInterface, WallpaperType} from '../personalization_app.mojom-webui.js';
 import {PersonalizationStore, WithPersonalizationStore} from '../personalization_store.js';
+import {isGooglePhotosPhoto} from '../utils.js';
 
-import {fetchGooglePhotosAlbum} from './wallpaper_controller.js';
+import {fetchGooglePhotosAlbum, selectWallpaper} from './wallpaper_controller.js';
 import {getWallpaperProvider} from './wallpaper_interface_provider.js';
-
-let fetchGooglePhotosAlbumFunction = fetchGooglePhotosAlbum;
-
-type WallpaperControllerFunctionPromisesForTesting = {
-  fetchGooglePhotosAlbum: Promise<any[]>,
-};
-
-/**
- * TODO(dmblack): Remove once mojo provider is used to fetch data.
- * Mocks out wallpaper controller functions for testing. Returns promises that
- * are resolved when the function is called by |GooglePhotosPhotosByAlbumId|.
- */
-export function promisifyWallpaperControllerFunctionsForTesting():
-    WallpaperControllerFunctionPromisesForTesting {
-  const resolvers: Record<string, (args: any[]) => void> = {};
-  const promises = {
-    fetchGooglePhotosAlbum: new Promise<any[]>(
-        resolve => resolvers[fetchGooglePhotosAlbum.name] = resolve),
-  };
-  fetchGooglePhotosAlbumFunction = (...args: any): Promise<void> => {
-    resolvers[fetchGooglePhotosAlbum.name](args);
-    return Promise.resolve();
-  };
-  return promises;
-}
 
 export interface GooglePhotosPhotosByAlbumId {
   $: {grid: IronListElement;};
@@ -77,6 +55,8 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
             'computeAlbum_(albumId, photosByAlbumId_, photosByAlbumIdLoading_)',
       },
 
+      currentSelected_: Object,
+      pendingSelected_: Object,
       photosByAlbumId_: Object,
       photosByAlbumIdLoading_: Object,
     };
@@ -89,10 +69,16 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
   hidden: boolean;
 
   /** The list of photos for the currently selected album id. */
-  private album_: unknown[]|null|undefined;
+  private album_: GooglePhotosPhoto[]|null|undefined;
+
+  /** The currently selected wallpaper. */
+  private currentSelected_: CurrentWallpaper|null;
+
+  /** The pending selected wallpaper. */
+  private pendingSelected_: FilePath|GooglePhotosPhoto|WallpaperImage|null;
 
   /** The list of photos by album id. */
-  private photosByAlbumId_: Record<string, unknown[]|null|undefined>;
+  private photosByAlbumId_: Record<string, GooglePhotosPhoto[]|null|undefined>;
 
   /** Whether the list of photos by album id is currently loading. */
   private photosByAlbumIdLoading_: Record<string, boolean>;
@@ -104,6 +90,10 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
   connectedCallback() {
     super.connectedCallback();
 
+    this.watch<GooglePhotosPhotosByAlbumId['currentSelected_']>(
+        'currentSelected_', state => state.wallpaper.currentSelected);
+    this.watch<GooglePhotosPhotosByAlbumId['pendingSelected_']>(
+        'pendingSelected_', state => state.wallpaper.pendingSelected);
     this.watch<GooglePhotosPhotosByAlbumId['photosByAlbumId_']>(
         'photosByAlbumId_',
         state => state.wallpaper.googlePhotos.photosByAlbumId);
@@ -115,8 +105,8 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
   }
 
   /** Invoked on changes to this element's |hidden| state. */
-  private onHiddenChanged_() {
-    if (this.hidden) {
+  private onHiddenChanged_(hidden: GooglePhotosPhotosByAlbumId['hidden']) {
+    if (hidden) {
       return;
     }
 
@@ -126,24 +116,57 @@ export class GooglePhotosPhotosByAlbumId extends WithPersonalizationStore {
     afterNextRender(this, () => this.$.grid.fire('iron-resize'));
   }
 
+  /** Invoked on selection of a photo. */
+  private onPhotoSelected_(e: Event&{model: {photo: GooglePhotosPhoto}}) {
+    assert(e.model.photo);
+    if (isSelectionEvent(e)) {
+      selectWallpaper(e.model.photo, this.wallpaperProvider_, this.getStore());
+    }
+  }
+
   /** Invoked to compute |album_|. */
-  private computeAlbum_(): number[]|null|undefined {
+  private computeAlbum_(
+      albumId: GooglePhotosPhotosByAlbumId['albumId'],
+      photosByAlbumId: GooglePhotosPhotosByAlbumId['photosByAlbumId_'],
+      photosByAlbumIdLoading:
+          GooglePhotosPhotosByAlbumId['photosByAlbumIdLoading_']):
+      GooglePhotosPhoto[]|null {
     // If no album is currently selected or if the currently selected album is
     // still loading then there is nothing to display.
-    if (!this.albumId || this.photosByAlbumIdLoading_[this.albumId]) {
+    if (!albumId || photosByAlbumIdLoading[albumId]) {
       return null;
     }
 
     // If the currently selected album has not already been fetched, do so
     // though there is still nothing to display.
-    if (!this.photosByAlbumId_.hasOwnProperty(this.albumId)) {
-      fetchGooglePhotosAlbumFunction(
-          this.wallpaperProvider_, this.getStore(), this.albumId);
+    if (!photosByAlbumId.hasOwnProperty(albumId)) {
+      fetchGooglePhotosAlbum(this.wallpaperProvider_, this.getStore(), albumId);
       return null;
     }
 
     // Once the currently selected album has been fetched it can be displayed.
-    return this.photosByAlbumId_[this.albumId]?.map((_, i) => i + 1);
+    return photosByAlbumId[albumId]!;
+  }
+
+  // Returns whether the specified |photo| is currently selected.
+  private isPhotoSelected_(
+      photo: GooglePhotosPhoto|null,
+      currentSelected: GooglePhotosPhotosByAlbumId['currentSelected_'],
+      pendingSelected: GooglePhotosPhotosByAlbumId['pendingSelected_']):
+      boolean {
+    if (!photo || (!currentSelected && !pendingSelected)) {
+      return false;
+    }
+    if (isGooglePhotosPhoto(pendingSelected) &&
+        pendingSelected!.id === photo.id) {
+      return true;
+    }
+    if (!pendingSelected &&
+        currentSelected?.type === WallpaperType.kGooglePhotos &&
+        currentSelected!.key === photo.id) {
+      return true;
+    }
+    return false;
   }
 }
 

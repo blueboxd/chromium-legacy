@@ -118,6 +118,9 @@ class WPTAndroidAdapter(wpt_common.BaseWptScriptAdapter):
       '--no-pause-after-test',
       '--no-capture-stdio',
       '--no-manifest-download',
+      # Exclude webdriver tests for now.
+      "--exclude=webdriver",
+      "--exclude=infrastructure/webdriver",
       '--binary-arg=--enable-blink-features=MojoJS,MojoJSTest',
       '--binary-arg=--enable-blink-test-features',
       '--binary-arg=--disable-field-trial-config',
@@ -315,6 +318,7 @@ class WPTWeblayerAdapter(WPTAndroidAdapter):
   @property
   def rest_args(self):
     args = super(WPTWeblayerAdapter, self).rest_args
+    args.append('--test-type=testharness')
     args.append(ANDROID_WEBLAYER)
     return args
 
@@ -433,7 +437,6 @@ def get_devices(args):
       for _ in range(max(args.processes, 1)):
         instance = avd_config.CreateInstance()
         instance.Start(writable_system=True, window=args.emulator_window)
-        device_utils.DeviceUtils(instance.serial).WaitUntilFullyBooted()
         instances.append(instance)
 
     #TODO(weizhong): when choose device, make sure abi matches with target

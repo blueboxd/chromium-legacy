@@ -83,19 +83,8 @@ bool Match(const AtomicString& name, const QualifiedName& q_name) {
   return q_name.LocalName() == name;
 }
 
-bool Match(const String& name, const QualifiedName& q_name) {
-  return ThreadSafeMatch(name, q_name);
-}
-
 const StringImpl* TagImplFor(const HTMLToken::DataVector& data) {
   AtomicString tag_name = data.AsAtomicString();
-  const StringImpl* result = tag_name.Impl();
-  if (result->IsStatic())
-    return result;
-  return nullptr;
-}
-
-const StringImpl* TagImplFor(const String& tag_name) {
   const StringImpl* result = tag_name.Impl();
   if (result->IsStatic())
     return result;
@@ -242,16 +231,6 @@ class TokenPreloadScanner::StartTagScanner {
       String attribute_value = html_token_attribute.Value8BitIfNecessary();
       ProcessAttribute(attribute_name, attribute_value);
     }
-    PostProcessAfterAttributes();
-  }
-
-  void ProcessAttributes(
-      const Vector<CompactHTMLToken::Attribute>& attributes) {
-    if (!tag_impl_)
-      return;
-    for (const CompactHTMLToken::Attribute& html_token_attribute : attributes)
-      ProcessAttribute(html_token_attribute.GetName(),
-                       html_token_attribute.Value());
     PostProcessAfterAttributes();
   }
 
@@ -649,36 +628,12 @@ class TokenPreloadScanner::StartTagScanner {
     if (!document_parameters.lazy_load_image_observer)
       return false;
 
-    bool is_fully_loadable =
-        document_parameters.lazy_load_image_observer
-            ->IsFullyLoadableFirstKImageAndDecrementCount();
     if (document_parameters.lazy_load_image_setting ==
         LocalFrame::LazyLoadImageSetting::kDisabled) {
       return false;
     }
 
-    switch (loading_attr_value_) {
-      case LoadingAttributeValue::kEager:
-        return false;
-      case LoadingAttributeValue::kLazy:
-        return true;
-      case LoadingAttributeValue::kAuto:
-        if ((width_attr_dimension_type_ ==
-                 HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall &&
-             height_attr_dimension_type_ ==
-                 HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall) ||
-            inline_style_dimensions_type_ ==
-                HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall) {
-          // Fetch small images eagerly.
-          return false;
-        } else if (is_fully_loadable ||
-                   document_parameters.lazy_load_image_setting !=
-                       LocalFrame::LazyLoadImageSetting::kEnabledAutomatic) {
-          return false;
-        }
-        break;
-    }
-    return true;
+    return loading_attr_value_ == LoadingAttributeValue::kLazy;
   }
 
   void SetUrlToLoad(const String& value, URLReplacement replacement) {
@@ -937,14 +892,6 @@ void TokenPreloadScanner::RewindTo(
 }
 
 void TokenPreloadScanner::Scan(const HTMLToken& token,
-                               const SegmentedString& source,
-                               PreloadRequestStream& requests,
-                               absl::optional<ViewportDescription>* viewport,
-                               bool* is_csp_meta_tag) {
-  ScanCommon(token, source, requests, viewport, is_csp_meta_tag);
-}
-
-void TokenPreloadScanner::Scan(const CompactHTMLToken& token,
                                const SegmentedString& source,
                                PreloadRequestStream& requests,
                                absl::optional<ViewportDescription>* viewport,

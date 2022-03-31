@@ -102,6 +102,7 @@ class TestConfigurator : public Configurator {
   std::unique_ptr<ProtocolHandlerFactory> GetProtocolHandlerFactory()
       const override;
   absl::optional<bool> IsMachineExternallyManaged() const override;
+  UpdaterStateProvider GetUpdaterStateProvider() const override;
 
   void SetOnDemandTime(int seconds);
   void SetInitialDelay(double seconds);
@@ -113,6 +114,7 @@ class TestConfigurator : public Configurator {
       scoped_refptr<CrxDownloaderFactory> crx_downloader_factory);
   void SetIsMachineExternallyManaged(
       absl::optional<bool> is_machine_externally_managed);
+  void SetUpdaterStateProvider(UpdaterStateProvider update_state_provider);
   network::TestURLLoaderFactory* test_url_loader_factory() {
     return &test_url_loader_factory_;
   }
@@ -138,6 +140,7 @@ class TestConfigurator : public Configurator {
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<NetworkFetcherFactory> network_fetcher_factory_;
   scoped_refptr<CrxDownloaderFactory> crx_downloader_factory_;
+  UpdaterStateProvider updater_state_provider_;
 
   absl::optional<bool> is_machine_externally_managed_;
 };

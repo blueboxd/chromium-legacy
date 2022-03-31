@@ -21,10 +21,11 @@ import org.chromium.chrome.browser.feature_engagement.ScreenshotMonitor;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotMonitorDelegate;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotTabObserver;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.feature_guide.notifications.FeatureNotificationUtils;
+import org.chromium.chrome.browser.feature_guide.notifications.FeatureType;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
-import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.CurrentTabObserver;
@@ -37,7 +38,6 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.user_education.IPHCommandBuilder;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
-import org.chromium.chrome.browser.video_tutorials.FeatureType;
 import org.chromium.chrome.browser.video_tutorials.VideoTutorialServiceFactory;
 import org.chromium.chrome.browser.video_tutorials.iph.VideoTutorialTryNowTracker;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -98,21 +98,6 @@ public class ToolbarButtonInProductHelpController
         mLifecycleDispatcher.register(this);
         mCurrentTabSupplier = tabSupplier;
         mPageLoadObserver = new CurrentTabObserver(tabSupplier, new EmptyTabObserver() {
-            /**
-             * Stores total data saved at the start of a page load. Used to calculate delta at the
-             * end of page load, which is just an estimate of the data saved for the current page
-             * load since there may be multiple pages loading at the same time. This estimate is
-             * used to get an idea of how widely used the data saver feature is for a particular
-             * user at a time (i.e. not since the user started using Chrome).
-             */
-            private long mDataSavedOnStartPageLoad;
-
-            @Override
-            public void onPageLoadStarted(Tab tab, GURL url) {
-                mDataSavedOnStartPageLoad = DataReductionProxySettings.getInstance()
-                                                    .getContentLengthSavedInHistorySummary();
-            }
-
             @Override
             public void onPageLoadFinished(Tab tab, GURL url) {
                 if (tab.isShowingErrorPage()) {
@@ -124,17 +109,6 @@ public class ToolbarButtonInProductHelpController
             }
 
             private void handleIPHForSuccessfulPageLoad(final Tab tab) {
-                long dataSaved = DataReductionProxySettings.getInstance()
-                                         .getContentLengthSavedInHistorySummary()
-                        - mDataSavedOnStartPageLoad;
-                Tracker tracker = TrackerFactory.getTrackerForProfile(
-                        Profile.fromWebContents(tab.getWebContents()));
-                if (dataSaved > 0L) tracker.notifyEvent(EventConstants.DATA_SAVED_ON_PAGE_LOAD);
-
-                if (tab.isUserInteractable()) {
-                    showDataSaverDetail();
-                }
-
                 showDownloadPageTextBubble(tab, FeatureConstants.DOWNLOAD_PAGE_FEATURE);
                 showTranslateMenuButtonTextBubble(tab);
                 showPriceTrackingIPH(tab);
@@ -157,9 +131,13 @@ public class ToolbarButtonInProductHelpController
                 tracker.notifyEvent(EventConstants.USER_HAS_SEEN_DINO);
             }
         }, /*swapCallback=*/null);
+
+        FeatureNotificationUtils.registerIPHCallback(
+                FeatureType.INCOGNITO_TAB, this::showIncognitoTabIPH);
     }
 
     public void destroy() {
+        FeatureNotificationUtils.unregisterIPHCallback(FeatureType.INCOGNITO_TAB);
         mPageLoadObserver.destroy();
         mLifecycleDispatcher.unregister(this);
     }
@@ -248,21 +226,6 @@ public class ToolbarButtonInProductHelpController
         return R.id.app_menu_footer;
     }
 
-    // Attempts to show an IPH text bubble for data saver detail.
-    private void showDataSaverDetail() {
-        mUserEducationHelper.requestShowIPH(
-                new IPHCommandBuilder(mActivity.getResources(),
-                        FeatureConstants.DATA_SAVER_DETAIL_FEATURE,
-                        R.string.iph_data_saver_detail_text,
-                        R.string.iph_data_saver_detail_accessibility_text)
-                        .setAnchorView(mMenuButtonAnchorView)
-                        .setOnShowCallback(()
-                                                   -> turnOnHighlightForMenuItem(
-                                                           getDataReductionMenuItemHighlight()))
-                        .setOnDismissCallback(this::turnOffHighlightForMenuItem)
-                        .build());
-    }
-
     private void showDownloadHomeIPH() {
         mUserEducationHelper.requestShowIPH(
                 new IPHCommandBuilder(mActivity.getResources(),
@@ -270,6 +233,20 @@ public class ToolbarButtonInProductHelpController
                         R.string.iph_download_home_accessibility_text)
                         .setAnchorView(mMenuButtonAnchorView)
                         .setOnShowCallback(() -> turnOnHighlightForMenuItem(R.id.downloads_menu_id))
+                        .setOnDismissCallback(this::turnOffHighlightForMenuItem)
+                        .build());
+    }
+
+    private void showIncognitoTabIPH() {
+        mUserEducationHelper.requestShowIPH(
+                new IPHCommandBuilder(mActivity.getResources(),
+                        FeatureConstants
+                                .FEATURE_NOTIFICATION_GUIDE_INCOGNITO_TAB_HELP_BUBBLE_FEATURE,
+                        R.string.feature_notification_guide_tooltip_message_incognito_tab,
+                        R.string.feature_notification_guide_tooltip_message_incognito_tab)
+                        .setAnchorView(mMenuButtonAnchorView)
+                        .setOnShowCallback(
+                                () -> turnOnHighlightForMenuItem(R.id.new_incognito_tab_menu_id))
                         .setOnDismissCallback(this::turnOffHighlightForMenuItem)
                         .build());
     }
@@ -327,7 +304,8 @@ public class ToolbarButtonInProductHelpController
     /** Show the Try Now UI for video tutorial download feature. */
     private void showVideoTutorialTryNowUIForDownload() {
         VideoTutorialTryNowTracker tryNowTracker = VideoTutorialServiceFactory.getTryNowTracker();
-        if (!tryNowTracker.didClickTryNowButton(FeatureType.DOWNLOAD)) {
+        if (!tryNowTracker.didClickTryNowButton(
+                    org.chromium.chrome.browser.video_tutorials.FeatureType.DOWNLOAD)) {
             return;
         }
 
@@ -343,7 +321,8 @@ public class ToolbarButtonInProductHelpController
                         .setOnShowCallback(() -> turnOnHighlightForMenuItem(menuItemId))
                         .setOnDismissCallback(this::turnOffHighlightForMenuItem)
                         .build());
-        tryNowTracker.tryNowUIShown(FeatureType.DOWNLOAD);
+        tryNowTracker.tryNowUIShown(
+                org.chromium.chrome.browser.video_tutorials.FeatureType.DOWNLOAD);
     }
 
     private void turnOnHighlightForMenuItem(Integer highlightMenuItemId) {

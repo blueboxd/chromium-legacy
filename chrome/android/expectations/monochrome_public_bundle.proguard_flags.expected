@@ -519,6 +519,15 @@
     public <init>();
 }
 
+# File: obj/third_party/androidx/androidx_lifecycle_lifecycle_viewmodel_java/proguard.txt
+-keepclassmembers,allowobfuscation class * extends androidx.lifecycle.ViewModel {
+    <init>();
+}
+
+-keepclassmembers,allowobfuscation class * extends androidx.lifecycle.AndroidViewModel {
+    <init>(android.app.Application);
+}
+
 # File: obj/third_party/androidx/androidx_lifecycle_lifecycle_viewmodel_savedstate_java/proguard.txt
 -keepclassmembers,allowobfuscation class * extends androidx.lifecycle.ViewModel {
     <init>(androidx.lifecycle.SavedStateHandle);
@@ -823,11 +832,6 @@
   <fields>;
 }
 
-# File: obj/third_party/android_deps/google_play_services_fido_java/proguard.txt
-# Methods enable and disable in this class are complained as unresolved
-# references, but they are system APIs and are not used by Fido client apps.
--dontwarn android.nfc.NfcAdapter
-
 # File: obj/third_party/android_deps/google_play_services_gcm_java/proguard.txt
 # Ensure that proguard will not strip the handleIntent method.
 -keepclassmembers class com.google.android.gms.gcm.GcmListenerService {
@@ -885,73 +889,3 @@
 -ignorewarnings
 # THIS LINE WAS OMITTED
 -repackageclasses ''
--keep @interface org.chromium.base.annotations.VerifiesOnNMR1
--if @org.chromium.base.annotations.VerifiesOnNMR1 class * {
-    *** *(...);
-}
--keep,allowobfuscation class <1> {
-    *** <2>(...);
-}
--keepclassmembers,allowobfuscation class ** {
-  @org.chromium.base.annotations.VerifiesOnNMR1 <methods>;
-}
--keep @interface org.chromium.base.annotations.VerifiesOnO
--if @org.chromium.base.annotations.VerifiesOnO class * {
-    *** *(...);
-}
--keep,allowobfuscation class <1> {
-    *** <2>(...);
-}
--keepclassmembers,allowobfuscation class ** {
-  @org.chromium.base.annotations.VerifiesOnO <methods>;
-}
--keep @interface org.chromium.base.annotations.VerifiesOnOMR1
--if @org.chromium.base.annotations.VerifiesOnOMR1 class * {
-    *** *(...);
-}
--keep,allowobfuscation class <1> {
-    *** <2>(...);
-}
--keepclassmembers,allowobfuscation class ** {
-  @org.chromium.base.annotations.VerifiesOnOMR1 <methods>;
-}
--keep @interface org.chromium.base.annotations.VerifiesOnP
--if @org.chromium.base.annotations.VerifiesOnP class * {
-    *** *(...);
-}
--keep,allowobfuscation class <1> {
-    *** <2>(...);
-}
--keepclassmembers,allowobfuscation class ** {
-  @org.chromium.base.annotations.VerifiesOnP <methods>;
-}
--keep @interface org.chromium.base.annotations.VerifiesOnQ
--if @org.chromium.base.annotations.VerifiesOnQ class * {
-    *** *(...);
-}
--keep,allowobfuscation class <1> {
-    *** <2>(...);
-}
--keepclassmembers,allowobfuscation class ** {
-  @org.chromium.base.annotations.VerifiesOnQ <methods>;
-}
--keep @interface org.chromium.base.annotations.VerifiesOnR
--if @org.chromium.base.annotations.VerifiesOnR class * {
-    *** *(...);
-}
--keep,allowobfuscation class <1> {
-    *** <2>(...);
-}
--keepclassmembers,allowobfuscation class ** {
-  @org.chromium.base.annotations.VerifiesOnR <methods>;
-}
--keep @interface org.chromium.base.annotations.VerifiesOnS
--if @org.chromium.base.annotations.VerifiesOnS class * {
-    *** *(...);
-}
--keep,allowobfuscation class <1> {
-    *** <2>(...);
-}
--keepclassmembers,allowobfuscation class ** {
-  @org.chromium.base.annotations.VerifiesOnS <methods>;
-}

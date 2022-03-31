@@ -92,15 +92,14 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
                       /*main_frame_name=*/"", /*opener=*/nullptr,
                       /*frame_policy=*/blink::FramePolicy());
 
-    const auto& site_info =
-        static_cast<SiteInstanceImpl*>(site_instance.get())->GetSiteInfo();
     // Use the same SessionStorageNamespace as the primary page for the
     // prerendering page.
     frame_tree_->controller().SetSessionStorageNamespace(
-        site_info.GetStoragePartitionId(site_instance->GetBrowserContext()),
+        site_instance->GetStoragePartitionConfig(),
         web_contents_.GetPrimaryFrameTree()
             .controller()
-            .GetSessionStorageNamespace(site_info));
+            .GetSessionStorageNamespace(
+                site_instance->GetStoragePartitionConfig()));
 
     // TODO(https://crbug.com/1199679): This should be moved to FrameTree::Init
     web_contents_.NotifySwappedFromRenderManager(
@@ -138,6 +137,12 @@ class PrerenderHost::PageHolder : public FrameTree::Delegate,
 
   void DidChangeLoadProgress() override {}
   bool IsHidden() override { return true; }
+  FrameTree* LoadingTree() override {
+    // For prerendering loading tree is the same as its frame tree as loading is
+    // done at a frame tree level in the background, unlike the loading visible
+    // to the user where we account for nested frame tree loading state.
+    return frame_tree_.get();
+  }
   void NotifyPageChanged(PageImpl& page) override {}
   int GetOuterDelegateFrameTreeNodeId() override {
     // A prerendered FrameTree is not "inner to" or "nested inside" another
@@ -643,8 +648,12 @@ bool PrerenderHost::AreCommonNavigationParamsCompatibleWithNavigation(
   // initial and activation prerender navigations, as the PrerenderHost
   // selection would have already checked for matching values. Adding a DCHECK
   // here to be safe.
-  DCHECK_EQ(potential_activation.url, common_params_->url);
-
+  if (attributes_.url_match_predicate) {
+    DCHECK(
+        attributes_.url_match_predicate.value().Run(potential_activation.url));
+  } else {
+    DCHECK_EQ(potential_activation.url, common_params_->url);
+  }
   if (potential_activation.initiator_origin !=
       common_params_->initiator_origin) {
     return false;
@@ -800,6 +809,18 @@ void PrerenderHost::SetInitialNavigation(NavigationRequest* navigation) {
   initial_navigation_id_ = navigation->GetNavigationId();
   begin_params_ = navigation->begin_params().Clone();
   common_params_ = navigation->common_params().Clone();
+}
+
+bool PrerenderHost::IsUrlMatch(const GURL& url) const {
+  // If the trigger defines its predicate, respect it.
+  if (attributes_.url_match_predicate) {
+    // Triggers are not allowed to treat a cross-origin url as a matched url. It
+    // would cause security risks.
+    if (!url::IsSameOriginWith(attributes_.prerendering_url, url))
+      return false;
+    return attributes_.url_match_predicate.value().Run(url);
+  }
+  return GetInitialUrl() == url;
 }
 
 void PrerenderHost::Cancel(FinalStatus status) {

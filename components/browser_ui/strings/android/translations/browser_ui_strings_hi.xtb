@@ -129,6 +129,7 @@
 <translation id="42981349822642051">विस्तृत करें</translation>
 <translation id="4336434711095810371">सारा डेटा मिटाएं</translation>
 <translation id="4402755511846832236">साइटों को यह जानने से रोकें कि आप इस डिवाइस का इस्तेमाल कब करते हैं</translation>
+<translation id="4428065317363009941">दिलचस्पी के मुताबिक विज्ञापन</translation>
 <translation id="4434045419905280838">पॉप-अप और रीडायरेक्ट</translation>
 <translation id="445467742685312942">साइटों को सभी सुरक्षित सामग्री चलाने दें</translation>
 <translation id="4468959413250150279">किसी खास साइट के लिए आवाज़ बंद करें.</translation>
@@ -159,6 +160,7 @@
 <translation id="5186036860380548585">यह विकल्प, स्क्रीन के सबसे ऊपरी हिस्से में उपलब्ध है</translation>
 <translation id="5197729504361054390">आप जो संपर्क चुनेंगे उन्हें <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> के साथ शेयर किया जाएगा.</translation>
 <translation id="5216942107514965959">साइट पर पिछली बार आज गए</translation>
+<translation id="5264323282659631142">'<ph name="CHIP_LABEL" />' हटाएं</translation>
 <translation id="528192093759286357">फ़ुल स्क्रीन से बाहर निकलने के लिए ऊपर से खींचें और वापस जाएं स्पर्श करें.</translation>
 <translation id="5300589172476337783">दिखाएं</translation>
 <translation id="5301954838959518834">ठीक है, समझ लिया</translation>
@@ -232,7 +234,6 @@
 <translation id="6790428901817661496">चलाएं</translation>
 <translation id="6818926723028410516">आइटम चुनें</translation>
 <translation id="6864395892908308021">इस डिवाइस के साथ NFC काम नहीं कर सकता</translation>
-<translation id="6910211073230771657">हटाया गया</translation>
 <translation id="6912998170423641340">साइटों को क्लिपबोर्ड से टेक्स्ट और इमेज पढ़ने से रोकें</translation>
 <translation id="6945221475159498467">चुनें</translation>
 <translation id="6965382102122355670">ठीक है</translation>
@@ -256,6 +257,7 @@
 <translation id="7554752735887601236">कोई साइट आपके माइक्रोफ़ोन का इस्तेमाल कर रही है</translation>
 <translation id="7561196759112975576">हमेशा</translation>
 <translation id="757524316907819857">साइटों को सुरक्षित सामग्री चलाने से रोकें</translation>
+<translation id="7577900504646297215">पसंद प्रबंधित करें</translation>
 <translation id="7649070708921625228">सहायता</translation>
 <translation id="7658239707568436148">अभी नहीं</translation>
 <translation id="7781829728241885113">बीता कल</translation>

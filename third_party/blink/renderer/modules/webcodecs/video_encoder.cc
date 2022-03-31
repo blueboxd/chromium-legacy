@@ -14,6 +14,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/clamped_math.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -202,7 +203,8 @@ VideoEncoderTraits::ParsedConfig* ParseConfigStatic(
       // Currently webcodecs doesn't expose peak bitrate
       // (assuming unconstrained VBR), here we just set peak as 10 times
       // target as a good enough way of expressing unconstrained VBR.
-      result->options.bitrate = media::Bitrate::VariableBitrate(bps, 10 * bps);
+      result->options.bitrate = media::Bitrate::VariableBitrate(
+          bps, base::ClampMul(bps, 10u).RawValue());
     }
   }
 
@@ -647,7 +649,7 @@ void VideoEncoder::ProcessEncode(Request* request) {
   DCHECK_EQ(state_, V8CodecState::Enum::kConfigured);
   DCHECK(media_encoder_);
   DCHECK_EQ(request->type, Request::Type::kEncode);
-  DCHECK_GT(requested_encodes_, 0);
+  DCHECK_GT(requested_encodes_, 0u);
 
   bool keyframe = request->encodeOpts->hasKeyFrameNonNull() &&
                   request->encodeOpts->keyFrameNonNull();
@@ -737,8 +739,7 @@ void VideoEncoder::ProcessEncode(Request* request) {
       // has different (non-sRGB) primaries.
       // https://crbug.com/1258245
       constexpr gfx::ColorSpace dst_color_space(
-          gfx::ColorSpace::PrimaryID::BT709,
-          gfx::ColorSpace::TransferID::IEC61966_2_1,
+          gfx::ColorSpace::PrimaryID::BT709, gfx::ColorSpace::TransferID::SRGB,
           gfx::ColorSpace::MatrixID::SMPTE170M,
           gfx::ColorSpace::RangeID::LIMITED);
       if (accelerated_frame_pool_->CopyRGBATextureToVideoFrame(

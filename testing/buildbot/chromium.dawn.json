@@ -28,7 +28,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -55,7 +55,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -82,7 +82,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -109,7 +109,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -188,14 +188,15 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_perf_tests/"
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu",
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--no-xvfb",
-          "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -205,6 +206,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -224,11 +230,12 @@
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu-with-backend-validation",
           "--timeout-ms=30000",
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--no-xvfb",
-          "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -238,6 +245,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests_with_backend_validation",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -282,7 +294,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -309,7 +321,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -336,7 +348,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -363,7 +375,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -442,14 +454,15 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_perf_tests/"
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu",
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--no-xvfb",
-          "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -459,6 +472,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -478,11 +496,12 @@
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu-with-backend-validation",
           "--timeout-ms=30000",
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--no-xvfb",
-          "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -492,6 +511,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests_with_backend_validation",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -536,7 +560,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -563,7 +587,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -590,7 +614,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -617,7 +641,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -696,14 +720,15 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_perf_tests/"
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu",
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--no-xvfb",
-          "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -713,6 +738,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -732,11 +762,12 @@
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu-with-backend-validation",
           "--timeout-ms=30000",
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--no-xvfb",
-          "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -746,6 +777,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests_with_backend_validation",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -790,7 +826,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -817,7 +853,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -844,7 +880,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -871,7 +907,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -950,14 +986,15 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_perf_tests/"
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu",
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--no-xvfb",
-          "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -967,6 +1004,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -986,11 +1028,12 @@
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu-with-backend-validation",
           "--timeout-ms=30000",
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--no-xvfb",
-          "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan"
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -1000,6 +1043,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests_with_backend_validation",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -1041,14 +1089,14 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-11.4|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1070,14 +1118,14 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-11.4|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1099,14 +1147,14 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-11.4|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1128,14 +1176,14 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-11.4|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1156,7 +1204,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-11.4|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1182,7 +1230,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-11.4|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1215,19 +1263,20 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-11.4|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_perf_tests/"
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu",
-          "--platform=mac-mac11"
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
+          "--platform=mac-mac11",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -1237,6 +1286,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -1248,7 +1302,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-11.4|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1259,10 +1313,11 @@
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu-with-backend-validation",
           "--timeout-ms=30000",
-          "--platform=mac-mac11"
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
+          "--platform=mac-mac11",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -1272,6 +1327,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests_with_backend_validation",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -1283,7 +1343,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-11.4|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1319,7 +1379,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1346,7 +1406,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1373,7 +1433,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1400,7 +1460,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1478,13 +1538,14 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_perf_tests/"
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu",
-          "--platform=mac-mac11"
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
+          "--platform=mac-mac11",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -1494,6 +1555,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -1514,10 +1580,11 @@
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu-with-backend-validation",
           "--timeout-ms=30000",
-          "--platform=mac-mac11"
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
+          "--platform=mac-mac11",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -1527,6 +1594,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests_with_backend_validation",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -1567,7 +1639,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-12.0|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1575,7 +1647,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1597,7 +1669,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-12.0|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1605,7 +1677,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1627,7 +1699,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-12.0|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1635,7 +1707,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1657,7 +1729,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-12.0|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1665,7 +1737,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1686,7 +1758,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-12.0|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1713,7 +1785,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-12.0|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1747,20 +1819,21 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-12.0|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
           "expiration": 21600,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_perf_tests/"
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu",
-          "--platform=mac-mac11"
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
+          "--platform=mac-mac11",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -1770,6 +1843,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -1781,7 +1859,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-12.0|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1793,10 +1871,11 @@
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu-with-backend-validation",
           "--timeout-ms=30000",
-          "--platform=mac-mac11"
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
+          "--platform=mac-mac11",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -1806,6 +1885,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests_with_backend_validation",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -1817,7 +1901,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-12.0|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1885,14 +1969,14 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-11.4|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1914,14 +1998,14 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-11.4|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1943,14 +2027,14 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-11.4|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -1972,14 +2056,14 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-11.4|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2000,7 +2084,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-11.4|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2026,7 +2110,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-11.4|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2059,19 +2143,20 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-11.4|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_perf_tests/"
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu",
-          "--platform=mac-mac11"
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
+          "--platform=mac-mac11",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -2081,6 +2166,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -2092,7 +2182,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-11.4|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2103,10 +2193,11 @@
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu-with-backend-validation",
           "--timeout-ms=30000",
-          "--platform=mac-mac11"
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
+          "--platform=mac-mac11",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -2116,6 +2207,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests_with_backend_validation",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -2127,7 +2223,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-11.4|Mac-12.1",
+              "os": "Mac-12.1",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2163,7 +2259,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2190,7 +2286,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2217,7 +2313,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2244,7 +2340,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2322,13 +2418,14 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_perf_tests/"
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu",
-          "--platform=mac-mac11"
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
+          "--platform=mac-mac11",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -2338,6 +2435,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -2358,10 +2460,11 @@
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu-with-backend-validation",
           "--timeout-ms=30000",
-          "--platform=mac-mac11"
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
+          "--platform=mac-mac11",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -2371,6 +2474,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests_with_backend_validation",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -2420,7 +2528,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2451,7 +2559,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2482,7 +2590,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2574,13 +2682,14 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_perf_tests/"
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu",
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--target=Release_x64",
+          "--git-revision=${got_revision}",
           "--timeout-ms=48000"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -2591,6 +2700,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -2641,7 +2755,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2667,7 +2781,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2693,7 +2807,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2719,7 +2833,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2796,13 +2910,14 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_perf_tests/"
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu",
-          "--target=Release_x64"
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
+          "--target=Release_x64",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -2812,6 +2927,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -2831,10 +2951,11 @@
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu-with-partial-backend-validation",
           "--timeout-ms=30000",
-          "--target=Release_x64"
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
+          "--target=Release_x64",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -2844,6 +2965,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests_with_partial_backend_validation",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -2887,7 +3013,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2913,7 +3039,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2939,7 +3065,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -2965,7 +3091,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3042,13 +3168,14 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_perf_tests/"
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu",
-          "--target=Release_x64"
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
+          "--target=Release_x64",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -3058,6 +3185,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -3077,10 +3209,11 @@
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu-with-partial-backend-validation",
           "--timeout-ms=30000",
-          "--target=Release_x64"
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
+          "--target=Release_x64",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -3090,6 +3223,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests_with_partial_backend_validation",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -3133,7 +3271,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3159,7 +3297,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3185,7 +3323,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3211,7 +3349,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3288,13 +3426,14 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_perf_tests/"
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu",
-          "--target=Release_x64"
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
+          "--target=Release_x64",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -3304,6 +3443,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -3323,10 +3467,11 @@
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu-with-partial-backend-validation",
           "--timeout-ms=30000",
-          "--target=Release_x64"
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
+          "--target=Release_x64",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -3336,6 +3481,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests_with_partial_backend_validation",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -3379,7 +3529,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3405,7 +3555,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3431,7 +3581,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3457,7 +3607,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3534,13 +3684,14 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_perf_tests/"
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu",
-          "--target=Release_x64"
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
+          "--target=Release_x64",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -3550,6 +3701,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -3569,10 +3725,11 @@
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu-with-partial-backend-validation",
           "--timeout-ms=30000",
-          "--target=Release_x64"
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
+          "--target=Release_x64",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -3582,6 +3739,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests_with_partial_backend_validation",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -3627,7 +3789,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3653,7 +3815,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3679,7 +3841,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3705,7 +3867,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3782,12 +3944,13 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_perf_tests/"
       },
       {
         "args": [
+          "--flag-specific=webgpu",
           "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
-          "--flag-specific=webgpu"
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -3797,6 +3960,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -3816,9 +3984,10 @@
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu-with-partial-backend-validation",
-          "--timeout-ms=30000"
+          "--timeout-ms=30000",
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -3828,6 +3997,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests_with_partial_backend_validation",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -3871,7 +4045,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3897,7 +4071,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3923,7 +4097,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -3949,7 +4123,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -4026,12 +4200,13 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_perf_tests/"
       },
       {
         "args": [
+          "--flag-specific=webgpu",
           "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
-          "--flag-specific=webgpu"
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -4041,6 +4216,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -4060,9 +4240,10 @@
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu-with-partial-backend-validation",
-          "--timeout-ms=30000"
+          "--timeout-ms=30000",
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -4072,6 +4253,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests_with_partial_backend_validation",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -4115,7 +4301,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -4141,7 +4327,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -4167,7 +4353,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -4193,7 +4379,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -4270,12 +4456,13 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_perf_tests/"
       },
       {
         "args": [
+          "--flag-specific=webgpu",
           "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
-          "--flag-specific=webgpu"
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -4285,6 +4472,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -4304,9 +4496,10 @@
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu-with-partial-backend-validation",
-          "--timeout-ms=30000"
+          "--timeout-ms=30000",
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -4316,6 +4509,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests_with_partial_backend_validation",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -4359,7 +4557,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -4385,7 +4583,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -4411,7 +4609,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -4437,7 +4635,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "dawn_end2end_tests",
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_end2end_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_end2end_tests/"
       },
       {
         "args": [
@@ -4514,12 +4712,13 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://third_party/dawn/src/tests:dawn_perf_tests/"
+        "test_id_prefix": "ninja://third_party/dawn/src/dawn/tests:dawn_perf_tests/"
       },
       {
         "args": [
+          "--flag-specific=webgpu",
           "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
-          "--flag-specific=webgpu"
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -4529,6 +4728,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },
@@ -4548,9 +4752,10 @@
       },
       {
         "args": [
-          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu-with-partial-backend-validation",
-          "--timeout-ms=30000"
+          "--timeout-ms=30000",
+          "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
+          "--git-revision=${got_revision}"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -4560,6 +4765,11 @@
           "script": "//third_party/blink/tools/merge_web_test_results.py"
         },
         "name": "webgpu_blink_web_tests_with_partial_backend_validation",
+        "precommit_args": [
+          "--gerrit-issue=${patch_issue}",
+          "--gerrit-patchset=${patch_set}",
+          "--buildbucket-id=${buildbucket_build_id}"
+        ],
         "resultdb": {
           "enable": true
         },

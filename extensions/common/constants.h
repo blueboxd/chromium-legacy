@@ -255,12 +255,6 @@ EXTENSIONS_EXPORT extern const char kQuickOfficeExtensionId[];
 // The extension id used for testing mimeHandlerPrivate.
 EXTENSIONS_EXPORT extern const char kMimeHandlerPrivateTestExtensionId[];
 
-// The extension id of the Chrome component application.
-EXTENSIONS_EXPORT extern const char kChromeAppId[];
-
-// Fake extension ID for the Lacros chrome browser application.
-EXTENSIONS_EXPORT extern const char kLacrosAppId[];
-
 // The extension id of the Files Manager application.
 EXTENSIONS_EXPORT extern const char kFilesManagerAppId[];
 

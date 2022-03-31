@@ -116,6 +116,15 @@ Compositor::Compositor(const viz::FrameSinkId& frame_sink_id,
   settings.use_occlusion_for_tile_prioritization = true;
   settings.main_frame_before_activation_enabled = false;
 
+  settings.release_tile_resources_for_hidden_layers =
+      base::FeatureList::IsEnabled(
+          features::kUiCompositorReleaseTileResourcesForHiddenLayers);
+
+  if (base::FeatureList::IsEnabled(features::kUiCompositorRequiredTilesOnly)) {
+    settings.memory_policy.priority_cutoff_when_visible =
+        gpu::MemoryAllocation::CUTOFF_ALLOW_REQUIRED_ONLY;
+  }
+
   // Disable edge anti-aliasing in order to increase support for HW overlays.
   settings.enable_edge_anti_aliasing = false;
 
@@ -389,6 +398,18 @@ void Compositor::SetRootLayer(Layer* root_layer) {
   root_web_layer_->RemoveAllChildren();
   if (root_layer_)
     root_layer_->SetCompositor(this, root_web_layer_);
+}
+
+void Compositor::DisableAnimations() {
+  DCHECK(animations_are_enabled_);
+  animations_are_enabled_ = false;
+  root_layer_->ResetCompositorForAnimatorsInTree(this);
+}
+
+void Compositor::EnableAnimations() {
+  DCHECK(!animations_are_enabled_);
+  animations_are_enabled_ = true;
+  root_layer_->SetCompositorForAnimatorsInTree(this);
 }
 
 cc::AnimationTimeline* Compositor::GetAnimationTimeline() const {

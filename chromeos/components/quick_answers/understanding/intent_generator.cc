@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_split.h"
@@ -136,6 +137,27 @@ IntentGenerator::~IntentGenerator() {
 }
 
 void IntentGenerator::GenerateIntent(const QuickAnswersRequest& request) {
+  if (chromeos::features::IsQuickAnswersAlwaysTriggerForSingleWord()) {
+    const std::u16string& u16_text = base::UTF8ToUTF16(request.selected_text);
+    base::i18n::BreakIterator iter(u16_text,
+                                   base::i18n::BreakIterator::BREAK_WORD);
+    if (!iter.Init() || !iter.Advance()) {
+      NOTREACHED() << "Failed to load BreakIterator.";
+
+      std::move(complete_callback_)
+          .Run(IntentInfo(request.selected_text, IntentType::kUnknown));
+      return;
+    }
+
+    // Generate dictionary intent if the selected text is a single word.
+    if (iter.IsWord() && iter.prev() == 0 && iter.pos() == u16_text.length()) {
+      std::move(complete_callback_)
+          .Run(IntentInfo(request.selected_text, IntentType::kDictionary,
+                          request.context.device_properties.language));
+      return;
+    }
+  }
+
   if (QuickAnswersState::Get()->ShouldUseQuickAnswersTextAnnotator()) {
     // Load text classifier.
     chromeos::machine_learning::ServiceConnection::GetInstance()
@@ -149,6 +171,10 @@ void IntentGenerator::GenerateIntent(const QuickAnswersRequest& request) {
 
   std::move(complete_callback_)
       .Run(IntentInfo(request.selected_text, IntentType::kUnknown));
+}
+
+void IntentGenerator::FlushForTesting() {
+  text_classifier_.FlushForTesting();
 }
 
 void IntentGenerator::LoadModelCallback(const QuickAnswersRequest& request,
@@ -208,8 +234,10 @@ void IntentGenerator::AnnotationCallback(
         return;
       }
       std::move(complete_callback_)
-          .Run(IntentInfo(entity_str, RewriteIntent(request.selected_text,
-                                                    entity_str, it->second)));
+          .Run(IntentInfo(
+              entity_str,
+              RewriteIntent(request.selected_text, entity_str, it->second),
+              request.context.device_properties.language));
       return;
     }
   }
@@ -260,8 +288,8 @@ void IntentGenerator::LanguageDetectorCallback(
           request.context.device_properties.preferred_languages)) {
     std::move(complete_callback_)
         .Run(IntentInfo(request.selected_text, IntentType::kTranslation,
-                        detected_language.value(),
-                        request.context.device_properties.language));
+                        request.context.device_properties.language,
+                        detected_language.value()));
     return;
   }
 

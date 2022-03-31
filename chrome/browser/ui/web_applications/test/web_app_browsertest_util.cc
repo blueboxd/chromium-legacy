@@ -31,7 +31,6 @@
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/test/service_worker_registration_waiter.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
-#include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -42,6 +41,7 @@
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
+#include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
@@ -127,8 +127,8 @@ AppId InstallWebAppFromPage(Browser* browser, const GURL& app_url) {
       base::BindOnce(&AutoAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&run_loop, &app_id](const AppId& installed_app_id,
-                               InstallResultCode code) {
-            DCHECK_EQ(code, InstallResultCode::kSuccessNewInstall);
+                               webapps::InstallResultCode code) {
+            DCHECK_EQ(code, webapps::InstallResultCode::kSuccessNewInstall);
             app_id = installed_app_id;
             run_loop.Quit();
           }));
@@ -156,8 +156,8 @@ AppId InstallWebAppFromManifest(Browser* browser, const GURL& app_url) {
       base::BindOnce(&AutoAcceptDialogCallback),
       base::BindLambdaForTesting(
           [&run_loop, &app_id](const AppId& installed_app_id,
-                               InstallResultCode code) {
-            DCHECK_EQ(code, InstallResultCode::kSuccessNewInstall);
+                               webapps::InstallResultCode code) {
+            DCHECK_EQ(code, webapps::InstallResultCode::kSuccessNewInstall);
             app_id = installed_app_id;
             run_loop.Quit();
           }));
@@ -170,7 +170,7 @@ Browser* LaunchWebAppBrowser(Profile* profile, const AppId& app_id) {
   content::WebContents* web_contents =
       apps::AppServiceProxyFactory::GetForProfile(profile)
           ->BrowserAppLauncher()
-          ->LaunchAppWithParams(apps::AppLaunchParams(
+          ->LaunchAppWithParamsForTesting(apps::AppLaunchParams(
               app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
               WindowOpenDisposition::CURRENT_TAB,
               apps::mojom::LaunchSource::kFromTest));
@@ -194,7 +194,7 @@ Browser* LaunchBrowserForWebAppInTab(Profile* profile, const AppId& app_id) {
   content::WebContents* web_contents =
       apps::AppServiceProxyFactory::GetForProfile(profile)
           ->BrowserAppLauncher()
-          ->LaunchAppWithParams(apps::AppLaunchParams(
+          ->LaunchAppWithParamsForTesting(apps::AppLaunchParams(
               app_id, apps::mojom::LaunchContainer::kLaunchContainerTab,
               WindowOpenDisposition::NEW_FOREGROUND_TAB,
               apps::mojom::LaunchSource::kFromTest));
@@ -221,7 +221,7 @@ ExternalInstallOptions CreateInstallOptions(const GURL& url) {
   return install_options;
 }
 
-InstallResultCode ExternallyManagedAppManagerInstall(
+webapps::InstallResultCode ExternallyManagedAppManagerInstall(
     Profile* profile,
     ExternalInstallOptions install_options) {
   DCHECK(profile);
@@ -229,7 +229,7 @@ InstallResultCode ExternallyManagedAppManagerInstall(
   DCHECK(provider);
   test::WaitUntilReady(provider);
   base::RunLoop run_loop;
-  InstallResultCode result_code;
+  webapps::InstallResultCode result_code;
 
   provider->externally_managed_app_manager().Install(
       std::move(install_options),
@@ -376,8 +376,12 @@ void BrowserWaiter::OnBrowserRemoved(Browser* browser) {
   removed_run_loop_.Quit();
 }
 
-UpdateAwaiter::UpdateAwaiter(WebAppRegistrar& registrar) {
-  scoped_observation_.Observe(&registrar);
+UpdateAwaiter::UpdateAwaiter(WebAppInstallManager& install_manager) {
+  scoped_observation_.Observe(&install_manager);
+}
+
+void UpdateAwaiter::OnWebAppInstallManagerDestroyed() {
+  scoped_observation_.Reset();
 }
 
 UpdateAwaiter::~UpdateAwaiter() = default;

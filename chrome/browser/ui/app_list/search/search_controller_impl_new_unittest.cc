@@ -45,7 +45,7 @@ class TestSearchResult : public ChromeSearchResult {
     SetCategory(category);
     scoring().best_match_rank = best_match_rank;
     set_relevance(relevance);
-    scoring().normalized_relevance = relevance;
+    scoring().ftrl_result_score = relevance;
   }
 
   TestSearchResult(const TestSearchResult&) = delete;
@@ -239,7 +239,7 @@ class SearchControllerImplNewTest : public testing::Test {
   void Wait() { task_environment_.RunUntilIdle(); }
 
   void ElapseBurnInPeriod() {
-    task_environment_.FastForwardBy(base::Milliseconds(200));
+    task_environment_.FastForwardBy(base::Seconds(1));
   }
 
  protected:
@@ -679,6 +679,32 @@ TEST_F(SearchControllerImplNewTest, ZeroStateResultsGetTimedOut) {
   // The slow provider should still publish when it returns.
   task_environment_.FastForwardBy(base::Seconds(1));
   ExpectIdOrder({"a", "b"});
+}
+
+TEST_F(SearchControllerImplNewTest, ContinueRanksDriveAboveLocal) {
+  // Use the full ranking stack.
+  search_controller_->set_ranker_delegate_for_test(
+      std::make_unique<RankerDelegate>(&profile_, search_controller_.get()));
+
+  auto drive_provider = std::make_unique<TestSearchProvider>(
+      Result::kZeroStateDrive, true, base::Seconds(0));
+  auto local_provider = std::make_unique<TestSearchProvider>(
+      Result::kZeroStateFile, true, base::Seconds(0));
+
+  drive_provider->SetNextResults(MakeResults(
+      {"drive_a", "drive_b"}, {Category::kUnknown, Category::kUnknown},
+      {-1, -1}, {0.2, 0.1}));
+  local_provider->SetNextResults(MakeResults(
+      {"local_a", "local_b"}, {Category::kUnknown, Category::kUnknown},
+      {-1, -1}, {0.5, 0.4}));
+
+  search_controller_->AddProvider(0, std::move(local_provider));
+  search_controller_->AddProvider(0, std::move(drive_provider));
+
+  search_controller_->StartZeroState(base::DoNothing(), base::Seconds(1));
+
+  Wait();
+  ExpectIdOrder({"drive_a", "drive_b", "local_a", "local_b"});
 }
 
 }  // namespace app_list

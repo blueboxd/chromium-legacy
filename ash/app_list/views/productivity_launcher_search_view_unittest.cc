@@ -84,10 +84,10 @@ class ProductivityLauncherSearchViewTest
           std::make_unique<TestSearchResult>();
       result->set_result_id(base::NumberToString(init_id + i));
       result->set_display_type(ash::SearchResultDisplayType::kList);
-      result->set_title(
+      result->SetTitle(
           base::UTF8ToUTF16(base::StringPrintf("Result %d", init_id + i)));
       result->set_display_score(display_score);
-      result->set_details(u"Detail");
+      result->SetDetails(u"Detail");
       result->set_best_match(best_match);
       result->set_category(category);
       results->Add(std::move(result));
@@ -103,9 +103,9 @@ class ProductivityLauncherSearchViewTest
         std::make_unique<TestSearchResult>();
     result->set_result_id(base::NumberToString(init_id));
     result->set_display_type(ash::SearchResultDisplayType::kAnswerCard);
-    result->set_title(base::UTF8ToUTF16(base::StringPrintf("Answer Card")));
+    result->SetTitle(base::UTF8ToUTF16(base::StringPrintf("Answer Card")));
     result->set_display_score(1000);
-    result->set_details(u"Answer Card Details");
+    result->SetDetails(u"Answer Card Details");
     result->set_best_match(false);
     results->Add(std::move(result));
 
@@ -172,8 +172,6 @@ INSTANTIATE_TEST_SUITE_P(Tablet,
 
 TEST_P(ProductivityLauncherSearchViewTest, AnimateSearchResultView) {
   // Enable animations.
-  base::test::ScopedFeatureList feature(
-      features::kProductivityLauncherAnimation);
   ui::ScopedAnimationDurationScaleMode duration(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
@@ -226,6 +224,36 @@ TEST_P(ProductivityLauncherSearchViewTest, ResultContainerIsVisible) {
       GetProductivityLauncherSearchView()->result_container_views_for_test();
   ASSERT_EQ(static_cast<int>(result_containers.size()), kResultContainersCount);
   EXPECT_TRUE(result_containers[0]->GetVisible());
+}
+
+TEST_P(ProductivityLauncherSearchViewTest,
+       SearchResultsAreVisibleDuringHidePageAnimation) {
+  auto* helper = GetAppListTestHelper();
+  helper->ShowAppList();
+
+  // Press a key to start a search.
+  PressAndReleaseKey(ui::VKEY_A);
+
+  // Populate answer card result.
+  auto* results = helper->GetSearchResults();
+  SetUpAnswerCardResult(results, 1, 1);
+  auto* search_view = GetProductivityLauncherSearchView();
+  search_view->OnSearchResultContainerResultsChanged();
+
+  // Enable animations.
+  ui::ScopedAnimationDurationScaleMode duration(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Press backspace to delete the query and switch back to the apps page.
+  PressAndReleaseKey(ui::VKEY_BACK);
+  search_view->OnSearchResultContainerResultsChanged();
+
+  // Result is visible during hide animation.
+  std::vector<SearchResultContainerView*> result_containers =
+      search_view->result_container_views_for_test();
+  ASSERT_EQ(static_cast<int>(result_containers.size()), kResultContainersCount);
+  EXPECT_TRUE(result_containers[0]->GetVisible());
+  EXPECT_TRUE(result_containers[0]->GetResultViewAt(0)->GetVisible());
 }
 
 // Tests that key traversal correctly cycles between the list of results and

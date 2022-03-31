@@ -729,14 +729,27 @@
   <message name="IDS_OOBE_EULA_SECTION_TITLE" desc="Title of Terms of Service screen">
     Google terms of service
   </message>
-  <message name="IDS_OOBE_EULA_IFRAME_LABEL" desc="Accessibility label on an iframe with full Chrome OS Terms text">
-    Google Chrome OS Terms contents
-  </message>
-  <message name="IDS_OOBE_EULA_ADDITIONAL_TERMS" desc="Text of the Link to Google Chrome and Chrome OS additional terms">
-    Google Chrome and Chrome OS Additional Terms
-  </message>
+  <if expr="reven">
+    <message name="IDS_OOBE_EULA_IFRAME_LABEL" desc="Accessibility label on an iframe with full Chrome OS Terms text">
+      Google CloudReady 2.0 Terms contents
+    </message>
+    <message name="IDS_OOBE_EULA_ADDITIONAL_TERMS" desc="Text of the Link to Google Chrome and Chrome OS additional terms">
+      Google Chrome and CloudReady 2.0 Additional Terms
+    </message>
+  </if>
+  <if expr="not reven">
+    <message name="IDS_OOBE_EULA_IFRAME_LABEL" desc="Accessibility label on an iframe with full Chrome OS Terms text">
+      Google Chrome OS Terms contents
+    </message>
+    <message name="IDS_OOBE_EULA_ADDITIONAL_TERMS" desc="Text of the Link to Google Chrome and Chrome OS additional terms">
+      Google Chrome and Chrome OS Additional Terms
+    </message>
+  </if>
   <message name="IDS_OOBE_EULA_ACCEPT_AND_CONTINUE_BUTTON_TEXT" desc="Label on a button on the Title of Terms of Service OOBE screen to accept EULA and continue.">
     Accept and continue
+  </message>
+  <message name="IDS_OOBE_ACCESSIBLE_SCREEN_NAME" desc="Text that is spoken when requesting OOBE screen name">
+    Login Dialog
   </message>
 
   <!-- Strings for the Bluetooth pairing dialog -->
@@ -853,33 +866,6 @@
   </message>
   <message name="IDS_BLUETOOTH_PAIRING_ENTER_KEYS" desc="Bluetooth pairing dialog: Message displayed informing the user to enter the keys below on the device being paired.">
     Enter these keys on <ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>
-  </message>
-    <message name="IDS_BLUETOOTH_PAIRINGS_DEVICE_ITEM_A11Y_LABEL_UNKNOWN" desc="Bluetooth pairing UI: Accessibility label used for a device of unknown type in a list of devices which can be paired.">
-    Device <ph name="DEVICE_INDEX">$1<ex>1</ex></ph> of <ph name="DEVICE_COUNT">$2<ex>15</ex></ph>, Unknown device named <ph name="DEVICE_NAME">$3<ex>Beats</ex></ph>
-  </message>
-  <message name="IDS_BLUETOOTH_PAIRINGS_DEVICE_ITEM_A11Y_LABEL_COMPUTER" desc="Bluetooth pairing UI: Accessibility label used for a computer device in a list of devices which can be paired.">
-    Device <ph name="DEVICE_INDEX">$1<ex>1</ex></ph> of <ph name="DEVICE_COUNT">$2<ex>15</ex></ph>, Computer named <ph name="DEVICE_NAME">$3<ex>Beats</ex></ph>
-  </message>
-  <message name="IDS_BLUETOOTH_PAIRINGS_DEVICE_ITEM_A11Y_LABEL_PHONE" desc="Bluetooth pairing UI: Accessibility label used for a phone device in a list of devices which can be paired.">
-    Device <ph name="DEVICE_INDEX">$1<ex>1</ex></ph> of <ph name="DEVICE_COUNT">$2<ex>15</ex></ph>, Phone named <ph name="DEVICE_NAME">$3<ex>Beats</ex></ph>
-  </message>
-  <message name="IDS_BLUETOOTH_PAIRINGS_DEVICE_ITEM_A11Y_LABEL_HEADSET" desc="Bluetooth pairing UI: Accessibility label used for an audio device in a list of devices which can be paired.">
-    Device <ph name="DEVICE_INDEX">$1<ex>1</ex></ph> of <ph name="DEVICE_COUNT">$2<ex>15</ex></ph>, Audio device named <ph name="DEVICE_NAME">$3<ex>Beats</ex></ph>
-  </message>
-  <message name="IDS_BLUETOOTH_PAIRINGS_DEVICE_ITEM_A11Y_LABEL_VIDEO_CAMERA" desc="Bluetooth pairing UI: Accessibility label used for a video camera device in a list of devices which can be paired.">
-    Device <ph name="DEVICE_INDEX">$1<ex>1</ex></ph> of <ph name="DEVICE_COUNT">$2<ex>15</ex></ph>, Video camera named <ph name="DEVICE_NAME">$3<ex>Beats</ex></ph>
-  </message>
-  <message name="IDS_BLUETOOTH_PAIRINGS_DEVICE_ITEM_A11Y_LABEL_GAME_CONTROLLER" desc="Bluetooth pairing UI: Accessibility label used for a game controller device in a list of devices which can be paired.">
-    Device <ph name="DEVICE_INDEX">$1<ex>1</ex></ph> of <ph name="DEVICE_COUNT">$2<ex>15</ex></ph>, Game controller named <ph name="DEVICE_NAME">$3<ex>Beats</ex></ph>
-  </message>
-  <message name="IDS_BLUETOOTH_PAIRINGS_DEVICE_ITEM_A11Y_LABEL_KEYBOARD" desc="Bluetooth pairing UI: Accessibility label used for a keyboard device in a list of devices which can be paired.">
-    Device <ph name="DEVICE_INDEX">$1<ex>1</ex></ph> of <ph name="DEVICE_COUNT">$2<ex>15</ex></ph>, Keyboard named <ph name="DEVICE_NAME">$3<ex>Beats</ex></ph>
-  </message>
-  <message name="IDS_BLUETOOTH_PAIRINGS_DEVICE_ITEM_A11Y_LABEL_MOUSE" desc="Bluetooth pairing UI: Accessibility label used for a mouse device in a list of devices which can be paired.">
-    Device <ph name="DEVICE_INDEX">$1<ex>1</ex></ph> of <ph name="DEVICE_COUNT">$2<ex>15</ex></ph>, Mouse named <ph name="DEVICE_NAME">$3<ex>Beats</ex></ph>
-  </message>
-  <message name="IDS_BLUETOOTH_PAIRINGS_DEVICE_ITEM_A11Y_LABEL_TABLET" desc="Bluetooth pairing UI: Accessibility label used for a tablet device in a list of devices which can be paired.">
-    Device <ph name="DEVICE_INDEX">$1<ex>1</ex></ph> of <ph name="DEVICE_COUNT">$2<ex>15</ex></ph>, Tablet named <ph name="DEVICE_NAME">$3<ex>Beats</ex></ph>
   </message>
   <message name="IDS_BLUETOOTH_PAIRINGS_DEVICE_ITEM_SECONDARY_ERROR_A11Y_LABEL" desc="Bluetooth pairing dialog: Accessibility label for unpaired Bluetooth device list item, when pairing to a device fails.">
     Couldn't pair to device <ph name="DEVICE_NAME">$1<ex>Beats</ex></ph>; select device to try again
@@ -1243,20 +1229,39 @@
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE_WITH_DEVICE" desc="Alternate title for the dialog that explains Chrome Sync and privacy options on first login.">
     Sync your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
   </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE_WITH_ARC_RESTRICTED" desc="Alternate title for the dialog that explains Chrome Sync and privacy options on first login.">
+    Get your apps, settings, and more on any ChromeOS device
+  </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_SUBTITLE" desc="The subtitle of the dialog that explains Chrome Sync and privacy options on first login.">
     The following services help keep your data safe and secure. You can turn these features off at any time.
   </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_SUBTITLE_2" desc="Alternate subtitle of the dialog that explains Chrome Sync and privacy options on first login for non-split.">
-    Your saved preferences and activity will be ready on any Chrome OS device when you sign in with your Google Account. You can choose what to sync in Settings.
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_NAME" desc="Title of the 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
-    Chrome OS settings sync
-  </message>
+  <if expr="reven">
+    <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_SUBTITLE_2" desc="Alternate subtitle of the dialog that explains Chrome Sync and privacy options on first login for non-split.">
+      Your saved preferences and activity will be ready on any CloudReady 2.0 device when you sign in with your Google Account. You can choose what to sync in Settings.
+    </message>
+    <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_NAME" desc="Title of the 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
+      CloudReady 2.0 settings sync
+    </message>
+    <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_DESCRIPTION" desc="Description of 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
+      Your apps, settings, and other customizations will be synced across all CloudReady 2.0 devices signed in with your Google Account.
+    </message>
+  </if>
+  <if expr="not reven">
+    <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_SUBTITLE_2" desc="Alternate subtitle of the dialog that explains Chrome Sync and privacy options on first login for non-split.">
+      Your saved preferences and activity will be ready on any Chrome OS device when you sign in with your Google Account. You can choose what to sync in Settings.
+    </message>
+    <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_NAME" desc="Title of the 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
+      Chrome OS settings sync
+    </message>
+    <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_DESCRIPTION" desc="Description of 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
+      Your apps, settings, and other customizations will be synced across all Chrome OS devices signed in with your Google Account.
+    </message>
+  </if>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_NAME_2" desc="Alternate title of the 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
     Sync your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> apps, settings, and more
   </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_DESCRIPTION" desc="Description of 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
-    Your apps, settings, and other customizations will be synced across all Chrome OS devices signed in with your Google Account.
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_DESCRIPTION_WITH_ARC_RESTRICTED" desc="Alternate description of the sync confirmation dialog that is displayed on the first user log in.">
+    Sync your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> so your preferences will be ready on any device when you sign in with your Google Account. Preferences include apps, settings, Wi-Fi passwords, languages, wallpaper, keyboard shortcuts, and more.
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_BROWSER_SYNC_NAME" desc="Title of the 'Chrome browser sync' section of the sync confirmation dialog that is displayed on the first user log in.">
     Chrome browser sync
@@ -1284,6 +1289,9 @@
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_REVIEW_SYNC_OPTIONS_LATER" desc="The label to the checkbox explaining that when checked, it will trigger user settings screen opened after session start.">
     Review sync options following setup
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_REVIEW_SYNC_OPTIONS_LATER_ARC_RESTRICTED" desc="Alternate string for the label to the checkbox explaining that when checked, it will trigger user settings screen opened after session start.">
+    Review device sync after setup
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE" desc="The label on the button that closes dialog while accepting the selected settings.">
     Accept and continue
@@ -1791,18 +1799,32 @@
   <message name="IDS_EULA_SYSTEM_SECURITY_SETTING" desc="Link from the EULA wizard screen and title of the TPM info dialog">
     System security setting
   </message>
-  <message name="IDS_EULA_TPM_DESCRIPTION" desc="Dialog box text">
-    Your computer contains a Trusted Platform Module (TPM) security device, which is used to implement many critical security features in Chrome OS. Visit the Chromebook Help Center to learn more: https://support.google.com/chromebook/?p=tpm
-  </message>
+  <if expr="reven">
+    <message name="IDS_EULA_TPM_DESCRIPTION" desc="Dialog box text">
+      Your computer contains a Trusted Platform Module (TPM) security device, which is used to implement many critical security features in CloudReady 2.0. Visit the Chromebook Help Center to learn more: https://support.google.com/chromebook/?p=tpm
+    </message>
+  </if>
+  <if expr="not reven">
+    <message name="IDS_EULA_TPM_DESCRIPTION" desc="Dialog box text">
+      Your computer contains a Trusted Platform Module (TPM) security device, which is used to implement many critical security features in Chrome OS. Visit the Chromebook Help Center to learn more: https://support.google.com/chromebook/?p=tpm
+    </message>
+  </if>
   <message name="IDS_EULA_RLZ_DESCRIPTION" desc="Dialog box text">
     Your computer also comes with <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>'s RLZ library built in. RLZ assigns a non-unique, non-personally identifiable tag to measure the searches and <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> usage driven by a particular promotional campaign. These labels sometimes appear in Google Search queries in <ph name="PRODUCT_NAME">$2<ex>Google Chrome</ex></ph>.
   </message>
   <message name="IDS_EULA_RLZ_ENABLE" desc="Check box text for enabling RLZ tracking on TPM/RLZ info dialog.">
     Enable RLZ tracking on <ph name="SHORT_PRODUCT_OS_NAME">$1<ex>Chrome OS</ex></ph>.
   </message>
-  <message name="IDS_EULA_SECURE_MODULE_DESCRIPTION" desc="Description of what a secure module does in the eula page.">
-    Your computer contains a secure module, which is used to implement many critical security features in Chrome OS. Visit the Chromebook Help Center to learn more: https://support.google.com/chromebook/?p=sm
-  </message>
+  <if expr="reven">
+    <message name="IDS_EULA_SECURE_MODULE_DESCRIPTION" desc="Description of what a secure module does in the eula page.">
+      Your computer contains a secure module, which is used to implement many critical security features in CloudReady 2.0. Visit the Chromebook Help Center to learn more: https://support.google.com/chromebook/?p=sm
+    </message>
+  </if>
+  <if expr="not reven">
+    <message name="IDS_EULA_SECURE_MODULE_DESCRIPTION" desc="Description of what a secure module does in the eula page.">
+      Your computer contains a secure module, which is used to implement many critical security features in Chrome OS. Visit the Chromebook Help Center to learn more: https://support.google.com/chromebook/?p=sm
+    </message>
+  </if>
   <message name="IDS_ENABLE_DEBUGGING_SCREEN_TITLE" desc="Title of the enable debugging features screen">
     Enable debugging features
   </message>
@@ -1821,9 +1843,16 @@
   <message name="IDS_ENABLE_DEBUGGING_ENABLE_BUTTON" desc="Button for enabling debugging features shown on enable debugging dialog.">
     Enable
   </message>
-  <message name="IDS_ENABLE_DEBUGGING_SETUP_MESSAGE" desc="Setup message in dialog for enabling debugging features.">
-   You are enabling Chrome OS debugging features which will set up sshd daemon and enable booting from USB drives.
-  </message>
+  <if expr="reven">
+    <message name="IDS_ENABLE_DEBUGGING_SETUP_MESSAGE" desc="Setup message in dialog for enabling debugging features.">
+      You are enabling CloudReady 2.0 debugging features which will set up sshd daemon and enable booting from USB drives.
+    </message>
+  </if>
+  <if expr="not reven">
+    <message name="IDS_ENABLE_DEBUGGING_SETUP_MESSAGE" desc="Setup message in dialog for enabling debugging features.">
+      You are enabling Chrome OS debugging features which will set up sshd daemon and enable booting from USB drives.
+    </message>
+  </if>
   <message name="IDS_ENABLE_DEBUGGING_DONE_MESSAGE" desc="Completion message in dialog for enabling debugging features.">
     You have successfully enabled debugging features on this <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device.
   </message>
@@ -1845,26 +1874,50 @@
   <message name="IDS_ENABLE_DEBUGGING_EMPTY_ROOT_PASSWORD_LABEL" desc="Text for root password entry field label from enable debugging features dialog.">
     leave empty if you want to set the root password to the default test image value
   </message>
-  <message name="IDS_ENABLE_DEBUGGING_HELP" desc="Help content of the enable debugging features dialog.">
-    <ph name="BEGIN_H3">&lt;h3&gt;</ph>Debugging Features<ph name="END_H3">&lt;/h3&gt;</ph>
-    <ph name="BR">&lt;br&gt;</ph>
-    You can enable the debugging features on your Chrome OS Device in order to install and test custom code on your device.  This will allow you to:<ph name="BR">&lt;br&gt;</ph>
-    <ph name="BEGIN_LIST">&lt;ul&gt;</ph>
-      <ph name="LIST_ITEM">&lt;li&gt;</ph>Remove rootfs verification so you can modify OS files
-      <ph name="LIST_ITEM">&lt;li&gt;</ph>Enable SSH access to the device using the standard test keys so you can use tools such as <ph name="BEGIN_CODE">&lt;span style=&quot;color:grey;font-family:monospace&quot;&gt;</ph>&apos;cros flash&apos;<ph name="END_CODE">&lt;/span&gt;</ph> to access the device
-      <ph name="LIST_ITEM">&lt;li&gt;</ph>Enable booting from USB so you can install an OS image from a USB drive
-      <ph name="LIST_ITEM">&lt;li&gt;</ph>Set both the dev and the system root login password to a custom value so you can manually SSH into the device
-    <ph name="END_LIST">&lt;/ul&gt;</ph>
-    <ph name="BR">&lt;br&gt;</ph>
-    Once enabled, most of the debugging features will remain enabled even after performing a powerwash or wiping the data on an enterprise managed device.  To fully disable all debugging features, complete the Chrome OS recovery process (https://support.google.com/chromebook/answer/1080595).
-    <ph name="BR">&lt;br&gt;</ph>
-    <ph name="BR">&lt;br&gt;</ph>
-    For more information about the debugging features see:<ph name="BR">&lt;br&gt;</ph>
-    https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-features
-    <ph name="BR">&lt;br&gt;</ph>
-    <ph name="BR">&lt;br&gt;</ph>
-    <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Note:<ph name="END_BOLD">&lt;/b&gt;</ph>  The system will reboot during the process.
-  </message>
+  <if expr="reven">
+    <message name="IDS_ENABLE_DEBUGGING_HELP" desc="Help content of the enable debugging features dialog.">
+      <ph name="BEGIN_H3">&lt;h3&gt;</ph>Debugging Features<ph name="END_H3">&lt;/h3&gt;</ph>
+      <ph name="BR">&lt;br&gt;</ph>
+      You can enable the debugging features on your CloudReady 2.0 Device in order to install and test custom code on your device.  This will allow you to:<ph name="BR">&lt;br&gt;</ph>
+      <ph name="BEGIN_LIST">&lt;ul&gt;</ph>
+        <ph name="LIST_ITEM">&lt;li&gt;</ph>Remove rootfs verification so you can modify OS files
+        <ph name="LIST_ITEM">&lt;li&gt;</ph>Enable SSH access to the device using the standard test keys so you can use tools such as <ph name="BEGIN_CODE">&lt;span style=&quot;color:grey;font-family:monospace&quot;&gt;</ph>&apos;cros flash&apos;<ph name="END_CODE">&lt;/span&gt;</ph> to access the device
+        <ph name="LIST_ITEM">&lt;li&gt;</ph>Enable booting from USB so you can install an OS image from a USB drive
+        <ph name="LIST_ITEM">&lt;li&gt;</ph>Set both the dev and the system root login password to a custom value so you can manually SSH into the device
+      <ph name="END_LIST">&lt;/ul&gt;</ph>
+      <ph name="BR">&lt;br&gt;</ph>
+      Once enabled, most of the debugging features will remain enabled even after performing a powerwash or wiping the data on an enterprise managed device.  To fully disable all debugging features, complete the Chrome OS recovery process (https://support.google.com/chromebook/answer/1080595).
+      <ph name="BR">&lt;br&gt;</ph>
+      <ph name="BR">&lt;br&gt;</ph>
+      For more information about the debugging features see:<ph name="BR">&lt;br&gt;</ph>
+      https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-features
+      <ph name="BR">&lt;br&gt;</ph>
+      <ph name="BR">&lt;br&gt;</ph>
+      <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Note:<ph name="END_BOLD">&lt;/b&gt;</ph>  The system will reboot during the process.
+    </message>
+  </if>
+  <if expr="not reven">
+    <message name="IDS_ENABLE_DEBUGGING_HELP" desc="Help content of the enable debugging features dialog.">
+      <ph name="BEGIN_H3">&lt;h3&gt;</ph>Debugging Features<ph name="END_H3">&lt;/h3&gt;</ph>
+      <ph name="BR">&lt;br&gt;</ph>
+      You can enable the debugging features on your Chrome OS Device in order to install and test custom code on your device.  This will allow you to:<ph name="BR">&lt;br&gt;</ph>
+      <ph name="BEGIN_LIST">&lt;ul&gt;</ph>
+        <ph name="LIST_ITEM">&lt;li&gt;</ph>Remove rootfs verification so you can modify OS files
+        <ph name="LIST_ITEM">&lt;li&gt;</ph>Enable SSH access to the device using the standard test keys so you can use tools such as <ph name="BEGIN_CODE">&lt;span style=&quot;color:grey;font-family:monospace&quot;&gt;</ph>&apos;cros flash&apos;<ph name="END_CODE">&lt;/span&gt;</ph> to access the device
+        <ph name="LIST_ITEM">&lt;li&gt;</ph>Enable booting from USB so you can install an OS image from a USB drive
+        <ph name="LIST_ITEM">&lt;li&gt;</ph>Set both the dev and the system root login password to a custom value so you can manually SSH into the device
+      <ph name="END_LIST">&lt;/ul&gt;</ph>
+      <ph name="BR">&lt;br&gt;</ph>
+      Once enabled, most of the debugging features will remain enabled even after performing a powerwash or wiping the data on an enterprise managed device.  To fully disable all debugging features, complete the Chrome OS recovery process (https://support.google.com/chromebook/answer/1080595).
+      <ph name="BR">&lt;br&gt;</ph>
+      <ph name="BR">&lt;br&gt;</ph>
+      For more information about the debugging features see:<ph name="BR">&lt;br&gt;</ph>
+      https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-features
+      <ph name="BR">&lt;br&gt;</ph>
+      <ph name="BR">&lt;br&gt;</ph>
+      <ph name="BEGIN_BOLD">&lt;b&gt;</ph>Note:<ph name="END_BOLD">&lt;/b&gt;</ph>  The system will reboot during the process.
+    </message>
+  </if>
   <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_SETUP_TITLE" desc="Title of the enable ARC ADB Sideloading screen upon reboot">
     Enable ADB debugging?
   </message>
@@ -1944,9 +1997,16 @@
   <message name="IDS_WRONG_HWID_SCREEN_HEADER" desc="Header of message shown on screen notifying about malformed hardware ID.">
     A factory error has been detected
   </message>
-  <message name="IDS_WRONG_HWID_SCREEN_MESSAGE_FIRST_PART" desc="Warning message shown on screen notifying about malformed hardware ID. First paragraph.">
-    Unfortunately, your computer is configured with a malformed hardware ID. This prevents Chrome OS from updating with the latest security fixes and your computer <ph name="BEGIN_BOLD">&lt;b&gt;</ph>may be vulnerable to malicious attacks<ph name="END_BOLD">&lt;/b&gt;</ph>.
-  </message>
+  <if expr="reven">
+    <message name="IDS_WRONG_HWID_SCREEN_MESSAGE_FIRST_PART" desc="Warning message shown on screen notifying about malformed hardware ID. First paragraph.">
+      Unfortunately, your computer is configured with a malformed hardware ID. This prevents CloudReady 2.0 from updating with the latest security fixes and your computer <ph name="BEGIN_BOLD">&lt;b&gt;</ph>may be vulnerable to malicious attacks<ph name="END_BOLD">&lt;/b&gt;</ph>.
+    </message>
+  </if>
+  <if expr="not reven">
+    <message name="IDS_WRONG_HWID_SCREEN_MESSAGE_FIRST_PART" desc="Warning message shown on screen notifying about malformed hardware ID. First paragraph.">
+      Unfortunately, your computer is configured with a malformed hardware ID. This prevents Chrome OS from updating with the latest security fixes and your computer <ph name="BEGIN_BOLD">&lt;b&gt;</ph>may be vulnerable to malicious attacks<ph name="END_BOLD">&lt;/b&gt;</ph>.
+    </message>
+  </if>
   <message name="IDS_WRONG_HWID_SCREEN_MESSAGE_SECOND_PART" desc="Warning message shown on screen notifying about malformed hardware ID. Second paragraph.">
     Please contact your hardware manufacturer immediately to send your computer to a repair facility.
   </message>
@@ -2625,9 +2685,16 @@
   <message name="IDS_FILEMANAGER_APP_NAME" desc="Name for the File Manager app.">
     Files
   </message>
-  <message name="IDS_FILEMANAGER_APP_DESCRIPTION" desc="Description for the File Manager app.">
-    The Files app provides quick access to files that you've saved on Google Drive, external storage, or your Chrome OS device.
-  </message>
+  <if expr="reven">
+    <message name="IDS_FILEMANAGER_APP_DESCRIPTION" desc="Description for the File Manager app.">
+      The Files app provides quick access to files that you've saved on Google Drive, external storage, or your CloudReady 2.0 device.
+    </message>
+  </if>
+  <if expr="not reven">
+    <message name="IDS_FILEMANAGER_APP_DESCRIPTION" desc="Description for the File Manager app.">
+      The Files app provides quick access to files that you've saved on Google Drive, external storage, or your Chrome OS device.
+    </message>
+  </if>
 
   <!-- Network portal notification -->
   <message name="IDS_PORTAL_DETECTION_NOTIFICATION_TITLE_WIRED" desc="Title for the system notification that current wired network is behind captive portal">
@@ -2919,6 +2986,9 @@
   <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS_TITLE" desc="Title of the screen to be shown once enterprise enrollment completes.">
     Enterprise enrollment complete
   </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS_ENTERPRISE_ICON_EXPLANATION" desc="Title of the screen to be shown once enterprise enrollment completes.">
+    You will see this Managed icon when a setting or feature is managed by your administrator.
+  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_SUCCESS" desc="Success message to be shown once enterprise enrollment completes.">
     Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> has successfully been enrolled for enterprise management.
   </message>
@@ -3180,6 +3250,15 @@
   </message>
   <message name="IDS_NETWORK_UI_RESET_ESIM_PROFILES_BUTTON_TEXT" desc="Text for button in the debug networking page which allows developers and QA testers to reset the cache of eSIM profile metadata stored in Chrome OS. After this button is clicked, Chrome needs to request that the hardware re-scan for installed profiles.">
     Reset eSIM profile cache
+  </message>
+  <message name="IDS_NETWORK_UI_DISABLE_ESIM_PROFILES_LABEL" desc="Label for section of the debug networking page which allows developers and QA testers to disable eSIM profiles.">
+    Disable eSIM profiles
+  </message>
+  <message name="IDS_NETWORK_UI_DISABLE_ACTIVE_ESIM_PROFILE_BUTTON_TEXT" desc="Text for button which, when pressed, disables the active eSIM profile.">
+    Disable active eSIM profile
+  </message>
+  <message name="IDS_NETWORK_UI_RESET_EUICC_LABEL" desc="Label and button text for section of the debug networking page which allows developers and QA testers to reset Euicc.">
+    Reset eSIM
   </message>
   <message name="IDS_NETWORK_UI_ADD_NEW_WIFI_LABEL" desc="Label for section dealing with showing the 'Add new Wi-Fi network' dialog.">
     New Wi-Fi Network Dialog
@@ -4119,6 +4198,32 @@
     Accept and continue
   </message>
 
+  <!-- Smart privacy protection OOBE screen -->
+  <message name="IDS_SMART_PRIVACY_PROTECTION_TITLE" desc="Title of the screen, which introduces privacy protection features.">
+    Keep your screen private
+  </message>
+  <message name="IDS_SMART_PRIVACY_PROTECTION_SCREEN_LOCK" desc="Title of the lock-on-leave section.">
+    Lock-on-leave
+  </message>
+  <message name="IDS_SMART_PRIVACY_PROTECTION_SCREEN_LOCK_DESCRIPTION" desc="Description of the lock-on-leave feature.">
+    If you move away from your device, your screen will lock automatically. When you're in front of your device, your screen will stay awake.
+  </message>
+  <message name="IDS_SMART_PRIVACY_PROTECTION_SNOOPING_DETECTION" desc="Title of the viewing protection section.">
+    Viewing protection
+  </message>
+  <message name="IDS_SMART_PRIVACY_PROTECTION_SNOOPING_DETECTION_DESCRIPTION" desc="Description of the viewing protection feature.">
+    When someone else looks at your screen, you'll get an alert and notification content will be hidden.
+  </message>
+  <message name="IDS_SMART_PRIVACY_PROTECTION_CONTENT" desc="Description of the privacy protection features implementation. This message is followed by a 'Learn more' link.">
+    Your Chromebook uses a built-in sensor to detect people in front of your device. All data is processed on your device immediately and then deleted. Sensor data is never sent to Google.
+  </message>
+  <message name="IDS_SMART_PRIVACY_PROTECTION_TURN_ON_BUTTON" desc="Label on a button to turn on the smart privacy protection feature and continue.">
+    Turn on
+  </message>
+  <message name="IDS_SMART_PRIVACY_PROTECTION_TURN_OFF_BUTTON" desc="Label on a button to turn off the smart privacy protection feature and continue.">
+    No Thanks
+  </message>
+
   <!-- Supervision transition OOBE screen. -->
   <message name="IDS_ADDING_MANAGEMENT_TITLE" desc="Title of the management transition OOBE scree when user transitions to managed state. MANAGER can be a domain or an email address.">
     Setting up management by <ph name="MANAGER">$1<ex>example.com</ex></ph>
@@ -4460,12 +4565,22 @@
   <message name="IDS_CROSTINI_INSTALLER_LOAD_TERMINA_ERROR" desc="Text shown in the Crostini installer dialog when the VM component fails to load">
     Error downloading the virtual machine. Please try again.
   </message>
-  <message name="IDS_CROSTINI_INSTALLER_NEED_UPDATE_TITLE" desc="Title shown in the Crostini installer dialog when the VM fails to install because the device must be updated">
-    Chrome OS update required
-  </message>
-  <message name="IDS_CROSTINI_INSTALLER_NEED_UPDATE_ERROR" desc="Text shown in the Crostini installer dialog when the VM fails to install because the device must be updated first">
-    To finish setting up Linux, update Chrome OS and try again.
-  </message>
+  <if expr="reven">
+    <message name="IDS_CROSTINI_INSTALLER_NEED_UPDATE_TITLE" desc="Title shown in the Crostini installer dialog when the VM fails to install because the device must be updated">
+      CloudReady 2.0 update required
+    </message>
+    <message name="IDS_CROSTINI_INSTALLER_NEED_UPDATE_ERROR" desc="Text shown in the Crostini installer dialog when the VM fails to install because the device must be updated first">
+      To finish setting up Linux, update CloudReady 2.0 and try again.
+    </message>
+  </if>
+  <if expr="not reven">
+    <message name="IDS_CROSTINI_INSTALLER_NEED_UPDATE_TITLE" desc="Title shown in the Crostini installer dialog when the VM fails to install because the device must be updated">
+      Chrome OS update required
+    </message>
+    <message name="IDS_CROSTINI_INSTALLER_NEED_UPDATE_ERROR" desc="Text shown in the Crostini installer dialog when the VM fails to install because the device must be updated first">
+      To finish setting up Linux, update Chrome OS and try again.
+    </message>
+  </if>
   <message name="IDS_CROSTINI_INSTALLER_START_CONCIERGE_ERROR" desc="Text shown in the Crostini installer dialog when the VM service fails to start">
     Error starting the virtual machine service. Please try again.
   </message>
@@ -4571,6 +4686,12 @@
   <message name="IDS_CROSTINI_UPGRADER_BACKING_UP_MESSAGE" desc="Text shown by the Crostini upgrader when the container backup is in progress.">
     This may take up to 30 minutes.
   </message>
+  <message name="IDS_CROSTINI_UPGRADER_BACKUP_ERROR_TITLE" desc="Title of the Crostini upgrader when the container backup fails.">
+    Backing up failed
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_BACKUP_ERROR_MESSAGE" desc="Text shown by the Crostini upgrader when the container backup fails.">
+    Backing up Linux apps and files failed. This can happen if your device doesn't have enough free storage space. Try freeing some space on your device, or picking a different location to back up to.
+  </message>
   <message name="IDS_CROSTINI_UPGRADER_BACKUP_SUCCEEDED_TITLE" desc="Title of the Crostini upgrader when the container backup completed successfully, prior to the main upgrade.">
     Backing up complete
   </message>
@@ -4586,9 +4707,6 @@
   <message name="IDS_CROSTINI_UPGRADER_PRECHECKS_FAILED_POWER" desc="Text shown by the Crostini upgrader when the upgrade did not start because there wasn't enough power.">
     Upgrading Linux can drain your battery significantly. Please connect your device to a charger and try again.
   </message>
-  <message name="IDS_CROSTINI_UPGRADER_PRECHECKS_FAILED_SPACE" desc="Text shown by the Crostini upgrader when the upgrade did not start because there wasn't enough free disk space.">
-    At least <ph name="REQUIRED_SPACE">$1<ex>1GB</ex></ph> of free disk space is required to upgrade Linux. Please free some space on your device and try again.
-  </message>
   <message name="IDS_CROSTINI_UPGRADER_UPGRADING_TITLE" desc="Title of the Crostini upgrader when the upgrade is in progress.">
     Upgrading Linux
   </message>
@@ -4603,6 +4721,12 @@
   </message>
   <message name="IDS_CROSTINI_UPGRADER_RESTORE_TITLE" desc="Title of the Crostini upgrader when the container upgrade fails and restore of a backup is in progress.">
     Restoring Linux
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_RESTORE_ERROR_TITLE" desc="Title of the Crostini upgrader when restoring from backup fails.">
+    Restore failed
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_RESTORE_ERROR_MESSAGE" desc="Text shown by the Crostini upgrader when restoring from backup fails fails.">
+    Restoring your Linux backup failed. This may be because Linux doesn't have enough disk space. You can change how much disk space Linux has and try to restore your backup again in the OS Settings.
   </message>
   <message name="IDS_CROSTINI_UPGRADER_RESTORE_SUCCEEDED_TITLE" desc="Title of the Crostini upgrader when the upgrade failed but the restore of a backup completed successfully.">
     Restore complete
@@ -4625,14 +4749,14 @@
   <message name="IDS_CROSTINI_UPGRADER_BACKUP_CHANGE_LOCATION" desc="Text shown in the Crostini upgrader dialog next to the backup checkbox with a link enabling the user to change the location to which files are backed up.">
     Change location
   </message>
-  <message name="IDS_CROSTINI_UPGRADER_OFFER_RESTORE_MESSAGE" desc="Text shown in the Crostini upgrader dialog when the upgrade has failed and the previous container backup can be restored.">
-    There was an error while upgrading Linux. We'll restore the container using your backup.
-  </message>
   <message name="IDS_CROSTINI_UPGRADER_RESTORE_MESSAGE" desc="Title of the Crostini upgrader when the container upgrade fails and restore of a backup is in progress.">
     Linux files and apps are being restored to their backed up state.
   </message>
-  <message name="IDS_CROSTINI_UPGRADER_LOG_FILE" desc="A message shown in the Crostini upgrader that says which file the upgrade log messages have been stored in.">
-    These logs have been saved in My Files as
+  <message name="IDS_CROSTINI_UPGRADER_LOG_FILE_ERROR" desc="A message shown in the Crostini upgrader that says which file the upgrade log messages have been stored in, shown after an error.">
+    Something went wrong and the Linux upgrade has failed. More information on the failure can be found in the logs. The logs have been saved in <ph name="LOG_FILE">$1<ex>upgrade_container.log</ex></ph>
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_LOG_FILE_SUCCESS" desc="A message shown in the Crostini upgrader that says which file the upgrade log messages have been stored in, shown on success.">
+    The upgrade has finished successfully. For detailed upgrade information, the logs have been saved in <ph name="LOG_FILE">$1<ex>upgrade_container.log</ex></ph>
   </message>
   <message name="IDS_CROSTINI_UPGRADER_NOT_NOW" desc="Text on the button to defer performing the upgrade">
     Not now
@@ -5000,6 +5124,9 @@
   <message name="IDS_ECHE_APP_DISABLED_BY_PHONE_NOTIFICATION_MESSAGE" translateable="false" desc="Message for the notification shown when the apps streaming settings is disabled on phony while using app stream of EcheApp.">
     Enable apps streaming settings from your phone.
   </message>
+  <message name="IDS_ECHE_APP_NOTIFICATION_OPEN_AGAIN_BUTTON" desc="Label for the inactivity notification button of EcheApp to open open.">
+    Open again
+  </message>
 
   <!-- User Image Selection Dialog -->
   <message name="IDS_USER_IMAGE_SCREEN_TITLE" desc="String to be displayed in the title bar of the oobe/login user image selection dialog">
@@ -5112,15 +5239,28 @@
   <message name="IDS_OOBE_CONTINUE_WITHOUT_CHROMEVOX" desc="Label for the button in the ChromeVox hint dialog that will close the dialog.">
     No, continue without ChromeVox
   </message>
-  <message name="IDS_OOBE_CHROMEVOX_HINT_TEXT" desc="Text content in the ChromeVox hint dialog, asking the user if they would like to activate ChromeVox.">
-    Do you want to activate ChromeVox, the built-in screen reader for Chrome OS?
-  </message>
-  <message name="IDS_OOBE_CHROMEVOX_HINT_ANNOUNCEMENT_TEXT_LAPTOP" desc="The string spoken when the ChromeVox hint is activated when the device is in laptop mode." is_accessibility_with_no_ui="true">
-    Do you want to activate ChromeVox, the built-in screen reader for Chrome OS? If so, press the space bar.
-  </message>
-  <message name="IDS_OOBE_CHROMEVOX_HINT_ANNOUNCEMENT_TEXT_TABLET" desc="The string spoken when the ChromeVox hint is activated when the device is in tablet mode." is_accessibility_with_no_ui="true">
-    Do you want to activate ChromeVox, the built-in screen reader for Chrome OS? If so, press and hold both volume keys for five seconds.
-  </message>
+  <if expr="reven">
+    <message name="IDS_OOBE_CHROMEVOX_HINT_TEXT" desc="Text content in the ChromeVox hint dialog, asking the user if they would like to activate ChromeVox.">
+      Do you want to activate ChromeVox, the built-in screen reader for CloudReady 2.0?
+    </message>
+    <message name="IDS_OOBE_CHROMEVOX_HINT_ANNOUNCEMENT_TEXT_LAPTOP" desc="The string spoken when the ChromeVox hint is activated when the device is in laptop mode." is_accessibility_with_no_ui="true">
+      Do you want to activate ChromeVox, the built-in screen reader for CloudReady 2.0? If so, press the space bar.
+    </message>
+    <message name="IDS_OOBE_CHROMEVOX_HINT_ANNOUNCEMENT_TEXT_TABLET" desc="The string spoken when the ChromeVox hint is activated when the device is in tablet mode." is_accessibility_with_no_ui="true">
+      Do you want to activate ChromeVox, the built-in screen reader for CloudReady 2.0? If so, press and hold both volume keys for five seconds.
+    </message>
+  </if>
+  <if expr="not reven">
+    <message name="IDS_OOBE_CHROMEVOX_HINT_TEXT" desc="Text content in the ChromeVox hint dialog, asking the user if they would like to activate ChromeVox.">
+      Do you want to activate ChromeVox, the built-in screen reader for Chrome OS?
+    </message>
+    <message name="IDS_OOBE_CHROMEVOX_HINT_ANNOUNCEMENT_TEXT_LAPTOP" desc="The string spoken when the ChromeVox hint is activated when the device is in laptop mode." is_accessibility_with_no_ui="true">
+      Do you want to activate ChromeVox, the built-in screen reader for Chrome OS? If so, press the space bar.
+    </message>
+    <message name="IDS_OOBE_CHROMEVOX_HINT_ANNOUNCEMENT_TEXT_TABLET" desc="The string spoken when the ChromeVox hint is activated when the device is in tablet mode." is_accessibility_with_no_ui="true">
+      Do you want to activate ChromeVox, the built-in screen reader for Chrome OS? If so, press and hold both volume keys for five seconds.
+    </message>
+  </if>
 
   <!-- Mojo service names (displayed in task manager) -->
   <message name="IDS_ASH_ASH_SERVICE_NAME" desc="Name of the internal software service that manages windows. Appears in the task manager.">
@@ -5461,9 +5601,16 @@
   <message name="IDS_CAMERA_MIC_NOTIFICATION_SOURCE" desc="The name of the source of a 'camera and mic' notification">
     Camera &amp; microphone
   </message>
-  <message name="IDS_CHROME_OS_NOTIFICATION_SOURCE" desc="The name of the source of a Chrome OS notificatoin">
-    Chrome OS
-  </message>
+  <if expr="reven">
+    <message name="IDS_CHROME_OS_NOTIFICATION_SOURCE" desc="The name of the source of a CloudReady 2.0 notification">
+      CloudReady 2.0
+    </message>
+  </if>
+  <if expr="not reven">
+    <message name="IDS_CHROME_OS_NOTIFICATION_SOURCE" desc="The name of the source of a Chrome OS notification">
+      Chrome OS
+    </message>
+  </if>
   <message name="IDS_APP_USING_CAMERA_NOTIFICATION_MESSAGE" desc="Message shown in notification when an app is using the camera">
     <ph name="APP_NAME">$1<ex>Parallels Desktop</ex></ph> is using your camera
   </message>
@@ -5512,6 +5659,9 @@
   <message name="IDS_ACCOUNT_MANAGER_DIALOG_TITLE" desc="Title for the Chrome OS 'Add account' dialog.">
     Sign in to add a Google account
   </message>
+  <message name="IDS_ACCOUNT_MANAGER_DIALOG_NEXT_BUTTON" desc="Label for the 'Continue' button which takes user to the next screen in Chrome OS 'Add account' dialog.">
+    Continue
+  </message>
   <message name="IDS_ACCOUNT_MANAGER_DIALOG_WELCOME_TITLE" desc="Title for the Welcome screen in Chrome OS 'Add account' dialog.">
     Add another Google Account for <ph name="USER_NAME">$1<ex>John</ex></ph>
   </message>
@@ -5520,6 +5670,23 @@
   </message>
   <message name="IDS_ACCOUNT_MANAGER_DIALOG_WELCOME_BODY_WITHOUT_INCOGNITO" desc="Text body for the Welcome screen in Chrome OS 'Add account' dialog without Incognito link.">
     You can manage signed-in Google Accounts from <ph name="LINK_BEGIN">&lt;a id="osSettingsLink" href="$1<ex>https://google.com/</ex>"&gt;</ph>Settings<ph name="LINK_END">&lt;/a&gt;</ph>. Permissions you have granted to websites and apps may apply to all accounts. If you don't want sites or apps to access your account info, you can sign into your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph> as a guest.
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_DIALOG_WELCOME_BODY_ARC" desc="Text body for the Welcome screen in Chrome OS 'Add account' dialog.">
+You can use this account with Android apps. If you want to add an account for someone else, <ph name="LINK_BEGIN">&lt;a id="newPersonLink" href="$1<ex>https://google.com/</ex>"&gt;</ph>add a new person<ph name="LINK_END">&lt;/a&gt;</ph> to your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph> instead.
+
+Permissions you've already given to apps may apply to this account. You can control permissions for Android apps in <ph name="APPS_LINK_BEGIN">&lt;a id="appsSettingsLink" href="$3<ex>https://google.com/</ex>"&gt;</ph>Apps Settings<ph name="APPS_LINK_END">&lt;/a&gt;</ph>.
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_DIALOG_ARC_TOGGLE_LABEL" desc="Toggle text for the Welcome screen in Chrome OS 'Add account' dialog. If user toggles it on, the account that will be added will be available in Android Apps. The default value for the toggle may be 'on' or 'off' depending on where the dialog is being opened from.">
+    Use this account with Android apps. You can control permissions for Android apps in <ph name="LINK_BEGIN">&lt;a id="appsSettingsLink" href="$1<ex>https://google.com/</ex>"&gt;</ph>Apps Settings<ph name="LINK_END">&lt;/a&gt;</ph>.
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_DIALOG_ARC_ACCOUNT_PICKER_TITLE" desc="Title for the Account picker screen in Chrome OS 'Add account' dialog. This screen shows user a list of accounts that are not available in ARC / Android apps, and allows to add one of the listed accounts to ARC / Android apps.">
+    Accounts available for Android apps
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_DIALOG_ARC_ACCOUNT_PICKER_BODY" desc="Text body for the Account picker screen in Chrome OS 'Add account' dialog. This screen shows user a list of accounts that are not available in ARC / Android apps, and allows to add one of the listed accounts to ARC / Android apps.">
+    These accounts aren't being used with Android apps right now. If you select an account to use with this Android app, the account can also be used with other Android apps. You can change Android app access in <ph name="LINK_BEGIN">&lt;a id="osSettingsLink" href="$1<ex>https://google.com/</ex>"&gt;</ph>Settings > Accounts<ph name="LINK_END">&lt;/a&gt;</ph>.
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_DIALOG_ADD_ACCOUNT_LABEL" desc="Label of the Add account button on Account picker screen.">
+    Add Google Account
   </message>
   <message name="IDS_ACCOUNT_MANAGER_DIALOG_WELCOME_CHECKBOX" desc="Checkbox text for the Welcome screen in Chrome OS 'Add account' dialog. If user checks this checkbox, this screen will not be shown the next time they open the dialog.">
     Don't remind me next time
@@ -5540,6 +5707,15 @@
   </message>
   <message name="IDS_ACCOUNT_MANAGER_ERROR_CANNOT_ADD_ACCOUNT_BODY" desc="Text body for the error screen which tells user to try again later.">
     Please try again later.
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_DIALOG_SIGNIN_BLOCKED_BY_POLICY_TITLE" desc="Title for the sign-in blocked by policy screen in Chrome OS 'Add account' dialog.">
+    Sign-in blocked by your admin
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_DIALOG_SIGNIN_BLOCKED_BY_POLICY_BODY" desc="Text body for the sign-in blocked by policy screen in Chrome OS 'Add account' dialog.">
+    <ph name="USER_EMAIL">$1<ex>john.doe@example.com</ex></ph> is managed by <ph name="MANAGER">$2<ex>example.com</ex></ph> and your admin has blocked sign-in as a secondary account
+  </message>
+  <message name="IDS_ACCOUNT_MANAGER_DIALOG_SIGNIN_BLOCKED_BY_POLICY_IMAGE_ALT" desc="Alternate text for image on the sign-in blocked by policy screen in Chrome OS 'Add account' dialog.">
+   Restriction image
   </message>
 
   <!-- Strings for per-account Migration welcome screen -->
@@ -5702,7 +5878,7 @@
 
   <!-- Strings for Release Notes notification -->
   <message name="IDS_RELEASE_NOTES_DEVICE_SPECIFIC_NOTIFICATION_TITLE" desc="Text for the notification title informing the user that the device has been updated and patch notes are available. Will specify the user's Chrome OS device. [CHAR_LIMIT=40]">
-    See what's new on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+    Explore what's new on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
   </message>
   <message name="IDS_RELEASE_NOTES_NOTIFICATION_MESSAGE" desc="Text for the notification message informing the user that the device has been updated and patch notes are available.">
     Get highlights from the latest update

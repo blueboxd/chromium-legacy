@@ -6,21 +6,27 @@
 #define CHROME_BROWSER_UI_WEB_APPLICATIONS_TEST_WEB_APP_BROWSERTEST_UTIL_H_
 
 #include "base/memory/raw_ptr.h"
+#include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/web_applications/app_registrar_observer.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
+#include "chrome/browser/web_applications/web_app_install_manager.h"
+#include "chrome/browser/web_applications/web_app_install_manager_observer.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "url/gurl.h"
 
 class Browser;
 class Profile;
 
+namespace webapps {
+enum class InstallResultCode;
+}
+
 namespace web_app {
 
 struct ExternalInstallOptions;
-enum class InstallResultCode;
 
 // For InstallWebAppFromInfo see web_app_install_test_utils.h
 
@@ -48,8 +54,9 @@ Browser* LaunchBrowserForWebAppInTab(Profile*, const AppId&);
 ExternalInstallOptions CreateInstallOptions(const GURL& url);
 
 // Synchronous version of ExternallyManagedAppManager::Install.
-InstallResultCode ExternallyManagedAppManagerInstall(Profile*,
-                                                     ExternalInstallOptions);
+webapps::InstallResultCode ExternallyManagedAppManagerInstall(
+    Profile*,
+    ExternalInstallOptions);
 
 // If |proceed_through_interstitial| is true, asserts that a security
 // interstitial is shown, and clicks through it, before returning.
@@ -113,19 +120,20 @@ class BrowserWaiter : public BrowserListObserver {
   raw_ptr<Browser> removed_browser_ = nullptr;
 };
 
-class UpdateAwaiter : public AppRegistrarObserver {
+class UpdateAwaiter : public WebAppInstallManagerObserver {
  public:
-  explicit UpdateAwaiter(WebAppRegistrar& registrar);
+  explicit UpdateAwaiter(WebAppInstallManager& install_manager);
   ~UpdateAwaiter() override;
   void AwaitUpdate();
 
-  // AppRegistrarObserver:
+  // WebAppInstallManagerObserver:
   void OnWebAppManifestUpdated(const AppId& app_id,
                                base::StringPiece old_name) override;
+  void OnWebAppInstallManagerDestroyed() override;
 
  private:
   base::RunLoop run_loop_;
-  base::ScopedObservation<WebAppRegistrar, AppRegistrarObserver>
+  base::ScopedObservation<WebAppInstallManager, WebAppInstallManagerObserver>
       scoped_observation_{this};
 };
 

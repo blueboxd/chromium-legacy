@@ -18,22 +18,24 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/commands/run_on_os_login_command.h"
 #include "chrome/browser/web_applications/external_install_options.h"
-#include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/policy/pre_redirection_url_observer.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_constants.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
-#include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/webapps/browser/install_result_code.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
@@ -108,7 +110,7 @@ void WebAppPolicyManager::Start() {
 void WebAppPolicyManager::ReinstallPlaceholderAppIfNecessary(const GURL& url) {
   const base::Value* web_apps =
       pref_service_->GetList(prefs::kWebAppInstallForceList);
-  const auto& web_apps_list = web_apps->GetList();
+  const auto& web_apps_list = web_apps->GetListDeprecated();
 
   const auto it =
       std::find_if(web_apps_list.begin(), web_apps_list.end(),
@@ -127,11 +129,6 @@ void WebAppPolicyManager::ReinstallPlaceholderAppIfNecessary(const GURL& url) {
   // No need to install a placeholder because there should be one already.
   install_options.wait_for_windows_closed = true;
   install_options.reinstall_placeholder = true;
-
-  // TODO(crbug.com/1280773): Reevaluate if this is needed.
-  install_options.run_on_os_login = (GetUrlRunOnOsLoginPolicyByUnhashedAppId(
-                                         install_options.install_url.spec()) ==
-                                     RunOnOsLoginPolicy::kRunWindowed);
 
   // If the app is not a placeholder app, ExternallyManagedAppManager will
   // ignore the request.
@@ -222,7 +219,7 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
   // No need to validate the types or values of the policy members because we
   // are using a SimpleSchemaValidatingPolicyHandler which should validate them
   // for us.
-  for (const base::Value& entry : web_apps->GetList()) {
+  for (const base::Value& entry : web_apps->GetListDeprecated()) {
     ExternalInstallOptions install_options = ParseInstallPolicyEntry(entry);
 
     if (!install_options.install_url.is_valid())
@@ -233,12 +230,6 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
     // apps but only if they are not being used.
     install_options.wait_for_windows_closed = true;
     install_options.reinstall_placeholder = true;
-
-    // TODO(crbug.com/1280773): Reevaluate if this is needed.
-    install_options.run_on_os_login =
-        (GetUrlRunOnOsLoginPolicyByUnhashedAppId(
-             install_options.install_url.spec()) ==
-         RunOnOsLoginPolicy::kRunWindowed);
 
     absl::optional<AppId> app_id = externally_installed_app_prefs_.LookupAppId(
         install_options.install_url);
@@ -321,26 +312,11 @@ void WebAppPolicyManager::RefreshPolicySettings() {
 
 void WebAppPolicyManager::ApplyPolicySettings() {
   for (const AppId& app_id : app_registrar_->GetAppIds()) {
-    // TODO(crbug.com/1280773): Reevaluate if this code should belong here, or
-    // in WebAppRegistrar.
-    RunOnOsLoginPolicy policy = GetUrlRunOnOsLoginPolicy(app_id);
-    if (policy == RunOnOsLoginPolicy::kBlocked) {
-      sync_bridge_->SetAppRunOnOsLoginMode(app_id, RunOnOsLoginMode::kNotRun);
-      OsHooksOptions os_hooks;
-      os_hooks[OsHookType::kRunOnOsLogin] = true;
-      os_integration_manager_->UninstallOsHooks(app_id, os_hooks,
-                                                base::DoNothing());
-    } else if (policy == RunOnOsLoginPolicy::kRunWindowed) {
-      sync_bridge_->SetAppRunOnOsLoginMode(app_id, RunOnOsLoginMode::kWindowed);
-      InstallOsHooksOptions options;
-      options.os_hooks[OsHookType::kRunOnOsLogin] = true;
-      os_integration_manager_->InstallOsHooks(app_id, base::DoNothing(),
-                                              nullptr, options);
-    }
+    SyncRunOnOsLoginOsIntegrationState(app_registrar_, os_integration_manager_,
+                                       app_id);
   }
 
-  for (WebAppPolicyManagerObserver& observer : observers_)
-    observer.OnPolicyChanged();
+  app_registrar_->NotifyWebAppSettingsPolicyChanged();
 }
 
 ExternalInstallOptions WebAppPolicyManager::ParseInstallPolicyEntry(
@@ -362,7 +338,7 @@ ExternalInstallOptions WebAppPolicyManager::ParseInstallPolicyEntry(
              kDefaultLaunchContainerTabValue);
 
   if (!install_gurl.is_valid()) {
-    LOG(WARNING) << "Policy-installed web app has invalid URL " << install_url;
+    LOG(WARNING) << "Policy-installed web app has invalid URL " << *install_url;
   }
 
   DisplayMode user_display_mode;
@@ -420,15 +396,6 @@ ExternalInstallOptions WebAppPolicyManager::ParseInstallPolicyEntry(
   return install_options;
 }
 
-void WebAppPolicyManager::AddObserver(WebAppPolicyManagerObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void WebAppPolicyManager::RemoveObserver(
-    WebAppPolicyManagerObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 RunOnOsLoginPolicy WebAppPolicyManager::GetUrlRunOnOsLoginPolicy(
     const AppId& app_id) const {
   return GetUrlRunOnOsLoginPolicyByUnhashedAppId(
@@ -451,6 +418,10 @@ void WebAppPolicyManager::SetOnAppsSynchronizedCompletedCallbackForTesting(
 void WebAppPolicyManager::SetRefreshPolicySettingsCompletedCallbackForTesting(
     base::OnceClosure callback) {
   refresh_policy_settings_completed_ = std::move(callback);
+}
+
+void WebAppPolicyManager::RefreshPolicySettingsForTesting() {
+  RefreshPolicySettings();
 }
 
 void WebAppPolicyManager::OverrideManifest(
@@ -619,7 +590,7 @@ void WebAppPolicyManager::PopulateDisabledWebAppsIdsLists() {
   if (!disabled_system_features_pref)
     return;
 
-  for (const auto& entry : disabled_system_features_pref->GetList()) {
+  for (const auto& entry : disabled_system_features_pref->GetListDeprecated()) {
     switch (entry.GetInt()) {
       case policy::SystemFeature::kCamera:
         disabled_system_apps_.insert(SystemAppType::CAMERA);

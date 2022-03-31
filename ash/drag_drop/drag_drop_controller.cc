@@ -74,15 +74,6 @@ gfx::Rect AdjustDragImageBoundsForScaleAndOffset(
       gfx::RectF(gfx::PointF(final_origin), final_size));
 }
 
-void DispatchGestureEndToWindow(aura::Window* window) {
-  if (window && window->delegate()) {
-    ui::GestureEventDetails details(ui::ET_GESTURE_END);
-    details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
-    ui::GestureEvent gesture_end(0, 0, 0, ui::EventTimeForNow(), details);
-    window->delegate()->OnGestureEvent(&gesture_end);
-  }
-}
-
 void DropIfAllowed(const ui::OSExchangeData* drag_data,
                    aura::client::DragUpdateInfo& drag_info,
                    base::OnceClosure drop_cb) {
@@ -94,17 +85,6 @@ void DropIfAllowed(const ui::OSExchangeData* drag_data,
   } else {
     std::move(drop_cb).Run();
   }
-}
-
-aura::Window* GetTarget(const ui::LocatedEvent& event) {
-  gfx::Point location_in_screen = event.location();
-  ::wm::ConvertPointToScreen(static_cast<aura::Window*>(event.target()),
-                             &location_in_screen);
-  aura::Window* root_window_at_point =
-      window_util::GetRootWindowAt(location_in_screen);
-  gfx::Point location_in_root = location_in_screen;
-  ::wm::ConvertPointFromScreen(root_window_at_point, &location_in_root);
-  return root_window_at_point->GetEventHandlerForPoint(location_in_root);
 }
 
 std::unique_ptr<ui::LocatedEvent> ConvertEvent(aura::Window* target,
@@ -347,7 +327,8 @@ void DragDropController::OnMouseEvent(ui::MouseEvent* event) {
     event->StopPropagation();
     return;
   }
-  aura::Window* translated_target = GetTarget(*event);
+  aura::Window* translated_target =
+      window_util::GetEventHandlerForEvent(*event);
   if (!translated_target) {
     // ET_MOUSE_CAPTURE_CHANGED event does not have a location that can
     // be used to locate a translated target.
@@ -371,13 +352,9 @@ void DragDropController::OnMouseEvent(ui::MouseEvent* event) {
       // (aura::RootWindow::PostMouseMoveEventAfterWindowChange).
       break;
   }
-  ui::Event::DispatcherApi(translated_event.get()).set_phase(ui::EP_PRETARGET);
-  ui::Event::DispatcherApi(translated_event.get())
-      .set_target(translated_target->GetToplevelWindow());
 
   if (toplevel_window_drag_delegate_)
-    toplevel_window_drag_delegate_->OnToplevelWindowDragEvent(
-        translated_event.get());
+    toplevel_window_drag_delegate_->OnToplevelWindowDragEvent(event);
 
   event->StopPropagation();
 }
@@ -429,7 +406,8 @@ void DragDropController::OnGestureEvent(ui::GestureEvent* event) {
     translated_target = capture_delegate_->GetTarget(touch_offset_event);
   } else {
     ui::Event::DispatcherApi(&touch_offset_event).set_target(event->target());
-    translated_target = GetTarget(touch_offset_event);
+    translated_target =
+        window_util::GetEventHandlerForEvent(touch_offset_event);
   }
 
   if (!translated_target) {
@@ -620,6 +598,8 @@ void DragDropController::Drop(aura::Window* target,
                      std::move(tab_drag_drop_delegate_),
                      std::move(drag_cancel)));
 
+  for (aura::client::DragDropClientObserver& observer : observers_)
+    observer.OnDragCompleted(e);
   Cleanup();
 
   // Tab drag-n-drop should never be async.
@@ -674,7 +654,10 @@ void DragDropController::DoDragCancel(
   if (toplevel_window_drag_delegate_)
     toplevel_window_drag_delegate_->OnToplevelWindowDragCancelled();
 
+  for (aura::client::DragDropClientObserver& observer : observers_)
+    observer.OnDragCancelled();
   Cleanup();
+
   // If the drop is async, then |drag_image_widget_| is already reset.
   if (drag_image_widget_)
     StartCanceledAnimation(drag_cancel_animation_duration);
@@ -731,13 +714,6 @@ void DragDropController::ForwardPendingLongTap() {
 }
 
 void DragDropController::Cleanup() {
-  for (aura::client::DragDropClientObserver& observer : observers_)
-    observer.OnDragEnded();
-  if (!capture_delegate_ && drag_source_window_ &&
-      current_drag_event_source_ == ui::mojom::DragEventSource::kMouse) {
-    drag_source_window_->ReleaseCapture();
-  }
-
   // Do not remove observer `the drag_window_1 is same as `drag_source_window_`.
   // `drag_source_window_` is still necessary to process long tab and the
   // observer will be reset when `drag_source_window_` is destroyed.
@@ -764,8 +740,9 @@ void DragDropController::PerformDrop(
   ui::Event::DispatcherApi(&event).set_target(drag_window_);
 
   ui::OSExchangeData copied_data(drag_data->provider().Clone());
-  if (drop_cb)
-    std::move(drop_cb).Run(event, std::move(drag_data), operation_);
+  if (drop_cb) {
+    std::move(drop_cb).Run(std::move(drag_data), operation_);
+  }
 
   if (operation_ == DragOperation::kNone && tab_drag_drop_delegate) {
     DCHECK(drag_image_widget_);

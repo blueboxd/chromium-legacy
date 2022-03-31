@@ -16,7 +16,7 @@ namespace crash_keys {
 #if !BUILDFLAG(IS_ANDROID)
 extern GPU_EXPORT crash_reporter::CrashKeyString<16> gpu_vendor_id;
 extern GPU_EXPORT crash_reporter::CrashKeyString<16> gpu_device_id;
-#endif  // !OS_ANDROID
+#endif  // !BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(IS_WIN)
 extern GPU_EXPORT crash_reporter::CrashKeyString<16> gpu_sub_sys_id;
 extern GPU_EXPORT crash_reporter::CrashKeyString<16> gpu_revision;
@@ -42,6 +42,7 @@ extern GPU_EXPORT crash_reporter::CrashKeyString<4>
 extern GPU_EXPORT crash_reporter::CrashKeyString<4>
     gpu_watchdog_crashed_in_gpu_init;
 extern GPU_EXPORT crash_reporter::CrashKeyString<16> num_of_processors;
+extern GPU_EXPORT crash_reporter::CrashKeyString<64> gpu_thread;
 }  // namespace crash_keys
 }  // namespace gpu
 

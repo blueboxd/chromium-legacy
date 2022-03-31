@@ -66,7 +66,7 @@ WebUIBrowserTest* WebUIBrowserExpectFailTest::s_test_ = NULL;
 
 // Test that bogus javascript fails fast - no timeout waiting for result.
 // TODO(crbug/974796): Flaky on Win7 debug builds.
-#if (defined(OS_WIN) && !(defined(NDEBUG)))
+#if (BUILDFLAG(IS_WIN) && !(defined(NDEBUG)))
 #define MAYBE_TestFailsFast DISABLED_TestFailsFast
 #else
 #define MAYBE_TestFailsFast TestFailsFast
@@ -89,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBrowserExpectFailTest, TestRuntimeErrorFailsFast) {
 
 // Test times out in debug builds: https://crbug.com/902310
 // Test also times out in Win7 Tests: https://crbug.com/1039406
-#if defined(OS_WIN) || !defined(NDEBUG)
+#if BUILDFLAG(IS_WIN) || !defined(NDEBUG)
 #define MAYBE_TestFailsAsyncFast DISABLED_TestFailsAsyncFast
 #else
 #define MAYBE_TestFailsAsyncFast TestFailsAsyncFast
@@ -163,7 +163,7 @@ class WebUIBrowserAsyncTest : public WebUIBrowserTest {
 
     // Starts the test in |list_value|[0] with the runAsync wrapper.
     void HandleStartAsyncTest(const base::ListValue* list_value) {
-      const base::Value& test_name = list_value->GetList()[0];
+      const base::Value& test_name = list_value->GetListDeprecated()[0];
       web_ui()->CallJavascriptFunctionUnsafe("runAsync", test_name);
     }
   };

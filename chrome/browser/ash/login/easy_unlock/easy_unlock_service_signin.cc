@@ -11,6 +11,7 @@
 #include "ash/components/login/auth/user_context.h"
 #include "ash/components/proximity_auth/proximity_auth_local_state_pref_manager.h"
 #include "ash/components/proximity_auth/smart_lock_metrics_recorder.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/smartlock_state.h"
 #include "base/base64url.h"
 #include "base/bind.h"
@@ -134,7 +135,8 @@ std::vector<multidevice::BeaconSeed> DeserializeBeaconSeeds(
     return beacon_seeds;
   }
 
-  for (const base::Value& beacon_seed_value : deserialized_value->GetList()) {
+  for (const base::Value& beacon_seed_value :
+       deserialized_value->GetListDeprecated()) {
     if (!beacon_seed_value.is_string()) {
       PA_LOG(ERROR) << "Expected Base64 BeaconSeed.";
       continue;
@@ -306,7 +308,6 @@ void EasyUnlockServiceSignin::InitializeInternal() {
 
   proximity_auth::ScreenlockBridge* screenlock_bridge =
       proximity_auth::ScreenlockBridge::Get();
-  screenlock_bridge->AddObserver(this);
   if (screenlock_bridge->focused_account_id().is_valid())
     OnFocusedUserChanged(screenlock_bridge->focused_account_id());
 }
@@ -322,7 +323,6 @@ void EasyUnlockServiceSignin::ShutdownInternal() {
   StopFeatureUsageMetrics();
 
   weak_ptr_factory_.InvalidateWeakPtrs();
-  proximity_auth::ScreenlockBridge::Get()->RemoveObserver(this);
   user_data_.clear();
 }
 
@@ -345,6 +345,13 @@ bool EasyUnlockServiceSignin::IsChromeOSLoginEnabled() const {
   return pref_manager_ && pref_manager_->IsChromeOSLoginEnabled();
 }
 
+SmartLockState EasyUnlockServiceSignin::GetInitialSmartLockState() const {
+  if (IsChromeOSLoginEnabled())
+    return EasyUnlockService::GetInitialSmartLockState();
+
+  return SmartLockState::kDisabled;
+}
+
 void EasyUnlockServiceSignin::OnSuspendDoneInternal() {
   // Ignored.
 }
@@ -357,8 +364,12 @@ void EasyUnlockServiceSignin::OnScreenDidLock(
       proximity_auth::ScreenlockBridge::LockHandler::SIGNIN_SCREEN)
     return;
 
-  // Update initial UI is when the account picker on login screen is ready.
-  ShowInitialUserPodState();
+  EasyUnlockService::OnScreenDidLock(screen_type);
+
+  if (!base::FeatureList::IsEnabled(ash::features::kSmartLockUIRevamp)) {
+    // Update initial UI is when the account picker on login screen is ready.
+    ShowInitialUserPodState();
+  }
   user_pod_last_focused_timestamp_ = base::TimeTicks::Now();
 }
 
@@ -410,7 +421,12 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
   if (!IsAllowed() || !IsEnabled())
     return;
 
-  ShowInitialUserPodState();
+  // Update initial UI is when the account picker on login screen is ready.
+  if (base::FeatureList::IsEnabled(ash::features::kSmartLockUIRevamp)) {
+    ShowInitialSmartLockState();
+  } else {
+    ShowInitialUserPodState();
+  }
 
   // If there is a hardlock, then there is no point in loading the devices.
   SmartLockStateHandler::HardlockState hardlock_state;
@@ -622,6 +638,8 @@ EasyUnlockServiceSignin::FindLoadedDataForCurrentUser() const {
 }
 
 void EasyUnlockServiceSignin::ShowInitialUserPodState() {
+  DCHECK(!base::FeatureList::IsEnabled(ash::features::kSmartLockUIRevamp));
+
   if (!IsAllowed() || !IsEnabled())
     return;
 

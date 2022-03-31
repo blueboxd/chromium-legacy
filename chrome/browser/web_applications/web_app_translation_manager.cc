@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/web_applications/proto/web_app_translations.pb.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace web_app {
 
@@ -27,15 +28,13 @@ LocaleOverrides ConvertTranslationItemToLocaleOverrides(
     blink::Manifest::TranslationItem translation) {
   LocaleOverrides locale_overrides;
   if (translation.name) {
-    locale_overrides.set_name(base::UTF16ToUTF8(translation.name.value()));
+    locale_overrides.set_name(translation.name.value());
   }
   if (translation.short_name) {
-    locale_overrides.set_short_name(
-        base::UTF16ToUTF8(translation.short_name.value()));
+    locale_overrides.set_short_name(translation.short_name.value());
   }
   if (translation.description) {
-    locale_overrides.set_description(
-        base::UTF16ToUTF8(translation.description.value()));
+    locale_overrides.set_description(translation.description.value());
   }
   return locale_overrides;
 }
@@ -44,18 +43,18 @@ blink::Manifest::TranslationItem ConvertLocaleOverridesToTranslationItem(
     LocaleOverrides locale_overrides) {
   blink::Manifest::TranslationItem translation_item;
 
-  std::u16string name = base::UTF8ToUTF16(locale_overrides.name());
-  translation_item.name =
-      name.empty() ? absl::nullopt : absl::make_optional(name);
+  if (locale_overrides.has_name()) {
+    translation_item.name = locale_overrides.name();
+  }
 
-  std::u16string short_name = base::UTF8ToUTF16(locale_overrides.short_name());
-  translation_item.short_name =
-      short_name.empty() ? absl::nullopt : absl::make_optional(short_name);
+  if (locale_overrides.has_short_name()) {
+    translation_item.short_name = locale_overrides.short_name();
+  }
 
-  std::u16string description =
-      base::UTF8ToUTF16(locale_overrides.description());
-  translation_item.description =
-      description.empty() ? absl::nullopt : absl::make_optional(description);
+  if (locale_overrides.has_description()) {
+    translation_item.description = locale_overrides.description();
+  }
+
   return translation_item;
 }
 
@@ -127,17 +126,20 @@ bool WriteTranslationsBlocking(
 
 WebAppTranslationManager::WebAppTranslationManager(
     Profile* profile,
-    WebAppRegistrar* registrar,
+    base::raw_ptr<WebAppInstallManager> install_manager,
     scoped_refptr<FileUtilsWrapper> utils)
-    : registrar_(registrar), utils_(std::move(utils)) {
+    : install_manager_(install_manager), utils_(std::move(utils)) {
   web_apps_directory_ = GetWebAppsRootDirectory(profile);
 }
 
 WebAppTranslationManager::~WebAppTranslationManager() = default;
 
 void WebAppTranslationManager::Start() {
-  ReadTranslations(base::DoNothing());
-  registrar_observation_.Observe(registrar_.get());
+  if (base::FeatureList::IsEnabled(
+          blink::features::kWebAppEnableTranslations)) {
+    ReadTranslations(base::DoNothing());
+    install_manager_observation_.Observe(install_manager_.get());
+  }
 }
 
 // TODO(crbug.com/1259777): Consider adding to cache when writing a translation
@@ -150,8 +152,8 @@ void WebAppTranslationManager::OnWebAppUninstalled(const AppId& app_id) {
   DeleteTranslations(app_id, base::DoNothing());
 }
 
-void WebAppTranslationManager::OnAppRegistrarDestroyed() {
-  registrar_observation_.Reset();
+void WebAppTranslationManager::OnWebAppInstallManagerDestroyed() {
+  install_manager_observation_.Reset();
 }
 
 void WebAppTranslationManager::WriteTranslations(
@@ -159,11 +161,16 @@ void WebAppTranslationManager::WriteTranslations(
     const base::flat_map<Locale, blink::Manifest::TranslationItem>&
         translations,
     WriteCallback callback) {
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, kTaskTraits,
-      base::BindOnce(WriteTranslationsBlocking, utils_, web_apps_directory_,
-                     std::move(app_id), std::move(translations)),
-      std::move(callback));
+  if (base::FeatureList::IsEnabled(
+          blink::features::kWebAppEnableTranslations)) {
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE, kTaskTraits,
+        base::BindOnce(WriteTranslationsBlocking, utils_, web_apps_directory_,
+                       std::move(app_id), std::move(translations)),
+        std::move(callback));
+  } else {
+    std::move(callback).Run(true);
+  }
 }
 
 void WebAppTranslationManager::DeleteTranslations(const AppId& app_id,

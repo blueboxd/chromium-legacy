@@ -11,7 +11,7 @@
 
 namespace wallpaper_handlers {
 
-// Fetcher that returns one dummy album and no resume token in response to a
+// Fetcher that returns an empty album list and no resume token in response to a
 // request for the user's Google Photos albums. Used to avoid network requests
 // in unit tests.
 class MockGooglePhotosAlbumsFetcher : public GooglePhotosAlbumsFetcher {
@@ -29,6 +29,11 @@ class MockGooglePhotosAlbumsFetcher : public GooglePhotosAlbumsFetcher {
               AddRequestAndStartIfNecessary,
               (const absl::optional<std::string>& resume_token,
                base::OnceCallback<void(GooglePhotosAlbumsCbkArgs)> callback),
+              (override));
+
+  MOCK_METHOD(GooglePhotosAlbumsCbkArgs,
+              ParseResponse,
+              (absl::optional<base::Value> response),
               (override));
 };
 
@@ -48,6 +53,39 @@ class MockGooglePhotosCountFetcher : public GooglePhotosCountFetcher {
   MOCK_METHOD(void,
               AddRequestAndStartIfNecessary,
               (base::OnceCallback<void(int)> callback),
+              (override));
+
+  MOCK_METHOD(int,
+              ParseResponse,
+              (absl::optional<base::Value> response),
+              (override));
+};
+
+// Fetcher that returns an empty photo list and no resume token in response to a
+// request for photos from the user's Google Photos library. Used to avoid
+// network requests in unit tests.
+class MockGooglePhotosPhotosFetcher : public GooglePhotosPhotosFetcher {
+ public:
+  explicit MockGooglePhotosPhotosFetcher(Profile* profile);
+
+  MockGooglePhotosPhotosFetcher(const MockGooglePhotosPhotosFetcher&) = delete;
+  MockGooglePhotosPhotosFetcher& operator=(
+      const MockGooglePhotosPhotosFetcher&) = delete;
+
+  ~MockGooglePhotosPhotosFetcher() override;
+
+  // GooglePhotosPhotosFetcher:
+  MOCK_METHOD(void,
+              AddRequestAndStartIfNecessary,
+              (const absl::optional<std::string>& item_id,
+               const absl::optional<std::string>& album_id,
+               const absl::optional<std::string>& resume_token,
+               base::OnceCallback<void(GooglePhotosPhotosCbkArgs)> callback),
+              (override));
+
+  MOCK_METHOD(GooglePhotosPhotosCbkArgs,
+              ParseResponse,
+              (absl::optional<base::Value> response),
               (override));
 };
 

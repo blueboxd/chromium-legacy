@@ -99,6 +99,8 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.layouts.LayoutTestUtils;
+import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
@@ -133,6 +135,7 @@ import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.browser_ui.widget.chips.ChipView;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -142,7 +145,6 @@ import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.ui.util.ColorUtils;
-import org.chromium.ui.widget.ChipView;
 import org.chromium.ui.widget.ChromeImageView;
 import org.chromium.ui.widget.ViewLookupCachingFrameLayout;
 
@@ -2241,9 +2243,8 @@ public class StartSurfaceLayoutTest {
         waitForCaptureRateControl();
         // TODO(wychen): use TabUiTestHelper.enterTabSwitcher() instead.
         //  Might increase flakiness though. See crbug.com/1024742.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(true));
-        assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        LayoutTestUtils.startShowingAndWaitForLayout(
+                mActivityTestRule.getActivity().getLayoutManager(), LayoutType.TAB_SWITCHER, true);
 
         // Make sure the fading animation is done.
         int delta;
@@ -2278,7 +2279,9 @@ public class StartSurfaceLayoutTest {
             // If the last thumbnail is missing, try without animation.
             Espresso.pressBack();
             TestThreadUtils.runOnUiThreadBlocking(
-                    () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(false));
+                    ()
+                            -> mActivityTestRule.getActivity().getLayoutManager().showLayout(
+                                    LayoutType.TAB_SWITCHER, false));
             TabUiTestHelper.verifyAllTabsHaveThumbnail(
                     mActivityTestRule.getActivity().getCurrentTabModel());
         }

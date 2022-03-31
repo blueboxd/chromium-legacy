@@ -70,9 +70,11 @@ class AttributionInternalsHandlerImpl
   void OnReportsChanged() override;
   void OnSourceDeactivated(
       const AttributionStorage::DeactivatedSource& deactivated_source) override;
+  void OnSourceHandled(const StorableSource& source,
+                       StorableSource::Result result) override;
   void OnReportSent(const AttributionReport& report,
                     const SendResult& info) override;
-  void OnReportDropped(
+  void OnTriggerHandled(
       const AttributionStorage::CreateReportResult& result) override;
 
   raw_ptr<WebUI> web_ui_;

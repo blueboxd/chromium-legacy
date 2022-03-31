@@ -25,7 +25,7 @@
 #include "build/buildflag.h"
 #include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
 #include "content/browser/interest_group/auction_process_manager.h"
-#include "content/browser/interest_group/interest_group_manager.h"
+#include "content/browser/interest_group/interest_group_manager_impl.h"
 #include "content/browser/interest_group/interest_group_storage.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
@@ -40,8 +40,8 @@
 #include "content/services/auction_worklet/auction_worklet_service_impl.h"
 #include "content/services/auction_worklet/public/mojom/auction_worklet_service.mojom.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
+#include "content/test/fenced_frame_test_utils.h"
 #include "content/test/test_content_browser_client.h"
-#include "content/test/test_fenced_frame_url_mapping_result_observer.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -361,9 +361,10 @@ class AdAuctionServiceImplTest : public RenderViewHostTestHarness {
     RenderViewHostTestHarness::SetUp();
     NavigateAndCommit(kUrlA);
 
-    manager_ = (static_cast<StoragePartitionImpl*>(
-                    browser_context()->GetDefaultStoragePartition()))
-                   ->GetInterestGroupManager();
+    manager_ = static_cast<InterestGroupManagerImpl*>(
+        browser_context()
+            ->GetDefaultStoragePartition()
+            ->GetInterestGroupManager());
     // Process creation crashes in the Chrome zygote init in unit tests, so run
     // the auction "processes" in-process instead.
     manager_->set_auction_process_manager_for_testing(
@@ -555,7 +556,7 @@ class AdAuctionServiceImplTest : public RenderViewHostTestHarness {
 
   AllowInterestGroupContentBrowserClient content_browser_client_;
   raw_ptr<ContentBrowserClient> old_content_browser_client_ = nullptr;
-  raw_ptr<InterestGroupManager> manager_;
+  raw_ptr<InterestGroupManagerImpl> manager_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 
   // Must be destroyed before RenderViewHostTestHarness::TearDown().
@@ -2221,8 +2222,8 @@ function scoreAd(
   auction_config->decision_logic_url = kUrlA.Resolve(kDecisionUrlPath);
   auction_config->auction_ad_config_non_shared_params =
       blink::mojom::AuctionAdConfigNonSharedParams::New();
-  auction_config->auction_ad_config_non_shared_params->interest_group_buyers =
-      blink::mojom::InterestGroupBuyers::NewBuyers({kOriginA});
+  auction_config->auction_ad_config_non_shared_params->interest_group_buyers = {
+      kOriginA};
   absl::optional<GURL> auction_result =
       RunAdAuctionAndFlush(std::move(auction_config));
   ASSERT_NE(auction_result, absl::nullopt);
@@ -2280,8 +2281,8 @@ function reportResult(auctionConfig, browserSignals) {
   auction_config->decision_logic_url = kUrlA.Resolve(kDecisionUrlPath);
   auction_config->auction_ad_config_non_shared_params =
       blink::mojom::AuctionAdConfigNonSharedParams::New();
-  auction_config->auction_ad_config_non_shared_params->interest_group_buyers =
-      blink::mojom::InterestGroupBuyers::NewBuyers({kOriginA});
+  auction_config->auction_ad_config_non_shared_params->interest_group_buyers = {
+      kOriginA};
   absl::optional<GURL> auction_result =
       RunAdAuctionAndFlush(std::move(auction_config));
   EXPECT_NE(auction_result, absl::nullopt);
@@ -2362,8 +2363,7 @@ function reportResult() {}
   succeed_auction_config->auction_ad_config_non_shared_params =
       blink::mojom::AuctionAdConfigNonSharedParams::New();
   succeed_auction_config->auction_ad_config_non_shared_params
-      ->interest_group_buyers =
-      blink::mojom::InterestGroupBuyers::NewBuyers({kOriginA});
+      ->interest_group_buyers = {kOriginA};
 
   auto fail_auction_config = blink::mojom::AuctionAdConfig::New();
   fail_auction_config->seller = kOriginA;
@@ -2372,8 +2372,7 @@ function reportResult() {}
   fail_auction_config->auction_ad_config_non_shared_params =
       blink::mojom::AuctionAdConfigNonSharedParams::New();
   fail_auction_config->auction_ad_config_non_shared_params
-      ->interest_group_buyers =
-      blink::mojom::InterestGroupBuyers::NewBuyers({kOriginA});
+      ->interest_group_buyers = {kOriginA};
 
   // 1st auction
   EXPECT_NE(RunAdAuctionAndFlush(succeed_auction_config->Clone()),
@@ -2528,8 +2527,7 @@ function reportResult() {}
   succeed_auction_config->auction_ad_config_non_shared_params =
       blink::mojom::AuctionAdConfigNonSharedParams::New();
   succeed_auction_config->auction_ad_config_non_shared_params
-      ->interest_group_buyers =
-      blink::mojom::InterestGroupBuyers::NewBuyers({kOriginA});
+      ->interest_group_buyers = {kOriginA};
 
   auto fail_auction_config = blink::mojom::AuctionAdConfig::New();
   fail_auction_config->seller = kOriginA;
@@ -2538,8 +2536,7 @@ function reportResult() {}
   fail_auction_config->auction_ad_config_non_shared_params =
       blink::mojom::AuctionAdConfigNonSharedParams::New();
   fail_auction_config->auction_ad_config_non_shared_params
-      ->interest_group_buyers =
-      blink::mojom::InterestGroupBuyers::NewBuyers({kOriginA});
+      ->interest_group_buyers = {kOriginA};
 
   // 1st auction
   EXPECT_NE(RunAdAuctionAndFlush(succeed_auction_config->Clone()),
@@ -2689,8 +2686,7 @@ function reportResult() {}
   succeed_auction_config->auction_ad_config_non_shared_params =
       blink::mojom::AuctionAdConfigNonSharedParams::New();
   succeed_auction_config->auction_ad_config_non_shared_params
-      ->interest_group_buyers =
-      blink::mojom::InterestGroupBuyers::NewBuyers({kOriginA});
+      ->interest_group_buyers = {kOriginA};
 
   for (int i = 0; i < kNumAuctions; i++) {
     EXPECT_NE(RunAdAuctionAndFlush(succeed_auction_config->Clone()),
@@ -2812,8 +2808,7 @@ function reportResult() {}
   succeed_auction_config->auction_ad_config_non_shared_params =
       blink::mojom::AuctionAdConfigNonSharedParams::New();
   succeed_auction_config->auction_ad_config_non_shared_params
-      ->interest_group_buyers =
-      blink::mojom::InterestGroupBuyers::NewBuyers({kOriginA});
+      ->interest_group_buyers = {kOriginA};
 
   auto fail_auction_config = blink::mojom::AuctionAdConfig::New();
   fail_auction_config->seller = kOriginA;
@@ -2822,8 +2817,7 @@ function reportResult() {}
   fail_auction_config->auction_ad_config_non_shared_params =
       blink::mojom::AuctionAdConfigNonSharedParams::New();
   fail_auction_config->auction_ad_config_non_shared_params
-      ->interest_group_buyers =
-      blink::mojom::InterestGroupBuyers::NewBuyers({kOriginA});
+      ->interest_group_buyers = {kOriginA};
 
   // 1st auction
   EXPECT_NE(RunAdAuctionAndFlush(succeed_auction_config->Clone()),
@@ -2930,8 +2924,7 @@ function reportResult() {}
   succeed_auction_config->auction_ad_config_non_shared_params =
       blink::mojom::AuctionAdConfigNonSharedParams::New();
   succeed_auction_config->auction_ad_config_non_shared_params
-      ->interest_group_buyers =
-      blink::mojom::InterestGroupBuyers::NewBuyers({kOriginA});
+      ->interest_group_buyers = {kOriginA};
 
   // Pick some large number, larger than the auction limit.
   constexpr int kNumAuctions = 10;

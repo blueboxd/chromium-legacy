@@ -3,7 +3,12 @@
 // found in the LICENSE file.
 
 import * as animate from '../../animation.js';
-import {DeviceInfoUpdater} from '../../device/device_info_updater.js';
+import {
+  CameraConfig,
+  CameraInfo,
+  CameraManager,
+  CameraUI,
+} from '../../device/index.js';
 import * as dom from '../../dom.js';
 import {I18nString} from '../../i18n_string.js';
 import * as localStorage from '../../models/local_storage.js';
@@ -13,11 +18,19 @@ import {Facing, ViewName} from '../../type.js';
 import * as util from '../../util.js';
 
 /**
+ * All supported constant fps options of video recording.
+ */
+const SUPPORTED_CONSTANT_FPS = [30, 60];
+
+/**
  * Creates a controller for the options of Camera view.
  */
-export class Options {
+export class Options implements CameraUI {
   private readonly toggleMic = dom.get('#toggle-mic', HTMLInputElement);
   private readonly toggleMirror = dom.get('#toggle-mirror', HTMLInputElement);
+  private readonly toggleFps = dom.get('#toggle-fps', HTMLInputElement);
+  private readonly switchDeviceButton =
+      dom.get('#switch-device', HTMLButtonElement);
 
   /**
    * Device id of the camera device currently used or selected.
@@ -34,20 +47,22 @@ export class Options {
    */
   private audioTrack: MediaStreamTrack|null = null;
 
+  private cameraAvailble = false;
+
   /**
    * @param doSwitchDevice Callback to trigger device switching.
    */
-  constructor(
-      private readonly infoUpdater: DeviceInfoUpdater,
-      private readonly doSwitchDevice: () => Promise<void>| null,
-  ) {
-    dom.get('#switch-device', HTMLButtonElement)
-        .addEventListener('click', () => {
-          const switching = this.doSwitchDevice();
-          if (switching !== null) {
-            animate.play(dom.get('#switch-device', HTMLElement));
-          }
-        });
+  constructor(private readonly cameraManager: CameraManager) {
+    this.cameraManager.registerCameraUI(this);
+    this.switchDeviceButton.addEventListener('click', () => {
+      if (state.get(state.State.TAKING) || !this.cameraAvailble) {
+        return;
+      }
+      const switching = this.cameraManager.switchCamera();
+      if (switching !== null) {
+        animate.play(dom.get('#switch-device', HTMLElement));
+      }
+    });
     dom.get('#open-settings', HTMLButtonElement)
         .addEventListener('click', () => nav.open(ViewName.SETTINGS));
 
@@ -66,20 +81,78 @@ export class Options {
     // Remove the deprecated values.
     localStorage.remove('effectIndex', 'toggleMulti', 'toggleMirror');
 
-    this.infoUpdater.addDeviceChangeListener((updater) => {
-      state.set(state.State.MULTI_CAMERA, updater.getDevicesInfo().length >= 2);
+    state.addObserver(state.State.TAKING, () => {
+      this.updateOptionAvailability();
+    });
+    this.toggleFps.addEventListener('click', (e) => {
+      if (state.get(state.State.TAKING) || !this.cameraAvailble) {
+        e.preventDefault();
+        return;
+      }
+    });
+    this.toggleFps.addEventListener('change', () => {
+      const prefFps = this.toggleFps.checked ? 60 : 30;
+      this.updateVideoConstFpsOption(prefFps);
+      const reconfiguring = this.cameraManager.setPrefVideoConstFps(prefFps);
+      if (reconfiguring === null) {
+        return;
+      }
+      state.set(state.State.MODE_SWITCHING, true);
+      (async () => {
+        const hasError = !await reconfiguring;
+        state.set(state.State.MODE_SWITCHING, false, {hasError});
+      })();
     });
   }
 
-  /**
-   * Updates the options' values for the current constraints and stream.
-   * @param stream Current Stream in use.
-   */
-  updateValues(stream: MediaStream, deviceId: string, facing: Facing): void {
-    this.videoDeviceId = deviceId;
-    this.updateMirroring(facing);
-    this.audioTrack = stream.getAudioTracks()[0];
+  private updateVideoConstFpsOption(prefFps: number|null) {
+    this.toggleFps.checked = prefFps === 60;
+    SUPPORTED_CONSTANT_FPS.forEach(
+        (fps) => state.set(state.assertState(`fps-${fps}`), fps === prefFps));
+  }
+
+  onUpdateCapability(cameraInfo: CameraInfo): void {
+    state.set(state.State.MULTI_CAMERA, cameraInfo.devicesInfo.length >= 2);
+  }
+
+  onUpdateConfig(config: CameraConfig): void {
+    this.videoDeviceId = config.deviceId;
+    this.updateMirroring(config.facing);
+    this.audioTrack = this.cameraManager.getAudioTrack();
     this.updateAudioByMic();
+
+    this.toggleFps.hidden = (() => {
+      if (config.facing !== Facing.EXTERNAL) {
+        return true;
+      }
+      const info = this.cameraManager.getCameraInfo().getCamera3DeviceInfo(
+          this.videoDeviceId);
+      if (info === null) {
+        return true;
+      }
+      const constFpses = info.fpsRanges.filter(
+          ({minFps, maxFps}) =>
+              minFps === maxFps && SUPPORTED_CONSTANT_FPS.includes(minFps));
+      return constFpses.length <= 1;
+    })();
+    if (!this.toggleFps.hidden) {
+      this.updateVideoConstFpsOption(this.cameraManager.getConstFps());
+    }
+  }
+
+  onCameraAvailble(): void {
+    this.cameraAvailble = true;
+    this.updateOptionAvailability();
+  }
+
+  onCameraUnavailable(): void {
+    this.cameraAvailble = false;
+    this.updateOptionAvailability();
+  }
+
+  private updateOptionAvailability(): void {
+    this.toggleFps.disabled =
+        !this.cameraAvailble || state.get(state.State.TAKING);
   }
 
   /**
@@ -92,7 +165,8 @@ export class Options {
     let enabled = facing !== Facing.ENVIRONMENT;
 
     // Override mirroring only if mirroring was toggled manually.
-    if (this.videoDeviceId in this.mirroringToggles) {
+    if (this.videoDeviceId !== null &&
+        this.videoDeviceId in this.mirroringToggles) {
       enabled = this.mirroringToggles[this.videoDeviceId];
     }
 
@@ -103,8 +177,10 @@ export class Options {
    * Saves the toggled mirror state for the current video device.
    */
   private saveMirroring() {
-    this.mirroringToggles[this.videoDeviceId] = this.toggleMirror.checked;
-    localStorage.set('mirroringToggles', this.mirroringToggles);
+    if (this.videoDeviceId !== null) {
+      this.mirroringToggles[this.videoDeviceId] = this.toggleMirror.checked;
+      localStorage.set('mirroringToggles', this.mirroringToggles);
+    }
   }
 
   /**

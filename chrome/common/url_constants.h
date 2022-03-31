@@ -161,8 +161,8 @@ extern const char kGoogleAccountLanguagesURL[];
 extern const char kGoogleAccountActivityControlsURL[];
 
 // URL of the 'Activity controls' section of the privacy settings page, with
-// privacy review parameters and a link for users to manage data.
-extern const char kGoogleAccountActivityControlsURLInPrivacyReview[];
+// privacy guide parameters and a link for users to manage data.
+extern const char kGoogleAccountActivityControlsURLInPrivacyGuide[];
 
 // URL of the Google Account.
 extern const char kGoogleAccountURL[];
@@ -281,6 +281,9 @@ extern const char kAccountManagerLearnMoreURL[];
 
 // The URL for the "Account recovery" page.
 extern const char kAccountRecoveryURL[];
+
+// The URL for the "How to add a new user account on a Chromebook" page.
+extern const char kAddNewUserURL[];
 
 // The URL for the "learn more" link for Google Play Store (ARC) settings.
 extern const char kAndroidAppsLearnMoreURL[];

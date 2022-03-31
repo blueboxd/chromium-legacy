@@ -192,6 +192,17 @@ void CallServiceUpdate(UpdaterScope updater_scope,
                        const std::string& app_id,
                        bool same_version_update_allowed);
 
+void SetupFakeLegacyUpdaterData(UpdaterScope scope);
+void ExpectLegacyUpdaterDataMigrated(UpdaterScope scope);
+
+void RunRecoveryComponent(UpdaterScope scope,
+                          const std::string& app_id,
+                          const base::Version& version);
+
+void ExpectLastChecked(UpdaterScope scope);
+
+void ExpectLastStarted(UpdaterScope scope);
+
 }  // namespace test
 }  // namespace updater
 

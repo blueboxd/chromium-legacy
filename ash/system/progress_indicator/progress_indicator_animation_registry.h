@@ -5,12 +5,16 @@
 #ifndef ASH_SYSTEM_PROGRESS_INDICATOR_PROGRESS_INDICATOR_ANIMATION_REGISTRY_H_
 #define ASH_SYSTEM_PROGRESS_INDICATOR_PROGRESS_INDICATOR_ANIMATION_REGISTRY_H_
 
+#include <map>
+#include <memory>
+
+#include "ash/ash_export.h"
+#include "ash/system/progress_indicator/progress_icon_animation.h"
+#include "ash/system/progress_indicator/progress_ring_animation.h"
 #include "base/callback_forward.h"
+#include "base/callback_list.h"
 
 namespace ash {
-
-class HoldingSpaceProgressIconAnimation;
-class HoldingSpaceProgressRingAnimation;
 
 // A registry for progress indicator animations.
 //
@@ -27,41 +31,88 @@ class HoldingSpaceProgressRingAnimation;
 //     for a progress indicator's outer ring, as opposed to progress icon
 //     animations which independently drive the animation of properties for a
 //     progress indicator's inner icon.
-class ProgressIndicatorAnimationRegistry {
+class ASH_EXPORT ProgressIndicatorAnimationRegistry {
  public:
+  ProgressIndicatorAnimationRegistry();
+  ProgressIndicatorAnimationRegistry(
+      const ProgressIndicatorAnimationRegistry&) = delete;
+  ProgressIndicatorAnimationRegistry& operator=(
+      const ProgressIndicatorAnimationRegistry&) = delete;
+  ~ProgressIndicatorAnimationRegistry();
+
   using ProgressIconAnimationChangedCallbackList =
-      base::RepeatingCallbackList<void(HoldingSpaceProgressIconAnimation*)>;
+      base::RepeatingCallbackList<void(ProgressIconAnimation*)>;
 
   // Adds the specified `callback` to be notified of changes to the progress
   // icon animation associated with the specified `key`. The `callback` will
   // continue to receive events so long as both `this` and the returned
   // subscription exist.
-  virtual base::CallbackListSubscription
-  AddProgressIconAnimationChangedCallbackForKey(
+  base::CallbackListSubscription AddProgressIconAnimationChangedCallbackForKey(
       const void* key,
-      ProgressIconAnimationChangedCallbackList::CallbackType callback) = 0;
+      ProgressIconAnimationChangedCallbackList::CallbackType callback);
 
   using ProgressRingAnimationChangedCallbackList =
-      base::RepeatingCallbackList<void(HoldingSpaceProgressRingAnimation*)>;
+      base::RepeatingCallbackList<void(ProgressRingAnimation*)>;
 
   // Adds the specified `callback` to be notified of changes to the progress
   // ring animation associated with the specified `key`. The `callback` will
   // continue to receive events so long as both `this` and the returned
   // subscription exist.
-  virtual base::CallbackListSubscription
-  AddProgressRingAnimationChangedCallbackForKey(
+  base::CallbackListSubscription AddProgressRingAnimationChangedCallbackForKey(
       const void* key,
-      ProgressRingAnimationChangedCallbackList::CallbackType callback) = 0;
+      ProgressRingAnimationChangedCallbackList::CallbackType callback);
 
   // Returns the progress icon animation registered for the specified `key`.
   // NOTE: This may return `nullptr` if no such animation is registered.
-  virtual HoldingSpaceProgressIconAnimation* GetProgressIconAnimationForKey(
-      const void* key) = 0;
+  ProgressIconAnimation* GetProgressIconAnimationForKey(const void* key);
 
   // Returns the progress ring animation registered for the specified `key`.
   // NOTE: This may return `nullptr` if no such animation is registered.
-  virtual HoldingSpaceProgressRingAnimation* GetProgressRingAnimationForKey(
-      const void* key) = 0;
+  ProgressRingAnimation* GetProgressRingAnimationForKey(const void* key);
+
+  // Sets and returns the progress icon animation registered for the specified
+  // `key`. NOTE: `animation` may be `nullptr` to unregister `key`.
+  ProgressIconAnimation* SetProgressIconAnimationForKey(
+      const void* key,
+      std::unique_ptr<ProgressIconAnimation> animation);
+
+  // Sets and returns the progress ring animation registered for the specified
+  // `key`. NOTE: `animation` may be `nullptr` to unregister `key`.
+  ProgressRingAnimation* SetProgressRingAnimationForKey(
+      const void* key,
+      std::unique_ptr<ProgressRingAnimation> animation);
+
+  // Erases all animations for all keys.
+  void EraseAllAnimations();
+
+  // Erases all animations for the specified `key`.
+  void EraseAllAnimationsForKey(const void* key);
+
+  // Erases all animations for all keys for which the specified `predicate`
+  // returns `true`.
+  void EraseAllAnimationsForKeyIf(
+      base::RepeatingCallback<bool(const void* key)> predicate);
+
+ private:
+  // Mapping of keys to their associated progress icon animations.
+  std::map<const void*, std::unique_ptr<ProgressIconAnimation>>
+      icon_animations_by_key_;
+
+  // Mapping of keys to their associated icon animation changed callback lists.
+  // Whenever an animation for a given key is changed, the callback list for
+  // that key will be notified.
+  std::map<const void*, ProgressIconAnimationChangedCallbackList>
+      icon_animation_changed_callback_lists_by_key_;
+
+  // Mapping of keys to their associated progress ring animations.
+  std::map<const void*, std::unique_ptr<ProgressRingAnimation>>
+      ring_animations_by_key_;
+
+  // Mapping of keys to their associated ring animation changed callback lists.
+  // Whenever an animation for a given key is changed, the callback list for
+  // that key will be notified.
+  std::map<const void*, ProgressRingAnimationChangedCallbackList>
+      ring_animation_changed_callback_lists_by_key_;
 };
 
 }  // namespace ash

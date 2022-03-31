@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "ash/components/arc/arc_util.h"
+#include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "ash/components/proximity_auth/screenlock_bridge.h"
 #include "ash/components/proximity_auth/smart_lock_metrics_recorder.h"
 #include "ash/components/settings/cros_settings_names.h"
@@ -48,7 +49,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
@@ -478,13 +478,14 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(
     return true;
   }
 
+  user_manager::KnownUser known_user(g_browser_process->local_state());
   const absl::optional<base::TimeDelta> offline_signin_time_limit =
-      user_manager::known_user::GetOfflineSigninLimit(user->GetAccountId());
+      known_user.GetOfflineSigninLimit(user->GetAccountId());
   if (!offline_signin_time_limit)
     return false;
 
   const base::Time last_gaia_signin_time =
-      user_manager::known_user::GetLastOnlineSignin(user->GetAccountId());
+      known_user.GetLastOnlineSignin(user->GetAccountId());
   if (last_gaia_signin_time == base::Time())
     return false;
   const base::Time now = base::DefaultClock::GetInstance()->Now();
@@ -641,13 +642,14 @@ void UserSelectionScreen::HandleFocusPod(const AccountId& account_id) {
           DisplayedScreen::SIGN_IN_SCREEN /* honor_device_policy */);
   lock_screen_utils::SetKeyboardSettings(account_id);
 
-  bool use_24hour_clock = false;
-  if (!user_manager::known_user::GetBooleanPref(
-          account_id, ::prefs::kUse24HourClock, &use_24hour_clock)) {
+  user_manager::KnownUser known_user(g_browser_process->local_state());
+  absl::optional<bool> use_24hour_clock =
+      known_user.FindBoolPath(account_id, ::prefs::kUse24HourClock);
+  if (!use_24hour_clock.has_value()) {
     focused_user_clock_type_.reset();
   } else {
     base::HourClockType clock_type =
-        use_24hour_clock ? base::k24HourClock : base::k12HourClock;
+        use_24hour_clock.value() ? base::k24HourClock : base::k12HourClock;
     if (focused_user_clock_type_.has_value()) {
       focused_user_clock_type_->UpdateClockType(clock_type);
     } else {
@@ -868,13 +870,11 @@ UserSelectionScreen::UpdateAndReturnUserListForAsh() {
     user_info.basic_user_info.type = user->GetType();
     user_info.basic_user_info.account_id = user->GetAccountId();
 
-    if (!user_manager::known_user::GetBooleanPref(
-            account_id, ::prefs::kUse24HourClock,
-            &user_info.use_24hour_clock)) {
-      // Fallback to system default in case pref was not found.
-      user_info.use_24hour_clock =
-          base::GetHourClockType() == base::k24HourClock;
-    }
+    user_manager::KnownUser known_user(g_browser_process->local_state());
+
+    user_info.use_24hour_clock =
+        known_user.FindBoolPath(account_id, ::prefs::kUse24HourClock)
+            .value_or(base::GetHourClockType() == base::k24HourClock);
 
     user_info.basic_user_info.display_name =
         base::UTF16ToUTF8(user->GetDisplayName());
@@ -886,14 +886,19 @@ UserSelectionScreen::UpdateAndReturnUserListForAsh() {
     user_info.can_remove = CanRemoveUser(user);
     user_info.fingerprint_state =
         quick_unlock::GetFingerprintStateForUser(user);
+
+    auto* easy_unlock_service = GetEasyUnlockServiceForUser(account_id);
+    if (easy_unlock_service) {
+      user_info.smart_lock_state =
+          easy_unlock_service->GetInitialSmartLockState();
+    }
+
     user_info.show_pin_pad_for_password = false;
-    if (user_manager::known_user::GetIsEnterpriseManaged(
-            user->GetAccountId()) &&
+    if (known_user.GetIsEnterpriseManaged(user->GetAccountId()) &&
         user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
-      std::string account_manager;
-      if (user_manager::known_user::GetAccountManager(user->GetAccountId(),
-                                                      &account_manager)) {
-        user_info.user_account_manager = account_manager;
+      if (const std::string* account_manager =
+              known_user.GetAccountManager(user->GetAccountId())) {
+        user_info.user_account_manager = *account_manager;
       } else {
         user_info.user_account_manager =
             gaia::ExtractDomainName(user->display_email());
@@ -901,9 +906,13 @@ UserSelectionScreen::UpdateAndReturnUserListForAsh() {
     }
     CrosSettings::Get()->GetBoolean(kDeviceShowNumericKeyboardForPassword,
                                     &user_info.show_pin_pad_for_password);
-    user_manager::known_user::GetBooleanPref(
-        user->GetAccountId(), prefs::kLoginDisplayPasswordButtonEnabled,
-        &user_info.show_display_password_button);
+    if (absl::optional<bool> show_display_password_button =
+            known_user.FindBoolPath(
+                user->GetAccountId(),
+                prefs::kLoginDisplayPasswordButtonEnabled)) {
+      user_info.show_display_password_button =
+          show_display_password_button.value();
+    }
 
     // Fill multi-profile data.
     if (!is_signin_to_add) {
@@ -979,8 +988,13 @@ EasyUnlockService* UserSelectionScreen::GetEasyUnlockServiceForUser(
   ProfileHelper* profile_helper = ProfileHelper::Get();
   Profile* profile = profile_helper->GetProfileByUser(unlock_user);
 
-  // The user profile should exist if and only if this is the lock screen.
-  DCHECK_EQ(!!profile, GetScreenType() == LOCK_SCREEN);
+  // If the active screen is the lock screen, a Profile must exist that is
+  // associated with |unlock_user|. This does not apply vice-versa: there are
+  // some valid scenarios where |profile| exists but the active screen is not
+  // the lock screen.
+  if (GetScreenType() == LOCK_SCREEN) {
+    DCHECK(profile);
+  }
 
   if (!profile)
     profile = profile_helper->GetSigninProfile();

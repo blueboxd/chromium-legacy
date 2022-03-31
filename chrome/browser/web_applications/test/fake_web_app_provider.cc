@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
-#include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_manager.h"
@@ -121,6 +121,16 @@ void FakeWebAppProvider::SetOsIntegrationManager(
 void FakeWebAppProvider::SkipAwaitingExtensionSystem() {
   CheckNotStarted();
   skip_awaiting_extension_system_ = true;
+}
+
+void FakeWebAppProvider::StartWithSubsystems() {
+  CheckNotStarted();
+  SetRunSubsystemStartupTasks(true);
+  // Use a TestSystemWebAppManager to skip system web apps being
+  // auto-installed on |Start|.
+  SetSystemWebAppManager(
+      std::make_unique<web_app::TestSystemWebAppManager>(profile_.get()));
+  Start();
 }
 
 WebAppRegistrarMutable& FakeWebAppProvider::GetRegistrarMutable() const {

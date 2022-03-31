@@ -80,11 +80,18 @@
             disabled$="[[isConnectDisconnectBtnDisabled(pageState_)]]"
             class="action-button"
             on-click="onConnectDisconnectBtnClick_">
-          [[getBluetoothConnectDisconnectBtnLabel_(device_.*, pageState_)]]
+          [[getBluetoothConnectDisconnectBtnLabel_(isDeviceConnected_)]]
         </cr-button>
       </template>
     </div>
   </div>
+  <template is="dom-if"
+      if="[[shouldShowTrueWirelessImages_(device_.*)]]" restamp>
+    <os-settings-bluetooth-true-wireless-images
+        id="trueWirelessImages"
+        device="[[device_.deviceProperties]]">
+    </os-settings-bluetooth-true-wireless-images>
+  </template>
   <template is="dom-if"
       if="[[shouldShowNonAudioOutputDeviceMessage_(device_.*)]]" restamp>
     <div id="nonAudioOutputDeviceMessage"

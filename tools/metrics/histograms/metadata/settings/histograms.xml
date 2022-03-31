@@ -109,7 +109,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.HomePageEngineType" enum="OmniboxSearchEngineType"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>mpearson@chromium.org</owner>
   <owner>csharp@chromium.org</owner>
   <summary>
@@ -160,13 +160,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.PinUnlockSetup" enum="LockScreenProgress"
-    expires_after="2022-04-10">
-  <owner>rsorokin@chromium.org</owner>
-  <owner>jessejames@chromium.org</owner>
-  <owner>cros-oac@google.com</owner>
+    expires_after="2022-06-10">
+  <owner>anastasiian@chromium.org</owner>
+  <owner>teresachow@google.com</owner>
+  <owner>cros-lurs@google.com</owner>
   <summary>
     The users progress through the pin unlock setup wizard. Each type
-    corresponds to the user completeing a different stage of the setup wizard.
+    corresponds to the user completing a different stage of the setup wizard.
   </summary>
 </histogram>
 
@@ -181,7 +181,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.PrivacyElementInteractions"
-    enum="SettingsPrivacyElementInteractions" expires_after="2022-06-12">
+    enum="SettingsPrivacyElementInteractions" expires_after="2022-08-14">
   <owner>harrisonsean@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <owner>sauski@chromium.org</owner>
@@ -212,6 +212,29 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Settings.PrivacyGuide.SettingsStates"
+    enum="SettingsPrivacyGuideSettingsStates" expires_after="M104">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>rainhard@chromium.org</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <summary>
+    Records whether or not the user kept the same settings or changed it, and
+    the corresponding value, on every |Next| or |Back| button click inside of
+    Privacy guide.
+  </summary>
+</histogram>
+
+<histogram name="Settings.PrivacySandbox.DialogLoadTime" units="ms"
+    expires_after="M104">
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <summary>
+    Records the load time of the Privacy Sandbox Dialog. The load time is the
+    time between the dialog view created and HTML loaded (DOMContentLoaded).
+  </summary>
+</histogram>
+
 <histogram name="Settings.PrivacySandbox.Enabled"
     enum="SettingsPrivacySandboxEnabled" expires_after="2022-06-26">
   <owner>harrisonsean@chromium.org</owner>
@@ -221,6 +244,19 @@ chromium-metrics-reviews@google.com.
     Whether or not privacy sandbox apis are enabled, including the current state
     of cookie settings, and if it is disabled by policy. Recorded on profile
     startup. Values 8, 9, and 10 were added with M92.
+  </summary>
+</histogram>
+
+<histogram name="Settings.PrivacySandbox.InvalidTopicIdLocalized" units="units"
+    expires_after="M110">
+  <owner>sauski@google.com</owner>
+  <owner>chrome-friendly-settings@google.com</owner>
+  <summary>
+    Records the Topic ID which was provided for attempted localization, but
+    failed because the ID was outside the supported range.
+
+    Any entry in this histogram is unexpected, and indicates that the model
+    generating Topic IDs is generating IDs which cannot be handled by Chrome UI.
   </summary>
 </histogram>
 
@@ -269,21 +305,21 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.SafetyCheck.PasswordsResult"
-    enum="SafetyCheckPasswordsStatus" expires_after="2022-06-12">
+    enum="SafetyCheckPasswordsStatus" expires_after="2022-08-14">
   <owner>andzaytsev@google.com</owner>
   <owner>msramek@chromium.org</owner>
   <summary>Resulting state of the safety check password check.</summary>
 </histogram>
 
 <histogram name="Settings.SafetyCheck.SafeBrowsingResult"
-    enum="SafetyCheckSafeBrowsingStatus" expires_after="2022-06-05">
+    enum="SafetyCheckSafeBrowsingStatus" expires_after="2022-08-07">
   <owner>andzaytsev@google.com</owner>
   <owner>msramek@chromium.org</owner>
   <summary>Resulting state of the safety check Safe Browsing check.</summary>
 </histogram>
 
 <histogram name="Settings.SafetyCheck.UpdatesResult"
-    enum="SafetyCheckUpdateStatus" expires_after="2022-06-12">
+    enum="SafetyCheckUpdateStatus" expires_after="2022-08-14">
   <owner>andzaytsev@google.com</owner>
   <owner>msramek@chromium.org</owner>
   <summary>Resulting state of the safety check updates check.</summary>
@@ -384,7 +420,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Settings.StartupPageLoadSettings" enum="SessionStartupPref"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>mpearson@chromium.org</owner>
   <owner>tiborg@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>

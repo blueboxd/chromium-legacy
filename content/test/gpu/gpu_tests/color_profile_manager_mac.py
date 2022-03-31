@@ -2,11 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# The Foundation and Quartz modules are opaque and will trigger no-member
-# warnings on Mac. They will not exist on other platforms and will trigger
-# import-error warnings.
-# pylint: disable=no-member
-# pylint: disable=import-error
 # Variables will be pulled into globals() from the ColorSync framework, and will
 # trigger undefined-variables.
 # pylint: disable=undefined-variable
@@ -14,9 +9,11 @@
 
 import sys
 if sys.platform.startswith('darwin'):
+  # pylint: disable=import-error
   import Foundation
   import Quartz
   import objc
+  # pylint: enable=import-error
   # There is no module for the ColorSync framework, so synthesize one using
   # bridge # support.
   color_sync_framework = '/System/Library/Frameworks/ApplicationServices.' \
@@ -51,7 +48,7 @@ if sys.platform.startswith('darwin'):
 # Set |display_id| to use the color profile specified in |profile_url|. If
 # |profile_url| is None, then use the factor default.
 def SetDisplayCustomProfile(device_id, profile_url):
-  if profile_url == None:
+  if profile_url is None:
     profile_url = Foundation.kCFNull
   profile_info = {
       kColorSyncDeviceDefaultProfileID: profile_url,
@@ -59,7 +56,7 @@ def SetDisplayCustomProfile(device_id, profile_url):
   }
   result = ColorSyncDeviceSetCustomProfiles(kColorSyncDisplayDeviceClass,
                                             device_id, profile_info)
-  if result != True:
+  if not result:
     raise Exception('Failed to set display custom profile')
 
 

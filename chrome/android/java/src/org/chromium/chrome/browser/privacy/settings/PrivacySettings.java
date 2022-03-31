@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.privacy.secure_dns.SecureDnsSettings;
 import org.chromium.chrome.browser.privacy_review.PrivacyReviewDialog;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxReferrer;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxSettingsFragment;
+import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxSettingsFragmentV3;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.safe_browsing.metrics.SettingsAccessPoint;
 import org.chromium.chrome.browser.safe_browsing.settings.SafeBrowsingSettingsFragment;
@@ -77,15 +78,12 @@ public class PrivacySettings
         SettingsUtils.addPreferencesFromResource(this, R.xml.privacy_preferences);
         getActivity().setTitle(R.string.prefs_privacy_security);
 
-        findPreference(PREF_PRIVACY_SANDBOX)
-                .setSummary(PrivacySandboxSettingsFragment.getStatusString(getContext()));
+        Preference sandboxPreference = findPreference(PREF_PRIVACY_SANDBOX);
+        sandboxPreference.setSummary(PrivacySandboxSettingsFragment.getStatusString(getContext()));
         // Overwrite the click listener to pass a correct referrer to the fragment.
-        findPreference(PREF_PRIVACY_SANDBOX).setOnPreferenceClickListener(preference -> {
-            Bundle fragmentArgs = new Bundle();
-            fragmentArgs.putInt(PrivacySandboxSettingsFragment.PRIVACY_SANDBOX_REFERRER,
-                    PrivacySandboxReferrer.PRIVACY_SETTINGS);
-            new SettingsLauncherImpl().launchSettingsActivity(
-                    getContext(), PrivacySandboxSettingsFragment.class, fragmentArgs);
+        sandboxPreference.setOnPreferenceClickListener(preference -> {
+            PrivacySandboxSettingsFragmentV3.launchPrivacySandboxSettings(getContext(),
+                    new SettingsLauncherImpl(), PrivacySandboxReferrer.PRIVACY_SETTINGS);
             return true;
         });
 
@@ -123,10 +121,6 @@ public class PrivacySettings
         ChromeSwitchPreference canMakePaymentPref =
                 (ChromeSwitchPreference) findPreference(PREF_CAN_MAKE_PAYMENT);
         canMakePaymentPref.setOnPreferenceChangeListener(this);
-
-        Preference preloadPagesPreference = findPreference(PREF_PRELOAD_PAGES);
-        preloadPagesPreference.setSummary(
-                PreloadPagesSettingsFragment.getPreloadPagesSummaryString(getContext()));
 
         ChromeSwitchPreference httpsFirstModePref =
                 (ChromeSwitchPreference) findPreference(PREF_HTTPS_FIRST_MODE);
@@ -210,6 +204,12 @@ public class PrivacySettings
             doNotTrackPref.setSummary(prefService.getBoolean(Pref.ENABLE_DO_NOT_TRACK)
                             ? R.string.text_on
                             : R.string.text_off);
+        }
+
+        Preference preloadPagesPreference = findPreference(PREF_PRELOAD_PAGES);
+        if (preloadPagesPreference != null) {
+            preloadPagesPreference.setSummary(
+                    PreloadPagesSettingsFragment.getPreloadPagesSummaryString(getContext()));
         }
 
         Preference secureDnsPref = findPreference(PREF_SECURE_DNS);

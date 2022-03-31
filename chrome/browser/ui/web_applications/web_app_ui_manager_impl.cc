@@ -25,7 +25,7 @@
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
 #include "chrome/browser/ui/webui/web_app_internals/web_app_internals_source.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
-#include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_callback_app_identity.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -216,21 +216,24 @@ void WebAppUiManagerImpl::NotifyOnAllAppWindowsClosed(
 bool WebAppUiManagerImpl::UninstallAndReplaceIfExists(
     const std::vector<AppId>& from_apps,
     const AppId& to_app) {
-  bool has_migrated = false;
+  bool has_migrated_ui = false;
   bool uninstall_triggered = false;
   for (const AppId& from_app : from_apps) {
     if (!IsAppInstalled(profile_, from_app))
       continue;
 
-    if (!has_migrated) {
+    if (!has_migrated_ui) {
+      has_migrated_ui = true;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       // Grid position in app list.
       auto* app_list_syncable_service =
           app_list::AppListSyncableServiceFactory::GetForProfile(profile_);
-      if (app_list_syncable_service->GetSyncItem(from_app)) {
+      bool to_app_in_shelf =
+          app_list_syncable_service->GetPinPosition(to_app).IsValid();
+      // If the new app is already pinned to the shelf don't transfer UI prefs
+      // across as that could cause it to become unpinned.
+      if (!to_app_in_shelf)
         app_list_syncable_service->TransferItemAttributes(from_app, to_app);
-        has_migrated = true;
-      }
 #endif
 
       // If migration of user/UI data is required for other app types consider
@@ -252,7 +255,6 @@ bool WebAppUiManagerImpl::UninstallAndReplaceIfExists(
             to_app, GetExtensionDisplayMode(profile_, from_extension),
             /*is_user_action=*/false);
 
-        has_migrated = true;
         auto shortcut_info = web_app::ShortcutInfoForExtensionAndProfile(
             from_extension, profile_);
         auto callback =
@@ -263,7 +265,7 @@ bool WebAppUiManagerImpl::UninstallAndReplaceIfExists(
         uninstall_triggered = true;
         continue;
       }
-      has_migrated = true;
+
       // The from_app could be a web app.
       os_integration_manager_->GetShortcutInfoForApp(
           from_app,

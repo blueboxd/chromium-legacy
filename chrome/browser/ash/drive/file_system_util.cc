@@ -23,7 +23,7 @@
 #include "chromeos/login/login_state/login_state.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/base/command_line_switches.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
@@ -44,8 +44,7 @@ DriveIntegrationService* GetIntegrationServiceByProfile(Profile* profile) {
 }
 
 bool IsUnderDriveMountPoint(const base::FilePath& path) {
-  std::vector<base::FilePath::StringType> components;
-  path.GetComponents(&components);
+  std::vector<base::FilePath::StringType> components = path.GetComponents();
   if (components.size() < 4)
     return false;
   if (components[0] != FILE_PATH_LITERAL("/"))
@@ -92,7 +91,7 @@ bool IsDriveAvailableForProfile(Profile* profile) {
 
   // Disable drive if sync is disabled by command line flag. Outside tests, this
   // only occurs in cases already handled by the gaia account check above.
-  if (!switches::IsSyncAllowedByFlag())
+  if (!syncer::IsSyncAllowedByFlag())
     return false;
 
   return true;

@@ -16,12 +16,12 @@ import './tab_search_search_field.js';
 import './title_item.js';
 import './strings.m.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {listenOnce} from 'chrome://resources/js/util.m.js';
 import {Token} from 'chrome://resources/mojo/mojo/public/mojom/base/token.mojom-webui.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {DomRepeatEvent, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {fuzzySearch, FuzzySearchOptions} from './fuzzy_search.js';
 import {InfiniteList, NO_SELECTION, selectorNavigationKeys} from './infinite_list.js';
@@ -35,27 +35,6 @@ import {TitleItem} from './title_item.js';
 // The minimum number of list items we allow viewing regardless of browser
 // height. Includes a half row that hints to the user the capability to scroll.
 const MINIMUM_AVAILABLE_HEIGHT_LIST_ITEM_COUNT: number = 5.5;
-
-interface RepeaterEvent<T> extends Event {
-  model: {
-    item: T,
-    index: number,
-  };
-}
-
-interface RepeaterCustomEvent<M, P> extends CustomEvent<P> {
-  model: {
-    item: M,
-    index: number,
-  };
-}
-
-interface RepeaterKeyboardEvent<T> extends KeyboardEvent {
-  model: {
-    item: T,
-    index: number,
-  };
-}
 
 export interface TabSearchAppElement {
   $: {
@@ -324,12 +303,12 @@ export class TabSearchAppElement extends PolymerElement {
 
   private onSearchChanged_(e: CustomEvent<string>) {
     this.searchText_ = e.detail;
+    // Reset the selected item whenever a search query is provided.
+    // updateFilteredTabs_ will set the correct tab index for initial selection.
+    const tabsList = this.$.tabsList;
+    tabsList.selected = NO_SELECTION;
 
     this.updateFilteredTabs_();
-    // Reset the selected item whenever a search query is provided.
-    this.$.tabsList.selected =
-        this.selectableItemCount_() > 0 ? 0 : NO_SELECTION;
-
     this.$.searchField.announce(this.getA11ySearchResultText_());
   }
 
@@ -361,7 +340,7 @@ export class TabSearchAppElement extends PolymerElement {
     }, 0);
   }
 
-  private onItemClick_(e: RepeaterEvent<ItemData>) {
+  private onItemClick_(e: DomRepeatEvent<ItemData>) {
     const tabItem = e.model.item;
     this.tabItemAction_(tabItem, e.model.index);
   }
@@ -376,7 +355,7 @@ export class TabSearchAppElement extends PolymerElement {
       case TabItemType.OPEN_TAB:
         this.apiProxy_.switchToTab(
             {tabId: (itemData as TabData).tab.tabId}, !!this.searchText_,
-            tabIndex);
+            tabHasMediaAlerts((itemData as TabData).tab as Tab), tabIndex);
         action = 'SwitchTab';
         break;
       case TabItemType.RECENTLY_CLOSED_TAB:
@@ -400,17 +379,19 @@ export class TabSearchAppElement extends PolymerElement {
         Math.round(Date.now() - this.windowShownTimestamp_));
   }
 
-  private onItemClose_(e: RepeaterEvent<TabData>) {
+  private onItemClose_(e: DomRepeatEvent<TabData>) {
     performance.mark('tab_search:close_tab:metric_begin');
     const tabId = e.model.item.tab.tabId;
-    this.apiProxy_.closeTab(tabId, !!this.searchText_, e.model.index);
+    this.apiProxy_.closeTab(
+        tabId, !!this.searchText_, tabHasMediaAlerts((e.model.item.tab as Tab)),
+        e.model.index);
     this.announceA11y_(loadTimeData.getString('a11yTabClosed'));
     listenOnce(this.$.tabsList, 'iron-items-changed', () => {
       performance.mark('tab_search:close_tab:metric_end');
     });
   }
 
-  private onItemKeyDown_(e: RepeaterKeyboardEvent<ItemData>) {
+  private onItemKeyDown_(e: DomRepeatEvent<ItemData, KeyboardEvent>) {
     if (e.key !== 'Enter' && e.key !== ' ') {
       return;
     }
@@ -446,24 +427,16 @@ export class TabSearchAppElement extends PolymerElement {
         profileData.recentlyClosedSectionExpanded;
 
     this.updateFilteredTabs_();
-
-    // If there was no previously selected index, set the first item as
-    // selected; else retain the currently selected index. If the list
-    // shrunk above the selected index, select the last index in the list.
-    // If there are no matching results, set the selected index value to none.
-    const tabsList = this.$.tabsList;
-    tabsList.selected = Math.min(
-        Math.max(this.getSelectedIndex(), 0), this.selectableItemCount_() - 1);
   }
 
-  private onItemFocus_(e: RepeaterEvent<TabData|TabGroupData>) {
+  private onItemFocus_(e: DomRepeatEvent<TabData|TabGroupData>) {
     // Ensure that when a TabSearchItem receives focus, it becomes the selected
     // item in the list.
     this.$.tabsList.selected = e.model.index;
   }
 
   private onTitleExpandChanged_(
-      e: RepeaterCustomEvent<TitleItem, {value: boolean}>) {
+      e: DomRepeatEvent<TitleItem, CustomEvent<{value: boolean}>>) {
     // Instead of relying on two-way binding to update the `expanded` property,
     // we update the value directly as the `expanded-changed` event takes place
     // before a two way bound property update and we need the TitleItem
@@ -476,13 +449,6 @@ export class TabSearchAppElement extends PolymerElement {
 
     this.updateFilteredTabs_();
     e.stopPropagation();
-  }
-
-  private onSearchFocus_() {
-    const tabsList = this.$.tabsList;
-    if (tabsList.selected === NO_SELECTION && this.selectableItemCount_() > 0) {
-      tabsList.selected = 0;
-    }
   }
 
   /**
@@ -591,10 +557,9 @@ export class TabSearchAppElement extends PolymerElement {
     });
 
     let mediaTabs: Array<TabData> = [];
-    // Audio & Video section will not be added when search criteria is applied
-    // if media tabs are also shown in Open Tabs section.
-    if (this.searchText_.length == 0 ||
-        !loadTimeData.getBoolean('alsoShowMediaTabsinOpenTabsSection')) {
+    // Audio & Video section will not be added when search criteria is applied.
+    // Show media tabs in Open Tabs.
+    if (this.searchText_.length === 0) {
       mediaTabs = this.openTabs_.filter(
           tabData => tabHasMediaAlerts(tabData.tab as Tab));
     }
@@ -605,7 +570,19 @@ export class TabSearchAppElement extends PolymerElement {
     let filteredOpenTabs =
         fuzzySearch(this.searchText_, this.openTabs_, this.fuzzySearchOptions_);
 
-    if (!loadTimeData.getBoolean('alsoShowMediaTabsinOpenTabsSection')) {
+    // The MRU tab that is not the active tab is either the first tab in the
+    // Audio and Video section (if it exists) or the first tab in the Open Tabs
+    // section.
+    let initiallySelectedTabIndex = NO_SELECTION;
+    if (filteredOpenTabs.length > 0) {
+      initiallySelectedTabIndex =
+          tabHasMediaAlerts(filteredOpenTabs[0]!.tab! as Tab) ?
+          0 :
+          filteredMediaTabs.length;
+    }
+
+    if (!loadTimeData.getBoolean('alsoShowMediaTabsinOpenTabsSection') &&
+        this.searchText_.length === 0) {
       filteredOpenTabs = filteredOpenTabs.filter(
           tabData => !tabHasMediaAlerts(tabData.tab as Tab));
     }
@@ -668,6 +645,19 @@ export class TabSearchAppElement extends PolymerElement {
               return acc;
             }, [] as Array<TitleItem|TabData|TabGroupData>);
     this.searchResultText_ = this.getA11ySearchResultText_();
+
+    // If there was no previously selected index, set the selected index to be
+    // the tab index specified for initial selection; else retain the currently
+    // selected index. If the list shrunk above the selected index, select the
+    // last index in the list. If there are no matching results, set the
+    // selected index value to none.
+    const tabsList = this.$.tabsList;
+    let selectedIndex = this.getSelectedIndex();
+    if (selectedIndex === NO_SELECTION) {
+      selectedIndex = initiallySelectedTabIndex;
+    }
+    tabsList.selected =
+        Math.min(Math.max(selectedIndex, 0), this.selectableItemCount_() - 1);
   }
 
   getSearchTextForTesting(): string {

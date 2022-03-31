@@ -135,6 +135,23 @@ var availableTests = [
     chrome.test.notifyPass();
   },
 
+  function testUpdateDictationBubbleWithHints() {
+    const update = chrome.accessibilityPrivate.updateDictationBubble;
+    const IconType = chrome.accessibilityPrivate.DictationBubbleIconType;
+    const HintType = chrome.accessibilityPrivate.DictationBubbleHintType;
+    update({
+      visible: true,
+      icon: IconType.STANDBY,
+      hints: [HintType.TRY_SAYING, HintType.TYPE, HintType.HELP]
+    });
+    chrome.test.sendMessage('Some hints', (proceed) => {
+      update({visible: true, icon: IconType.STANDBY});
+      chrome.test.sendMessage('No hints');
+      chrome.test.succeed();
+    });
+
+    chrome.test.notifyPass();
+  },
 ];
 
 chrome.test.getConfig(function(config) {

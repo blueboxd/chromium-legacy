@@ -56,6 +56,14 @@ bool SharedImageBacking::PresentSwapChain() {
   return false;
 }
 
+void SharedImageBacking::OnMemoryDump(
+    const std::string& dump_name,
+    base::trace_event::MemoryAllocatorDump* dump,
+    base::trace_event::ProcessMemoryDump* pmd,
+    uint64_t client_tracing_id) {
+  NOTIMPLEMENTED();
+}
+
 std::unique_ptr<SharedImageRepresentationGLTexture>
 SharedImageBacking::ProduceGLTexture(SharedImageManager* manager,
                                      MemoryTypeTracker* tracker) {
@@ -113,6 +121,14 @@ SharedImageBacking::ProduceRaster(SharedImageManager* manager,
                                   MemoryTypeTracker* tracker) {
   return nullptr;
 }
+
+#if BUILDFLAG(IS_ANDROID)
+std::unique_ptr<SharedImageRepresentationLegacyOverlay>
+SharedImageBacking::ProduceLegacyOverlay(SharedImageManager* manager,
+                                         MemoryTypeTracker* tracker) {
+  return nullptr;
+}
+#endif
 
 void SharedImageBacking::AddRef(SharedImageRepresentation* representation) {
   AutoLock auto_lock(this);

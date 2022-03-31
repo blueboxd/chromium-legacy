@@ -11,6 +11,17 @@ namespace features {
 
 const base::Feature kFeatureNotificationGuide{
     "FeatureNotificationGuide", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSegmentationModelLowEngagedUsers{
+    "SegmentationModelLowEngagedUsers", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSkipCheckForLowEngagedUsers{
+    "FeatureNotificationGuideSkipCheckForLowEngagedUsers",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kUseFeatureEngagementForUserTargeting{
+    "UseFeatureEngagementForUserTargeting", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 
 FeatureNotificationGuideService::FeatureNotificationGuideService() = default;

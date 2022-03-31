@@ -11,6 +11,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/proto/price_tracking.pb.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
@@ -106,8 +107,7 @@ class ShoppingPersistedDataTabHelperTest : public PlatformTest {
     auth_service_ = static_cast<AuthenticationServiceFake*>(
         AuthenticationServiceFactory::GetInstance()->GetForBrowserState(
             browser_state_.get()));
-    auth_service_->SignIn(fake_identity_);
-    web_state_.SetCurrentTimestamp(base::Time::Now());
+    auth_service_->SignIn(fake_identity_, nil);
   }
 
   void MockOptimizationGuideResponse(
@@ -124,7 +124,7 @@ class ShoppingPersistedDataTabHelperTest : public PlatformTest {
         {{optimization_guide::features::kOptimizationHints, {}},
          {optimization_guide::features::kOptimizationGuideMetadataValidation,
           {}},
-         {kCommercePriceTracking,
+         {commerce::kCommercePriceTracking,
           {{kPriceTrackingWithOptimizationGuideParam, "true"}}}},
         {});
 

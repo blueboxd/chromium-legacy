@@ -303,6 +303,7 @@ class WaylandWindow : public PlatformWindow,
                 WaylandConnection* connection);
 
   WaylandConnection* connection() { return connection_; }
+  const WaylandConnection* connection() const { return connection_; }
   PlatformWindowDelegate* delegate() { return delegate_; }
 
   // Sets bounds in dip.
@@ -344,6 +345,8 @@ class WaylandWindow : public PlatformWindow,
   base::circular_deque<PendingConfigure> pending_configures_;
 
  private:
+  friend class WaylandBufferManagerViewportTest;
+
   FRIEND_TEST_ALL_PREFIXES(WaylandScreenTest, SetWindowScale);
   FRIEND_TEST_ALL_PREFIXES(WaylandBufferManagerTest, CanSubmitOverlayPriority);
   FRIEND_TEST_ALL_PREFIXES(WaylandBufferManagerTest, CanSetRoundedCorners);

@@ -23,10 +23,12 @@ VIZ_COMMON_EXPORT extern const base::Feature kAdpf;
 VIZ_COMMON_EXPORT extern const base::FeatureParam<int> kAdpfTargetDurationMs;
 VIZ_COMMON_EXPORT extern const base::Feature kEnableOverlayPrioritization;
 VIZ_COMMON_EXPORT extern const base::Feature kUseSkiaRenderer;
+VIZ_COMMON_EXPORT extern const base::Feature kDelegatedCompositing;
 VIZ_COMMON_EXPORT extern const base::Feature kRecordSkPicture;
 VIZ_COMMON_EXPORT extern const base::Feature kDisableDeJelly;
 VIZ_COMMON_EXPORT extern const base::Feature kUseMultipleOverlays;
 VIZ_COMMON_EXPORT extern const char kMaxOverlaysParam[];
+VIZ_COMMON_EXPORT extern const base::Feature kVideoDetectorIgnoreNonVideos;
 #if BUILDFLAG(IS_ANDROID)
 VIZ_COMMON_EXPORT extern const base::Feature kDynamicColorGamut;
 #endif
@@ -47,7 +49,6 @@ VIZ_COMMON_EXPORT extern const base::Feature kUsePlatformDelegatedInk;
 #if BUILDFLAG(IS_ANDROID)
 VIZ_COMMON_EXPORT extern const base::Feature kUseSurfaceLayerForVideoDefault;
 #endif
-VIZ_COMMON_EXPORT extern const base::Feature kSurfaceSyncThrottling;
 VIZ_COMMON_EXPORT extern const base::Feature kDynamicSchedulerForDraw;
 VIZ_COMMON_EXPORT extern const base::Feature kDynamicSchedulerForClients;
 #if BUILDFLAG(IS_MAC)
@@ -91,10 +92,10 @@ VIZ_COMMON_EXPORT bool ShouldUsePlatformDelegatedInk();
 VIZ_COMMON_EXPORT bool UseSurfaceLayerForVideo();
 VIZ_COMMON_EXPORT bool UseRealVideoColorSpaceForDisplay();
 #endif
-VIZ_COMMON_EXPORT bool IsSurfaceSyncThrottling();
 VIZ_COMMON_EXPORT absl::optional<double> IsDynamicSchedulerEnabledForDraw();
 VIZ_COMMON_EXPORT absl::optional<double> IsDynamicSchedulerEnabledForClients();
 VIZ_COMMON_EXPORT int MaxOverlaysConsidered();
+VIZ_COMMON_EXPORT bool ShouldVideoDetectorIgnoreNonVideoFrames();
 
 }  // namespace features
 

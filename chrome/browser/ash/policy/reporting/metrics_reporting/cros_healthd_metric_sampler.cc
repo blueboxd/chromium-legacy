@@ -64,9 +64,9 @@ MemoryEncryptionAlgorithm TranslateMemoryEncryptionAlgorithm(
 
 void HandleBusResult(MetricCallback callback,
                      CrosHealthdMetricSampler::MetricType metric_type,
-                     MetricData metric_data,
                      cros_healthd::TelemetryInfoPtr result) {
   bool anything_reported = false;
+  MetricData metric_data;
   const auto& bus_result = result->bus_result;
 
   if (!bus_result.is_null()) {
@@ -80,8 +80,8 @@ void HandleBusResult(MetricCallback callback,
       case cros_healthd::BusResult::Tag::BUS_DEVICES: {
         for (const auto& bus_device : bus_result->get_bus_devices()) {
           const auto& bus_info = bus_device->bus_info;
-          if (bus_info->is_thunderbolt_bus_info()) {
-            if (metric_type == CrosHealthdMetricSampler::MetricType::kInfo) {
+          if (metric_type == CrosHealthdMetricSampler::MetricType::kInfo) {
+            if (bus_info->is_thunderbolt_bus_info()) {
               auto* const thunderbolt_info_out =
                   metric_data.mutable_info_data()
                       ->mutable_bus_device_info()
@@ -90,6 +90,23 @@ void HandleBusResult(MetricCallback callback,
               thunderbolt_info_out->set_security_level(
                   TranslateThunderboltSecurityLevel(
                       bus_info->get_thunderbolt_bus_info()->security_level));
+            }
+          } else if (metric_type ==
+                     CrosHealthdMetricSampler::MetricType::kTelemetry) {
+            if (bus_info->is_usb_bus_info()) {
+              auto* const usb_telemetry_out =
+                  metric_data.mutable_telemetry_data()->add_usb_telemetry();
+              anything_reported = true;
+              usb_telemetry_out->set_vid(
+                  bus_info->get_usb_bus_info()->vendor_id);
+              usb_telemetry_out->set_pid(
+                  bus_info->get_usb_bus_info()->product_id);
+              usb_telemetry_out->set_class_id(
+                  bus_info->get_usb_bus_info()->class_id);
+              usb_telemetry_out->set_subclass_id(
+                  bus_info->get_usb_bus_info()->subclass_id);
+              usb_telemetry_out->set_vendor(bus_device->vendor_name);
+              usb_telemetry_out->set_name(bus_device->product_name);
             }
           }
         }
@@ -105,9 +122,9 @@ void HandleBusResult(MetricCallback callback,
 
 void HandleCpuResult(MetricCallback callback,
                      CrosHealthdMetricSampler::MetricType metric_type,
-                     MetricData metric_data,
                      cros_healthd::TelemetryInfoPtr result) {
   bool anything_reported = false;
+  MetricData metric_data;
   const auto& cpu_result = result->cpu_result;
 
   if (!cpu_result.is_null()) {
@@ -151,10 +168,12 @@ void HandleCpuResult(MetricCallback callback,
     std::move(callback).Run(std::move(metric_data));
   }
 }
+
 void HandleBootPerformanceResult(
     MetricCallback callback,
     CrosHealthdMetricSampler::MetricType metric_type,
     chromeos::cros_healthd::mojom::TelemetryInfoPtr result) {
+  const std::string kShutdownReasonNotApplicable = "N/A";
   MetricData metric_data;
   auto* const boot_info_out = metric_data.mutable_telemetry_data()
                                   ->mutable_boot_performance_telemetry();
@@ -182,10 +201,13 @@ void HandleBootPerformanceResult(
             (int64_t)boot_performance_info->boot_up_seconds);
         boot_info_out->set_boot_up_timestamp_seconds(
             (int64_t)boot_performance_info->boot_up_timestamp);
-        boot_info_out->set_shutdown_seconds(
-            (int64_t)boot_performance_info->shutdown_seconds);
-        boot_info_out->set_shutdown_timestamp_seconds(
-            (int64_t)boot_performance_info->shutdown_timestamp);
+        if (boot_performance_info->shutdown_reason !=
+            kShutdownReasonNotApplicable) {
+          boot_info_out->set_shutdown_seconds(
+              (int64_t)boot_performance_info->shutdown_seconds);
+          boot_info_out->set_shutdown_timestamp_seconds(
+              (int64_t)boot_performance_info->shutdown_timestamp);
+        }
         boot_info_out->set_shutdown_reason(
             boot_performance_info->shutdown_reason);
 
@@ -199,9 +221,9 @@ void HandleBootPerformanceResult(
 
 void HandleAudioResult(MetricCallback callback,
                        CrosHealthdMetricSampler::MetricType metric_type,
-                       MetricData metric_data,
                        chromeos::cros_healthd::mojom::TelemetryInfoPtr result) {
   bool anything_reported = false;
+  MetricData metric_data;
   auto* const audio_info_out =
       metric_data.mutable_telemetry_data()->mutable_audio_telemetry();
   const auto& audio_result = result->audio_result;
@@ -243,9 +265,9 @@ void HandleAudioResult(MetricCallback callback,
 
 void HandleMemoryResult(MetricCallback callback,
                         CrosHealthdMetricSampler::MetricType metric_type,
-                        MetricData metric_data,
                         cros_healthd::TelemetryInfoPtr result) {
   bool anything_reported = false;
+  MetricData metric_data;
   const auto& memory_result = result->memory_result;
 
   if (!memory_result.is_null()) {
@@ -303,29 +325,23 @@ void HandleMemoryResult(MetricCallback callback,
 void OnHealthdInfoReceived(MetricCallback callback,
                            cros_healthd::ProbeCategoryEnum probe_category,
                            CrosHealthdMetricSampler::MetricType metric_type,
-                           MetricData metric_data,
                            cros_healthd::TelemetryInfoPtr result) {
   DCHECK(result);
-
   switch (probe_category) {
     case cros_healthd::ProbeCategoryEnum::kAudio: {
-      HandleAudioResult(std::move(callback), metric_type,
-                        std::move(metric_data), std::move(result));
+      HandleAudioResult(std::move(callback), metric_type, std::move(result));
       break;
     }
     case cros_healthd::ProbeCategoryEnum::kBus: {
-      HandleBusResult(std::move(callback), metric_type, std::move(metric_data),
-                      std::move(result));
+      HandleBusResult(std::move(callback), metric_type, std::move(result));
       break;
     }
     case cros_healthd::ProbeCategoryEnum::kCpu: {
-      HandleCpuResult(std::move(callback), metric_type, std::move(metric_data),
-                      std::move(result));
+      HandleCpuResult(std::move(callback), metric_type, std::move(result));
       break;
     }
     case cros_healthd::ProbeCategoryEnum::kMemory: {
-      HandleMemoryResult(std::move(callback), metric_type,
-                         std::move(metric_data), std::move(result));
+      HandleMemoryResult(std::move(callback), metric_type, std::move(result));
       break;
     }
     case cros_healthd::ProbeCategoryEnum::kBootPerformance: {
@@ -351,14 +367,10 @@ CrosHealthdMetricSampler::~CrosHealthdMetricSampler() = default;
 void CrosHealthdMetricSampler::Collect(MetricCallback callback) {
   auto healthd_callback =
       base::BindOnce(OnHealthdInfoReceived, std::move(callback),
-                     probe_category_, metric_type_, std::move(metric_data_));
-  metric_data_.Clear();
+                     probe_category_, metric_type_);
   chromeos::cros_healthd::ServiceConnection::GetInstance()->ProbeTelemetryInfo(
       std::vector<cros_healthd::ProbeCategoryEnum>{probe_category_},
       std::move(healthd_callback));
 }
 
-void CrosHealthdMetricSampler::SetMetricData(MetricData metric_data) {
-  metric_data_ = std::move(metric_data);
-}
 }  // namespace reporting

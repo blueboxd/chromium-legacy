@@ -48,6 +48,7 @@ class BackdropCollectionInfoFetcher;
 class BackdropImageInfoFetcher;
 class GooglePhotosAlbumsFetcher;
 class GooglePhotosCountFetcher;
+class GooglePhotosPhotosFetcher;
 }  // namespace wallpaper_handlers
 
 class Profile;
@@ -93,6 +94,12 @@ class PersonalizationAppWallpaperProviderImpl
 
   void FetchGooglePhotosCount(FetchGooglePhotosCountCallback callback) override;
 
+  void FetchGooglePhotosPhotos(
+      const absl::optional<std::string>& item_id,
+      const absl::optional<std::string>& album_id,
+      const absl::optional<std::string>& resume_token,
+      FetchGooglePhotosPhotosCallback callback) override;
+
   void GetLocalImages(GetLocalImagesCallback callback) override;
 
   void GetLocalImageThumbnail(const base::FilePath& file_path,
@@ -118,6 +125,10 @@ class PersonalizationAppWallpaperProviderImpl
                         bool preview_mode,
                         SelectLocalImageCallback callback) override;
 
+  void SelectGooglePhotosPhoto(
+      const std::string& id,
+      SelectGooglePhotosPhotoCallback callback) override;
+
   void SetCustomWallpaperLayout(ash::WallpaperLayout layout) override;
 
   void SetDailyRefreshCollectionId(const std::string& collection_id) override;
@@ -142,6 +153,10 @@ class PersonalizationAppWallpaperProviderImpl
   SetGooglePhotosCountFetcherForTest(
       std::unique_ptr<wallpaper_handlers::GooglePhotosCountFetcher> fetcher);
 
+  wallpaper_handlers::GooglePhotosPhotosFetcher*
+  SetGooglePhotosPhotosFetcherForTest(
+      std::unique_ptr<wallpaper_handlers::GooglePhotosPhotosFetcher> fetcher);
+
  private:
   friend class PersonalizationAppWallpaperProviderImplTest;
 
@@ -162,16 +177,20 @@ class PersonalizationAppWallpaperProviderImpl
                                 const SkBitmap* bitmap,
                                 base::File::Error error);
 
-  // Called after attempting selecting an online wallpaper. Will be dropped if
+  // Called after attempting to select an online wallpaper. Will be dropped if
   // new requests come in.
   void OnOnlineWallpaperSelected(bool success);
 
-  // Called after attempting selecting a local image. Will be dropped if new
+  // Called after attempting to select a Google Photos wallpaper. Will be
+  // dropped if new requests come in.
+  void OnGooglePhotosWallpaperSelected(bool success);
+
+  // Called after attempting to select a local image. Will be dropped if new
   // requests come in.
   void OnLocalImageSelected(bool success);
 
-  // Called after attempting updating a daily refresh wallpaper. Will be dropped
-  // if new requests come in.
+  // Called after attempting to update a daily refresh wallpaper. Will be
+  // dropped if new requests come in.
   void OnDailyRefreshWallpaperUpdated(bool success);
 
   void FindAttribution(
@@ -204,7 +223,7 @@ class PersonalizationAppWallpaperProviderImpl
   std::unique_ptr<wallpaper_handlers::BackdropImageInfoFetcher>
       wallpaper_attribution_info_fetcher_;
 
-  // Fetches the Google Photos Albums the user has created. Constructed lazily
+  // Fetches the Google Photos albums the user has created. Constructed lazily
   // at the time of the first request and then persists for the rest of the
   // delegate's lifetime, unless preemptively or subsequently replaced by a mock
   // in a test.
@@ -218,9 +237,18 @@ class PersonalizationAppWallpaperProviderImpl
   std::unique_ptr<wallpaper_handlers::GooglePhotosCountFetcher>
       google_photos_count_fetcher_;
 
+  // Fetches visible photos from the user's Google Photos library. Constructed
+  // lazily at the time of the first request and then persists for the rest of
+  // the delegate's lifetime, unless preemptively or subsequently replaced by a
+  // mock in a test.
+  std::unique_ptr<wallpaper_handlers::GooglePhotosPhotosFetcher>
+      google_photos_photos_fetcher_;
+
   SelectWallpaperCallback pending_select_wallpaper_callback_;
 
   SelectLocalImageCallback pending_select_local_image_callback_;
+
+  SelectGooglePhotosPhotoCallback pending_select_google_photos_photo_callback_;
 
   UpdateDailyRefreshWallpaperCallback
       pending_update_daily_refresh_wallpaper_callback_;

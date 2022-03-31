@@ -9,9 +9,12 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
+#import "components/signin/internal/identity_manager/account_capabilities_constants.h"
+#include "components/signin/ios/browser/features.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/device_accounts_synchronizer.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -125,8 +128,8 @@ class AuthenticationServiceTest : public PlatformTest {
     authentication_service()->OnAccessTokenRefreshFailed(identity, user_info);
   }
 
-  void FireIdentityListChanged(bool keychain_reload) {
-    authentication_service()->OnIdentityListChanged(keychain_reload);
+  void FireIdentityListChanged(bool notify_user) {
+    authentication_service()->OnIdentityListChanged(notify_user);
   }
 
   void SetCachedMDMInfo(ChromeIdentity* identity, NSDictionary* user_info) {
@@ -172,7 +175,7 @@ class AuthenticationServiceTest : public PlatformTest {
 
   // Sets a restricted pattern.
   void SetPattern(const std::string pattern) {
-    base::ListValue allowed_patterns;
+    base::Value allowed_patterns(base::Value::Type::LIST);
     allowed_patterns.Append(pattern);
     GetApplicationContext()->GetLocalState()->Set(
         prefs::kRestrictAccountsToPatterns, allowed_patterns);
@@ -195,7 +198,7 @@ TEST_F(AuthenticationServiceTest, TestDefaultGetPrimaryIdentity) {
 TEST_F(AuthenticationServiceTest, TestSignInAndGetPrimaryIdentity) {
   // Sign in.
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0));
+  authentication_service()->SignIn(identity(0), nil);
 
   EXPECT_NSEQ(identity(0), authentication_service()->GetPrimaryIdentity(
                                signin::ConsentLevel::kSignin));
@@ -226,7 +229,7 @@ TEST_F(AuthenticationServiceTest, TestSetReauthPromptForSignInAndSync) {
 TEST_F(AuthenticationServiceTest, TestHandleForgottenIdentityNoPromptSignIn) {
   // Sign in.
   SetExpectationsForSignInAndSync();
-  authentication_service()->SignIn(identity(0));
+  authentication_service()->SignIn(identity(0), nil);
   authentication_service()->GrantSyncConsent(identity(0));
 
   // Set the authentication service as "In Foreground", remove identity and run
@@ -252,7 +255,7 @@ TEST_F(AuthenticationServiceTest, TestHandleForgottenIdentityNoPromptSignIn) {
 TEST_F(AuthenticationServiceTest, TestHandleForgottenIdentityPromptSignIn) {
   // Sign in.
   SetExpectationsForSignInAndSync();
-  authentication_service()->SignIn(identity(0));
+  authentication_service()->SignIn(identity(0), nil);
   authentication_service()->GrantSyncConsent(identity(0));
 
   // Set the authentication service as "In Background", remove identity and run
@@ -277,7 +280,7 @@ TEST_F(AuthenticationServiceTest,
        TestHandleForgottenIdentityNoPromptSignInAndSync) {
   // Sign in.
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0));
+  authentication_service()->SignIn(identity(0), nil);
 
   // Set the authentication service as "In Background", remove identity and run
   // the loop.
@@ -300,7 +303,7 @@ TEST_F(AuthenticationServiceTest,
        OnApplicationEnterForegroundReloadCredentials) {
   // Sign in.
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0));
+  authentication_service()->SignIn(identity(0), nil);
 
   identity_service()->AddIdentities(@[ @"foo3" ]);
 
@@ -333,10 +336,10 @@ TEST_F(AuthenticationServiceTest,
 // Tests the account list is approved after adding an account with in Chrome.
 TEST_F(AuthenticationServiceTest, AccountListApprovedByUser_AddedByUser) {
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0));
+  authentication_service()->SignIn(identity(0), nil);
 
   identity_service()->AddIdentities(@[ @"foo3" ]);
-  FireIdentityListChanged(/*keychain_reload=*/false);
+  FireIdentityListChanged(/*notify_user=*/false);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(authentication_service()->IsAccountListApprovedByUser());
 }
@@ -345,10 +348,10 @@ TEST_F(AuthenticationServiceTest, AccountListApprovedByUser_AddedByUser) {
 // app (through the keychain).
 TEST_F(AuthenticationServiceTest, AccountListApprovedByUser_ChangedByKeychain) {
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0));
+  authentication_service()->SignIn(identity(0), nil);
 
   identity_service()->AddIdentities(@[ @"foo3" ]);
-  FireIdentityListChanged(/*keychain_reload=*/true);
+  FireIdentityListChanged(/*notify_user=*/true);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(authentication_service()->IsAccountListApprovedByUser());
 }
@@ -358,17 +361,17 @@ TEST_F(AuthenticationServiceTest, AccountListApprovedByUser_ChangedByKeychain) {
 TEST_F(AuthenticationServiceTest,
        AccountListApprovedByUser_ChangedTwiceByKeychain) {
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0));
+  authentication_service()->SignIn(identity(0), nil);
 
   identity_service()->AddIdentities(@[ @"foo3" ]);
-  FireIdentityListChanged(/*keychain_reload=*/true);
+  FireIdentityListChanged(/*notify_user=*/true);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(authentication_service()->IsAccountListApprovedByUser());
 
   // Simulate a switching to background, changing the accounts while in
   // background.
   identity_service()->AddIdentities(@[ @"foo4" ]);
-  FireIdentityListChanged(/*keychain_reload=*/true);
+  FireIdentityListChanged(/*notify_user=*/true);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(authentication_service()->IsAccountListApprovedByUser());
 }
@@ -377,10 +380,10 @@ TEST_F(AuthenticationServiceTest,
 TEST_F(AuthenticationServiceTest,
        AccountListApprovedByUser_ResetOntwoBackgrounds) {
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0));
+  authentication_service()->SignIn(identity(0), nil);
 
   identity_service()->AddIdentities(@[ @"foo3" ]);
-  FireIdentityListChanged(/*keychain_reload=*/true);
+  FireIdentityListChanged(/*notify_user=*/true);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(authentication_service()->IsAccountListApprovedByUser());
 
@@ -403,7 +406,7 @@ TEST_F(AuthenticationServiceTest,
 TEST_F(AuthenticationServiceTest, HasPrimaryIdentityBackground) {
   // Sign in.
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0));
+  authentication_service()->SignIn(identity(0), nil);
   EXPECT_TRUE(authentication_service()->HasPrimaryIdentity(
       signin::ConsentLevel::kSignin));
 
@@ -420,7 +423,7 @@ TEST_F(AuthenticationServiceTest, HasPrimaryIdentityBackground) {
 // notifications that the state of error has changed.
 TEST_F(AuthenticationServiceTest, MDMErrorsClearedOnForeground) {
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0));
+  authentication_service()->SignIn(identity(0), nil);
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 2UL);
 
   NSDictionary* user_info = [NSDictionary dictionary];
@@ -460,7 +463,7 @@ TEST_F(AuthenticationServiceTest, MDMErrorsClearedOnForeground) {
 // Tests that MDM errors are correctly cleared when signing out.
 TEST_F(AuthenticationServiceTest, MDMErrorsClearedOnSignout) {
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0));
+  authentication_service()->SignIn(identity(0), nil);
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 2UL);
 
   NSDictionary* user_info = [NSDictionary dictionary];
@@ -478,7 +481,7 @@ TEST_F(AuthenticationServiceTest, MDMErrorsClearedOnSignout) {
 TEST_F(AuthenticationServiceTest,
        MDMErrorsClearedOnSignoutAndClearBrowsingData) {
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0));
+  authentication_service()->SignIn(identity(0), nil);
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 2UL);
 
   NSDictionary* user_info = [NSDictionary dictionary];
@@ -497,7 +500,7 @@ TEST_F(AuthenticationServiceTest, SignedInManagedAccountSignOut) {
   identity_service()->AddManagedIdentities(@[ @"foo3" ]);
 
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(2));
+  authentication_service()->SignIn(identity(2), nil);
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 3UL);
   EXPECT_TRUE(authentication_service()->HasPrimaryIdentityManaged(
       signin::ConsentLevel::kSignin));
@@ -518,7 +521,7 @@ TEST_F(AuthenticationServiceTest, ManagedAccountSignOut) {
   identity_service()->AddManagedIdentities(@[ @"foo3" ]);
 
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(2));
+  authentication_service()->SignIn(identity(2), nil);
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 3UL);
   EXPECT_TRUE(authentication_service()->HasPrimaryIdentityManaged(
       signin::ConsentLevel::kSignin));
@@ -541,7 +544,7 @@ TEST_F(AuthenticationServiceTest, ManagedAccountSignOutAndClearBrowsingData) {
   identity_service()->AddManagedIdentities(@[ @"foo3" ]);
 
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(2));
+  authentication_service()->SignIn(identity(2), nil);
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 3UL);
   EXPECT_TRUE(authentication_service()->HasPrimaryIdentityManaged(
       signin::ConsentLevel::kSignin));
@@ -560,7 +563,7 @@ TEST_F(AuthenticationServiceTest, ManagedAccountSignOutAndClearBrowsingData) {
 // to MDM service when necessary.
 TEST_F(AuthenticationServiceTest, HandleMDMNotification) {
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0));
+  authentication_service()->SignIn(identity(0), nil);
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   signin::UpdatePersistentErrorOfRefreshTokenForAccount(
@@ -596,7 +599,7 @@ TEST_F(AuthenticationServiceTest, HandleMDMNotification) {
 // the primary account is blocked.
 TEST_F(AuthenticationServiceTest, HandleMDMBlockedNotification) {
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0));
+  authentication_service()->SignIn(identity(0), nil);
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   signin::UpdatePersistentErrorOfRefreshTokenForAccount(
@@ -655,7 +658,7 @@ TEST_F(AuthenticationServiceTest, ShowMDMErrorDialogInvalidCachedError) {
 // Tests that MDM dialog is shown when there is a cached error and a
 // corresponding error for the account.
 TEST_F(AuthenticationServiceTest, ShowMDMErrorDialog) {
-  authentication_service()->SignIn(identity(0));
+  authentication_service()->SignIn(identity(0), nil);
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   signin::UpdatePersistentErrorOfRefreshTokenForAccount(
@@ -675,7 +678,7 @@ TEST_F(AuthenticationServiceTest, ShowMDMErrorDialog) {
 TEST_F(AuthenticationServiceTest, SigninAndSyncDecoupled) {
   // Sign in.
   SetExpectationsForSignIn();
-  authentication_service()->SignIn(identity(0));
+  authentication_service()->SignIn(identity(0), nil);
 
   EXPECT_NSEQ(identity(0), authentication_service()->GetPrimaryIdentity(
                                signin::ConsentLevel::kSignin));
@@ -707,7 +710,7 @@ TEST_F(AuthenticationServiceTest, SigninDisallowedCrash) {
   browser_state_->GetPrefs()->SetBoolean(prefs::kSigninAllowed, false);
 
   // Attempt to sign in, and verify there is a crash.
-  EXPECT_CHECK_DEATH(authentication_service()->SignIn(identity(0)));
+  EXPECT_CHECK_DEATH(authentication_service()->SignIn(identity(0), nil));
 }
 
 // Tests that reauth prompt is not set if the primary identity is restricted and
@@ -721,7 +724,7 @@ TEST_F(AuthenticationServiceTest, TestHandleRestrictedIdentityPromptSignIn) {
   // Sign in.
   OCMExpect([observer_delegate onPrimaryAccountRestricted]);
   SetExpectationsForSignInAndSync();
-  authentication_service()->SignIn(identity(0));
+  authentication_service()->SignIn(identity(0), nil);
   authentication_service()->GrantSyncConsent(identity(0));
 
   // Set the account restriction.
@@ -789,4 +792,60 @@ TEST_F(AuthenticationServiceTest, TestGetServiceStatus) {
             authentication_service()->GetServiceStatus());
 
   EXPECT_OCMOCK_VERIFY(observer_delegate);
+}
+
+// Tests that a supervised user has all local data cleared on sign-in when
+// there was a previous account on the device.
+TEST_F(AuthenticationServiceTest, SupervisedAccountSwitch) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      signin::kEnableUnicornAccountSupport);
+
+  SetExpectationsForSignIn();
+  identity_service()->SetCapabilities(
+      identity(1), @{
+        @(kIsSubjectToParentalControlsCapabilityName) :
+            @(static_cast<int>(ios::ChromeIdentityCapabilityResult::kTrue))
+      });
+
+  authentication_service()->SignIn(identity(0), nil);
+  EXPECT_TRUE(authentication_service()->HasPrimaryIdentity(
+      signin::ConsentLevel::kSignin));
+  ON_CALL(*mock_sync_service()->GetMockUserSettings(), IsFirstSetupComplete())
+      .WillByDefault(Return(true));
+
+  authentication_service()->SignOut(signin_metrics::ABORT_SIGNIN,
+                                    /*force_clear_browsing_data=*/false, nil);
+
+  EXPECT_EQ(ClearBrowsingDataCount(), 0);
+
+  // Clears browsing data when signed-in as a child.
+  authentication_service()->SignIn(identity(1), nil);
+  EXPECT_EQ(ClearBrowsingDataCount(), 1);
+}
+
+// Tests that supervised user's local data is correctly cleared when signing
+// out.
+TEST_F(AuthenticationServiceTest, SupervisedAccountSignOut) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      signin::kEnableUnicornAccountSupport);
+
+  SetExpectationsForSignIn();
+  identity_service()->SetCapabilities(
+      identity(0), @{
+        @(kIsSubjectToParentalControlsCapabilityName) :
+            @(static_cast<int>(ios::ChromeIdentityCapabilityResult::kTrue))
+      });
+
+  authentication_service()->SignIn(identity(0), nil);
+  EXPECT_TRUE(authentication_service()->HasPrimaryIdentity(
+      signin::ConsentLevel::kSignin));
+  ON_CALL(*mock_sync_service()->GetMockUserSettings(), IsFirstSetupComplete())
+      .WillByDefault(Return(true));
+  EXPECT_EQ(ClearBrowsingDataCount(), 1);
+
+  authentication_service()->SignOut(signin_metrics::ABORT_SIGNIN,
+                                    /*force_clear_browsing_data=*/false, nil);
+  EXPECT_EQ(ClearBrowsingDataCount(), 2);
 }

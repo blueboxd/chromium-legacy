@@ -147,6 +147,8 @@ class PageInfo {
     PAGE_INFO_STORE_INFO_CLICKED = 27,
     PAGE_INFO_ABOUT_THIS_SITE_PAGE_OPENED = 28,
     PAGE_INFO_ABOUT_THIS_SITE_SOURCE_LINK_CLICKED = 29,
+    PAGE_INFO_AD_PERSONALIZATION_PAGE_OPENED = 30,
+    PAGE_INFO_AD_PERSONALIZATION_SETTINGS_OPENED = 31,
     PAGE_INFO_COUNT
   };
 
@@ -318,6 +320,9 @@ class PageInfo {
   // Presents feature related info in the |ui_|; like, if VR content is being
   // presented in a headset.
   void PresentPageFeatureInfo();
+
+  // Sets (presents) the information about ad personalization in the |ui_|.
+  void PresentAdPersonalizationData();
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   // Records a password reuse event. If FULL_SAFE_BROWSING is defined, this

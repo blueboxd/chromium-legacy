@@ -15,6 +15,8 @@
 #include "ash/components/arc/enterprise/arc_data_snapshotd_manager.h"
 #include "ash/components/audio/audio_devices_pref_handler_impl.h"
 #include "ash/components/audio/cras_audio_handler.h"
+#include "ash/components/cryptohome/cryptohome_parameters.h"
+#include "ash/components/cryptohome/system_salt_getter.h"
 #include "ash/components/device_activity/device_activity_controller.h"
 #include "ash/components/disks/disk_mount_manager.h"
 #include "ash/components/drivefs/fake_drivefs_launcher_client.h"
@@ -30,6 +32,7 @@
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/shell.h"
+#include "ash/system/firmware_update/firmware_update_notification_controller.h"
 #include "ash/system/pcie_peripheral/pcie_peripheral_notification_controller.h"
 #include "ash/system/usb_peripheral/usb_peripheral_notification_controller.h"
 #include "base/bind.h"
@@ -61,6 +64,7 @@
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/ash/arc/enterprise/arc_data_snapshotd_delegate.h"
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
+#include "chrome/browser/ash/audio/audio_survey_handler.h"
 #include "chrome/browser/ash/boot_times_recorder.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
@@ -74,6 +78,7 @@
 #include "chrome/browser/ash/dbus/dlp_files_policy_service_provider.h"
 #include "chrome/browser/ash/dbus/drive_file_stream_service_provider.h"
 #include "chrome/browser/ash/dbus/encrypted_reporting_service_provider.h"
+#include "chrome/browser/ash/dbus/fusebox_service_provider.h"
 #include "chrome/browser/ash/dbus/kiosk_info_service_provider.h"
 #include "chrome/browser/ash/dbus/libvda_service_provider.h"
 #include "chrome/browser/ash/dbus/lock_to_single_user_service_provider.h"
@@ -118,6 +123,7 @@
 #include "chrome/browser/ash/net/network_throttling_observer.h"
 #include "chrome/browser/ash/net/rollback_network_config/rollback_network_config_service.h"
 #include "chrome/browser/ash/net/system_proxy_manager.h"
+#include "chrome/browser/ash/net/traffic_counters_handler.h"
 #include "chrome/browser/ash/network_change_manager_client.h"
 #include "chrome/browser/ash/note_taking_helper.h"
 #include "chrome/browser/ash/notifications/debugd_notification_handler.h"
@@ -177,7 +183,6 @@
 #include "chrome/browser/ui/ash/image_downloader_impl.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
-#include "chrome/browser/ui/quick_answers/quick_answers_controller_impl.h"
 #include "chrome/browser/ui/webui/chromeos/emoji/emoji_ui.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
@@ -188,17 +193,14 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/components/chromebox_for_meetings/buildflags/buildflags.h"  // PLATFORM_CFM
 #include "chromeos/components/local_search_service/public/cpp/local_search_service_proxy_factory.h"
-#include "chromeos/components/quick_answers/public/cpp/controller/quick_answers_controller.h"
-#include "chromeos/components/quick_answers/quick_answers_client.h"
 #include "chromeos/components/sensors/ash/sensor_hal_dispatcher.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/constants/cryptohome_key_delegate_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/dbus/userdataauth/fake_userdataauth_client.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/fast_transition_observer.h"
@@ -220,7 +222,7 @@
 #include "components/quirks/quirks_manager.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/session_manager/core/session_manager.h"
-#include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/base/command_line_switches.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
@@ -419,11 +421,18 @@ class DBusServices {
                                 dbus::ObjectPath(smbfs::kSmbFsServicePath),
                                 CrosDBusService::CreateServiceProviderList(
                                     std::make_unique<SmbFsServiceProvider>()));
+
     lock_to_single_user_service_ = CrosDBusService::Create(
         system_bus, lock_to_single_user::kLockToSingleUserServiceName,
         dbus::ObjectPath(lock_to_single_user::kLockToSingleUserServicePath),
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<LockToSingleUserServiceProvider>()));
+
+    fusebox_service_ = CrosDBusService::Create(
+        system_bus, fusebox::kFuseBoxServiceName,
+        dbus::ObjectPath(fusebox::kFuseBoxServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            std::make_unique<FuseBoxServiceProvider>()));
 
     mojo_connection_service_ = CrosDBusService::Create(
         system_bus,
@@ -507,6 +516,7 @@ class DBusServices {
     cryptohome_key_delegate_service_.reset();
     encrypted_reporting_service_.reset();
     lock_to_single_user_service_.reset();
+    fusebox_service_.reset();
     mojo_connection_service_.reset();
     ProcessDataCollector::Shutdown();
     PowerDataCollector::Shutdown();
@@ -541,6 +551,7 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> machine_learning_decision_service_;
   std::unique_ptr<CrosDBusService> smb_fs_service_;
   std::unique_ptr<CrosDBusService> lock_to_single_user_service_;
+  std::unique_ptr<CrosDBusService> fusebox_service_;
   std::unique_ptr<CrosDBusService> mojo_connection_service_;
   std::unique_ptr<CrosDBusService> dlp_files_policy_service_;
 };
@@ -573,7 +584,7 @@ int ChromeBrowserMainPartsAsh::PreEarlyInitialization() {
 
   if (parsed_command_line().HasSwitch(switches::kGuestSession)) {
     // Disable sync and extensions if we're in "browse without sign-in" mode.
-    singleton_command_line->AppendSwitch(::switches::kDisableSync);
+    singleton_command_line->AppendSwitch(::syncer::kDisableSync);
     singleton_command_line->AppendSwitch(::switches::kDisableExtensions);
     browser_defaults::bookmarks_enabled = false;
   }
@@ -602,16 +613,21 @@ int ChromeBrowserMainPartsAsh::PreEarlyInitialization() {
   CHECK(DBusThreadManager::IsInitialized());
 
 #if !defined(USE_REAL_DBUS_CLIENTS)
-  if (!base::SysInfo::IsRunningOnChromeOS() &&
-      parsed_command_line().HasSwitch(
-          switches::kFakeDriveFsLauncherChrootPath) &&
-      parsed_command_line().HasSwitch(
-          switches::kFakeDriveFsLauncherSocketPath)) {
-    drivefs::FakeDriveFsLauncherClient::Init(
-        parsed_command_line().GetSwitchValuePath(
-            switches::kFakeDriveFsLauncherChrootPath),
-        parsed_command_line().GetSwitchValuePath(
-            switches::kFakeDriveFsLauncherSocketPath));
+  if (!base::SysInfo::IsRunningOnChromeOS()) {
+    if (parsed_command_line().HasSwitch(
+            switches::kFakeDriveFsLauncherChrootPath) &&
+        parsed_command_line().HasSwitch(
+            switches::kFakeDriveFsLauncherSocketPath)) {
+      drivefs::FakeDriveFsLauncherClient::Init(
+          parsed_command_line().GetSwitchValuePath(
+              switches::kFakeDriveFsLauncherChrootPath),
+          parsed_command_line().GetSwitchValuePath(
+              switches::kFakeDriveFsLauncherSocketPath));
+    }
+
+    base::FilePath user_data_dir;
+    base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+    FakeUserDataAuthClient::Get()->set_user_data_dir(user_data_dir);
   }
 #endif  // !defined(USE_REAL_DBUS_CLIENTS)
 
@@ -672,6 +688,8 @@ int ChromeBrowserMainPartsAsh::PreMainMessageLoopRun() {
   CrasAudioHandler::Initialize(
       std::move(media_controller_manager),
       new AudioDevicesPrefHandlerImpl(g_browser_process->local_state()));
+
+  audio_survey_handler_ = std::make_unique<AudioSurveyHandler>();
 
   content::MediaCaptureDevices::GetInstance()->AddVideoCaptureObserver(
       CrasAudioHandler::Get());
@@ -1040,10 +1058,8 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
       ProfileHelper::GetSigninProfile();
     }
 
-    if (base::FeatureList::IsEnabled(features::kImeSystemEmojiPicker)) {
-      ui::SetShowEmojiKeyboardCallback(
-          base::BindRepeating(&EmojiUI::Show, base::Unretained(profile)));
-    }
+    ui::SetShowEmojiKeyboardCallback(
+        base::BindRepeating(&EmojiUI::Show, base::Unretained(profile)));
 
     BootTimesRecorder::Get()->OnChromeProcessStart();
 
@@ -1096,6 +1112,13 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
               ->GetDiagnosticsRemoteAndBindReceiver();
         }));
 
+    if (features::IsTrafficCountersHandlerEnabled()) {
+      // Initialize the TrafficCountersHandler instance.
+      traffic_counters_handler_ =
+          std::make_unique<ash::traffic_counters::TrafficCountersHandler>();
+      traffic_counters_handler_->Start();
+    }
+
     // Initialize input methods.
     input_method::InputMethodManager* manager =
         input_method::InputMethodManager::Get();
@@ -1144,12 +1167,6 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
         std::make_unique<LoginScreenExtensionsLifetimeManager>();
     login_screen_extensions_storage_cleaner_ =
         std::make_unique<LoginScreenExtensionsStorageCleaner>();
-
-    quick_answers_controller_ = std::make_unique<QuickAnswersControllerImpl>();
-    QuickAnswersController::Get()->SetClient(
-        std::make_unique<quick_answers::QuickAnswersClient>(
-            g_browser_process->shared_url_loader_factory(),
-            QuickAnswersController::Get()->GetQuickAnswersDelegate()));
   }
 
   ChromeBrowserMainPartsLinux::PostProfileInit(profile, is_initial_profile);
@@ -1261,6 +1278,13 @@ void ChromeBrowserMainPartsAsh::PostBrowserStart() {
   if (features::IsFirmwareUpdaterAppEnabled()) {
     firmware_update_manager_ = std::make_unique<FirmwareUpdateManager>();
     fwupd_download_client_ = std::make_unique<FwupdDownloadClientImpl>();
+    // The notification controller is registered as an observer before
+    // requesting updates to allow a notification to be shown if a critical
+    // firmware update is found.
+    Shell::Get()
+        ->firmware_update_notification_controller()
+        ->OnFirmwareUpdateManagerInitialized();
+    firmware_update_manager_->RequestAllUpdates();
   }
 
   if (features::IsPciguardUiEnabled()) {
@@ -1388,7 +1412,9 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   login_screen_extensions_storage_cleaner_.reset();
   debugd_notification_handler_.reset();
   shortcut_mapping_pref_service_.reset();
-  quick_answers_controller_.reset();
+  if (features::IsTrafficCountersHandlerEnabled())
+    traffic_counters_handler_.reset();
+
   if (features::IsBluetoothRevampEnabled())
     bluetooth_pref_state_observer_.reset();
 

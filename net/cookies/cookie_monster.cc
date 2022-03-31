@@ -419,7 +419,8 @@ void CookieMonster::SetCanonicalCookieAsync(
     std::unique_ptr<CanonicalCookie> cookie,
     const GURL& source_url,
     const CookieOptions& options,
-    SetCookiesCallback callback) {
+    SetCookiesCallback callback,
+    const CookieAccessResult* cookie_access_result) {
   DCHECK(cookie->IsCanonical());
 
   std::string domain = cookie->Domain();
@@ -429,7 +430,8 @@ void CookieMonster::SetCanonicalCookieAsync(
           // the callback on |*this|, so the callback will not outlive
           // the object.
           &CookieMonster::SetCanonicalCookie, base::Unretained(this),
-          std::move(cookie), source_url, options, std::move(callback)),
+          std::move(cookie), source_url, options, std::move(callback),
+          cookie_access_result),
       domain);
 }
 
@@ -1471,10 +1473,12 @@ CookieMonster::InternalInsertPartitionedCookie(
   return std::make_pair(partition_it, cookie_it);
 }
 
-void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
-                                       const GURL& source_url,
-                                       const CookieOptions& options,
-                                       SetCookiesCallback callback) {
+void CookieMonster::SetCanonicalCookie(
+    std::unique_ptr<CanonicalCookie> cc,
+    const GURL& source_url,
+    const CookieOptions& options,
+    SetCookiesCallback callback,
+    const CookieAccessResult* cookie_access_result) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   bool delegate_treats_url_as_trustworthy =
@@ -1487,7 +1491,7 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
                          delegate_treats_url_as_trustworthy,
                          cookie_util::GetSamePartyStatus(
                              *cc, options, first_party_sets_enabled_)),
-      cookieable_schemes_);
+      cookieable_schemes_, cookie_access_result);
 
   const std::string key(GetKey(cc->Domain()));
 
@@ -2241,9 +2245,12 @@ bool CookieMonster::DoRecordPeriodicStats() {
   base::UmaHistogramCounts100000("Cookie.Count2", cookies_.size());
 
   if (cookie_access_delegate()) {
-    cookie_access_delegate()->RetrieveFirstPartySets(
-        base::BindOnce(&CookieMonster::RecordPeriodicFirstPartySetsStats,
-                       weak_ptr_factory_.GetWeakPtr()));
+    absl::optional<base::flat_map<SchemefulSite, std::set<SchemefulSite>>>
+        maybe_sets = cookie_access_delegate()->RetrieveFirstPartySets(
+            base::BindOnce(&CookieMonster::RecordPeriodicFirstPartySetsStats,
+                           weak_ptr_factory_.GetWeakPtr()));
+    if (maybe_sets.has_value())
+      RecordPeriodicFirstPartySetsStats(maybe_sets.value());
   }
 
   // Can be up to kMaxDomainPurgedKeys.

@@ -38,6 +38,9 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
       public RunLoop::Delegate,
       public RunLoop::NestingObserver {
  public:
+  static void InitializeFeatures();
+  static void ResetFeatures();
+
   ThreadControllerWithMessagePumpImpl(
       std::unique_ptr<MessagePump> message_pump,
       const SequenceManager::Settings& settings);
@@ -59,7 +62,8 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   void WillQueueTask(PendingTask* pending_task,
                      const char* task_queue_name) override;
   void ScheduleWork() override;
-  void SetNextDelayedDoWork(LazyNow* lazy_now, TimeTicks run_time) override;
+  void SetNextDelayedDoWork(LazyNow* lazy_now,
+                            absl::optional<WakeUp> wake_up) override;
   void SetTimerSlack(TimerSlack timer_slack) override;
   void SetTickClock(const TickClock* clock) override;
   bool RunsTasksInCurrentSequence() override;
@@ -148,10 +152,10 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   friend class DoWorkScope;
   friend class RunScope;
 
-  // Returns the ready time for the next pending task, is_null() if the next
-  // task can run immediately, or is_max() if there are no more immediate or
-  // delayed tasks.
-  TimeTicks DoWorkImpl(LazyNow* continuation_lazy_now);
+  // Returns a WakeUp for the next pending task, is_immediate() if the next task
+  // can run immediately, or nullopt if there are no more immediate or delayed
+  // tasks.
+  absl::optional<WakeUp> DoWorkImpl(LazyNow* continuation_lazy_now);
 
   void InitializeThreadTaskRunnerHandle()
       EXCLUSIVE_LOCKS_REQUIRED(task_runner_lock_);
@@ -196,7 +200,9 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   // lookups on task execution.
   raw_ptr<WorkIdProvider> work_id_provider_ = nullptr;
 
-  // Required to register the current thread as a sequence.
+  // Required to register the current thread as a sequence. Must be declared
+  // after |main_thread_only_| so that the destructors of state stored in the
+  // map run while the main thread state is still valid (crbug.com/1221382)
   base::internal::SequenceLocalStorageMap sequence_local_storage_map_;
   std::unique_ptr<
       base::internal::ScopedSetSequenceLocalStorageMapForCurrentThread>

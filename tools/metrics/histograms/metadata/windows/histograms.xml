@@ -76,7 +76,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.FileDeleteRetryCount" units="attempts"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>grt@chromium.org</owner>
   <owner>davidbienvenu@chromium.org</owner>
   <summary>
@@ -292,11 +292,6 @@ chromium-metrics-reviews@google.com.
     Whether virtualization has been enabled in the system firmware. Logged
     shortly after startup. This metric will only be logged on Windows 10+.
   </summary>
-</histogram>
-
-<histogram name="Windows.Tablet" enum="BooleanTablet" expires_after="M77">
-  <owner>zturner@chromium.org</owner>
-  <summary>Count of browser launches from a Windows tablet pc.</summary>
 </histogram>
 
 <histogram name="Windows.TouchDrag.Success" units="BooleanSuccess"

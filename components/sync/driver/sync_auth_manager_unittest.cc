@@ -7,13 +7,11 @@
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/connection_status.h"
 #include "components/sync/engine/sync_credentials.h"
 #include "net/base/net_errors.h"
@@ -376,32 +374,6 @@ TEST_F(SyncAuthManagerTest,
   EXPECT_TRUE(auth_manager->IsRetryingAccessTokenFetchForTest());
   EXPECT_EQ(auth_manager->GetLastAuthError(),
             GoogleServiceAuthError::AuthErrorNone());
-}
-
-TEST_F(
-    SyncAuthManagerTest,
-    RetriesAccessTokenFetchWithBackoffOnFirstCancelTransientFailWhenDisabled) {
-  // Disable the first retry without backoff on cancellation.
-  base::test::ScopedFeatureList local_feature;
-  local_feature.InitAndDisableFeature(kSyncRetryFirstCanceledTokenFetch);
-
-  CoreAccountId account_id =
-      identity_env()
-          ->MakePrimaryAccountAvailable("test@email.com",
-                                        signin::ConsentLevel::kSync)
-          .account_id;
-  std::unique_ptr<SyncAuthManager> auth_manager = CreateAuthManager();
-  auth_manager->RegisterForAuthNotifications();
-  ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
-            account_id);
-
-  auth_manager->ConnectionOpened();
-
-  identity_env()->WaitForAccessTokenRequestIfNecessaryAndRespondWithError(
-      GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
-
-  // Expect retry with backoff.
-  EXPECT_TRUE(auth_manager->IsRetryingAccessTokenFetchForTest());
 }
 
 TEST_F(SyncAuthManagerTest,

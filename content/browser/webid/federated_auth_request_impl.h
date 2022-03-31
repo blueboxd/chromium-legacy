@@ -24,7 +24,7 @@ namespace content {
 class FederatedIdentityActiveSessionPermissionContextDelegate;
 class FederatedIdentityRequestPermissionContextDelegate;
 class FederatedIdentitySharingPermissionContextDelegate;
-class RenderFrameHost;
+class RenderFrameHostImpl;
 
 // FederatedAuthRequestImpl contains the state machines for executing federated
 // authentication requests. This can be owned either by a
@@ -33,7 +33,8 @@ class RenderFrameHost;
 // invocation is from an intercepted HTTP request.
 class CONTENT_EXPORT FederatedAuthRequestImpl {
  public:
-  FederatedAuthRequestImpl(RenderFrameHost* host, const url::Origin& origin);
+  FederatedAuthRequestImpl(RenderFrameHostImpl* host,
+                           const url::Origin& origin);
 
   FederatedAuthRequestImpl(const FederatedAuthRequestImpl&) = delete;
   FederatedAuthRequestImpl& operator=(const FederatedAuthRequestImpl&) = delete;
@@ -52,8 +53,8 @@ class CONTENT_EXPORT FederatedAuthRequestImpl {
               const std::string& client_id,
               const std::string& account_id,
               blink::mojom::FederatedAuthRequest::RevokeCallback);
-  void Logout(std::vector<blink::mojom::LogoutRequestPtr> logout_requests,
-              blink::mojom::FederatedAuthRequest::LogoutCallback);
+  void LogoutRps(std::vector<blink::mojom::LogoutRpsRequestPtr> logout_requests,
+                 blink::mojom::FederatedAuthRequest::LogoutRpsCallback);
 
   void SetNetworkManagerForTests(
       std::unique_ptr<IdpNetworkRequestManager> manager);
@@ -68,12 +69,16 @@ class CONTENT_EXPORT FederatedAuthRequestImpl {
 
  private:
   bool HasPendingRequest() const;
-  GURL ResolveWellKnownUrl(const std::string& url);
-  void OnWellKnownFetched(IdpNetworkRequestManager::FetchStatus status,
-                          IdpNetworkRequestManager::Endpoints);
-  void OnClientIdMetadataResponseReceived(
+  GURL ResolveManifestUrl(const std::string& url);
+
+  // Checks validity of the passed-in endpoint URL origin.
+  bool IsEndpointUrlValid(const GURL& endpoint_url);
+
+  void OnManifestFetched(IdpNetworkRequestManager::FetchStatus status,
+                         IdpNetworkRequestManager::Endpoints);
+  void OnClientMetadataResponseReceived(
       IdpNetworkRequestManager::FetchStatus status,
-      IdpNetworkRequestManager::ClientIdMetadata data);
+      IdpNetworkRequestManager::ClientMetadata data);
 
   void OnSigninApproved(IdentityRequestDialogController::UserApproval approval);
   void OnSigninResponseReceived(IdpNetworkRequestManager::SigninResponse status,
@@ -100,11 +105,13 @@ class CONTENT_EXPORT FederatedAuthRequestImpl {
   std::unique_ptr<WebContents> CreateIdpWebContents();
   void CompleteRequest(blink::mojom::RequestIdTokenStatus,
                        const std::string& id_token);
-  void CompleteLogoutRequest(blink::mojom::LogoutStatus);
-  void OnWellKnownFetchedForRevoke(IdpNetworkRequestManager::FetchStatus status,
-                                   IdpNetworkRequestManager::Endpoints);
+  void CompleteLogoutRequest(blink::mojom::LogoutRpsStatus);
+  void OnManifestFetchedForRevoke(IdpNetworkRequestManager::FetchStatus status,
+                                  IdpNetworkRequestManager::Endpoints);
   void OnRevokeResponse(IdpNetworkRequestManager::RevokeResponse response);
   void CompleteRevokeRequest(blink::mojom::RevokeStatus status);
+
+  void CleanUp();
 
   std::unique_ptr<IdpNetworkRequestManager> CreateNetworkManager(
       const GURL& provider);
@@ -117,7 +124,19 @@ class CONTENT_EXPORT FederatedAuthRequestImpl {
   FederatedIdentitySharingPermissionContextDelegate*
   GetSharingPermissionContext();
 
-  const raw_ptr<RenderFrameHost> render_frame_host_ = nullptr;
+  // Creates an inspector issue related to a federated authentication request to
+  // the Issues panel in DevTools.
+  void AddInspectorIssue(blink::mojom::RequestIdTokenStatus status);
+
+  // Adds a console error message related to a federated authentication request
+  // issue. The Issues panel is preferred, but for now we also surface console
+  // error messages since it is much simpler to add.
+  // TODO(crbug.com/1294415): When the FedCM API is more stable, we should
+  // ensure that the Issues panel contains all of the needed debugging
+  // information and then we can remove the console error messages.
+  void AddConsoleErrorMessage(blink::mojom::RequestIdTokenStatus status);
+
+  const raw_ptr<RenderFrameHostImpl> render_frame_host_ = nullptr;
   const url::Origin origin_;
 
   std::unique_ptr<IdpNetworkRequestManager> network_manager_;
@@ -144,12 +163,12 @@ class CONTENT_EXPORT FederatedAuthRequestImpl {
 
   bool prefer_auto_sign_in_;
 
-  // Fetched from the IDP well-known configuration.
+  // Fetched from the IDP FedCM manifest configuration.
   struct {
     GURL idp;
     GURL token;
     GURL accounts;
-    GURL client_id_metadata;
+    GURL client_metadata;
   } endpoints_;
 
   // The WebContents that is used to load the IDP sign-up page. This is
@@ -165,17 +184,20 @@ class CONTENT_EXPORT FederatedAuthRequestImpl {
   raw_ptr<FederatedIdentitySharingPermissionContextDelegate>
       sharing_permission_delegate_ = nullptr;
 
-  IdpNetworkRequestManager::ClientIdMetadata client_id_metadata_;
+  IdpNetworkRequestManager::ClientMetadata client_metadata_;
   // The account that was selected by the user. This is only applicable to the
   // mediation flow.
   std::string account_id_;
   std::string id_token_;
-  base::TimeTicks id_token_request_time_;
+  base::TimeTicks start_time_;
+  base::TimeTicks show_accounts_dialog_time_;
+  base::TimeTicks select_account_time_;
+  base::TimeTicks id_token_response_time_;
   blink::mojom::FederatedAuthRequest::RequestIdTokenCallback
       auth_request_callback_;
 
-  base::queue<blink::mojom::LogoutRequestPtr> logout_requests_;
-  blink::mojom::FederatedAuthRequest::LogoutCallback logout_callback_;
+  base::queue<blink::mojom::LogoutRpsRequestPtr> logout_requests_;
+  blink::mojom::FederatedAuthRequest::LogoutRpsCallback logout_callback_;
 
   blink::mojom::FederatedAuthRequest::RevokeCallback revoke_callback_;
 

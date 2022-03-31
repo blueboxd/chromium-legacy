@@ -11,6 +11,7 @@
 #include "cc/base/features.h"
 #include "cc/input/scroll_elasticity_helper.h"
 #include "cc/input/scroll_utils.h"
+#include "cc/input/scrollbar_controller.h"
 #include "cc/input/snap_selection_strategy.h"
 #include "cc/layers/viewport.h"
 #include "cc/trees/compositor_commit_data.h"
@@ -1347,8 +1348,8 @@ InputHandler::ScrollStatus ThreadedInputHandler::TryScroll(
   // support impl-scrolling. The root, secondary root, and inner viewports
   // are all exceptions to this and may not have a layer because it is not
   // required for hit testing.
-  if (scroll_node->id != ScrollTree::kRootNodeId &&
-      scroll_node->id != ScrollTree::kSecondaryRootNodeId &&
+  if (scroll_node->id != kRootPropertyNodeId &&
+      scroll_node->id != kSecondaryRootPropertyNodeId &&
       !scroll_node->scrolls_inner_viewport &&
       !ActiveTree().LayerByElementId(scroll_node->element_id)) {
     TRACE_EVENT0("cc",

@@ -28,6 +28,7 @@ import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -51,7 +52,6 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetTestSupport;
 import org.chromium.content_public.browser.test.util.ClickUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.ui.test.util.DisableAnimationsTestRule;
 import org.chromium.url.GURL;
 
 import java.io.IOException;
@@ -63,8 +63,6 @@ import java.util.concurrent.ExecutionException;
 public class BookmarkSaveFlowTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
-    @Rule
-    public DisableAnimationsTestRule mDisableAnimationsTestRule = new DisableAnimationsTestRule();
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
             ChromeRenderTestRule.Builder.withPublicCorpus().build();
@@ -129,6 +127,21 @@ public class BookmarkSaveFlowTest {
         });
         mRenderTestRule.render(
                 mBookmarkSaveFlowCoordinator.getViewForTesting(), "bookmark_save_flow");
+    }
+
+    @Test
+    @MediumTest
+    public void testBookmarkSaveFlow_DestroyAfterHidden() throws IOException {
+        TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            BookmarkId id = addBookmark("Test bookmark", new GURL("http://a.com"));
+            mBookmarkSaveFlowCoordinator.show(id);
+            mBookmarkSaveFlowCoordinator.close();
+            return null;
+        });
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> mBookmarkSaveFlowCoordinator.getIsDestroyedForTesting(),
+                "Save flow coordinator not destroyed.");
     }
 
     @Test

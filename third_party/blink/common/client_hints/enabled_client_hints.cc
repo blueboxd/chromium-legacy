@@ -30,6 +30,7 @@ bool IsDisabledByFeature(const WebClientHintsType type) {
     case WebClientHintsType::kUAMobile:
     case WebClientHintsType::kUAFullVersion:
     case WebClientHintsType::kUABitness:
+    case WebClientHintsType::kUAWoW64:
       if (!base::FeatureList::IsEnabled(features::kUserAgentClientHint))
         return true;
       break;
@@ -89,33 +90,34 @@ bool IsDisabledByFeature(const WebClientHintsType type) {
   return false;
 }
 
-bool IsUaReducedClientHintEnabled(
+bool IsUserAgentOriginTrialEnabled(
     const GURL& url,
     const GURL* third_party_url,
-    const net::HttpResponseHeaders* response_headers) {
+    const net::HttpResponseHeaders* response_headers,
+    base::StringPiece feature_name) {
   blink::TrialTokenValidator validator;
   base::Time now = base::Time::Now();
   if (third_party_url == nullptr) {
-    // It's not a third-party embed request, validate the UserAgentReduction OT
+    // It's not a third-party embed request, validate the feature_name OT
     // token as normal.
-    return validator.RequestEnablesFeature(url, response_headers,
-                                           "UserAgentReduction", now);
+    return validator.RequestEnablesFeature(url, response_headers, feature_name,
+                                           now);
   }
 
   // Validate the third-party OT token.
   bool enabled = false;
   // Iterate through all of the Origin-Trial headers and validate if any of
-  // them are valid third-party OT tokens for the UserAgentReduction trial.
+  // them are valid third-party OT tokens for the feature_name trial.
   if (validator.IsTrialPossibleOnOrigin(*third_party_url)) {
     url::Origin origin = url::Origin::Create(url);
-    url::Origin third_party_origin = url::Origin::Create(*third_party_url);
+    url::Origin third_party_origins[] = {url::Origin::Create(*third_party_url)};
     size_t iter = 0;
     std::string token;
     while (response_headers->EnumerateHeader(&iter, "Origin-Trial", &token)) {
       blink::TrialTokenResult result =
-          validator.ValidateToken(token, origin, &third_party_origin, now);
+          validator.ValidateToken(token, origin, third_party_origins, now);
       if (result.Status() == blink::OriginTrialTokenStatus::kSuccess) {
-        if (result.ParsedToken()->feature_name() == "UserAgentReduction") {
+        if (result.ParsedToken()->feature_name() == feature_name) {
           enabled = true;
           break;
         }
@@ -145,8 +147,13 @@ void EnabledClientHints::SetIsEnabled(
     const bool should_send) {
   bool enabled = should_send;
   if (enabled && type == WebClientHintsType::kUAReduced) {
+    enabled = IsUserAgentOriginTrialEnabled(
+        url, third_party_url, response_headers, "UserAgentReduction");
+  }
+  if (enabled && type == WebClientHintsType::kFullUserAgent) {
     enabled =
-        IsUaReducedClientHintEnabled(url, third_party_url, response_headers);
+        IsUserAgentOriginTrialEnabled(url, third_party_url, response_headers,
+                                      "SendFullUserAgentAfterReduction");
   }
   SetIsEnabled(type, enabled);
 }

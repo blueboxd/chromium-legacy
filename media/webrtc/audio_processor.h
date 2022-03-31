@@ -55,17 +55,21 @@ class COMPONENT_EXPORT(MEDIA_WEBRTC) AudioProcessor {
                                    base::TimeTicks audio_capture_time,
                                    absl::optional<double> new_volume)>;
 
-  using LogCallback = base::RepeatingCallback<void(const std::string&)>;
+  using LogCallback = base::RepeatingCallback<void(base::StringPiece)>;
 
   // |deliver_processed_audio_callback| is used to deliver frames of processed
   // capture audio, from ProcessCapturedAudio(), and has to be valid for as long
-  // as ProcessCapturedAudio() may be called. |log_callback| is used for logging
-  // messages on the owning sequence. |input_format| is a format of the capture
-  // data.
+  // as ProcessCapturedAudio() may be called.
+  // |log_callback| is used for logging messages on the owning sequence.
+  // |input_format| specifies the format of the incoming capture data.
+  // |output_format| specifies the output format. If
+  // |settings.NeedWebrtcAudioProcessing()| is true, then the output must be in
+  // 10 ms chunks.
   AudioProcessor(DeliverProcessedAudioCallback deliver_processed_audio_callback,
                  LogCallback log_callback,
                  const AudioProcessingSettings& settings,
-                 const media::AudioParameters& input_format);
+                 const media::AudioParameters& input_format,
+                 const media::AudioParameters& output_format);
 
   ~AudioProcessor();
 
@@ -93,7 +97,7 @@ class COMPONENT_EXPORT(MEDIA_WEBRTC) AudioProcessor {
   // Processes playout audio. |audio_bus| must contain |sample_rate/100| samples
   // per channel.
   // Must be called on the playout thread.
-  void OnPlayoutData(media::AudioBus* audio_bus,
+  void OnPlayoutData(const media::AudioBus& audio_bus,
                      int sample_rate,
                      base::TimeDelta audio_delay);
 
@@ -106,10 +110,6 @@ class COMPONENT_EXPORT(MEDIA_WEBRTC) AudioProcessor {
     DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
     return !!webrtc_audio_processing_;
   }
-
-  // Returns true if the audio processing effects require seeing the playout
-  // audio in order to function properly.
-  bool RequiresPlayoutReference() const;
 
   // Instructs the Audio Processing Module (APM) to reduce its complexity when
   // |muted| is true. This mode is triggered when all audio tracks are disabled.
@@ -140,6 +140,12 @@ class COMPONENT_EXPORT(MEDIA_WEBRTC) AudioProcessor {
   const media::AudioParameters& GetInputFormatForTesting() const {
     return input_format_;
   }
+
+  // Returns an output format that minimizes delay and resampling for a given
+  // input format.
+  static AudioParameters GetDefaultOutputFormat(
+      const AudioParameters& input_format,
+      const AudioProcessingSettings& settings);
 
  private:
   friend class AudioProcessorTest;
@@ -198,10 +204,9 @@ class COMPONENT_EXPORT(MEDIA_WEBRTC) AudioProcessor {
   // Receives APM processing output.
   std::unique_ptr<AudioProcessorCaptureBus> output_bus_;
 
-  // Input and output formats for capture processing. |output_format_| is
-  // initialized once in the constructor, so is essentially const as well.
+  // Input and output formats for capture processing.
   const media::AudioParameters input_format_;
-  media::AudioParameters output_format_;
+  const media::AudioParameters output_format_;
 
   // Members accessed only on the capture thread:
 

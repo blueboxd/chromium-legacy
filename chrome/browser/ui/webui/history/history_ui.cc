@@ -128,10 +128,9 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
 
   source->AddBoolean(kIsUserSignedInKey, IsUserSignedIn(profile));
 
-  source->AddString("enableBrandingUpdateAttribute",
-                    base::FeatureList::IsEnabled(features::kWebUIBrandingUpdate)
-                        ? "enable-branding-update"
-                        : "");
+  // TODO(crbug.com/1286649): Remove after CSS has been updated to no longer
+  // need this attribute.
+  source->AddString("enableBrandingUpdateAttribute", "enable-branding-update");
 
   // History clusters
   auto* history_clusters_service =
@@ -238,11 +237,11 @@ void HistoryUI::UpdateDataSource() {
 
   std::unique_ptr<base::DictionaryValue> update =
       std::make_unique<base::DictionaryValue>();
-  update->SetBoolean(kIsUserSignedInKey, IsUserSignedIn(profile));
-  update->SetBoolean(
+  update->SetBoolKey(kIsUserSignedInKey, IsUserSignedIn(profile));
+  update->SetBoolKey(
       kIsHistoryClustersVisibleKey,
       profile->GetPrefs()->GetBoolean(history_clusters::prefs::kVisible));
-  update->SetBoolean(kIsHistoryClustersVisibleManagedByPolicyKey,
+  update->SetBoolKey(kIsHistoryClustersVisibleManagedByPolicyKey,
                      profile->GetPrefs()->IsManagedPreference(
                          history_clusters::prefs::kVisible));
 

@@ -126,6 +126,8 @@ class PrintBackendServiceImpl : public mojom::PrintBackendService {
   void FetchCapabilities(
       const std::string& printer_name,
       mojom::PrintBackendService::FetchCapabilitiesCallback callback) override;
+  void UseDefaultSettings(
+      mojom::PrintBackendService::UseDefaultSettingsCallback callback) override;
   void UpdatePrintSettings(
       base::flat_map<std::string, base::Value> job_settings,
       mojom::PrintBackendService::UpdatePrintSettingsCallback callback)
@@ -147,6 +149,9 @@ class PrintBackendServiceImpl : public mojom::PrintBackendService {
       float shrink_factor,
       mojom::PrintBackendService::RenderPrintedPageCallback callback) override;
 #endif  // BUILDFLAG(IS_WIN)
+  void DocumentDone(
+      int32_t document_cookie,
+      mojom::PrintBackendService::DocumentDoneCallback callback) override;
 
   // Callbacks from worker functions.
   void OnDidStartPrintingReadyDocument(DocumentHelper& document_helper,
@@ -157,6 +162,10 @@ class PrintBackendServiceImpl : public mojom::PrintBackendService {
       mojom::PrintBackendService::RenderPrintedPageCallback callback,
       mojom::ResultCode result);
 #endif
+  void OnDidDocumentDone(
+      DocumentHelper& document_helper,
+      mojom::PrintBackendService::DocumentDoneCallback callback,
+      mojom::ResultCode result);
 
   // Utility helpers.
   DocumentHelper* GetDocumentHelper(int document_cookie);

@@ -4,6 +4,7 @@
 
 import 'chrome://access-code-cast/code_input/code_input.js';
 
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {waitAfterNextRender} from 'chrome://webui-test/test_util.js';
 
 suite('CodeInputElementTest', () => {
@@ -11,6 +12,9 @@ suite('CodeInputElementTest', () => {
   let c2cInput;
 
   setup(async () => {
+    loadTimeData.resetForTesting({});
+    loadTimeData.getString = id => id;
+
     PolymerTest.clearBody();
 
     c2cInput = document.createElement('c2c-code-input');
@@ -79,5 +83,18 @@ suite('CodeInputElementTest', () => {
     input2.dispatchEvent(new KeyboardEvent('keydown', {'key': 'Backspace'}));
     assertEquals(c2cInput.getFocusedIndex(), 2);
     assertEquals(input1.value, 'a');
+  });
+
+  test('disabled state propogates correctly', () => {
+    c2cInput.clearInput();
+    c2cInput.disabled = false;
+    assertFalse(c2cInput.getInput(0).disabled);
+    assertFalse(c2cInput.getInput(1).disabled);
+    assertFalse(c2cInput.getInput(2).disabled);
+
+    c2cInput.disabled = true;
+    assertTrue(c2cInput.getInput(0).disabled);
+    assertTrue(c2cInput.getInput(1).disabled);
+    assertTrue(c2cInput.getInput(2).disabled);
   });
 });

@@ -219,8 +219,7 @@ class FrameSchedulerImplTest : public testing::Test {
     scheduler_ = std::make_unique<MainThreadSchedulerImpl>(
         base::sequence_manager::SequenceManagerForTest::Create(
             nullptr, task_environment_.GetMainThreadTaskRunner(),
-            task_environment_.GetMockTickClock()),
-        absl::nullopt);
+            task_environment_.GetMockTickClock()));
     agent_group_scheduler_ = scheduler_->CreateAgentGroupScheduler();
     page_scheduler_ =
         CreatePageScheduler(nullptr, scheduler_.get(), *agent_group_scheduler_);
@@ -240,10 +239,14 @@ class FrameSchedulerImplTest : public testing::Test {
   }
 
   void StorePageInBackForwardCache() {
+    page_scheduler_->SetPageVisible(false);
+    page_scheduler_->SetPageFrozen(true);
     page_scheduler_->SetPageBackForwardCached(true);
   }
 
   void RestorePageFromBackForwardCache() {
+    page_scheduler_->SetPageVisible(true);
+    page_scheduler_->SetPageFrozen(false);
     page_scheduler_->SetPageBackForwardCached(false);
   }
 
@@ -1300,6 +1303,8 @@ TEST_F(FrameSchedulerImplTest, LogIpcsPostedToFramesInBackForwardCache) {
     base::TaskAnnotator::ScopedSetIpcHash scoped_set_ipc_hash_2(2);
     task_runner->PostTask(FROM_HERE, base::DoNothing());
   }
+  // Logging is delayed by one second, so guarantee that our IPCS are logged.
+  task_environment_.FastForwardBy(base::Seconds(2));
   task_environment_.RunUntilIdle();
 
   // Once the page is restored from the cache, IPCs should no longer be
@@ -1362,12 +1367,20 @@ TEST_F(FrameSchedulerImplTest,
   base::ThreadPool::PostTask(
       FROM_HERE,
       base::BindOnce(
-          [](scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-             base::RepeatingClosure restore_from_cache_callback) {
+          [](scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
             {
               base::TaskAnnotator::ScopedSetIpcHash scoped_set_ipc_hash(2);
               task_runner->PostTask(FROM_HERE, base::DoNothing());
             }
+          },
+          task_runner));
+  // Logging is delayed by one second, so guarantee that our IPCS are logged.
+  task_environment_.FastForwardBy(base::Seconds(2));
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+             base::RepeatingClosure restore_from_cache_callback) {
             {
               // Once the page is restored from the cache, ensure that the IPC
               // restoring the page from the cache is not recorded as well.
@@ -2907,8 +2920,7 @@ class MockMainThreadScheduler : public MainThreadSchedulerImpl {
             base::sequence_manager::SequenceManagerForTest::Create(
                 nullptr,
                 task_environment.GetMainThreadTaskRunner(),
-                task_environment.GetMockTickClock()),
-            absl::nullopt) {}
+                task_environment.GetMockTickClock())) {}
 
   MOCK_METHOD(void, OnMainFramePaint, ());
 };

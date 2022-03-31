@@ -106,7 +106,7 @@ base::ListValue GetFakeParentsWithImage() {
   base::ListValue parents = GetFakeParentsWithoutImage();
   std::map<std::string, gfx::Image> profile_images = GetFakeProfileImageMap();
 
-  for (auto& parent : parents.GetList()) {
+  for (auto& parent : parents.GetListDeprecated()) {
     const std::string* obfuscated_gaia_id =
         parent.FindStringKey("obfuscatedGaiaId");
     DCHECK(obfuscated_gaia_id);
@@ -212,9 +212,8 @@ class EduAccountLoginHandlerTest : public testing::Test {
       bool success = true) {
     EXPECT_EQ("cr.webUIResponse", data.function_name());
 
-    std::string callback_id;
-    ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
-    EXPECT_EQ(event_name, callback_id);
+    ASSERT_TRUE(data.arg1()->is_string());
+    EXPECT_EQ(event_name, data.arg1()->GetString());
 
     ASSERT_TRUE(data.arg2()->is_bool());
     EXPECT_EQ(success, data.arg2()->GetBool());

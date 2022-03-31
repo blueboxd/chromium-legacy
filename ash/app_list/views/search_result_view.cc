@@ -17,6 +17,7 @@
 #include "ash/app_list/views/remove_query_confirmation_dialog.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_actions_view.h"
+#include "ash/app_list/views/search_result_inline_icon_view.h"
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/constants/ash_features.h"
@@ -54,6 +55,7 @@ namespace ash {
 
 namespace {
 
+constexpr int kBadgeIconShadowWidth = 1;
 constexpr int kPreferredWidth = 640;
 constexpr int kClassicViewHeight = 48;
 constexpr int kDefaultViewHeight = 40;
@@ -76,6 +78,59 @@ constexpr int kImageIconCornerRadius = 4;
 constexpr int kSearchRatingStarPadding = 4;
 constexpr int kSearchRatingStarSize = 16;
 constexpr gfx::Insets kAnswerCardBorder(12, 12, 12, 12);
+constexpr gfx::Insets kBigTitleBorder(0, 14, 0, 12);
+
+views::ImageView* SetupChildImageView(views::FlexLayoutView* parent) {
+  views::ImageView* image_view =
+      parent->AddChildView(std::make_unique<views::ImageView>());
+  image_view->SetCanProcessEventsWithinSubtree(false);
+  image_view->SetVerticalAlignment(views::ImageView::Alignment::kCenter);
+  image_view->SetVisible(false);
+  return image_view;
+}
+
+views::Label* SetupChildLabelView(
+    views::FlexLayoutView* parent,
+    SearchResultView::SearchResultViewType view_type,
+    SearchResultView::LabelType label_type) {
+  // Create and setup label.
+  views::Label* label = parent->AddChildView(std::make_unique<views::Label>());
+  label->SetBackgroundColor(SK_ColorTRANSPARENT);
+  label->SetVisible(false);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                               views::MaximumFlexSizeRule::kScaleToMaximum));
+
+  // Apply label text styling.
+  label->SetTextContext(label_type == SearchResultView::LabelType::kBigTitle
+                            ? CONTEXT_SEARCH_RESULT_BIG_TITLE
+                            : CONTEXT_SEARCH_RESULT_VIEW);
+  switch (view_type) {
+    case SearchResultView::SearchResultViewType::kClassic:
+      label->SetTextStyle(STYLE_CLASSIC_LAUNCHER);
+      break;
+    case SearchResultView::SearchResultViewType::kDefault:
+    case SearchResultView::SearchResultViewType::kAnswerCard:
+      label->SetTextStyle(STYLE_PRODUCTIVITY_LAUNCHER);
+  }
+  return label;
+}
+
+SearchResultInlineIconView* SetupChildInlineIconView(
+    views::FlexLayoutView* parent) {
+  SearchResultInlineIconView* inline_icon_view =
+      parent->AddChildView(std::make_unique<SearchResultInlineIconView>());
+  inline_icon_view->SetCanProcessEventsWithinSubtree(false);
+  inline_icon_view->SetVisible(false);
+  inline_icon_view->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                               views::MaximumFlexSizeRule::kScaleToMaximum));
+  return inline_icon_view;
+}
+
 }  // namespace
 
 // static
@@ -130,6 +185,25 @@ class MaskedImageView : public views::ImageView {
   SearchResult::IconShape shape_;
 };
 
+class SearchResultView::LabelAndTag {
+ public:
+  LabelAndTag(views::Label* label, SearchResult::Tags tags)
+      : label_(label), tags_(tags) {}
+
+  LabelAndTag(const LabelAndTag& other) = default;
+
+  LabelAndTag& operator=(const LabelAndTag& other) = default;
+
+  ~LabelAndTag() = default;
+
+  views::Label* GetLabel() { return label_; }
+  SearchResult::Tags GetTags() { return tags_; }
+
+ private:
+  views::Label* label_;  // Owned by views hierarchy.
+  SearchResult::Tags tags_;
+};
+
 SearchResultView::SearchResultView(
     SearchResultListView* list_view,
     AppListViewDelegate* view_delegate,
@@ -165,76 +239,58 @@ SearchResultView::SearchResultView(
   SetNotifyEnterExitOnChild(true);
 
   text_container_ = AddChildView(std::make_unique<views::FlexLayoutView>());
+  // View contents are announced as part of the result view's accessible name.
+  text_container_->GetViewAccessibility().OverrideIsLeaf(true);
   text_container_->GetViewAccessibility().OverrideIsIgnored(true);
   text_container_->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
+  text_container_->SetOrientation(views::LayoutOrientation::kHorizontal);
 
-  SetSearchResultViewType(view_type);
+  big_title_container_ =
+      text_container_->AddChildView(std::make_unique<views::FlexLayoutView>());
+  big_title_container_->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
+  big_title_container_->SetBorder(views::CreateEmptyBorder(kBigTitleBorder));
 
-  auto setup_flex_specifications = [](views::View* view) {
-    view->SetProperty(
-        views::kFlexBehaviorKey,
-        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
-                                 views::MaximumFlexSizeRule::kScaleToMaximum));
-  };
+  body_text_container_ =
+      text_container_->AddChildView(std::make_unique<views::FlexLayoutView>());
+  body_text_container_->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
+  body_text_container_->SetOrientation(views::LayoutOrientation::kVertical);
 
-  title_label_ =
-      text_container_->AddChildView(std::make_unique<views::Label>());
-  title_label_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  title_label_->SetVisible(false);
-  title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  setup_flex_specifications(title_label_);
+  title_and_details_container_ = body_text_container_->AddChildView(
+      std::make_unique<views::FlexLayoutView>());
+  title_and_details_container_->SetCrossAxisAlignment(
+      views::LayoutAlignment::kStretch);
+  SetSearchResultViewType(view_type_);
 
-  separator_label_ =
-      text_container_->AddChildView(std::make_unique<views::Label>(
-          l10n_util::GetStringUTF16(IDS_ASH_SEARCH_RESULT_SEPARATOR)));
-  separator_label_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  separator_label_->SetVisible(false);
-  separator_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  setup_flex_specifications(separator_label_);
+  keyboard_shortcut_container_ = body_text_container_->AddChildView(
+      std::make_unique<views::FlexLayoutView>());
+  keyboard_shortcut_container_->SetCrossAxisAlignment(
+      views::LayoutAlignment::kStretch);
 
-  details_label_ =
-      text_container_->AddChildView(std::make_unique<views::Label>());
-  details_label_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  details_label_->SetVisible(false);
-  details_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  setup_flex_specifications(details_label_);
+  title_container_ = title_and_details_container_->AddChildView(
+      std::make_unique<views::FlexLayoutView>());
+  title_container_->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
+  title_container_->SetOrientation(views::LayoutOrientation::kHorizontal);
 
-  rating_ = text_container_->AddChildView(std::make_unique<views::Label>());
-  rating_->SetBackgroundColor(SK_ColorTRANSPARENT);
-  rating_->SetVisible(false);
-  rating_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  setup_flex_specifications(rating_);
+  separator_label_ = SetupChildLabelView(title_and_details_container_,
+                                         view_type_, LabelType::kDetails);
+  separator_label_->SetText(
+      l10n_util::GetStringUTF16(IDS_ASH_SEARCH_RESULT_SEPARATOR));
 
-  rating_star_ =
-      text_container_->AddChildView(std::make_unique<views::ImageView>());
-  rating_star_->SetCanProcessEventsWithinSubtree(false);
-  rating_star_->SetVerticalAlignment(views::ImageView::Alignment::kCenter);
-  rating_star_->SetVisible(false);
+  details_container_ = title_and_details_container_->AddChildView(
+      std::make_unique<views::FlexLayoutView>());
+  details_container_->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
+  details_container_->SetOrientation(views::LayoutOrientation::kHorizontal);
+
+  rating_ = SetupChildLabelView(title_and_details_container_, view_type_,
+                                LabelType::kDetails);
+
+  rating_star_ = SetupChildImageView(title_and_details_container_);
   rating_star_->SetImage(gfx::CreateVectorIcon(
       kBadgeRatingIcon, kSearchRatingStarSize,
       AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
           kDeprecatedSearchBoxTextDefaultColor)));
   rating_star_->SetBorder(
       views::CreateEmptyBorder(0, kSearchRatingStarPadding, 0, 0));
-
-  title_label_->SetTextContext(CONTEXT_SEARCH_RESULT_VIEW);
-  separator_label_->SetTextContext(CONTEXT_SEARCH_RESULT_VIEW);
-  details_label_->SetTextContext(CONTEXT_SEARCH_RESULT_VIEW);
-  rating_->SetTextContext(CONTEXT_SEARCH_RESULT_VIEW);
-  switch (view_type_) {
-    case SearchResultViewType::kClassic:
-      title_label_->SetTextStyle(STYLE_CLASSIC_LAUNCHER);
-      separator_label_->SetTextStyle(STYLE_CLASSIC_LAUNCHER);
-      details_label_->SetTextStyle(STYLE_CLASSIC_LAUNCHER);
-      rating_->SetTextStyle(STYLE_CLASSIC_LAUNCHER);
-      break;
-    case SearchResultViewType::kDefault:
-    case SearchResultViewType::kAnswerCard:
-      title_label_->SetTextStyle(STYLE_PRODUCTIVITY_LAUNCHER);
-      separator_label_->SetTextStyle(STYLE_PRODUCTIVITY_LAUNCHER);
-      details_label_->SetTextStyle(STYLE_PRODUCTIVITY_LAUNCHER);
-      rating_->SetTextStyle(STYLE_PRODUCTIVITY_LAUNCHER);
-  }
 }
 
 SearchResultView::~SearchResultView() = default;
@@ -252,8 +308,15 @@ void SearchResultView::OnResultChanging(SearchResult* new_result) {
 void SearchResultView::OnResultChanged() {
   OnMetadataChanged();
   // Update tile, separator, and details text visibility.
-  UpdateTitleText();
-  UpdateDetailsText();
+  if (view_type_ == SearchResultViewType::kAnswerCard)
+    UpdateBigTitleContainer();
+  if (view_type_ != SearchResultViewType::kClassic &&
+      app_list_features::IsSearchResultInlineIconEnabled()) {
+    UpdateKeyboardShortcutContainer();
+  }
+  UpdateTitleContainer();
+  UpdateDetailsContainer();
+  UpdateBadgeIcon();
   UpdateRating();
   UpdateAccessibleName();
   SchedulePaint();
@@ -264,22 +327,33 @@ void SearchResultView::SetSearchResultViewType(SearchResultViewType type) {
 
   switch (view_type_) {
     case SearchResultViewType::kDefault:
-      text_container_->SetOrientation(views::LayoutOrientation::kHorizontal);
+      title_and_details_container_->SetOrientation(
+          views::LayoutOrientation::kHorizontal);
       SetBorder(views::CreateEmptyBorder(gfx::Insets()));
+      big_title_container_->RemoveAllChildViews();
+      big_title_label_tags_.clear();
+      big_title_container_->SetVisible(false);
+
       break;
     case SearchResultViewType::kClassic:
-      text_container_->SetOrientation(views::LayoutOrientation::kVertical);
+      title_and_details_container_->SetOrientation(
+          views::LayoutOrientation::kVertical);
       SetBorder(views::CreateEmptyBorder(gfx::Insets()));
+      big_title_container_->RemoveAllChildViews();
+      big_title_label_tags_.clear();
+      big_title_container_->SetVisible(false);
+
       break;
     case SearchResultViewType::kAnswerCard:
-      text_container_->SetOrientation(views::LayoutOrientation::kVertical);
+      title_and_details_container_->SetOrientation(
+          views::LayoutOrientation::kVertical);
       SetBorder(views::CreateEmptyBorder(kAnswerCardBorder));
       break;
   }
 }
 
-views::LayoutOrientation SearchResultView::GetLayoutOrientationForTest() {
-  return text_container_->GetOrientation();
+views::LayoutOrientation SearchResultView::TitleAndDetailsOrientationForTest() {
+  return title_and_details_container_->GetOrientation();
 }
 
 int SearchResultView::PreferredHeight() const {
@@ -310,42 +384,184 @@ int SearchResultView::SecondaryTextHeight() const {
   }
 }
 
-void SearchResultView::UpdateTitleText() {
-  if (!result() || result()->title().empty()) {
-    title_label_->SetText(std::u16string());
-    text_container_->SetVisible(false);
-    title_label_->SetVisible(false);
-  } else {
-    title_label_->SetText(result()->title());
-    StyleTitleLabel();
-    text_container_->SetVisible(true);
-    title_label_->SetVisible(true);
-  }
-}
-
 bool SearchResultView::GetAndResetResultChanged() {
   bool result_changed = result_changed_;
   result_changed_ = false;
   return result_changed;
 }
 
-void SearchResultView::UpdateDetailsText() {
-  if (!result() || result()->details().empty()) {
-    details_label_->SetText(std::u16string());
-    details_label_->SetVisible(false);
+std::vector<SearchResultView::LabelAndTag>
+SearchResultView::SetupContainerViewForTextVector(
+    views::FlexLayoutView* parent,
+    const std::vector<SearchResult::TextItem>& text_vector,
+    LabelType label_type) {
+  std::vector<LabelAndTag> label_tags;
+  for (auto& span : text_vector) {
+    switch (span.GetType()) {
+      case SearchResultTextItemType::kString: {
+        views::Label* label =
+            SetupChildLabelView(parent, view_type_, label_type);
+        if (label_type == LabelType::kDetails) {
+          // We should only show a separator label when the details container
+          // has valid contents.
+          should_show_separator_label_ =
+              should_show_separator_label_ || (!span.GetText().empty());
+        }
+        label->SetText(span.GetText());
+        label->SetVisible(true);
+        label_tags.push_back(LabelAndTag(label, span.GetTextTags()));
+      } break;
+      case SearchResultTextItemType::kIconifiedText: {
+        SearchResultInlineIconView* iconified_text_view =
+            SetupChildInlineIconView(parent);
+        iconified_text_view->SetText(span.GetText());
+        iconified_text_view->SetVisible(true);
+      } break;
+      case SearchResultTextItemType::kIconCode: {
+        SearchResultInlineIconView* icon_view =
+            SetupChildInlineIconView(parent);
+        icon_view->SetIcon(*span.GetIconFromCode());
+        icon_view->SetVisible(true);
+      } break;
+      case SearchResultTextItemType::kCustomImage:
+        break;
+    }
+  }
+  return label_tags;
+}
+
+void SearchResultView::UpdateBadgeIcon() {
+  if (!result() || result()->badge_icon().IsEmpty()) {
+    badge_icon_->SetVisible(false);
+    return;
+  }
+
+  gfx::ImageSkia badge_icon_skia = views::GetImageSkiaFromImageModel(
+      result()->badge_icon(), GetColorProvider());
+
+  if (result()->use_badge_icon_background()) {
+    badge_icon_skia =
+        CreateIconWithCircleBackground(badge_icon_skia, SK_ColorWHITE);
+  }
+
+  gfx::ImageSkia resized_badge_icon(
+      gfx::ImageSkiaOperations::CreateResizedImage(
+          badge_icon_skia, skia::ImageOperations::RESIZE_BEST,
+          SharedAppListConfig::instance().search_list_badge_icon_size()));
+
+  gfx::ShadowValues shadow_values;
+  shadow_values.push_back(
+      gfx::ShadowValue(gfx::Vector2d(0, kBadgeIconShadowWidth), 0,
+                       SkColorSetARGB(0x33, 0, 0, 0)));
+  shadow_values.push_back(
+      gfx::ShadowValue(gfx::Vector2d(0, kBadgeIconShadowWidth), 2,
+                       SkColorSetARGB(0x33, 0, 0, 0)));
+  badge_icon_->SetImage(gfx::ImageSkiaOperations::CreateImageWithDropShadow(
+      resized_badge_icon, shadow_values));
+  badge_icon_->SetVisible(true);
+}
+
+void SearchResultView::UpdateBigTitleContainer() {
+  DCHECK_EQ(view_type_, SearchResultViewType::kAnswerCard);
+  // Big title is only shown for answer card views.
+  big_title_container_->RemoveAllChildViews();
+  big_title_label_tags_.clear();
+  if (!result() || result()->big_title_text_vector().empty()) {
+    big_title_container_->SetVisible(false);
+  } else {
+    // Create title labels from text vector metadata.
+    big_title_label_tags_ = SetupContainerViewForTextVector(
+        big_title_container_, result()->big_title_text_vector(),
+        LabelType::kBigTitle);
+    StyleBigTitleContainer();
+    big_title_container_->SetVisible(true);
+  }
+}
+
+void SearchResultView::UpdateTitleContainer() {
+  title_container_->RemoveAllChildViews();
+  title_label_tags_.clear();
+  if (!result() || result()->title_text_vector().empty()) {
+    // The entire text container should be hidden when there is no title.
+    text_container_->SetVisible(false);
+    title_and_details_container_->SetVisible(false);
+    title_container_->SetVisible(false);
+  } else {
+    // Create title labels from text vector metadata.
+    title_label_tags_ = SetupContainerViewForTextVector(
+        title_container_, result()->title_text_vector(), LabelType::kTitle);
+    StyleTitleContainer();
+    text_container_->SetVisible(true);
+    title_and_details_container_->SetVisible(true);
+    title_container_->SetVisible(true);
+  }
+}
+
+void SearchResultView::UpdateDetailsContainer() {
+  should_show_separator_label_ = false;
+  details_container_->RemoveAllChildViews();
+  details_label_tags_.clear();
+  if (!result() || result()->details_text_vector().empty()) {
+    details_container_->SetVisible(false);
     separator_label_->SetVisible(false);
   } else {
-    details_label_->SetText(result()->details());
-    StyleDetailsLabel();
-    details_label_->SetVisible(true);
+    // Create details labels from text vector metadata.
+    details_label_tags_ = SetupContainerViewForTextVector(
+        details_container_, result()->details_text_vector(),
+        LabelType::kDetails);
+    StyleDetailsContainer();
+    details_container_->SetVisible(true);
     switch (view_type_) {
       case SearchResultViewType::kDefault:
-        separator_label_->SetVisible(true);
+        // Show `separator_label_` when SetupContainerViewForTextVector gets
+        // valid contents in `result()->details_text_vector()`.
+        separator_label_->SetVisible(should_show_separator_label_);
+        break;
+      case SearchResultViewType::kClassic:
+        separator_label_->SetVisible(false);
+        break;
+      case SearchResultViewType::kAnswerCard:
+        // Show `separator_label_` when SetupContainerViewForTextVector gets
+        // valid contents in `result()->details_text_vector()` and
+        // `has_keyboard_shortcut_contents_` is set.
+        separator_label_->SetVisible(should_show_separator_label_ &&
+                                     has_keyboard_shortcut_contents_);
+    }
+  }
+}
+
+void SearchResultView::UpdateKeyboardShortcutContainer() {
+  keyboard_shortcut_container_->RemoveAllChildViews();
+  keyboard_shortcut_container_tags_.clear();
+
+  DCHECK(view_type_ != SearchResultViewType::kClassic);
+  if (!app_list_features::IsSearchResultInlineIconEnabled() || !result() ||
+      result()->keyboard_shortcut_text_vector().empty()) {
+    keyboard_shortcut_container_->SetVisible(false);
+    has_keyboard_shortcut_contents_ = false;
+    // Reset `title_and_details_container_` orientation.
+    switch (view_type_) {
+      case SearchResultViewType::kDefault:
+        title_and_details_container_->SetOrientation(
+            views::LayoutOrientation::kHorizontal);
         break;
       case SearchResultViewType::kClassic:
       case SearchResultViewType::kAnswerCard:
-        separator_label_->SetVisible(false);
+        title_and_details_container_->SetOrientation(
+            views::LayoutOrientation::kVertical);
+        break;
     }
+  } else {
+    keyboard_shortcut_container_tags_ = SetupContainerViewForTextVector(
+        keyboard_shortcut_container_, result()->keyboard_shortcut_text_vector(),
+        LabelType::kKeyboardShortcut);
+    StyleKeyboardShortcutContainer();
+    keyboard_shortcut_container_->SetVisible(true);
+    has_keyboard_shortcut_contents_ = true;
+    // Override `title_and_details_container_` orientation if the keyboard
+    // shortcut text vector has valid contents.
+    title_and_details_container_->SetOrientation(
+        views::LayoutOrientation::kHorizontal);
   }
 }
 
@@ -367,34 +583,79 @@ void SearchResultView::StyleLabel(views::Label* label,
                                   const SearchResult::Tags& tags) {
   // Reset font weight styling for label.
   label->ApplyBaselineTextStyle();
-  // Apply font weight styles.
-  bool is_url = false;
+  auto color_tag = SearchResult::Tag::NONE;
   for (const auto& tag : tags) {
-    bool has_url_tag = (tag.styles & SearchResult::Tag::URL);
+    // Each label only supports one type of color tag. `color_tag` should only
+    // be set once.
+    if (tag.styles & SearchResult::Tag::URL) {
+      DCHECK(color_tag == SearchResult::Tag::NONE ||
+             color_tag == SearchResult::Tag::URL);
+      color_tag = SearchResult::Tag::URL;
+    }
+    if (tag.styles & SearchResult::Tag::GREEN) {
+      DCHECK(color_tag == SearchResult::Tag::NONE ||
+             color_tag == SearchResult::Tag::GREEN);
+      color_tag = SearchResult::Tag::GREEN;
+    }
+    if (tag.styles & SearchResult::Tag::RED) {
+      DCHECK(color_tag == SearchResult::Tag::NONE ||
+             color_tag == SearchResult::Tag::RED);
+      color_tag = SearchResult::Tag::RED;
+    }
+
     bool has_match_tag = (tag.styles & SearchResult::Tag::MATCH);
-    is_url = has_url_tag || is_url;
     if (has_match_tag) {
       label->SetTextStyleRange(AshTextStyle::STYLE_EMPHASIZED, tag.range);
     }
   }
-  // Apply font color styles.
-  label->SetEnabledColor(
-      is_url
-          ? AppListColorProvider::Get()->GetTextColorURL()
-          : is_title_label
-                ? AppListColorProvider::Get()->GetSearchBoxTextColor(
-                      kDeprecatedSearchBoxTextDefaultColor)
-                : AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
-                      kDeprecatedSearchBoxTextDefaultColor));
+
+  switch (color_tag) {
+    case SearchResult::Tag::NONE:
+    case SearchResult::Tag::DIM:
+    case SearchResult::Tag::MATCH:
+      label->SetEnabledColor(
+          is_title_label
+              ? AppListColorProvider::Get()->GetSearchBoxTextColor(
+                    kDeprecatedSearchBoxTextDefaultColor)
+              : AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
+                    kDeprecatedSearchBoxTextDefaultColor));
+      break;
+    case SearchResult::Tag::URL:
+      label->SetEnabledColor(AppListColorProvider::Get()->GetTextColorURL());
+      break;
+    case SearchResult::Tag::GREEN:
+      label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kTextColorPositive));
+      break;
+    case SearchResult::Tag::RED:
+      label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kTextColorAlert));
+      break;
+  }
 }
 
-void SearchResultView::StyleTitleLabel() {
-  StyleLabel(title_label_, true /*is_title_label*/, result()->title_tags());
+void SearchResultView::StyleBigTitleContainer() {
+  for (auto& span : big_title_label_tags_) {
+    StyleLabel(span.GetLabel(), true /*is_title_label*/, span.GetTags());
+  }
 }
 
-void SearchResultView::StyleDetailsLabel() {
-  StyleLabel(details_label_, false /*is_title_label*/,
-             result()->details_tags());
+void SearchResultView::StyleTitleContainer() {
+  for (auto& span : title_label_tags_) {
+    StyleLabel(span.GetLabel(), false /*is_title_label*/, span.GetTags());
+  }
+}
+
+void SearchResultView::StyleDetailsContainer() {
+  for (auto& span : details_label_tags_) {
+    StyleLabel(span.GetLabel(), false /*is_title_label*/, span.GetTags());
+  }
+}
+
+void SearchResultView::StyleKeyboardShortcutContainer() {
+  for (auto& span : keyboard_shortcut_container_tags_) {
+    StyleLabel(span.GetLabel(), false /*is_title_label*/, span.GetTags());
+  }
 }
 
 void SearchResultView::OnQueryRemovalAccepted(bool accepted) {
@@ -451,10 +712,10 @@ void SearchResultView::Layout() {
 
   const int badge_icon_dimension =
       SharedAppListConfig::instance().search_list_badge_icon_dimension();
-  badge_icon_bounds = gfx::Rect(icon_bounds.right() - badge_icon_dimension / 2,
-                                icon_bounds.bottom() - badge_icon_dimension / 2,
+  badge_icon_bounds = gfx::Rect(icon_bounds.right() - badge_icon_dimension,
+                                icon_bounds.bottom() - badge_icon_dimension,
                                 badge_icon_dimension, badge_icon_dimension);
-
+  badge_icon_bounds.Inset(-kBadgeIconShadowWidth);
   badge_icon_bounds.Intersect(rect);
   badge_icon_->SetBoundsRect(badge_icon_bounds);
 
@@ -480,10 +741,16 @@ void SearchResultView::Layout() {
                           kTextTrailPadding - kActionButtonRightMargin);
   }
 
-  if (!title_label_->GetText().empty() && !details_label_->GetText().empty()) {
+  if (!title_label_tags_.empty() && !details_label_tags_.empty()) {
     switch (view_type_) {
       case SearchResultViewType::kDefault: {
-        gfx::Size label_size(text_bounds.width(), PrimaryTextHeight());
+        // SearchResultView needs additional space when
+        // `has_keyboard_shortcut_contents_` is set to accommodate the
+        // `keyboard_shortcut_container_`.
+        gfx::Size label_size(text_bounds.width(),
+                             has_keyboard_shortcut_contents_
+                                 ? PrimaryTextHeight() + SecondaryTextHeight()
+                                 : PrimaryTextHeight());
         gfx::Rect centered_text_bounds(text_bounds);
         centered_text_bounds.ClampToCenteredSize(label_size);
         text_container_->SetBoundsRect(centered_text_bounds);
@@ -491,16 +758,14 @@ void SearchResultView::Layout() {
       }
       case SearchResultViewType::kClassic:
       case SearchResultViewType::kAnswerCard: {
-        gfx::Size title_size(text_bounds.width(), PrimaryTextHeight());
-        gfx::Size details_size(text_bounds.width(), SecondaryTextHeight());
-        int total_height = title_size.height() + details_size.height();
-        gfx::Size label_size(text_bounds.width(), total_height);
+        gfx::Size label_size(text_bounds.width(),
+                             PrimaryTextHeight() + SecondaryTextHeight());
         gfx::Rect centered_text_bounds(text_bounds);
         centered_text_bounds.ClampToCenteredSize(label_size);
         text_container_->SetBoundsRect(centered_text_bounds);
       }
     }
-  } else if (!title_label_->GetText().empty()) {
+  } else if (!title_label_tags_.empty()) {
     gfx::Size text_size(text_bounds.width(), PrimaryTextHeight());
     gfx::Rect centered_text_bounds(text_bounds);
     centered_text_bounds.ClampToCenteredSize(text_size);
@@ -590,12 +855,15 @@ void SearchResultView::VisibilityChanged(View* starting_from, bool is_visible) {
 }
 
 void SearchResultView::OnThemeChanged() {
-  if (result()) {
-    if (!result()->title().empty())
-      StyleTitleLabel();
-    if (!result()->details().empty())
-      StyleDetailsLabel();
-  }
+  if (!big_title_label_tags_.empty())
+    StyleBigTitleContainer();
+  if (!title_label_tags_.empty())
+    StyleTitleContainer();
+  if (!details_label_tags_.empty())
+    StyleDetailsContainer();
+  if (!keyboard_shortcut_container_tags_.empty())
+    StyleKeyboardShortcutContainer();
+
   separator_label_->SetEnabledColor(
       AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(
           kDeprecatedSearchBoxTextDefaultColor));
@@ -628,6 +896,14 @@ void SearchResultView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void SearchResultView::OnMetadataChanged() {
+  if (view_type_ == SearchResultViewType::kAnswerCard)
+    UpdateBigTitleContainer();
+  if (view_type_ != SearchResultViewType::kClassic &&
+      app_list_features::IsSearchResultInlineIconEnabled()) {
+    UpdateKeyboardShortcutContainer();
+  }
+  UpdateTitleContainer();
+  UpdateDetailsContainer();
   // Updates |icon_|.
   // Note: this might leave the view with an old icon. But it is needed to avoid
   // flash when a SearchResult's icon is loaded asynchronously. In this case, it
@@ -640,34 +916,13 @@ void SearchResultView::OnMetadataChanged() {
 
     // Calculate the image dimensions. Images could be rectangular, and we
     // should preserve the aspect ratio.
-    const size_t dimension = result()->IconDimension();
+    const size_t dimension = result()->icon().dimension;
     const int max = std::max(image.width(), image.height());
     const bool is_square = image.width() == image.height();
     const int width = is_square ? dimension : dimension * image.width() / max;
     const int height = is_square ? dimension : dimension * image.height() / max;
     SetIconImage(image, icon_, gfx::Size(width, height));
     icon_->set_shape(icon_info.shape);
-  }
-
-  // Updates |badge_icon_|.
-  gfx::ImageSkia badge_icon_skia;
-  if (result() && !result()->badge_icon().IsEmpty()) {
-    const ui::ImageModel& badge_icon = result()->badge_icon();
-    gfx::ImageSkia badge_icon_skia =
-        views::GetImageSkiaFromImageModel(badge_icon, GetColorProvider());
-
-    if (result()->use_badge_icon_background())
-      badge_icon_skia =
-          CreateIconWithCircleBackground(badge_icon_skia, SK_ColorWHITE);
-  }
-
-  if (badge_icon_skia.isNull()) {
-    badge_icon_->SetVisible(false);
-  } else {
-    const int dimension =
-        SharedAppListConfig::instance().search_list_badge_icon_dimension();
-    SetIconImage(badge_icon_skia, badge_icon_, gfx::Size(dimension, dimension));
-    badge_icon_->SetVisible(true);
   }
 
   // Updates |actions_view()|.
@@ -711,12 +966,10 @@ void SearchResultView::OnSearchResultActionActivated(size_t index) {
       std::unique_ptr<views::WidgetDelegate> dialog;
       if (features::IsProductivityLauncherEnabled()) {
         dialog = std::make_unique<RemoveQueryConfirmationDialog>(
-            result()->title(),
             base::BindOnce(&SearchResultView::OnQueryRemovalAccepted,
                            weak_ptr_factory_.GetWeakPtr()));
       } else {
         dialog = std::make_unique<LegacyRemoveQueryConfirmationDialog>(
-            result()->title(),
             base::BindOnce(&SearchResultView::OnQueryRemovalAccepted,
                            weak_ptr_factory_.GetWeakPtr()));
       }

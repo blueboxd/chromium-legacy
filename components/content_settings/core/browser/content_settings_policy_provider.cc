@@ -88,6 +88,14 @@ constexpr PrefsForManagedContentSettingsMapEntry
          ContentSettingsType::JAVASCRIPT_JIT, CONTENT_SETTING_ALLOW},
         {prefs::kManagedJavaScriptJitBlockedForSites,
          ContentSettingsType::JAVASCRIPT_JIT, CONTENT_SETTING_BLOCK},
+        {prefs::kManagedWebHidAskForUrls, ContentSettingsType::HID_GUARD,
+         CONTENT_SETTING_ASK},
+        {prefs::kManagedWebHidBlockedForUrls, ContentSettingsType::HID_GUARD,
+         CONTENT_SETTING_BLOCK},
+        {prefs::kManagedWindowPlacementAllowedForUrls,
+         ContentSettingsType::WINDOW_PLACEMENT, CONTENT_SETTING_ALLOW},
+        {prefs::kManagedWindowPlacementBlockedForUrls,
+         ContentSettingsType::WINDOW_PLACEMENT, CONTENT_SETTING_BLOCK},
 };
 
 constexpr const char* kManagedPrefs[] = {
@@ -122,6 +130,10 @@ constexpr const char* kManagedPrefs[] = {
     prefs::kManagedWebUsbBlockedForUrls,
     prefs::kManagedJavaScriptJitAllowedForSites,
     prefs::kManagedJavaScriptJitBlockedForSites,
+    prefs::kManagedWebHidAskForUrls,
+    prefs::kManagedWebHidBlockedForUrls,
+    prefs::kManagedWindowPlacementAllowedForUrls,
+    prefs::kManagedWindowPlacementBlockedForUrls,
 };
 
 // The following preferences are only used to indicate if a default content
@@ -149,6 +161,8 @@ constexpr const char* kManagedDefaultPrefs[] = {
     prefs::kManagedDefaultWebBluetoothGuardSetting,
     prefs::kManagedDefaultWebUsbGuardSetting,
     prefs::kManagedDefaultJavaScriptJitSetting,
+    prefs::kManagedDefaultWebHidGuardSetting,
+    prefs::kManagedDefaultWindowPlacementSetting,
 };
 
 }  // namespace
@@ -196,6 +210,10 @@ const PolicyProvider::PrefsForManagedDefaultMapEntry
          prefs::kManagedDefaultInsecurePrivateNetworkSetting},
         {ContentSettingsType::JAVASCRIPT_JIT,
          prefs::kManagedDefaultJavaScriptJitSetting},
+        {ContentSettingsType::HID_GUARD,
+         prefs::kManagedDefaultWebHidGuardSetting},
+        {ContentSettingsType::WINDOW_PLACEMENT,
+         prefs::kManagedDefaultWindowPlacementSetting},
 };
 
 // static
@@ -254,7 +272,8 @@ void PolicyProvider::GetContentSettingsFromPreferences(
       return;
     }
 
-    base::Value::ConstListView pattern_str_list = pref->GetValue()->GetList();
+    base::Value::ConstListView pattern_str_list =
+        pref->GetValue()->GetListDeprecated();
     for (size_t i = 0; i < pattern_str_list.size(); ++i) {
       if (!pattern_str_list[i].is_string()) {
         NOTREACHED() << "Could not read content settings pattern #" << i
@@ -337,7 +356,7 @@ void PolicyProvider::GetAutoSelectCertificateSettingsFromPreferences(
   //   }
   // }
   std::unordered_map<std::string, base::DictionaryValue> filters_map;
-  for (const auto& pattern_filter_str : pref->GetValue()->GetList()) {
+  for (const auto& pattern_filter_str : pref->GetValue()->GetListDeprecated()) {
     if (!pattern_filter_str.is_string()) {
       NOTREACHED();
       continue;

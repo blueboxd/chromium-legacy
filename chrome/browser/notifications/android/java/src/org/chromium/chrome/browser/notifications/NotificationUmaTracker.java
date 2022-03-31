@@ -4,13 +4,13 @@
 
 package org.chromium.chrome.browser.notifications;
 
-import android.annotation.TargetApi;
 import android.app.Notification;
 import android.os.Build;
 import android.text.format.DateUtils;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationChannelCompat;
 import androidx.core.app.NotificationManagerCompat;
 
@@ -61,7 +61,8 @@ public class NotificationUmaTracker {
             SystemNotificationType.WEBAPK_INSTALL_IN_PROGRESS,
             SystemNotificationType.WEBAPK_INSTALL_COMPLETE,
             SystemNotificationType.PRICE_DROP_ALERTS_CHROME_MANAGED,
-            SystemNotificationType.PRICE_DROP_ALERTS_USER_MANAGED})
+            SystemNotificationType.PRICE_DROP_ALERTS_USER_MANAGED,
+            SystemNotificationType.CHROME_TIPS})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SystemNotificationType {
         int UNKNOWN = -1;
@@ -99,8 +100,9 @@ public class NotificationUmaTracker {
         int WEBAPK_INSTALL_COMPLETE = 31;
         int PRICE_DROP_ALERTS_CHROME_MANAGED = 32;
         int PRICE_DROP_ALERTS_USER_MANAGED = 33;
+        int CHROME_TIPS = 34;
 
-        int NUM_ENTRIES = 34;
+        int NUM_ENTRIES = 35;
     }
 
     /*
@@ -361,7 +363,7 @@ public class NotificationUmaTracker {
         recordHistogram("Mobile.SystemNotification.Shown", type);
     }
 
-    @TargetApi(26)
+    @RequiresApi(26)
     private boolean isChannelBlocked(@ChromeChannelDefinitions.ChannelId String channelId) {
         NotificationChannelCompat channel =
                 mNotificationManager.getNotificationChannelCompat(channelId);

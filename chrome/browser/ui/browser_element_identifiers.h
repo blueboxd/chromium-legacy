@@ -13,6 +13,7 @@
 #define CHROME_BROWSER_UI_BROWSER_ELEMENT_IDENTIFIERS_H_
 
 #include "ui/base/interaction/element_identifier.h"
+#include "ui/base/interaction/element_tracker.h"
 
 // These should gradually replace values in view_ids.h.
 DECLARE_ELEMENT_IDENTIFIER_VALUE(kAppMenuButtonElementId);
@@ -24,10 +25,18 @@ DECLARE_ELEMENT_IDENTIFIER_VALUE(kLocationIconElementId);
 DECLARE_ELEMENT_IDENTIFIER_VALUE(kMediaButtonElementId);
 DECLARE_ELEMENT_IDENTIFIER_VALUE(kOmniboxElementId);
 DECLARE_ELEMENT_IDENTIFIER_VALUE(kReadLaterButtonElementId);
+DECLARE_ELEMENT_IDENTIFIER_VALUE(kSavePasswordComboboxElementId);
 DECLARE_ELEMENT_IDENTIFIER_VALUE(kSideSearchButtonElementId);
+DECLARE_ELEMENT_IDENTIFIER_VALUE(kTabAlertIndicatorButtonElementId);
 DECLARE_ELEMENT_IDENTIFIER_VALUE(kTabCounterButtonElementId);
+DECLARE_ELEMENT_IDENTIFIER_VALUE(kTabGroupEditorBubbleId);
+DECLARE_ELEMENT_IDENTIFIER_VALUE(kTabGroupHeaderElementId);
 DECLARE_ELEMENT_IDENTIFIER_VALUE(kTabSearchButtonElementId);
+DECLARE_ELEMENT_IDENTIFIER_VALUE(kTabElementId);
 DECLARE_ELEMENT_IDENTIFIER_VALUE(kTabStripElementId);
+DECLARE_ELEMENT_IDENTIFIER_VALUE(kTabStripRegionElementId);
 DECLARE_ELEMENT_IDENTIFIER_VALUE(kTopContainerElementId);
+
+DECLARE_CUSTOM_ELEMENT_EVENT_TYPE(kTabGroupedCustomEventId);
 
 #endif  // CHROME_BROWSER_UI_BROWSER_ELEMENT_IDENTIFIERS_H_

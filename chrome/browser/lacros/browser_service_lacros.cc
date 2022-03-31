@@ -12,12 +12,16 @@
 #include "base/ranges/algorithm.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/feedback/feedback_dialog_utils.h"
 #include "chrome/browser/lacros/app_mode/kiosk_session_service_lacros.h"
 #include "chrome/browser/lacros/feedback_util.h"
 #include "chrome/browser/lacros/system_logs/lacros_system_log_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -70,6 +74,7 @@ std::string GetCompressedHistograms() {
 struct BrowserServiceLacros::PendingOpenUrl {
   Profile* profile;
   GURL url;
+  crosapi::mojom::OpenUrlParamsPtr params;
   OpenUrlCallback callback;
 };
 
@@ -139,11 +144,24 @@ void BrowserServiceLacros::NewWindow(bool incognito,
     return;
   }
 
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
   // TODO(crbug.com/1102815): Find what profile should be used.
-  ProfileManager::LoadLastUsedProfileAllowedByPolicy(
-      base::BindOnce(&BrowserServiceLacros::NewWindowWithProfile,
-                     weak_ptr_factory_.GetWeakPtr(), incognito,
-                     should_trigger_session_restore, std::move(callback)));
+  // Open the last used profile, unless it's a special profile like Guest. This
+  // deviates from other entry points here as this is the primary entry point to
+  // _launch_ Chrome. As there's no way to open other profiles from within
+  // Guest, user could get stuck with Guest forever without this treatment.
+  base::FilePath profile_path = profile_manager->GetLastUsedProfileDir();
+  if (profile_path == ProfileManager::GetGuestProfilePath() ||
+      profile_path == ProfileManager::GetSystemProfilePath()) {
+    profile_path = ProfileManager::GetPrimaryUserProfilePath();
+  }
+  profile_manager->LoadProfileByPath(
+      profile_path, /*incognito=*/false,
+      base::BindOnce(&ProfileManager::MaybeForceOffTheRecordMode)
+          .Then(base::BindOnce(&BrowserServiceLacros::NewWindowWithProfile,
+                               weak_ptr_factory_.GetWeakPtr(), incognito,
+                               should_trigger_session_restore,
+                               std::move(callback))));
 }
 
 void BrowserServiceLacros::NewFullscreenWindow(
@@ -152,6 +170,13 @@ void BrowserServiceLacros::NewFullscreenWindow(
   ProfileManager::LoadLastUsedProfileAllowedByPolicy(
       base::BindOnce(&BrowserServiceLacros::NewFullscreenWindowWithProfile,
                      weak_ptr_factory_.GetWeakPtr(), url, std::move(callback)));
+}
+
+void BrowserServiceLacros::NewGuestWindow(NewGuestWindowCallback callback) {
+  if (profiles::IsGuestModeEnabled())
+    profiles::SwitchToGuestProfile();
+
+  std::move(callback).Run();
 }
 
 void BrowserServiceLacros::NewWindowForDetachingTab(
@@ -180,11 +205,13 @@ void BrowserServiceLacros::NewTab(NewTabCallback callback) {
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void BrowserServiceLacros::OpenUrl(const GURL& url, OpenUrlCallback callback) {
+void BrowserServiceLacros::OpenUrl(const GURL& url,
+                                   crosapi::mojom::OpenUrlParamsPtr params,
+                                   OpenUrlCallback callback) {
   // TODO(crbug.com/1102815): Find what profile should be used.
-  ProfileManager::LoadLastUsedProfileAllowedByPolicy(
-      base::BindOnce(&BrowserServiceLacros::OpenUrlWithProfile,
-                     weak_ptr_factory_.GetWeakPtr(), url, std::move(callback)));
+  ProfileManager::LoadLastUsedProfileAllowedByPolicy(base::BindOnce(
+      &BrowserServiceLacros::OpenUrlWithProfile, weak_ptr_factory_.GetWeakPtr(),
+      url, std::move(params), std::move(callback)));
 }
 
 void BrowserServiceLacros::RestoreTab(RestoreTabCallback callback) {
@@ -303,31 +330,61 @@ void BrowserServiceLacros::OnSessionRestored(Profile* profile,
 
   // Then, run for each.
   for (auto& pending : pendings)
-    OpenUrlImpl(pending.profile, pending.url, std::move(pending.callback));
+    OpenUrlImpl(pending.profile, pending.url, std::move(pending.params),
+                std::move(pending.callback));
 }
 
 void BrowserServiceLacros::OpenUrlImpl(Profile* profile,
                                        const GURL& url,
+                                       crosapi::mojom::OpenUrlParamsPtr params,
                                        OpenUrlCallback callback) {
   NavigateParams navigate_params(
       profile, url,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                 ui::PAGE_TRANSITION_FROM_API));
-  if (url.SchemeIs(content::kChromeUIScheme) &&
-      (url.host() == chrome::kChromeUIFlagsHost ||
-       url.host() == chrome::kChromeUIVersionHost ||
-       url.host() == chrome::kChromeUIAboutHost ||
-       url.host() == chrome::kChromeUIComponentsHost)) {
-    // Try to re-activate an existing tab for a few specified URLs.
-    navigate_params.disposition = WindowOpenDisposition::SWITCH_TO_TAB;
-  } else {
-    navigate_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+
+  using OpenUrlParams = crosapi::mojom::OpenUrlParams;
+
+  // Set up the window disposition.
+  auto mojo_disposition =
+      params ? params->disposition
+             : OpenUrlParams::WindowOpenDisposition::kLegacyAutoDetection;
+  switch (mojo_disposition) {
+    // This is to support M99 or earlier ash-chrome behavior.
+    // We can drop this when we deprecate to support it.
+    case OpenUrlParams::WindowOpenDisposition::kLegacyAutoDetection:
+      if (url.SchemeIs(content::kChromeUIScheme) &&
+          (url.host() == chrome::kChromeUIFlagsHost ||
+           url.host() == chrome::kChromeUIVersionHost ||
+           url.host() == chrome::kChromeUIAboutHost ||
+           url.host() == chrome::kChromeUIComponentsHost)) {
+        // Try to re-activate an existing tab for a few specified URLs.
+        navigate_params.disposition = WindowOpenDisposition::SWITCH_TO_TAB;
+      } else {
+        navigate_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+      }
+      break;
+    case OpenUrlParams::WindowOpenDisposition::kNewForegroundTab:
+      navigate_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+      break;
+    case OpenUrlParams::WindowOpenDisposition::kSwitchToTab:
+      navigate_params.disposition = WindowOpenDisposition::SWITCH_TO_TAB;
+      break;
   }
+
   // Ensure the browser window is showing when the URL is opened. This avoids
   // the user being unaware a new tab with `url` has been opened (if the window
   // was minimized for example).
   navigate_params.window_action = NavigateParams::SHOW_WINDOW;
   Navigate(&navigate_params);
+
+  auto* tab = navigate_params.navigated_or_inserted_contents;
+  if (tab && params->from == crosapi::mojom::OpenUrlFrom::kArc) {
+    // Add a flag to remember this tab originated in the ARC context.
+    tab->SetUserData(&arc::ArcWebContentsData::kArcTransitionFlag,
+                     std::make_unique<arc::ArcWebContentsData>(tab));
+  }
+
   std::move(callback).Run();
 }
 
@@ -372,8 +429,6 @@ void BrowserServiceLacros::NewFullscreenWindowWithProfile(
 
   browser->window()->Show();
 
-  // TODO(crbug/1247638): we'd better figure out a better solution to move this
-  // special logic for web Kiosk out of this method.
   if (chromeos::LacrosService::Get()->init_params()->session_type ==
       crosapi::mojom::SessionType::kWebKioskSession) {
     KioskSessionServiceLacros::Get()->InitWebKioskSession(browser);
@@ -437,15 +492,17 @@ void BrowserServiceLacros::NewTabWithProfile(NewTabCallback callback,
   std::move(callback).Run();
 }
 
-void BrowserServiceLacros::OpenUrlWithProfile(const GURL& url,
-                                              OpenUrlCallback callback,
-                                              Profile* profile) {
+void BrowserServiceLacros::OpenUrlWithProfile(
+    const GURL& url,
+    crosapi::mojom::OpenUrlParamsPtr params,
+    OpenUrlCallback callback,
+    Profile* profile) {
   DCHECK(profile) << "No profile is found.";
 
   // If there is on-going session restoring task, wait for its completion.
   if (SessionRestore::IsRestoring(profile)) {
     pending_open_urls_.push_back(
-        PendingOpenUrl{profile, url, std::move(callback)});
+        PendingOpenUrl{profile, url, std::move(params), std::move(callback)});
     return;
   }
 
@@ -456,14 +513,14 @@ void BrowserServiceLacros::OpenUrlWithProfile(const GURL& url,
   if (!chrome::FindBrowserWithProfile(profile) && session_service &&
       session_service->ShouldRestore(nullptr)) {
     pending_open_urls_.push_back(
-        PendingOpenUrl{profile, url, std::move(callback)});
+        PendingOpenUrl{profile, url, std::move(params), std::move(callback)});
     session_service->RestoreIfNecessary(StartupTabs(),
                                         /* restore apps */ false);
     return;
   }
 
   // Otherwise, directly try to open the URL.
-  OpenUrlImpl(profile, url, std::move(callback));
+  OpenUrlImpl(profile, url, std::move(params), std::move(callback));
 }
 
 void BrowserServiceLacros::RestoreTabWithProfile(RestoreTabCallback callback,

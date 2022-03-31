@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
@@ -38,7 +39,6 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
-#include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -54,6 +54,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
+#include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -98,10 +99,11 @@ class MockAppPublisher : public crosapi::mojom::AppPublisher {
 
  private:
   // crosapi::mojom::AppPublisher:
-  void OnApps(std::vector<apps::mojom::AppPtr> deltas) override {
-    app_deltas_.insert(app_deltas_.end(),
-                       std::make_move_iterator(deltas.begin()),
-                       std::make_move_iterator(deltas.end()));
+  void OnApps(std::vector<apps::AppPtr> deltas) override {
+    for (const auto& delta : deltas) {
+      if (delta)
+        app_deltas_.push_back(apps::ConvertAppToMojomApp(delta));
+    }
     run_loop_->Quit();
   }
 
@@ -128,6 +130,49 @@ content::EvalJsResult ReadTextContent(content::WebContents* web_contents,
   const std::string script =
       base::StringPrintf("document.getElementById('%s').textContent", id);
   return content::EvalJs(web_contents, script);
+}
+
+// Returns whether there are file view filters among the given list of intent
+// filters.
+bool HasFileViewFilters(
+    const std::vector<apps::mojom::IntentFilterPtr>& intent_filters) {
+  for (const auto& intent_filter : intent_filters) {
+    bool has_action_view = false;
+    bool has_mime_type = false;
+    bool has_file_extension = false;
+
+    for (const auto& condition : intent_filter->conditions) {
+      switch (condition->condition_type) {
+        case apps::mojom::ConditionType::kAction:
+          if (condition->condition_values.size() == 1 &&
+              condition->condition_values.back()->value ==
+                  apps_util::kIntentActionView) {
+            has_action_view = true;
+          }
+          break;
+        case apps::mojom::ConditionType::kFile:
+          for (const auto& condition_value : condition->condition_values) {
+            if (condition_value->match_type ==
+                apps::mojom::PatternMatchType::kMimeType) {
+              has_mime_type = true;
+            } else if (condition_value->match_type ==
+                       apps::mojom::PatternMatchType::kFileExtension) {
+              has_file_extension = true;
+            }
+          }
+          break;
+        default:
+          // NOOP
+          break;
+      }
+    }
+
+    if (has_action_view && (has_mime_type || has_file_extension)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace
@@ -165,11 +210,19 @@ IN_PROC_BROWSER_TEST_F(WebAppsPublisherHostBrowserTest, PublishApps) {
   // OnWebAppLastLaunchTimeChanged() lead to updates.
   const auto& app_deltas = mock_app_publisher.get_deltas();
   EXPECT_EQ(app_deltas.size(), 5U);
-  EXPECT_EQ(app_deltas[app_deltas.size() - 2]->app_id, app_id);
-  EXPECT_EQ(app_deltas[app_deltas.size() - 2]->readiness,
-            apps::mojom::Readiness::kReady);
-  EXPECT_EQ(app_deltas[app_deltas.size() - 2]->icon_key->icon_effects,
-            IconEffects::kRoundCorners | IconEffects::kCrOsStandardIcon);
+  EXPECT_EQ(app_deltas.back()->app_id, app_id);
+  bool found_ready_with_icon = false;
+  // The order of those three updates is not important
+  for (std::vector<apps::mojom::AppPtr>::size_type i = 2; i < app_deltas.size();
+       i++) {
+    EXPECT_EQ(app_deltas[i]->app_id, app_id);
+    if (app_deltas[i]->readiness == apps::mojom::Readiness::kReady) {
+      EXPECT_EQ(app_deltas[i]->icon_key->icon_effects,
+                IconEffects::kRoundCorners | IconEffects::kCrOsStandardIcon);
+      found_ready_with_icon = true;
+    }
+  }
+  EXPECT_TRUE(found_ready_with_icon);
 
   {
     base::RunLoop run_loop;
@@ -247,10 +300,13 @@ IN_PROC_BROWSER_TEST_F(WebAppsPublisherHostBrowserTest, ManifestUpdate) {
     base::RunLoop run_loop;
     provider().install_finalizer().FinalizeUpdate(
         *web_app_info,
-        base::BindLambdaForTesting(
-            [&run_loop](const AppId& app_id, InstallResultCode code) {
-              run_loop.Quit();
-            }));
+        base::BindLambdaForTesting([&run_loop](const AppId& app_id,
+                                               webapps::InstallResultCode code,
+                                               OsHooksErrors os_hooks_errors) {
+          EXPECT_EQ(code, webapps::InstallResultCode::kSuccessAlreadyInstalled);
+          EXPECT_TRUE(os_hooks_errors.none());
+          run_loop.Quit();
+        }));
 
     run_loop.Run();
     mock_app_publisher.Wait();
@@ -319,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(WebAppsPublisherHostBrowserTest, PolicyId) {
   web_app_prefs.Insert(install_url, app_id,
                        web_app::ExternalInstallSource::kExternalPolicy);
 
-  provider().registrar().NotifyWebAppInstalledWithOsHooks(app_id);
+  provider().install_manager().NotifyWebAppInstalledWithOsHooks(app_id);
 
   mock_app_publisher.Wait();
   EXPECT_EQ(mock_app_publisher.get_deltas().back()->policy_id,
@@ -641,8 +697,7 @@ IN_PROC_BROWSER_TEST_F(WebAppsPublisherHostBrowserTest, WindowMode) {
   EXPECT_EQ(mock_app_publisher.get_deltas().back()->window_mode,
             apps::mojom::WindowMode::kWindow);
 
-  web_apps_publisher_host.SetWindowMode(app_id,
-                                        apps::mojom::WindowMode::kBrowser);
+  web_apps_publisher_host.SetWindowMode(app_id, apps::WindowMode::kBrowser);
   mock_app_publisher.Wait();
 
   EXPECT_GE(mock_app_publisher.get_deltas().size(), 2U);
@@ -759,8 +814,8 @@ IN_PROC_BROWSER_TEST_F(WebAppsPublisherHostBrowserTest, DisabledState) {
             IconEffects::kRoundCorners | IconEffects::kCrOsStandardMask |
                 IconEffects::kBlocked);
 
-  provider().registrar().NotifyWebAppManifestUpdated(app_id,
-                                                     base::StringPiece());
+  provider().install_manager().NotifyWebAppManifestUpdated(app_id,
+                                                           base::StringPiece());
   mock_app_publisher.Wait();
   EXPECT_EQ(mock_app_publisher.get_deltas().size(), 7U);
   EXPECT_EQ(mock_app_publisher.get_deltas().back()->app_id, app_id);
@@ -926,6 +981,43 @@ IN_PROC_BROWSER_TEST_F(WebAppsPublisherHostBrowserTest, ShareMultimedia) {
   EXPECT_EQ(kVideoContent, ReadTextContent(web_contents, "video"));
   EXPECT_EQ("sam.ple.mp3", ReadTextContent(web_contents, "audio_filename"));
   EXPECT_EQ("_sample.mp4", ReadTextContent(web_contents, "video_filename"));
+}
+
+// Regression test for crbug.com/1266642
+IN_PROC_BROWSER_TEST_F(WebAppsPublisherHostBrowserTest,
+                       PublishOnlyEnabledFileHandlers) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  auto app_id = InstallWebAppFromManifest(
+      browser(),
+      embedded_test_server()->GetURL("/web_app_file_handling/basic_app.html"));
+
+  // Have to call it explicitly due to usage of
+  // OsIntegrationManager::ScopedSuppressForTesting
+  provider()
+      .os_integration_manager()
+      .file_handler_manager_for_testing()
+      .EnableAndRegisterOsFileHandlers(app_id);
+
+  MockAppPublisher mock_app_publisher;
+  WebAppsPublisherHost web_apps_publisher_host(profile());
+  web_apps_publisher_host.SetPublisherForTesting(&mock_app_publisher);
+  web_apps_publisher_host.Init();
+  mock_app_publisher.Wait();
+  EXPECT_EQ(mock_app_publisher.get_deltas().size(), 1U);
+
+  EXPECT_TRUE(HasFileViewFilters(
+      mock_app_publisher.get_deltas().back()->intent_filters));
+
+  EXPECT_EQ(ApiApprovalState::kRequiresPrompt,
+            provider().registrar().GetAppFileHandlerApprovalState(app_id));
+  provider().sync_bridge().SetAppFileHandlerApprovalState(
+      app_id, ApiApprovalState::kDisallowed);
+
+  mock_app_publisher.Wait();
+  EXPECT_EQ(mock_app_publisher.get_deltas().size(), 2U);
+
+  EXPECT_FALSE(HasFileViewFilters(
+      mock_app_publisher.get_deltas().back()->intent_filters));
 }
 
 }  // namespace web_app

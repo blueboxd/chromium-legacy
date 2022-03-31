@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/quick_answers/ui/quick_answers_focus_search.h"
 #include "ui/events/event_handler.h"
 #include "ui/views/focus/focus_manager.h"
@@ -32,7 +31,7 @@ class QuickAnswersView : public views::View {
   QuickAnswersView(const gfx::Rect& anchor_view_bounds,
                    const std::string& title,
                    bool is_internal,
-                   base::WeakPtr<QuickAnswersUiController> controller);
+                   QuickAnswersUiController* controller);
 
   QuickAnswersView(const QuickAnswersView&) = delete;
   QuickAnswersView& operator=(const QuickAnswersView&) = delete;
@@ -42,6 +41,7 @@ class QuickAnswersView : public views::View {
   // views::View:
   const char* GetClassName() const override;
   void OnFocus() override;
+  void OnThemeChanged() override;
   views::FocusTraversable* GetPaneFocusTraversable() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
@@ -76,7 +76,7 @@ class QuickAnswersView : public views::View {
   void OnPhoneticsAudioButtonPressed(const GURL& phonetics_audio);
 
   gfx::Rect anchor_view_bounds_;
-  base::WeakPtr<QuickAnswersUiController> controller_;
+  QuickAnswersUiController* const controller_;
   bool has_second_row_answer_ = false;
   std::string title_;
   bool is_internal_ = false;

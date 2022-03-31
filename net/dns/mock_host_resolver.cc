@@ -282,6 +282,18 @@ class MockHostResolverBase::RequestImpl
 
     // TODO(crbug.com/1264933): Perform fixups on `endpoint_results`?
     endpoint_results_ = std::move(endpoint_results);
+
+    // For now, we do not support configuring DNS aliases with endpoint results,
+    // but the value is expected to always be present.
+    //
+    // TODO(crbug.com/1264933): Add some way to configure this, to support code
+    // migrating to `HostResolverEndpointResult`.
+    fixed_up_dns_alias_results_.emplace();
+
+    // `HostResolver` implementations are expected to provide an `AddressList`
+    // result whenever `HostResolverEndpointResult` is also available.
+    address_results_ = EndpointResultToAddressList(
+        *endpoint_results_, *fixed_up_dns_alias_results_);
   }
 
   void OnAsyncCompleted(size_t id, int error) {
@@ -1247,15 +1259,6 @@ void RuleBasedHostResolverProc::AddSimulatedTimeoutFailure(
   AddRuleInternal(rule);
 }
 
-void RuleBasedHostResolverProc::AddSimulatedHTTPSServiceFormRecord(
-    const std::string& host_pattern) {
-  Rule rule(Rule::kResolverTypeFailHTTPSServiceFormRecord, host_pattern,
-            ADDRESS_FAMILY_UNSPECIFIED, /*host_resolver_flags=*/0,
-            /*replacement=*/std::string(),
-            /*dns_aliases=*/{}, /*latency_ms=*/0);
-  AddRuleInternal(rule);
-}
-
 void RuleBasedHostResolverProc::ClearRules() {
   CHECK(modifications_allowed_);
   base::AutoLock lock(rule_lock_);
@@ -1311,14 +1314,6 @@ int RuleBasedHostResolverProc::Resolve(const std::string& host,
           return ERR_NAME_NOT_RESOLVED;
         case Rule::kResolverTypeFailTimeout:
           return ERR_DNS_TIMED_OUT;
-        case Rule::kResolverTypeFailHTTPSServiceFormRecord: {
-          // Remove the rule to create the behavior that the HTTPS record is
-          // only returned for the first request.
-          rules_.erase(r);
-          // TODO(https://crbug.com/1206799) Only return this error when the
-          // scheme is non-cryptographic (http:// or ws://).
-          return ERR_DNS_NAME_HTTPS_ONLY;
-        }
         case Rule::kResolverTypeSystem:
 #if BUILDFLAG(IS_WIN)
           EnsureWinsockInit();

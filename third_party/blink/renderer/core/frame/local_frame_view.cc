@@ -25,6 +25,7 @@
  */
 
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 
 #include <algorithm>
 #include <memory>
@@ -97,6 +98,7 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observation.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
+#include "third_party/blink/renderer/core/layout/deferred_shaping.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
@@ -146,6 +148,7 @@
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/font_performance.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
@@ -316,7 +319,7 @@ void LocalFrameView::Trace(Visitor* visitor) const {
   visitor->Trace(layout_subtree_root_list_);
   visitor->Trace(orthogonal_writing_mode_root_list_);
   visitor->Trace(fragment_anchor_);
-  visitor->Trace(scrollable_areas_);
+  visitor->Trace(scroll_anchoring_scrollable_areas_);
   visitor->Trace(animating_scrollable_areas_);
   visitor->Trace(user_scrollable_areas_);
   visitor->Trace(viewport_constrained_objects_);
@@ -658,8 +661,8 @@ bool LocalFrameView::LayoutFromRootObject(LayoutObject& root) {
   }
 
   LayoutState layout_state(root);
-  if (scrollable_areas_) {
-    for (auto& scrollable_area : *scrollable_areas_) {
+  if (scroll_anchoring_scrollable_areas_) {
+    for (auto& scrollable_area : *scroll_anchoring_scrollable_areas_) {
       if (scrollable_area->GetScrollAnchor() &&
           scrollable_area->ShouldPerformScrollAnchoring())
         scrollable_area->GetScrollAnchor()->NotifyBeforeLayout();
@@ -826,11 +829,7 @@ void LocalFrameView::PerformLayout() {
 #if DCHECK_IS_ON()
       // Ensure fragment-tree consistency after a subtree layout.
       for (const auto& p : fragment_tree_spines) {
-        // |LayoutNGMixin::UpdateInFlowBlockLayout| may |SetNeedsLayout| to its
-        // containing block. Don't check if it will be re-laid out.
-        if (!p.key->NeedsLayout()) {
-          p.key->AssertFragmentTree();
-        }
+        p.key->AssertFragmentTree();
         DCHECK_EQ(p.value, 0u);
       }
 #endif
@@ -838,6 +837,14 @@ void LocalFrameView::PerformLayout() {
     } else {
       if (HasOrthogonalWritingModeRoots())
         LayoutOrthogonalWritingModeRoots();
+      base::AutoReset<bool> deferred_shaping(
+          &allow_deferred_shaping_,
+          RuntimeEnabledFeatures::DeferredShapingEnabled() &&
+              !frame_->PagePopupOwner() &&
+              !FirstMeaningfulPaintDetector::From(*frame_->GetDocument())
+                   .SeenFirstMeaningfulPaint());
+      DeferredShapingViewportScope viewport_scope(
+          *this, GetLayoutView()->InitialContainingBlockSize().block_size);
       GetLayoutView()->UpdateLayout();
     }
   }
@@ -884,6 +891,8 @@ void LocalFrameView::UpdateLayout() {
   probe::UpdateLayout probe(GetFrame().GetDocument());
   HeapVector<LayoutObjectWithDepth> layout_roots;
 
+  ENTER_EMBEDDER_STATE(V8PerIsolateData::MainThreadIsolate(), &GetFrame(),
+                       BlinkState::LAYOUT);
   TRACE_EVENT_BEGIN0("blink,benchmark", "LocalFrameView::layout");
   if (UNLIKELY(RuntimeEnabledFeatures::BlinkRuntimeCallStatsEnabled())) {
     rcs_scope.emplace(
@@ -951,6 +960,10 @@ void LocalFrameView::SetNeedsPaintPropertyUpdate() {
 }
 
 gfx::SizeF LocalFrameView::ViewportSizeForViewportUnits() const {
+  return LargeViewportSizeForViewportUnits();
+}
+
+gfx::SizeF LocalFrameView::SmallViewportSizeForViewportUnits() const {
   float zoom = 1;
   if (!frame_->GetDocument() || !frame_->GetDocument()->Printing())
     zoom = GetFrame().PageZoomFactor();
@@ -963,6 +976,16 @@ gfx::SizeF LocalFrameView::ViewportSizeForViewportUnits() const {
   layout_size.set_width(layout_view->ViewWidth(kIncludeScrollbars) / zoom);
   layout_size.set_height(layout_view->ViewHeight(kIncludeScrollbars) / zoom);
 
+  return layout_size;
+}
+
+gfx::SizeF LocalFrameView::LargeViewportSizeForViewportUnits() const {
+  auto* layout_view = GetLayoutView();
+  if (!layout_view)
+    return gfx::SizeF();
+
+  gfx::SizeF layout_size = SmallViewportSizeForViewportUnits();
+
   BrowserControls& browser_controls = frame_->GetPage()->GetBrowserControls();
   if (browser_controls.PermittedState() != cc::BrowserControlsState::kHidden) {
     // We use the layoutSize rather than frameRect to calculate viewport units
@@ -974,9 +997,6 @@ gfx::SizeF LocalFrameView::ViewportSizeForViewportUnits() const {
     // use the viewport with browser controls hidden for vh (to match Safari).
     int viewport_width = frame_->GetPage()->GetVisualViewport().Size().width();
     if (frame_->IsMainFrame() && layout_size.width() && viewport_width) {
-      // TODO(bokan/eirage): BrowserControl height may need to account for the
-      // zoom factor when use-zoom-for-dsf is enabled on Android. Confirm this
-      // works correctly when that's turned on. https://crbug.com/737777.
       float page_scale_at_layout_width = viewport_width / layout_size.width();
       layout_size.Enlarge(0, (browser_controls.TotalHeight() -
                               browser_controls.TotalMinHeight()) /
@@ -992,6 +1012,13 @@ gfx::SizeF LocalFrameView::ViewportSizeForMediaQueries() const {
   if (!frame_->GetDocument() || !frame_->GetDocument()->Printing())
     viewport_size.Scale(1 / GetFrame().PageZoomFactor());
   return viewport_size;
+}
+
+gfx::SizeF LocalFrameView::DynamicViewportSizeForViewportUnits() const {
+  BrowserControls& browser_controls = frame_->GetPage()->GetBrowserControls();
+  return browser_controls.ShrinkViewport()
+             ? SmallViewportSizeForViewportUnits()
+             : LargeViewportSizeForViewportUnits();
 }
 
 DocumentLifecycle& LocalFrameView::Lifecycle() const {
@@ -1293,6 +1320,11 @@ void LocalFrameView::MarkViewportConstrainedObjectsForLayout(
       }
     }
   }
+}
+
+void LocalFrameView::DynamicViewportUnitsChanged() {
+  if (GetFrame().GetDocument())
+    GetFrame().GetDocument()->DynamicViewportUnitsChanged();
 }
 
 bool LocalFrameView::ShouldSetCursor() const {
@@ -1841,8 +1873,6 @@ void LocalFrameView::PerformPostLayoutTasks(bool visual_viewport_size_changed) {
     }
   }
 
-  UpdateDocumentAnnotatedRegions();
-
   GetLayoutView()->EnclosingLayer()->UpdateLayerPositionsAfterLayout();
   frame_->Selection().DidLayout();
 
@@ -1875,10 +1905,10 @@ void LocalFrameView::NotifyPageThatContentAreaWillPaint() const {
   if (!page)
     return;
 
-  if (!scrollable_areas_)
+  if (!user_scrollable_areas_)
     return;
 
-  for (const auto& scrollable_area : *scrollable_areas_) {
+  for (const auto& scrollable_area : *user_scrollable_areas_) {
     if (!scrollable_area->ScrollbarsCanBeActive())
       continue;
 
@@ -2000,6 +2030,20 @@ LocalFrameView* LocalFrameView::ParentFrameView() const {
 
 LayoutEmbeddedContent* LocalFrameView::GetLayoutEmbeddedContent() const {
   return frame_->OwnerLayoutObject();
+}
+
+bool LocalFrameView::LoadAllLazyLoadedIframes() {
+  bool result = false;
+  ForAllChildViewsAndPlugins([&](EmbeddedContentView& view) {
+    if (auto* embed = view.GetLayoutEmbeddedContent()) {
+      if (auto* node = embed->GetNode()) {
+        if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node)) {
+          result = result || frame_owner->LoadImmediatelyIfLazy();
+        }
+      }
+    }
+  });
+  return result;
 }
 
 void LocalFrameView::UpdateGeometriesIfNeeded() {
@@ -2449,15 +2493,15 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
 bool LocalFrameView::RunScrollTimelineSteps() {
   DCHECK_GE(Lifecycle().GetState(), DocumentLifecycle::kPrePaintClean);
   bool re_run_lifecycles = false;
-  ForAllNonThrottledLocalFrameViews(
-      [&re_run_lifecycles](LocalFrameView& frame_view) {
-        frame_view.GetFrame()
-            .GetDocument()
-            ->GetDocumentAnimations()
-            .ValidateTimelines();
-        re_run_lifecycles |= (frame_view.Lifecycle().GetState() <
-                              DocumentLifecycle::kPrePaintClean);
-      });
+  ForAllNonThrottledLocalFrameViews([&re_run_lifecycles](
+                                        LocalFrameView& frame_view) {
+    frame_view.GetFrame()
+        .GetDocument()
+        ->GetDocumentAnimations()
+        .ValidateTimelines();
+    re_run_lifecycles |=
+        (frame_view.Lifecycle().GetState() < DocumentLifecycle::kPrePaintClean);
+  });
   return re_run_lifecycles;
 }
 
@@ -2669,7 +2713,7 @@ void LocalFrameView::RunPaintLifecyclePhase(PaintBenchmarkMode benchmark_mode) {
 
   bool needed_update;
   {
-    PaintController::CycleScope cycle_scope(PaintDebugInfoEnabled());
+    PaintControllerCycleScope cycle_scope(PaintDebugInfoEnabled());
     bool repainted = PaintTree(benchmark_mode, cycle_scope);
 
     if (paint_artifact_compositor_ &&
@@ -2793,7 +2837,7 @@ void LocalFrameView::EnqueueScrollEvents() {
 }
 
 bool LocalFrameView::PaintTree(PaintBenchmarkMode benchmark_mode,
-                               PaintController::CycleScope& cycle_scope) {
+                               PaintControllerCycleScope& cycle_scope) {
   SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
                            LocalFrameUkmAggregator::kPaint);
 
@@ -3001,7 +3045,7 @@ void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
         });
   }
 
-  WTF::Vector<std::unique_ptr<DocumentTransition::Request>>
+  WTF::Vector<std::unique_ptr<DocumentTransitionRequest>>
       document_transition_requests;
   // TODO(vmpstr): We should make this work for subframes as well.
   AppendDocumentTransitionRequests(document_transition_requests);
@@ -3014,7 +3058,7 @@ void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
 }
 
 void LocalFrameView::AppendDocumentTransitionRequests(
-    WTF::Vector<std::unique_ptr<DocumentTransition::Request>>& requests) {
+    WTF::Vector<std::unique_ptr<DocumentTransitionRequest>>& requests) {
   DCHECK(frame_ && frame_->GetDocument());
   auto* document_transition_supplement =
       DocumentTransitionSupplement::FromIfExists(*frame_->GetDocument());
@@ -3172,6 +3216,7 @@ void LocalFrameView::UpdateStyleAndLayout() {
     PerformPostLayoutTasks(visual_viewport_size_changed);
     GetFrame().GetDocument()->LayoutUpdated();
   }
+  UpdateDocumentAnnotatedRegions();
   UpdateGeometriesIfNeeded();
 }
 
@@ -3584,21 +3629,20 @@ void LocalFrameView::ScheduleAnimation(base::TimeDelta delay) {
     client->ScheduleAnimation(this, delay);
 }
 
-void LocalFrameView::AddScrollableArea(
+void LocalFrameView::AddScrollAnchoringScrollableArea(
     PaintLayerScrollableArea* scrollable_area) {
   DCHECK(scrollable_area);
-  if (!scrollable_areas_)
-    scrollable_areas_ = MakeGarbageCollected<ScrollableAreaSet>();
-  scrollable_areas_->insert(scrollable_area);
+  if (!scroll_anchoring_scrollable_areas_) {
+    scroll_anchoring_scrollable_areas_ =
+        MakeGarbageCollected<ScrollableAreaSet>();
+  }
+  scroll_anchoring_scrollable_areas_->insert(scrollable_area);
 }
 
-void LocalFrameView::RemoveScrollableArea(
+void LocalFrameView::RemoveScrollAnchoringScrollableArea(
     PaintLayerScrollableArea* scrollable_area) {
-  if (!scrollable_areas_)
-    return;
-  scrollable_areas_->erase(scrollable_area);
-  if (user_scrollable_areas_)
-    user_scrollable_areas_->erase(scrollable_area);
+  if (scroll_anchoring_scrollable_areas_)
+    scroll_anchoring_scrollable_areas_->erase(scrollable_area);
 }
 
 void LocalFrameView::AddAnimatingScrollableArea(
@@ -3773,18 +3817,19 @@ void LocalFrameView::DidChangeScrollOffset() {
 
 ScrollableArea* LocalFrameView::ScrollableAreaWithElementId(
     const CompositorElementId& id) {
-  // Check for the layout viewport, which may not be in scrollable_areas_ if it
-  // is styled overflow: hidden.  (Other overflow: hidden elements won't have
-  // composited scrolling layers per crbug.com/784053, so we don't have to worry
-  // about them.)
+  // Check for the layout viewport, which may not be in user_scrollable_areas_
+  // if it is styled overflow: hidden.  (Other overflow: hidden elements won't
+  // have composited scrolling layers per crbug.com/784053, so we don't have to
+  // worry about them.)
   ScrollableArea* viewport = LayoutViewport();
   if (id == viewport->GetScrollElementId())
     return viewport;
 
-  if (scrollable_areas_) {
-    // This requires iterating over all scrollable areas. We may want to store a
-    // map of ElementId to ScrollableArea if this is an issue for performance.
-    for (ScrollableArea* scrollable_area : *scrollable_areas_) {
+  if (user_scrollable_areas_) {
+    // This requires iterating over all user-scrollable areas. We may want to
+    // store a map of ElementId to ScrollableArea if this is an issue for
+    // performance.
+    for (ScrollableArea* scrollable_area : *user_scrollable_areas_) {
       if (id == scrollable_area->GetScrollElementId())
         return scrollable_area;
     }
@@ -4005,7 +4050,7 @@ void LocalFrameView::PaintForTest(const CullRect& cull_rect) {
   OverriddenCullRectScope force_cull_rect(*GetLayoutView()->Layer(), cull_rect);
   PaintController& paint_controller = EnsurePaintController();
   if (GetLayoutView()->Layer()->SelfOrDescendantNeedsRepaint()) {
-    PaintController::CycleScope cycle_scope(paint_controller);
+    PaintControllerCycleScope cycle_scope(paint_controller);
     GraphicsContext graphics_context(paint_controller);
     PaintFrame(graphics_context);
     paint_controller.CommitNewDisplayItems();
@@ -4600,7 +4645,7 @@ void LocalFrameView::MapLocalToRemoteMainFrame(
   if (frame_->IsMainFrame())
     return;
   transform_state.ApplyTransform(
-      TransformationMatrix(GetFrame().RemoteMainFrameTransform().matrix()),
+      TransformationMatrix(GetFrame().RemoteMainFrameTransform()),
       TransformState::kAccumulateTransform);
 }
 

@@ -22,12 +22,12 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller_utils.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/user_education/feature_promo_controller.h"
 #include "chrome/browser/ui/views/autofill/autofill_popup_view_utils.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/chrome_typography_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/user_education/feature_promo_controller_views.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
@@ -1304,19 +1304,12 @@ void AutofillPopupRowView::MaybeShowIphPromo() {
   if (feature_name.empty())
     return;
 
-  Browser* browser = popup_view()->browser();
-  DCHECK(browser);
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  DCHECK(browser_view);
-  FeaturePromoControllerViews* promo_controller =
-      browser_view->feature_promo_controller();
-  if (!promo_controller)
-    return;
-
   if (feature_name == "IPH_AutofillVirtualCardSuggestion") {
     SetProperty(views::kElementIdentifierKey,
                 kAutofillCreditCardSuggestionEntryElementId);
-    promo_controller->MaybeShowPromo(
+    Browser* browser = popup_view()->browser();
+    DCHECK(browser);
+    browser->window()->MaybeShowFeaturePromo(
         feature_engagement::kIPHAutofillVirtualCardSuggestionFeature);
   }
 }
@@ -1563,7 +1556,7 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
 
   // If kAutofillVisualImprovementsForSuggestionUi is enabled, introduce an
   // additional view with a vertical padding that wraps the full content of the
-  // bubble. This is similar to the padding_wrapper used in the scroll area, but
+  // popup. This is similar to the padding_wrapper used in the scroll area, but
   // it allows to add a padding below the footer.
   if (UseImprovedSuggestionUi()) {
     // Create the view and set the convenience pointers defined above.
@@ -1574,7 +1567,7 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
         std::make_unique<views::BoxLayout>(
             views::BoxLayout::Orientation::kVertical));
 
-    // This adds a padding area on the top and the bottom of the bubble content.
+    // This adds a padding area on the top and the bottom of the popup content.
     content_padding_wrapper->SetBorder(
         views::CreateEmptyBorder(gfx::Insets(GetContentsVerticalPadding(), 0)));
 
@@ -1762,7 +1755,7 @@ bool AutofillPopupViewNativeViews::DoUpdateBoundsAndRedrawPopup() {
                             element_bounds, controller_->IsRTL(),
                             &popup_bounds);
   } else {
-    popup_bounds = GetOptionalPositionAndPlaceArrowOnBubble(
+    popup_bounds = GetOptionalPositionAndPlaceArrowOnPopup(
         element_bounds, content_area_bounds, preferred_size);
   }
 

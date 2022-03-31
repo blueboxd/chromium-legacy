@@ -7,10 +7,15 @@
 #include <set>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
+#include "base/json/json_reader.h"
+#include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_client_registration_helper.h"
+#include "components/policy/core/common/features.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/policy/proto/secure_connect.pb.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -27,7 +32,7 @@ namespace policy {
 namespace {
 
 const char kAuthorizationHeaderFormat[] = "Bearer %s";
-const char kProtobufferContentType[] = "application/x-protobuf";
+const char kJsonContentType[] = "application/json";
 const char kSecureConnectApiGetManagedAccountsSigninRestrictionsUrl[] =
     "https://secureconnect-pa.clients6.google.com/"
     "v1:getManagedAccountsSigninRestriction";
@@ -45,7 +50,7 @@ std::unique_ptr<network::SimpleURLLoader> CreateUrlLoader(
       net::HttpRequestHeaders::kAuthorization,
       base::StringPrintf(kAuthorizationHeaderFormat, access_token.c_str()));
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
-                                      kProtobufferContentType);
+                                      kJsonContentType);
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   auto url_loader =
       network::SimpleURLLoader::Create(std::move(resource_request), annotation);
@@ -69,6 +74,12 @@ void UserCloudSigninRestrictionPolicyFetcher::
         signin::IdentityManager* identity_manager,
         const CoreAccountId& account_id,
         base::OnceCallback<void(const std::string&)> callback) {
+  if (!base::FeatureList::IsEnabled(
+          features::kEnableUserCloudSigninRestrictionPolicyFetcher)) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), std::string()));
+    return;
+  }
   // base::Unretained is safe here because the callback is called in the
   // lifecycle of `this`.
   FetchAccessToken(
@@ -185,14 +196,12 @@ void UserCloudSigninRestrictionPolicyFetcher::
     }
   }
 
-  if (error.state() == GoogleServiceAuthError::NONE) {
-    enterprise_management::GetManagedAccountsSigninRestrictionResponse response;
-    if (response_body && response.ParseFromString(*response_body) &&
-        (!response.has_has_error() || !response.has_error())) {
-      restriction = response.policy_value();
-    } else {
+  if (error.state() == GoogleServiceAuthError::NONE && response_body) {
+    auto result = base::JSONReader::Read(*response_body, base::JSON_PARSE_RFC);
+    if (result && result->FindStringKey("policyValue"))
+      restriction = *result->FindStringKey("policyValue");
+    else
       LOG(WARNING) << "Failed to ManagedAccountsSigninRestriction response";
-    }
   }
 
   std::move(callback).Run(std::move(restriction));

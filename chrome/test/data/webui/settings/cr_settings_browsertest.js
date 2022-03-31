@@ -79,7 +79,7 @@ var CrSettingsBasicPageTest = class extends CrSettingsBrowserTest {
 
   /** @override */
   get featureListInternal() {
-    return {enabled: ['features::kPrivacyReview']};
+    return {enabled: ['features::kPrivacyGuide']};
   }
 };
 
@@ -87,8 +87,8 @@ TEST_F('CrSettingsBasicPageTest', 'BasicPage', function() {
   runMochaSuite('SettingsBasicPage');
 });
 
-TEST_F('CrSettingsBasicPageTest', 'PrivacyReviewPromo', function() {
-  runMochaSuite('PrivacyReviewPromo');
+TEST_F('CrSettingsBasicPageTest', 'PrivacyGuidePromo', function() {
+  runMochaSuite('PrivacyGuidePromo');
 });
 
 GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH)');
@@ -197,7 +197,7 @@ var CrSettingsClearBrowsingDataTest = class extends CrSettingsBrowserTest {
 };
 
 // TODO(crbug.com/1107652): Flaky on Mac.
-GEN('#if defined(OS_MAC)');
+GEN('#if BUILDFLAG(IS_MAC)');
 GEN('#define MAYBE_ClearBrowsingDataAllPlatforms DISABLED_ClearBrowsingDataAllPlatforms');
 GEN('#else');
 GEN('#define MAYBE_ClearBrowsingDataAllPlatforms ClearBrowsingDataAllPlatforms');
@@ -332,17 +332,17 @@ var CrSettingsPasswordsCheckTest = class extends CrSettingsBrowserTest {
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/password_check_test.js&host=webui-test';
   }
+  testGenPreamble() {
+    GEN('  LOG(INFO) << "Hardcoding timeout to 60s because ' +
+        'CrSettingsPasswordsCheckTest tests are slow.";');
+    GEN('  base::test::ScopedRunLoopTimeout timeout(FROM_HERE, ' +
+        'base::Seconds(60));');
+  }
 };
 
-// Flaky on Mac builds https://crbug.com/1143801
-GEN('#if (defined(OS_MAC)) || (defined(OS_LINUX))');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
-TEST_F('CrSettingsPasswordsCheckTest', 'MAYBE_All', function() {
+TEST_F('CrSettingsPasswordsCheckTest', 'All', function() {
   mocha.run();
-});
+}, /*opt_preamble=*/ '#include "base/test/scoped_run_loop_timeout.h"');
 GEN('#undef MAYBE_All');
 
 var CrSettingsSafetyCheckPageTest = class extends CrSettingsBrowserTest {
@@ -356,7 +356,7 @@ TEST_F('CrSettingsSafetyCheckPageTest', 'All', function() {
   mocha.run();
 });
 
-GEN('#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+GEN('#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 var CrSettingsSafetyCheckChromeCleanerTest =
     class extends CrSettingsBrowserTest {
   /** @override */
@@ -368,7 +368,7 @@ var CrSettingsSafetyCheckChromeCleanerTest =
 TEST_F('CrSettingsSafetyCheckChromeCleanerTest', 'All', function() {
   mocha.run();
 });
-GEN('#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+GEN('#endif');
 
 var CrSettingsSiteListTest = class extends CrSettingsBrowserTest {
   /** @override */
@@ -407,7 +407,7 @@ var CrSettingsSiteDetailsTest = class extends CrSettingsBrowserTest {
 // Disabling on debug due to flaky timeout on Win7 Tests (dbg)(1) bot.
 // https://crbug.com/825304 - later for other platforms in crbug.com/1021219.
 // Disabling on Linux CFI due to flaky timeout (crbug.com/1031960).
-GEN('#if (!defined(NDEBUG)) || ((defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(IS_CFI))');
+GEN('#if (!defined(NDEBUG)) || ((BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)) && defined(IS_CFI))');
 GEN('#define MAYBE_SiteDetails DISABLED_SiteDetails');
 GEN('#else');
 GEN('#define MAYBE_SiteDetails SiteDetails');
@@ -442,12 +442,12 @@ var CrSettingsPrivacyPageTest = class extends CrSettingsBrowserTest {
 
   /** @override */
   get featureListInternal() {
-    return {enabled: ['features::kPrivacyReview']};
+    return {enabled: ['features::kPrivacyGuide']};
   }
 };
 
 // TODO(crbug.com/1263420): Flaky on Linux Tests(dbg).
-GEN('#if defined(OS_LINUX)');
+GEN('#if BUILDFLAG(IS_LINUX)');
 GEN('#define MAYBE_PrivacyPageTests DISABLED_PrivacyPageTests');
 GEN('#else');
 GEN('#define MAYBE_PrivacyPageTests PrivacyPageTests');
@@ -456,8 +456,8 @@ TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPageTests', function() {
   runMochaSuite('PrivacyPage');
 });
 
-TEST_F('CrSettingsPrivacyPageTest', 'PrivacyReviewEnabled', function() {
-  runMochaSuite('PrivacyReviewEnabled');
+TEST_F('CrSettingsPrivacyPageTest', 'PrivacyGuideEnabled', function() {
+  runMochaSuite('PrivacyGuideEnabled');
 });
 
 // TODO(crbug.com/1043665): flaky crash on Linux Tests (dbg).
@@ -473,7 +473,7 @@ TEST_F(
       runMochaSuite('HappinessTrackingSurveys');
     });
 
-GEN('#if defined(OS_MAC) || defined(OS_WIN)');
+GEN('#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)');
 // TODO(crbug.com/1043665): disabling due to failures on several builders.
 TEST_F(
     'CrSettingsPrivacyPageTest', 'DISABLED_CertificateManagerTests',
@@ -482,35 +482,36 @@ TEST_F(
     });
 GEN('#endif');
 
-var CrSettingsPrivacyReviewPageTest = class extends CrSettingsBrowserTest {
+var CrSettingsPrivacyGuidePageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/privacy_review_page_test.js&host=webui-test';
+    return 'chrome://settings/test_loader.html?module=settings/privacy_guide_page_test.js&host=webui-test';
   }
 
   /** @override */
   get featureListInternal() {
-    return {enabled: ['features::kPrivacyReview']};
+    return {enabled: ['features::kPrivacyGuide']};
   }
 };
 
-// TODO(crbug.com/1281967): Flaky on debug Linux builds.
-GEN('#if defined(OS_LINUX) && !defined(NDEBUG)');
-GEN('#define MAYBE_PrivacyReviewPageTests DISABLED_PrivacyReviewPageTests');
-GEN('#else');
-GEN('#define MAYBE_PrivacyReviewPageTests PrivacyReviewPageTests');
-GEN('#endif');
+TEST_F('CrSettingsPrivacyGuidePageTest', 'PrivacyGuidePageTests', function() {
+  runMochaSuite('PrivacyGuidePage');
+});
+
 TEST_F(
-    'CrSettingsPrivacyReviewPageTest', 'MAYBE_PrivacyReviewPageTests',
+    'CrSettingsPrivacyGuidePageTest', 'PrivacyGuideFragmentMetricsTests',
     function() {
-      runMochaSuite('PrivacyReviewPage');
+      runMochaSuite('PrivacyGuideFragmentMetrics');
     });
 
-
 TEST_F(
-    'CrSettingsPrivacyReviewPageTest', 'HistorySyncFragmentTests', function() {
+    'CrSettingsPrivacyGuidePageTest', 'HistorySyncFragmentTests', function() {
       runMochaSuite('HistorySyncFragment');
     });
+
+TEST_F('CrSettingsPrivacyGuidePageTest', 'CompletionFragmentTests', function() {
+  runMochaSuite('CompletionFragment');
+});
 
 var CrSettingsRouteTest = class extends CrSettingsBrowserTest {
   /** @override */
@@ -529,7 +530,7 @@ TEST_F('CrSettingsRouteTest', 'DynamicParameters', function() {
 
 // Copied from Polymer 2 test:
 // Failing on ChromiumOS dbg. https://crbug.com/709442
-GEN('#if (defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)) && !defined(NDEBUG)');
+GEN('#if (BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)) && !defined(NDEBUG)');
 GEN('#define MAYBE_NonExistentRoute DISABLED_NonExistentRoute');
 GEN('#else');
 GEN('#define MAYBE_NonExistentRoute NonExistentRoute');
@@ -615,7 +616,7 @@ TEST_F('CrSettingsAdvancedPageTest', 'MAYBE_Load', function() {
 
 // Timeout on Linux and MacOS dbg bots: https://crbug.com/1133412
 // Fails on Mac/Arm: https://crbug.com/1222886
-GEN('#if (!defined(OS_LINUX) && !defined(OS_MAC)) || ' +
+GEN('#if (!BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_MAC)) || ' +
     '(defined(NDEBUG) && !defined(ARCH_CPU_ARM64))');
 [['SecurityPage', 'security_page_test.js'],
 ].forEach(test => registerTest(...test));
@@ -623,7 +624,7 @@ GEN('#endif');
 
 
 // Flaky on MacOS bots and times out on Linux Dbg: https://crbug.com/1240747
-GEN('#if (!defined(OS_MAC)) && (!defined(OS_LINUX) || defined(NDEBUG))');
+GEN('#if (!BUILDFLAG(IS_MAC)) && (!BUILDFLAG(IS_LINUX) || defined(NDEBUG))');
 [['CookiesPage', 'cookies_page_test.js'],
 ].forEach(test => registerTest(...test));
 GEN('#endif');
@@ -631,44 +632,43 @@ GEN('#endif');
 GEN('#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)');
 [['PasswordsSectionCros', 'passwords_section_test_cros.js'],
 ].forEach(test => registerTest(...test));
-GEN('#endif  // BUILDFLAG(IS_CHROMEOS_ASH)) || BUILDFLAG(IS_CHROMEOS_LACROS)');
+GEN('#endif');
 
 GEN('#if BUILDFLAG(IS_CHROMEOS_ASH)');
 [['PeoplePageChromeOS', 'people_page_test_cros.js'],
  // Copied from Polymer 2 test. TODO(crbug.com/929455): flaky, fix.
  ['SiteListChromeOS', 'site_list_tests_cros.js', 'DISABLED_AndroidSmsInfo'],
 ].forEach(test => registerTest(...test));
-GEN('#endif  // BUILDFLAG(IS_CHROMEOS_ASH)');
+GEN('#endif');
 
-GEN('#if !defined(OS_MAC) && !BUILDFLAG(IS_CHROMEOS_ASH)');
+GEN('#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_CHROMEOS_ASH)');
 [['EditDictionaryPage', 'edit_dictionary_page_test.js'],
 ].forEach(test => registerTest(...test));
-GEN('#endif  // !defined(OS_MAC) && !BUILDFLAG(IS_CHROMEOS_ASH)');
+GEN('#endif');
 
 GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)');
 [['DefaultBrowser', 'default_browser_test.js'],
  ['ImportDataDialog', 'import_data_dialog_test.js'],
  ['SystemPage', 'system_page_tests.js'],
 ].forEach(test => registerTest(...test));
-GEN('#endif  // !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)');
+GEN('#endif');
 
 GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH)');
 [['PeoplePageManageProfile', 'people_page_manage_profile_test.js'],
  ['Languages', 'languages_tests.js'],
  ['RelaunchConfirmationDialog', 'relaunch_confirmation_dialog_test.js'],
 ].forEach(test => registerTest(...test));
-GEN('#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)');
+GEN('#endif');
 
-GEN('#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+GEN('#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 [['ChromeCleanupPage', 'chrome_cleanup_page_test.js'],
  ['IncompatibleApplicationsPage', 'incompatible_applications_page_test.js'],
 ].forEach(test => registerTest(...test));
-GEN('#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+GEN('#endif');
 
 GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !BUILDFLAG(IS_CHROMEOS_ASH)');
 registerTest('MetricsReporting', 'metrics_reporting_tests.js');
-GEN('#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) ' +
-    '&& !BUILDFLAG(IS_CHROMEOS_ASH)');
+GEN('#endif');
 
 function registerTest(testName, module, caseName) {
   const className = `CrSettings${testName}Test`;

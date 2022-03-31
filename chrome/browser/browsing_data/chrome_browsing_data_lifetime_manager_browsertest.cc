@@ -38,13 +38,13 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/base/pref_names.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/browsing_data_remover_delegate.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/browser_test.h"
@@ -62,6 +62,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/test/base/ui_test_utils.h"
+#else
+#include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/ui/android/tab_model/tab_model.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #endif
 
 namespace {
@@ -257,7 +261,6 @@ IN_PROC_BROWSER_TEST_P(ChromeBrowsingDataLifetimeManagerScheduledRemovalTest,
   SetupSiteData(GetActiveWebContents());
   ApplyBrowsingDataLifetimeDeletion(kPref);
 
-#if !BUILDFLAG(IS_ANDROID)
   // The site data is not deleted since the page where it happened is still
   // opened.
   CheckSiteData(GetActiveWebContents(), /*has_site_data=*/true);
@@ -270,9 +273,7 @@ IN_PROC_BROWSER_TEST_P(ChromeBrowsingDataLifetimeManagerScheduledRemovalTest,
   // active.
   ApplyBrowsingDataLifetimeDeletion(kPref);
   ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), url));
-#else
-  ApplyBrowsingDataLifetimeDeletion(kPref);
-#endif
+
   CheckSiteData(GetActiveWebContents(), /*has_site_data=*/false);
 }
 
@@ -295,7 +296,6 @@ IN_PROC_BROWSER_TEST_P(ChromeBrowsingDataLifetimeManagerScheduledRemovalTest,
   EXPECT_NE(net::OK, content::LoadBasicRequest(network_context(), url));
 }
 
-#if !BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_P(ChromeBrowsingDataLifetimeManagerScheduledRemovalTest,
                        KeepsOtherTabData) {
   if (IsIncognito())
@@ -309,10 +309,21 @@ IN_PROC_BROWSER_TEST_P(ChromeBrowsingDataLifetimeManagerScheduledRemovalTest,
   ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), url));
 
   auto* first_tab = GetActiveWebContents();
+#if !BUILDFLAG(IS_ANDROID)
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+
   auto* second_tab = GetActiveWebContents();
+#else
+  TabModel* tab_model = TabModelList::GetTabModelForWebContents(first_tab);
+  TabAndroid* current_tab = TabAndroid::FromWebContents(first_tab);
+  std::unique_ptr<content::WebContents> contents = content::WebContents::Create(
+      content::WebContents::CreateParams(GetProfile()));
+  auto* second_tab = contents.release();
+  tab_model->CreateTab(current_tab, second_tab);
+  ASSERT_TRUE(content::NavigateToURL(second_tab, url));
+#endif
   DCHECK_NE(first_tab, second_tab);
 
   SetupSiteData(first_tab);
@@ -353,8 +364,18 @@ IN_PROC_BROWSER_TEST_P(ChromeBrowsingDataLifetimeManagerScheduledRemovalTest,
   ASSERT_TRUE(content::NavigateToURL(second_tab, url));
   CheckSiteData(first_tab, /*has_site_data=*/false);
   CheckSiteData(second_tab, /*has_site_data=*/false);
+
+#if BUILDFLAG(IS_ANDROID)
+  for (int i = 0; i < tab_model->GetTabCount(); ++i) {
+    if (second_tab == tab_model->GetWebContentsAt(i)) {
+      tab_model->CloseTabAt(i);
+      break;
+    }
+  }
+#endif
 }
 
+#if !BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_P(ChromeBrowsingDataLifetimeManagerScheduledRemovalTest,
                        KeepsOtherWindowData) {
   if (IsIncognito())

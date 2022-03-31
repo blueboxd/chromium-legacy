@@ -13,6 +13,7 @@
 #include <va/va_drmcommon.h>
 #include <va/va_str.h>
 #include <va/va_version.h>
+#include <xf86drm.h>
 
 #include <algorithm>
 #include <string>
@@ -37,6 +38,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -553,12 +555,30 @@ VADisplayState* VADisplayState::Get() {
 
 // static
 void VADisplayState::PreSandboxInitialization() {
-  const char kDriRenderNode0Path[] = "/dev/dri/renderD128";
-  base::File drm_file = base::File(
-      base::FilePath::FromUTF8Unsafe(kDriRenderNode0Path),
-      base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_WRITE);
-  if (drm_file.IsValid())
+  constexpr char kRenderNodeFilePattern[] = "/dev/dri/renderD%d";
+  // This loop ends on either the first card that does not exist or the first
+  // render node that is not vgem.
+  for (int i = 128;; i++) {
+    base::FilePath dev_path(FILE_PATH_LITERAL(
+        base::StringPrintf(kRenderNodeFilePattern, i).c_str()));
+    base::File drm_file =
+        base::File(dev_path, base::File::FLAG_OPEN | base::File::FLAG_READ |
+                                 base::File::FLAG_WRITE);
+    if (!drm_file.IsValid())
+      return;
+    // Skip the virtual graphics memory manager device.
+    drmVersionPtr version = drmGetVersion(drm_file.GetPlatformFile());
+    if (!version)
+      continue;
+    std::string version_name(
+        version->name,
+        base::checked_cast<std::string::size_type>(version->name_len));
+    drmFreeVersion(version);
+    if (base::LowerCaseEqualsASCII(version_name, "vgem"))
+      continue;
     VADisplayState::Get()->SetDrmFd(drm_file.GetPlatformFile());
+    return;
+  }
 }
 
 VADisplayState::VADisplayState()
@@ -628,6 +648,7 @@ absl::optional<VADisplay> GetVADisplayStateX11(const base::ScopedFD& drm_fd) {
 absl::optional<VADisplay> GetVADisplayState(const base::ScopedFD& drm_fd) {
   switch (gl::GetGLImplementation()) {
     case gl::kGLImplementationEGLGLES2:
+    case gl::kGLImplementationEGLANGLE:
     case gl::kGLImplementationNone:
       return vaGetDisplayDRM(drm_fd.get());
     default:
@@ -1271,10 +1292,8 @@ class VASupportedImageFormats {
   ~VASupportedImageFormats() = default;
 
   // Initialize the list of supported image formats.
-  bool InitSupportedImageFormats_Locked(const base::Lock* va_lock);
-
-  // Pointer to VADisplayState's member |va_display_|.
-  VADisplay va_display_;
+  bool InitSupportedImageFormats_Locked(const base::Lock* va_lock,
+                                        VADisplay va_display);
 
   std::vector<VAImageFormat> supported_formats_;
   const ReportErrorToUMACB report_error_to_uma_cb_;
@@ -1324,10 +1343,10 @@ VASupportedImageFormats::VASupportedImageFormats()
 
   {
     base::AutoLockMaybe auto_lock(va_lock);
-    va_display_ = display_state->va_display();
-    DCHECK(va_display_) << "VADisplayState hasn't been properly initialized";
+    VADisplay va_display = display_state->va_display();
+    DCHECK(va_display) << "VADisplayState hasn't been properly initialized";
 
-    if (!InitSupportedImageFormats_Locked(va_lock))
+    if (!InitSupportedImageFormats_Locked(va_lock, va_display))
       LOG(ERROR) << "Failed to get supported image formats";
   }
 
@@ -1336,11 +1355,12 @@ VASupportedImageFormats::VASupportedImageFormats()
 }
 
 bool VASupportedImageFormats::InitSupportedImageFormats_Locked(
-    const base::Lock* va_lock) {
+    const base::Lock* va_lock,
+    VADisplay va_display) {
   MAYBE_ASSERT_ACQUIRED(va_lock);
 
   // Query the driver for the max number of image formats and allocate space.
-  const int max_image_formats = vaMaxNumImageFormats(va_display_);
+  const int max_image_formats = vaMaxNumImageFormats(va_display);
   if (max_image_formats < 0) {
     LOG(ERROR) << "vaMaxNumImageFormats returned: " << max_image_formats;
     return false;
@@ -1350,7 +1370,7 @@ bool VASupportedImageFormats::InitSupportedImageFormats_Locked(
   // Query the driver for the list of supported image formats.
   int num_image_formats;
   const VAStatus va_res = vaQueryImageFormats(
-      va_display_, supported_formats_.data(), &num_image_formats);
+      va_display, supported_formats_.data(), &num_image_formats);
   VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVAQueryImageFormats, false);
   if (num_image_formats < 0 || num_image_formats > max_image_formats) {
     LOG(ERROR) << "vaQueryImageFormats returned: " << num_image_formats;
@@ -1466,7 +1486,7 @@ std::vector<SVCScalabilityMode> VaapiWrapper::GetSupportedScalabilityModes(
     VideoCodecProfile media_profile,
     VAProfile va_profile) {
   std::vector<SVCScalabilityMode> scalability_modes;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   if (media_profile == VP9PROFILE_PROFILE0) {
     scalability_modes.push_back(SVCScalabilityMode::kL1T2);
     scalability_modes.push_back(SVCScalabilityMode::kL1T3);
@@ -1478,6 +1498,13 @@ std::vector<SVCScalabilityMode> VaapiWrapper::GetSupportedScalabilityModes(
       scalability_modes.push_back(SVCScalabilityMode::kL2T3Key);
       scalability_modes.push_back(SVCScalabilityMode::kL3T2Key);
       scalability_modes.push_back(SVCScalabilityMode::kL3T3Key);
+    }
+  }
+
+  if (media_profile >= VP8PROFILE_MIN && media_profile <= VP8PROFILE_MAX) {
+    if (base::FeatureList::IsEnabled(kVaapiVp8TemporalLayerHWEncoding)) {
+      scalability_modes.push_back(SVCScalabilityMode::kL1T2);
+      scalability_modes.push_back(SVCScalabilityMode::kL1T3);
     }
   }
 
@@ -2192,7 +2219,7 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
     VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVACreateSurfaces_Importing,
                          nullptr);
   }
-  DVLOG(2) << __func__ << " " << va_surface_id;
+  DVLOG(3) << __func__ << " " << va_surface_id;
   // VASurface shares an ownership of the buffer referred by the passed file
   // descriptor. We can release |pixmap| here.
   return new VASurface(va_surface_id, size, va_format,
@@ -2322,17 +2349,15 @@ VaapiWrapper::ExportVASurfaceAsNativePixmapDmaBufUnwrapped(
     // specified, each layer should contain one plane.
     DCHECK_EQ(1u, descriptor.layers[layer].num_planes);
 
-    // Strictly speaking, we only have to dup() the fd for the planes after the
-    // first one since we already own the first one, but we dup() regardless for
-    // simplicity: |bo_fd| will be closed at the end of this method anyway.
-    base::ScopedFD plane_fd(HANDLE_EINTR(dup(bo_fd.get())));
+    auto plane_fd = base::ScopedFD(
+        layer == 0 ? bo_fd.release()
+                   : HANDLE_EINTR(dup(handle.planes[0].fd.get())));
     PCHECK(plane_fd.is_valid());
     constexpr uint64_t kZeroSizeToPreventMapping = 0u;
     handle.planes.emplace_back(
         base::checked_cast<int>(descriptor.layers[layer].pitch[0]),
         base::checked_cast<int>(descriptor.layers[layer].offset[0]),
-        kZeroSizeToPreventMapping,
-        base::ScopedFD(HANDLE_EINTR(dup(bo_fd.get()))));
+        kZeroSizeToPreventMapping, std::move(plane_fd));
   }
 
   if (descriptor.fourcc == VA_FOURCC_IMC3) {
@@ -3214,7 +3239,7 @@ void VaapiWrapper::DestroySurface(VASurfaceID va_surface_id) {
         sequence_checker_.CalledOnValidSequence());
   if (va_surface_id == VA_INVALID_SURFACE)
     return;
-  DVLOG(2) << __func__ << " " << va_surface_id;
+  DVLOG(3) << __func__ << " " << va_surface_id;
   base::AutoLockMaybe auto_lock(va_lock_);
   const VAStatus va_res = vaDestroySurfaces(va_display_, &va_surface_id, 1);
   VA_LOG_ON_ERROR(va_res, VaapiFunctions::kVADestroySurfaces);

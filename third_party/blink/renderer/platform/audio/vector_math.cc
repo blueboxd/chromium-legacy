@@ -30,7 +30,7 @@
 #include "base/compiler_specific.h"
 #include "build/build_config.h"
 
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 #include "third_party/blink/renderer/platform/audio/mac/vector_math_mac.h"
 #elif defined(CPU_ARM_NEON)
 #include "third_party/blink/renderer/platform/audio/cpu/arm/vector_math_neon.h"
@@ -42,12 +42,10 @@
 #include "third_party/blink/renderer/platform/audio/vector_math_scalar.h"
 #endif
 
-namespace blink {
-
-namespace vector_math {
+namespace blink::vector_math {
 
 namespace {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
 namespace impl = mac;
 #elif defined(CPU_ARM_NEON)
 namespace impl = neon;
@@ -69,7 +67,7 @@ void PrepareFilterForConv(const float* filter_p,
   // vectors are not implemented by all implementations.
   DCHECK_EQ(-1, filter_stride);
   DCHECK(prepared_filter);
-#if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_MAC)
+#if defined(ARCH_CPU_X86_FAMILY) && !BUILDFLAG(IS_MAC)
   x86::PrepareFilterForConv(filter_p, filter_stride, filter_size,
                             prepared_filter);
 #endif
@@ -282,6 +280,4 @@ void Zvmul(const float* real1p,
               frames_to_process);
 }
 
-}  // namespace vector_math
-
-}  // namespace blink
+}  // namespace blink::vector_math

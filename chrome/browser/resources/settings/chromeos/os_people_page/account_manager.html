@@ -1,6 +1,7 @@
 <style include="settings-shared iron-flex iron-flex-alignment">
   :host {
     --add-account-margin-top: 16px;
+    --account-item-padding-size: 8px;
   }
 
   .account-manager-description {
@@ -54,6 +55,21 @@
     text-overflow: ellipsis;
   }
 
+  .middle.two-line-or-more {
+    min-height: calc(var(--settings-row-two-line-min-height)
+                      - 2*var(--account-item-padding-size));
+    padding-bottom: var(--account-item-padding-size);
+    padding-top: var(--account-item-padding-size);
+  }
+
+  .middle.two-line-or-more>.flex {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(var(--settings-row-two-line-min-height)
+                      - 2*var(--account-item-padding-size));
+  }
+
   .secondary-accounts-policy-indicator {
     margin-inline-end: 12px;
   }
@@ -77,12 +93,19 @@
     width: 100%;
   }
 
-  .account-list-header-description > .secondary {
-    flex-grow: 1;
+  .account-list-header-description.with-padding {
+    padding-top: 16px;
   }
 
-  .account-list-header-description > .secondary {
+  .account-list-header-description > .secondary,
+  .account-list-header-description > h2 {
+    flex-grow: 1;
     padding-inline-end: 40px;
+  }
+
+  .account-list-header-description > h2 {
+    padding-bottom: 16px;
+    padding-top: 16px;
   }
 
   .secondary-accounts-disabled-tooltip {
@@ -253,11 +276,15 @@
 <!-- Secondary Accounts list header -->
 <div class="secondary-accounts-box settings-box first">
   <div id="account-list-header" class="start">
-    <h2>
+    <h2 hidden$="[[isArcAccountRestrictionsEnabled_]]">
       [[getAccountListHeader_(isChildUser_)]]
     </h2>
-    <div class="account-list-header-description">
-      <span class="secondary">
+    <div class$="[[
+        getAccountListHeaderClass_(isArcAccountRestrictionsEnabled_)]]">
+      <h2 hidden$="[[!isArcAccountRestrictionsEnabled_]]">
+        [[getAccountListHeader_(isChildUser_)]]
+      </h2>
+      <span class="secondary" hidden$="[[isArcAccountRestrictionsEnabled_]]">
         [[getAccountListDescription_(isChildUser_)]]
       </span>
       <template is="dom-if" if="[[
@@ -279,6 +306,9 @@
             isSecondaryGoogleAccountSigninAllowed_)]]
       </cr-button>
     </div>
+    <span class="secondary" hidden$="[[!isArcAccountRestrictionsEnabled_]]">
+      [[getAccountListDescription_(isChildUser_)]]
+    </span>
   </div>
 </div>
 <!-- Secondary Accounts list -->
@@ -292,7 +322,7 @@
           <span class="error-badge"></span>
         </template>
       </div>
-      <div class="middle two-line no-min-width">
+      <div class="middle two-line-or-more no-min-width">
         <div class="flex text-elide">
           <!-- If account is signed in, display the full name -->
           <template is="dom-if" if="[[item.isSignedIn]]">
@@ -305,18 +335,18 @@
               [[getAccountManagerSignedOutName_(item.unmigrated)]]
             </span>
           </template>
+          <!-- Display email -->
           <div class="secondary" id="email-[[index]]"
               aria-hidden="true">[[item.email]]</div>
+          <!-- Display ARC status -->
+          <template is="dom-if" if="[[isArcAccountRestrictionsEnabled_]]">
+            <span class="arc-availability secondary" id="arc-status-[[index]]"
+                aria-hidden="true" hidden$="[[item.isAvailableInArc]]">
+              $i18n{accountNotUsedInArcLabel}
+            </span>
+          </template>
         </div>
       </div>
-      <!-- Display ARC status -->
-      <template is="dom-if" if="[[isArcAccountRestrictionsEnabled_]]">
-        <span class="arc-availability secondary"
-            hidden$="[[item.isAvailableInArc]]">
-          <!-- TODO(crbug.com/1260909): Use real strings -->
-          Not shared with Android apps
-        </span>
-      </template>
       <template is="dom-if"
           if="[[shouldShowReauthenticationButton_(item)]]">
         <cr-button title="[[getAccountManagerSignedOutTitle_(item)]]"
@@ -330,6 +360,7 @@
           title="[[getMoreActionsTitle_(item)]]"
           aria-label="[[getMoreActionsTitle_(item)]]"
           aria-describedby$="fullName-[[index]]
+                              arc-status-[[index]]
                               edu-account-label-[[index]]"
           on-click="onAccountActionsMenuButtonTap_"
           deep-link-focus-id$="[[Setting.kRemoveAccount]]">

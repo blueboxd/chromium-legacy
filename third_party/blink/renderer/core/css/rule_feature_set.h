@@ -28,7 +28,7 @@
 #include "third_party/blink/renderer/core/css/invalidation/invalidation_flags.h"
 #include "third_party/blink/renderer/core/css/invalidation/invalidation_set.h"
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
@@ -104,10 +104,12 @@ class CORE_EXPORT RuleFeatureSet {
   MediaQueryResultList& DeviceDependentMediaQueryResults() {
     return device_dependent_media_query_results_;
   }
+  unsigned& MediaQueryUnitFlags() { return media_query_unit_flags_; }
   bool HasMediaQueryResults() const {
     return !viewport_dependent_media_query_results_.IsEmpty() ||
            !device_dependent_media_query_results_.IsEmpty();
   }
+  bool HasDynamicViewportDependentMediaQueries() const;
 
   // Collect descendant and sibling invalidation sets.
   void CollectInvalidationSetsForClass(InvalidationLists&,
@@ -489,6 +491,7 @@ class CORE_EXPORT RuleFeatureSet {
   scoped_refptr<DescendantInvalidationSet> type_rule_invalidation_set_;
   MediaQueryResultList viewport_dependent_media_query_results_;
   MediaQueryResultList device_dependent_media_query_results_;
+  unsigned media_query_unit_flags_{0};
   ValuesInHasArgument classes_in_has_argument_;
   ValuesInHasArgument attributes_in_has_argument_;
   ValuesInHasArgument ids_in_has_argument_;

@@ -16,10 +16,10 @@
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/app_constants/constants.h"
 #include "components/app_restore/full_restore_read_handler.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 
 namespace ash {
@@ -64,7 +64,7 @@ bool AppLaunchHandler::HasRestoreData() {
 }
 
 void AppLaunchHandler::OnAppUpdate(const apps::AppUpdate& update) {
-  if (update.AppId() == extension_misc::kChromeAppId || !restore_data_ ||
+  if (update.AppId() == app_constants::kChromeAppId || !restore_data_ ||
       !update.ReadinessChanged()) {
     return;
   }
@@ -92,7 +92,7 @@ void AppLaunchHandler::OnAppUpdate(const apps::AppUpdate& update) {
                      update.AppType(), update.AppId()));
 }
 
-void AppLaunchHandler::OnAppTypeInitialized(apps::mojom::AppType app_type) {
+void AppLaunchHandler::OnAppTypeInitialized(apps::AppType app_type) {
   // Do nothing: overridden by subclasses.
 }
 
@@ -114,7 +114,7 @@ void AppLaunchHandler::LaunchApps() {
   auto* cache = &apps::AppServiceProxyFactory::GetForProfile(profile_)
                      ->AppRegistryCache();
   Observe(cache);
-  for (const auto app_type : cache->GetInitializedAppTypes()) {
+  for (const auto app_type : cache->InitializedAppTypes()) {
     OnAppTypeInitialized(app_type);
   }
 
@@ -134,7 +134,7 @@ void AppLaunchHandler::LaunchApps() {
   for (const auto& app_id : app_ids) {
     // Chrome browser web pages are restored separately, so we don't need to
     // launch browser windows.
-    if (app_id == extension_misc::kChromeAppId)
+    if (app_id == app_constants::kChromeAppId)
       continue;
 
 #if !defined(OFFICIAL_BUILD)
@@ -167,7 +167,7 @@ bool AppLaunchHandler::ShouldLaunchSystemWebAppOrChromeApp(
 void AppLaunchHandler::LaunchApp(apps::mojom::AppType app_type,
                                  const std::string& app_id) {
   DCHECK(restore_data_);
-  DCHECK_NE(app_id, extension_misc::kChromeAppId);
+  DCHECK_NE(app_id, app_constants::kChromeAppId);
 
   const auto it = restore_data_->app_id_to_launch_list().find(app_id);
   if (it == restore_data_->app_id_to_launch_list().end() ||
@@ -211,8 +211,10 @@ void AppLaunchHandler::LaunchSystemWebAppOrChromeApp(
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
   DCHECK(proxy);
 
-  if (app_type == apps::mojom::AppType::kChromeApp)
+  if (app_type == apps::mojom::AppType::kChromeApp ||
+      app_type == apps::mojom::AppType::kStandaloneBrowserChromeApp) {
     OnExtensionLaunching(app_id);
+  }
 
   for (const auto& it : launch_list) {
     RecordRestoredAppLaunch(GetHistogrameAppType(app_type));

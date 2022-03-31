@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/rounded_image_view.h"
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -27,9 +28,11 @@
 #include "ash/wm/work_area_insets.h"
 #include "base/bind.h"
 #include "base/check.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/animation/tween.h"
@@ -131,7 +134,7 @@ void ConfigureLabelStyle(
 }
 
 // Create a view that will contain the `content_row`,
-// `message_view_in_expanded_state_`, inline settings and the large image.
+// `message_label_in_expanded_state_`, inline settings and the large image.
 views::Builder<views::View> CreateMainRightViewBuilder() {
   auto layout_manager = std::make_unique<views::FlexLayout>();
   layout_manager
@@ -177,10 +180,19 @@ void ScaleAndTranslateView(views::View* view,
                            SkScalar scale_value_x,
                            SkScalar scale_value_y,
                            SkScalar translate_value_x,
-                           SkScalar translate_value_y) {
+                           SkScalar translate_value_y,
+                           const std::string& animation_histogram_name) {
   gfx::Transform transform;
   transform.Translate(translate_value_x, translate_value_y);
   transform.Scale(scale_value_x, scale_value_y);
+
+  ui::AnimationThroughputReporter reporter(
+      view->layer()->GetAnimator(),
+      ash::metrics_util::ForSmoothness(base::BindRepeating(
+          [](const std::string& animation_histogram_name, int smoothness) {
+            base::UmaHistogramPercentage(animation_histogram_name, smoothness);
+          },
+          animation_histogram_name)));
 
   views::AnimationBuilder()
       .SetPreemptionStrategy(
@@ -280,12 +292,14 @@ void AshNotificationView::NotificationTitleRow::
     message_center_utils::FadeInView(
         title_row_divider_, kTitleRowTimestampFadeInAnimationDelayMs,
         kTitleRowTimestampFadeInAnimationDurationMs,
-        gfx::Tween::ACCEL_20_DECEL_100);
+        gfx::Tween::ACCEL_20_DECEL_100,
+        "Ash.NotificationView.TitleRowDivider.FadeIn.AnimationSmoothness");
     DCHECK(timestamp_in_collapsed_view_->GetVisible());
     message_center_utils::FadeInView(
         timestamp_in_collapsed_view_, kTitleRowTimestampFadeInAnimationDelayMs,
         kTitleRowTimestampFadeInAnimationDurationMs,
-        gfx::Tween::ACCEL_20_DECEL_100);
+        gfx::Tween::ACCEL_20_DECEL_100,
+        "Ash.NotificationView.TimestampInTitle.FadeIn.AnimationSmoothness");
   }
 }
 
@@ -296,6 +310,7 @@ AshNotificationView::AshNotificationView(
     const message_center::Notification& notification,
     bool shown_in_popup)
     : NotificationViewBase(notification), shown_in_popup_(shown_in_popup) {
+  message_center_observer_.Observe(message_center::MessageCenter::Get());
   // TODO(crbug/1232197): fix views and layout to match spec.
   // Instantiate view instances and define layout and view hierarchy.
   SetLayoutManager(std::make_unique<views::FlexLayout>())
@@ -362,10 +377,10 @@ AshNotificationView::AshNotificationView(
           .AddChild(content_row_builder)
           .AddChild(
               views::Builder<views::Label>()
-                  .CopyAddressTo(&message_view_in_expanded_state_)
+                  .CopyAddressTo(&message_label_in_expanded_state_)
                   .SetHorizontalAlignment(gfx::ALIGN_TO_HEAD)
                   .SetMultiLine(true)
-                  .SetMaxLines(message_center::kMaxLinesForExpandedMessageView)
+                  .SetMaxLines(message_center::kMaxLinesForExpandedMessageLabel)
                   .SetAllowCharacterBreak(true)
                   .SetBorder(
                       views::CreateEmptyBorder(kMainRightViewChildPadding))
@@ -374,12 +389,12 @@ AshNotificationView::AshNotificationView(
                   // original bug, but it seems there's no obvious solution for
                   // the bug according to https://crbug.com/678337#c7. We will
                   // consider making changes to this code when the bug is fixed.
-                  .SetMaximumWidth(GetExpandedMessageViewWidth()))
+                  .SetMaximumWidth(GetExpandedMessageLabelWidth()))
           .AddChild(CreateInlineSettingsBuilder())
           .AddChild(CreateImageContainerBuilder().SetBorder(
               views::CreateEmptyBorder(kImageContainerPadding)));
 
-  ConfigureLabelStyle(message_view_in_expanded_state_, kMessageLabelSize,
+  ConfigureLabelStyle(message_label_in_expanded_state_, kMessageLabelSize,
                       false);
 
   AddChildView(
@@ -416,24 +431,22 @@ AshNotificationView::AshNotificationView(
                    .CopyAddressTo(&collapsed_summary_view_)
                    .Build());
 
-  if (!notification.group_child()) {
-    AddChildView(
-        views::Builder<views::ScrollView>()
-            .CopyAddressTo(&grouped_notifications_scroll_view_)
-            .SetBackgroundColor(absl::nullopt)
-            .SetDrawOverflowIndicator(false)
-            .ClipHeightTo(0, std::numeric_limits<int>::max())
-            .SetContents(
-                views::Builder<GroupedNotificationsContainer>()
-                    .CopyAddressTo(&grouped_notifications_container_)
-                    .SetParentNotificationView(this)
-                    .SetOrientation(Orientation::kVertical)
-                    .SetInsideBorderInsets(kGroupedNotificationContainerInsets)
-                    .SetBetweenChildSpacing(
-                        IsExpanded() ? kGroupedNotificationsExpandedSpacing
-                                     : kGroupedNotificationsCollapsedSpacing))
-            .Build());
-  }
+  AddChildView(
+      views::Builder<views::ScrollView>()
+          .CopyAddressTo(&grouped_notifications_scroll_view_)
+          .SetBackgroundColor(absl::nullopt)
+          .SetDrawOverflowIndicator(false)
+          .ClipHeightTo(0, std::numeric_limits<int>::max())
+          .SetContents(
+              views::Builder<GroupedNotificationsContainer>()
+                  .CopyAddressTo(&grouped_notifications_container_)
+                  .SetParentNotificationView(this)
+                  .SetOrientation(Orientation::kVertical)
+                  .SetInsideBorderInsets(kGroupedNotificationContainerInsets)
+                  .SetBetweenChildSpacing(
+                      IsExpanded() ? kGroupedNotificationsExpandedSpacing
+                                   : kGroupedNotificationsCollapsedSpacing))
+          .Build());
 
   AddChildView(CreateActionsRow(std::make_unique<views::FlexLayout>()));
 
@@ -474,7 +487,8 @@ AshNotificationView::AshNotificationView(
 
   // Create layer in some views for animations.
   message_center_utils::InitLayerForAnimations(header_row());
-  message_center_utils::InitLayerForAnimations(message_view_in_expanded_state_);
+  message_center_utils::InitLayerForAnimations(
+      message_label_in_expanded_state_);
   message_center_utils::InitLayerForAnimations(actions_row());
 
   UpdateWithNotification(notification);
@@ -506,9 +520,10 @@ void AshNotificationView::AnimateGroupedChildExpandedCollapse(bool expanded) {
             },
             weak_factory_.GetWeakPtr(), collapsed_summary_view_),
         0, kCollapsedSummaryViewAnimationDurationMs);
-    message_center_utils::FadeInView(main_view_,
-                                     kCollapsedSummaryViewAnimationDurationMs,
-                                     kChildMainViewFadeInAnimationDurationMs);
+    message_center_utils::FadeInView(
+        main_view_, kCollapsedSummaryViewAnimationDurationMs,
+        kChildMainViewFadeInAnimationDurationMs, gfx::Tween::LINEAR,
+        "Ash.NotificationView.MainView.FadeIn.AnimationSmoothness");
     return;
   }
 
@@ -524,9 +539,10 @@ void AshNotificationView::AnimateGroupedChildExpandedCollapse(bool expanded) {
           },
           weak_factory_.GetWeakPtr(), main_view_),
       0, kChildMainViewFadeOutAnimationDurationMs);
-  message_center_utils::FadeInView(collapsed_summary_view_,
-                                   kChildMainViewFadeOutAnimationDurationMs,
-                                   kCollapsedSummaryViewAnimationDurationMs);
+  message_center_utils::FadeInView(
+      collapsed_summary_view_, kChildMainViewFadeOutAnimationDurationMs,
+      kCollapsedSummaryViewAnimationDurationMs, gfx::Tween::LINEAR,
+      "Ash.NotificationView.CollapsedSummaryView.FadeIn.AnimationSmoothness");
 }
 
 void AshNotificationView::ToggleExpand() {
@@ -586,6 +602,10 @@ base::TimeDelta AshNotificationView::GetBoundsAnimationDuration(
 void AshNotificationView::AddGroupNotification(
     const message_center::Notification& notification,
     bool newest_first) {
+  // Do not add a grouped notification if a view for it already exists.
+  if (FindGroupNotificationView(notification.id()))
+    return;
+
   auto notification_view =
       std::make_unique<AshNotificationView>(notification,
                                             /*shown_in_popup=*/false);
@@ -606,7 +626,11 @@ void AshNotificationView::AddGroupNotification(
 
 void AshNotificationView::PopulateGroupNotifications(
     const std::vector<const message_center::Notification*>& notifications) {
-  DCHECK(total_grouped_notifications_ == 0);
+  // Clear all grouped notifications since we will add all grouped notifications
+  // from scratch.
+  total_grouped_notifications_ = 0;
+  grouped_notifications_container_->RemoveAllChildViews();
+
   for (auto* notification : notifications) {
     auto notification_view =
         std::make_unique<AshNotificationView>(*notification,
@@ -626,18 +650,12 @@ void AshNotificationView::PopulateGroupNotifications(
 
 void AshNotificationView::RemoveGroupNotification(
     const std::string& notification_id) {
-  AshNotificationView* to_be_deleted = nullptr;
-  for (auto* child : grouped_notifications_container_->children()) {
-    AshNotificationView* group_notification =
-        static_cast<AshNotificationView*>(child);
-    if (group_notification->notification_id() == notification_id) {
-      to_be_deleted = group_notification;
-      break;
-    }
-  }
-  if (to_be_deleted)
-    delete to_be_deleted;
+  auto* to_be_deleted = FindGroupNotificationView(notification_id);
 
+  if (!to_be_deleted)
+    return;
+
+  grouped_notifications_container_->RemoveChildView(to_be_deleted);
   total_grouped_notifications_--;
   left_content_->SetVisible(total_grouped_notifications_ == 0);
   expand_button_->UpdateGroupedNotificationsCount(total_grouped_notifications_);
@@ -664,15 +682,15 @@ void AshNotificationView::UpdateViewForExpandedState(bool expanded) {
                                  (IsExpandable() && !expanded));
   }
 
-  if (message_view()) {
-    // `message_view()` is shown only in collapsed mode.
+  if (message_label()) {
+    // `message_label()` is shown only in collapsed mode.
     if (!expanded) {
-      ConfigureLabelStyle(message_view(), kMessageLabelSize, false);
-      message_center_utils::InitLayerForAnimations(message_view());
+      ConfigureLabelStyle(message_label(), kMessageLabelSize, false);
+      message_center_utils::InitLayerForAnimations(message_label());
     }
-    message_view()->SetVisible(!expanded);
-    message_view_in_expanded_state_->SetVisible(expanded &&
-                                                !is_grouped_parent_view_);
+    message_label()->SetVisible(!expanded);
+    message_label_in_expanded_state_->SetVisible(expanded &&
+                                                 !is_grouped_parent_view_);
   }
 
   // Custom padding for app icon and expand button. These 2 views should always
@@ -718,11 +736,13 @@ void AshNotificationView::UpdateWithNotification(
   is_grouped_child_view_ = notification.group_child();
   is_grouped_parent_view_ = notification.group_parent();
 
-  if (!is_grouped_child_view_)
-    grouped_notifications_scroll_view_->SetVisible(is_grouped_parent_view_);
+  grouped_notifications_scroll_view_->SetVisible(is_grouped_parent_view_);
+
+  if (is_grouped_child_view_ && !is_nested())
+    SetIsNested();
 
   header_row()->SetVisible(!is_grouped_child_view_);
-  UpdateMessageViewInExpandedState(notification);
+  UpdateMessageLabelInExpandedState(notification);
 
   NotificationViewBase::UpdateWithNotification(notification);
 
@@ -968,10 +988,35 @@ void AshNotificationView::ActionButtonPressed(size_t index,
 
     // Delay for the action buttons to fade out, then fade in inline reply.
     message_center_utils::InitLayerForAnimations(inline_reply());
-    message_center_utils::FadeInView(inline_reply(),
-                                     kActionButtonsFadeOutAnimationDurationMs,
-                                     kInlineReplyFadeInAnimationDurationMs);
+    message_center_utils::FadeInView(
+        inline_reply(), kActionButtonsFadeOutAnimationDurationMs,
+        kInlineReplyFadeInAnimationDurationMs, gfx::Tween::LINEAR,
+        "Ash.NotificationView.InlineReply.FadeIn.AnimationSmoothness");
   }
+}
+
+views::View* AshNotificationView::FindGroupNotificationView(
+    const std::string& notification_id) {
+  auto id_match = [&notification_id](views::View* notification_view) {
+    return notification_id ==
+           static_cast<AshNotificationView*>(notification_view)
+               ->notification_id();
+  };
+  auto notification = std::find_if(
+      grouped_notifications_container_->children().begin(),
+      grouped_notifications_container_->children().end(), id_match);
+  return notification == grouped_notifications_container_->children().end()
+             ? nullptr
+             : *notification;
+}
+
+void AshNotificationView::OnNotificationRemoved(
+    const std::string& notification_id,
+    bool by_user) {
+  if (!is_grouped_parent_view_)
+    return;
+
+  RemoveGroupNotification(notification_id);
 }
 
 void AshNotificationView::CreateOrUpdateSnoozeButton(
@@ -1013,18 +1058,18 @@ void AshNotificationView::CreateOrUpdateSnoozeButton(
   snooze_button_ = action_buttons_row()->AddChildView(std::move(snooze_button));
 }
 
-void AshNotificationView::UpdateMessageViewInExpandedState(
+void AshNotificationView::UpdateMessageLabelInExpandedState(
     const message_center::Notification& notification) {
   if (notification.type() == message_center::NOTIFICATION_TYPE_PROGRESS ||
       notification.message().empty()) {
-    message_view_in_expanded_state_->SetVisible(false);
+    message_label_in_expanded_state_->SetVisible(false);
     return;
   }
-  message_view_in_expanded_state_->SetText(gfx::TruncateString(
+  message_label_in_expanded_state_->SetText(gfx::TruncateString(
       notification.message(), message_center::kMessageCharacterLimit,
       gfx::WORD_BREAK));
 
-  message_view_in_expanded_state_->SetVisible(true);
+  message_label_in_expanded_state_->SetVisible(true);
 }
 
 void AshNotificationView::UpdateBackground(int top_radius, int bottom_radius) {
@@ -1052,7 +1097,7 @@ void AshNotificationView::UpdateBackground(int top_radius, int bottom_radius) {
           top_radius_, bottom_radius_, background_color_)));
 }
 
-int AshNotificationView::GetExpandedMessageViewWidth() {
+int AshNotificationView::GetExpandedMessageLabelWidth() {
   int notification_width = shown_in_popup_ ? message_center::kNotificationWidth
                                            : kNotificationInMessageCenterWidth;
 
@@ -1139,29 +1184,33 @@ void AshNotificationView::PerformExpandCollapseAnimation() {
 
   // Fade in `header row()` if this is not a grouped parent view.
   if (header_row() && header_row()->GetVisible() && !is_grouped_parent_view_) {
-    message_center_utils::FadeInView(header_row(),
-                                     kHeaderRowFadeInAnimationDelayMs,
-                                     kHeaderRowFadeInAnimationDurationMs);
-  }
-
-  // Fade in `message_view()`. We only do fade in for both message view in
-  // expanded and collapsed mode if there's a difference between them (a.k.a
-  // when `message_view()` is truncated).
-  if (message_view() && message_view()->GetVisible() &&
-      message_view()->IsDisplayTextTruncated()) {
-    message_center_utils::FadeInView(message_view(),
-                                     kMessageViewFadeInAnimationDelayMs,
-                                     kMessageViewFadeInAnimationDurationMs);
-  }
-
-  // Fade in `message_view_in_expanded_state_`.
-  if (message_view_in_expanded_state_ &&
-      message_view_in_expanded_state_->GetVisible() && message_view() &&
-      message_view()->IsDisplayTextTruncated()) {
     message_center_utils::FadeInView(
-        message_view_in_expanded_state_,
-        kMessageViewInExpandedStateFadeInAnimationDelayMs,
-        kMessageViewInExpandedStateFadeInAnimationDurationMs);
+        header_row(), kHeaderRowFadeInAnimationDelayMs,
+        kHeaderRowFadeInAnimationDurationMs, gfx::Tween::LINEAR,
+        "Ash.NotificationView.HeaderRow.FadeIn.AnimationSmoothness");
+  }
+
+  // Fade in `message_label()`. We only do fade in for both message view in
+  // expanded and collapsed mode if there's a difference between them (a.k.a
+  // when `message_label()` is truncated).
+  if (message_label() && message_label()->GetVisible() &&
+      IsMessageLabelTruncated()) {
+    message_center_utils::FadeInView(
+        message_label(), kMessageLabelFadeInAnimationDelayMs,
+        kMessageLabelFadeInAnimationDurationMs, gfx::Tween::LINEAR,
+        "Ash.NotificationView.MessageLabel.FadeIn.AnimationSmoothness");
+  }
+
+  // Fade in `message_label_in_expanded_state_`.
+  if (message_label_in_expanded_state_ &&
+      message_label_in_expanded_state_->GetVisible() && message_label() &&
+      IsMessageLabelTruncated()) {
+    message_center_utils::FadeInView(
+        message_label_in_expanded_state_,
+        kMessageLabelInExpandedStateFadeInAnimationDelayMs,
+        kMessageLabelInExpandedStateFadeInAnimationDurationMs,
+        gfx::Tween::LINEAR,
+        "Ash.NotificationView.ExpandedMessageLabel.FadeIn.AnimationSmoothness");
   }
 
   if (!image_container_view()->children().empty()) {
@@ -1169,9 +1218,10 @@ void AshNotificationView::PerformExpandCollapseAnimation() {
   }
 
   if (actions_row() && actions_row()->GetVisible()) {
-    message_center_utils::FadeInView(actions_row(),
-                                     kActionsRowFadeInAnimationDelayMs,
-                                     kActionsRowFadeInAnimationDurationMs);
+    message_center_utils::FadeInView(
+        actions_row(), kActionsRowFadeInAnimationDelayMs,
+        kActionsRowFadeInAnimationDurationMs, gfx::Tween::LINEAR,
+        "Ash.NotificationView.ActionsRow.FadeIn.AnimationSmoothness");
   }
 
   if (total_grouped_notifications_) {
@@ -1201,15 +1251,18 @@ void AshNotificationView::PerformLargeImageAnimation() {
                           static_cast<double>(icon_view()->height()) /
                               image_container_view()->height(),
                           icon_view_bounds.x() - large_image_bounds.x(),
-                          icon_view_bounds.y() - large_image_bounds.y());
+                          icon_view_bounds.y() - large_image_bounds.y(),
+                          "Ash.NotificationView.ImageContainerView."
+                          "ScaleAndTranslate.AnimationSmoothness");
 
-    // If we a different image for `icon_view()` and `image_container_view()`
+    // If we use different images for `icon_view()` and `image_container_view()`
     // (a.k.a hide_icon_on_expanded() is false), fade in
     // `image_container_view()`.
     if (!hide_icon_on_expanded()) {
-      message_center_utils::FadeInView(image_container_view(),
-                                       kLargeImageFadeInAnimationDelayMs,
-                                       kLargeImageFadeInAnimationDurationMs);
+      message_center_utils::FadeInView(
+          image_container_view(), kLargeImageFadeInAnimationDelayMs,
+          kLargeImageFadeInAnimationDurationMs, gfx::Tween::LINEAR,
+          "Ash.NotificationView.ImageContainerView.FadeIn.AnimationSmoothness");
     }
     return;
   }
@@ -1225,7 +1278,8 @@ void AshNotificationView::PerformLargeImageAnimation() {
         static_cast<double>(image_container_view()->height()) /
             icon_view()->height(),
         large_image_bounds.x() - icon_view_bounds.x(),
-        large_image_bounds.y() - icon_view_bounds.y());
+        large_image_bounds.y() - icon_view_bounds.y(),
+        "Ash.NotificationView.IconView.ScaleAndTranslate.AnimationSmoothness");
     return;
   }
 
@@ -1357,9 +1411,10 @@ void AshNotificationView::PerformToggleInlineSettingsAnimation(
   }
 
   // Fade in views.
-  message_center_utils::FadeInView(main_right_view_,
-                                   kToggleInlineSettingsFadeInDelayMs,
-                                   kToggleInlineSettingsFadeInDurationMs);
+  message_center_utils::FadeInView(
+      main_right_view_, kToggleInlineSettingsFadeInDelayMs,
+      kToggleInlineSettingsFadeInDurationMs, gfx::Tween::LINEAR,
+      "Ash.NotificationView.MainRightView.FadeIn.AnimationSmoothness");
 }
 
 int AshNotificationView::CalculateMaxHeightForGroupedNotifications() {
@@ -1380,6 +1435,24 @@ int AshNotificationView::CalculateMaxHeightForGroupedNotifications() {
   return free_space_height_above_anchor -
          control_buttons_container_->bounds().height() -
          main_view_->bounds().height() - vertical_margin;
+}
+
+bool AshNotificationView::IsMessageLabelTruncated() {
+  // True if the expanded label has more than one line.
+  if (message_label_in_expanded_state_->GetRequiredLines() > 1)
+    return true;
+
+  // Get the first row's width of `message_label_in_expanded_state_`'s text,
+  // which is also the text width of this label since it has one line. If text
+  // width is larger than `left_content()`'s width, which is the space dedicated
+  // to `message_label()`, the text is truncated.
+  int text_width =
+      message_label_in_expanded_state_
+          ->GetSubstringBounds(gfx::Range(
+              0, message_label_in_expanded_state_->GetText().length()))
+          .front()
+          .width();
+  return text_width > left_content()->width();
 }
 
 }  // namespace ash

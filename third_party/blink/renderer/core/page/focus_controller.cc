@@ -203,9 +203,6 @@ class ScopedFocusNavigation {
   static ScopedFocusNavigation OwnedByIFrame(const HTMLFrameOwnerElement&,
                                              FocusController::OwnerMap&);
   static HTMLSlotElement* FindFallbackScopeOwnerSlot(const Element&);
-  static bool IsSlotFallbackScoped(const Element&);
-  static bool IsSlotFallbackScopedForThisSlot(const HTMLSlotElement&,
-                                              const Element&);
 
  private:
   ScopedFocusNavigation(ContainerNode& scoping_root_node,
@@ -331,25 +328,6 @@ HTMLSlotElement* ScopedFocusNavigation::FindFallbackScopeOwnerSlot(
     parent = parent->parentElement();
   }
   return nullptr;
-}
-
-bool ScopedFocusNavigation::IsSlotFallbackScoped(const Element& element) {
-  return ScopedFocusNavigation::FindFallbackScopeOwnerSlot(element);
-}
-
-bool ScopedFocusNavigation::IsSlotFallbackScopedForThisSlot(
-    const HTMLSlotElement& slot,
-    const Element& current) {
-  Element* parent = current.parentElement();
-  while (parent) {
-    auto* html_slot_element = DynamicTo<HTMLSlotElement>(parent);
-    if (html_slot_element && html_slot_element->AssignedNodes().IsEmpty()) {
-      return !SlotScopedTraversal::IsSlotScoped(current) &&
-             html_slot_element == slot;
-    }
-    parent = parent->parentElement();
-  }
-  return false;
 }
 
 inline void DispatchBlurEvent(const Document& document,
@@ -924,6 +902,12 @@ void FocusController::SetFocused(bool focused) {
   is_focused_ = focused;
   if (!is_emulating_focus_)
     FocusHasChanged();
+
+  // If the page has completely lost focus ensure we clear the focused
+  // frame.
+  if (!is_focused_ && page_->IsMainFrameFencedFrameRoot()) {
+    SetFocusedFrame(nullptr);
+  }
 }
 
 void FocusController::SetFocusEmulationEnabled(bool emulate_focus) {
@@ -1222,6 +1206,9 @@ Element* FocusController::NextFocusableElementInForm(
 
 // This is an implementation of step 2 of the "shadow host" branch of
 // https://html.spec.whatwg.org/C/#get-the-focusable-area
+// TODO(https://crbug.com/383230): update this to the latest spec for "focus
+// delegate", including using Element::GetAutofocusDelegate(), and use it for
+// <dialog> too.
 Element* FocusController::FindFocusableElementInShadowHost(
     const Element& shadow_host) {
   DCHECK(shadow_host.AuthorShadowRoot());

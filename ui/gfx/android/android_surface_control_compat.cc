@@ -42,12 +42,6 @@ enum {
   ASURFACE_TRANSACTION_TRANSPARENCY_OPAQUE = 2,
 };
 
-// ANativeWindow_FrameRateCompatibility enums
-enum {
-  ANATIVEWINDOW_FRAME_RATE_COMPATIBILITY_DEFAULT = 0,
-  ANATIVEWINDOW_FRAME_RATE_COMPATIBILITY_FIXED_SOURCE = 1
-};
-
 // ASurfaceTransaction
 using pASurfaceTransaction_create = ASurfaceTransaction* (*)(void);
 using pASurfaceTransaction_delete = void (*)(ASurfaceTransaction*);
@@ -371,9 +365,9 @@ absl::optional<uint64_t> GetDataSpaceTransfer(
       return DataSpace::TRANSFER_SMPTE_170M;
     case gfx::ColorSpace::TransferID::LINEAR_HDR:
       return DataSpace::TRANSFER_LINEAR;
-    case gfx::ColorSpace::TransferID::SMPTEST2084:
+    case gfx::ColorSpace::TransferID::PQ:
       return DataSpace::TRANSFER_ST2084;
-    case gfx::ColorSpace::TransferID::ARIB_STD_B67:
+    case gfx::ColorSpace::TransferID::HLG:
       return DataSpace::TRANSFER_HLG;
     // We use SRGB for BT709. See |ColorSpace::GetTransferFunction()| for
     // details.

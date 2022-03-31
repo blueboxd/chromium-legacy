@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/commerce/price_alert_util.h"
 
 #include "base/test/scoped_feature_list.h"
+#include "components/commerce/core/commerce_feature_list.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/unified_consent/unified_consent_service.h"
@@ -62,14 +63,14 @@ class PriceAlertUtilTest : public PlatformTest {
   void SetFeatureFlag(bool enabled) {
     if (enabled) {
       scoped_feature_list_.InitAndEnableFeatureWithParameters(
-          kCommercePriceTracking,
+          commerce::kCommercePriceTracking,
           {{kPriceTrackingWithOptimizationGuideParam, "true"}});
     } else {
       scoped_feature_list_.InitWithFeatures({}, {});
     }
   }
 
-  void SignIn() { auth_service_->SignIn(fake_identity_); }
+  void SignIn() { auth_service_->SignIn(fake_identity_, nil); }
 
   void SignOut() {
     auth_service_->SignOut(signin_metrics::SIGNOUT_TEST,

@@ -29,6 +29,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ApplicationLifetime;
+import org.chromium.chrome.browser.BackPressHelper;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataFragmentBasic;
@@ -40,12 +41,12 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.language.settings.LanguageSettings;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.password_check.PasswordCheckComponentUiFactory;
-import org.chromium.chrome.browser.password_check.PasswordCheckEditFragmentView;
-import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
 import org.chromium.chrome.browser.password_check.PasswordCheckFragmentView;
 import org.chromium.chrome.browser.password_entry_edit.CredentialEditUiFactory;
 import org.chromium.chrome.browser.password_entry_edit.CredentialEntryFragmentViewBase;
 import org.chromium.chrome.browser.privacy.settings.PrivacySettings;
+import org.chromium.chrome.browser.privacy_sandbox.AdPersonalizationFragment;
+import org.chromium.chrome.browser.privacy_sandbox.AdPersonalizationRemovedFragment;
 import org.chromium.chrome.browser.privacy_sandbox.FlocSettingsFragment;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxSettingsFragment;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -152,6 +153,7 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         configureWideDisplayStyle();
         setStatusBarColor();
         initBottomSheet();
+        BackPressHelper.create(this, getOnBackPressedDispatcher(), this::handleBackPressed);
     }
 
     @Override
@@ -241,6 +243,12 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
                                                           .getSiteSettingsDelegate());
             delegate.setSnackbarManager(mSnackbarManager);
         }
+        if (fragment instanceof AdPersonalizationFragment) {
+            ((AdPersonalizationFragment) fragment).setSnackbarManager(getSnackbarManager());
+        }
+        if (fragment instanceof AdPersonalizationRemovedFragment) {
+            ((AdPersonalizationRemovedFragment) fragment).setSnackbarManager(getSnackbarManager());
+        }
     }
 
     @Override
@@ -326,18 +334,11 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onBackPressed() {
+    private boolean handleBackPressed() {
         Fragment activeFragment = getMainFragment();
-        if (!(activeFragment instanceof OnBackPressedListener)) {
-            super.onBackPressed();
-            return;
-        }
+        if (!(activeFragment instanceof OnBackPressedListener)) return false;
         OnBackPressedListener listener = (OnBackPressedListener) activeFragment;
-        if (!listener.onBackPressed()) {
-            // Fragment hasn't handled this event, fall back to AppCompatActivity handling.
-            super.onBackPressed();
-        }
+        return listener.onBackPressed();
     }
 
     @Override
@@ -367,10 +368,6 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
                     HelpAndFeedbackLauncherImpl.getInstance(), mSettingsLauncher,
                     LaunchIntentDispatcher::createCustomTabActivityIntent,
                     IntentUtils::addTrustedIntentExtras);
-        } else if (fragment instanceof PasswordCheckEditFragmentView) {
-            PasswordCheckEditFragmentView editFragment = (PasswordCheckEditFragmentView) fragment;
-            editFragment.setCheckProvider(
-                    () -> PasswordCheckFactory.getOrCreate(mSettingsLauncher));
         }
         if (fragment instanceof CredentialEntryFragmentViewBase) {
             CredentialEditUiFactory.create((CredentialEntryFragmentViewBase) fragment,
@@ -441,13 +438,6 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
             // Something terribly wrong has happened.
             throw new RuntimeException(ex);
         }
-    }
-
-    @Override
-    protected void applyThemeOverlays() {
-        super.applyThemeOverlays();
-
-        setTheme(R.style.ThemeRefactorOverlay_Disabled_Settings);
     }
 
     /**

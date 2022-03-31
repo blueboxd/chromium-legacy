@@ -717,9 +717,22 @@ TEST_F(AXPositionTest, Clone) {
   TestPositionType copy_position = null_position->Clone();
   ASSERT_NE(nullptr, copy_position);
   EXPECT_TRUE(copy_position->IsNullPosition());
+  EXPECT_EQ(kInvalidAXNodeID, copy_position->anchor_id());
+  EXPECT_EQ(AXNodePosition::INVALID_INDEX, copy_position->child_index());
+  EXPECT_EQ(AXNodePosition::INVALID_OFFSET, copy_position->text_offset());
 
   TestPositionType tree_position = AXNodePosition::CreateTreePosition(
-      GetTreeID(), root_.id, 1 /* child_index */);
+      GetTreeID(), root_.id, 0 /* child_index */);
+  ASSERT_NE(nullptr, tree_position);
+  copy_position = tree_position->Clone();
+  ASSERT_NE(nullptr, copy_position);
+  EXPECT_TRUE(copy_position->IsTreePosition());
+  EXPECT_EQ(root_.id, copy_position->anchor_id());
+  EXPECT_EQ(0, copy_position->child_index());
+  EXPECT_EQ(AXNodePosition::INVALID_OFFSET, copy_position->text_offset());
+
+  tree_position = AXNodePosition::CreateTreePosition(GetTreeID(), root_.id,
+                                                     1 /* child_index */);
   ASSERT_NE(nullptr, tree_position);
   copy_position = tree_position->Clone();
   ASSERT_NE(nullptr, copy_position);
@@ -733,8 +746,19 @@ TEST_F(AXPositionTest, Clone) {
   ASSERT_NE(nullptr, tree_position);
   copy_position = tree_position->Clone();
   ASSERT_NE(nullptr, copy_position);
+  EXPECT_TRUE(copy_position->IsNullPosition())
+      << "`AXNodePosition::BEFORE_TEXT` is invalid on non-leaves.";
+  EXPECT_EQ(kInvalidAXNodeID, copy_position->anchor_id());
+  EXPECT_EQ(AXNodePosition::INVALID_INDEX, copy_position->child_index());
+  EXPECT_EQ(AXNodePosition::INVALID_OFFSET, copy_position->text_offset());
+
+  tree_position = AXNodePosition::CreateTreePosition(
+      GetTreeID(), inline_box1_.id, AXNodePosition::BEFORE_TEXT);
+  ASSERT_NE(nullptr, tree_position);
+  copy_position = tree_position->Clone();
+  ASSERT_NE(nullptr, copy_position);
   EXPECT_TRUE(copy_position->IsTreePosition());
-  EXPECT_EQ(root_.id, copy_position->anchor_id());
+  EXPECT_EQ(inline_box1_.id, copy_position->anchor_id());
   EXPECT_EQ(AXNodePosition::BEFORE_TEXT, copy_position->child_index());
   EXPECT_EQ(AXNodePosition::INVALID_OFFSET, copy_position->text_offset());
 
@@ -783,12 +807,12 @@ TEST_F(AXPositionTest, Serialize) {
   EXPECT_EQ(AXNodePosition::INVALID_OFFSET, copy_position->text_offset());
 
   tree_position = AXNodePosition::CreateTreePosition(
-      GetTreeID(), root_.id, AXNodePosition::BEFORE_TEXT);
+      GetTreeID(), inline_box2_.id, AXNodePosition::BEFORE_TEXT);
   ASSERT_NE(nullptr, tree_position);
   copy_position = AXNodePosition::Unserialize(tree_position->Serialize());
   ASSERT_NE(nullptr, copy_position);
   EXPECT_TRUE(copy_position->IsTreePosition());
-  EXPECT_EQ(root_.id, copy_position->anchor_id());
+  EXPECT_EQ(inline_box2_.id, copy_position->anchor_id());
   EXPECT_EQ(AXNodePosition::BEFORE_TEXT, copy_position->child_index());
   EXPECT_EQ(AXNodePosition::INVALID_OFFSET, copy_position->text_offset());
 
@@ -1075,11 +1099,15 @@ TEST_F(AXPositionTest, IsIgnored) {
   ASSERT_TRUE(tree_position_5->IsTreePosition());
   EXPECT_TRUE(tree_position_5->IsIgnored());
 
-  // A "before text" position on an ignored node should be ignored.
+  // A "before text" position on an ignored node that is not a leaf, however,
+  // should be invalid. It should not be ignored because in this case the child
+  // index makes no sense: the child index can point to any one of the node's
+  // children, not only the unignored ones.
   TestPositionType tree_position_6 = AXNodePosition::CreateTreePosition(
       GetTreeID(), static_text_data_1.id, AXNodePosition::BEFORE_TEXT);
-  ASSERT_TRUE(tree_position_6->IsTreePosition());
-  EXPECT_TRUE(tree_position_6->IsIgnored());
+  ASSERT_TRUE(tree_position_6->IsNullPosition());
+  EXPECT_FALSE(tree_position_6->IsIgnored())
+      << "Null positions are by design not ignored.";
 }
 
 TEST_F(AXPositionTest, GetTextFromNullPosition) {
@@ -1230,6 +1258,16 @@ TEST_F(AXPositionTest, IsInLineBreak) {
 }
 
 TEST_F(AXPositionTest, IsInWhiteSpace) {
+  TestPositionType button_position = AXNodePosition::CreateTextPosition(
+      GetTreeID(), button_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, button_position);
+  // Note that as constructed, the button's name should not be visible in the
+  // tree's text representation.
+  EXPECT_FALSE(button_position->IsInWhiteSpace())
+      << "Positions anchored to nodes with no text in them should not be "
+         "classified as 'in white space'.";
+
   // Before the line break. Even though the leaf equivalent position is inside
   // the line break which is certainly whitespace, the whole of the text field
   // does not only have whitespace in it.
@@ -1238,6 +1276,7 @@ TEST_F(AXPositionTest, IsInWhiteSpace) {
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_NE(nullptr, text_field_position);
   EXPECT_FALSE(text_field_position->IsInWhiteSpace());
+
   TestPositionType line_break_position = AXNodePosition::CreateTextPosition(
       GetTreeID(), line_break_.id, 0 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
@@ -3188,6 +3227,7 @@ TEST_F(AXPositionTest, CreateNextOrPreviousParagraphPositionWithIgnoredNodes) {
   inline_text_data_a.SetName("First paragraph");
 
   ignored_container_data_a.role = ax::mojom::Role::kGenericContainer;
+  ignored_container_data_a.AddState(ax::mojom::State::kIgnored);
   ignored_container_data_a.AddBoolAttribute(
       ax::mojom::BoolAttribute::kIsLineBreakingObject, true);
 
@@ -3408,12 +3448,12 @@ TEST_F(AXPositionTest, LowestCommonAncestor) {
   ASSERT_NE(nullptr, inline_box2_position);
   ASSERT_TRUE(inline_box2_position->IsTextPosition());
 
-  TestPositionType test_position = root_position->LowestCommonAncestor(
+  TestPositionType test_position = root_position->LowestCommonAncestorPosition(
       *null_position.get(), ax::mojom::MoveDirection::kForward);
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsNullPosition());
 
-  test_position = root_position->LowestCommonAncestor(
+  test_position = root_position->LowestCommonAncestorPosition(
       *root_position.get(), ax::mojom::MoveDirection::kForward);
   ASSERT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTreePosition());
@@ -3422,7 +3462,7 @@ TEST_F(AXPositionTest, LowestCommonAncestor) {
   // be unchanged.
   EXPECT_EQ(3, test_position->child_index());
 
-  test_position = button_position->LowestCommonAncestor(
+  test_position = button_position->LowestCommonAncestorPosition(
       *text_field_position.get(), ax::mojom::MoveDirection::kForward);
   ASSERT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTreePosition());
@@ -3430,7 +3470,7 @@ TEST_F(AXPositionTest, LowestCommonAncestor) {
   // The child index should point to the button.
   EXPECT_EQ(0, test_position->child_index());
 
-  test_position = static_text2_position->LowestCommonAncestor(
+  test_position = static_text2_position->LowestCommonAncestorPosition(
       *static_text1_position.get(), ax::mojom::MoveDirection::kForward);
   ASSERT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTreePosition());
@@ -3438,7 +3478,7 @@ TEST_F(AXPositionTest, LowestCommonAncestor) {
   // The child index should point to the second static text node.
   EXPECT_EQ(2, test_position->child_index());
 
-  test_position = static_text1_position->LowestCommonAncestor(
+  test_position = static_text1_position->LowestCommonAncestorPosition(
       *text_field_position.get(), ax::mojom::MoveDirection::kForward);
   ASSERT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTreePosition());
@@ -3446,14 +3486,14 @@ TEST_F(AXPositionTest, LowestCommonAncestor) {
   // The child index should point to the first static text node.
   EXPECT_EQ(0, test_position->child_index());
 
-  test_position = inline_box1_position->LowestCommonAncestor(
+  test_position = inline_box1_position->LowestCommonAncestorPosition(
       *inline_box2_position.get(), ax::mojom::MoveDirection::kForward);
   ASSERT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTextPosition());
   EXPECT_EQ(text_field_.id, test_position->anchor_id());
   EXPECT_EQ(0, test_position->text_offset());
 
-  test_position = inline_box2_position->LowestCommonAncestor(
+  test_position = inline_box2_position->LowestCommonAncestorPosition(
       *inline_box1_position.get(), ax::mojom::MoveDirection::kForward);
   ASSERT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsTextPosition());
@@ -3837,6 +3877,53 @@ TEST_F(AXPositionTest, AsLeafTextPositionWithTreePosition) {
   EXPECT_TRUE(test_position->IsLeafTextPosition());
   EXPECT_EQ(GetTreeID(), test_position->tree_id());
   EXPECT_EQ(inline_box2_.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
+}
+
+TEST_F(AXPositionTest,
+       AsLeafTextPositionWithTreePositionAndEmptyLeafDescendants) {
+  // When computing the leaf equivalent position we should be careful not to
+  // switch from the initial tree position to a text position right away,
+  // because we might lose the information that the child index provides to us
+  // if the tree's text representation is made up of empty leaf nodes.
+  AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+
+  AXNodeData empty_div_data1;
+  empty_div_data1.id = 2;
+  empty_div_data1.role = ax::mojom::Role::kGenericContainer;
+
+  AXNodeData empty_div_data2;
+  empty_div_data2.id = 3;
+  empty_div_data2.role = ax::mojom::Role::kGenericContainer;
+
+  root_data.child_ids = {empty_div_data1.id, empty_div_data2.id};
+
+  SetTree(CreateAXTree({root_data, empty_div_data1, empty_div_data2}));
+
+  // Create a tree position on the root pointing to the second empty div child.
+  TestPositionType tree_position = AXNodePosition::CreateTreePosition(
+      GetTreeID(), root_data.id, 1 /* child_index */);
+  ASSERT_FALSE(tree_position->IsLeafTextPosition());
+  TestPositionType test_position = tree_position->AsLeafTextPosition();
+  ASSERT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsLeafTextPosition());
+  EXPECT_EQ(GetTreeID(), test_position->tree_id());
+  EXPECT_EQ(empty_div_data2.id, test_position->anchor_id());
+  EXPECT_EQ(0, test_position->text_offset());
+  EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
+
+  // Create an "after children" tree position.
+  tree_position = AXNodePosition::CreateTreePosition(GetTreeID(), root_data.id,
+                                                     2 /* child_index */);
+  ASSERT_FALSE(tree_position->IsLeafTextPosition());
+  test_position = tree_position->AsLeafTextPosition();
+  ASSERT_NE(nullptr, test_position);
+  EXPECT_TRUE(test_position->IsLeafTextPosition());
+  EXPECT_EQ(GetTreeID(), test_position->tree_id());
+  EXPECT_EQ(empty_div_data2.id, test_position->anchor_id());
   EXPECT_EQ(0, test_position->text_offset());
   EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, test_position->affinity());
 }
@@ -8529,11 +8616,13 @@ TEST_F(AXPositionTest, CreateParentAndLeafPositionWithEmbeddedObjects) {
   // before the word "Hello" that comes after the paragraph (downstream
   // affinity).
   TestPositionType middle_root = AXNodePosition::CreateTextPosition(
-      GetTreeID(), root.id, AXNode::kEmbeddedCharacterLength /* text_offset */,
+      GetTreeID(), root.id,
+      AXNode::kEmbeddedObjectCharacterLengthUTF16 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
   ASSERT_FALSE(middle_root->IsNullPosition());
   TestPositionType middle_root_upstream = AXNodePosition::CreateTextPosition(
-      GetTreeID(), root.id, AXNode::kEmbeddedCharacterLength /* text_offset */,
+      GetTreeID(), root.id,
+      AXNode::kEmbeddedObjectCharacterLengthUTF16 /* text_offset */,
       ax::mojom::TextAffinity::kUpstream);
   ASSERT_FALSE(middle_root_upstream->IsNullPosition());
 
@@ -8616,7 +8705,8 @@ TEST_F(AXPositionTest, CreateParentAndLeafPositionWithEmbeddedObjects) {
   ASSERT_NE(nullptr, parent_position);
   EXPECT_TRUE(parent_position->IsTextPosition());
   EXPECT_EQ(root.id, parent_position->anchor_id());
-  EXPECT_EQ(AXNode::kEmbeddedCharacterLength, parent_position->text_offset());
+  EXPECT_EQ(AXNode::kEmbeddedObjectCharacterLengthUTF16,
+            parent_position->text_offset());
   EXPECT_EQ(ax::mojom::TextAffinity::kUpstream, parent_position->affinity());
 
   parent_position = after_inline_box_1_tree->CreateParentPosition()
@@ -8639,7 +8729,8 @@ TEST_F(AXPositionTest, CreateParentAndLeafPositionWithEmbeddedObjects) {
   ASSERT_NE(nullptr, parent_position);
   EXPECT_TRUE(parent_position->IsTextPosition());
   EXPECT_EQ(root.id, parent_position->anchor_id());
-  EXPECT_EQ(AXNode::kEmbeddedCharacterLength, parent_position->text_offset());
+  EXPECT_EQ(AXNode::kEmbeddedObjectCharacterLengthUTF16,
+            parent_position->text_offset());
   EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, parent_position->affinity());
 
   leaf_position = middle_root->AsLeafTextPosition();
@@ -8703,7 +8794,8 @@ TEST_F(AXPositionTest, CreateParentAndLeafPositionWithEmbeddedObjects) {
   EXPECT_TRUE(leaf_position->IsTextPosition());
   EXPECT_EQ(button_empty.id, leaf_position->anchor_id());
   // Empty leaf objects are replaced by the embedded object character.
-  EXPECT_EQ(AXNode::kEmbeddedCharacterLength, leaf_position->text_offset());
+  EXPECT_EQ(AXNode::kEmbeddedObjectCharacterLengthUTF16,
+            leaf_position->text_offset());
   EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, leaf_position->affinity());
 }
 
@@ -9011,6 +9103,48 @@ TEST_F(AXPositionTest,
   test_position = null_position->AsLeafTextPositionAfterCharacter();
   EXPECT_NE(nullptr, test_position);
   EXPECT_TRUE(test_position->IsNullPosition());
+}
+
+TEST_F(AXPositionTest,
+       AsLeafTextPositionBeforeAndAfterCharacterWithInvalidPosition) {
+  AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+
+  AXNodeData text_data;
+  text_data.id = 2;
+  text_data.role = ax::mojom::Role::kStaticText;
+  text_data.SetName("some text");
+
+  root_data.child_ids = {text_data.id};
+  SetTree(CreateAXTree({root_data, text_data}));
+
+  // Create a text position at MaxTextOffset.
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      GetTreeID(), text_data.id, 9 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  EXPECT_TRUE(text_position->IsTextPosition());
+  EXPECT_TRUE(text_position->IsValid());
+  EXPECT_EQ(9, text_position->text_offset());
+
+  // Now make a change to shorten MaxTextOffset. Ensure that this position is
+  // invalid.
+  text_data.SetName("some tex");
+  AXTreeUpdate shorten_text_update;
+  shorten_text_update.nodes = {text_data};
+  ASSERT_TRUE(GetTree()->Unserialize(shorten_text_update));
+  EXPECT_FALSE(text_position->IsValid());
+
+  // Ensure that |AsLeafTextPositionBeforeCharacter| returns a null position.
+  TestPositionType text_position_before =
+      text_position->AsLeafTextPositionBeforeCharacter();
+  EXPECT_TRUE(text_position_before->IsNullPosition());
+
+  // Likewise for |AsLeafTextPositionAfterCharacter|.
+  TestPositionType text_position_after =
+      text_position->AsLeafTextPositionAfterCharacter();
+  EXPECT_TRUE(text_position_after->IsNullPosition());
 }
 
 TEST_F(AXPositionTest,
@@ -10087,8 +10221,8 @@ TEST_F(AXPositionTest, OperatorEquals) {
   tree_position1 = AXNodePosition::CreateTreePosition(GetTreeID(), root_.id,
                                                       3 /* child_index */);
   ASSERT_NE(nullptr, tree_position1);
-  tree_position2 = AXNodePosition::CreateTreePosition(GetTreeID(), root_.id,
-                                                      -1 /* child_index */);
+  tree_position2 = AXNodePosition::CreateTreePosition(
+      GetTreeID(), root_.id, AXNodePosition::INVALID_INDEX);
   ASSERT_NE(nullptr, tree_position2);
   EXPECT_NE(*tree_position1, *tree_position2);
 
@@ -11597,7 +11731,7 @@ TEST_F(AXPositionTest, EmptyObjectReplacedByCharacterTextNavigation) {
   EXPECT_EQ(text_field_4.id, result_position->anchor_id());
   EXPECT_EQ(0, result_position->text_offset());
   EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, result_position->affinity());
-  EXPECT_EQ(AXNode::kEmbeddedCharacter, result_position->GetText());
+  EXPECT_EQ(AXNode::kEmbeddedObjectCharacterUTF16, result_position->GetText());
 
   position = std::move(result_position);
   result_position =
@@ -11616,7 +11750,7 @@ TEST_F(AXPositionTest, EmptyObjectReplacedByCharacterTextNavigation) {
   EXPECT_EQ(text_field_4.id, result_position->anchor_id());
   EXPECT_EQ(0, result_position->text_offset());
   EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, result_position->affinity());
-  EXPECT_EQ(AXNode::kEmbeddedCharacter, result_position->GetText());
+  EXPECT_EQ(AXNode::kEmbeddedObjectCharacterUTF16, result_position->GetText());
 
   position = std::move(result_position);
   result_position = position->CreatePreviousWordStartPosition(
@@ -11647,7 +11781,7 @@ TEST_F(AXPositionTest, EmptyObjectReplacedByCharacterTextNavigation) {
   EXPECT_EQ(text_field_4.id, result_position->anchor_id());
   EXPECT_EQ(1, result_position->text_offset());
   EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, result_position->affinity());
-  EXPECT_EQ(AXNode::kEmbeddedCharacter, result_position->GetText());
+  EXPECT_EQ(AXNode::kEmbeddedObjectCharacterUTF16, result_position->GetText());
 
   position = std::move(result_position);
   result_position =
@@ -11669,7 +11803,7 @@ TEST_F(AXPositionTest, EmptyObjectReplacedByCharacterTextNavigation) {
   EXPECT_EQ(text_field_4.id, result_position->anchor_id());
   EXPECT_EQ(1, result_position->text_offset());
   EXPECT_EQ(ax::mojom::TextAffinity::kDownstream, result_position->affinity());
-  EXPECT_EQ(AXNode::kEmbeddedCharacter, result_position->GetText());
+  EXPECT_EQ(AXNode::kEmbeddedObjectCharacterUTF16, result_position->GetText());
 
   position = std::move(result_position);
   result_position = position->CreatePreviousWordEndPosition(
@@ -11681,8 +11815,10 @@ TEST_F(AXPositionTest, EmptyObjectReplacedByCharacterTextNavigation) {
   EXPECT_EQ(u"Hello ", result_position->GetText());
 
   // Positions on descendants of empty objects that have been replaced by the
-  // "embedded object replacement character" are valid, to allow for navigating
-  // inside of text controls.
+  // "embedded object replacement character" are non-null, to allow for
+  // navigating inside of text controls, but we prefer adjusting the position to
+  // their empty object ancestor if the caller requests for a valid position,
+  // (see `AXPosition::AsValidPosition()`.
   position = AXNodePosition::CreateTextPosition(
       GetTreeID(), generic_container_5.id, 0 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
@@ -11698,9 +11834,10 @@ TEST_F(AXPositionTest, EmptyObjectReplacedByCharacterTextNavigation) {
 
   // Hello <embedded> world<embedded><embedded>hey<embedded><embedded>
   std::u16string expected_text =
-      base::StrCat({u"Hello ", AXNode::kEmbeddedCharacter, u" world",
-                    AXNode::kEmbeddedCharacter, AXNode::kEmbeddedCharacter,
-                    u"hey", AXNode::kEmbeddedCharacter});
+      base::StrCat({u"Hello ", AXNode::kEmbeddedObjectCharacterUTF16, u" world",
+                    AXNode::kEmbeddedObjectCharacterUTF16,
+                    AXNode::kEmbeddedObjectCharacterUTF16, u"hey",
+                    AXNode::kEmbeddedObjectCharacterUTF16});
   EXPECT_EQ(expected_text, position->GetText());
 
   // A position on an empty object that has been replaced by an "embedded object
@@ -11708,7 +11845,8 @@ TEST_F(AXPositionTest, EmptyObjectReplacedByCharacterTextNavigation) {
   position = AXNodePosition::CreateTextPosition(
       GetTreeID(), text_field_4.id, 0 /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
-  EXPECT_EQ(AXNode::kEmbeddedCharacterLength, position->MaxTextOffset())
+  EXPECT_EQ(AXNode::kEmbeddedObjectCharacterLengthUTF16,
+            position->MaxTextOffset())
       << *position;
 
   position = position->CreateParentPosition();

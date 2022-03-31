@@ -129,6 +129,7 @@
 <translation id="42981349822642051">දිගහරින්න</translation>
 <translation id="4336434711095810371">සියලු දත්ත හිස් කරන්න</translation>
 <translation id="4402755511846832236">ඔබ මෙම උපාංගය සක්‍රියව භාවිත කරන විට දැන ගැනීමෙන් අඩවි අවහිර කරන්න</translation>
+<translation id="4428065317363009941">වෙළඳ දැන්වීම් පුද්ගලිකකරණය</translation>
 <translation id="4434045419905280838">උත්පතන සහ හරවා යැවීම්</translation>
 <translation id="445467742685312942">මෙම වෙබ් අඩවියට ආරක්‍ෂිත අන්තර්ගතය ධාවන කිරීමට ඉඩ දෙන්න.</translation>
 <translation id="4468959413250150279">නිශ්චිත අඩවියක් සඳහා ශබ්දය නිහඬ කරන්න.</translation>
@@ -159,6 +160,7 @@
 <translation id="5186036860380548585">තිරයේ ඉහළට ආසන්නව විකල්පය තිබේ</translation>
 <translation id="5197729504361054390">ඔබ තේරූ සම්බන්ධතා <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> සමඟ බෙදා ගනු ලැබේ.</translation>
 <translation id="5216942107514965959">අද අවසන් වරට පිවිසි</translation>
+<translation id="5264323282659631142">'<ph name="CHIP_LABEL" />' ඉවත් කරන්න</translation>
 <translation id="528192093759286357">ඉහළින් ඇද, පූර්ණ තිරයෙන් ඉවත් වීමට පිටුපස බොත්තම ස්පර්ශ කරන්න.</translation>
 <translation id="5300589172476337783">පෙන්වන්න</translation>
 <translation id="5301954838959518834">හරි, එය තේරුණා</translation>
@@ -232,7 +234,6 @@
 <translation id="6790428901817661496">වාදනය කරන්න</translation>
 <translation id="6818926723028410516">අයිතම තෝරන්න</translation>
 <translation id="6864395892908308021">මෙම උපාංගය NFC කියවිය නොහැක</translation>
-<translation id="6910211073230771657">මකාදැමූ</translation>
 <translation id="6912998170423641340">පසුරු පුවරුවෙන් පෙළ සහ රූප කියවීමෙන් අඩවි අවහිර කරන්න</translation>
 <translation id="6945221475159498467">තෝරන්න</translation>
 <translation id="6965382102122355670">හරි</translation>
@@ -256,6 +257,7 @@
 <translation id="7554752735887601236">වෙබ් අඩවියක් ඔබේ මයික්‍රොෆෝනය භාවිත කරයි</translation>
 <translation id="7561196759112975576">සැමවිටම</translation>
 <translation id="757524316907819857">ආරක්ෂිත අන්තර්ගත වාදනය කරමින් තිබෙන අඩවි තහනම් කිරීම</translation>
+<translation id="7577900504646297215">ලැදිකම් කළමනා කරන්න</translation>
 <translation id="7649070708921625228">උදවු</translation>
 <translation id="7658239707568436148">අවලංගු කරන්න</translation>
 <translation id="7781829728241885113">ඊයේ</translation>

@@ -407,6 +407,11 @@ void RuleSet::AddCounterStyleRule(StyleRuleCounterStyle* rule) {
   counter_style_rules_.push_back(rule);
 }
 
+void RuleSet::AddFontPaletteValuesRule(StyleRuleFontPaletteValues* rule) {
+  EnsurePendingRules();
+  font_palette_values_rules_.push_back(rule);
+}
+
 void RuleSet::AddScrollTimelineRule(StyleRuleScrollTimeline* rule) {
   EnsurePendingRules();  // So that property_rules_.ShrinkToFit() gets called.
   scroll_timeline_rules_.push_back(rule);
@@ -439,6 +444,11 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
     } else if (auto* font_face_rule = DynamicTo<StyleRuleFontFace>(rule)) {
       font_face_rule->SetCascadeLayer(cascade_layer);
       AddFontFaceRule(font_face_rule);
+    } else if (auto* font_palette_values_rule =
+                   DynamicTo<StyleRuleFontPaletteValues>(rule)) {
+      // TODO(https://crbug.com/1170794): Handle cascade layers for
+      // @font-palette-values.
+      AddFontPaletteValuesRule(font_palette_values_rule);
     } else if (auto* keyframes_rule = DynamicTo<StyleRuleKeyframes>(rule)) {
       keyframes_rule->SetCascadeLayer(cascade_layer);
       AddKeyframesRule(keyframes_rule);
@@ -459,10 +469,14 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
                       container_query, cascade_layer);
       }
     } else if (auto* container_rule = DynamicTo<StyleRuleContainer>(rule)) {
-      // TODO(crbug.com/1145970): Handle nested container queries.
-      // For now only the innermost applies.
+      const ContainerQuery* inner_container_query =
+          &container_rule->GetContainerQuery();
+      if (container_query) {
+        inner_container_query =
+            inner_container_query->CopyWithParent(container_query);
+      }
       AddChildRules(container_rule->ChildRules(), medium, add_rule_flags,
-                    &container_rule->GetContainerQuery(), cascade_layer);
+                    inner_container_query, cascade_layer);
     } else if (auto* layer_block_rule = DynamicTo<StyleRuleLayerBlock>(rule)) {
       CascadeLayer* sub_layer =
           GetOrAddSubLayer(cascade_layer, layer_block_rule->GetName());
@@ -483,7 +497,8 @@ bool RuleSet::MatchMediaForAddRules(const MediaQueryEvaluator& evaluator,
   bool match_media = evaluator.Eval(
       *media_queries, MediaQueryEvaluator::Results{
                           &features_.ViewportDependentMediaQueryResults(),
-                          &features_.DeviceDependentMediaQueryResults()});
+                          &features_.DeviceDependentMediaQueryResults(),
+                          &features_.MediaQueryUnitFlags()});
   media_query_set_results_.push_back(
       MediaQuerySetResult(*media_queries, match_media));
   return match_media;
@@ -587,6 +602,7 @@ void RuleSet::CompactRules() {
   visited_dependent_rules_.ShrinkToFit();
   page_rules_.ShrinkToFit();
   font_face_rules_.ShrinkToFit();
+  font_palette_values_rules_.ShrinkToFit();
   keyframes_rules_.ShrinkToFit();
   property_rules_.ShrinkToFit();
   counter_style_rules_.ShrinkToFit();
@@ -721,6 +737,7 @@ void RuleSet::Trace(Visitor* visitor) const {
   visitor->Trace(visited_dependent_rules_);
   visitor->Trace(page_rules_);
   visitor->Trace(font_face_rules_);
+  visitor->Trace(font_palette_values_rules_);
   visitor->Trace(keyframes_rules_);
   visitor->Trace(property_rules_);
   visitor->Trace(counter_style_rules_);

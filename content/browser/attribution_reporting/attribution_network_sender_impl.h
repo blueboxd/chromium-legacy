@@ -10,7 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/raw_ptr.h"
-#include "content/browser/attribution_reporting/attribution_manager_impl.h"
+#include "content/browser/attribution_reporting/attribution_network_sender.h"
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -24,13 +24,14 @@ class SimpleURLLoader;
 
 namespace content {
 
+class AttributionReport;
 class StoragePartition;
 
 // Implemented a NetworkSender capable of issuing POST requests for complete
 // conversions. Maintains a set of all ongoing UrlLoaders used for posting
 // conversion reports. Created and owned by AttributionReporterImpl.
 class CONTENT_EXPORT AttributionNetworkSenderImpl
-    : public AttributionManagerImpl::NetworkSender {
+    : public AttributionNetworkSender {
  public:
   explicit AttributionNetworkSenderImpl(StoragePartition* storage_partition);
   AttributionNetworkSenderImpl(const AttributionNetworkSenderImpl&) = delete;
@@ -46,8 +47,7 @@ class CONTENT_EXPORT AttributionNetworkSenderImpl
   // seconds.
   // |sent_callback| is run after the request finishes, whether or not it
   // succeeded,
-  void SendReport(GURL report_url,
-                  std::string report_body,
+  void SendReport(AttributionReport report,
                   ReportSentCallback sent_callback) override;
 
   // Tests inject a TestURLLoaderFactory so they can mock the network response.
@@ -60,6 +60,7 @@ class CONTENT_EXPORT AttributionNetworkSenderImpl
 
   // Called when headers are available for a sent report.
   void OnReportSent(UrlLoaderList::iterator it,
+                    AttributionReport report,
                     ReportSentCallback sent_callback,
                     scoped_refptr<net::HttpResponseHeaders> headers);
 

@@ -120,13 +120,22 @@ TEST(WebCursorTest, SetCursor) {
   cursor.set_image_scale_factor(1000.f);
   EXPECT_FALSE(webcursor.SetCursor(cursor));
 
-  // SetCursor should return false when the image width is too large.
-  cursor.set_image_scale_factor(1.f);
-  cursor.set_custom_bitmap(CreateTestBitmap(1025, 3));
+  // SetCursor should return false when the unscaled bitmap width is too large.
+  cursor.set_image_scale_factor(10.f);
+  cursor.set_custom_bitmap(CreateTestBitmap(1025, 5));
   EXPECT_FALSE(webcursor.SetCursor(cursor));
 
-  // SetCursor should return false when the image height is too large.
-  cursor.set_custom_bitmap(CreateTestBitmap(3, 1025));
+  // SetCursor should return false when the unscaled bitmap height is too large.
+  cursor.set_custom_bitmap(CreateTestBitmap(5, 1025));
+  EXPECT_FALSE(webcursor.SetCursor(cursor));
+
+  // SetCursor should return false when the 1x scaled image width is too large.
+  cursor.set_image_scale_factor(1.f);
+  cursor.set_custom_bitmap(CreateTestBitmap(151, 3));
+  EXPECT_FALSE(webcursor.SetCursor(cursor));
+
+  // SetCursor should return false when the 1x scaled image height is too large.
+  cursor.set_custom_bitmap(CreateTestBitmap(3, 151));
   EXPECT_FALSE(webcursor.SetCursor(cursor));
 
   // SetCursor should return false when the scaled image width is too large.
@@ -136,7 +145,7 @@ TEST(WebCursorTest, SetCursor) {
 
   // SetCursor should return false when the scaled image height is too large.
   cursor.set_image_scale_factor(0.1f);
-  cursor.set_custom_bitmap(CreateTestBitmap(5, 200));
+  cursor.set_custom_bitmap(CreateTestBitmap(5, 20));
   EXPECT_FALSE(webcursor.SetCursor(cursor));
 }
 

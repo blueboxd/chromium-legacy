@@ -149,8 +149,7 @@ editing.TextEditHandler = class {
                       this.node_, Dir.FORWARD, AutomationPredicate.object,
                       {skipInitialSubtree: true}) ||
         this.node_;
-    ChromeVoxState.instance.navigateToRange(
-        cursors.Range.fromNode(after), true, {}, true);
+    ChromeVoxState.instance.navigateToRange(cursors.Range.fromNode(after));
   }
 
   /**
@@ -395,7 +394,8 @@ const AutomationRichEditableText = class extends AutomationEditableText {
       deep = deep.previousOnLine;
     }
     const next = AutomationUtil.findNextNode(
-        deep, Dir.BACKWARD, AutomationPredicate.inlineTextBox);
+        deep, Dir.BACKWARD, AutomationPredicate.inlineTextBox,
+        {root: r => r === this.node_});
     if (!next) {
       return true;
     }
@@ -412,7 +412,8 @@ const AutomationRichEditableText = class extends AutomationEditableText {
       deep = deep.nextOnLine;
     }
     const next = AutomationUtil.findNextNode(
-        deep, Dir.FORWARD, AutomationPredicate.inlineTextBox);
+        deep, Dir.FORWARD, AutomationPredicate.inlineTextBox,
+        {root: r => r === this.node_});
     if (!next) {
       return true;
     }
@@ -512,11 +513,17 @@ const AutomationRichEditableText = class extends AutomationEditableText {
       return;
     }
 
-    // Selection stayed within the same line(s) and didn't cross into new lines.
+    // We must validate the previous lines below as state changes in the
+    // accessibility tree may have invalidated the lines.
 
-    // We must validate the previous lines as state changes in the accessibility
-    // tree may have invalidated the lines.
-    if (startLine.isSameLine(prevStartLine) &&
+    // Selection stayed within the same line(s) and didn't cross into new lines.
+    // Handle speech output for collapsed selections and all selections on text
+    // areas using EditableTextBase.
+    // TODO(accessibility): eventually remove usage of the EditableTextBase
+    // plain text state machine by migrating all cases to be handled by
+    // EditableLine.
+    if ((cur.hasCollapsedSelection() || this.node_.htmlTag === 'textarea') &&
+        startLine.isSameLine(prevStartLine) &&
         endLine.isSameLine(prevEndLine)) {
       // Intra-line changes.
 
@@ -558,14 +565,7 @@ const AutomationRichEditableText = class extends AutomationEditableText {
     }
 
     const curBase = baseLineOnStart ? endLine : startLine;
-    if (cur.text === '\u00a0' && cur.hasCollapsedSelection() &&
-        !cur.end.node.nextOnLine) {
-      // This is a specific pattern seen in Google Docs. A single node (static
-      // text/in line text box), containing a non-breaking-space signifies a new
-      // line.
-      ChromeVox.tts.speak('\n', QueueMode.CATEGORY_FLUSH);
-    } else if (
-        (cur.startContainer.role === RoleType.TEXT_FIELD ||
+    if ((cur.startContainer.role === RoleType.TEXT_FIELD ||
          (cur.startContainer === prev.startContainer &&
           cur.endContainer === prev.endContainer)) &&
         cur.startContainerValue !== prev.startContainerValue) {

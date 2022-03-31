@@ -574,6 +574,9 @@ public class ReaderModeManager extends EmptyTabObserver implements UserData {
         if (dismissReason == DismissReason.GESTURE) {
             onClosed();
         }
+
+        recordDismissalConditions(dismissReason);
+
         int mode = getThrottleMode();
         if (dismissReason != DismissReason.PRIMARY_ACTION
                 && (mode == ThrottleMode.URL || mode == ThrottleMode.DOMAIN)) {
@@ -583,8 +586,6 @@ public class ReaderModeManager extends EmptyTabObserver implements UserData {
                 sMutedSites.remove(v);
             }
         }
-
-        recordDismissalConditions(dismissReason);
     }
 
     public void activateReaderMode() {

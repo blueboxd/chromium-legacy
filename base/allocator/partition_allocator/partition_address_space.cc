@@ -21,9 +21,7 @@
 #include <windows.h>
 #endif
 
-namespace base {
-
-namespace internal {
+namespace partition_alloc::internal {
 
 #if defined(PA_HAS_64_BITS_POINTERS)
 
@@ -73,13 +71,13 @@ void PartitionAddressSpace::Init() {
   if (IsInitialized())
     return;
 
-  setup_.regular_pool_base_address_ =
-      AllocPages(kRegularPoolSize, kRegularPoolSize, base::PageInaccessible,
-                 PageTag::kPartitionAlloc);
+  setup_.regular_pool_base_address_ = AllocPages(
+      kRegularPoolSize, kRegularPoolSize,
+      PageAccessibilityConfiguration::kInaccessible, PageTag::kPartitionAlloc);
   if (!setup_.regular_pool_base_address_)
     HandleGigaCageAllocFailure();
   PA_DCHECK(!(setup_.regular_pool_base_address_ & (kRegularPoolSize - 1)));
-  setup_.regular_pool_ = internal::AddressPoolManager::GetInstance()->Add(
+  setup_.regular_pool_ = AddressPoolManager::GetInstance()->Add(
       setup_.regular_pool_base_address_, kRegularPoolSize);
   PA_CHECK(setup_.regular_pool_ == kRegularPoolHandle);
   PA_DCHECK(!IsInRegularPool(setup_.regular_pool_base_address_ - 1));
@@ -96,13 +94,13 @@ void PartitionAddressSpace::Init() {
   const size_t kForbiddenZoneSize = PageAllocationGranularity();
   uintptr_t base_address = AllocPagesWithAlignOffset(
       0, kBRPPoolSize + kForbiddenZoneSize, kBRPPoolSize,
-      kBRPPoolSize - kForbiddenZoneSize, base::PageInaccessible,
-      PageTag::kPartitionAlloc);
+      kBRPPoolSize - kForbiddenZoneSize,
+      PageAccessibilityConfiguration::kInaccessible, PageTag::kPartitionAlloc);
   if (!base_address)
     HandleGigaCageAllocFailure();
   setup_.brp_pool_base_address_ = base_address + kForbiddenZoneSize;
   PA_DCHECK(!(setup_.brp_pool_base_address_ & (kBRPPoolSize - 1)));
-  setup_.brp_pool_ = internal::AddressPoolManager::GetInstance()->Add(
+  setup_.brp_pool_ = AddressPoolManager::GetInstance()->Add(
       setup_.brp_pool_base_address_, kBRPPoolSize);
   PA_CHECK(setup_.brp_pool_ == kBRPPoolHandle);
   PA_DCHECK(!IsInBRPPool(setup_.brp_pool_base_address_ - 1));
@@ -113,9 +111,8 @@ void PartitionAddressSpace::Init() {
 #if PA_STARSCAN_USE_CARD_TABLE
   // Reserve memory for PCScan quarantine card table.
   uintptr_t requested_address = setup_.regular_pool_base_address_;
-  uintptr_t actual_address =
-      internal::AddressPoolManager::GetInstance()->Reserve(
-          setup_.regular_pool_, requested_address, kSuperPageSize);
+  uintptr_t actual_address = AddressPoolManager::GetInstance()->Reserve(
+      setup_.regular_pool_, requested_address, kSuperPageSize);
   PA_CHECK(requested_address == actual_address)
       << "QuarantineCardTable is required to be allocated at the beginning of "
          "the regular pool";
@@ -133,13 +130,13 @@ void PartitionAddressSpace::InitConfigurablePool(uintptr_t pool_base,
   PA_CHECK(pool_base);
   PA_CHECK(size <= kConfigurablePoolMaxSize);
   PA_CHECK(size >= kConfigurablePoolMinSize);
-  PA_CHECK(bits::IsPowerOfTwo(size));
+  PA_CHECK(base::bits::IsPowerOfTwo(size));
   PA_CHECK(pool_base % size == 0);
 
   setup_.configurable_pool_base_address_ = pool_base;
   setup_.configurable_pool_base_mask_ = ~(size - 1);
 
-  setup_.configurable_pool_ = internal::AddressPoolManager::GetInstance()->Add(
+  setup_.configurable_pool_ = AddressPoolManager::GetInstance()->Add(
       setup_.configurable_pool_base_address_, size);
   PA_CHECK(setup_.configurable_pool_ == kConfigurablePoolHandle);
 }
@@ -160,12 +157,11 @@ void PartitionAddressSpace::UninitForTesting() {
   setup_.regular_pool_ = 0;
   setup_.brp_pool_ = 0;
   setup_.configurable_pool_ = 0;
-  internal::AddressPoolManager::GetInstance()->ResetForTesting();
+  AddressPoolManager::GetInstance()->ResetForTesting();
 }
 
 void PartitionAddressSpace::UninitConfigurablePoolForTesting() {
-  internal::AddressPoolManager::GetInstance()->Remove(
-      setup_.configurable_pool_);
+  AddressPoolManager::GetInstance()->Remove(setup_.configurable_pool_);
   setup_.configurable_pool_base_address_ = kConfigurablePoolInitialBaseAddress;
   setup_.configurable_pool_base_mask_ = 0;
   setup_.configurable_pool_ = 0;
@@ -173,6 +169,4 @@ void PartitionAddressSpace::UninitConfigurablePoolForTesting() {
 
 #endif  // defined(PA_HAS_64_BITS_POINTERS)
 
-}  // namespace internal
-
-}  // namespace base
+}  // namespace partition_alloc::internal

@@ -17,6 +17,7 @@
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "sysmem_native_pixmap.h"
 #include "ui/gfx/buffer_types.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/ozone/platform/scenic/scenic_gpu_host.h"
 #include "ui/ozone/platform/scenic/scenic_surface_factory.h"
 #include "ui/ozone/platform/scenic/sysmem_buffer_collection.h"
@@ -117,16 +118,9 @@ ScenicSurface::~ScenicSurface() {
   scenic_surface_factory_->RemoveSurface(window_);
 }
 
-ScenicSurface::OverlayViewInfo::OverlayViewInfo(
-    scenic::Session* scenic_session,
-    fuchsia::ui::views::ViewHolderToken view_holder_token)
-    : view_holder(scenic_session,
-                  std::move(view_holder_token),
-                  "OverlayViewHolder"),
-      entity_node(scenic_session) {
-  view_holder.SetHitTestBehavior(fuchsia::ui::gfx::HitTestBehavior::kSuppress);
-  entity_node.AddChild(view_holder);
-}
+ScenicSurface::OverlayViewInfo::OverlayViewInfo(scenic::ViewHolder holder,
+                                                scenic::EntityNode node)
+    : view_holder(std::move(holder)), entity_node(std::move(node)) {}
 
 void ScenicSurface::OnScenicEvents(
     std::vector<fuchsia::ui::scenic::Event> events) {
@@ -135,16 +129,12 @@ void ScenicSurface::OnScenicEvents(
     DCHECK(event.is_gfx());
     switch (event.gfx().Which()) {
       case fuchsia::ui::gfx::Event::kMetrics: {
-        DCHECK(event.gfx().metrics().node_id == main_shape_.id());
+        DCHECK_EQ(event.gfx().metrics().node_id, main_shape_.id());
         // This is enough to track size because |main_shape_| is 1x1.
         const auto& metrics = event.gfx().metrics().metrics;
         main_shape_size_.set_width(metrics.scale_x);
         main_shape_size_.set_height(metrics.scale_y);
-
-        // Update layout only if Present() was called at least once, i.e. we
-        // have a frame to display.
-        if (last_frame_present_time_ != base::TimeTicks())
-          UpdateViewHolderScene();
+        UpdateViewHolderScene();
         break;
       }
       case fuchsia::ui::gfx::Event::kViewDetachedFromScene: {
@@ -169,7 +159,7 @@ void ScenicSurface::Present(
     BufferPresentedCallback presentation_callback) {
   if (!image_pipe_) {
     std::move(completion_callback)
-        .Run(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_SKIPPED));
+        .Run(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_FAILED));
     return;
   }
 
@@ -183,8 +173,7 @@ void ScenicSurface::Present(
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("viz", "ScenicSurface::PresentFrame",
                                     TRACE_ID_LOCAL(this), "image_id", image_id);
 
-  // Always update layout for the first frame.
-  bool layout_update_required = last_frame_present_time_ == base::TimeTicks();
+  bool layout_update_required = false;
 
   for (auto& overlay_view : overlay_views_) {
     overlay_view.second.should_be_visible = false;
@@ -195,35 +184,26 @@ void ScenicSurface::Present(
                                          DuplicateGpuFences(acquire_fences),
                                          /*release_fences=*/{});
 
-    auto* pixmap = static_cast<SysmemNativePixmap*>(overlay.pixmap.get());
-    auto& overlay_handle = pixmap->PeekHandle();
+    auto& overlay_handle =
+        static_cast<SysmemNativePixmap*>(overlay.pixmap.get())->PeekHandle();
     gfx::SysmemBufferCollectionId overlay_id =
         overlay_handle.buffer_collection_id.value();
     auto it = overlay_views_.find(overlay_id);
-
-    // If this is a new overlay then attach it.
-    if (it == overlay_views_.end()) {
-      auto token_pair = scenic::ViewTokenPair::New();
-      pixmap->GetScenicOverlayView()->AttachToScenicSurface(
-          std::move(token_pair.view_token));
-      auto emplace_result = overlay_views_.emplace(
-          std::piecewise_construct, std::forward_as_tuple(overlay_id),
-          std::forward_as_tuple(&scenic_session_,
-                                std::move(token_pair.view_holder_token)));
-      it = emplace_result.first;
-      layout_update_required = true;
-    }
-
+    CHECK(it != overlay_views_.end());
     auto& overlay_view_info = it->second;
     overlay_view_info.should_be_visible = true;
 
     auto& overlay_data = overlay.overlay_plane_data;
-    if (overlay_view_info.plane_z_order != overlay_data.z_order ||
-        overlay_view_info.display_bounds != overlay_data.display_bounds ||
+    if (!overlay_view_info.visible ||
+        overlay_view_info.plane_z_order != overlay_data.z_order ||
+        overlay_view_info.display_bounds !=
+            gfx::ToNearestRect(overlay_data.display_bounds) ||
         overlay_view_info.crop_rect != overlay_data.crop_rect ||
         overlay_view_info.plane_transform != overlay_data.plane_transform) {
+      overlay_view_info.visible = true;
       overlay_view_info.plane_z_order = overlay_data.z_order;
-      overlay_view_info.display_bounds = overlay_data.display_bounds;
+      overlay_view_info.display_bounds =
+          gfx::ToNearestRect(overlay_data.display_bounds);
       overlay_view_info.crop_rect = overlay_data.crop_rect;
       overlay_view_info.plane_transform = overlay_data.plane_transform;
       layout_update_required = true;
@@ -231,17 +211,12 @@ void ScenicSurface::Present(
   }
 
   // Hide all overlays views that are not in `overlays_to_present`.
-  auto it = overlay_views_.begin();
-  while (it != overlay_views_.end()) {
+  for (auto it = overlay_views_.begin(); it != overlay_views_.end(); ++it) {
     auto& overlay_view = it->second;
-    if (!overlay_view.should_be_visible) {
+    if (overlay_view.visible && !overlay_view.should_be_visible) {
+      overlay_view.visible = false;
       layout_update_required = true;
-      parent_->DetachChild(overlay_view.entity_node);
-      it = overlay_views_.erase(it);
-      continue;
     }
-
-    it++;
   }
 
   if (layout_update_required) {
@@ -373,6 +348,36 @@ void ScenicSurface::SetTextureToImage(const scenic::Image& image) {
   main_shape_.SetMaterial(main_material_);
 }
 
+bool ScenicSurface::PresentOverlayView(
+    gfx::SysmemBufferCollectionId id,
+    fuchsia::ui::views::ViewHolderToken view_holder_token) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  scenic::ViewHolder view_holder(&scenic_session_, std::move(view_holder_token),
+                                 "OverlayViewHolder");
+  scenic::EntityNode entity_node(&scenic_session_);
+  view_holder.SetHitTestBehavior(fuchsia::ui::gfx::HitTestBehavior::kSuppress);
+
+  entity_node.AddChild(view_holder);
+
+  DCHECK(!overlay_views_.count(id));
+  overlay_views_.emplace(
+      std::piecewise_construct, std::forward_as_tuple(id),
+      std::forward_as_tuple(std::move(view_holder), std::move(entity_node)));
+
+  return true;
+}
+
+bool ScenicSurface::RemoveOverlayView(gfx::SysmemBufferCollectionId id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  auto it = overlay_views_.find(id);
+  DCHECK(it != overlay_views_.end());
+  parent_->DetachChild(it->second.entity_node);
+  safe_presenter_.QueuePresent();
+  overlay_views_.erase(it);
+  return true;
+}
+
 mojo::PlatformHandle ScenicSurface::CreateView() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -444,10 +449,6 @@ void ScenicSurface::OnPresentComplete(
 void ScenicSurface::UpdateViewHolderScene() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // Layout will be updated once we receive view size.
-  if (main_shape_size_.IsEmpty())
-    return;
-
   // |plane_z_order| for main surface is 0.
   int min_z_order = 0;
   for (auto& item : overlay_views_) {
@@ -457,6 +458,12 @@ void ScenicSurface::UpdateViewHolderScene() {
 
   for (auto& item : overlay_views_) {
     auto& overlay_view = item.second;
+
+    if (!overlay_view.visible) {
+      // `Detach()` is a no-op if the node is not attached.
+      overlay_view.entity_node.Detach();
+      continue;
+    }
 
     // No-op if the node is already attached.
     parent_->AddChild(overlay_view.entity_node);

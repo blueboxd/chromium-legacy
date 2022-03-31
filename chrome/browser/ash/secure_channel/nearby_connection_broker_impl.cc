@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
+#include "ash/services/secure_channel/public/mojom/secure_channel_types.mojom.h"
 #include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file.h"
@@ -23,7 +24,6 @@
 #include "chrome/browser/ash/secure_channel/nearby_endpoint_finder.h"
 #include "chrome/browser/ash/secure_channel/util/histogram_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/services/secure_channel/public/mojom/secure_channel_types.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace ash {
@@ -31,7 +31,7 @@ namespace secure_channel {
 namespace {
 
 // TODO(https://crbug.com/1164001): remove after
-// chromeos/services/secure_channel is moved to namespace ash.
+// ash/services/secure_channel is moved to namespace ash.
 namespace mojom = ::chromeos::secure_channel::mojom;
 
 using ::location::nearby::connections::mojom::BytesPayload;

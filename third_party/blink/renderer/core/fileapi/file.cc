@@ -27,10 +27,13 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_file_property_bag.h"
+#include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -42,6 +45,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -191,6 +195,25 @@ File* File::CreateWithRelativePath(const String& path,
   return file;
 }
 
+// static
+File* File::CreateForFileSystemFile(ExecutionContext& context,
+                                    const KURL& url,
+                                    const FileMetadata& metadata,
+                                    UserVisibility user_visibility) {
+  String content_type =
+      GetContentTypeFromFileName(url.GetPath(), File::kWellKnownContentTypes);
+  // RegisterBlob doesn't take nullable strings.
+  if (content_type.IsNull()) {
+    content_type = g_empty_string;
+  }
+
+  scoped_refptr<BlobDataHandle> handle;
+  CoreInitializer::GetInstance().GetFileSystemManager(&context).RegisterBlob(
+      content_type, url, metadata.length, metadata.modification_time, &handle);
+
+  return MakeGarbageCollected<File>(url, metadata, user_visibility, handle);
+}
+
 File::File(const String& path,
            ContentTypeLookupPolicy policy,
            UserVisibility user_visibility)
@@ -258,6 +281,21 @@ File::File(const String& name,
       snapshot_modification_time_(metadata.modification_time) {
   if (metadata.length >= 0)
     snapshot_size_ = metadata.length;
+}
+
+File::File(const KURL& file_system_url,
+           const FileMetadata& metadata,
+           UserVisibility user_visibility,
+           scoped_refptr<BlobDataHandle> blob_data_handle)
+    : Blob(std::move(blob_data_handle)),
+      has_backing_file_(false),
+      user_visibility_(user_visibility),
+      name_(DecodeURLEscapeSequences(file_system_url.LastPathComponent(),
+                                     DecodeURLMode::kUTF8OrIsomorphic)),
+      file_system_url_(file_system_url),
+      snapshot_size_(metadata.length),
+      snapshot_modification_time_(metadata.modification_time) {
+  DCHECK_GE(metadata.length, 0);
 }
 
 File::File(const KURL& file_system_url,

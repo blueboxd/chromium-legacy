@@ -181,9 +181,9 @@ absl::optional<base::Value> CopyWithoutEmptyChildren(const base::Value& value) {
 
     case base::Value::Type::LIST: {
       base::Value::ListStorage storage;
-      storage.reserve(value.GetList().size());
+      storage.reserve(value.GetListDeprecated().size());
 
-      for (const base::Value& item : value.GetList()) {
+      for (const base::Value& item : value.GetListDeprecated()) {
         absl::optional<base::Value> item_copy = CopyWithoutEmptyChildren(item);
         if (item_copy)
           storage.push_back(std::move(*item_copy));
@@ -330,7 +330,7 @@ bool RlzValueStoreChromeOS::ReadProductEvents(
   events->clear();
 
   bool remove_caf = false;
-  for (const base::Value& item : events_list->GetList()) {
+  for (const base::Value& item : events_list->GetListDeprecated()) {
     const std::string* event = item.GetIfString();
     if (!event)
       continue;
@@ -469,7 +469,7 @@ bool RlzValueStoreChromeOS::AddValueToList(const std::string& list_name,
     list_value =
         rlz_store_.SetPath(list_name, base::Value(base::Value::Type::LIST));
   }
-  if (!base::Contains(list_value->GetList(), value)) {
+  if (!base::Contains(list_value->GetListDeprecated(), value)) {
     list_value->Append(std::move(value));
   }
   return true;
@@ -481,7 +481,8 @@ bool RlzValueStoreChromeOS::RemoveValueFromList(const std::string& list_name,
   if (!list_value)
     return false;
 
-  base::Value::ListStorage storage = std::move(*list_value).TakeList();
+  base::Value::ListStorage storage =
+      std::move(*list_value).TakeListDeprecated();
   base::EraseIf(storage, [&to_remove](const base::Value& value) {
     return value == to_remove;
   });
@@ -496,7 +497,7 @@ bool RlzValueStoreChromeOS::ListContainsValue(const std::string& list_name,
   if (!list_value)
     return false;
 
-  return base::Contains(list_value->GetList(), value);
+  return base::Contains(list_value->GetListDeprecated(), value);
 }
 
 bool RlzValueStoreChromeOS::HasAccessPointRlz(AccessPoint access_point) const {

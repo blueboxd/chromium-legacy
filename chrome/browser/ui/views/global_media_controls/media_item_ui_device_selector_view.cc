@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/global_media_controls/media_item_ui_device_selector_delegate.h"
@@ -404,7 +405,7 @@ void MediaItemUIDeviceSelectorView::CreateExpandButtonStrip(
     dropdown_button_ = expand_button_strip_->AddChildView(
         std::make_unique<ExpandDeviceSelectorButton>(
             base::BindRepeating(
-                &MediaItemUIDeviceSelectorView::ExpandButtonPressed,
+                &MediaItemUIDeviceSelectorView::ShowOrHideDeviceList,
                 base::Unretained(this)),
             foreground_color_));
   }
@@ -413,7 +414,7 @@ void MediaItemUIDeviceSelectorView::CreateExpandButtonStrip(
     expand_button_strip_->SetVisible(false);
 }
 
-void MediaItemUIDeviceSelectorView::ExpandButtonPressed() {
+void MediaItemUIDeviceSelectorView::ShowOrHideDeviceList() {
   if (is_expanded_) {
     HideDevices();
   } else {
@@ -500,7 +501,7 @@ void MediaItemUIDeviceSelectorView::OnDeviceSelected(int tag) {
 }
 
 void MediaItemUIDeviceSelectorView::OnDropdownButtonClicked() {
-  ExpandButtonPressed();
+  ShowOrHideDeviceList();
 }
 
 bool MediaItemUIDeviceSelectorView::IsDeviceSelectorExpanded() {
@@ -509,6 +510,10 @@ bool MediaItemUIDeviceSelectorView::IsDeviceSelectorExpanded() {
 
 bool MediaItemUIDeviceSelectorView::OnMousePressed(
     const ui::MouseEvent& event) {
+  if (entry_point_ !=
+      global_media_controls::GlobalMediaControlsEntryPoint::kPresentation) {
+    ShowOrHideDeviceList();
+  }
   // Stop the mouse click event from bubbling to parent views.
   return true;
 }

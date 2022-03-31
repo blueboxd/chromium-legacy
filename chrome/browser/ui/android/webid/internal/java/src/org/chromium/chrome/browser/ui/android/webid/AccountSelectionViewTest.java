@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.ui.android.webid;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
@@ -18,8 +16,6 @@ import static java.util.Arrays.asList;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.text.Spanned;
 import android.text.style.ClickableSpan;
 import android.view.View;
@@ -55,7 +51,7 @@ import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.ui.test.util.DummyUiActivity;
+import org.chromium.ui.test.util.BlankUiTestActivity;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
 
@@ -80,12 +76,12 @@ public class AccountSelectionViewTest {
     private Callback<Account> mAccountCallback;
     private Runnable mAutoSignInCancelCallback;
 
-    private DummyUiActivity mActivity;
+    private BlankUiTestActivity mActivity;
     private ModelList mSheetItems;
     private View mContentView;
     @Rule
-    public BaseActivityTestRule<DummyUiActivity> mActivityTestRule =
-            new BaseActivityTestRule<>(DummyUiActivity.class);
+    public BaseActivityTestRule<BlankUiTestActivity> mActivityTestRule =
+            new BaseActivityTestRule<>(BlankUiTestActivity.class);
 
     @Before
     public void setUp() throws Exception {
@@ -102,38 +98,39 @@ public class AccountSelectionViewTest {
 
     @Test
     @MediumTest
-    public void testSingleAccountTitleDisplayed() {
+    public void testSignInTitleDisplayed() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mSheetItems.add(new MVCListAdapter.ListItem(AccountSelectionProperties.ItemType.HEADER,
                     new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
-                            .with(HeaderProperties.TYPE, HeaderType.SINGLE_ACCOUNT)
+                            .with(HeaderProperties.TYPE, HeaderType.SIGN_IN)
                             .with(HeaderProperties.FORMATTED_RP_URL, "www.example.org")
+                            .with(HeaderProperties.FORMATTED_IDP_URL, "www.idp.org")
                             .build()));
         });
         pollUiThread(() -> mContentView.getVisibility() == View.VISIBLE);
         TextView title = mContentView.findViewById(R.id.header_title);
 
         assertEquals("Incorrect title",
-                mActivity.getString(
-                        R.string.account_selection_sheet_title_single, "www.example.org"),
+                mActivity.getString(R.string.account_selection_sheet_title_explicit,
+                        "www.example.org", "www.idp.org"),
                 title.getText());
     }
 
     @Test
     @MediumTest
-    public void testMultiAccountTitleDisplayed() {
+    public void testVerifyingTitleDisplayed() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mSheetItems.add(new MVCListAdapter.ListItem(AccountSelectionProperties.ItemType.HEADER,
                     new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
-                            .with(HeaderProperties.TYPE, HeaderType.MULTIPLE_ACCOUNT)
+                            .with(HeaderProperties.TYPE, HeaderType.VERIFY)
                             .with(HeaderProperties.FORMATTED_RP_URL, "www.example.org")
+                            .with(HeaderProperties.FORMATTED_IDP_URL, "www.idp.org")
                             .build()));
         });
         pollUiThread(() -> mContentView.getVisibility() == View.VISIBLE);
         TextView title = mContentView.findViewById(R.id.header_title);
 
-        assertEquals("Incorrect title",
-                mActivity.getString(R.string.account_selection_sheet_title, "www.example.org"),
+        assertEquals("Incorrect title", mActivity.getString(R.string.verify_sheet_title),
                 title.getText());
     }
 
@@ -221,33 +218,32 @@ public class AccountSelectionViewTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mSheetItems.add(new MVCListAdapter.ListItem(AccountSelectionProperties.ItemType.HEADER,
                     new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
-                            .with(HeaderProperties.TYPE, HeaderType.SIGN_IN)
+                            .with(HeaderProperties.TYPE, HeaderType.AUTO_SIGN_IN)
                             .with(HeaderProperties.FORMATTED_RP_URL, "www.example.org")
+                            .with(HeaderProperties.FORMATTED_IDP_URL, "www.idp.org")
                             .build()));
         });
         pollUiThread(() -> mContentView.getVisibility() == View.VISIBLE);
         TextView title = mContentView.findViewById(R.id.header_title);
 
         assertEquals("Incorrect title",
-                mActivity.getString(R.string.sign_in_sheet_title, "www.example.org"),
+                mActivity.getString(R.string.account_selection_sheet_title_auto, "www.example.org",
+                        "www.idp.org"),
                 title.getText());
     }
 
     @Test
     @MediumTest
     public void testDataSharingConsentDisplayed() {
-        final String rpUrl = "www.rp.org";
         final String idpUrl = "www.idp.org";
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mSheetItems.addAll(
-                    Collections.singletonList(buildDataSharingConsentItem(rpUrl, idpUrl)));
+            mSheetItems.addAll(Collections.singletonList(buildDataSharingConsentItem(idpUrl)));
         });
         pollUiThread(() -> mContentView.getVisibility() == View.VISIBLE);
         assertNotNull(getAccounts().getChildAt(0));
         TextView consent = mContentView.findViewById(R.id.user_data_sharing_consent);
         String expectedSharingConsentText =
-                mActivity.getString(R.string.account_selection_data_sharing_consent, "www.idp.org",
-                        "www.rp.org", "www.rp.org");
+                mActivity.getString(R.string.account_selection_data_sharing_consent, "www.idp.org");
         expectedSharingConsentText = expectedSharingConsentText.replaceAll("<[^>]*>", "");
         // We use toString() here because otherwise getText() returns a
         // Spanned, which is not equal to the string we get from the resources.
@@ -282,21 +278,6 @@ public class AccountSelectionViewTest {
         TextView continueButton = mContentView.findViewById(R.id.account_selection_continue_btn);
 
         assertEquals(expectedTextColor, continueButton.getTextColors().getDefaultColor());
-
-        Drawable[] compoundDrawables = continueButton.getCompoundDrawables();
-        assertEquals(4, compoundDrawables.length);
-
-        assertTrue(compoundDrawables[0] instanceof BitmapDrawable);
-        Bitmap actualBrandIconBitmap = ((BitmapDrawable) compoundDrawables[0]).getBitmap();
-        // AccountSelectionViewBinder crops the brand icon in a circle. Test a pixel in the middle
-        // of the icon which is unaffected by the cropping.
-        int centerX = actualBrandIconBitmap.getWidth() / 2;
-        int centerY = actualBrandIconBitmap.getHeight() / 2;
-        assertEquals(expectedIconColor, actualBrandIconBitmap.getPixel(centerX, centerY));
-
-        assertNull(compoundDrawables[1]);
-        assertNull(compoundDrawables[2]);
-        assertNull(compoundDrawables[3]);
     }
 
     private RecyclerView getAccounts() {
@@ -347,13 +328,12 @@ public class AccountSelectionViewTest {
                         .build());
     }
 
-    private MVCListAdapter.ListItem buildDataSharingConsentItem(String rpUrl, String idpUrl) {
+    private MVCListAdapter.ListItem buildDataSharingConsentItem(String idpUrl) {
         DataSharingConsentProperties.Properties properties =
                 new DataSharingConsentProperties.Properties();
-        properties.mFormattedRpUrl = rpUrl;
         properties.mFormattedIdpUrl = idpUrl;
-        properties.mTermsOfServiceUrl = "";
-        properties.mPrivacyPolicyUrl = "";
+        properties.mTermsOfServiceUrl = "https://rp.com/tos";
+        properties.mPrivacyPolicyUrl = "https://rp.com/privacy";
 
         return new MVCListAdapter.ListItem(AccountSelectionProperties.ItemType.DATA_SHARING_CONSENT,
                 new PropertyModel.Builder(DataSharingConsentProperties.ALL_KEYS)

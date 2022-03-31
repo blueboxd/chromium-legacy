@@ -26,6 +26,8 @@
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
+#include "components/sync/base/command_line_switches.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/stop_source.h"
 #include "components/sync/base/sync_util.h"
@@ -33,7 +35,6 @@
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_auth_manager.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_type_preference_provider.h"
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/engine_components_factory_impl.h"
@@ -41,7 +42,6 @@
 #include "components/sync/engine/net/http_post_provider_factory.h"
 #include "components/sync/engine/shutdown_reason.h"
 #include "components/sync/engine/sync_encryption_handler.h"
-#include "components/sync/invalidations/switches.h"
 #include "components/sync/invalidations/sync_invalidations_service.h"
 #include "components/sync/model/sync_error.h"
 #include "components/sync/model/type_entities_count.h"
@@ -51,12 +51,6 @@
 namespace syncer {
 
 namespace {
-
-// Allows refreshing the recoverability state from the server when a persistent
-// auth error is resolved.
-const base::Feature kTrustedVaultUpdateRecoverabilityUponResolvedAuthError{
-    "TrustedVaultUpdateRecoverabilityUponResolvedAuthError",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // The initial state of sync, for the Sync.InitialState histogram. Even if
 // this value is CAN_START, sync startup might fail for reasons that we may
@@ -101,11 +95,11 @@ EngineComponentsFactory::Switches EngineSwitchesFromCommandLine() {
       /*force_short_nudge_delay_for_test=*/false};
 
   base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-  if (cl->HasSwitch(switches::kSyncShortInitialRetryOverride)) {
+  if (cl->HasSwitch(kSyncShortInitialRetryOverride)) {
     factory_switches.backoff_override =
         EngineComponentsFactory::BACKOFF_SHORT_INITIAL_RETRY_OVERRIDE;
   }
-  if (cl->HasSwitch(switches::kSyncShortNudgeDelayForTest)) {
+  if (cl->HasSwitch(kSyncShortNudgeDelayForTest)) {
     factory_switches.force_short_nudge_delay_for_test = true;
   }
   return factory_switches;
@@ -173,10 +167,10 @@ SyncServiceImpl::SyncServiceImpl(InitParams init_params)
 
   // If Sync is disabled via command line flag, then SyncServiceImpl
   // shouldn't be instantiated.
-  DCHECK(switches::IsSyncAllowedByFlag());
+  DCHECK(IsSyncAllowedByFlag());
 
   bool should_wait_for_policies =
-      base::FeatureList::IsEnabled(switches::kSyncRequiresPoliciesLoaded);
+      base::FeatureList::IsEnabled(kSyncRequiresPoliciesLoaded);
 
   startup_controller_ = std::make_unique<StartupController>(
       base::BindRepeating(&SyncServiceImpl::GetPreferredDataTypes,
@@ -254,11 +248,6 @@ void SyncServiceImpl::Initialize() {
     // Remove after 11/2021. Migration logic to set SyncRequested to false if
     // the user is signed-out or signed-in but not syncing (crbug.com/1147026).
     user_settings_->SetSyncRequested(false);
-
-#if BUILDFLAG(IS_ANDROID)
-    // If Sync gets turned on, it should be in the decoupled state.
-    sync_prefs_.SetDecoupledFromAndroidMasterSync();
-#endif  // BUILDFLAG(IS_ANDROID)
   }
 
   // Auto-start means the first time the profile starts up, sync should start up
@@ -318,15 +307,6 @@ bool SyncServiceImpl::IsDataTypeControllerRunningForTest(ModelType type) const {
 
 void SyncServiceImpl::AccountStateChanged() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-#if BUILDFLAG(IS_ANDROID)
-  // Sync and master sync should only remain coupled if the former stays enabled
-  // and the latter disabled. Upon sign-out set the pref so they are decoupled
-  // on the next time Sync is turned on.
-  if (!HasSyncConsent()) {
-    sync_prefs_.SetDecoupledFromAndroidMasterSync();
-  }
-#endif  // BUILDFLAG(IS_ANDROID)
 
   if (!IsSignedIn()) {
     // The account was signed out, so shut down.
@@ -390,12 +370,9 @@ void SyncServiceImpl::CredentialsChanged() {
 }
 
 bool SyncServiceImpl::IsEngineAllowedToRun() const {
-  // USER_CHOICE (i.e. the Sync feature toggle) and PLATFORM_OVERRIDE (i.e.
-  // Android's "MasterSync" toggle) do not prevent starting up the Sync
-  // transport.
+  // USER_CHOICE does not prevent starting up the Sync transport.
   DisableReasonSet disable_reasons = GetDisableReasons();
-  disable_reasons.RemoveAll(SyncService::DisableReasonSet(
-      DISABLE_REASON_USER_CHOICE, DISABLE_REASON_PLATFORM_OVERRIDE));
+  disable_reasons.Remove(DISABLE_REASON_USER_CHOICE);
   return disable_reasons.Empty() && !auth_manager_->IsSyncPaused();
 }
 
@@ -609,11 +586,8 @@ SyncService::DisableReasonSet SyncServiceImpl::GetDisableReasons() const {
 
   // If Sync is disabled via command line flag, then SyncServiceImpl
   // shouldn't even be instantiated.
-  DCHECK(switches::IsSyncAllowedByFlag());
+  DCHECK(IsSyncAllowedByFlag());
   DisableReasonSet result;
-  if (!sync_allowed_by_platform_) {
-    result.Put(DISABLE_REASON_PLATFORM_OVERRIDE);
-  }
 
   // If local sync is enabled, most disable reasons don't apply.
   if (!IsLocalSyncEnabled()) {
@@ -1256,9 +1230,8 @@ void SyncServiceImpl::UpdateDataTypesForInvalidations() {
   if (!sessions_invalidations_enabled_) {
     types.Remove(SESSIONS);
   }
-  if (!(base::FeatureList::IsEnabled(switches::kUseSyncInvalidations) &&
-        base::FeatureList::IsEnabled(
-            switches::kUseSyncInvalidationsForWalletAndOffer))) {
+  if (!(base::FeatureList::IsEnabled(kUseSyncInvalidations) &&
+        base::FeatureList::IsEnabled(kUseSyncInvalidationsForWalletAndOffer))) {
     types.RemoveAll({AUTOFILL_WALLET_DATA, AUTOFILL_WALLET_OFFER});
   }
   invalidations_service->SetInterestedDataTypes(types);
@@ -1296,41 +1269,41 @@ std::unique_ptr<base::Value> SyncServiceImpl::GetTypeStatusMapForDebugging() {
 
   std::unique_ptr<base::DictionaryValue> type_status_header(
       new base::DictionaryValue());
-  type_status_header->SetString("status", "header");
-  type_status_header->SetString("name", "Model Type");
-  type_status_header->SetString("num_entries", "Total Entries");
-  type_status_header->SetString("num_live", "Live Entries");
-  type_status_header->SetString("message", "Message");
-  type_status_header->SetString("state", "State");
+  type_status_header->SetStringKey("status", "header");
+  type_status_header->SetStringKey("name", "Model Type");
+  type_status_header->SetStringKey("num_entries", "Total Entries");
+  type_status_header->SetStringKey("num_live", "Live Entries");
+  type_status_header->SetStringKey("message", "Message");
+  type_status_header->SetStringKey("state", "State");
   result->Append(std::move(type_status_header));
 
   for (const auto& [type, controller] : data_type_controllers_) {
     auto type_status = std::make_unique<base::DictionaryValue>();
-    type_status->SetString("name", ModelTypeToDebugString(type));
+    type_status->SetStringKey("name", ModelTypeToDebugString(type));
 
     if (data_type_error_map_.find(type) != data_type_error_map_.end()) {
       const SyncError& error = data_type_error_map_.find(type)->second;
       DCHECK(error.IsSet());
       switch (error.GetSeverity()) {
         case SyncError::SYNC_ERROR_SEVERITY_ERROR:
-          type_status->SetString("status", "severity_error");
-          type_status->SetString(
+          type_status->SetStringKey("status", "severity_error");
+          type_status->SetStringKey(
               "message", "Error: " + error.location().ToString() + ", " +
                              error.GetMessagePrefix() + error.message());
           break;
         case SyncError::SYNC_ERROR_SEVERITY_INFO:
-          type_status->SetString("status", "severity_info");
-          type_status->SetString("message", error.message());
+          type_status->SetStringKey("status", "severity_info");
+          type_status->SetStringKey("message", error.message());
           break;
       }
     } else if (throttled_types.Has(type)) {
-      type_status->SetString("status", "severity_warning");
-      type_status->SetString("message", " Throttled");
+      type_status->SetStringKey("status", "severity_warning");
+      type_status->SetStringKey("message", " Throttled");
     } else if (backed_off_types.Has(type)) {
-      type_status->SetString("status", "severity_warning");
-      type_status->SetString("message", "Backed off");
+      type_status->SetStringKey("status", "severity_warning");
+      type_status->SetStringKey("message", "Backed off");
     } else {
-      type_status->SetString("message", "");
+      type_status->SetStringKey("message", "");
 
       // Determine the row color based on the controller's state.
       switch (controller->state()) {
@@ -1339,26 +1312,26 @@ std::unique_ptr<base::Value> SyncServiceImpl::GetTypeStatusMapForDebugging() {
           // which is not very different to certain SYNC_ERROR_SEVERITY_INFO
           // cases like preconditions not having been met due to user
           // configuration.
-          type_status->SetString("status", "severity_info");
+          type_status->SetStringKey("status", "severity_info");
           break;
         case DataTypeController::MODEL_STARTING:
         case DataTypeController::MODEL_LOADED:
         case DataTypeController::STOPPING:
           // These are all transitional states that should be rare to observe.
-          type_status->SetString("status", "transitioning");
+          type_status->SetStringKey("status", "transitioning");
           break;
         case DataTypeController::RUNNING:
-          type_status->SetString("status", "ok");
+          type_status->SetStringKey("status", "ok");
           break;
         case DataTypeController::FAILED:
           // Note that most of the errors (possibly all) should have been
           // handled earlier via |data_type_error_map_|.
-          type_status->SetString("status", "severity_error");
+          type_status->SetStringKey("status", "severity_error");
           break;
       }
     }
 
-    type_status->SetString(
+    type_status->SetStringKey(
         "state", DataTypeController::StateToString(controller->state()));
 
     result->Append(std::move(type_status));
@@ -1467,9 +1440,7 @@ void SyncServiceImpl::OnErrorStateOfRefreshTokenUpdatedForAccount(
     const CoreAccountInfo& account_info,
     const GoogleServiceAuthError& error) {
   if (error.state() == GoogleServiceAuthError::NONE &&
-      last_error_state_of_refresh_token_.IsPersistentError() &&
-      base::FeatureList::IsEnabled(
-          kTrustedVaultUpdateRecoverabilityUponResolvedAuthError)) {
+      last_error_state_of_refresh_token_.IsPersistentError()) {
     // Resolving a persistent error may or may not necessarily imply changes in
     // the recoverability state. However, over-triggering
     // OnTrustedVaultRecoverabilityChanged() is totally fine and should lead to
@@ -1703,22 +1674,6 @@ void SyncServiceImpl::StopAndClear() {
   NotifyObservers();
 }
 
-void SyncServiceImpl::SetSyncAllowedByPlatform(bool allowed) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (allowed == sync_allowed_by_platform_) {
-    return;
-  }
-
-  sync_allowed_by_platform_ = allowed;
-  if (!sync_allowed_by_platform_) {
-    // TODO(crbug.com/856179): Evaluate whether we can get away without a full
-    // restart (i.e. just reconfigure). See also similar comment in
-    // OnSyncRequestedPrefChange().
-    ResetEngine(ShutdownReason::STOP_SYNC_AND_KEEP_DATA,
-                ResetEngineReason::kSetSyncAllowedByPlatform);
-  }
-}
-
 void SyncServiceImpl::ReconfigureDatatypeManager(
     bool bypass_setup_in_progress_check) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1799,18 +1754,6 @@ void SyncServiceImpl::OverrideNetworkForTest(
     startup_controller_->TryStart(/*force_immediate=*/true);
   }
 }
-
-#if BUILDFLAG(IS_ANDROID)
-void SyncServiceImpl::SetDecoupledFromAndroidMasterSync() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  sync_prefs_.SetDecoupledFromAndroidMasterSync();
-}
-
-bool SyncServiceImpl::GetDecoupledFromAndroidMasterSync() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return sync_prefs_.GetDecoupledFromAndroidMasterSync();
-}
-#endif  // BUILDFLAG(IS_ANDROID)
 
 SyncEncryptionHandler::Observer*
 SyncServiceImpl::GetEncryptionObserverForTest() {

@@ -517,24 +517,28 @@ void InputHandlerProxy::DispatchSingleInputEvent(
                                     attribution);
 }
 
-void InputHandlerProxy::DispatchQueuedInputEvents() {
+bool InputHandlerProxy::HasQueuedEventsReadyForDispatch() {
   // Block flushing the compositor gesture event queue while there's an async
   // scroll begin hit test outstanding. We'll flush the queue when the hit test
   // responds.
   if (hit_testing_scroll_begin_on_main_thread_) {
     DCHECK(base::FeatureList::IsEnabled(::features::kScrollUnification));
-    return;
+    return false;
   }
 
+  return !compositor_event_queue_->empty();
+}
+
+void InputHandlerProxy::DispatchQueuedInputEvents() {
   // Calling |NowTicks()| is expensive so we only want to do it once.
   base::TimeTicks now = tick_clock_->NowTicks();
-  while (!compositor_event_queue_->empty())
+  while (HasQueuedEventsReadyForDispatch())
     DispatchSingleInputEvent(compositor_event_queue_->Pop(), now);
 }
 
 void InputHandlerProxy::UpdateElasticOverscroll() {
   bool can_use_elastic_overscroll = true;
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
   // On android, elastic overscroll introduces quite a bit of motion which can
   // effect those sensitive to it. Disable when prefers_reduced_motion_ is
   // disabled.
@@ -639,7 +643,7 @@ void InputHandlerProxy::InjectScrollbarGestureScroll(
 }
 
 bool HasScrollbarJumpKeyModifier(const WebInputEvent& event) {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   // Mac uses the "Option" key (which is mapped to the enum "kAltKey").
   return event.GetModifiers() & WebInputEvent::kAltKey;
 #else
@@ -1439,19 +1443,11 @@ void InputHandlerProxy::UpdateRootLayerStateForSynchronousInputHandler(
 
 void InputHandlerProxy::DeliverInputForBeginFrame(
     const viz::BeginFrameArgs& args) {
-  // Block flushing the compositor gesture event queue while there's an async
-  // scroll begin hit test outstanding. We'll flush the queue when the hit test
-  // responds.
-  if (hit_testing_scroll_begin_on_main_thread_) {
-    DCHECK(base::FeatureList::IsEnabled(::features::kScrollUnification));
-    return;
-  }
-
   if (!scroll_predictor_)
     DispatchQueuedInputEvents();
 
   // Resampling GSUs and dispatch queued input events.
-  while (!compositor_event_queue_->empty()) {
+  while (HasQueuedEventsReadyForDispatch()) {
     std::unique_ptr<EventWithCallback> event_with_callback =
         scroll_predictor_->ResampleScrollEvents(compositor_event_queue_->Pop(),
                                                 args.frame_time, args.interval);

@@ -63,7 +63,7 @@ bool LinkedAppIconsHandler::Parse(Extension* extension, std::u16string* error) {
       return false;
     }
 
-    for (const auto& icon_value : icons_value->GetList()) {
+    for (const auto& icon_value : icons_value->GetListDeprecated()) {
       const base::DictionaryValue* icon_dict = nullptr;
       if (!icon_value.GetAsDictionary(&icon_dict)) {
         *error = base::UTF8ToUTF16(
@@ -71,15 +71,16 @@ bool LinkedAppIconsHandler::Parse(Extension* extension, std::u16string* error) {
         return false;
       }
 
-      std::string url_string;
-      if (!icon_dict->GetString(keys::kLinkedAppIconURL, &url_string)) {
+      const std::string* url_string =
+          icon_dict->FindStringKey(keys::kLinkedAppIconURL);
+      if (!url_string) {
         *error = base::UTF8ToUTF16(
             extensions::manifest_errors::kInvalidLinkedAppIconURL);
         return false;
       }
 
       LinkedAppIcons::IconInfo info;
-      info.url = GURL(url_string);
+      info.url = GURL(*url_string);
       if (!info.url.is_valid()) {
         *error = base::UTF8ToUTF16(
             extensions::manifest_errors::kInvalidLinkedAppIconURL);

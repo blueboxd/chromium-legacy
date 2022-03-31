@@ -72,7 +72,8 @@ PointerResultType ScrollbarController::HitTest(
   const ScrollNode* target_node =
       layer_tree_host_impl_->active_tree()
           ->property_trees()
-          ->scroll_tree.FindNodeFromElementId(scrollbar->scroll_element_id());
+          ->scroll_tree()
+          .FindNodeFromElementId(scrollbar->scroll_element_id());
   if (target_node->main_thread_scrolling_reasons)
     return PointerResultType::kUnhandled;
 
@@ -337,7 +338,8 @@ InputHandlerPointerResult ScrollbarController::HandlePointerMove(
   const ScrollNode* target_node =
       layer_tree_host_impl_->active_tree()
           ->property_trees()
-          ->scroll_tree.FindNodeFromElementId(scrollbar->scroll_element_id());
+          ->scroll_tree()
+          .FindNodeFromElementId(scrollbar->scroll_element_id());
 
   // If a scrollbar exists, it should always have an ElementId pointing to a
   // valid ScrollNode.
@@ -569,9 +571,9 @@ void ScrollbarController::StartAutoScrollAnimation(
   // scroll_node is set up while handling GSB. If there's no node to scroll, we
   // don't need to create any animation for it.
   const ScrollbarLayerImplBase* scrollbar = ScrollbarLayer();
-  ScrollTree& scroll_tree =
-      layer_tree_host_impl_->active_tree()->property_trees()->scroll_tree;
-  ScrollNode* scroll_node =
+  const ScrollTree& scroll_tree =
+      layer_tree_host_impl_->active_tree()->property_trees()->scroll_tree();
+  const ScrollNode* scroll_node =
       scroll_tree.FindNodeFromElementId(scrollbar->scroll_element_id());
 
   if (!(scroll_node && scrollbar_scroll_is_active_))
@@ -644,7 +646,8 @@ float ScrollbarController::GetViewportLength() const {
   const ScrollNode* scroll_node =
       layer_tree_host_impl_->active_tree()
           ->property_trees()
-          ->scroll_tree.FindNodeFromElementId(scrollbar->scroll_element_id());
+          ->scroll_tree()
+          .FindNodeFromElementId(scrollbar->scroll_element_id());
   DCHECK(scroll_node);
   if (!scroll_node->scrolls_outer_viewport) {
     float length = scrollbar->orientation() == ScrollbarOrientation::VERTICAL
@@ -667,7 +670,8 @@ float ScrollbarController::GetScrollDistanceForPercentBasedScroll() const {
   const ScrollNode* scroll_node =
       layer_tree_host_impl_->active_tree()
           ->property_trees()
-          ->scroll_tree.FindNodeFromElementId(scrollbar->scroll_element_id());
+          ->scroll_tree()
+          .FindNodeFromElementId(scrollbar->scroll_element_id());
   DCHECK(scroll_node);
 
   const gfx::Vector2dF scroll_delta =
@@ -737,6 +741,17 @@ float ScrollbarController::ScreenSpaceScaleFactor() const {
 gfx::PointF ScrollbarController::GetScrollbarRelativePosition(
     const gfx::PointF position_in_widget,
     bool* clipped) const {
+  // This is a speculative fix for crbug.com/1254865. On Mac, we occasionally
+  // enter into a state where a scrollbar layer becomes null mid interaction. If
+  // this happens, early out.
+  const ScrollbarLayerImplBase* scrollbar = ScrollbarLayer();
+  if (!scrollbar) {
+    // Set clipped to true so that GetScrollbarPartFromPointerDown returns early
+    // without trying to find a ScrollbarPart (since it wouldn't matter anyway).
+    *clipped = true;
+    return gfx::PointF(0, 0);
+  }
+
   gfx::Transform inverse_screen_space_transform(
       gfx::Transform::kSkipInitialization);
 
@@ -747,7 +762,7 @@ gfx::PointF ScrollbarController::GetScrollbarRelativePosition(
           ? 1.f / layer_tree_host_impl_->active_tree()->device_scale_factor()
           : 1.f;
   gfx::Transform scaled_screen_space_transform(
-      ScrollbarLayer()->ScreenSpaceTransform());
+      scrollbar->ScreenSpaceTransform());
   scaled_screen_space_transform.PostScale(scale, scale);
   if (!scaled_screen_space_transform.GetInverse(
           &inverse_screen_space_transform))

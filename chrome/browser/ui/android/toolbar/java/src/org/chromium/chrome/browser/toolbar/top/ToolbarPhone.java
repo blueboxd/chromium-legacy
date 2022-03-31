@@ -42,17 +42,21 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.graphics.drawable.DrawableWrapper;
+import androidx.core.widget.ImageViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.MathUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarCoordinator;
 import org.chromium.chrome.browser.omnibox.NewTabPageDelegate;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.status.StatusCoordinator;
+import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.theme.ThemeUtils;
@@ -68,6 +72,7 @@ import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.UrlExpansionObserver;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.components.browser_ui.styles.ChromeColors;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.browser_ui.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
 import org.chromium.components.embedder_support.util.UrlUtilities;
@@ -76,6 +81,7 @@ import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.util.ColorUtils;
+import org.chromium.ui.util.TokenHolder;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -148,8 +154,9 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     @ViewDebug.ExportedProperty(category = "chrome")
     protected boolean mTextureCaptureMode;
     private boolean mForceTextureCapture;
-    private int mTintUsedForLastTextureCapture;
-    private int mTabCountForLastTextureCapture;
+
+    private BrowserStateBrowserControlsVisibilityDelegate mBrowserControlsVisibilityDelegate;
+    private int mShowBrowserControlsToken = TokenHolder.INVALID_TOKEN;
 
     @ViewDebug.ExportedProperty(category = "chrome")
     private boolean mAnimateNormalToolbar;
@@ -243,6 +250,9 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
 
     /** Whether the toolbar has a pending request to call {@link triggerUrlFocusAnimation()}. */
     private boolean mPendingTriggerUrlFocusRequest;
+    private ToolbarSnapshotState mToolbarSnapshotState;
+    private ButtonData mButtonData;
+    private int mTabCount;
 
     /**
      * Used to specify the visual state of the toolbar.
@@ -250,7 +260,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     @IntDef({VisualState.NORMAL, VisualState.INCOGNITO, VisualState.BRAND_COLOR,
             VisualState.NEW_TAB_NORMAL})
     @Retention(RetentionPolicy.SOURCE)
-    private @interface VisualState {
+    @interface VisualState {
         int NORMAL = 0;
         int INCOGNITO = 1;
         int BRAND_COLOR = 2;
@@ -261,7 +271,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
 
     private float mPreTextureCaptureAlpha = 1f;
     private int mPreTextureCaptureVisibility;
-    private boolean mIsOverlayTabStackDrawableLight;
+    private @BrandedColorScheme int mOverlayTabStackDrawableScheme;
 
     private AnimatorSet mOptionalButtonAnimator;
     private boolean mOptionalButtonAnimationRunning;
@@ -367,6 +377,12 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     public void setLocationBarCoordinator(LocationBarCoordinator locationBarCoordinator) {
         mLocationBar = locationBarCoordinator;
         initLocationBarBackground();
+    }
+
+    @Override
+    public void setBrowserControlsVisibilityDelegate(
+            BrowserStateBrowserControlsVisibilityDelegate controlsVisibilityDelegate) {
+        mBrowserControlsVisibilityDelegate = controlsVisibilityDelegate;
     }
 
     @Override
@@ -746,7 +762,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                 return getToolbarDataProvider().getPrimaryColor();
             default:
                 assert false;
-                return ApiCompatibilityUtils.getColor(res, R.color.toolbar_background_primary);
+                return SemanticColorUtils.getToolbarBackgroundPrimary(getContext());
         }
     }
 
@@ -1327,11 +1343,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                     mToolbarButtonsContainer, canvas, rgbAlpha);
         }
 
-        mTintUsedForLastTextureCapture = getTint().getDefaultColor();
-
-        if (mTabSwitcherAnimationTabStackDrawable != null && mToggleTabStackButton != null) {
-            mTabCountForLastTextureCapture = mTabSwitcherAnimationTabStackDrawable.getTabCount();
-        }
+        mToolbarSnapshotState = generateToolbarSnapshotState();
 
         canvas.restore();
     }
@@ -1550,7 +1562,16 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         if (mForceTextureCapture) {
             return true;
         }
-        return !(urlHasFocus() || mUrlFocusChangeInProgress);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SUPPRESS_TOOLBAR_CAPTURES)) {
+            ToolbarSnapshotState snapshotState = generateToolbarSnapshotState();
+            boolean isReady = !snapshotState.equals(mToolbarSnapshotState);
+            isReady &=
+                    !(urlHasFocus() || mUrlFocusChangeInProgress || mOptionalButtonAnimationRunning
+                            || mLocationBar.getStatusCoordinator().isStatusIconAnimating());
+            return isReady;
+        } else {
+            return !(urlHasFocus() || mUrlFocusChangeInProgress);
+        }
     }
 
     @Override
@@ -1558,11 +1579,15 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
         if (forceTextureCapture) {
             // Only force a texture capture if the tint for the toolbar drawables is changing or
             // if the tab count has changed since the last texture capture.
-            mForceTextureCapture = mTintUsedForLastTextureCapture != getTint().getDefaultColor();
+            if (mToolbarSnapshotState == null) {
+                mToolbarSnapshotState = generateToolbarSnapshotState();
+            }
+
+            mForceTextureCapture = mToolbarSnapshotState.getTint() != getTint().getDefaultColor();
 
             if (mTabSwitcherAnimationTabStackDrawable != null && mToggleTabStackButton != null) {
                 mForceTextureCapture = mForceTextureCapture
-                        || mTabCountForLastTextureCapture
+                        || mToolbarSnapshotState.getTabCount()
                                 != mTabSwitcherAnimationTabStackDrawable.getTabCount();
             }
 
@@ -1571,6 +1596,17 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
 
         mForceTextureCapture = forceTextureCapture;
         return false;
+    }
+
+    private ToolbarSnapshotState generateToolbarSnapshotState() {
+        return new ToolbarSnapshotState(getTint().getDefaultColor(),
+                mTabCountProvider.getTabCount(), mButtonData, mVisualState,
+                getToolbarDataProvider().getCurrentUrl(),
+                getToolbarDataProvider().getSecurityIconResource(false),
+                ImageViewCompat.getImageTintList(mHomeButton),
+                getMenuButtonCoordinator().isShowingUpdateBadge(),
+                getToolbarDataProvider().isPaintPreview(), getProgressBar().getProgress(),
+                mUnfocusedLocationBarLayoutWidth);
     }
 
     @Override
@@ -1636,21 +1672,16 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     }
 
     @Override
-    public void onThemeColorChanged(int color, boolean shouldAnimate) {
-        if (mToggleTabStackButton != null) {
-            final boolean useLight = ColorUtils.shouldUseLightForegroundOnBackground(color);
-            mToggleTabStackButton.setUseLightDrawables(useLight);
-        }
-    }
-
-    @Override
     public void onTintChanged(ColorStateList tint, @BrandedColorScheme int brandedColorScheme) {
         if (mHomeButton != null) {
             ApiCompatibilityUtils.setImageTintList(mHomeButton, tint);
         }
 
-        if (mToggleTabStackButton != null && mTabSwitcherAnimationTabStackDrawable != null) {
-            mTabSwitcherAnimationTabStackDrawable.setTint(tint);
+        if (mToggleTabStackButton != null) {
+            mToggleTabStackButton.setBrandedColorScheme(brandedColorScheme);
+            if (mTabSwitcherAnimationTabStackDrawable != null) {
+                mTabSwitcherAnimationTabStackDrawable.setTint(tint);
+            }
         }
 
         if (mOptionalButton != null && mOptionalButtonUsesTint) {
@@ -2174,18 +2205,18 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     @Override
     public void onTabCountChanged(int numberOfTabs, boolean isIncognito) {
         if (mHomeButton != null) mHomeButton.setEnabled(true);
-
         if (mToggleTabStackButton == null) return;
 
-        boolean useTabStackDrawableLight =
-                isIncognito || ColorUtils.shouldUseLightForegroundOnBackground(getTabThemeColor());
+        @BrandedColorScheme
+        int overlayTabStackDrawableScheme = OmniboxResourceProvider.getBrandedColorScheme(
+                getContext(), isIncognito, getTabThemeColor());
         if (mTabSwitcherAnimationTabStackDrawable == null
-                || mIsOverlayTabStackDrawableLight != useTabStackDrawableLight) {
+                || mOverlayTabStackDrawableScheme != overlayTabStackDrawableScheme) {
             mTabSwitcherAnimationTabStackDrawable = TabSwitcherDrawable.createTabSwitcherDrawable(
-                    getContext(), useTabStackDrawableLight);
+                    getContext(), overlayTabStackDrawableScheme);
             int[] stateSet = {android.R.attr.state_enabled};
             mTabSwitcherAnimationTabStackDrawable.setState(stateSet);
-            mIsOverlayTabStackDrawableLight = useTabStackDrawableLight;
+            mOverlayTabStackDrawableScheme = overlayTabStackDrawableScheme;
         }
 
         if (mTabSwitcherAnimationTabStackDrawable != null) {
@@ -2496,6 +2527,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
 
     @Override
     void updateOptionalButton(ButtonData buttonData) {
+        mButtonData = buttonData;
         if (mOptionalButton == null) {
             ViewStub viewStub = findViewById(R.id.optional_button_stub);
             mOptionalButton = (ImageButton) viewStub.inflate();
@@ -2544,6 +2576,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
 
     @Override
     void hideOptionalButton() {
+        mButtonData = null;
         // mLayoutLocationBarWithoutExtraButton implies that the hide animation is currently
         // running.
         if (mOptionalButton == null || mOptionalButton.getVisibility() == View.GONE
@@ -2619,6 +2652,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
             public void onStart(Animator animation) {
                 mDisableLocationBarRelayout = true;
                 mOptionalButtonAnimationRunning = true;
+                keepControlsShownForAnimation();
                 mOptionalButton.setVisibility(View.VISIBLE);
             }
 
@@ -2627,12 +2661,31 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                 onOptionalButtonAnimationEnd();
                 mDisableLocationBarRelayout = false;
                 mOptionalButtonAnimationRunning = false;
+                allowBrowserControlsHide();
                 getViewTreeObserver().addOnGlobalLayoutListener(mOptionalButtonLayoutListener);
                 requestLayout();
             }
         });
         mOptionalButtonAnimator.playTogether(animators);
         mOptionalButtonAnimator.start();
+    }
+
+    private void keepControlsShownForAnimation() {
+        // isShown() being false implies that the toolbar isn't visible. We don't want to force it
+        // back into visibility just so that we can show an animation.
+        if (isShown() && mBrowserControlsVisibilityDelegate != null) {
+            mShowBrowserControlsToken =
+                    mBrowserControlsVisibilityDelegate.showControlsPersistentAndClearOldToken(
+                            mShowBrowserControlsToken);
+        }
+    }
+
+    private void allowBrowserControlsHide() {
+        if (mBrowserControlsVisibilityDelegate != null) {
+            mBrowserControlsVisibilityDelegate.releasePersistentShowingToken(
+                    mShowBrowserControlsToken);
+            mShowBrowserControlsToken = TokenHolder.INVALID_TOKEN;
+        }
     }
 
     /**
@@ -2669,6 +2722,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
             public void onStart(Animator animation) {
                 mLayoutLocationBarWithoutExtraButton = true;
                 mOptionalButtonAnimationRunning = true;
+                keepControlsShownForAnimation();
                 requestLayout();
             }
 
@@ -2678,6 +2732,7 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
                 mOptionalButton.setVisibility(View.GONE);
                 mLayoutLocationBarWithoutExtraButton = false;
                 mOptionalButtonAnimationRunning = false;
+                allowBrowserControlsHide();
                 getViewTreeObserver().addOnGlobalLayoutListener(mOptionalButtonLayoutListener);
             }
         });
@@ -2871,5 +2926,12 @@ public class ToolbarPhone extends ToolbarLayout implements OnClickListener, TabC
     private int getAdditionalOffsetForNTP() {
         return getResources().getDimensionPixelSize(R.dimen.location_bar_lateral_padding)
                 - getResources().getDimensionPixelSize(R.dimen.fake_search_box_lateral_padding);
+    }
+
+    @Override
+    @VisibleForTesting
+    public boolean isAnimationRunningForTesting() {
+        return mUrlFocusChangeInProgress || mBrandColorTransitionActive
+                || mOptionalButtonAnimationRunning;
     }
 }

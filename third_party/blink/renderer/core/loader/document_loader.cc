@@ -292,6 +292,7 @@ struct SameSizeAsDocumentLoader
   bool loading_main_document_from_mhtml_archive;
   bool loading_srcdoc;
   bool loading_url_as_empty_document;
+  bool is_static_data;
   CommitReason commit_reason;
   uint64_t main_resource_identifier;
   scoped_refptr<ResourceTimingInfo> navigation_timing_info;
@@ -316,6 +317,8 @@ struct SameSizeAsDocumentLoader
   HashSet<KURL> early_hints_preloaded_resources;
   absl::optional<Vector<KURL>> ad_auction_components;
   bool anonymous;
+  bool waiting_for_document_loader;
+  bool waiting_for_code_cache;
 };
 
 // Asserts size of DocumentLoader, so that whenever a new attribute is added to
@@ -859,6 +862,11 @@ void DocumentLoader::SetHistoryItemStateForCommit(
           ->CanAccess(SecurityOrigin::Create(history_item_->Url()).get())) {
     history_item_->SetAppHistoryKey(old_item->GetAppHistoryKey());
   }
+
+  // The AppHistory id corresponds to a "session history entry", and so should
+  // be carried over across reloads.
+  if (IsReloadLoadType(load_type))
+    history_item_->SetAppHistoryId(old_item->GetAppHistoryId());
 
   // AppHistory's state is stickier than the legacy History state. It always
   // propagates by default to a same-document navigation.
@@ -2505,12 +2513,9 @@ void DocumentLoader::CreateParserPostCommit() {
         window, &initiator_origin_trial_features_);
   }
 
-  ParserSynchronizationPolicy parsing_policy =
-      RuntimeEnabledFeatures::ForceSynchronousHTMLParsingEnabled()
-          ? kAllowDeferredParsing
-          : kAllowAsynchronousParsing;
+  ParserSynchronizationPolicy parsing_policy = kAllowDeferredParsing;
   if (IsJavaScriptURLOrXSLTCommit() ||
-      !Document::ThreadedParsingEnabledForTesting()) {
+      Document::ForceSynchronousParsingForTesting()) {
     parsing_policy = kForceSynchronousParsing;
   }
   const AtomicString& encoding = commit_reason_ == CommitReason::kXSLT

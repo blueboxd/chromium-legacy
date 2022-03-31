@@ -51,6 +51,9 @@ constexpr int kTokensFileMaxSizeInBytes = 100000;  // ~100 KB.
 constexpr char kNumAccountsMetricName[] = "AccountManager.NumAccounts";
 constexpr int kMaxNumAccountsMetric = 10;
 
+// The value `all` means that all usages of managed accounts are allowed.
+constexpr char kDefaultSecondaryGoogleAccountUsage[] = "all";
+
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 // Note: Enums labels are at |AccountManagerTokenLoadStatus|.
@@ -275,7 +278,9 @@ AccountManager::AccountManager() = default;
 void AccountManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(
       ::account_manager::prefs::kSecondaryGoogleAccountSigninAllowed,
-      true /* default_value */);
+      /*default_value=*/true);
+  registry->RegisterStringPref(prefs::kSecondaryGoogleAccountUsage,
+                               kDefaultSecondaryGoogleAccountUsage);
 }
 
 void AccountManager::SetPrefService(PrefService* pref_service) {
@@ -745,21 +750,18 @@ void AccountManager::CheckDummyGaiaTokenForAllAccounts(
     base::OnceCallback<
         void(const std::vector<std::pair<::account_manager::Account, bool>>&)>
         callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(init_state_, InitializationState::kNotStarted);
 
-  base::OnceClosure closure =
-      base::BindOnce(&AccountManager::CheckDummyGaiaTokenForAllAccountsInternal,
-                     weak_factory_.GetWeakPtr(), std::move(callback));
-  RunOnInitialization(std::move(closure));
-}
+  if (init_state_ != InitializationState::kInitialized) {
+    base::OnceClosure closure =
+        base::BindOnce(&AccountManager::CheckDummyGaiaTokenForAllAccounts,
+                       weak_factory_.GetWeakPtr(), std::move(callback));
+    RunOnInitialization(std::move(closure));
+    return;
+  }
 
-void AccountManager::CheckDummyGaiaTokenForAllAccountsInternal(
-    base::OnceCallback<
-        void(const std::vector<std::pair<::account_manager::Account, bool>>&)>
-        callback) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(init_state_, InitializationState::kInitialized);
-
   std::vector<std::pair<::account_manager::Account, bool>> accounts_list;
   accounts_list.reserve(accounts_.size());
 

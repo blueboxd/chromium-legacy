@@ -62,19 +62,19 @@ SyncItemWrapper<std::u16string>::SyncItemWrapper(
 
 template <>
 SyncItemWrapper<std::u16string>::SyncItemWrapper(
-    const ChromeAppListItem& app_list_item)
-    : id(app_list_item.id()),
-      item_ordinal(app_list_item.position()),
-      is_folder(app_list_item.is_folder()) {
+    const ash::AppListItemMetadata& metadata)
+    : id(metadata.id),
+      item_ordinal(metadata.position),
+      is_folder(metadata.is_folder) {
   // Handle the case when the folder item name is not specified and set the
   // `key_attribute` to the default placeholder.
-  if (is_folder && app_list_item.name().empty()) {
+  if (is_folder && metadata.name.empty()) {
     key_attribute =
         l10n_util::GetStringUTF16(IDS_APP_LIST_FOLDER_NAME_PLACEHOLDER);
     return;
   }
 
-  key_attribute = base::UTF8ToUTF16(app_list_item.name());
+  key_attribute = base::UTF8ToUTF16(metadata.name);
 }
 
 // SyncItemWrapper<ash::IconColor> ---------------------------------------------
@@ -89,11 +89,11 @@ SyncItemWrapper<ash::IconColor>::SyncItemWrapper(
 
 template <>
 SyncItemWrapper<ash::IconColor>::SyncItemWrapper(
-    const ChromeAppListItem& app_list_item)
-    : id(app_list_item.id()),
-      item_ordinal(app_list_item.position()),
-      is_folder(app_list_item.is_folder()),
-      key_attribute(app_list_item.icon_color()) {}
+    const ash::AppListItemMetadata& metadata)
+    : id(metadata.id),
+      item_ordinal(metadata.position),
+      is_folder(metadata.is_folder),
+      key_attribute(metadata.icon_color) {}
 
 // IconColorWrapperComparator -------------------------------------------------
 
@@ -105,7 +105,19 @@ bool IconColorWrapperComparator::operator()(
   // Folders are placed at the bottom of the app list in color sort.
   if (lhs.is_folder != rhs.is_folder)
     return rhs.is_folder;
-  return lhs.key_attribute < rhs.key_attribute;
+
+  if (lhs.key_attribute != rhs.key_attribute)
+    return lhs.key_attribute < rhs.key_attribute;
+
+  const syncer::StringOrdinal& lhs_ordinal = lhs.item_ordinal;
+  const syncer::StringOrdinal& rhs_ordinal = rhs.item_ordinal;
+  if (lhs_ordinal.IsValid() && rhs_ordinal.IsValid() &&
+      !lhs_ordinal.Equals(rhs_ordinal)) {
+    lhs.item_ordinal.LessThan(rhs.item_ordinal);
+  }
+
+  // Compare ids so that sorting with this comparator is stable.
+  return lhs.id < rhs.id;
 }
 
 // StringWrapperComparator ----------------------------------------------------
@@ -117,10 +129,6 @@ StringWrapperComparator::StringWrapperComparator(bool increasing,
 bool StringWrapperComparator::operator()(
     const reorder::SyncItemWrapper<std::u16string>& lhs,
     const reorder::SyncItemWrapper<std::u16string>& rhs) const {
-  // Folders are placed in the front of the app list in app name sort.
-  if (lhs.is_folder != rhs.is_folder)
-    return lhs.is_folder;
-
   // If the collator is not created successfully, compare the string values
   // using operators.
   if (!collator_) {

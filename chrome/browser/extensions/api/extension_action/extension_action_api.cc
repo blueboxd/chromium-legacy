@@ -60,10 +60,13 @@ const char kNoTabError[] = "No tab with id: *.";
 const char kOpenPopupError[] =
     "Failed to show popup either because there is an existing popup or another "
     "error occurred.";
+const char kFailedToOpenPopupGenericError[] = "Failed to open popup.";
 const char kInvalidColorError[] =
     "The color specification could not be parsed.";
 constexpr char kNoActiveWindowFound[] =
     "Could not find an active browser window.";
+constexpr char kNoActivePopup[] =
+    "Extension does not have a popup on the active tab.";
 
 bool g_report_error_for_invisible_icon = false;
 
@@ -93,25 +96,43 @@ Browser* FindLastActiveBrowserWindow(Profile* profile,
   return nullptr;
 }
 
+// Returns true if the given `extension` has an active popup on the active tab
+// of `browser`.
+bool HasPopupOnActiveTab(Browser* browser,
+                         content::BrowserContext* browser_context,
+                         const Extension& extension) {
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  ExtensionAction* extension_action =
+      ExtensionActionManager::Get(browser_context)
+          ->GetExtensionAction(extension);
+  DCHECK(extension_action);
+  int tab_id = ExtensionTabUtil::GetTabId(web_contents);
+
+  return extension_action->HasPopup(tab_id) &&
+         extension_action->GetIsVisibleIgnoringDeclarative(tab_id);
+}
+
 // Attempts to open `extension`'s popup in the given `browser`. Returns true on
 // success; otherwise, populates `error` and returns false.
 bool OpenPopupInBrowser(Browser& browser,
                         const Extension& extension,
-                        std::string* error) {
+                        std::string* error,
+                        ShowPopupCallback callback) {
   if (!browser.window()->IsToolbarVisible()) {
     *error = "Browser window has no toolbar.";
     return false;
   }
 
-  // TODO(https://crbug.com/1245093): Modify
-  // ShowExtensionActionPopupForAPICall() to take a callback so that
-  // a) the API function doesn't have to wait and observe first load for all
-  //    ExtensionHosts, and
-  // b) we catch cases like the associated window being closed before the
-  //    popup complete opening.
   if (!ExtensionActionAPI::Get(browser.profile())
-           ->ShowExtensionActionPopupForAPICall(&extension, &browser)) {
-    *error = "Failed to open popup.";
+           ->ShowExtensionActionPopupForAPICall(&extension, &browser,
+                                                std::move(callback))) {
+    // NOTE(devlin): We could have the callback pass more information here about
+    // why the popup didn't open (e.g., another active popup vs popup closing
+    // before display, as may happen if the window closes), but it's not clear
+    // whether that would be significantly helpful to developers and it may
+    // leak other information about the user's browser.
+    *error = kFailedToOpenPopupGenericError;
     return false;
   }
 
@@ -170,7 +191,8 @@ void ExtensionActionAPI::RemoveObserver(Observer* observer) {
 
 bool ExtensionActionAPI::ShowExtensionActionPopupForAPICall(
     const Extension* extension,
-    Browser* browser) {
+    Browser* browser,
+    ShowPopupCallback callback) {
   ExtensionAction* extension_action =
       ExtensionActionManager::Get(browser_context_)->GetExtensionAction(
           *extension);
@@ -187,7 +209,7 @@ bool ExtensionActionAPI::ShowExtensionActionPopupForAPICall(
   // no toolbar.
   return extensions_container &&
          extensions_container->ShowToolbarActionPopupForAPICall(
-             extension->id());
+             extension->id(), std::move(callback));
 }
 
 void ExtensionActionAPI::NotifyChange(ExtensionAction* extension_action,
@@ -278,7 +300,8 @@ void ExtensionActionAPI::DispatchEventToExtension(
     return;
 
   auto event = std::make_unique<Event>(
-      histogram_value, event_name, std::move(*event_args).TakeList(), context);
+      histogram_value, event_name, std::move(*event_args).TakeListDeprecated(),
+      context);
   event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
   EventRouter::Get(context)
       ->DispatchEventToExtension(extension_id, std::move(event));
@@ -464,12 +487,6 @@ ExtensionActionSetIconFunction::RunExtensionAction() {
     const bool is_visible = image_util::IsIconSufficientlyVisible(bitmap);
     UMA_HISTOGRAM_BOOLEAN("Extensions.DynamicExtensionActionIconWasVisible",
                           is_visible);
-    const bool is_visible_rendered =
-        extensions::ui_util::IsRenderedIconSufficientlyVisibleForBrowserContext(
-            bitmap, browser_context());
-    UMA_HISTOGRAM_BOOLEAN(
-        "Extensions.DynamicExtensionActionIconWasVisibleRendered",
-        is_visible_rendered);
 
     if (!is_visible && g_report_error_for_invisible_icon)
       return RespondNow(Error("Icon not sufficiently visible."));
@@ -532,7 +549,7 @@ ExtensionActionSetBadgeBackgroundColorFunction::RunExtensionAction() {
   EXTENSION_FUNCTION_VALIDATE(color_value);
   SkColor color = 0;
   if (color_value->is_list()) {
-    base::Value::ConstListView list = color_value->GetList();
+    base::Value::ConstListView list = color_value->GetListDeprecated();
 
     EXTENSION_FUNCTION_VALIDATE(list.size() == 4);
 
@@ -670,63 +687,36 @@ ExtensionFunction::ResponseAction ActionOpenPopupFunction::Run() {
     return RespondNow(Error(std::move(error)));
   }
 
-  content::WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-  ExtensionAction* extension_action =
-      ExtensionActionManager::Get(browser_context())
-          ->GetExtensionAction(*extension());
-  DCHECK(extension_action);
-  int tab_id = ExtensionTabUtil::GetTabId(web_contents);
-  if (!extension_action->HasPopup(tab_id) ||
-      !extension_action->GetIsVisible(tab_id)) {
-    return RespondNow(
-        Error("Extension does not have a popup on the active tab."));
-  }
+  if (!HasPopupOnActiveTab(browser, browser_context(), *extension()))
+    return RespondNow(Error(kNoActivePopup));
 
-  if (!OpenPopupInBrowser(*browser, *extension(), &error)) {
+  if (!OpenPopupInBrowser(
+          *browser, *extension(), &error,
+          base::BindOnce(&ActionOpenPopupFunction::OnShowPopupComplete,
+                         this))) {
     DCHECK(!error.empty());
     return RespondNow(Error(std::move(error)));
   }
 
-  // Even if this is for an incognito window, we want to use the profile
-  // associated with the extension function.
-  // If the extension is runs in spanning mode, then extension hosts are
-  // created with the original profile, and if it's split, then we know the api
-  // call came from the associated profile.
-  host_registry_observation_.Observe(ExtensionHostRegistry::Get(profile));
-
-  // Balanced in OnExtensionHostCompletedFirstLoad() or
-  // OnBrowserContextShutdown().
-  AddRef();
-
+  // The function responds in OnShowPopupComplete(). Note that the function is
+  // kept alive by the ref-count owned by the ShowPopupCallback.
   return RespondLater();
 }
 
-void ActionOpenPopupFunction::OnBrowserContextShutdown() {
-  // No point in responding at this point (the context is gone). However, we
-  // need to explicitly remove the ExtensionHostRegistry observation, since the
-  // ExtensionHostRegistry's lifetime is tied to the BrowserContext. Otherwise,
-  // this would cause a UAF when the observation is destructed as part of this
-  // instance's destruction.
-  host_registry_observation_.Reset();
-  Release();  // Balanced in Run().
-}
+void ActionOpenPopupFunction::OnShowPopupComplete(ExtensionHost* popup_host) {
+  DCHECK(!did_respond());
 
-void ActionOpenPopupFunction::OnExtensionHostCompletedFirstLoad(
-    content::BrowserContext* browser_context,
-    ExtensionHost* host) {
-  if (did_respond())
-    return;
+  ResponseValue response_value;
+  if (popup_host) {
+    // TODO(https://crbug.com/1245093): Return the tab for which the extension
+    // popup was shown?
+    DCHECK(popup_host->document_element_available());
+    response_value = NoArguments();
+  } else {
+    response_value = Error(kFailedToOpenPopupGenericError);
+  }
 
-  if (host->extension_host_type() != mojom::ViewType::kExtensionPopup ||
-      host->extension()->id() != extension_->id())
-    return;
-
-  // TODO(https://crbug.com/1245093): Return the tab for which the extension
-  // popup was shown?
-  Respond(NoArguments());
-  host_registry_observation_.Reset();
-  Release();  // Balanced in Run().
+  Respond(std::move(response_value));
 }
 
 BrowserActionOpenPopupFunction::BrowserActionOpenPopupFunction() = default;
@@ -741,8 +731,12 @@ ExtensionFunction::ResponseAction BrowserActionOpenPopupFunction::Run() {
   if (!browser)
     return RespondNow(Error(kNoActiveWindowFound));
 
+  if (!HasPopupOnActiveTab(browser, browser_context(), *extension()))
+    return RespondNow(Error(kNoActivePopup));
+
   std::string error;
-  if (!OpenPopupInBrowser(*browser, *extension(), &error)) {
+  if (!OpenPopupInBrowser(*browser, *extension(), &error,
+                          ShowPopupCallback())) {
     DCHECK(!error.empty());
     return RespondNow(Error(std::move(error)));
   }

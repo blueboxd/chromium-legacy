@@ -19,12 +19,11 @@
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
 #include "base/allocator/partition_allocator/partition_root.h"
 #include "base/allocator/partition_allocator/reservation_offset_table.h"
+#include "base/allocator/partition_allocator/tagging.h"
 #include "base/bits.h"
 #include "base/dcheck_is_on.h"
-#include "base/memory/tagging.h"
 
-namespace base {
-namespace internal {
+namespace partition_alloc::internal {
 
 namespace {
 
@@ -65,7 +64,7 @@ ALWAYS_INLINE void PartitionDirectUnmap(
       SlotSpanMetadata<thread_safe>::ToSlotSpanStart(slot_span);
   // The mapping may start at an unspecified location within a super page, but
   // we always reserve memory aligned to super page size.
-  reservation_start = bits::AlignDown(reservation_start, kSuperPageSize);
+  reservation_start = base::bits::AlignDown(reservation_start, kSuperPageSize);
 
   // All the metadata have been updated above, in particular the mapping has
   // been unlinked. We can safely release the memory outside the lock, which is
@@ -216,7 +215,8 @@ void SlotSpanMetadata<thread_safe>::Decommit(PartitionRoot<thread_safe>* root) {
   PA_DCHECK(!bucket->is_direct_mapped());
   uintptr_t slot_span_start = SlotSpanMetadata::ToSlotSpanStart(this);
   // If lazy commit is enabled, only provisioned slots are committed.
-  size_t dirty_size = bits::AlignUp(GetProvisionedSize(), SystemPageSize());
+  size_t dirty_size =
+      base::bits::AlignUp(GetProvisionedSize(), SystemPageSize());
   size_t size_to_decommit =
       kUseLazyCommit ? dirty_size : bucket->get_bytes_per_span();
 
@@ -225,8 +225,9 @@ void SlotSpanMetadata<thread_safe>::Decommit(PartitionRoot<thread_safe>* root) {
 
   // Not decommitted slot span must've had at least 1 allocation.
   PA_DCHECK(size_to_decommit > 0);
-  root->DecommitSystemPagesForData(slot_span_start, size_to_decommit,
-                                   PageKeepPermissionsIfPossible);
+  root->DecommitSystemPagesForData(
+      slot_span_start, size_to_decommit,
+      PageAccessibilityDisposition::kAllowKeepForPerf);
 
   // We actually leave the decommitted slot span in the active list. We'll sweep
   // it on to the decommitted list when we next walk the active list.
@@ -265,8 +266,9 @@ void SlotSpanMetadata<thread_safe>::SortFreelist() {
   for (PartitionFreelistEntry* head = freelist_head; head;
        head = head->GetNext(slot_size)) {
     ++num_free_slots;
-    size_t offset_in_slot_span =
-        memory::UnmaskPtr(reinterpret_cast<uintptr_t>(head)) - slot_span_start;
+    size_t offset_in_slot_span = ::partition_alloc::internal::UnmaskPtr(
+                                     reinterpret_cast<uintptr_t>(head)) -
+                                 slot_span_start;
     size_t slot_number = bucket->GetSlotNumber(offset_in_slot_span);
     PA_DCHECK(slot_number < num_provisioned_slots);
     free_slots[slot_number] = true;
@@ -280,10 +282,9 @@ void SlotSpanMetadata<thread_safe>::SortFreelist() {
     for (size_t slot_number = 0; slot_number < num_provisioned_slots;
          slot_number++) {
       if (free_slots[slot_number]) {
-        uintptr_t slot_address =
-            memory::RemaskPtr(slot_span_start + (slot_size * slot_number));
-        auto* entry = new (reinterpret_cast<void*>(slot_address))
-            PartitionFreelistEntry();
+        uintptr_t slot_address = ::partition_alloc::internal::RemaskPtr(
+            slot_span_start + (slot_size * slot_number));
+        auto* entry = PartitionFreelistEntry::EmplaceAndInitNull(slot_address);
 
         if (!head)
           head = entry;
@@ -300,6 +301,7 @@ void SlotSpanMetadata<thread_safe>::SortFreelist() {
 }
 
 namespace {
+
 void UnmapNow(uintptr_t reservation_start,
               size_t reservation_size,
               pool_handle pool) {
@@ -355,9 +357,9 @@ void UnmapNow(uintptr_t reservation_start,
   AddressPoolManager::GetInstance()->UnreserveAndDecommit(
       pool, reservation_start, reservation_size);
 }
+
 }  // namespace
 
 template struct SlotSpanMetadata<ThreadSafe>;
 
-}  // namespace internal
-}  // namespace base
+}  // namespace partition_alloc::internal

@@ -19,7 +19,6 @@
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
@@ -87,10 +86,13 @@ const char kPakFileExtension[] = ".pak";
 // See: tools/grit/grit/node/structure.py
 constexpr char kLottiePrefix[6] = {'L', 'O', 'T', 'T', 'I', 'E'};
 
-// Points to |lottie::ParseLottieAsStillImage| so that certain dependencies do
-// not need to be included directly in ui/base.
+// Pointers to the functions |lottie::ParseLottieAsStillImage| and
+// |lottie::ParseLottieAsThemedStillImage|, so that dependencies used by those
+// functions do not need to be included directly in ui/base.
 ResourceBundle::LottieImageParseFunction g_parse_lottie_as_still_image_ =
     nullptr;
+ResourceBundle::LottieThemedImageParseFunction
+    g_parse_lottie_as_themed_still_image_ = nullptr;
 #endif
 
 ResourceBundle* g_shared_instance_ = nullptr;
@@ -245,25 +247,6 @@ class ResourceBundle::BitmapImageSource : public gfx::ImageSkiaSource {
   const int resource_id_;
 };
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-// A descendant of |gfx::ImageSkiaSource| that simply uses one
-// |gfx::ImageSkiaRep| for all scales.
-class ResourceBundle::LottieImageSource : public gfx::ImageSkiaSource {
- public:
-  LottieImageSource(const gfx::ImageSkiaRep& rep) : rep_(rep) {}
-  LottieImageSource(const LottieImageSource&) = delete;
-  LottieImageSource& operator=(const LottieImageSource&) = delete;
-  ~LottieImageSource() override = default;
-
-  // gfx::ImageSkiaSource overrides:
-  gfx::ImageSkiaRep GetImageForScale(float scale) override { return rep_; }
-  bool HasRepresentationAtAllScales() const override { return true; }
-
- private:
-  gfx::ImageSkiaRep rep_;
-};
-#endif
-
 ResourceBundle::FontDetails::FontDetails(std::string typeface,
                                          int size_delta,
                                          gfx::Font::Weight weight)
@@ -292,6 +275,21 @@ std::string ResourceBundle::InitSharedInstanceWithLocale(
                                               /*crash_on_failure=*/true);
   g_shared_instance_->InitDefaultFontList();
   return result;
+}
+
+// static
+void ResourceBundle::InitSharedInstanceWithBuffer(
+    base::span<const uint8_t> buffer,
+    ResourceScaleFactor scale_factor) {
+  InitSharedInstance(nullptr);
+
+  auto data_pack = std::make_unique<DataPack>(scale_factor);
+  if (data_pack->LoadFromBuffer(buffer)) {
+    g_shared_instance_->locale_resources_data_ = std::move(data_pack);
+  } else {
+    LOG(ERROR) << "Failed to load locale resource from buffer";
+  }
+  g_shared_instance_->InitDefaultFontList();
 }
 
 // static
@@ -345,9 +343,11 @@ ResourceBundle& ResourceBundle::GetSharedInstance() {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // static
-void ResourceBundle::SetParseLottieAsStillImage(
-    ResourceBundle::LottieImageParseFunction parse_lottie_as_still_image) {
+void ResourceBundle::SetLottieParsingFunctions(
+    LottieImageParseFunction parse_lottie_as_still_image,
+    LottieThemedImageParseFunction parse_lottie_as_themed_still_image) {
   g_parse_lottie_as_still_image_ = parse_lottie_as_still_image;
+  g_parse_lottie_as_themed_still_image_ = parse_lottie_as_themed_still_image;
 }
 #endif
 
@@ -589,6 +589,35 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
   DCHECK(inserted.second);
   return inserted.first->second;
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const ui::ImageModel& ResourceBundle::GetThemedLottieImageNamed(
+    int resource_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Check to see if the image is already in the cache.
+  auto found = image_models_.find(resource_id);
+  if (found != image_models_.end())
+    return found->second;
+
+  std::string bytes_string;
+  if (!LoadLottieBytesString(resource_id, &bytes_string)) {
+    LOG(WARNING) << "Unable to load themed Lottie image with id "
+                 << resource_id;
+    NOTREACHED();  // Want to assert in debug mode.
+    // The load failed to retrieve the bytes string; show a debugging red
+    // square.
+    return GetEmptyImageModel();
+  }
+
+  // The bytes string was successfully loaded, so parse it and cache the
+  // resulting image.
+  auto inserted = image_models_.emplace(
+      resource_id, (*g_parse_lottie_as_themed_still_image_)(bytes_string));
+  DCHECK(inserted.second);
+  return inserted.first->second;
+}
+#endif
 
 constexpr uint8_t ResourceBundle::kBrotliConst[];
 
@@ -911,6 +940,9 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
 
 void ResourceBundle::FreeImages() {
   images_.clear();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  image_models_.clear();
+#endif
 }
 
 void ResourceBundle::LoadChromeResources() {
@@ -988,11 +1020,9 @@ void ResourceBundle::InitDefaultFontList() {
 gfx::ImageSkia ResourceBundle::CreateImageSkia(int resource_id) {
   DCHECK(!data_packs_.empty()) << "Missing call to SetResourcesDataDLL?";
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  gfx::ImageSkiaRep rep_from_lottie;
-  if (LoadLottie(resource_id, &rep_from_lottie)) {
-    return gfx::ImageSkia(std::make_unique<LottieImageSource>(rep_from_lottie),
-                          rep_from_lottie.pixel_size());
-  }
+  std::string lottie_bytes_string;
+  if (LoadLottieBytesString(resource_id, &lottie_bytes_string))
+    return (*g_parse_lottie_as_still_image_)(lottie_bytes_string);
   const ResourceScaleFactor scale_factor_to_load = GetMaxResourceScaleFactor();
 #elif BUILDFLAG(IS_WIN)
   const ResourceScaleFactor scale_factor_to_load =
@@ -1083,6 +1113,16 @@ gfx::Image& ResourceBundle::GetEmptyImage() {
   }
   return empty_image_;
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const ui::ImageModel& ResourceBundle::GetEmptyImageModel() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (empty_image_model_.IsEmpty())
+    empty_image_model_ = ui::ImageModel::FromImage(GetEmptyImage());
+  return empty_image_model_;
+}
+#endif
 
 std::u16string ResourceBundle::GetLocalizedStringImpl(int resource_id) const {
   std::u16string string;
@@ -1188,16 +1228,14 @@ bool ResourceBundle::DecodePNG(const unsigned char* buf,
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-bool ResourceBundle::LoadLottie(int resource_id, gfx::ImageSkiaRep* rep) const {
+bool ResourceBundle::LoadLottieBytesString(int resource_id,
+                                           std::string* bytes_string) const {
   const base::StringPiece potential_lottie = GetRawDataResource(resource_id);
   if (potential_lottie.substr(0u, base::size(kLottiePrefix)) !=
       base::StringPiece(kLottiePrefix, base::size(kLottiePrefix)))
     return false;
-
-  auto bytes_string = base::MakeRefCounted<base::RefCountedString>();
   DecompressIfNeeded(potential_lottie.substr(base::size(kLottiePrefix)),
-                     &(bytes_string->data()));
-  *rep = (*g_parse_lottie_as_still_image_)(*bytes_string);
+                     bytes_string);
   return true;
 }
 #endif

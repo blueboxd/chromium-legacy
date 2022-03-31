@@ -22,6 +22,25 @@ var MockAccessibilityPrivate = {
 
   AccessibilityFeature: {
     DICTATION_COMMANDS: 'dictation_commands',
+    DICTATION_HINTS: 'dictation_hints',
+  },
+
+  DictationBubbleIconType: {
+    HIDDEN: 'hidden',
+    STANDBY: 'standby',
+    MACRO_SUCCESS: 'macroSuccess',
+    MACRO_FAIL: 'macroFail',
+  },
+
+  DictationBubbleHintType: {
+    TRY_SAYING: 'trySaying',
+    TYPE: 'type',
+    DELETE: 'delete',
+    SELECT_ALL: 'selectAll',
+    UNDO: 'undo',
+    HELP: 'help',
+    UNSELECT: 'unselect',
+    COPY: 'copy',
   },
 
   SyntheticKeyboardEventType: {KEYDOWN: 'keydown', KEYUP: 'keyup,'},
@@ -61,11 +80,8 @@ var MockAccessibilityPrivate = {
   /** @private {boolean} */
   dictationActivated_: false,
 
-  /** @private {boolean} */
-  dictationBubbleVisible_: false,
-
-  /** @private {?string} */
-  dictationBubbleText_: null,
+  /** @private {!chrome.accessibilityPrivate.DictationBubbleProperties|null} */
+  dictationBubbleProps_: null,
 
   /** @private {Set<string>} */
   enabledFeatures_: new Set(),
@@ -135,6 +151,12 @@ var MockAccessibilityPrivate = {
       MockAccessibilityPrivate.selectToSpeakStateChangeListener_ = listener;
     },
   },
+
+  /**
+   * Called when AccessibilityCommon wants to enable mouse events.
+   * @param {boolean} enabled
+   */
+  enableMouseEvents: (enabled) => {},
 
   /**
    * Called when AccessibilityCommon finds scrollable bounds at a point.
@@ -326,9 +348,14 @@ var MockAccessibilityPrivate = {
     return MockAccessibilityPrivate.dictationActivated_;
   },
 
-  updateDictationBubble(visible, text) {
-    MockAccessibilityPrivate.dictationBubbleVisible_ = visible;
-    MockAccessibilityPrivate.dictationBubbleText_ = text || null;
+  /** @param {!chrome.accessibilityPrivate.DictationBubbleProperties} props */
+  updateDictationBubble(props) {
+    MockAccessibilityPrivate.dictationBubbleProps_ = props;
+  },
+
+  /** @return {!chrome.accessibilityPrivate.DictationBubbleProperties|null} */
+  getDictationBubbleProps() {
+    return MockAccessibilityPrivate.dictationBubbleProps_;
   },
 
   /**

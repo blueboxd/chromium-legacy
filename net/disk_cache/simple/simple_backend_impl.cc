@@ -183,9 +183,6 @@ SimpleEntryImpl::OperationsMode CacheTypeToOperationsMode(net::CacheType type) {
 
 }  // namespace
 
-const base::Feature SimpleBackendImpl::kPrioritizedSimpleCacheTasks{
-    "PrioritizedSimpleCacheTasks", base::FEATURE_ENABLED_BY_DEFAULT};
-
 class SimpleBackendImpl::ActiveEntryProxy
     : public SimpleEntryImpl::ActiveEntryProxy {
  public:
@@ -224,9 +221,6 @@ SimpleBackendImpl::SimpleBackendImpl(
       file_tracker_(file_tracker ? file_tracker
                                  : g_simple_file_tracker.Pointer()),
       path_(path),
-      cache_runner_(base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       orig_max_size_(max_bytes),
       entry_operations_mode_(CacheTypeToOperationsMode(cache_type)),
       post_doom_waiting_(
@@ -248,28 +242,29 @@ SimpleBackendImpl::~SimpleBackendImpl() {
 void SimpleBackendImpl::SetTaskRunnerForTesting(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   prioritized_task_runner_ =
-      base::MakeRefCounted<net::PrioritizedTaskRunner>(std::move(task_runner));
+      base::MakeRefCounted<net::PrioritizedTaskRunner>(kWorkerPoolTaskTraits);
+  prioritized_task_runner_->SetTaskRunnerForTesting(  // IN-TEST
+      std::move(task_runner));
 }
 
 net::Error SimpleBackendImpl::Init(CompletionOnceCallback completion_callback) {
-  auto worker_pool = base::ThreadPool::CreateTaskRunner(
-      {base::MayBlock(), base::WithBaseSyncPrimitives(),
-       base::TaskPriority::USER_BLOCKING,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
+  auto index_task_runner = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 
   prioritized_task_runner_ =
-      base::MakeRefCounted<net::PrioritizedTaskRunner>(worker_pool);
+      base::MakeRefCounted<net::PrioritizedTaskRunner>(kWorkerPoolTaskTraits);
 
   index_ = std::make_unique<SimpleIndex>(
       base::SequencedTaskRunnerHandle::Get(), cleanup_tracker_.get(), this,
       GetCacheType(),
-      std::make_unique<SimpleIndexFile>(cache_runner_, worker_pool.get(),
-                                        GetCacheType(), path_));
+      std::make_unique<SimpleIndexFile>(index_task_runner, GetCacheType(),
+                                        path_));
   index_->ExecuteWhenReady(
       base::BindOnce(&RecordIndexLoad, GetCacheType(), base::TimeTicks::Now()));
 
-  PostTaskAndReplyWithResult(
-      cache_runner_.get(), FROM_HERE,
+  index_task_runner->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&SimpleBackendImpl::InitCacheStructureOnDisk, path_,
                      orig_max_size_, GetCacheType()),
       base::BindOnce(&SimpleBackendImpl::InitializeIndex, AsWeakPtr(),
@@ -352,8 +347,13 @@ void SimpleBackendImpl::DoomEntries(std::vector<uint64_t>* entry_hashes,
   std::vector<uint64_t>* mass_doom_entry_hashes_ptr =
       mass_doom_entry_hashes.get();
 
-  PostTaskAndReplyWithResult(
-      prioritized_task_runner_->task_runner(), FROM_HERE,
+  // We don't use priorities (i.e., `prioritized_task_runner_`) here because
+  // we don't actually have them here (since this is for eviction based on
+  // index).
+  auto task_runner =
+      base::ThreadPool::CreateSequencedTaskRunner(kWorkerPoolTaskTraits);
+  task_runner->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&SimpleSynchronousEntry::DeleteEntrySetFiles,
                      mass_doom_entry_hashes_ptr, path_),
       base::BindOnce(&SimpleBackendImpl::DoomEntriesComplete, AsWeakPtr(),
@@ -907,14 +907,9 @@ void SimpleBackendImpl::FlushWorkerPoolForTesting() {
 
 uint32_t SimpleBackendImpl::GetNewEntryPriority(
     net::RequestPriority request_priority) {
-  if (base::FeatureList::IsEnabled(kPrioritizedSimpleCacheTasks)) {
-    // Lower priority is better, so give high network priority the least bump.
-    return ((net::RequestPriority::MAXIMUM_PRIORITY - request_priority) *
-            10000) +
-           entry_count_++;
-  }
-
-  return 0;
+  // Lower priority is better, so give high network priority the least bump.
+  return ((net::RequestPriority::MAXIMUM_PRIORITY - request_priority) * 10000) +
+         entry_count_++;
 }
 
 }  // namespace disk_cache

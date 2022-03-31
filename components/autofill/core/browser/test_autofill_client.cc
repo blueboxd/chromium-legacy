@@ -102,6 +102,10 @@ translate::TranslateDriver* TestAutofillClient::GetTranslateDriver() {
   return &mock_translate_driver_;
 }
 
+std::string TestAutofillClient::GetVariationConfigCountryCode() const {
+  return variation_config_country_code_;
+}
+
 #if !BUILDFLAG(IS_IOS)
 std::unique_ptr<webauthn::InternalAuthenticator>
 TestAutofillClient::CreateCreditCardInternalAuthenticator(
@@ -118,6 +122,11 @@ void TestAutofillClient::ShowUnmaskPrompt(
     base::WeakPtr<CardUnmaskDelegate> delegate) {}
 
 void TestAutofillClient::OnUnmaskVerificationResult(PaymentsRpcResult result) {}
+
+raw_ptr<VirtualCardEnrollmentManager>
+TestAutofillClient::GetVirtualCardEnrollmentManager() {
+  return form_data_importer_->GetVirtualCardEnrollmentManager();
+}
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 std::vector<std::string>
@@ -258,9 +267,14 @@ void TestAutofillClient::HideAutofillPopup(PopupHidingReason reason) {}
 
 void TestAutofillClient::ShowVirtualCardErrorDialog(bool is_permanent_error) {
   virtual_card_error_dialog_shown_ = true;
+  virtual_card_error_dialog_is_permanent_error_ = is_permanent_error;
 }
 
 bool TestAutofillClient::IsAutocompleteEnabled() {
+  return true;
+}
+
+bool TestAutofillClient::IsPasswordManagerEnabled() {
   return true;
 }
 

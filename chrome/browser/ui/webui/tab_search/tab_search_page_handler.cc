@@ -134,8 +134,13 @@ void TabSearchPageHandler::GetProfileData(GetProfileDataCallback callback) {
   if (!sent_initial_payload_) {
     sent_initial_payload_ = true;
     int tab_count = 0;
-    for (const auto& window : profile_tabs->windows)
+    int media_tab_count = 0;
+    for (const auto& window : profile_tabs->windows) {
       tab_count += window->tabs.size();
+      media_tab_count += base::ranges::count_if(
+          window->tabs.begin(), window->tabs.end(),
+          [](const auto& tab) { return tab->alert_states.size() > 0; });
+    }
     base::UmaHistogramCounts100("Tabs.TabSearch.NumWindowsOnOpen",
                                 profile_tabs->windows.size());
     base::UmaHistogramCounts10000("Tabs.TabSearch.NumTabsOnOpen", tab_count);
@@ -147,6 +152,8 @@ void TabSearchPageHandler::GetProfileData(GetProfileDataCallback callback) {
         "Tabs.TabSearch.RecentlyClosedSectionToggleStateOnOpen",
         expand_preference ? TabSearchRecentlyClosedToggleAction::kExpand
                           : TabSearchRecentlyClosedToggleAction::kCollapse);
+    base::UmaHistogramCounts10000("Tabs.TabSearch.NumMediaTabsOnOpen",
+                                  media_tab_count);
   }
 
   std::move(callback).Run(std::move(profile_tabs));
@@ -246,20 +253,22 @@ tab_search::mojom::ProfileDataPtr TabSearchPageHandler::CreateProfileData() {
     }
     profile_data->windows.push_back(std::move(window));
 
-    for (auto tab_group_id : tab_strip_model->group_model()->ListTabGroups()) {
-      const tab_groups::TabGroupVisualData* tab_group_visual_data =
-          tab_strip_model->group_model()
-              ->GetTabGroup(tab_group_id)
-              ->visual_data();
+    if (tab_strip_model->group_model())
+      for (auto tab_group_id :
+           tab_strip_model->group_model()->ListTabGroups()) {
+        const tab_groups::TabGroupVisualData* tab_group_visual_data =
+            tab_strip_model->group_model()
+                ->GetTabGroup(tab_group_id)
+                ->visual_data();
 
-      auto tab_group = tab_search::mojom::TabGroup::New();
-      tab_group->id = tab_group_id.token();
-      tab_group->title = base::UTF16ToUTF8(tab_group_visual_data->title());
-      tab_group->color = tab_group_visual_data->color();
+        auto tab_group = tab_search::mojom::TabGroup::New();
+        tab_group->id = tab_group_id.token();
+        tab_group->title = base::UTF16ToUTF8(tab_group_visual_data->title());
+        tab_group->color = tab_group_visual_data->color();
 
-      tab_group_ids.insert(tab_group_id);
-      profile_data->tab_groups.push_back(std::move(tab_group));
-    }
+        tab_group_ids.insert(tab_group_id);
+        profile_data->tab_groups.push_back(std::move(tab_group));
+      }
   }
 
   AddRecentlyClosedEntries(profile_data->recently_closed_tabs,

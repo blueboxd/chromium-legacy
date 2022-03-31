@@ -76,7 +76,7 @@
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-#include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
+#include "chrome/browser/ui/webui/signin/turn_sync_on_helper.h"
 #endif
 
 namespace signin {
@@ -337,6 +337,14 @@ void ProcessMirrorHeader(
   // 3. Displaying an account addition window.
   if (service_type == GAIA_SERVICE_TYPE_ADDSESSION) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+    // As per https://crbug.com/1286822 and internal b/215509741, the session
+    // may sometimes become invalid on the server without notice. When this
+    // happens, the user may try to fix it by signing-in again.
+    // Trigger a cookie jar update now to fix the session if needed.
+    signin::IdentityManager* const identity_manager =
+        IdentityManagerFactory::GetForProfile(profile);
+    identity_manager->GetAccountsCookieMutator()->TriggerCookieJarUpdate();
+
     AccountProfileMapper* mapper =
         g_browser_process->profile_manager()->GetAccountProfileMapper();
     GetAccountsAvailableAsSecondary(
@@ -393,22 +401,22 @@ void ProcessMirrorHeader(
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 
-// Creates a DiceTurnOnSyncHelper.
-void CreateDiceTurnOnSyncHelper(Profile* profile,
-                                signin_metrics::AccessPoint access_point,
-                                signin_metrics::PromoAction promo_action,
-                                signin_metrics::Reason reason,
-                                content::WebContents* web_contents,
-                                const CoreAccountId& account_id) {
+// Creates a TurnSyncOnHelper.
+void CreateTurnSyncOnHelper(Profile* profile,
+                            signin_metrics::AccessPoint access_point,
+                            signin_metrics::PromoAction promo_action,
+                            signin_metrics::Reason reason,
+                            content::WebContents* web_contents,
+                            const CoreAccountId& account_id) {
   DCHECK(profile);
   Browser* browser = web_contents
                          ? chrome::FindBrowserWithWebContents(web_contents)
                          : chrome::FindBrowserWithProfile(profile);
-  // DiceTurnSyncOnHelper is suicidal (it will kill itself once it finishes
-  // enabling sync).
-  new DiceTurnSyncOnHelper(
-      profile, browser, access_point, promo_action, reason, account_id,
-      DiceTurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT);
+  // TurnSyncOnHelper is suicidal (it will kill itself once it finishes enabling
+  // sync).
+  new TurnSyncOnHelper(profile, browser, access_point, promo_action, reason,
+                       account_id,
+                       TurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT);
 }
 
 // Shows UI for signin errors.
@@ -443,10 +451,9 @@ void ProcessDiceHeader(
   DiceResponseHandler* dice_response_handler =
       DiceResponseHandler::GetForProfile(profile);
   dice_response_handler->ProcessDiceHeader(
-      dice_params,
-      std::make_unique<ProcessDiceHeaderDelegateImpl>(
-          web_contents, base::BindOnce(&CreateDiceTurnOnSyncHelper),
-          base::BindOnce(&ShowDiceSigninError)));
+      dice_params, std::make_unique<ProcessDiceHeaderDelegateImpl>(
+                       web_contents, base::BindOnce(&CreateTurnSyncOnHelper),
+                       base::BindOnce(&ShowDiceSigninError)));
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 

@@ -4,21 +4,23 @@
 // Source: Compute Pressure API (https://wicg.github.io/compute-pressure/)
 
 callback ComputePressureUpdateCallback = undefined (
-  ComputePressureObserverUpdate update,
+  ComputePressureEntry update,
   ComputePressureObserver observer
 );
 
+enum ComputePressureTarget { "cpu" };
+
 [Exposed=Window]
 interface ComputePressureObserver {
-  constructor(
-    ComputePressureUpdateCallback callback,
-    optional ComputePressureObserverOptions options = {}
-  );
-  undefined observe();
-  undefined unobserve();
+  constructor(ComputePressureUpdateCallback callback);
+  undefined observe(ComputePressureTarget target, optional ComputePressureObserverOptions options = {});
+  undefined unobserve(ComputePressureTarget target);
+  undefined disconnect();
+  sequence<ComputePressureEntry> takeRecords();
+  [SameObject] static readonly attribute FrozenArray<DOMString> supportedTargetTypes;
 };
 
-dictionary ComputePressureObserverUpdate {
+dictionary ComputePressureEntry {
   double cpuSpeed;
   double cpuUtilization;
   ComputePressureObserverOptions options;

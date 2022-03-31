@@ -98,11 +98,11 @@ public class DirectActionsIntegrationTest {
                     AutofillAssistantModuleEntryProvider.INSTANCE.getModuleEntryIfInstalled();
             assert mModuleEntry != null;
             AssistantDependencies dependencies =
-                    mModuleEntry.createDependenciesFactory().createDependencies(
+                    new AssistantStaticDependenciesChrome().createDependencies(
                             mTestRule.getActivity());
             mDirectActionHandler = AutofillAssistantFacade.createDirectActionHandler(
                     mTestRule.getActivity(), dependencies.getBottomSheetController(),
-                    dependencies.getBrowserControls(), dependencies.getRootView(),
+                    mTestRule.getActivity().getBrowserControlsManager(), dependencies.getRootView(),
                     mTestRule.getActivity().getActivityTabProvider());
         });
     }

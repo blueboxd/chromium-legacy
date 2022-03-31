@@ -29,13 +29,6 @@ constexpr auto enabled_by_default_desktop_android =
     base::FEATURE_ENABLED_BY_DEFAULT;
 #endif
 
-constexpr auto enabled_by_default_desktop_ios =
-#if BUILDFLAG(IS_ANDROID)
-    base::FEATURE_DISABLED_BY_DEFAULT;
-#else
-    base::FEATURE_ENABLED_BY_DEFAULT;
-#endif
-
 // Comment out this macro since it is currently not being used in this file.
 // const auto enabled_by_default_android_ios =
 // #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
@@ -45,10 +38,10 @@ constexpr auto enabled_by_default_desktop_ios =
 // #endif
 
 // Feature that enables the tab-switch suggestions corresponding to an open
-// tab, for a button or dedicated suggestion. Enabled by default on Desktop
-// and iOS.
+// tab, for a button or dedicated suggestion. Enabled by default on Desktop, iOS
+// and Android.
 const base::Feature kOmniboxTabSwitchSuggestions{
-    "OmniboxTabSwitchSuggestions", enabled_by_default_desktop_ios};
+    "OmniboxTabSwitchSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used to enable various experiments on keyword mode, UI and
 // suggestions.
@@ -113,7 +106,7 @@ const base::Feature kClobberTriggersContextualWebZeroSuggest{
 // Chrome will request remote ZeroSuggest suggestions for the SRP (search
 // results page).
 const base::Feature kClobberTriggersSRPZeroSuggest{
-    "OmniboxClobberTriggersSRPZeroSuggest", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OmniboxClobberTriggersSRPZeroSuggest", enabled_by_default_desktop_only};
 
 // Used to adjust the age threshold since the last visit in order to consider a
 // normalized keyword search term as a zero-prefix suggestion. If disabled, the
@@ -289,7 +282,7 @@ const base::Feature kOmniboxPedalsBatch2NonEnglish{
 
 // Feature used to enable the third batch of Pedals.
 const base::Feature kOmniboxPedalsBatch3{"OmniboxPedalsBatch3",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used to enable the third batch of Pedals (Find your phone, etc.)
 // for non-English locales (English locales are 'en' and 'en-GB').
@@ -311,10 +304,11 @@ const base::Feature kWebUIOmniboxPopup{"WebUIOmniboxPopup",
 const base::Feature kOmniboxAssistantVoiceSearch{
     "OmniboxAssistantVoiceSearch", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, a setting is added to chrome://settings/searchEngines to
-// control whether <space> can be used to trigger keyword mode.
-const base::Feature kKeywordSpaceTriggeringSetting{
-    "OmniboxKeywordSpaceTriggeringSetting", enabled_by_default_desktop_only};
+const base::Feature kClosePopupWithEscape{"OmniboxClosePopupWithEscape",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kBlurWithEscape{"OmniboxBlurWithEscape",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, add an Active Search Engines category to
 // chrome://settings/searchEngines. This section contains any search engines

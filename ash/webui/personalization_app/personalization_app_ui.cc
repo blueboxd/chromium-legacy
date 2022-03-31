@@ -5,8 +5,9 @@
 #include "ash/webui/personalization_app/personalization_app_ui.h"
 
 #include "ash/constants/ash_features.h"
-#include "ash/grit/ash_personalization_app_resources.h"
-#include "ash/grit/ash_personalization_app_resources_map.h"
+#include "ash/webui/grit/ash_personalization_app_resources.h"
+#include "ash/webui/grit/ash_personalization_app_resources_map.h"
+#include "ash/webui/personalization_app/personalization_app_ambient_provider.h"
 #include "ash/webui/personalization_app/personalization_app_theme_provider.h"
 #include "ash/webui/personalization_app/personalization_app_url_constants.h"
 #include "ash/webui/personalization_app/personalization_app_user_provider.h"
@@ -85,27 +86,56 @@ void AddStrings(content::WebUIDataSource* source) {
       {"themeLabel", IDS_PERSONALIZATION_APP_THEME_LABEL},
       {"darkColorMode", IDS_PERSONALIZATION_APP_THEME_DARK_COLOR_MODE},
       {"lightColorMode", IDS_PERSONALIZATION_APP_THEME_LIGHT_COLOR_MODE},
+      {"autoColorMode", IDS_PERSONALIZATION_APP_THEME_AUTO_COLOR_MODE},
       {"zeroImages", IDS_PERSONALIZATION_APP_NO_IMAGES},
       {"oneImage", IDS_PERSONALIZATION_APP_ONE_IMAGE},
       {"multipleImages", IDS_PERSONALIZATION_APP_MULTIPLE_IMAGES},
+
+      // User/avatar related strings.
       {"avatarLabel", IDS_PERSONALIZATION_APP_AVATAR_LABEL},
-      {"screensaverLabel", IDS_PERSONALIZATION_APP_SCREENSAVER_LABEL}};
+      {"takeWebcamPhoto", IDS_PERSONALIZATION_APP_AVATAR_TAKE_PHOTO},
+
+      // Ambient mode related string.
+      {"screensaverLabel", IDS_PERSONALIZATION_APP_SCREENSAVER_LABEL},
+      {"ambientModePageDescription",
+       IDS_PERSONALIZATION_APP_AMBIENT_MODE_PAGE_DESCRIPTION},
+      {"ambientModeOn", IDS_PERSONALIZATION_APP_AMBIENT_MODE_ON},
+      {"ambientModeOff", IDS_PERSONALIZATION_APP_AMBIENT_MODE_OFF},
+      {"ambientModeTopicSourceTitle",
+       IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_TITLE},
+      {"ambientModeTopicSourceGooglePhotos",
+       IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_GOOGLE_PHOTOS},
+      {"ambientModeTopicSourceGooglePhotosDescription",
+       IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_GOOGLE_PHOTOS_DESC},
+      {"ambientModeTopicSourceGooglePhotosDescriptionNoAlbum",
+       IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_GOOGLE_PHOTOS_DESC_NO_ALBUM},
+      {"ambientModeTopicSourceArtGallery",
+       IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_ART_GALLERY},
+      {"ambientModeTopicSourceArtGalleryDescription",
+       IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_ART_GALLERY_DESCRIPTION},
+      {"ambientModeTopicSourceSelectedRow",
+       IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_SELECTED_ROW},
+      {"ambientModeTopicSourceUnselectedRow",
+       IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_UNSELECTED_ROW},
+      {"ambientModeWeatherTitle",
+       IDS_PERSONALIZATION_APP_AMBIENT_MODE_WEATHER_TITLE},
+      {"ambientModeWeatherUnitFahrenheit",
+       IDS_PERSONALIZATION_APP_AMBIENT_MODE_WEATHER_UNIT_FAHRENHEIT},
+      {"ambientModeWeatherUnitCelsius",
+       IDS_PERSONALIZATION_APP_AMBIENT_MODE_WEATHER_UNIT_CELSIUS},
+
+      // Google Photos strings
+      {"googlePhotosLabel", IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS},
+      {"googlePhotosAlbumsTabLabel",
+       IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_ALBUMS_TAB},
+      {"googlePhotosPhotosTabLabel",
+       IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_PHOTOS_TAB},
+      {"googlePhotosZeroStateMessage",
+       IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_ZERO_STATE_MESSAGE}};
 
   source->AddLocalizedStrings(kLocalizedStrings);
-
-  if (features::IsWallpaperGooglePhotosIntegrationEnabled()) {
-    static constexpr webui::LocalizedString kGooglePhotosLocalizedStrings[] = {
-        {"googlePhotosLabel", IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS},
-        {"googlePhotosAlbumsTabLabel",
-         IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_ALBUMS_TAB},
-        {"googlePhotosPhotosTabLabel",
-         IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_PHOTOS_TAB},
-        {"googlePhotosZeroStateMessage",
-         IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_ZERO_STATE_MESSAGE}};
-    source->AddLocalizedStrings(kGooglePhotosLocalizedStrings);
-  }
-
   source->UseStringsJs();
+  source->EnableReplaceI18nInJS();
 }
 
 void AddBooleans(content::WebUIDataSource* source) {
@@ -126,10 +156,12 @@ void AddBooleans(content::WebUIDataSource* source) {
 
 PersonalizationAppUI::PersonalizationAppUI(
     content::WebUI* web_ui,
+    std::unique_ptr<PersonalizationAppAmbientProvider> ambient_provider,
     std::unique_ptr<PersonalizationAppThemeProvider> theme_provider,
     std::unique_ptr<PersonalizationAppUserProvider> user_provider,
     std::unique_ptr<PersonalizationAppWallpaperProvider> wallpaper_provider)
     : ui::MojoWebUIController(web_ui),
+      ambient_provider_(std::move(ambient_provider)),
       theme_provider_(std::move(theme_provider)),
       user_provider_(std::move(user_provider)),
       wallpaper_provider_(std::move(wallpaper_provider)) {
@@ -150,8 +182,7 @@ PersonalizationAppUI::PersonalizationAppUI(
       base::StrCat(
           {"frame-src ", kChromeUIUntrustedPersonalizationAppURL, ";"}));
 
-  // TODO(crbug/1169829) set up trusted types properly to allow Polymer to write
-  // html
+  // TODO(crbug.com/1098690): Trusted Type Polymer
   source->DisableTrustedTypesCSP();
 
   AddResources(source.get());
@@ -163,6 +194,12 @@ PersonalizationAppUI::PersonalizationAppUI(
 }
 
 PersonalizationAppUI::~PersonalizationAppUI() = default;
+
+void PersonalizationAppUI::BindInterface(
+    mojo::PendingReceiver<personalization_app::mojom::AmbientProvider>
+        receiver) {
+  ambient_provider_->BindInterface(std::move(receiver));
+}
 
 void PersonalizationAppUI::BindInterface(
     mojo::PendingReceiver<personalization_app::mojom::ThemeProvider> receiver) {

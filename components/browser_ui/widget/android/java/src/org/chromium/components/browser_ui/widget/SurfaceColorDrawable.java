@@ -4,6 +4,7 @@
 
 package org.chromium.components.browser_ui.widget;
 
+import android.annotation.SuppressLint;
 import android.content.res.Resources;
 import android.content.res.Resources.Theme;
 import android.content.res.TypedArray;
@@ -65,7 +66,25 @@ public class SurfaceColorDrawable extends GradientDrawable {
 
     @Override
     public boolean canApplyTheme() {
+        // Attributes needed for color calculations are in the theme.
         return true;
+    }
+
+    @Override
+    public ConstantState getConstantState() {
+        // Must hide GradientDrawable's ConstantState, otherwise usage will cause GradientDrawable
+        // objects to be created, instead of this class. Returning null means that these drawables
+        // will not be able to be shared.
+        return null;
+    }
+
+    @Override
+    public Callback getCallback() {
+        // LayerDrawable attempts to do ownership checks by ensuring this callback is null.
+        // Unfortunately it more or less makes it incompatible for classes that return null for
+        // constant state, otherwise warning stack traces are logged. Even when returning null here,
+        // transition animations still seem to play correctly.
+        return null;
     }
 
     @Override
@@ -74,6 +93,12 @@ public class SurfaceColorDrawable extends GradientDrawable {
         onNonNullTheme(theme);
     }
 
+    /**
+     * Lint suppression for NewApi, since we check if a gradient is set by calling #getColors, which
+     * is available after API 24. This is fine, since this class is a custom drawable, which is only
+     * supported after API 24.
+     */
+    @SuppressLint("NewApi")
     private void onNonNullTheme(@NonNull Theme theme) {
         boolean elevationOverlayEnabled =
                 AttrUtils.resolveBoolean(theme, R.attr.elevationOverlayEnabled);
@@ -88,6 +113,12 @@ public class SurfaceColorDrawable extends GradientDrawable {
                         elevationOverlayAccentColor, colorSurface, mDensity);
         final @ColorInt int color =
                 elevationOverlayProvider.compositeOverlayWithThemeSurfaceColorIfNeeded(mElevation);
-        setTint(color);
+        if (getColors() == null) {
+            // Gradient not set, so we call #setColor.
+            setColor(color);
+        } else {
+            // Gradient set, so we call #setTint to preserve it.
+            setTint(color);
+        }
     }
 }

@@ -93,26 +93,11 @@ class TestARQuickLookTabHelper : public ARQuickLookTabHelper {
 class BrowserDownloadServiceTest : public PlatformTest {
  protected:
   BrowserDownloadServiceTest()
-      : browser_state_(browser_state_builder_.Build()) {
+      : browser_state_(TestChromeBrowserState::Builder().Build()) {
     StubTabHelper<PassKitTabHelper>::CreateForWebState(&web_state_);
     TestARQuickLookTabHelper::CreateForWebState(&web_state_);
     StubTabHelper<DownloadManagerTabHelper>::CreateForWebState(&web_state_);
     web_state_.SetBrowserState(browser_state_.get());
-
-    // BrowserDownloadServiceFactory sets its service as
-    // DownloadControllerDelegate. These test use separate
-    // BrowserDownloadService, not created by factory. So delegate
-    // is temporary removed for these tests to avoid DCHECKs.
-    previous_delegate_ = download_controller()->GetDelegate();
-    download_controller()->SetDelegate(nullptr);
-    service_ = std::make_unique<BrowserDownloadService>(download_controller());
-  }
-
-  ~BrowserDownloadServiceTest() override {
-    service_.reset();
-    // Return back the original delegate so service created by service factory
-    // can be destructed without DCHECKs.
-    download_controller()->SetDelegate(previous_delegate_);
   }
 
   web::DownloadController* download_controller() {
@@ -134,11 +119,8 @@ class BrowserDownloadServiceTest : public PlatformTest {
         DownloadManagerTabHelper::FromWebState(&web_state_));
   }
 
-  web::DownloadControllerDelegate* previous_delegate_;
   web::WebTaskEnvironment task_environment_;
-  TestChromeBrowserState::Builder browser_state_builder_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
-  std::unique_ptr<BrowserDownloadService> service_;
   web::FakeWebState web_state_;
   base::HistogramTester histogram_tester_;
 };
@@ -325,17 +307,4 @@ TEST_F(BrowserDownloadServiceTest, ApkMimeType) {
       static_cast<base::HistogramBase::Sample>(
           DownloadMimeTypeResult::AndroidPackageArchive),
       1);
-}
-
-// Tests that the code doesn't crash if the download manager tab helper hasn't
-// been created for this webstate.
-TEST_F(BrowserDownloadServiceTest, NoDownloadManager) {
-  web::FakeWebState fake_web_state;
-  fake_web_state.SetBrowserState(browser_state_.get());
-
-  ASSERT_TRUE(download_controller()->GetDelegate());
-  auto task = std::make_unique<web::FakeDownloadTask>(GURL(kUrl), "test/test");
-  download_controller()->GetDelegate()->OnDownloadCreated(
-      download_controller(), &fake_web_state, std::move(task));
-  ASSERT_EQ(0U, download_manager_tab_helper()->tasks().size());
 }

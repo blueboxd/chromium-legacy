@@ -20,6 +20,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_web_contents_factory.h"
 #include "content/public/test/test_web_ui.h"
@@ -104,10 +105,11 @@ class ProfilePickerHandlerTest : public testing::Test {
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
     ASSERT_EQ("cr.webUIListenerCallback", data.function_name());
     ASSERT_EQ("profiles-list-changed", data.arg1()->GetString());
-    size_t size = data.arg2()->GetList().size();
+    size_t size = data.arg2()->GetListDeprecated().size();
     ASSERT_EQ(size, ordered_profile_entries.size());
     for (size_t i = 0; i < size; ++i) {
-      VerifyProfileEntry(data.arg2()->GetList()[i], ordered_profile_entries[i]);
+      VerifyProfileEntry(data.arg2()->GetListDeprecated()[i],
+                         ordered_profile_entries[i]);
     }
   }
 
@@ -316,7 +318,7 @@ TEST_F(ProfilePickerHandlerTest, HandleGetAvailableAccounts_Empty) {
   const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
   EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
   EXPECT_EQ("available-accounts-changed", data.arg1()->GetString());
-  EXPECT_TRUE(data.arg2()->GetList().empty());
+  EXPECT_TRUE(data.arg2()->GetListDeprecated().empty());
 }
 
 TEST_F(ProfilePickerHandlerTest, HandleGetAvailableAccounts_Available) {
@@ -349,7 +351,7 @@ TEST_F(ProfilePickerHandlerTest, HandleGetAvailableAccounts_Available) {
   const content::TestWebUI::CallData& data1 = *web_ui()->call_data().back();
   EXPECT_EQ("cr.webUIListenerCallback", data1.function_name());
   EXPECT_EQ("available-accounts-changed", data1.arg1()->GetString());
-  EXPECT_EQ(data1.arg2()->GetList().size(), 2u);
+  EXPECT_EQ(data1.arg2()->GetListDeprecated().size(), 2u);
 
   // ****** Account 1 syncing in Secondary profile: return account 2.
   secondary->SetAuthInfo(kGaiaId1, u"example1@gmail.com",
@@ -362,9 +364,9 @@ TEST_F(ProfilePickerHandlerTest, HandleGetAvailableAccounts_Available) {
   const content::TestWebUI::CallData& data2 = *web_ui()->call_data().back();
   EXPECT_EQ("cr.webUIListenerCallback", data2.function_name());
   EXPECT_EQ("available-accounts-changed", data2.arg1()->GetString());
-  EXPECT_EQ(data2.arg2()->GetList().size(), 1u);
+  EXPECT_EQ(data2.arg2()->GetListDeprecated().size(), 1u);
   const std::string* gaia_id =
-      data2.arg2()->GetList()[0].FindStringPath("gaiaId");
+      data2.arg2()->GetListDeprecated()[0].FindStringPath("gaiaId");
   EXPECT_NE(gaia_id, nullptr);
   EXPECT_EQ(*gaia_id, kGaiaId2);
   // TODO(https://crbug/1226050): Test all other fields.
@@ -399,7 +401,7 @@ TEST_F(ProfilePickerHandlerTest, ProfilePickerObservesAvailableAccounts) {
   const content::TestWebUI::CallData& data1 = *web_ui()->call_data().back();
   EXPECT_EQ("cr.webUIListenerCallback", data1.function_name());
   EXPECT_EQ("available-accounts-changed", data1.arg1()->GetString());
-  EXPECT_EQ(data1.arg2()->GetList().size(), 2u);
+  EXPECT_EQ(data1.arg2()->GetListDeprecated().size(), 2u);
 
   // Add another account.
   const std::string kGaiaId = "some_gaia_id3";
@@ -419,7 +421,7 @@ TEST_F(ProfilePickerHandlerTest, ProfilePickerObservesAvailableAccounts) {
   const content::TestWebUI::CallData& data2 = *web_ui()->call_data().back();
   EXPECT_EQ("cr.webUIListenerCallback", data2.function_name());
   EXPECT_EQ("available-accounts-changed", data2.arg1()->GetString());
-  EXPECT_EQ(data2.arg2()->GetList().size(), 3u);
+  EXPECT_EQ(data2.arg2()->GetListDeprecated().size(), 3u);
 }
 
 TEST_F(ProfilePickerHandlerTest, CreateProfileExistingAccount) {
@@ -453,6 +455,15 @@ TEST_F(ProfilePickerHandlerTest, CreateProfileExistingAccount) {
           ->GetProfileAttributesWithPath(new_profile->GetPath());
   ASSERT_TRUE(entry);
   EXPECT_EQ(entry->GetGaiaIds(), base::flat_set<std::string>{kGaiaId});
+
+  // Set the primary account (simulate the `SigninManager`).
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(new_profile);
+  std::vector<CoreAccountInfo> accounts =
+      identity_manager->GetAccountsWithRefreshTokens();
+  ASSERT_EQ(1u, accounts.size());
+  identity_manager->GetPrimaryAccountMutator()->SetPrimaryAccount(
+      accounts[0].account_id, signin::ConsentLevel::kSignin);
 
   // Check that the handler replied.
   ASSERT_TRUE(!web_ui()->call_data().empty());
@@ -510,6 +521,15 @@ TEST_F(ProfilePickerHandlerTest, CreateProfileNewAccount) {
   ASSERT_TRUE(entry);
   EXPECT_EQ(entry->GetGaiaIds(), base::flat_set<std::string>{kGaiaId});
 
+  // Set the primary account (simulate the `SigninManager`).
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(new_profile);
+  std::vector<CoreAccountInfo> accounts =
+      identity_manager->GetAccountsWithRefreshTokens();
+  ASSERT_EQ(1u, accounts.size());
+  identity_manager->GetPrimaryAccountMutator()->SetPrimaryAccount(
+      accounts[0].account_id, signin::ConsentLevel::kSignin);
+
   // Check that the handler replied.
   ASSERT_TRUE(!web_ui()->call_data().empty());
   const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
@@ -564,7 +584,7 @@ TEST_F(ProfilePickerHandlerInUserProfileTest,
   const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
   EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
   EXPECT_EQ("available-accounts-changed", data.arg1()->GetString());
-  EXPECT_TRUE(data.arg2()->GetList().empty());
+  EXPECT_TRUE(data.arg2()->GetListDeprecated().empty());
 }
 
 TEST_F(ProfilePickerHandlerInUserProfileTest,
@@ -593,7 +613,7 @@ TEST_F(ProfilePickerHandlerInUserProfileTest,
   const content::TestWebUI::CallData& data1 = *web_ui()->call_data().back();
   EXPECT_EQ("cr.webUIListenerCallback", data1.function_name());
   EXPECT_EQ("available-accounts-changed", data1.arg1()->GetString());
-  EXPECT_EQ(data1.arg2()->GetList().size(), 2u);
+  EXPECT_EQ(data1.arg2()->GetListDeprecated().size(), 2u);
 
   // ****** Account 1 is assigned to "Secondary": return account 2.
   ProfileAttributesEntry* profile_entry =
@@ -609,9 +629,9 @@ TEST_F(ProfilePickerHandlerInUserProfileTest,
   const content::TestWebUI::CallData& data2 = *web_ui()->call_data().back();
   EXPECT_EQ("cr.webUIListenerCallback", data2.function_name());
   EXPECT_EQ("available-accounts-changed", data2.arg1()->GetString());
-  EXPECT_EQ(data2.arg2()->GetList().size(), 1u);
+  EXPECT_EQ(data2.arg2()->GetListDeprecated().size(), 1u);
   const std::string* gaia_id =
-      data2.arg2()->GetList()[0].FindStringPath("gaiaId");
+      data2.arg2()->GetListDeprecated()[0].FindStringPath("gaiaId");
   EXPECT_NE(gaia_id, nullptr);
   EXPECT_EQ(*gaia_id, kGaiaId2);
 }
@@ -636,20 +656,21 @@ TEST_F(ProfilePickerHandlerInUserProfileTest,
   const content::TestWebUI::CallData& data1 = *web_ui()->call_data().back();
   EXPECT_EQ("cr.webUIListenerCallback", data1.function_name());
   EXPECT_EQ("available-accounts-changed", data1.arg1()->GetString());
-  EXPECT_EQ(data1.arg2()->GetList().size(), 1u);
+  EXPECT_EQ(data1.arg2()->GetListDeprecated().size(), 1u);
   const std::string* gaia_id =
-      data1.arg2()->GetList()[0].FindStringPath("gaiaId");
+      data1.arg2()->GetListDeprecated()[0].FindStringPath("gaiaId");
   EXPECT_NE(gaia_id, nullptr);
   EXPECT_EQ(*gaia_id, kGaiaId1);
-  const std::string* email = data1.arg2()->GetList()[0].FindStringPath("email");
+  const std::string* email =
+      data1.arg2()->GetListDeprecated()[0].FindStringPath("email");
   EXPECT_NE(email, nullptr);
   EXPECT_EQ(*email, kEmail1);
   const std::string* full_name =
-      data1.arg2()->GetList()[0].FindStringPath("name");
+      data1.arg2()->GetListDeprecated()[0].FindStringPath("name");
   EXPECT_NE(full_name, nullptr);
   EXPECT_EQ(*full_name, kFullName1);
   const std::string* account_image_url =
-      data1.arg2()->GetList()[0].FindStringPath("accountImageUrl");
+      data1.arg2()->GetListDeprecated()[0].FindStringPath("accountImageUrl");
   EXPECT_NE(account_image_url, nullptr);
 }
 

@@ -78,6 +78,15 @@ class ASH_EXPORT VideoRecordingWatcher
   // Clean up prior to deletion.
   void ShutDown();
 
+  // Returns the current parent window for
+  // `CaptureModeCameraController::camera_preview_widget_` when recording is in
+  // progress.
+  aura::Window* GetCameraPreviewParentWindow() const;
+
+  // Returns the confine bounds for the camera preview when recording is in
+  // progress.
+  gfx::Rect GetCameraPreviewConfineBounds() const;
+
   // aura::WindowObserver:
   void OnWindowParentChanged(aura::Window* window,
                              aura::Window* parent) override;

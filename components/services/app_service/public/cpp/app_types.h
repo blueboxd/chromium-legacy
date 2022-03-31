@@ -12,7 +12,9 @@
 #include "base/component_export.h"
 #include "base/time/time.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
+#include "components/services/app_service/public/cpp/intent_filter.h"
 #include "components/services/app_service/public/cpp/permission.h"
+#include "components/services/app_service/public/cpp/run_on_os_login_types.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -96,6 +98,17 @@ enum class InstallSource {
   kMaxValue = kBrowser,
 };
 
+// The window mode that each app will open in.
+enum class WindowMode {
+  kUnknown = 0,
+  // Opens in a standalone window
+  kWindow,
+  // Opens in the default web browser
+  kBrowser,
+  // Opens in a tabbed app window
+  kTabbedWindow,
+};
+
 struct COMPONENT_EXPORT(APP_TYPES) App {
   App(AppType app_type, const std::string& app_id);
 
@@ -145,11 +158,52 @@ struct COMPONENT_EXPORT(APP_TYPES) App {
   // For web apps, it contains the install URL.
   absl::optional<std::string> policy_id;
 
-  // TODO(crbug.com/1253250): Add other App struct fields.
+  // Whether the app is an extensions::Extensions where is_platform_app()
+  // returns true.
+  absl::optional<bool> is_platform_app;
+
+  absl::optional<bool> recommendable;
+  absl::optional<bool> searchable;
+  absl::optional<bool> show_in_launcher;
+  absl::optional<bool> show_in_shelf;
+  absl::optional<bool> show_in_search;
+  absl::optional<bool> show_in_management;
+
+  // True if the app is able to handle intents and should be shown in intent
+  // surfaces.
+  absl::optional<bool> handles_intents;
+
+  // Whether the app publisher allows the app to be uninstalled.
+  absl::optional<bool> allow_uninstall;
+
+  // Whether the app icon should add the notification badging.
+  absl::optional<bool> has_badge;
+
+  // Paused apps cannot be launched, and any running apps that become paused
+  // will be stopped. This is independent of whether or not the app is ready to
+  // be launched (defined by the Readiness field).
+  absl::optional<bool> paused;
+
+  // This vector stores all the intent filters defined in this app. Each
+  // intent filter defines a matching criteria for whether an intent can
+  // be handled by this app. One app can have multiple intent filters.
+  IntentFilters intent_filters;
+
+  // Whether the app can be free resized. If this is true, various resizing
+  // operations will be restricted.
+  absl::optional<bool> resize_locked;
+
+  // Whether the app's display mode is in the browser or otherwise.
+  WindowMode window_mode = WindowMode::kUnknown;
+
+  // Whether the app runs on os login in a new window or not.
+  absl::optional<RunOnOsLogin> run_on_os_login;
 
   // When adding new fields to the App type, the `Clone` function and the
   // `AppUpdate` class should also be updated.
 };
+
+using AppPtr = std::unique_ptr<App>;
 
 // TODO(crbug.com/1253250): Remove these functions after migrating to non-mojo
 // AppService.
@@ -164,15 +218,45 @@ Readiness ConvertMojomReadinessToReadiness(
     apps::mojom::Readiness mojom_readiness);
 
 COMPONENT_EXPORT(APP_TYPES)
+apps::mojom::Readiness ConvertReadinessToMojomReadiness(Readiness readiness);
+
+COMPONENT_EXPORT(APP_TYPES)
 InstallReason ConvertMojomInstallReasonToInstallReason(
     apps::mojom::InstallReason mojom_install_reason);
+
+COMPONENT_EXPORT(APP_TYPES)
+apps::mojom::InstallReason ConvertInstallReasonToMojomInstallReason(
+    InstallReason install_reason);
 
 COMPONENT_EXPORT(APP_TYPES)
 InstallSource ConvertMojomInstallSourceToInstallSource(
     apps::mojom::InstallSource mojom_install_source);
 
 COMPONENT_EXPORT(APP_TYPES)
-std::unique_ptr<App> ConvertMojomAppToApp(const apps::mojom::AppPtr& mojom_app);
+apps::mojom::InstallSource ConvertInstallSourceToMojomInstallSource(
+    InstallSource install_source);
+
+COMPONENT_EXPORT(APP_TYPES)
+WindowMode ConvertMojomWindowModeToWindowMode(
+    apps::mojom::WindowMode mojom_window_mode);
+
+COMPONENT_EXPORT(APP_TYPES)
+apps::mojom::WindowMode ConvertWindowModeToMojomWindowMode(
+    WindowMode mojom_window_mode);
+
+COMPONENT_EXPORT(APP_TYPES)
+absl::optional<bool> GetOptionalBool(
+    const apps::mojom::OptionalBool& mojom_optional_bool);
+
+COMPONENT_EXPORT(APP_TYPES)
+absl::optional<bool> GetMojomOptionalBool(
+    const apps::mojom::OptionalBool& mojom_optional_bool);
+
+COMPONENT_EXPORT(APP_TYPES)
+AppPtr ConvertMojomAppToApp(const apps::mojom::AppPtr& mojom_app);
+
+COMPONENT_EXPORT(APP_TYPES)
+apps::mojom::AppPtr ConvertAppToMojomApp(const AppPtr& app);
 
 }  // namespace apps
 

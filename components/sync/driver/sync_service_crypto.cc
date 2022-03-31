@@ -15,8 +15,8 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/os_crypt/os_crypt.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/passphrase_enums.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/nigori/nigori.h"
 #include "components/sync/engine/sync_string_conversions.h"
@@ -360,7 +360,7 @@ bool SyncServiceCrypto::SetDecryptionPassphrase(const std::string& passphrase) {
   DCHECK(nigori);
 
   std::string bootstrap_token = SerializeNigoriAsBootstrapToken(*nigori);
-  if (SetDecryptionNigoriKey(std::move(nigori))) {
+  if (SetDecryptionKeyWithoutUpdatingBootstrapToken(std::move(nigori))) {
     // Update the bootstrap token immediately, even if engine has new pending
     // keys, which aren't decryptable with |nigori|, this is harmless as
     // bootstrap token is ignored if it doesn't contain the right key.
@@ -369,6 +369,28 @@ bool SyncServiceCrypto::SetDecryptionPassphrase(const std::string& passphrase) {
   }
 
   return false;
+}
+
+void SyncServiceCrypto::SetDecryptionNigoriKey(std::unique_ptr<Nigori> nigori) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  DCHECK(nigori);
+  if (state_.required_user_action != RequiredUserAction::kPassphraseRequired) {
+    // Passphrase not required, ignore the call.
+    return;
+  }
+
+  std::string bootstrap_token = SerializeNigoriAsBootstrapToken(*nigori);
+  if (SetDecryptionKeyWithoutUpdatingBootstrapToken(std::move(nigori))) {
+    // Update the bootstrap token immediately, even if engine has new pending
+    // keys, which aren't decryptable with |nigori|, this is harmless as
+    // bootstrap token is ignored if it doesn't contain the right key.
+    delegate_->SetEncryptionBootstrapToken(bootstrap_token);
+  }
+}
+
+std::unique_ptr<Nigori> SyncServiceCrypto::GetDecryptionNigoriKey() const {
+  return ReadNigoriFromBootstrapToken(delegate_->GetEncryptionBootstrapToken());
 }
 
 bool SyncServiceCrypto::IsTrustedVaultKeyRequiredStateKnown() const {
@@ -765,8 +787,7 @@ void SyncServiceCrypto::RefreshIsRecoverabilityDegraded() {
       break;
   }
 
-  if (!base::FeatureList::IsEnabled(
-          switches::kSyncTrustedVaultPassphraseRecovery)) {
+  if (!base::FeatureList::IsEnabled(kSyncTrustedVaultPassphraseRecovery)) {
     return;
   }
 
@@ -810,7 +831,8 @@ void SyncServiceCrypto::GetIsRecoverabilityDegradedCompleted(
   }
 }
 
-bool SyncServiceCrypto::SetDecryptionNigoriKey(std::unique_ptr<Nigori> nigori) {
+bool SyncServiceCrypto::SetDecryptionKeyWithoutUpdatingBootstrapToken(
+    std::unique_ptr<Nigori> nigori) {
   DCHECK(nigori);
   // This should only be called when we have cached pending keys.
   DCHECK(state_.cached_pending_keys.has_blob());
@@ -852,7 +874,7 @@ void SyncServiceCrypto::MaybeSetDecryptionKeyFromBootstrapToken() {
     return;
   }
 
-  SetDecryptionNigoriKey(std::move(nigori));
+  SetDecryptionKeyWithoutUpdatingBootstrapToken(std::move(nigori));
 }
 
 }  // namespace syncer

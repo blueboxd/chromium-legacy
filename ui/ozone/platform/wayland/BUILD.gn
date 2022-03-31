@@ -352,6 +352,18 @@ source_set("wayland") {
 
   deps += [ ":wayland_proxy" ]
 
+  if (use_glib) {
+    sources += [
+      "host/wayland_event_watcher_glib.cc",
+      "host/wayland_event_watcher_glib.h",
+    ]
+  } else {
+    sources += [
+      "host/wayland_event_watcher_fdwatch.cc",
+      "host/wayland_event_watcher_fdwatch.h",
+    ]
+  }
+
   configs += [ "//third_party/khronos:khronos_headers" ]
 }
 
@@ -390,6 +402,8 @@ source_set("test_support") {
     "test/test_alpha_blending.h",
     "test/test_alpha_compositing.cc",
     "test/test_alpha_compositing.h",
+    "test/test_augmented_subsurface.cc",
+    "test/test_augmented_subsurface.h",
     "test/test_augmented_surface.cc",
     "test/test_augmented_surface.h",
     "test/test_compositor.cc",
@@ -487,6 +501,7 @@ source_set("wayland_unittests") {
     "host/wayland_connection_unittest.cc",
     "host/wayland_data_drag_controller_unittest.cc",
     "host/wayland_event_source_unittest.cc",
+    "host/wayland_event_watcher_unittest.cc",
     "host/wayland_exchange_data_provider_unittest.cc",
     "host/wayland_input_method_context_unittest.cc",
     "host/wayland_keyboard_unittest.cc",
@@ -509,6 +524,7 @@ source_set("wayland_unittests") {
     ":test_support",
     ":wayland",
     "//build:chromeos_buildflags",
+    "//components/crash/core/common:crash_key",
     "//components/exo/wayland/protocol:aura_shell_protocol",
     "//testing/gmock",
     "//testing/gtest",

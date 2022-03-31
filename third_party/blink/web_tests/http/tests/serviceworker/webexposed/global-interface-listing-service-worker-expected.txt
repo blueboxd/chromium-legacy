@@ -10,11 +10,13 @@ interface AbortPaymentEvent : ExtendableEvent
     method respondWith
 interface AbortSignal : EventTarget
     static method abort
+    static method timeout
     attribute @@toStringTag
     getter aborted
     getter onabort
     getter reason
     method constructor
+    method throwIfAborted
     setter onabort
 interface BackgroundFetchEvent : ExtendableEvent
     attribute @@toStringTag
@@ -791,6 +793,37 @@ interface MediaCapabilities
     method constructor
     method decodingInfo
     method encodingInfo
+interface MediaStreamTrack : EventTarget
+    attribute @@toStringTag
+    getter contentHint
+    getter enabled
+    getter id
+    getter kind
+    getter label
+    getter muted
+    getter oncapturehandlechange
+    getter onended
+    getter onmute
+    getter onunmute
+    getter readyState
+    method applyConstraints
+    method clone
+    method constructor
+    method getCapabilities
+    method getCaptureHandle
+    method getConstraints
+    method getSettings
+    method stop
+    setter contentHint
+    setter enabled
+    setter oncapturehandlechange
+    setter onended
+    setter onmute
+    setter onunmute
+interface MediaStreamTrackGenerator : MediaStreamTrack
+    attribute @@toStringTag
+    getter writable
+    method constructor
 interface MessageChannel
     attribute @@toStringTag
     getter port1
@@ -1346,7 +1379,6 @@ interface Response
     method text
 interface Scheduler
     attribute @@toStringTag
-    getter currentTaskSignal
     method constructor
     method postTask
 interface SecurityPolicyViolationEvent : Event
@@ -2971,7 +3003,6 @@ interface WindowClient : Client
     method navigate
 interface WorkerGlobalScope : EventTarget
     attribute @@toStringTag
-    getter addressSpace
     getter caches
     getter crossOriginIsolated
     getter crypto

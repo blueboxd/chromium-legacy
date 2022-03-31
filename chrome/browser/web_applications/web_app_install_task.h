@@ -13,13 +13,14 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_params.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_url_loader.h"
+#include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -35,7 +36,7 @@ class WebContents;
 
 namespace web_app {
 
-class OsIntegrationManager;
+class WebAppInstallManager;
 class WebAppDataRetriever;
 class WebAppUrlLoader;
 class WebAppRegistrar;
@@ -50,7 +51,7 @@ class WebAppInstallTask : content::WebContentsObserver {
       base::OnceCallback<void(std::unique_ptr<WebAppInstallInfo>)>;
 
   WebAppInstallTask(Profile* profile,
-                    OsIntegrationManager* os_integration_manager,
+                    WebAppInstallManager* install_manager,
                     WebAppInstallFinalizer* install_finalizer,
                     std::unique_ptr<WebAppDataRetriever> data_retriever,
                     WebAppRegistrar* registrar);
@@ -71,7 +72,7 @@ class WebAppInstallTask : content::WebContentsObserver {
   using LoadWebAppAndCheckManifestCallback = base::OnceCallback<void(
       std::unique_ptr<content::WebContents> web_contents,
       const AppId& app_id,
-      InstallResultCode code)>;
+      webapps::InstallResultCode code)>;
   // Load a web app from the given URL and check for valid manifest.
   void LoadWebAppAndCheckManifest(const GURL& url,
                                   webapps::WebappInstallSource install_source,
@@ -175,7 +176,8 @@ class WebAppInstallTask : content::WebContentsObserver {
 
   // Calling the callback may destroy |this| task. Callers shouldn't work with
   // any |this| class members after calling it.
-  void CallInstallCallback(const AppId& app_id, InstallResultCode code);
+  void CallInstallCallback(const AppId& app_id,
+                           webapps::InstallResultCode code);
 
   // Checks if any errors occurred while |this| was async awaiting. All On*
   // completion handlers below must return early if this is true. Also, if
@@ -248,11 +250,14 @@ class WebAppInstallTask : content::WebContentsObserver {
   void OnDialogCompleted(ForInstallableSite for_installable_site,
                          bool user_accepted,
                          std::unique_ptr<WebAppInstallInfo> web_app_info);
-  void OnInstallFinalized(const AppId& app_id, InstallResultCode code);
-  void OnInstallFinalizedCreateShortcuts(
+  void OnInstallFinalized(const AppId& app_id,
+                          webapps::InstallResultCode code,
+                          OsHooksErrors os_hooks_errors);
+  void OnInstallFinalizedMaybeReparentTab(
       std::unique_ptr<WebAppInstallInfo> web_app_info,
       const AppId& app_id,
-      InstallResultCode code);
+      webapps::InstallResultCode code,
+      OsHooksErrors os_hooks_errors);
   void OnOsHooksCreated(DisplayMode user_display_mode,
                         const AppId& app_id,
                         const OsHooksErrors os_hook_errors);
@@ -304,7 +309,7 @@ class WebAppInstallTask : content::WebContentsObserver {
   std::unique_ptr<content::WebContents> web_contents_;
   content::WebContents* installing_web_contents_ = nullptr;
 
-  raw_ptr<OsIntegrationManager> os_integration_manager_;
+  raw_ptr<WebAppInstallManager> install_manager_;
   raw_ptr<WebAppInstallFinalizer> install_finalizer_;
   const raw_ptr<Profile> profile_;
   raw_ptr<WebAppRegistrar> registrar_;

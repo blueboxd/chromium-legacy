@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/system/unified/unified_system_tray_controller.h"
+#include <memory>
 
 #include "ash/capture_mode/capture_mode_feature_pod_controller.h"
 #include "ash/constants/ash_features.h"
@@ -45,6 +46,7 @@
 #include "ash/system/night_light/night_light_feature_pod_controller.h"
 #include "ash/system/privacy_screen/privacy_screen_feature_pod_controller.h"
 #include "ash/system/rotation/rotation_lock_feature_pod_controller.h"
+#include "ash/system/time/calendar_metrics.h"
 #include "ash/system/time/unified_calendar_view_controller.h"
 #include "ash/system/tray/system_tray_item_uma_type.h"
 #include "ash/system/tray/tray_constants.h"
@@ -70,6 +72,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/compositor/compositor.h"
 #include "ui/display/screen.h"
+#include "ui/events/event.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/widget/widget.h"
@@ -118,10 +121,6 @@ UnifiedSystemTrayController::UnifiedSystemTrayController(
       model_->pagination_model(), PaginationController::SCROLL_AXIS_HORIZONTAL,
       base::BindRepeating(&RecordPageSwitcherSourceByEventType),
       Shell::Get()->tablet_mode_controller()->InTabletMode());
-
-  Shell::Get()->metrics()->RecordUserMetricsAction(UMA_STATUS_AREA_MENU_OPENED);
-  UMA_HISTOGRAM_BOOLEAN("ChromeOS.SystemTray.IsExpandedOnOpen",
-                        model_->IsExpandedOnOpen());
 }
 
 UnifiedSystemTrayController::~UnifiedSystemTrayController() {
@@ -394,9 +393,14 @@ void UnifiedSystemTrayController::ShowNotifierSettingsView() {
   ShowDetailedView(std::make_unique<UnifiedNotifierSettingsController>(this));
 }
 
-void UnifiedSystemTrayController::ShowCalendarView() {
-  if (features::IsCalendarViewEnabled())
-    ShowDetailedView(std::make_unique<UnifiedCalendarViewController>(this));
+void UnifiedSystemTrayController::ShowCalendarView(
+    calendar_metrics::CalendarViewShowSource show_source,
+    calendar_metrics::CalendarEventSource event_source) {
+  if (!features::IsCalendarViewEnabled())
+    return;
+
+  calendar_metrics::RecordCalendarShowMetrics(show_source, event_source);
+  ShowDetailedView(std::make_unique<UnifiedCalendarViewController>(this));
 }
 
 void UnifiedSystemTrayController::ShowMediaControlsDetailedView() {

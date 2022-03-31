@@ -124,7 +124,7 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   void EndDragFromShelf(AppListViewState app_list_state);
   void ProcessMouseWheelEvent(const ui::MouseWheelEvent& event);
   void ProcessScrollEvent(const ui::ScrollEvent& event);
-  void UpdateAppListWithNewSortingOrder(
+  void UpdateAppListWithNewTemporarySortOrder(
       const absl::optional<AppListSortOrder>& new_order,
       bool animate,
       base::OnceClosure update_position_closure) override;
@@ -152,7 +152,6 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   void StartAssistant() override;
   void StartSearch(const std::u16string& raw_query) override;
   void OpenSearchResult(const std::string& result_id,
-                        AppListSearchResultType result_type,
                         int event_flags,
                         AppListLaunchedFrom launched_from,
                         AppListLaunchType launch_type,

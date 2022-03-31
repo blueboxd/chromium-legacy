@@ -13,10 +13,10 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
 #include "ash/public/cpp/pagination/pagination_model_observer.h"
-#include "ash/public/cpp/presentation_time_recorder.h"
 #include "base/memory/ref_counted.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/presentation_time_recorder.h"
 #include "ui/compositor/throughput_tracker.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -103,6 +103,7 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
 
   // views::View:
   void Layout() override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // AppsGridView:
   gfx::Size GetTileViewSize() const override;
@@ -132,6 +133,7 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   void EnsureViewVisible(const GridIndex& index) override;
   absl::optional<VisibleItemIndexRange> GetVisibleItemIndexRange()
       const override;
+  base::ScopedClosureRunner LockAppsGridOpacity() override;
 
   // PaginationModelObserver:
   void TotalPagesChanged(int previous_page_count, int new_page_count) override;
@@ -292,7 +294,7 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   absl::optional<ui::ThroughputTracker> pagination_metrics_tracker_;
 
   // Records the presentation time for apps grid dragging.
-  std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;
+  std::unique_ptr<ui::PresentationTimeRecorder> presentation_time_recorder_;
 
   // The highlighted page during cardified state.
   int highlighted_page_ = -1;
@@ -331,6 +333,9 @@ class ASH_EXPORT PagedAppsGridView : public AppsGridView,
   // A margin added to the height of the clip rect used for clipping the
   // cardified state's background cards.
   int margin_for_gradient_mask_ = 0;
+
+  // If true, ignore the calls on `UpdateOpacity()`.
+  bool lock_opacity_ = false;
 
   base::WeakPtrFactory<PagedAppsGridView> weak_ptr_factory_{this};
 };

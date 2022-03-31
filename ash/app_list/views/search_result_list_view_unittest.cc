@@ -142,7 +142,7 @@ class SearchResultListViewTest : public views::test::WidgetTest,
     assistant_result->set_result_type(
         ash::AppListSearchResultType::kAssistantText);
     assistant_result->set_display_type(ash::SearchResultDisplayType::kList);
-    assistant_result->set_title(u"assistant result");
+    assistant_result->SetTitle(u"assistant result");
     results->Add(std::move(assistant_result));
 
     RunPendingMessages();
@@ -154,10 +154,10 @@ class SearchResultListViewTest : public views::test::WidgetTest,
       std::unique_ptr<TestSearchResult> result =
           std::make_unique<TestSearchResult>();
       result->set_display_type(ash::SearchResultDisplayType::kList);
-      result->set_title(base::UTF8ToUTF16(base::StringPrintf("Result %d", i)));
+      result->SetTitle(base::UTF8ToUTF16(base::StringPrintf("Result %d", i)));
       result->set_best_match(true);
       if (i < 2)
-        result->set_details(u"Detail");
+        result->SetDetails(u"Detail");
       results->Add(std::move(result));
     }
 
@@ -270,15 +270,15 @@ TEST_P(SearchResultListViewTest, SearchResultViewLayout) {
 
   EXPECT_EQ(gfx::Size(kPreferredWidth, kClassicViewHeight),
             GetUnifiedResultViewAt(0)->size());
-  EXPECT_EQ(GetUnifiedResultViewAt(0)->GetLayoutOrientationForTest(),
+  EXPECT_EQ(GetUnifiedResultViewAt(0)->TitleAndDetailsOrientationForTest(),
             views::LayoutOrientation::kVertical);
   EXPECT_EQ(gfx::Size(kPreferredWidth, kInlineAnswerViewHeight),
             GetUnifiedResultViewAt(1)->size());
-  EXPECT_EQ(GetUnifiedResultViewAt(1)->GetLayoutOrientationForTest(),
+  EXPECT_EQ(GetUnifiedResultViewAt(1)->TitleAndDetailsOrientationForTest(),
             views::LayoutOrientation::kVertical);
   EXPECT_EQ(gfx::Size(kPreferredWidth, kDefaultViewHeight),
             GetUnifiedResultViewAt(2)->size());
-  EXPECT_EQ(GetUnifiedResultViewAt(2)->GetLayoutOrientationForTest(),
+  EXPECT_EQ(GetUnifiedResultViewAt(2)->TitleAndDetailsOrientationForTest(),
             views::LayoutOrientation::kHorizontal);
 }
 

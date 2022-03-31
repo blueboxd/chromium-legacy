@@ -83,15 +83,15 @@ class WebRequestEventDetails {
   void SetResponseSource(const WebRequestInfo& request);
 
   void SetBoolean(const std::string& key, bool value) {
-    dict_.SetBoolean(key, value);
+    dict_.SetBoolPath(key, value);
   }
 
   void SetInteger(const std::string& key, int value) {
-    dict_.SetInteger(key, value);
+    dict_.SetIntPath(key, value);
   }
 
   void SetString(const std::string& key, const std::string& value) {
-    dict_.SetString(key, value);
+    dict_.SetStringPath(key, value);
   }
 
   // Create an event dictionary that contains all required keys, and also the
@@ -109,12 +109,12 @@ class WebRequestEventDetails {
   // dictionary is empty.
   std::unique_ptr<base::DictionaryValue> GetAndClearDict();
 
-  // Returns a filtered copy with only whitelisted data for public session.
+  // Returns a filtered copy with only allowlisted data for public session.
   std::unique_ptr<WebRequestEventDetails> CreatePublicSessionCopy();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(
-      WebRequestEventDetailsTest, WhitelistedCopyForPublicSession);
+  FRIEND_TEST_ALL_PREFIXES(WebRequestEventDetailsTest,
+                           AllowlistedCopyForPublicSession);
 
   // Empty constructor used in unittests.
   WebRequestEventDetails();

@@ -9,7 +9,7 @@ import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
-import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -18,13 +18,17 @@ import androidx.annotation.Nullable;
  * The View that renders the ManagementPage (chrome://management).
  * Consists of an medium size image icon over title and descriptive text.
  */
-public class ManagementView extends LinearLayout {
+public class ManagementView extends ScrollView {
     private boolean mIsManaged;
     private @Nullable String mManagerName;
 
     private TextView mTitle;
     private TextView mDescription;
     private TextView mLearnMore;
+    private TextView mBrowserReporting;
+    private TextView mBrowserReportingExplanation;
+    private TextView mExtensionReportUsername;
+    private TextView mExtensionReportVersion;
 
     /** Constructor for inflating from XML. */
     public ManagementView(Context context, AttributeSet attrs) {
@@ -38,6 +42,10 @@ public class ManagementView extends LinearLayout {
         mTitle = (TextView) findViewById(R.id.title_text);
         mDescription = (TextView) findViewById(R.id.description_text);
         mLearnMore = (TextView) findViewById(R.id.learn_more);
+        mBrowserReporting = (TextView) findViewById(R.id.browser_reporting);
+        mBrowserReportingExplanation = (TextView) findViewById(R.id.browser_reporting_explanation);
+        mExtensionReportUsername = (TextView) findViewById(R.id.extension_report_username);
+        mExtensionReportVersion = (TextView) findViewById(R.id.extension_report_version);
 
         // Set default management status
         mIsManaged = false;
@@ -99,5 +107,9 @@ public class ManagementView extends LinearLayout {
 
         mDescription.setVisibility(mIsManaged ? VISIBLE : INVISIBLE);
         mLearnMore.setVisibility(mIsManaged ? VISIBLE : INVISIBLE);
+        mBrowserReporting.setVisibility(mIsManaged ? VISIBLE : INVISIBLE);
+        mBrowserReportingExplanation.setVisibility(mIsManaged ? VISIBLE : INVISIBLE);
+        mExtensionReportUsername.setVisibility(mIsManaged ? VISIBLE : INVISIBLE);
+        mExtensionReportVersion.setVisibility(mIsManaged ? VISIBLE : INVISIBLE);
     }
 }

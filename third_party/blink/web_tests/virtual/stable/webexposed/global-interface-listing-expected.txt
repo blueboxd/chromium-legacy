@@ -15,6 +15,7 @@ interface AbortSignal : EventTarget
     getter onabort
     getter reason
     method constructor
+    method throwIfAborted
     setter onabort
 interface AbsoluteOrientationSensor : OrientationSensor
     attribute @@toStringTag
@@ -501,6 +502,12 @@ interface CSSLayerBlockRule : CSSGroupingRule
 interface CSSLayerStatementRule : CSSRule
     attribute @@toStringTag
     getter nameList
+    method constructor
+interface CSSMathClamp : CSSMathValue
+    attribute @@toStringTag
+    getter lower
+    getter upper
+    getter value
     method constructor
 interface CSSMathInvert : CSSMathValue
     attribute @@toStringTag
@@ -2357,6 +2364,7 @@ interface HIDDevice : EventTarget
     getter vendorId
     method close
     method constructor
+    method forget
     method open
     method receiveFeatureReport
     method sendFeatureReport

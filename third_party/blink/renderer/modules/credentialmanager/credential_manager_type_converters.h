@@ -19,7 +19,7 @@ class AuthenticatorSelectionCriteria;
 class CableAuthenticationData;
 class CableRegistrationData;
 class Credential;
-class FederatedCredentialLogoutRequest;
+class FederatedCredentialLogoutRpsRequest;
 class PublicKeyCredentialCreationOptions;
 class PublicKeyCredentialDescriptor;
 class PublicKeyCredentialParameters;
@@ -48,13 +48,6 @@ struct TypeConverter<blink::Credential*,
 };
 
 // blink::mojom::blink::Authenticator ---------------------------------------
-template <>
-struct TypeConverter<blink::mojom::blink::CredentialManagerError,
-                     blink::mojom::blink::AuthenticatorStatus> {
-  static blink::mojom::blink::CredentialManagerError Convert(
-      const blink::mojom::blink::AuthenticatorStatus&);
-};
-
 template <>
 struct TypeConverter<Vector<uint8_t>,
                      blink::V8UnionArrayBufferOrArrayBufferView*> {
@@ -125,10 +118,10 @@ struct TypeConverter<blink::mojom::blink::AuthenticatorSelectionCriteriaPtr,
 };
 
 template <>
-struct TypeConverter<blink::mojom::blink::LogoutRequestPtr,
-                     blink::FederatedCredentialLogoutRequest> {
-  static blink::mojom::blink::LogoutRequestPtr Convert(
-      const blink::FederatedCredentialLogoutRequest&);
+struct TypeConverter<blink::mojom::blink::LogoutRpsRequestPtr,
+                     blink::FederatedCredentialLogoutRpsRequest> {
+  static blink::mojom::blink::LogoutRpsRequestPtr Convert(
+      const blink::FederatedCredentialLogoutRpsRequest&);
 };
 
 template <>

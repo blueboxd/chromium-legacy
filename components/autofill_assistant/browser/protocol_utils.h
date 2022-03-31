@@ -31,6 +31,15 @@ class ProtocolUtils {
       const ClientContextProto& client_context,
       const ScriptParameters& script_parameters);
 
+  // Create request to get domains capabilities via their url hash prefix.
+  // Note: Only a subset of allowed fields from |client_context| will be sent to
+  // the server.
+  static std::string CreateCapabilitiesByHashRequest(
+      uint32_t hash_prefix_length,
+      const std::vector<uint64_t>& hash_prefix,
+      const ClientContextProto& client_context,
+      const ScriptParameters& script_parameters);
+
   // Convert |script_proto| to a script struct and if the script is valid, add
   // it to |scripts|.
   static void AddScript(const SupportedScriptProto& script_proto,
@@ -66,6 +75,15 @@ class ProtocolUtils {
   // Create an action from the |action|.
   static std::unique_ptr<Action> CreateAction(ActionDelegate* delegate,
                                               const ActionProto& action);
+
+  // Parses an individual action as ActionProto.
+  //
+  // If something goes wrong, returns nullopt. If error_message is non-null, it
+  // is filled with an error message suitable for logging.
+  static absl::optional<ActionProto> ParseFromString(
+      int32_t action_id,
+      const std::string& bytes,
+      std::string* error_message);
 
   // Parse actions from the given |response|, which can be an empty string.
   //

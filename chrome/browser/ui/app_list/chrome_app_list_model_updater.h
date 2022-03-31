@@ -61,7 +61,9 @@ class ChromeAppListModelUpdater : public AppListModelUpdater,
 
   // Methods only used by ChromeAppListItem that talk to ash directly.
   void SetItemIconVersion(const std::string& id, int icon_version) override;
-  void SetItemIcon(const std::string& id, const gfx::ImageSkia& icon) override;
+  void SetItemIconAndColor(const std::string& id,
+                           const gfx::ImageSkia& icon,
+                           const ash::IconColor& icon_color) override;
   void SetItemName(const std::string& id, const std::string& name) override;
   void SetAppStatus(const std::string& id, ash::AppStatus app_status) override;
   void SetItemPosition(const std::string& id,
@@ -72,8 +74,6 @@ class ChromeAppListModelUpdater : public AppListModelUpdater,
                        const std::string& folder_id) override;
   void SetNotificationBadgeColor(const std::string& id,
                                  const SkColor color) override;
-  void SetIconColor(const std::string& id,
-                    const ash::IconColor icon_color) override;
 
   // Methods only used by ChromeSearchResult that talk to ash directly.
   void SetSearchResultMetadata(
@@ -122,10 +122,13 @@ class ChromeAppListModelUpdater : public AppListModelUpdater,
                              const syncer::StringOrdinal& new_position,
                              ash::RequestPositionUpdateReason reason) override;
   void RequestMoveItemToFolder(std::string id,
-                               const std::string& folder_id,
-                               ash::RequestMoveToFolderReason reason) override;
+                               const std::string& folder_id) override;
   void RequestMoveItemToRoot(std::string id,
                              syncer::StringOrdinal target_position) override;
+  std::string RequestFolderCreation(std::string target_merge_id,
+                                    std::string item_to_merge_id) override;
+  void RequestFolderRename(std::string folder_id,
+                           const std::string& new_name) override;
   void RequestAppListSort(ash::AppListSortOrder order) override;
   void RequestAppListSortRevert() override;
 
@@ -191,6 +194,14 @@ class ChromeAppListModelUpdater : public AppListModelUpdater,
   void UpdateItemPositionWithReorderParam(
       const std::vector<app_list::reorder::ReorderParam>& reorder_params);
 
+  // Resets the pref sort order to be kCustom when the app list is not under
+  // temporary sorting. `event` indicates the reason leading to reset.
+  void ResetPrefSortOrderInNonTemporaryMode(ash::AppListOrderUpdateEvent event);
+
+  // Updates the position carried by `data` based on the icon color if the app
+  // list is sorted by color.
+  void MaybeUpdatePositionWhenIconColorChange(ash::AppListItemMetadata* data);
+
   // Indicates the profile that the model updater is associated with.
   Profile* const profile_ = nullptr;
 
@@ -210,6 +221,9 @@ class ChromeAppListModelUpdater : public AppListModelUpdater,
   std::vector<ChromeSearchResult*> published_results_;
   base::ObserverList<AppListModelUpdaterObserver> observers_;
   bool search_engine_is_google_ = false;
+
+  // The id of the item whose icon update is in progress.
+  absl::optional<std::string> item_with_icon_update_;
 
   // Set when sort is triggered and reset when exiting the temporary sort
   // status.

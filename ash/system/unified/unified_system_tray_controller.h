@@ -12,6 +12,8 @@
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/system/audio/unified_volume_slider_controller.h"
 #include "ash/system/media/unified_media_controls_controller.h"
+#include "ash/system/time/calendar_metrics.h"
+#include "ash/system/time/calendar_model.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -110,7 +112,8 @@ class ASH_EXPORT UnifiedSystemTrayController
   // Show the detailed view of media controls. Called from the view.
   void ShowMediaControlsDetailedView();
   // Show the detailed view of Calendar. Called from the view.
-  void ShowCalendarView();
+  void ShowCalendarView(calendar_metrics::CalendarViewShowSource show_source,
+                        calendar_metrics::CalendarEventSource event_source);
 
   // If you want to add a new detailed view, add here.
 
@@ -154,6 +157,9 @@ class ASH_EXPORT UnifiedSystemTrayController
   // UnifedMediaControlsController::Delegate;
   void ShowMediaControls() override;
   void OnMediaControlsViewClicked() override;
+
+  // Return true if UnifiedSystemTray is expanded.
+  bool IsExpanded() const;
 
   scoped_refptr<UnifiedSystemTrayModel> model() { return model_; }
 
@@ -212,9 +218,6 @@ class ASH_EXPORT UnifiedSystemTrayController
   // value. For example, if the view is expanded and it's dragged to the top, it
   // keeps returning 1.0.
   double GetDragExpandedAmount(const gfx::PointF& location) const;
-
-  // Return true if UnifiedSystemTray is expanded.
-  bool IsExpanded() const;
 
   // Return true if message center needs to be collapsed due to limited
   // screen height.

@@ -212,6 +212,8 @@ class CONTENT_EXPORT AuthenticatorCommon {
   void CompleteMakeCredentialRequest(
       blink::mojom::AuthenticatorStatus status,
       blink::mojom::MakeCredentialAuthenticatorResponsePtr response = nullptr,
+      blink::mojom::WebAuthnDOMExceptionDetailsPtr dom_exception_details =
+          nullptr,
       Focus focus_check = Focus::kDontCheck);
 
   // Creates a get assertion response.
@@ -221,7 +223,9 @@ class CONTENT_EXPORT AuthenticatorCommon {
   // Runs |get_assertion_callback_| and then Cleanup().
   void CompleteGetAssertionRequest(
       blink::mojom::AuthenticatorStatus status,
-      blink::mojom::GetAssertionAuthenticatorResponsePtr response = nullptr);
+      blink::mojom::GetAssertionAuthenticatorResponsePtr response = nullptr,
+      blink::mojom::WebAuthnDOMExceptionDetailsPtr dom_exception_details =
+          nullptr);
 
   BrowserContext* GetBrowserContext() const;
 
@@ -235,8 +239,14 @@ class CONTENT_EXPORT AuthenticatorCommon {
   WebAuthenticationRequestProxy* GetWebAuthnRequestProxyIfActive();
 
   void OnMakeCredentialProxyResponse(
-      blink::mojom::AuthenticatorStatus status,
+      WebAuthenticationRequestProxy::RequestId request_id,
+      blink::mojom::WebAuthnDOMExceptionDetailsPtr error,
       blink::mojom::MakeCredentialAuthenticatorResponsePtr response);
+
+  void OnGetAssertionProxyResponse(
+      WebAuthenticationRequestProxy::RequestId request_id,
+      blink::mojom::WebAuthnDOMExceptionDetailsPtr error,
+      blink::mojom::GetAssertionAuthenticatorResponsePtr response);
 
   const GlobalRenderFrameHostId render_frame_host_id_;
   bool has_pending_request_ = false;
@@ -273,6 +283,10 @@ class CONTENT_EXPORT AuthenticatorCommon {
   bool enable_request_proxy_api_ = false;
 
   base::flat_set<RequestExtension> requested_extensions_;
+
+  // The request ID of a pending proxied MakeCredential or GetAssertion request.
+  absl::optional<WebAuthenticationRequestProxy::RequestId>
+      pending_proxied_request_id_;
 
   base::WeakPtrFactory<AuthenticatorCommon> weak_factory_{this};
 };

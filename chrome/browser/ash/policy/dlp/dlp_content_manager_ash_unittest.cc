@@ -14,7 +14,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/ash/policy/dlp/dlp_content_manager_ash_test_helper.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_content_manager_test_helper.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_policy_event.pb.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_reporting_manager.h"
@@ -152,13 +152,15 @@ class DlpContentManagerAshTest : public testing::Test {
     ASSERT_TRUE(DlpRulesManagerFactory::GetForPrimaryProfile());
   }
 
-  DlpContentManagerAsh* GetManager() { return helper_.GetContentManager(); }
+  DlpContentManagerAsh* GetManager() {
+    return static_cast<DlpContentManagerAsh*>(helper_.GetContentManager());
+  }
 
   TestingProfile* profile() { return profile_; }
 
   content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-  DlpContentManagerAshTestHelper helper_;
+  DlpContentManagerTestHelper helper_;
   base::HistogramTester histogram_tester_;
   std::vector<DlpPolicyEvent> events_;
   MockDlpRulesManager* mock_rules_manager_ = nullptr;
@@ -742,7 +744,7 @@ TEST_F(DlpContentManagerAshCheckRestrictionTest,
   SetReportQueueForReportingManager();
   SetupDlpRulesManager();
   EXPECT_CALL(*mock_rules_manager_, GetSourceUrlPattern)
-      .Times(3)
+      .Times(1)
       .WillRepeatedly(::testing::Return(kSrcPattern));
 
   // No restrictions are enforced: allow.
@@ -765,14 +767,11 @@ TEST_F(DlpContentManagerAshCheckRestrictionTest,
   VerifyAndResetActionAllowed(true /*expected*/);
   EXPECT_TRUE(helper_.HasContentCachedForRestriction(
       web_contents.get(), DlpRulesManager::Restriction::kScreenshot));
-  EXPECT_EQ(events_.size(), 2u);
+  EXPECT_EQ(events_.size(), 1u);
   EXPECT_THAT(events_[0],
               IsDlpPolicyEvent(CreateDlpPolicyEvent(
                   kSrcPattern, DlpRulesManager::Restriction::kScreenshot,
                   DlpRulesManager::Level::kWarn)));
-  EXPECT_THAT(events_[1],
-              IsDlpPolicyEvent(CreateDlpPolicyWarningProceededEvent(
-                  kSrcPattern, DlpRulesManager::Restriction::kScreenshot)));
 
   // Check again: allow based on cached user's response - no dialog is shown.
   GetManager()->CheckCaptureModeInitRestriction(
@@ -780,10 +779,7 @@ TEST_F(DlpContentManagerAshCheckRestrictionTest,
   VerifyAndResetActionAllowed(true /*expected*/);
   EXPECT_TRUE(helper_.HasContentCachedForRestriction(
       web_contents.get(), DlpRulesManager::Restriction::kScreenshot));
-  EXPECT_EQ(events_.size(), 3u);
-  EXPECT_THAT(events_[2],
-              IsDlpPolicyEvent(CreateDlpPolicyWarningProceededEvent(
-                  kSrcPattern, DlpRulesManager::Restriction::kScreenshot)));
+  EXPECT_EQ(events_.size(), 1u);
 
   // Web contents are destroyed: allow, no dialog is shown.
   helper_.DestroyWebContents(web_contents.get());
@@ -792,7 +788,7 @@ TEST_F(DlpContentManagerAshCheckRestrictionTest,
   GetManager()->CheckCaptureModeInitRestriction(
       base::BindOnce(on_dlp_restriction_checked_callback, &is_action_allowed_));
   VerifyAndResetActionAllowed(true /*expected*/);
-  EXPECT_EQ(events_.size(), 3u);
+  EXPECT_EQ(events_.size(), 1u);
 }
 
 TEST_F(DlpContentManagerAshCheckRestrictionTest,
@@ -922,7 +918,7 @@ TEST_F(DlpContentManagerAshCheckRestrictionTest, ScreenshotWarnedContinued) {
   SetReportQueueForReportingManager();
   SetupDlpRulesManager();
   EXPECT_CALL(*mock_rules_manager_, GetSourceUrlPattern)
-      .Times(3)
+      .Times(1)
       .WillRepeatedly(::testing::Return(kSrcPattern));
 
   ScreenshotArea area = ScreenshotArea::CreateForAllRootWindows();
@@ -949,14 +945,11 @@ TEST_F(DlpContentManagerAshCheckRestrictionTest, ScreenshotWarnedContinued) {
   VerifyAndResetActionAllowed(true /*expected*/);
   EXPECT_TRUE(helper_.HasContentCachedForRestriction(
       web_contents.get(), DlpRulesManager::Restriction::kScreenshot));
-  EXPECT_EQ(events_.size(), 2u);
+  EXPECT_EQ(events_.size(), 1u);
   EXPECT_THAT(events_[0],
               IsDlpPolicyEvent(CreateDlpPolicyEvent(
                   kSrcPattern, DlpRulesManager::Restriction::kScreenshot,
                   DlpRulesManager::Level::kWarn)));
-  EXPECT_THAT(events_[1],
-              IsDlpPolicyEvent(CreateDlpPolicyWarningProceededEvent(
-                  kSrcPattern, DlpRulesManager::Restriction::kScreenshot)));
 
   // Check again: allow based on cached user's response - no dialog is shown.
   GetManager()->CheckScreenshotRestriction(
@@ -965,10 +958,7 @@ TEST_F(DlpContentManagerAshCheckRestrictionTest, ScreenshotWarnedContinued) {
   VerifyAndResetActionAllowed(true /*expected*/);
   EXPECT_TRUE(helper_.HasContentCachedForRestriction(
       web_contents.get(), DlpRulesManager::Restriction::kScreenshot));
-  EXPECT_EQ(events_.size(), 3u);
-  EXPECT_THAT(events_[2],
-              IsDlpPolicyEvent(CreateDlpPolicyWarningProceededEvent(
-                  kSrcPattern, DlpRulesManager::Restriction::kScreenshot)));
+  EXPECT_EQ(events_.size(), 1u);
 
   // Web contents are destroyed: allow, no dialog is shown.
   helper_.DestroyWebContents(web_contents.get());
@@ -978,7 +968,7 @@ TEST_F(DlpContentManagerAshCheckRestrictionTest, ScreenshotWarnedContinued) {
       area,
       base::BindOnce(on_dlp_restriction_checked_callback, &is_action_allowed_));
   VerifyAndResetActionAllowed(true /*expected*/);
-  EXPECT_EQ(events_.size(), 3u);
+  EXPECT_EQ(events_.size(), 1u);
 }
 
 TEST_F(DlpContentManagerAshCheckRestrictionTest, ScreenshotWarnedCancelled) {

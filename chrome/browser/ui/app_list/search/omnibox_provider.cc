@@ -4,7 +4,13 @@
 
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
 
+#include <iterator>
+#include <string>
+#include <utility>
+
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
@@ -14,8 +20,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/search/common/types_util.h"
 #include "chrome/browser/ui/app_list/search/omnibox_answer_result.h"
 #include "chrome/browser/ui/app_list/search/omnibox_result.h"
+#include "chrome/browser/ui/app_list/search/open_tab_result.h"
 #include "chrome/browser/ui/app_list/search/ranking/util.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
@@ -26,6 +34,8 @@
 
 namespace app_list {
 namespace {
+
+using chromeos::string_matching::TokenizedString;
 
 bool IsDriveUrl(const GURL& url) {
   // Returns true if the |url| points to a Drive Web host.
@@ -43,8 +53,36 @@ int ProviderTypes() {
   // We use all the default providers except for the document provider, which
   // suggests Drive files on enterprise devices. This is disabled to avoid
   // duplication with search results from DriveFS.
-  return AutocompleteClassifier::DefaultOmniboxProviders() &
-         ~AutocompleteProvider::TYPE_DOCUMENT;
+  int providers = AutocompleteClassifier::DefaultOmniboxProviders() &
+                  ~AutocompleteProvider::TYPE_DOCUMENT;
+  if (ash::features::IsProductivityLauncherEnabled() &&
+      base::GetFieldTrialParamByFeatureAsBool(
+          ash::features::kProductivityLauncher, "enable_open_tab", false)) {
+    providers |= AutocompleteProvider::TYPE_OPEN_TAB;
+  }
+  return providers;
+}
+
+void RemoveDuplicates(std::vector<std::unique_ptr<OmniboxResult>>& results) {
+  // Sort the results by deduplication priority and then filter from left to
+  // right. This ensures that higher priority results are retained.
+  sort(results.begin(), results.end(),
+       [](const std::unique_ptr<OmniboxResult>& a,
+          const std::unique_ptr<OmniboxResult>& b) {
+         return a->dedup_priority() > b->dedup_priority();
+       });
+
+  base::flat_set<std::string> seen_ids;
+  for (auto iter = results.begin(); iter != results.end();) {
+    bool inserted = seen_ids.insert((*iter)->id()).second;
+    if (!inserted) {
+      // C++11:: The return value of erase(iter) is an iterator pointing to the
+      // next element in the container.
+      iter = results.erase(iter);
+    } else {
+      ++iter;
+    }
+  }
 }
 
 }  //  namespace
@@ -69,26 +107,28 @@ OmniboxProvider::~OmniboxProvider() {}
 
 void OmniboxProvider::Start(const std::u16string& query) {
   ClearResultsSilently();
+  last_query_.emplace(query, TokenizedString::Mode::kCamelCase);
 
   controller_->Stop(false);
+  query_finished_ = false;
   // The new page classification value(CHROMEOS_APP_LIST) is introduced
   // to differentiate the suggest requests initiated by ChromeOS app_list from
   // the ones by Chrome omnibox.
-  AutocompleteInput input =
+  input_ =
       AutocompleteInput(query, metrics::OmniboxEventProto::CHROMEOS_APP_LIST,
                         ChromeAutocompleteSchemeClassifier(profile_));
 
   // Sets the |from_omnibox_focus| flag to enable ZeroSuggestProvider to process
   // the requests from app_list.
-  if (input.text().empty()) {
-    input.set_focus_type(OmniboxFocusType::ON_FOCUS);
+  if (input_.text().empty()) {
+    input_.set_focus_type(OmniboxFocusType::ON_FOCUS);
     is_zero_state_input_ = true;
   } else {
     is_zero_state_input_ = false;
   }
 
   query_start_time_ = base::TimeTicks::Now();
-  controller_->Start(input);
+  controller_->Start(input_);
 }
 
 void OmniboxProvider::StartZeroState() {
@@ -106,6 +146,10 @@ ash::AppListSearchResultType OmniboxProvider::ResultType() const {
 void OmniboxProvider::PopulateFromACResult(const AutocompleteResult& result) {
   SearchProvider::Results new_results;
   new_results.reserve(result.size());
+
+  std::vector<std::unique_ptr<OmniboxResult>> list_results;
+  list_results.reserve(result.size());
+
   for (const AutocompleteMatch& match : result) {
     // Do not return a match in any of these cases:
     // - The URL is invalid.
@@ -120,19 +164,30 @@ void OmniboxProvider::PopulateFromACResult(const AutocompleteResult& result) {
       continue;
     }
 
-    std::unique_ptr<ChromeSearchResult> result;
     if (!is_zero_state_input_ && IsAnswer(match)) {
-      result = std::make_unique<OmniboxAnswerResult>(profile_, list_controller_,
-                                                     controller_.get(), match);
+      new_results.emplace_back(std::make_unique<OmniboxAnswerResult>(
+          profile_, list_controller_, controller_.get(), match));
+    } else if (match.type == AutocompleteMatchType::OPEN_TAB) {
+      DCHECK(last_query_.has_value());
+      new_results.emplace_back(std::make_unique<OpenTabResult>(
+          profile_, list_controller_, &favicon_cache_, last_query_.value(),
+          match));
     } else {
-      result = std::make_unique<OmniboxResult>(
-          profile_, list_controller_, controller_.get(), &favicon_cache_, match,
-          is_zero_state_input_);
+      list_results.emplace_back(std::make_unique<OmniboxResult>(
+          profile_, list_controller_, controller_.get(), &favicon_cache_,
+          input_, match, is_zero_state_input_));
     }
-    new_results.emplace_back(std::move(result));
   }
 
-  SwapResults(&new_results);
+  // Deduplicate the list results and then move-concatenate it into new_results.
+  RemoveDuplicates(list_results);
+  std::move(list_results.begin(), list_results.end(),
+            std::back_inserter(new_results));
+
+  if (controller_->done() && !query_finished_) {
+    query_finished_ = true;
+    SwapResults(&new_results);
+  }
 }
 
 void OmniboxProvider::OnResultChanged(AutocompleteController* controller,

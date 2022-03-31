@@ -105,6 +105,9 @@ class ExtendedDragSource::DraggedWindowHolder : public aura::WindowObserver {
 
     toplevel_window_ = surface_->window()->GetToplevelWindow();
     toplevel_window_->AddObserver(this);
+
+    // Disable visibility change animations on the dragged window.
+    toplevel_window_->SetProperty(aura::client::kAnimationsDisabledKey, true);
     return true;
   }
 
@@ -256,9 +259,6 @@ void ExtendedDragSource::StartDrag(aura::Window* toplevel,
   event_blocker_ =
       std::make_unique<aura::ScopedWindowEventTargetingBlocker>(toplevel);
 
-  // Disable visibility change animations on the dragged window.
-  toplevel->SetProperty(aura::client::kAnimationsDisabledKey, true);
-
   DVLOG(1) << "Starting drag. pointer_loc=" << pointer_location.ToString();
   auto* toplevel_handler = ash::Shell::Get()->toplevel_window_event_handler();
   auto move_source = drag_event_source_ == ui::mojom::DragEventSource::kTouch
@@ -280,10 +280,12 @@ void ExtendedDragSource::StartDrag(aura::Window* toplevel,
 
   // TODO(crbug.com/1167581): Experiment setting |update_gesture_target| back
   // to true when capture is removed from drag and drop.
-  toplevel_handler->AttemptToStartDrag(toplevel, pointer_location, HTCAPTION,
-                                       move_source, std::move(end_closure),
-                                       /*update_gesture_target=*/false,
-                                       /*grab_capture=*/false);
+  toplevel_handler->AttemptToStartDrag(
+      toplevel, pointer_location, HTCAPTION, move_source,
+      std::move(end_closure),
+      /*update_gesture_target=*/false,
+      /*grab_capture =*/
+      drag_event_source_ != ui::mojom::DragEventSource::kTouch);
 }
 
 void ExtendedDragSource::OnDraggedWindowVisibilityChanging(bool visible) {

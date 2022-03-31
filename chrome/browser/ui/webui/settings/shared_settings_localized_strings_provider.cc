@@ -22,7 +22,7 @@
 #include "components/google/core/common/google_util.h"
 #include "components/soda/constants.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/base/features.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
@@ -64,7 +64,7 @@ std::u16string GetHelpUrlWithBoard(const std::string& original_url) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 bool ShouldShowLacrosSideBySideWarningInAsh() {
   return base::FeatureList::IsEnabled(
-             switches::kSyncSettingsShowLacrosSideBySideWarning) &&
+             syncer::kSyncSettingsShowLacrosSideBySideWarning) &&
          crosapi::browser_util::IsAshWebBrowserEnabled() &&
          crosapi::browser_util::IsLacrosEnabled();
 }
@@ -73,7 +73,7 @@ bool ShouldShowLacrosSideBySideWarningInAsh() {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 bool ShouldShowLacrosSideBySideWarningInLacros() {
   return base::FeatureList::IsEnabled(
-             switches::kSyncSettingsShowLacrosSideBySideWarning) &&
+             syncer::kSyncSettingsShowLacrosSideBySideWarning) &&
          !chromeos::LacrosService::Get()
               ->init_params()
               ->standalone_browser_is_only_browser;
@@ -317,8 +317,8 @@ void AddSyncPageStrings(content::WebUIDataSource* html_source) {
   html_source->AddString("activityControlsUrl",
                          chrome::kGoogleAccountActivityControlsURL);
   html_source->AddString(
-      "activityControlsUrlInPrivacyReview",
-      chrome::kGoogleAccountActivityControlsURLInPrivacyReview);
+      "activityControlsUrlInPrivacyGuide",
+      chrome::kGoogleAccountActivityControlsURLInPrivacyGuide);
   html_source->AddString("syncDashboardUrl", sync_dashboard_url);
   html_source->AddString(
       "passphraseExplanationText",
@@ -342,9 +342,8 @@ void AddSyncPageStrings(content::WebUIDataSource* html_source) {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  // TODO(https://crbug.com/1275542): Un-deprecate kSyncDeprecatedSubpagePath.
   html_source->AddString("chromeOSSyncSettingsPath",
-                         chromeos::settings::mojom::kSyncDeprecatedSubpagePath);
+                         chromeos::settings::mojom::kSyncSetupSubpagePath);
 #endif
 
   html_source->AddString("syncErrorsHelpUrl", chrome::kSyncErrorsHelpURL);

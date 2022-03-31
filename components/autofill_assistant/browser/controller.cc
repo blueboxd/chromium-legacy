@@ -26,6 +26,7 @@
 #include "components/autofill_assistant/browser/user_data_util.h"
 #include "components/autofill_assistant/browser/view_layout.pb.h"
 #include "components/google/core/common/google_util.h"
+#include "components/password_manager/core/browser/password_change_success_tracker_impl.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -105,7 +106,7 @@ Service* Controller::GetService() {
 WebController* Controller::GetWebController() {
   if (!web_controller_) {
     web_controller_ = WebController::CreateForWebContents(
-        web_contents(), &user_data_, &log_info_);
+        web_contents(), &user_data_, &log_info_, annotate_dom_model_service_);
   }
   return web_controller_.get();
 }
@@ -135,6 +136,7 @@ content::WebContents* Controller::GetWebContents() {
 std::string Controller::GetEmailAddressForAccessTokenAccount() {
   return client_->GetEmailAddressForAccessTokenAccount();
 }
+
 ukm::UkmRecorder* Controller::GetUkmRecorder() {
   return ukm_recorder_;
 }
@@ -740,7 +742,11 @@ void Controller::InitFromParameters() {
     DCHECK(GetDeeplinkURL().is_valid());  // |deeplink_url_| must be set.
     user_data_.selected_login_.emplace(
         GetDeeplinkURL().DeprecatedGetOriginAsURL(), *password_change_username);
-    // TODO(crbug.com/1281844): Inform PasswordChangeSuccessTracker.
+    GetPasswordChangeSuccessTracker()->OnChangePasswordFlowStarted(
+        user_data_.selected_login_->origin,
+        user_data_.selected_login_->username,
+        password_manager::PasswordChangeSuccessTracker::StartEvent::
+            kAutomatedFlow);
   }
 
   user_model_.SetCurrentURL(GetCurrentURL());
@@ -1174,8 +1180,7 @@ void Controller::DidFinishNavigation(
   }
 }
 
-void Controller::DocumentAvailableInMainFrame(
-    content::RenderFrameHost* render_frame_host) {
+void Controller::PrimaryMainDocumentElementAvailable() {
   OnUrlChange();
 }
 

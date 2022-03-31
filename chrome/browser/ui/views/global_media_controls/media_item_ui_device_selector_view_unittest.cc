@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/media_router/cast_dialog_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/views/chrome_views_test_base.h"
+#include "components/media_router/browser/presentation/start_presentation_context.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/media_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -42,6 +43,13 @@ constexpr char kItemId[] = "item_id";
 constexpr char kSinkId[] = "sink_id";
 constexpr char kSinkFriendlyName[] = "Nest Hub";
 constexpr char16_t kSinkFriendlyName16[] = u"Nest Hub";
+
+ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED,
+                             gfx::Point(),
+                             gfx::Point(),
+                             ui::EventTimeForNow(),
+                             ui::EF_LEFT_MOUSE_BUTTON,
+                             ui::EF_LEFT_MOUSE_BUTTON);
 
 UIMediaSink CreateMediaSink(
     UIMediaSinkState state = UIMediaSinkState::AVAILABLE) {
@@ -142,6 +150,8 @@ class MockCastDialogController : public CastDialogController {
   MOCK_METHOD1(StopCasting, void(const std::string& route_id));
   MOCK_METHOD1(ClearIssue, void(const media_router::Issue::Id& issue_id));
   MOCK_METHOD0(GetInitiator, content::WebContents*());
+  MOCK_METHOD0(TakeStartPresentationContext,
+               std::unique_ptr<media_router::StartPresentationContext>());
 };
 
 }  // anonymous namespace
@@ -172,8 +182,11 @@ class MediaItemUIDeviceSelectorViewTest : public ChromeViewsTestBase {
 
   void SimulateButtonClick(views::View* view) {
     views::test::ButtonTestApi(static_cast<views::Button*>(view))
-        .NotifyClick(ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(),
-                                    gfx::Point(), ui::EventTimeForNow(), 0, 0));
+        .NotifyClick(pressed_event);
+  }
+
+  void SimulateMouseClick(views::View* view) {
+    view->OnMousePressed(pressed_event);
   }
 
   std::string EntryLabelText(views::View* entry_view) {
@@ -259,9 +272,22 @@ TEST_F(MediaItemUIDeviceSelectorViewTest, ExpandButtonOpensEntryContainer) {
   AddAudioDevices(delegate);
   view_ = CreateDeviceSelectorView(&delegate);
 
+  // Clicking on the dropdown button should expand the device list.
   ASSERT_TRUE(view_->GetDropdownButtonForTesting());
   EXPECT_FALSE(view_->GetDeviceEntryViewVisibilityForTesting());
   SimulateButtonClick(view_->GetDropdownButtonForTesting());
+  EXPECT_TRUE(view_->GetDeviceEntryViewVisibilityForTesting());
+}
+
+TEST_F(MediaItemUIDeviceSelectorViewTest, ExpandLabelOpensEntryContainer) {
+  NiceMock<MockMediaItemUIDeviceSelectorDelegate> delegate;
+  AddAudioDevices(delegate);
+  view_ = CreateDeviceSelectorView(&delegate);
+
+  // Clicking on the device selector view should expand the device list.
+  ASSERT_TRUE(view_.get());
+  EXPECT_FALSE(view_->GetDeviceEntryViewVisibilityForTesting());
+  SimulateMouseClick(view_.get());
   EXPECT_TRUE(view_->GetDeviceEntryViewVisibilityForTesting());
 }
 

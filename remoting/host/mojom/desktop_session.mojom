@@ -5,6 +5,7 @@
 module remoting.mojom;
 
 import "mojo/public/mojom/base/byte_string.mojom";
+import "remoting/host/mojom/webrtc_types.mojom";
 import "remoting/host/mojom/wrapped_primitives.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
@@ -172,11 +173,104 @@ interface DesktopSessionRequestHandler {
   CrashNetworkProcess();
 };
 
+// Allows the network process to ask the daemon process to create, update, or
+// destroy the current desktop session.
+// The remote for this interface is owned in the low-privilege network process
+// and the receiver is bound in the high-privilege daemon process.
+interface DesktopSessionManager {
+  // Creates a chromoting desktop environment for the session identified by
+  // |terminal_id|. This is done by injecting a desktop agent process and
+  // establishing IPC channels between the daemon, desktop, and network
+  // processes.
+  CreateDesktopSession(int32 terminal_id, ScreenResolution screen_resolution,
+                       bool is_virtual_terminal);
+
+  // Closes the desktop session identified by |terminal_id|. This involves
+  // terminating the desktop agent process and removing any references to the
+  // session being closed in the daemon and network processes. Not changes are
+  // made at an OS level, meaning the user can reconnect to the same session
+  // without a loss of state.
+  CloseDesktopSession(int32 terminal_id);
+
+  // Sends the updated screen resolution to the desktop agent running in the
+  // |terminal_id| session.
+  SetScreenResolution(int32 terminal_id, ScreenResolution screen_resolution);
+};
+
+// A set of options used to customize the desktop session behavior.
+struct DesktopEnvironmentOptions {
+  // True if the curtain mode should be enabled.
+  bool enable_curtaining;
+
+  // True if a user-interactive windows should be displayed on the desktop.
+  bool enable_user_interface;
+
+  // True if a notification should be shown when a remote user is connected.
+  bool enable_notifications;
+
+  // True if the session should be terminated when local input is detected.
+  bool terminate_upon_input;
+
+  // True if this host has file transfer enabled.
+  bool enable_file_transfer;
+
+  // True if this host has the remote open URL feature enabled.
+  bool enable_remote_open_url;
+
+  // True if this host has the remote WebAuthn feature enabled.
+  bool enable_remote_webauthn;
+
+  // If set, this value is used to constrain the amount of data that can be
+  // transferred using ClipboardEvents. A value of 0 will effectively disable
+  // clipboard sharing.
+  UInt32? clipboard_size;
+
+  // The DesktopCaptureOptions to initialize DesktopCapturer.
+  DesktopCaptureOptions desktop_capture_options;
+};
+
+// Describes a screen's dimensions and DPI.
+struct ScreenResolution {
+  // Dimensions of the screen in pixels.
+  DesktopSize dimensions;
+
+  // The vertical and horizontal DPI of the screen.
+  DesktopVector dpi;
+};
+
+// Starts the agent in the desktop session and returns an interface to allow the
+// caller to inject input events and control A/V capture.
+// The remote for this interface is owned in the low-privilege network process
+// and the receiver is bound in the high-privilege desktop integration process.
+interface DesktopSessionAgent {
+  // Passes the client session data to the desktop session agent and starts it.
+  // Note: This must only be called once per desktop process instance.
+  Start(string authenticated_jid, ScreenResolution resolution,
+        DesktopEnvironmentOptions options) =>
+      (pending_associated_remote<DesktopSessionControl>
+             desktop_session_control);
+};
+
 // Allows the network process to inject input events and control A/V capture in
 // the desktop session.
 // The remote for this interface is owned in the low-privilege network process
 // and the receiver is bound in the high-privilege desktop integration process.
 interface DesktopSessionControl {
+  // Requests that a new frame be captured.
+  CaptureFrame();
+
+  // Selects a display source in a multi-monitor system.
+  SelectSource(int32 desktop_display_id);
+
+  // Changes the screen resolution in the desktop session.
+  SetScreenResolution(ScreenResolution new_resolution);
+
+  // Locks the current desktop session.
+  LockWorkstation();
+
+  // Asks the desktop session to inject the send attention sequence (SAS).
+  InjectSendAttentionSequence();
+
   // Used to inject clipboard events received from the client.
   InjectClipboardEvent(ClipboardEvent event);
 
@@ -201,7 +295,6 @@ interface DesktopSessionControl {
 // Allows the desktop process to forward events and data to the network process
 // which may process it (e.g. encode a video frame) or forward it to the client
 // (in the case of updated clipboard contents).
-// Forwards local clipboard events from the host to the client.
 // The remote for this interface is owned in the high-privilege desktop
 // integration process and the receiver is bound in the low-privilege network
 // process.
@@ -213,4 +306,41 @@ interface DesktopSessionEventHandler {
   // starts to provide the initial state, then it will be called to report state
   // changes caused by calling DesktopSessionControl::SetUpUrlForwarder().
   OnUrlForwarderStateChange(UrlForwarderState state);
+};
+
+// This enum mirrors the remoting::protocol::ErrorCode enum.
+enum ProtocolErrorCode {
+  kOk = 0,
+  kPeerIsOffline = 1,
+  kSessionRejected = 2,
+  kIncompatibleProtocol = 3,
+  kAuthenticationFailed = 4,
+  kInvalidAccount = 5,
+  kChannelConnectionError = 6,
+  kSignalingError = 7,
+  kSignalingTimeout = 8,
+  kHostOverload = 9,
+  kMaxSessionLength = 10,
+  kHostConfigurationError = 11,
+  kUnknownError = 12,
+  kElevationError = 13,
+  kHostCertificateError = 14,
+  kHostRegistrationError = 15,
+  kExistingAdminSession = 16,
+  kAuthzPolicyCheckFailed = 17,
+  kDisallowedByPolicy = 18,
+};
+
+// Provides the desktop integration process with a mechanism for controlling the
+// client session owned by the network process.
+// The remote for this interface is owned in the high-privilege desktop
+// integration process and the receiver is bound in the low-privilege network
+// process.
+interface DesktopSessionStateHandler {
+  // Disconnects the remote client from the host machine, |error_code| is
+  // passed to the remote client as the reason for the disconnection. An example
+  // usage is when the 'disconnect' button is clicked on the local disconnect
+  // window. The desktop process should expect to be terminated shortly after
+  // calling this method.
+  DisconnectSession(ProtocolErrorCode error_code);
 };

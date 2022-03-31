@@ -342,11 +342,9 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
   using MainThreadSchedulerImpl::V8TaskQueue;
   using MainThreadSchedulerImpl::VirtualTimeControlTaskQueue;
 
-  MainThreadSchedulerImplForTest(
-      std::unique_ptr<base::sequence_manager::SequenceManager> manager,
-      absl::optional<base::Time> initial_virtual_time)
-      : MainThreadSchedulerImpl(std::move(manager), initial_virtual_time),
-        update_policy_count_(0) {}
+  explicit MainThreadSchedulerImplForTest(
+      std::unique_ptr<base::sequence_manager::SequenceManager> manager)
+      : MainThreadSchedulerImpl(std::move(manager)), update_policy_count_(0) {}
 
   void UpdatePolicyLocked(UpdateType update_type) override {
     update_policy_count_++;
@@ -422,8 +420,7 @@ class MainThreadSchedulerImplTest : public testing::Test {
             nullptr, test_task_runner_, test_task_runner_->GetMockTickClock(),
             base::sequence_manager::SequenceManager::Settings::Builder()
                 .SetRandomisedSamplingEnabled(true)
-                .Build()),
-        absl::nullopt));
+                .Build())));
     if (initially_ensure_usecase_none_)
       EnsureUseCaseNone();
   }
@@ -3078,32 +3075,22 @@ TEST_F(MainThreadSchedulerImplTest, UnthrottledTaskRunner) {
   EXPECT_EQ(500u, unthrottled_count);
 }
 
-TEST_F(
-    MainThreadSchedulerImplTest,
-    VirtualTimePolicyDoesNotAffectNewThrottleableTaskQueueIfVirtualTimeNotEnabled) {
-  scheduler_->SetVirtualTimePolicy(
-      PageSchedulerImpl::VirtualTimePolicy::kPause);
-  scoped_refptr<MainThreadTaskQueue> throttleable_tq =
-      scheduler_->NewThrottleableTaskQueueForTest(nullptr);
-  EXPECT_FALSE(throttleable_tq->GetTaskQueue()->HasActiveFence());
-}
-
 TEST_F(MainThreadSchedulerImplTest, EnableVirtualTime) {
   EXPECT_FALSE(scheduler_->IsVirtualTimeEnabled());
-  scheduler_->EnableVirtualTime();
+  scheduler_->EnableVirtualTime(base::Time());
   EXPECT_TRUE(scheduler_->IsVirtualTimeEnabled());
   EXPECT_TRUE(scheduler_->GetVirtualTimeDomain());
 }
 
 TEST_F(MainThreadSchedulerImplTest, DisableVirtualTimeForTesting) {
-  scheduler_->EnableVirtualTime();
+  scheduler_->EnableVirtualTime(base::Time());
   scheduler_->DisableVirtualTimeForTesting();
   EXPECT_FALSE(scheduler_->IsVirtualTimeEnabled());
   EXPECT_FALSE(scheduler_->VirtualTimeControlTaskQueue());
 }
 
 TEST_F(MainThreadSchedulerImplTest, VirtualTimePauser) {
-  scheduler_->EnableVirtualTime();
+  scheduler_->EnableVirtualTime(base::Time());
   scheduler_->SetVirtualTimePolicy(
       PageSchedulerImpl::VirtualTimePolicy::kDeterministicLoading);
 
@@ -3123,7 +3110,7 @@ TEST_F(MainThreadSchedulerImplTest, VirtualTimePauser) {
 }
 
 TEST_F(MainThreadSchedulerImplTest, VirtualTimePauserNonInstantTask) {
-  scheduler_->EnableVirtualTime();
+  scheduler_->EnableVirtualTime(base::Time());
   scheduler_->SetVirtualTimePolicy(
       PageSchedulerImpl::VirtualTimePolicy::kDeterministicLoading);
 
@@ -3142,7 +3129,7 @@ TEST_F(MainThreadSchedulerImplTest, VirtualTimeWithOneQueueWithoutVirtualTime) {
   // This test ensures that we do not do anything strange like stopping
   // processing task queues after we encountered one task queue with
   // DoNotUseVirtualTime trait.
-  scheduler_->EnableVirtualTime();
+  scheduler_->EnableVirtualTime(base::Time());
   scheduler_->SetVirtualTimePolicy(
       PageSchedulerImpl::VirtualTimePolicy::kDeterministicLoading);
 
@@ -3323,7 +3310,7 @@ TEST_F(MainThreadSchedulerImplTest,
   Mock::VerifyAndClearExpectations(page_scheduler_.get());
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 TEST_F(MainThreadSchedulerImplTest, PauseTimersForAndroidWebView) {
   // Tasks in some queues don't fire when the throttleable queues are paused.
   Vector<String> run_order;
@@ -3338,7 +3325,7 @@ TEST_F(MainThreadSchedulerImplTest, PauseTimersForAndroidWebView) {
   test_task_runner_->FastForwardUntilNoTasksRemain();
   EXPECT_THAT(run_order, testing::ElementsAre("T1"));
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID)
 
 TEST_F(MainThreadSchedulerImplTest, FreezesCompositorQueueWhenAllPagesFrozen) {
   main_frame_scheduler_.reset();
@@ -3393,13 +3380,19 @@ class MainThreadSchedulerImplWithInitalVirtualTimeTest
  public:
   void SetUp() override {
     CreateTestTaskRunner();
-    Initialize(std::make_unique<MainThreadSchedulerImplForTest>(
-        base::sequence_manager::SequenceManagerForTest::Create(
-            nullptr, test_task_runner_, test_task_runner_->GetMockTickClock(),
-            base::sequence_manager::SequenceManager::Settings::Builder()
-                .SetRandomisedSamplingEnabled(true)
-                .Build()),
-        base::Time::FromJsTime(1000000.0)));
+    auto main_thread_scheduler =
+        std::make_unique<MainThreadSchedulerImplForTest>(
+            base::sequence_manager::SequenceManagerForTest::Create(
+                nullptr, test_task_runner_,
+                test_task_runner_->GetMockTickClock(),
+                base::sequence_manager::SequenceManager::Settings::Builder()
+                    .SetRandomisedSamplingEnabled(true)
+                    .Build()));
+    main_thread_scheduler->EnableVirtualTime(
+        /* initial_time= */ base::Time::FromJsTime(1000000.0));
+    main_thread_scheduler->SetVirtualTimePolicy(
+        PageScheduler::VirtualTimePolicy::kPause);
+    Initialize(std::move(main_thread_scheduler));
   }
 };
 

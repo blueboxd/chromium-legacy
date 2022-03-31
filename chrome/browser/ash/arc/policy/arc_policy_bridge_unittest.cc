@@ -30,7 +30,6 @@
 #include "chrome/browser/ash/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/policy/developer_tools_policy_handler.h"
-#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -298,8 +297,7 @@ class ArcPolicyBridgeTestBase {
           base::JSONReader::ReadDeprecated(
               policy_bridge()->get_arc_policy_compliance_report());
       ASSERT_TRUE(saved_compliance_report_value);
-      EXPECT_TRUE(
-          compliance_report_value->Equals(saved_compliance_report_value.get()));
+      EXPECT_EQ(*compliance_report_value, *saved_compliance_report_value);
     } else {
       EXPECT_TRUE(policy_bridge()->get_arc_policy_compliance_report().empty());
     }
@@ -684,7 +682,7 @@ TEST_F(ArcPolicyBridgeTest, VpnConfigAllowedTest) {
 
 TEST_F(ArcPolicyBridgeTest, ManualChildUserPoliciesSet) {
   // Mark profile as supervised user.
-  profile()->SetSupervisedUserId(::supervised_users::kChildAccountSUID);
+  profile()->SetIsSupervisedProfile();
   EXPECT_TRUE(profile()->IsChild());
 
   policy_map().Set(policy::key::kArcPolicy, policy::POLICY_LEVEL_MANDATORY,

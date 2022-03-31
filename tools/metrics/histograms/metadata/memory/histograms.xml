@@ -22,6 +22,140 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
+<histogram name="HeapProfiling.AndroidStackUnwinder"
+    enum="AndroidStackUnwinder" expires_after="2022-12-02">
+  <owner>joenotcharles@chromium.org</owner>
+  <owner>chrome-memory@google.com</owner>
+  <summary>
+    The stack unwinder implementation used by the SamplingHeapProfiler. Emitted
+    on Android devices only each time the profiler is started, which happens at
+    Chrome launch when HeapProfiling.InProcess.Enabled is true.
+  </summary>
+</histogram>
+
+<histogram name="HeapProfiling.InProcess.Enabled" enum="BooleanEnabled"
+    expires_after="2022-12-02">
+  <owner>joenotcharles@chromium.org</owner>
+  <owner>chrome-memory@google.com</owner>
+  <summary>
+    One metric is emitted on every Chrome launch, recording whether the
+    in-process heap profiler is enabled in the browser process for this Chrome
+    session.
+  </summary>
+</histogram>
+
+<histogram name="HeapProfiling.InProcess.SamplesPerSnapshot" units="samples"
+    expires_after="2022-12-02">
+  <owner>joenotcharles@chromium.org</owner>
+  <owner>chrome-memory@google.com</owner>
+  <summary>
+    The number of samples in a heap snapshot. Emitted once per snapshot when the
+    in-process heap profiler is enabled.
+  </summary>
+</histogram>
+
+<histogram name="HeapProfiling.InProcess.SnapshotInterval" units="ms"
+    expires_after="2022-02-02">
+  <obsolete>
+    Replaced by
+    HeapProfiling.InProcess.SnapshotInterval.{Platform}.{RecordingTime} on
+    2022-02-02.
+  </obsolete>
+  <owner>joenotcharles@chromium.org</owner>
+  <owner>chrome-memory@google.com</owner>
+  <summary>
+    The time until the next heap snapshot is scheduled. Emitted once per
+    snapshot when the in-process heap profiler is enabled.
+  </summary>
+</histogram>
+
+<histogram
+    name="HeapProfiling.InProcess.SnapshotInterval.{Platform}.{RecordingTime}"
+    units="ms" expires_after="2022-12-02">
+  <owner>joenotcharles@chromium.org</owner>
+  <owner>chrome-memory@google.com</owner>
+  <summary>
+    The time between heap snapshots on {Platform}. Emitted for each snapshot
+    when the in-process heap profiler is enabled, at the beginning and end of
+    the snapshot interval. *.Scheduled histograms are recorded at the beginning
+    of the interval, when the snapshot is scheduled. *.Taken histograms are
+    recorded at the end of the interval, when the snapshot is taken. Entries in
+    *.Scheduled that don't appear in *.Taken show which snapshot intervals are
+    interrupted before the snapshot is taken.
+  </summary>
+  <token key="Platform">
+    <variant name="Desktop" summary="All desktop platforms"/>
+    <variant name="Mobile" summary="Android and iOS"/>
+  </token>
+  <token key="RecordingTime">
+    <variant name="Scheduled"
+        summary="Recorded when the snapshot is scheduled."/>
+    <variant name="Taken" summary="Recorded when the snapshot is taken."/>
+  </token>
+</histogram>
+
+<histogram name="HeapProfiling.ProfiledProcess.Type"
+    enum="HeapProfilingProcessType" expires_after="2021-12-12">
+  <owner>erikchen@chromium.org</owner>
+  <owner>chrome-memory@google.com</owner>
+  <summary>
+    One metric is emitted every 24-hours after Chrome is launched for every
+    process that is being profiled. The timer is reset if Chrome exits.
+  </summary>
+</histogram>
+
+<histogram name="HeapProfiling.ProfilingMode" enum="HeapProfilingMode"
+    expires_after="2021-02-25">
+  <owner>erikchen@chromium.org</owner>
+  <owner>chrome-memory@google.com</owner>
+  <summary>
+    One metric is emitted every 24-hours after Chrome is launched for every
+    Chrome instance that is using out of process heap profiling. The timer is
+    reset if Chrome exits.
+  </summary>
+</histogram>
+
+<histogram name="HeapProfiling.RecordTrace.Success" enum="BooleanSuccess"
+    expires_after="2021-02-25">
+  <owner>erikchen@chromium.org</owner>
+  <owner>chrome-memory@google.com</owner>
+  <summary>
+    The metric is emitted each time Chrome attempts to record a memory-infra
+    trace to upload an out-of-process heap-profiling memory dump.
+  </summary>
+</histogram>
+
+<histogram name="HeapProfiling.SamplingIntervalKB" units="KB"
+    expires_after="2022-12-02">
+  <owner>joenotcharles@chromium.org</owner>
+  <owner>chrome-memory@google.com</owner>
+  <summary>
+    The mean number of kilobytes between samples used by the
+    SamplingHeapProfiler. Emitted each time the profiler is started, which
+    happens at Chrome launch when HeapProfiling.InProcess.Enabled is true.
+  </summary>
+</histogram>
+
+<histogram name="HeapProfiling.UploadTrace.Size" units="bytes"
+    expires_after="2021-02-25">
+  <owner>erikchen@chromium.org</owner>
+  <owner>chrome-memory@google.com</owner>
+  <summary>
+    The metric is emitted each time Chrome uploads a trace. It reflects the
+    uncompressed size of the trace.
+  </summary>
+</histogram>
+
+<histogram name="HeapProfiling.UploadTrace.Success" enum="BooleanSuccess"
+    expires_after="2021-02-25">
+  <owner>erikchen@chromium.org</owner>
+  <owner>chrome-memory@google.com</owner>
+  <summary>
+    The metric is emitted each time Chrome uploads a trace. It reflects whether
+    the upload was successful.
+  </summary>
+</histogram>
+
 <histogram name="Memory.AudioService.PrivateMemoryFootprint" units="MB"
     expires_after="2023-01-10">
   <owner>marinaciocea@chromium.org</owner>
@@ -90,153 +224,6 @@ chromium-metrics-reviews@google.com.
 
     Recorded at Poisson sampled time intervals with a mean of 5 minutes on
     Android and 30 minutes on other platforms.
-  </summary>
-</histogram>
-
-<histogram base="true"
-    name="Memory.BackgroundTask.Browser.PrivateMemoryFootprint" units="MiB"
-    expires_after="2021-08-01">
-  <obsolete>
-    Removed in M91.
-  </obsolete>
-<!-- Name completed by histogram_suffixes name="BrowserRunningMode" -->
-
-  <owner>hanxi@chromium.org</owner>
-  <owner>hnakashima@chromium.org</owner>
-  <summary>
-    A rough estimate of the private memory footprint of the browser process
-    while an Android background task is running. Recorded once per background
-    task, with a random delay of 0s to 60s after it starts. Available only on
-    Android.
-  </summary>
-</histogram>
-
-<histogram base="true"
-    name="Memory.BackgroundTask.Browser.PrivateSwapFootprint" units="MiB"
-    expires_after="2021-09-15">
-  <obsolete>
-    Removed in M91.
-  </obsolete>
-<!-- Name completed by histogram_suffixes name="BrowserRunningMode" -->
-
-  <owner>hanxi@chromium.org</owner>
-  <owner>hnakashima@chromium.org</owner>
-  <summary>
-    An amount of private memory the browser process placed in swap (VmSwap) by
-    the browser process while an Android background task is running in Full
-    Browser Mode. Recorded once per background task, with a random delay of 0s
-    to 60s after it starts. Available only on Android.
-  </summary>
-</histogram>
-
-<histogram base="true" name="Memory.BackgroundTask.Browser.ResidentSet"
-    units="MiB" expires_after="2021-08-01">
-  <obsolete>
-    Removed in M91.
-  </obsolete>
-<!-- Name completed by histogram_suffixes name="BrowserRunningMode" -->
-
-  <owner>hanxi@chromium.org</owner>
-  <owner>hnakashima@chromium.org</owner>
-  <summary>
-    The size of the resident memory in a browser process while an Android
-    background task is running. Recorded once per background task, with a random
-    delay of 0s to 60s after it starts. Available only on Android.
-  </summary>
-</histogram>
-
-<histogram base="true"
-    name="Memory.BackgroundTask.Browser.SharedMemoryFootprint" units="MiB"
-    expires_after="2021-09-15">
-  <obsolete>
-    Removed in M91.
-  </obsolete>
-<!-- Name completed by histogram_suffixes name="BrowserRunningMode" -->
-
-  <owner>hanxi@chromium.org</owner>
-  <owner>hnakashima@chromium.org</owner>
-  <summary>
-    A rough estimate of the shared memory footprint of the browser process while
-    an Android background task is running. Recorded once per background task,
-    with a random delay of 0s to 60s after it starts. Available only on Android.
-  </summary>
-</histogram>
-
-<histogram base="true"
-    name="Memory.BackgroundTask.OfflinePrefetch.Browser.PrivateMemoryFootprint"
-    units="MiB" expires_after="2021-03-28">
-  <obsolete>
-    Removed in M91.
-  </obsolete>
-<!-- Name completed by histogram_suffixes name="BrowserRunningMode" -->
-
-  <owner>hanxi@chromium.org</owner>
-  <owner>hnakashima@chromium.org</owner>
-  <summary>
-    A rough estimate of the private memory footprint of the browser process
-    while the Android Offline Prefetch Android background task is running.
-    Recorded once per background task, with a random delay of 0s to 60s after it
-    starts. The same value is recorded into
-    Memory.BackgroundTask.Browser.PrivateMemoryFootprint, which aggregates all
-    task types. Available only on Android.
-  </summary>
-</histogram>
-
-<histogram base="true"
-    name="Memory.BackgroundTask.OfflinePrefetch.Browser.PrivateSwapFootprint"
-    units="MiB" expires_after="2021-09-15">
-  <obsolete>
-    Removed in M91.
-  </obsolete>
-<!-- Name completed by histogram_suffixes name="BrowserRunningMode" -->
-
-  <owner>hanxi@chromium.org</owner>
-  <owner>hnakashima@chromium.org</owner>
-  <summary>
-    An amount of private memory the browser process placed in swap (VmSwap) by
-    the browser process while the Android Offline Prefetch Android background
-    task is running in Full Browser Mode. Recorded once per background task,
-    with a random delay of 0s to 60s after it starts. The same value is recorded
-    into Memory.BackgroundTask.Browser.PrivateSwapFootprint, which aggregates
-    all task types. Available only on Android.
-  </summary>
-</histogram>
-
-<histogram base="true"
-    name="Memory.BackgroundTask.OfflinePrefetch.Browser.ResidentSet"
-    units="MiB" expires_after="2021-09-15">
-  <obsolete>
-    Removed in M91.
-  </obsolete>
-<!-- Name completed by histogram_suffixes name="BrowserRunningMode" -->
-
-  <owner>hanxi@chromium.org</owner>
-  <owner>hnakashima@chromium.org</owner>
-  <summary>
-    The size of the resident memory in a browser process while the Android
-    Offline Prefetch Android background task is running. Recorded once per
-    background task, with a random delay of 0s to 60s after it starts. The same
-    value is recorded into Memory.BackgroundTask.Browser.ResidentSet, which
-    aggregates all task types. Available only on Android.
-  </summary>
-</histogram>
-
-<histogram base="true"
-    name="Memory.BackgroundTask.OfflinePrefetch.Browser.SharedMemoryFootprint"
-    units="MiB" expires_after="2021-09-15">
-  <obsolete>
-    Removed in M91.
-  </obsolete>
-<!-- Name completed by histogram_suffixes name="BrowserRunningMode" -->
-
-  <owner>hanxi@chromium.org</owner>
-  <owner>hnakashima@chromium.org</owner>
-  <summary>
-    A rough estimate of the shared memory footprint of the browser process while
-    the Android Offline Prefetch background task is running. Recorded once per
-    background task, with a random delay of 0s to 60s after it starts. The same
-    value is recorded into Memory.BackgroundTask.Browser.SharedMemoryFootprint,
-    which aggregates all task types. Available only on Android.
   </summary>
 </histogram>
 
@@ -487,7 +474,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Discardable.FreelistSize.Dirty" units="KiB"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -811,22 +798,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram base="true"
-    name="Memory.Experimental.GpuChannelManagerPressureHandlerDuration"
-    units="ms" expires_after="2021-08-22">
-  <obsolete>
-    Removed 03/2021.
-  </obsolete>
-<!-- Name completed by histogram_suffixes name="GpuChannelManagerPressureHandlerDetails" -->
-
-  <owner>sebmarchand@chromium.org</owner>
-  <owner>catan-team@chromium.org</owner>
-  <summary>
-    The time taken by the call to the various memory pressure handlers in
-    GpuChannelManager::HandleMemoryPressure.
-  </summary>
-</histogram>
-
 <histogram base="true" name="Memory.Experimental.NetworkService2" units="MiB"
     expires_after="2023-01-10">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryAllocator2" -->
@@ -1117,7 +1088,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Experimental.Renderer.HighestPrivateMemoryFootprint"
-    units="MB" expires_after="2022-06-05">
+    units="MB" expires_after="2022-08-07">
   <owner>tasak@google.com</owner>
   <owner>bartekn@google.com</owner>
   <summary>
@@ -1132,18 +1103,6 @@ chromium-metrics-reviews@google.com.
     does not measure the same thing on each platform. We have not found a good
     way to compare any system level memory metric across platforms due to the
     different nature of memory management on each platform.
-  </summary>
-</histogram>
-
-<histogram name="Memory.Experimental.Renderer.LoadsInMainFrameDuringUptime"
-    units="loads" expires_after="M77">
-  <obsolete>
-    Removed in May 2021.
-  </obsolete>
-  <owner>keishi@chromium.org</owner>
-  <summary>
-    The number of loads in a main frame during the lifetime of a render process
-    (excludes extensions). Emitted when the processes quits.
   </summary>
 </histogram>
 
@@ -1162,18 +1121,6 @@ chromium-metrics-reviews@google.com.
     not measure the same thing on each platform. We have not found a good way to
     compare any system level memory metric across platforms due to the different
     nature of memory management on each platform.
-  </summary>
-</histogram>
-
-<histogram name="Memory.Experimental.Renderer.Uptime" units="ms"
-    expires_after="2021-10-25">
-  <obsolete>
-    Removed in May 2021.
-  </obsolete>
-  <owner>keishi@chromium.org</owner>
-  <summary>
-    The uptime of a render process in time ticks (excludes extensions). Emitted
-    when the processes quits.
   </summary>
 </histogram>
 
@@ -1439,29 +1386,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram base="true" name="Memory.GPU.PeakMemoryAllocationSource" units="KB"
-    expires_after="2021-08-22">
-  <obsolete>
-    Removed in M92. Replaced by Memory.GPU.PeakMemoryAllocationSource2.
-  </obsolete>
-<!-- Name completed by a combination of the following two histogram_suffixes: -->
-
-<!-- histogram_suffixes name="GPU.PeakMemoryAllocationSourceBase" -->
-
-<!-- and histogram_suffixes name="GPU.PeakMemoryAllocationSource" -->
-
-  <owner>jonross@chromium.org</owner>
-  <owner>graphics-dev@chromium.org</owner>
-  <owner>sadrul@chromium.org</owner>
-  <summary>
-    Replaced by Memory.GPU.PeakMemoryAllocationSource2.
-
-    The maximum amount of memory of the GPU process allocated by a particular
-    source during a user interaction (e.g. tab-switch, page-load, scroll etc.).
-    See Memory.GPU.PeakMemoryUsage.
-  </summary>
-</histogram>
-
 <histogram base="true" name="Memory.GPU.PeakMemoryAllocationSource2" units="MB"
     expires_after="2022-08-22">
 <!-- Name completed by a combination of the following two histogram_suffixes: -->
@@ -1477,24 +1401,6 @@ chromium-metrics-reviews@google.com.
     The maximum amount of memory of the GPU process allocated by a particular
     source during a user interaction (e.g. tab-switch, page-load, scroll etc.).
     See Memory.GPU.PeakMemoryUsage2.
-  </summary>
-</histogram>
-
-<histogram base="true" name="Memory.GPU.PeakMemoryUsage" units="KB"
-    expires_after="2021-08-22">
-  <obsolete>
-    Removed in M92. Replaced by Memory.GPU.PeakMemoryUsage2.
-  </obsolete>
-<!-- Name completed by histogram_suffixes name="GPU_PeakMemoryUsage" -->
-
-  <owner>jonross@chromium.org</owner>
-  <owner>sadrul@chromium.org</owner>
-  <owner>graphics-dev@chromium.org</owner>
-  <summary>
-    Replaced by Memory.GPU.PeakMemoryUsage2.
-
-    The maximum amount of memory of the GPU process during a particular
-    interaction (e.g. tab-switch, page-load, scroll etc.).
   </summary>
 </histogram>
 
@@ -1593,18 +1499,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Memory.HeapProfiler.Browser.Malloc" units="MB"
-    expires_after="M81">
-  <obsolete>
-    Removed from Chrome code in Sept 2021.
-  </obsolete>
-  <owner>alph@chromium.org</owner>
-  <owner>erikchen@chromium.org</owner>
-  <summary>
-    Browser process memory allocated with malloc when UMA heap profile is taken.
-  </summary>
-</histogram>
-
 <histogram name="Memory.LowMemoryKiller.Count" units="low-memory kills"
     expires_after="2022-04-03">
   <owner>vovoy@google.com</owner>
@@ -1644,7 +1538,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.NativeLibrary.MappedAndResidentMemoryFootprint3"
-    units="KB" expires_after="2022-06-05">
+    units="KB" expires_after="2022-08-07">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -1707,7 +1601,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.NetworkService.PrivateMemoryFootprint" units="MiB"
-    expires_after="2022-06-05">
+    expires_after="2022-08-07">
   <owner>mmenke@chromium.org</owner>
   <owner>morlovich@chromium.org</owner>
   <owner>erikchen@chromium.org</owner>
@@ -1908,7 +1802,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.PaintPreviewCompositor.PrivateMemoryFootprint"
-    units="MB" expires_after="2022-06-12">
+    units="MB" expires_after="2022-08-14">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>yashard@chromium.org</owner>
@@ -1943,7 +1837,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.PaintPreviewCompositor.ResidentSet" units="MiB"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>yashard@chromium.org</owner>
@@ -2140,7 +2034,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.Compression.SizeKb" units="KB"
-    expires_after="2022-04-17">
+    expires_after="2022-07-24">
   <owner>lizeb@chromium.org</owner>
   <owner>thiabaud@google.com</owner>
   <summary>
@@ -2213,7 +2107,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.DiskReadTime.5min" units="ms"
-    expires_after="2022-04-17">
+    expires_after="2022-07-24">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -2224,7 +2118,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.DiskWriteTime.5min" units="ms"
-    expires_after="2022-04-17">
+    expires_after="2022-08-07">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -2346,8 +2240,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Memory.ParkableString.Snappy.CompressedLargerThanOriginal"
+    enum="Boolean" expires_after="2022-03-14">
+  <owner>peilinwang@google.com</owner>
+  <owner>lizeb@google.com</owner>
+  <summary>
+    Whether the compressed string is larger than the original string, if it were
+    compressed by snappy.
+  </summary>
+</histogram>
+
 <histogram name="Memory.ParkableString.TotalSizeKb.5min" units="KB"
-    expires_after="2022-04-17">
+    expires_after="2022-07-24">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -2384,7 +2288,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.PartitionAlloc.MemoryReclaim" units="microseconds"
-    expires_after="M102">
+    expires_after="2022-07-31">
   <owner>lizeb@chromium.org</owner>
   <owner>bartekn@chromium.org</owner>
   <summary>
@@ -2425,19 +2329,6 @@ chromium-metrics-reviews@google.com.
     <variant name="" summary="all threads"/>
     <variant name=".MainThread" summary="the main thread only"/>
   </token>
-</histogram>
-
-<histogram name="Memory.PressureLevel" enum="MemoryPressureLevel"
-    expires_after="2021-10-24">
-  <obsolete>
-    Replaced by Memory.PressureLevel2 in M93.
-  </obsolete>
-  <owner>chrisha@chromium.org</owner>
-  <summary>
-    The memory pressure level, which is recorded periodically. This shows the
-    cumulative number of seconds that systems spend in each of the memory
-    pressure states.
-  </summary>
 </histogram>
 
 <histogram name="Memory.PressureLevel2" enum="MemoryPressureLevel"
@@ -2574,7 +2465,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.RendererProcessCount" units="processes"
-    expires_after="2022-06-05">
+    expires_after="2022-08-07">
   <owner>creis@chromium.org</owner>
   <owner>nasko@chromium.org</owner>
   <summary>
@@ -2740,7 +2631,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Total.RendererPrivateMemoryFootprint" units="MB"
-    expires_after="2022-06-05">
+    expires_after="2022-08-07">
   <owner>tommckee@chromium.org</owner>
   <summary>
     A rough estimate of the private memory footprint of all renderer processes.

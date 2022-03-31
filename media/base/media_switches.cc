@@ -261,7 +261,7 @@ const base::Feature kEnableMediaInternals{"enable-media-internals",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables user control over muting tab audio from the tab strip.
-const base::Feature kEnableTabMuting{"enable-tab-muting",
+const base::Feature kEnableTabMuting{"EnableTabMuting",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable Picture-in-Picture.
@@ -304,6 +304,11 @@ const base::Feature kMediaCapabilitiesQueryGpuFactories{
 // Enable Media Capabilities with finch-parameters.
 const base::Feature kMediaCapabilitiesWithParameters{
     "MediaCapabilitiesWithParameters", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Used to set a few tunable parameters for the WebRTC Media Capabilities
+// implementation.
+const base::Feature kWebrtcMediaCapabilitiesParameters{
+    "WebrtcMediaCapabilitiesParameters", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Display the Cast overlay button on the media controls.
 const base::Feature kMediaCastOverlayButton{"MediaCastOverlayButton",
@@ -513,15 +518,20 @@ const base::Feature kVaapiVP9Encoder{"VaapiVP9Encoder",
 const base::Feature kGlobalVaapiLock{"GlobalVaapiLock",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
-#if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)
+// TODO(b/214589754): revisit the need for the BUILDFLAG(IS_CHROMEOS) guard (as
+// opposed to BUILDFLAG(IS_CHROMEOS_ASH)) when the final design for HW
+// encoding is implemented for lacros-chrome.
 // Enable H264 temporal layer encoding with HW encoder on ChromeOS.
 const base::Feature kVaapiH264TemporalLayerHWEncoding{
     "VaapiH264TemporalLayerEncoding", base::FEATURE_ENABLED_BY_DEFAULT};
+// Enable VP8 temporal layer encoding with HW encoder on ChromeOS.
+const base::Feature kVaapiVp8TemporalLayerHWEncoding{
+    "VaapiVp8TemporalLayerEncoding", base::FEATURE_ENABLED_BY_DEFAULT};
 // Enable VP9 k-SVC encoding with HW encoder for webrtc use case on ChromeOS.
 const base::Feature kVaapiVp9kSVCHWEncoding{"VaapiVp9kSVCHWEncoding",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
-#endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)
 
 // Inform video blitter of video color space.
 const base::Feature kVideoBlitColorAccuracy{"video-blit-color-accuracy",
@@ -777,6 +787,10 @@ const base::Feature kMediaFoundationClearPlayback{
 // https://docs.microsoft.com/en-us/windows/win32/api/audioclient/ne-audioclient-audclnt_streamoptions
 const base::Feature MEDIA_EXPORT kWasapiRawAudioCapture{
     "WASAPIRawAudioCapture", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables HEVC hardware accelerated decoding.
+const base::Feature kD3D11HEVCDecoding{"D3D11HEVCDecoding",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable VP9 kSVC decoding with HW decoder for webrtc use case on Windows.
 const base::Feature kD3D11Vp9kSVCHWDecoding{"D3D11Vp9kSVCHWDecoding",

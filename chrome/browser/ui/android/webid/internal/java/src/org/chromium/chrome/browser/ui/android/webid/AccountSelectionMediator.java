@@ -23,8 +23,6 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
-import org.chromium.components.favicon.LargeIconBridge;
-import org.chromium.components.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.components.image_fetcher.ImageFetcher;
 import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
@@ -45,9 +43,7 @@ class AccountSelectionMediator {
     private final AccountSelectionComponent.Delegate mDelegate;
     private final ModelList mSheetItems;
     private final ImageFetcher mImageFetcher;
-    private final LargeIconBridge mLargeIconBridge;
     private final @Px int mDesiredAvatarSize;
-    private final @Px int mDesiredIconSize;
 
     private final BottomSheetController mBottomSheetController;
     private final AccountSelectionBottomSheetContent mBottomSheetContent;
@@ -71,15 +67,13 @@ class AccountSelectionMediator {
     AccountSelectionMediator(AccountSelectionComponent.Delegate delegate, ModelList sheetItems,
             BottomSheetController bottomSheetController,
             AccountSelectionBottomSheetContent bottomSheetContent, ImageFetcher imageFetcher,
-            @Px int desiredAvatarSize, LargeIconBridge largeIconBridge, @Px int desiredIconSize) {
+            @Px int desiredAvatarSize) {
         assert delegate != null;
         mVisible = false;
         mDelegate = delegate;
         mSheetItems = sheetItems;
         mImageFetcher = imageFetcher;
         mDesiredAvatarSize = desiredAvatarSize;
-        mLargeIconBridge = largeIconBridge;
-        mDesiredIconSize = desiredIconSize;
         mBottomSheetController = bottomSheetController;
         mBottomSheetContent = bottomSheetContent;
 
@@ -110,20 +104,9 @@ class AccountSelectionMediator {
     }
 
     // This method should not be used when the VERIFY header is needed.
-    private void addHeader(GURL rpUrl, GURL idpUrl, List<Account> accounts) {
-        boolean useSignInHeader = false;
-        for (Account account : accounts) {
-            if (!account.isSignIn()) continue;
-            useSignInHeader = true;
-            break;
-        }
-        HeaderType headerType;
-        if (useSignInHeader) {
-            headerType = HeaderType.SIGN_IN;
-        } else {
-            headerType =
-                    accounts.size() == 1 ? HeaderType.SINGLE_ACCOUNT : HeaderType.MULTIPLE_ACCOUNT;
-        }
+    private void addHeader(
+            GURL rpUrl, GURL idpUrl, IdentityProviderMetadata idpMetadata, boolean isAutoSignIn) {
+        HeaderType headerType = isAutoSignIn ? HeaderType.AUTO_SIGN_IN : HeaderType.SIGN_IN;
         String formattedRpUrl =
                 UrlFormatter.formatUrlForSecurityDisplay(rpUrl, SchemeDisplay.OMIT_HTTP_AND_HTTPS);
         String formattedIdpUrl =
@@ -137,6 +120,7 @@ class AccountSelectionMediator {
         // allowed with WebID.
         mSheetItems.add(new ListItem(ItemType.HEADER,
                 new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
+                        .with(HeaderProperties.IDP_BRAND_ICON, idpMetadata.getBrandIcon())
                         .with(HeaderProperties.CLOSE_ON_CLICK_LISTENER, closeOnClickRunnable)
                         .with(HeaderProperties.FORMATTED_IDP_URL, formattedIdpUrl)
                         .with(HeaderProperties.FORMATTED_RP_URL, formattedRpUrl)
@@ -148,7 +132,6 @@ class AccountSelectionMediator {
         for (Account account : accounts) {
             final PropertyModel model = createAccountItem(account, areAccountsClickable);
             mSheetItems.add(new ListItem(ItemType.ACCOUNT, model));
-            requestIconOrFallbackImage(model, idpUrl);
             requestAvatarImage(model);
         }
     }
@@ -158,7 +141,7 @@ class AccountSelectionMediator {
         mSheetItems.add(new ListItem(ItemType.AUTO_SIGN_IN_CANCEL_BUTTON, cancelBtnModel));
     }
 
-    private void addContinueButton(Account account, GURL rpUrl, GURL idpUrl,
+    private void addContinueButton(Account account, GURL idpUrl,
             IdentityProviderMetadata idpMetadata, ClientIdMetadata clientMetadata) {
         // Shows the continue button for both sign-up and non auto-sign-in.
         final PropertyModel continueBtnModel = createContinueBtnItem(account, idpMetadata);
@@ -167,7 +150,7 @@ class AccountSelectionMediator {
         // Only show the user data sharing consent text for sign up.
         if (!account.isSignIn()) {
             mSheetItems.add(new ListItem(ItemType.DATA_SHARING_CONSENT,
-                    createDataSharingConsentItem(rpUrl, idpUrl, clientMetadata)));
+                    createDataSharingConsentItem(idpUrl, clientMetadata)));
         }
     }
 
@@ -180,11 +163,19 @@ class AccountSelectionMediator {
         mSheetItems.add(new ListItem(ItemType.HEADER,
                 new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
                         .with(HeaderProperties.CLOSE_ON_CLICK_LISTENER, closeOnClickRunnable)
+                        .with(HeaderProperties.IDP_BRAND_ICON, mIdpMetadata.getBrandIcon())
                         .with(HeaderProperties.TYPE, HeaderType.VERIFY)
                         .build()));
 
         addAccounts(mIdpUrl, Arrays.asList(account), /*areAccountsClickable=*/false);
         showContent();
+
+        // When TalkBack is enabled, updating |mSheetItems| clears the current item's accessibility
+        // focus and TalkBack reads the bottom sheet's content description -
+        // {@link AccountSelectionBottomSheetContent#getSheetContentDescriptionStringId()}.
+        // Make TalkBack announce the verify header text to clarify to the user that the browser is
+        // not showing a second sign in prompt.
+        mBottomSheetContent.announceVerifyHeaderText();
     }
 
     void hideBottomSheet() {
@@ -215,7 +206,7 @@ class AccountSelectionMediator {
             accounts = Arrays.asList(selectedAccount);
         }
 
-        addHeader(rpUrl, idpUrl, accounts);
+        addHeader(rpUrl, idpUrl, idpMetadata, isAutoSignIn);
         addAccounts(idpUrl, accounts, /*areAccountsClickable=*/mSelectedAccount == null);
 
         if (isAutoSignIn) {
@@ -225,7 +216,7 @@ class AccountSelectionMediator {
             mAutoSignInTaskHandler.postDelayed(
                     () -> onAccountSelected(mSelectedAccount), AUTO_SIGN_IN_CANCELLATION_TIMER_MS);
         } else if (mSelectedAccount != null) {
-            addContinueButton(mSelectedAccount, rpUrl, idpUrl, idpMetadata, clientMetadata);
+            addContinueButton(mSelectedAccount, idpUrl, idpMetadata, clientMetadata);
         }
 
         showContent();
@@ -274,16 +265,6 @@ class AccountSelectionMediator {
             accountModel.set(AccountProperties.AVATAR,
                     new AccountProperties.Avatar(name, null, mDesiredAvatarSize));
         }
-    }
-
-    private void requestIconOrFallbackImage(PropertyModel accountModel, GURL idpUrl) {
-        Account account = accountModel.get(AccountProperties.ACCOUNT);
-        final LargeIconCallback setIcon = (icon, fallbackColor, hasDefaultColor, type) -> {
-            accountModel.set(AccountProperties.FAVICON_OR_FALLBACK,
-                    new AccountProperties.FaviconOrFallback(
-                            idpUrl, icon, fallbackColor, mDesiredIconSize));
-        };
-        mLargeIconBridge.getLargeIconForUrl(idpUrl, mDesiredIconSize, setIcon);
     }
 
     boolean isVisible() {
@@ -338,14 +319,11 @@ class AccountSelectionMediator {
                 .build();
     }
 
-    private PropertyModel createDataSharingConsentItem(
-            GURL rpUrl, GURL idpUrl, ClientIdMetadata metadata) {
+    private PropertyModel createDataSharingConsentItem(GURL idpUrl, ClientIdMetadata metadata) {
         DataSharingConsentProperties.Properties properties =
                 new DataSharingConsentProperties.Properties();
         properties.mFormattedIdpUrl =
                 UrlFormatter.formatUrlForSecurityDisplay(idpUrl, SchemeDisplay.OMIT_HTTP_AND_HTTPS);
-        properties.mFormattedRpUrl =
-                UrlFormatter.formatUrlForSecurityDisplay(rpUrl, SchemeDisplay.OMIT_HTTP_AND_HTTPS);
         properties.mTermsOfServiceUrl = metadata.getTermsOfServiceUrl().getValidSpecOrEmpty();
         properties.mPrivacyPolicyUrl = metadata.getPrivacyPolicyUrl().getValidSpecOrEmpty();
 

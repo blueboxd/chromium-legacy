@@ -34,6 +34,7 @@
 #include "content/public/browser/mojo_binder_policy_map.h"
 #include "content/public/browser/storage_partition_config.h"
 #include "content/public/browser/web_ui_browser_interface_broker_registry.h"
+#include "content/public/common/alternative_error_page_override_info.mojom.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/page_visibility_state.h"
 #include "content/public/common/window_container_type.mojom-forward.h"
@@ -59,7 +60,6 @@
 #include "storage/browser/file_system/file_system_context.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
-#include "third_party/blink/public/mojom/federated_learning/floc.mojom-forward.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/page_transition_types.h"
@@ -209,6 +209,8 @@ class BrowserURLHandler;
 class ClientCertificateDelegate;
 class ControllerPresentationServiceDelegate;
 class DevToolsManagerDelegate;
+class DocumentOverlayWindow;
+class DocumentPictureInPictureWindowController;
 class FeatureObserverClient;
 class FontAccessDelegate;
 class HidDelegate;
@@ -218,8 +220,6 @@ class MediaObserver;
 class NavigationHandle;
 class NavigationThrottle;
 class NavigationUIData;
-class OverlayWindow;
-class PictureInPictureWindowController;
 class QuotaPermissionContext;
 class ReceiverPresentationServiceDelegate;
 class RenderFrameHost;
@@ -232,6 +232,8 @@ class StoragePartition;
 class TracingDelegate;
 class TtsPlatform;
 class URLLoaderRequestInterceptor;
+class VideoOverlayWindow;
+class VideoPictureInPictureWindowController;
 class VpnServiceProxy;
 class WebAuthenticationDelegate;
 class WebContents;
@@ -620,6 +622,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool ShouldUrlUseApplicationIsolationLevel(
       BrowserContext* browser_context,
       const GURL& url);
+
+  // Checks whether Direct Sockets API is allowed by the EnableDirectSockets
+  // policy (chrome-only, the respective override can be found in
+  // ChromeContentBrowserClient). Returns true by default.
+  virtual bool AreDirectSocketsAllowedByPolicy(BrowserContext* context);
 
   // Allow the embedder to control the maximum renderer process count. Only
   // applies if it is set to a non-zero value.  Once this limit is exceeded,
@@ -1674,6 +1681,18 @@ class CONTENT_EXPORT ContentBrowserClient {
                                         bool is_main_frame,
                                         ui::PageTransition transition,
                                         bool* ignore_navigation);
+
+  // Only used by Android WebView. Whether creating or modifying the initial
+  // NavigationEntry of a WebContents should notify the embedder via
+  // NavigationStateChanged() calls or not. The embedder should return true if
+  // NavigationStateChanged() calls should be skipped for the initial entry, or
+  // false otherwise (which is the default). On Android WebView, we should not
+  // fire the initial NavigationEntry creation/modification
+  // NavigationStateChanged calls to preserve legacy behavior (not firing extra
+  // onPageFinished calls), as initial NavigationEntries used to not exist.
+  // See https://crbug.com/1277414.
+  virtual bool
+  ShouldIgnoreInitialNavigationEntryNavigationStateChangedForLegacySupport();
 #endif
 
   // Called on IO or UI thread to determine whether or not to allow load and
@@ -1735,12 +1754,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // BrowserMainLoop, BrowserMainLoop itself is responsible for that.
   virtual bool CreateThreadPool(base::StringPiece name);
 
-#if !BUILDFLAG(IS_ANDROID)
   // Returns an embedder-provided subclass of WebAuthenticationDelegate. This
   // allows the embedder to customize the implementation of the Web
   // Authentication API.
   virtual WebAuthenticationDelegate* GetWebAuthenticationDelegate();
 
+#if !BUILDFLAG(IS_ANDROID)
   // Returns an AuthenticatorRequestClientDelegate subclass instance to provide
   // embedder-specific configuration for a single Web Authentication API request
   // being serviced in a given RenderFrame. The instance is guaranteed to be
@@ -1823,13 +1842,18 @@ class CONTENT_EXPORT ContentBrowserClient {
       RenderFrameHost* initiator_document,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory);
 
-  // Creates an OverlayWindow to be used for Picture-in-Picture. This window
-  // will house the content shown when in Picture-in-Picture mode. This will
-  // return a new OverlayWindow.
+  // Creates an OverlayWindow to be used for video or document
+  // Picture-in-Picture respectively. This window will house the content shown
+  // when in Picture-in-Picture mode. This will return a new OverlayWindow.
+  //
   // May return nullptr if embedder does not support this functionality. The
   // default implementation provides nullptr OverlayWindow.
-  virtual std::unique_ptr<OverlayWindow> CreateWindowForPictureInPicture(
-      PictureInPictureWindowController* controller);
+  virtual std::unique_ptr<VideoOverlayWindow>
+  CreateWindowForVideoPictureInPicture(
+      VideoPictureInPictureWindowController* controller);
+  virtual std::unique_ptr<DocumentOverlayWindow>
+  CreateWindowForDocumentPictureInPicture(
+      DocumentPictureInPictureWindowController* controller);
 
   // Registers the watcher to observe updates in RendererPreferences.
   virtual void RegisterRendererPreferenceWatcher(
@@ -1887,6 +1911,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Default to the non-context |GetUserAgent| above.
   virtual std::string GetUserAgentBasedOnPolicy(
       content::BrowserContext* context);
+
+  // Returns the full user agent string. Defaults to |GetUserAgent|. Content
+  // may cache this value.
+  virtual std::string GetFullUserAgent();
 
   // Returns the reduced user agent string. Defaults to |GetUserAgent|. Content
   // may cache this value.
@@ -1946,13 +1974,6 @@ class CONTENT_EXPORT ContentBrowserClient {
       RenderFrameHost* frame_host,
       bool user_gesture,
       blink::NavigationDownloadPolicy* download_policy);
-
-  // Returns the interest cohort associated with the browser context of
-  // |web_contents|.
-  virtual blink::mojom::InterestCohortPtr GetInterestCohortForJsApi(
-      WebContents* web_contents,
-      const GURL& url,
-      const absl::optional<url::Origin>& top_frame_origin);
 
   // Returns whether a site is blocked to use Bluetooth scanning API.
   virtual bool IsBluetoothScanningBlocked(
@@ -2176,6 +2197,16 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns true if First-Party Sets is enabled.
   virtual bool IsFirstPartySetsEnabled();
+
+  // Gets information required for an alternative error page from web app's
+  // manifest for |url|, including theme color, background color and app short
+  // name. The |error_code| is the network error as specified in
+  // `net/base/net_error_list.h`. Information is returned in a struct. Default
+  // implementation returns nullptr.
+  virtual mojom::AlternativeErrorPageOverrideInfoPtr
+  GetAlternativeErrorPageOverrideInfo(const GURL& url,
+                                      BrowserContext* browser_context,
+                                      int32_t error_code);
 };
 
 }  // namespace content

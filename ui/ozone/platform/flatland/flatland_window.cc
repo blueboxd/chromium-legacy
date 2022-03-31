@@ -35,8 +35,13 @@ FlatlandWindow::FlatlandWindow(FlatlandWindowManager* window_manager,
       window_delegate_(delegate),
       window_id_(manager_->AddWindow(this)),
       view_ref_(std::move(properties.view_ref_pair.view_ref)),
+      view_controller_(std::move(properties.view_controller)),
       flatland_("Chromium FlatlandWindow"),
       bounds_(properties.bounds) {
+  if (view_controller_) {
+    view_controller_.set_error_handler(
+        fit::bind_member(this, &FlatlandWindow::OnViewControllerDisconnected));
+  }
   fuchsia::ui::views::ViewIdentityOnCreation view_identity = {
       .view_ref = CloneViewRef(),
       .view_ref_control = std::move(properties.view_ref_pair.control_ref)};
@@ -157,6 +162,10 @@ void FlatlandWindow::Hide() {
 }
 
 void FlatlandWindow::Close() {
+  if (view_controller_) {
+    view_controller_->Dismiss();
+    view_controller_ = nullptr;
+  }
   Hide();
   window_delegate_->OnClosed();
 }
@@ -170,16 +179,15 @@ void FlatlandWindow::PrepareForShutdown() {
 }
 
 void FlatlandWindow::SetCapture() {
-  NOTIMPLEMENTED_LOG_ONCE();
+  has_capture_ = true;
 }
 
 void FlatlandWindow::ReleaseCapture() {
-  NOTIMPLEMENTED_LOG_ONCE();
+  has_capture_ = false;
 }
 
 bool FlatlandWindow::HasCapture() const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  return has_capture_;
 }
 
 void FlatlandWindow::ToggleFullscreen() {
@@ -310,11 +318,9 @@ void FlatlandWindow::UpdateSize() {
   bounds_ = gfx::Rect(ceilf(width * device_pixel_ratio_),
                       ceilf(height * device_pixel_ratio_));
 
-  // TODO(crbug.com/1230150): Handle zero size scenario.
-
   PlatformWindowDelegate::BoundsChange bounds;
   bounds.bounds = bounds_;
-  // TODO(crbug.com/1230150): Calculate insets and update.
+  // TODO(fxbug.dev/93998): Calculate insets and update.
   window_delegate_->OnBoundsChanged(bounds);
 }
 
@@ -335,6 +341,11 @@ void FlatlandWindow::DispatchEvent(ui::Event* event) {
     located_event->set_location_f(location);
   }
   window_delegate_->DispatchEvent(event);
+}
+
+void FlatlandWindow::OnViewControllerDisconnected(zx_status_t status) {
+  view_controller_ = nullptr;
+  window_delegate_->OnCloseRequest();
 }
 
 }  // namespace ui

@@ -16,10 +16,10 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.AssistantOptionModel;
 import org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting;
 import org.chromium.chrome.browser.autofill_assistant.AssistantTextUtils;
 import org.chromium.chrome.browser.autofill_assistant.LayoutUtils;
-import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel.OptionModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,10 +27,10 @@ import java.util.List;
 /**
  * This is the generic superclass for all autofill-assistant payment request sections.
  *
- * @param <T> The type of |EditableOption| that a concrete instance of this class is created for,
- * such as |AutofillContact|, |AutofillPaymentMethod|, etc.
+ * @param <T> The type of entry that a concrete instance of this class is created for,
+ *            such as {@link AssistantAutofillProfile}, {@link AssistantPaymentInstrument}, etc.
  */
-public abstract class AssistantCollectUserDataSection<T extends OptionModel> {
+public abstract class AssistantCollectUserDataSection<T extends AssistantOptionModel> {
     interface Delegate<T> {
         void onUserDataChanged(T item, @AssistantUserDataEventType int type);
     }
@@ -134,6 +134,13 @@ public abstract class AssistantCollectUserDataSection<T extends OptionModel> {
 
     void setDelegate(@Nullable Delegate<T> delegate) {
         mDelegate = delegate;
+    }
+
+    void notifyDataChanged(@Nullable T item, @AssistantUserDataEventType int eventType) {
+        if (mDelegate == null) {
+            return;
+        }
+        mDelegate.onUserDataChanged(item, eventType);
     }
 
     void setTitle(String title) {
@@ -308,7 +315,7 @@ public abstract class AssistantCollectUserDataSection<T extends OptionModel> {
                         return;
                     }
                     selectItem(item, /*notify=*/true, AssistantUserDataEventType.SELECTION_CHANGED);
-                    if (item.mOption.mOption.isComplete()) {
+                    if (item.mOption.isComplete()) {
                         // Workaround for Android bug: a layout transition may cause the newly
                         // checked radiobutton to not render properly.
                         mSectionExpander.post(() -> mSectionExpander.setExpanded(false));
@@ -331,8 +338,8 @@ public abstract class AssistantCollectUserDataSection<T extends OptionModel> {
         updateSummaryView(mSummaryView, item.mOption);
         updateVisibility();
 
-        if (mDelegate != null && notify) {
-            mDelegate.onUserDataChanged(item.mOption, eventType);
+        if (notify) {
+            notifyDataChanged(item.mOption, eventType);
         }
     }
 

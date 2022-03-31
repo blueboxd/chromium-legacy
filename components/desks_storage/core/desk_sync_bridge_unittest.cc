@@ -19,6 +19,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "components/account_id/account_id.h"
+#include "components/app_constants/constants.h"
 #include "components/app_restore/app_launch_info.h"
 #include "components/desks_storage/core/desk_model_observer.h"
 #include "components/desks_storage/core/desk_template_conversion.h"
@@ -32,7 +33,6 @@
 #include "components/sync/test/model/mock_model_type_change_processor.h"
 #include "components/sync/test/model/model_type_store_test_util.h"
 #include "components/sync/test/model/test_matchers.h"
-#include "extensions/common/constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,6 +40,8 @@ namespace desks_storage {
 
 using BrowserAppTab =
     sync_pb::WorkspaceDeskSpecifics_BrowserAppWindow_BrowserAppTab;
+using ArcApp = sync_pb::WorkspaceDeskSpecifics_ArcApp;
+using ArcSize = sync_pb::WorkspaceDeskSpecifics_ArcApp_WindowSize;
 using BrowserAppWindow = sync_pb::WorkspaceDeskSpecifics_BrowserAppWindow;
 using ChromeApp = sync_pb::WorkspaceDeskSpecifics_ChromeApp;
 using Desk = sync_pb::WorkspaceDeskSpecifics_Desk;
@@ -72,6 +74,7 @@ using testing::StrEq;
 
 constexpr char kTestPwaAppId[] = "test_pwa_app_id";
 constexpr char kTestChromeAppId[] = "test_chrome_app_id";
+constexpr char kTestArcAppId[] = "test_arc_app_id";
 constexpr char kUuidFormat[] = "9e186d5a-502e-49ce-9ee1-00000000000%d";
 constexpr char kAdminTemplateUuidFormat[] =
     "59dbe2b8-671f-4fd0-92ec-11111111100%d";
@@ -174,6 +177,36 @@ void FillExampleChromeAppWindow(WorkspaceDeskSpecifics_App* app) {
   app->set_window_id(2555);
 }
 
+void FillExampleArcAppWindow(WorkspaceDeskSpecifics_App* app) {
+  ArcApp* app_window = app->mutable_app()->mutable_arc_app();
+  app_window->set_app_id(kTestArcAppId);
+
+  ArcSize* minimum_size = app_window->mutable_minimum_size();
+  minimum_size->set_width(1);
+  minimum_size->set_height(1);
+
+  ArcSize* maximum_size = app_window->mutable_maximum_size();
+  maximum_size->set_width(256);
+  maximum_size->set_height(256);
+
+  WindowBound* bounds_in_root = app_window->mutable_bounds_in_root();
+  bounds_in_root->set_width(1024);
+  bounds_in_root->set_height(1024);
+  bounds_in_root->set_left(0);
+  bounds_in_root->set_top(0);
+
+  WindowBound* window_bound = app->mutable_window_bound();
+  window_bound->set_left(210);
+  window_bound->set_top(220);
+  window_bound->set_width(2330);
+  window_bound->set_height(2440);
+  app->set_window_state(
+      WindowState::WorkspaceDeskSpecifics_WindowState_MAXIMIZED);
+  app->set_display_id(99887766l);
+  app->set_z_index(233);
+  app->set_window_id(2555);
+}
+
 WorkspaceDeskSpecifics ExampleWorkspaceDeskSpecifics(
     const std::string uuid,
     const std::string template_name,
@@ -190,6 +223,7 @@ WorkspaceDeskSpecifics ExampleWorkspaceDeskSpecifics(
           .InMicroseconds());
   Desk* desk = specifics.mutable_desk();
   FillExampleBrowserAppWindow(desk->add_apps(), number_of_tabs);
+  FillExampleArcAppWindow(desk->add_apps());
   FillExampleChromeAppWindow(desk->add_apps());
   FillExampleProgressiveWebAppWindow(desk->add_apps());
   return specifics;
@@ -215,7 +249,7 @@ std::unique_ptr<ash::DeskTemplate> CreateTemplateWithBrowserFromScratch(
 
   auto restore_data = std::make_unique<app_restore::RestoreData>();
   auto browser_info = std::make_unique<app_restore::AppLaunchInfo>(
-      extension_misc::kChromeAppId, kBrowserWindowId);
+      app_constants::kChromeAppId, kBrowserWindowId);
   browser_info->urls = {GURL(base::StringPrintf(kTestUrlFormat, 1)),
                         GURL(base::StringPrintf(kTestUrlFormat, 2))};
 
@@ -338,10 +372,12 @@ class DeskSyncBridgeTest : public testing::Test {
     deltas.push_back(
         MakeApp(kTestPwaAppId, "Test PWA App", apps::mojom::AppType::kWeb));
     // chromeAppId returns kExtension in the real Apps cache.
-    deltas.push_back(MakeApp(extension_misc::kChromeAppId, "Chrome Browser",
+    deltas.push_back(MakeApp(app_constants::kChromeAppId, "Chrome Browser",
                              apps::mojom::AppType::kChromeApp));
     deltas.push_back(MakeApp(kTestChromeAppId, "Test Chrome App",
                              apps::mojom::AppType::kChromeApp));
+    deltas.push_back(
+        MakeApp(kTestArcAppId, "Arc app", apps::mojom::AppType::kArc));
 
     cache_->OnApps(std::move(deltas), apps::mojom::AppType::kUnknown,
                    false /* should_notify_initialized */);

@@ -725,7 +725,7 @@ void MediaRouterMojoImpl::OnProviderConnectionError(
 
 void MediaRouterMojoImpl::GetLogger(
     mojo::PendingReceiver<mojom::Logger> receiver) {
-  logger_.Bind(std::move(receiver));
+  logger_.BindReceiver(std::move(receiver));
 }
 
 LoggerImpl* MediaRouterMojoImpl::GetLogger() {
@@ -911,8 +911,8 @@ void MediaRouterMojoImpl::CreateRouteWithSelectedDesktop(
     return;
   }
 
-  // TODO(jrw): This is kind of ridiculous.  The PendingStreamRequest struct
-  // only exists to store the arguments given to
+  // TODO(crbug.com/1291738): This is kind of ridiculous.  The
+  // PendingStreamRequest struct only exists to store the arguments given to
   // DesktopStreamsRegistry::RegisterStream() so they can later be passed back
   // to DesktopStreamsRegistry::RequestMediaForStreamId(), but the saved values
   // aren't actually needed in RequestMediaForStreamId() except to prove that

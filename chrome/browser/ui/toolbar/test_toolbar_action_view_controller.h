@@ -38,9 +38,10 @@ class TestToolbarActionViewController : public ToolbarActionViewController {
   ui::MenuModel* GetContextMenu(
       extensions::ExtensionContextMenuModel::ContextMenuSource
           context_menu_source) override;
-  bool ExecuteAction(bool by_user, InvocationSource source) override;
+  void ExecuteUserAction(InvocationSource source) override;
+  void TriggerPopupForAPI(ShowPopupCallback callback) override;
   void UpdateState() override;
-  PageInteractionStatus GetPageInteractionStatus(
+  extensions::SitePermissionsHelper::SiteInteraction GetSiteInteraction(
       content::WebContents* web_contents) const override;
 
   // Instruct the controller to fake showing a popup.

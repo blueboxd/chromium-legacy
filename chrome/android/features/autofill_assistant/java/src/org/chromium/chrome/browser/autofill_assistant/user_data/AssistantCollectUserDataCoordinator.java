@@ -10,9 +10,11 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.AssistantEditorFactory;
 import org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting;
 import org.chromium.chrome.browser.autofill_assistant.LayoutUtils;
 import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantAdditionalSectionContainer;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 // TODO(crbug.com/806868): Use mCarouselCoordinator to show chips.
@@ -27,8 +29,9 @@ public class AssistantCollectUserDataCoordinator {
     private final AssistantCollectUserDataModel mModel;
     private AssistantCollectUserDataBinder.ViewHolder mViewHolder;
 
-    public AssistantCollectUserDataCoordinator(
-            Activity activity, AssistantCollectUserDataModel model) {
+    public AssistantCollectUserDataCoordinator(Activity activity,
+            AssistantCollectUserDataModel model, AssistantEditorFactory editorFactory,
+            WindowAndroid windowAndroid) {
         mActivity = activity;
         mModel = model;
         int sectionToSectionPadding = activity.getResources().getDimensionPixelSize(
@@ -68,7 +71,9 @@ public class AssistantCollectUserDataCoordinator {
         AssistantContactDetailsSection contactDetailsSection =
                 new AssistantContactDetailsSection(mActivity, paymentRequestExpanderAccordion);
         createSeparator(paymentRequestExpanderAccordion);
-
+        AssistantPhoneNumberSection phoneNumberSection =
+                new AssistantPhoneNumberSection(mActivity, paymentRequestExpanderAccordion);
+        createSeparator(paymentRequestExpanderAccordion);
         AssistantPaymentMethodSection paymentMethodSection =
                 new AssistantPaymentMethodSection(mActivity, paymentRequestExpanderAccordion);
         createSeparator(paymentRequestExpanderAccordion);
@@ -99,6 +104,8 @@ public class AssistantCollectUserDataCoordinator {
         loginSection.getView().setTag(AssistantTagsForTesting.COLLECT_USER_DATA_LOGIN_SECTION_TAG);
         contactDetailsSection.getView().setTag(
                 AssistantTagsForTesting.COLLECT_USER_DATA_CONTACT_DETAILS_SECTION_TAG);
+        phoneNumberSection.getView().setTag(
+                AssistantTagsForTesting.COLLECT_USER_DATA_PHONE_NUMBER_SECTION_TAG);
         paymentMethodSection.getView().setTag(
                 AssistantTagsForTesting.COLLECT_USER_DATA_PAYMENT_METHOD_SECTION_TAG);
         shippingAddressSection.getView().setTag(
@@ -112,10 +119,11 @@ public class AssistantCollectUserDataCoordinator {
         // Bind view and mediator through the model.
         mViewHolder = new AssistantCollectUserDataBinder.ViewHolder(mPaymentRequestUI,
                 paymentRequestExpanderAccordion, sectionToSectionPadding, loginSection,
-                contactDetailsSection, paymentMethodSection, shippingAddressSection, termsSection,
-                termsAsCheckboxSection, infoSection, prependedSections, appendedSections,
-                genericUserInterfaceContainerPrepended, genericUserInterfaceContainerAppended,
-                DIVIDER_TAG, mActivity);
+                contactDetailsSection, phoneNumberSection, paymentMethodSection,
+                shippingAddressSection, termsSection, termsAsCheckboxSection, infoSection,
+                prependedSections, appendedSections, genericUserInterfaceContainerPrepended,
+                genericUserInterfaceContainerAppended, DIVIDER_TAG, mActivity, editorFactory,
+                windowAndroid);
         AssistantCollectUserDataBinder binder = new AssistantCollectUserDataBinder();
         PropertyModelChangeProcessor.create(model, mViewHolder, binder);
 

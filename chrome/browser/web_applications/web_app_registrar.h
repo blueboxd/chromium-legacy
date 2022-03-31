@@ -13,7 +13,9 @@
 
 #include "base/check_op.h"
 #include "base/memory/raw_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -27,12 +29,23 @@ namespace apps {
 struct ShareTarget;
 }  // namespace apps
 
+namespace webapps {
+enum class WebappInstallSource;
+}
+
 namespace web_app {
 
 class AppRegistrarObserver;
 class WebApp;
+class WebAppPolicyManager;
 
 using Registry = std::map<AppId, std::unique_ptr<WebApp>>;
+
+template <typename T>
+struct ValueWithPolicy {
+  T value;
+  bool user_controllable;
+};
 
 // A registry model. This is a read-only container, which owns WebApp objects.
 class WebAppRegistrar : public ProfileManagerObserver {
@@ -54,6 +67,8 @@ class WebAppRegistrar : public ProfileManagerObserver {
   void Start();
   void Shutdown();
 
+  void SetSubsystems(WebAppPolicyManager* policy_manager);
+
   // Returns whether the app with |app_id| is currently listed in the registry.
   // ie. we have data for web app manifest and icons, and this |app_id| can be
   // used in other registrar methods.
@@ -71,6 +86,13 @@ class WebAppRegistrar : public ProfileManagerObserver {
   // like shortcuts. |IsLocallyInstalled| apps is a subset of |IsInstalled|
   // apps. On Chrome OS all apps are always locally installed.
   bool IsLocallyInstalled(const AppId& app_id) const;
+
+  // Returns the permissions policy declared as declared in the manifest for
+  // the app with |app_id|. This permissions policy is not yet parsed by the
+  // PermissionsPolicyParser, and thus may contain invalid permissions and/or
+  // origin allowlists.
+  std::vector<PermissionsPolicyDeclaration> GetPermissionsPolicy(
+      const AppId& app_id) const;
 
   // Returns true if the app was preinstalled and NOT installed via any other
   // mechanism.
@@ -170,6 +192,9 @@ class WebAppRegistrar : public ProfileManagerObserver {
   base::Time GetAppLastLaunchTime(const AppId& app_id) const;
   base::Time GetAppInstallTime(const AppId& app_id) const;
 
+  absl::optional<webapps::WebappInstallSource> GetAppInstallSourceForMetrics(
+      const AppId& app_id) const;
+
   // Returns the "icons" field from the app manifest, use |WebAppIconManager| to
   // load icon bitmap data.
   std::vector<apps::IconInfo> GetAppIconInfos(const AppId& app_id) const;
@@ -187,8 +212,14 @@ class WebAppRegistrar : public ProfileManagerObserver {
   std::vector<IconSizes> GetAppDownloadedShortcutsMenuIconsSizes(
       const AppId& app_id) const;
 
-  // Returns the Run on OS Login mode.
-  RunOnOsLoginMode GetAppRunOnOsLoginMode(const AppId& app_id) const;
+  // Returns the Run on OS Login mode and enterprise policy value.
+  ValueWithPolicy<RunOnOsLoginMode> GetAppRunOnOsLoginMode(
+      const AppId& app_id) const;
+
+  // Returns true iff it's expected that the app has been, **or is in
+  // the process of being**, registered with the OS.
+  absl::optional<RunOnOsLoginMode> GetExpectedRunOnOsLoginOsIntegrationState(
+      const AppId& app_id) const;
 
   bool GetWindowControlsOverlayEnabled(const AppId& app_id) const;
 
@@ -261,15 +292,10 @@ class WebAppRegistrar : public ProfileManagerObserver {
   void AddObserver(AppRegistrarObserver* observer);
   void RemoveObserver(AppRegistrarObserver* observer);
 
-  void NotifyWebAppInstalled(const AppId& app_id);
-  void NotifyWebAppManifestUpdated(const AppId& app_id,
-                                   base::StringPiece old_name);
   void NotifyWebAppProtocolSettingsChanged();
   void NotifyWebAppFileHandlerApprovalStateChanged(const AppId& app_id);
   void NotifyWebAppsWillBeUpdatedFromSync(
       const std::vector<const WebApp*>& new_apps_state);
-  void NotifyWebAppUninstalled(const AppId& app_id);
-  void NotifyWebAppWillBeUninstalled(const AppId& app_id);
   void NotifyWebAppLocallyInstalledStateChanged(const AppId& app_id,
                                                 bool is_locally_installed);
   void NotifyWebAppDisabledStateChanged(const AppId& app_id, bool is_disabled);
@@ -280,11 +306,12 @@ class WebAppRegistrar : public ProfileManagerObserver {
                                          const base::Time& time);
   void NotifyWebAppInstallTimeChanged(const AppId& app_id,
                                       const base::Time& time);
-
-  // Notify when OS hooks installation is finished during Web App installation.
-  void NotifyWebAppInstalledWithOsHooks(const AppId& app_id);
   void NotifyWebAppUserDisplayModeChanged(const AppId& app_id,
                                           DisplayMode user_display_mode);
+  void NotifyWebAppRunOnOsLoginModeChanged(
+      const AppId& app_id,
+      RunOnOsLoginMode run_on_os_login_mode);
+  void NotifyWebAppSettingsPolicyChanged();
 
   // ProfileManagerObserver:
   void OnProfileMarkedForPermanentDeletion(
@@ -373,7 +400,6 @@ class WebAppRegistrar : public ProfileManagerObserver {
   Profile* profile() const { return profile_; }
 
   void NotifyWebAppProfileWillBeDeleted(const AppId& app_id);
-  void NotifyAppRegistrarShutdown();
 
   Registry& registry() { return registry_; }
   void SetRegistry(Registry&& registry);
@@ -389,6 +415,7 @@ class WebAppRegistrar : public ProfileManagerObserver {
 
  private:
   const raw_ptr<Profile> profile_;
+  raw_ptr<WebAppPolicyManager> policy_manager_ = nullptr;
 
   base::ObserverList<AppRegistrarObserver, /*check_empty=*/true> observers_;
 

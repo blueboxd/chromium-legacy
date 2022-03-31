@@ -192,6 +192,7 @@ TEST(WebAppTest, EmptyAppAsDebugValue) {
    "manifest_icons": [  ],
    "handle_links": "kUndefined",
    "install_time": "1601-01-01 00:00:00.000 UTC",
+   "install_source_for_metrics": "not set",
    "is_generated_icon": false,
    "is_from_sync_and_pending_installation": false,
    "is_locally_installed": true,
@@ -208,6 +209,7 @@ TEST(WebAppTest, EmptyAppAsDebugValue) {
    "parent_app_id": "",
    "protocol_handlers": [  ],
    "run_on_os_login_mode": "not run",
+   "run_on_os_login_os_integration_state": "not set",
    "scope": "",
    "share_target": null,
    "shortcuts_menu_item_infos": [  ],
@@ -375,6 +377,7 @@ TEST(WebAppTest, SampleAppAsDebugValue) {
    } ],
    "handle_links": "kAuto",
    "install_time": "1970-01-10 21:57:36.131 UTC",
+   "install_source_for_metrics": 13,
    "is_from_sync_and_pending_installation": false,
    "is_generated_icon": true,
    "is_locally_installed": false,
@@ -415,6 +418,7 @@ TEST(WebAppTest, SampleAppAsDebugValue) {
       "url": "https://example.com/24741963854"
    } ],
    "run_on_os_login_mode": "windowed",
+   "run_on_os_login_os_integration_state": "not run",
    "scope": "https://example.com/scope1234/",
    "share_target": null,
    "shortcuts_menu_item_infos": [ {

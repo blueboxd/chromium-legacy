@@ -37,7 +37,7 @@ import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
-import {afterNextRender, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender, DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {GlobalScrollTargetMixin} from '../global_scroll_target_mixin.js';
 import {HatsBrowserProxyImpl, TrustSafetyInteraction} from '../hats_browser_proxy.js';
@@ -59,6 +59,7 @@ import {PasswordCheckMixin} from './password_check_mixin.js';
 import {AddCredentialFromSettingsUserInteractions} from './password_edit_dialog.js';
 import {PasswordCheckReferrer, PasswordExceptionListChangedListener, PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
 import {PasswordsListHandlerElement} from './passwords_list_handler.js';
+import {getTemplate} from './passwords_section.html.js';
 
 /**
  * Checks if an HTML element is an editable. An editable is either a text
@@ -74,12 +75,6 @@ function isEditable(element: Element): boolean {
 }
 
 type FocusConfig = Map<string, string|(() => void)>;
-
-interface RepeaterEvent extends CustomEvent {
-  model: {
-    item: MultiStoreExceptionEntry,
-  };
-}
 
 export interface PasswordsSectionElement {
   $: {
@@ -98,7 +93,7 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -578,7 +573,8 @@ export class PasswordsSectionElement extends PasswordsSectionElementBase {
   /**
    * Fires an event that should delete the password exception.
    */
-  private onRemoveExceptionButtonTap_(e: RepeaterEvent) {
+  private onRemoveExceptionButtonTap_(
+      e: DomRepeatEvent<MultiStoreExceptionEntry>) {
     const exception = e.model.item;
     const allExceptionIds: Array<number> = [];
     if (exception.isPresentInAccount()) {

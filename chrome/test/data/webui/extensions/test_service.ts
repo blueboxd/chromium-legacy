@@ -11,8 +11,10 @@ export class TestService extends TestBrowserProxy implements ServiceInterface {
   itemStateChangedTarget: FakeChromeEvent = new FakeChromeEvent();
   profileStateChangedTarget: FakeChromeEvent = new FakeChromeEvent();
   extensionActivityTarget: FakeChromeEvent = new FakeChromeEvent();
+  userSiteSettingsChangedTarget: FakeChromeEvent = new FakeChromeEvent();
   acceptRuntimeHostPermission: boolean = true;
-  testActivities?: chrome.activityLogPrivate.ActivityResultSet|undefined;
+  testActivities?: chrome.activityLogPrivate.ActivityResultSet;
+  userSiteSettings?: chrome.developerPrivate.UserSiteSettings;
 
   private retryLoadUnpackedError_?: chrome.developerPrivate.LoadError;
   private forceReloadItemError_: boolean = false;
@@ -21,6 +23,7 @@ export class TestService extends TestBrowserProxy implements ServiceInterface {
   constructor() {
     super([
       'addRuntimeHostPermission',
+      'addUserSpecifiedSite',
       'choosePackRootDirectory',
       'choosePrivateKeyPath',
       'deleteActivitiesById',
@@ -33,13 +36,18 @@ export class TestService extends TestBrowserProxy implements ServiceInterface {
       'getExtensionSize',
       'getFilteredExtensionActivityLog',
       'getProfileConfiguration',
+      'getUserSiteSettings',
       'inspectItemView',
+      'installDroppedFile',
       'loadUnpacked',
+      'loadUnpackedFromDrag',
+      'notifyDragInstallInProgress',
       'openUrl',
       'packExtension',
       'recordUserAction',
       'reloadItem',
       'removeRuntimeHostPermission',
+      'removeUserSpecifiedSite',
       'repairItem',
       'requestFileSource',
       'retryLoadUnpacked',
@@ -89,7 +97,13 @@ export class TestService extends TestBrowserProxy implements ServiceInterface {
 
   getProfileConfiguration() {
     this.methodCalled('getProfileConfiguration');
-    return Promise.resolve({inDeveloperMode: false});
+    return Promise.resolve({
+      canLoadUnpacked: false,
+      inDeveloperMode: false,
+      isDeveloperModeControlledByPolicy: false,
+      isIncognitoAvailable: false,
+      isChildAccount: false,
+    });
   }
 
   getItemStateChangedTarget() {
@@ -98,6 +112,10 @@ export class TestService extends TestBrowserProxy implements ServiceInterface {
 
   getProfileStateChangedTarget() {
     return this.profileStateChangedTarget;
+  }
+
+  getUserSiteSettingsChangedTarget() {
+    return this.userSiteSettingsChangedTarget;
   }
 
   getExtensionsInfo() {
@@ -287,5 +305,35 @@ export class TestService extends TestBrowserProxy implements ServiceInterface {
 
   recordUserAction(metricName: string) {
     this.methodCalled('recordUserAction', metricName);
+  }
+
+  notifyDragInstallInProgress() {
+    this.methodCalled('notifyDragInstallInProgress');
+  }
+
+  loadUnpackedFromDrag() {
+    this.methodCalled('loadUnpackedFromDrag');
+    return Promise.resolve(true);
+  }
+
+  installDroppedFile() {
+    this.methodCalled('installDroppedFile');
+  }
+
+  getUserSiteSettings() {
+    this.methodCalled('getUserSiteSettings');
+    return Promise.resolve(this.userSiteSettings!);
+  }
+
+  addUserSpecifiedSite(
+      siteSet: chrome.developerPrivate.UserSiteSet, host: string) {
+    this.methodCalled('addUserSpecifiedSite', [siteSet, host]);
+    return Promise.resolve();
+  }
+
+  removeUserSpecifiedSite(
+      siteSet: chrome.developerPrivate.UserSiteSet, host: string) {
+    this.methodCalled('removeUserSpecifiedSite', [siteSet, host]);
+    return Promise.resolve();
   }
 }

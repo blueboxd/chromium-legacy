@@ -23,7 +23,6 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
-#include "chrome/common/chrome_features.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -53,18 +52,18 @@ namespace web_app {
 
 namespace {
 
-apps::mojom::AppType GetWebAppType() {
+apps::AppType GetWebAppType() {
 // After moving the ordinary Web Apps to Lacros chrome, the remaining web
 // apps in ash Chrome will be only System Web Apps. Change the app type
 // to kSystemWeb for this case and the kWeb app type will be published from
 // the publisher for Lacros web apps.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (crosapi::browser_util::IsLacrosEnabled() && IsWebAppsCrosapiEnabled()) {
-    return apps::mojom::AppType::kSystemWeb;
+    return apps::AppType::kSystemWeb;
   }
 #endif
 
-  return apps::mojom::AppType::kWeb;
+  return apps::AppType::kWeb;
 }
 
 bool ShouldObserveMediaRequests() {
@@ -79,9 +78,10 @@ void AddDefaultPreferredApp(const std::string& app_id,
                             const GURL& url,
                             apps::mojom::AppService* app_service) {
   auto intent_filter = apps_util::CreateIntentFilterForUrlScope(url);
-  app_service->AddPreferredApp(GetWebAppType(), app_id,
-                               std::move(intent_filter),
-                               /*intent=*/nullptr, /*from_publisher=*/true);
+  app_service->AddPreferredApp(
+      apps::ConvertAppTypeToMojomAppType(GetWebAppType()), app_id,
+      std::move(intent_filter),
+      /*intent=*/nullptr, /*from_publisher=*/true);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -130,7 +130,8 @@ void WebApps::Initialize(
 
   DCHECK(provider_);
 
-  PublisherBase::Initialize(app_service, app_type_);
+  PublisherBase::Initialize(app_service,
+                            apps::ConvertAppTypeToMojomAppType(app_type_));
 
   provider_->on_registry_ready().Post(
       FROM_HERE, base::BindOnce(&WebApps::InitWebApps, AsWeakPtr()));
@@ -218,7 +219,18 @@ void WebApps::OpenNativeSettings(const std::string& app_id) {
   publisher_helper().OpenNativeSettings(app_id);
 }
 
-void WebApps::PublishWebApps(std::vector<apps::mojom::AppPtr> mojom_apps) {
+void WebApps::SetWindowMode(const std::string& app_id,
+                            apps::mojom::WindowMode window_mode) {
+  publisher_helper().SetWindowMode(app_id, window_mode);
+}
+
+void WebApps::SetRunOnOsLoginMode(
+    const std::string& app_id,
+    apps::mojom::RunOnOsLoginMode run_on_os_login_mode) {
+  publisher_helper().SetRunOnOsLoginMode(app_id, run_on_os_login_mode);
+}
+
+void WebApps::PublishWebApps(std::vector<apps::AppPtr> apps) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   const WebApp* web_app = GetWebApp(ash::kChromeUITrustedProjectorSwaAppId);
   if (web_app) {
@@ -228,21 +240,23 @@ void WebApps::PublishWebApps(std::vector<apps::mojom::AppPtr> mojom_apps) {
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-  if (mojom_apps.empty()) {
+  if (apps.empty()) {
     return;
   }
 
-  std::vector<std::unique_ptr<apps::App>> apps;
-  for (apps::mojom::AppPtr& app : mojom_apps) {
-    apps.push_back(apps::ConvertMojomAppToApp(app));
+  std::vector<apps::mojom::AppPtr> mojom_apps;
+  for (apps::AppPtr& app : apps) {
+    mojom_apps.push_back(apps::ConvertAppToMojomApp(app));
   }
 
-  apps::AppPublisher::Publish(std::move(apps));
+  apps::AppPublisher::Publish(std::move(apps), app_type_,
+                              /*should_notify_initialized=*/false);
 
   const bool should_notify_initialized = false;
   if (subscribers_.size() == 1) {
     auto& subscriber = *subscribers_.begin();
-    subscriber->OnApps(std::move(mojom_apps), app_type(),
+    subscriber->OnApps(std::move(mojom_apps),
+                       apps::ConvertAppTypeToMojomAppType(app_type()),
                        should_notify_initialized);
     return;
   }
@@ -250,12 +264,13 @@ void WebApps::PublishWebApps(std::vector<apps::mojom::AppPtr> mojom_apps) {
     std::vector<apps::mojom::AppPtr> cloned_apps;
     for (const auto& app : mojom_apps)
       cloned_apps.push_back(app.Clone());
-    subscriber->OnApps(std::move(cloned_apps), app_type(),
+    subscriber->OnApps(std::move(cloned_apps),
+                       apps::ConvertAppTypeToMojomAppType(app_type()),
                        should_notify_initialized);
   }
 }
 
-void WebApps::PublishWebApp(apps::mojom::AppPtr app) {
+void WebApps::PublishWebApp(apps::AppPtr app) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (app->app_id == ash::kChromeUITrustedProjectorSwaAppId) {
     // After OOBE, PublishWebApps() above could execute before the intent filter
@@ -268,8 +283,9 @@ void WebApps::PublishWebApp(apps::mojom::AppPtr app) {
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-  apps::AppPublisher::Publish(apps::ConvertMojomAppToApp(app));
-  PublisherBase::Publish(std::move(app), subscribers_);
+  auto mojom_app = apps::ConvertAppToMojomApp(app);
+  apps::AppPublisher::Publish(std::move(app));
+  PublisherBase::Publish(std::move(mojom_app), subscribers_);
 }
 
 void WebApps::ModifyWebAppCapabilityAccess(
@@ -280,10 +296,10 @@ void WebApps::ModifyWebAppCapabilityAccess(
                          std::move(accessing_microphone));
 }
 
-std::vector<std::unique_ptr<apps::App>> WebApps::CreateWebApps() {
+std::vector<apps::AppPtr> WebApps::CreateWebApps() {
   DCHECK(provider_);
 
-  std::vector<std::unique_ptr<apps::App>> apps;
+  std::vector<apps::AppPtr> apps;
   for (const WebApp& web_app : provider_->registrar().GetApps()) {
     if (Accepts(web_app.app_id())) {
       apps.push_back(publisher_helper().CreateWebApp(&web_app));
@@ -306,13 +322,11 @@ void WebApps::ConvertWebApps(std::vector<apps::mojom::AppPtr>* apps_out) {
 }
 
 void WebApps::InitWebApps() {
-  RegisterPublisher(apps::ConvertMojomAppTypToAppType(app_type_));
+  RegisterPublisher(app_type_);
 
-  std::vector<std::unique_ptr<apps::App>> apps = CreateWebApps();
-  if (apps.empty()) {
-    return;
-  }
-  apps::AppPublisher::Publish(std::move(apps));
+  std::vector<apps::AppPtr> apps = CreateWebApps();
+  apps::AppPublisher::Publish(std::move(apps), app_type_,
+                              /*should_notify_initialized=*/true);
 }
 
 void WebApps::StartPublishingWebApps(
@@ -322,15 +336,11 @@ void WebApps::StartPublishingWebApps(
 
   mojo::Remote<apps::mojom::Subscriber> subscriber(
       std::move(subscriber_remote));
-  subscriber->OnApps(std::move(apps), app_type_,
+  subscriber->OnApps(std::move(apps),
+                     apps::ConvertAppTypeToMojomAppType(app_type_),
                      true /* should_notify_initialized */);
 
   subscribers_.Add(std::move(subscriber));
-}
-
-void WebApps::SetWindowMode(const std::string& app_id,
-                            apps::mojom::WindowMode window_mode) {
-  publisher_helper().SetWindowMode(app_id, window_mode);
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -432,9 +442,7 @@ void WebApps::GetAppShortcutMenuModel(const std::string& app_id,
   }
 
   // Read shortcuts menu item icons from disk, if any.
-  if (base::FeatureList::IsEnabled(
-          features::kDesktopPWAsAppIconShortcutsMenuUI) &&
-      !web_app->shortcuts_menu_item_infos().empty()) {
+  if (!web_app->shortcuts_menu_item_infos().empty()) {
     provider()->icon_manager().ReadAllShortcutsMenuIcons(
         app_id, base::BindOnce(&WebApps::OnShortcutsMenuIconsRead,
                                base::AsWeakPtr<WebApps>(this), app_id,

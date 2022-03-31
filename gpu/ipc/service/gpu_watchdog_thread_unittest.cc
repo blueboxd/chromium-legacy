@@ -7,6 +7,7 @@
 
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
+#include "base/system/sys_info.h"
 #include "base/task/current_thread.h"
 #include "base/test/power_monitor_test.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -30,12 +31,14 @@ namespace {
 // should be enough to trigger the watchdog kill. However, it can cause test
 // flakiness when the time is too short.
 
-constexpr auto kGpuWatchdogTimeoutForTesting = base::Milliseconds(500);
-constexpr auto kExtraGPUJobTimeForTesting = base::Milliseconds(2000);
+constexpr auto kGpuWatchdogTimeoutForTesting = base::Milliseconds(120);
+constexpr auto kExtraGPUJobTimeForTesting = base::Milliseconds(500);
 
-// For slow machines like Win 7 and Mac 10.xx.
-constexpr auto kGpuWatchdogTimeoutForTestingSlow = base::Milliseconds(1000);
-constexpr auto kExtraGPUJobTimeForTestingSlow = base::Milliseconds(4000);
+// For slow machines like Win 7, Mac 10.xx and Android L/M/N.
+[[maybe_unused]] constexpr auto kGpuWatchdogTimeoutForTestingSlow =
+    base::Milliseconds(240);
+[[maybe_unused]] constexpr auto kExtraGPUJobTimeForTestingSlow =
+    base::Milliseconds(1000);
 
 // On Windows, the gpu watchdog check if the main thread has used the full
 // thread time. We want to detect the case in which the main thread is swapped
@@ -102,26 +105,61 @@ class GpuWatchdogPowerTest : public GpuWatchdogTest {
 void GpuWatchdogTest::SetUp() {
   ASSERT_TRUE(base::ThreadTaskRunnerHandle::IsSet());
   ASSERT_TRUE(base::CurrentThread::IsSet());
+  bool use_slow_timeout = false;
 
 #if BUILDFLAG(IS_WIN)
   // Win7
   if (base::win::GetVersion() < base::win::Version::WIN10) {
+    use_slow_timeout = true;
+  }
+
+#elif BUILDFLAG(IS_MAC)
+  // Use slow timeout for Mac versions < 11.00 and for MacBookPro model <
+  // MacBookPro14,1
+  int os_version = base::mac::internal::MacOSVersion();
+
+  if (os_version <= 1100) {
+    use_slow_timeout = true;
+  } else {
+    std::string model_str = base::SysInfo::HardwareModelName();
+    size_t found_position = model_str.find("MacBookPro");
+    constexpr size_t model_version_pos = 10;
+
+    // A MacBookPro is found.
+    if (found_position == 0 && model_str.size() > model_version_pos) {
+      // model_ver_str = "MacBookProXX,X", model_ver_str = "XX,X"
+      std::string model_ver_str = model_str.substr(model_version_pos);
+      int major_model_ver = std::atoi(model_ver_str.c_str());
+      // For version < 14,1
+      if (major_model_ver < 14) {
+        use_slow_timeout = true;
+      }
+    }
+  }
+
+#elif BUILDFLAG(IS_ANDROID)
+  int32_t major_version = 0;
+  int32_t minor_version = 0;
+  int32_t bugfix_version = 0;
+  base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
+                                               &bugfix_version);
+
+  // For Android version < Android Pie (Version 9)
+  if (major_version < 9) {
+    use_slow_timeout = true;
+  }
+
+#elif BUILDFLAG(IS_FUCHSIA)
+  use_slow_timeout = true;
+#endif
+
+  if (use_slow_timeout) {
     timeout_ = kGpuWatchdogTimeoutForTestingSlow;
     extra_gpu_job_time_ = kExtraGPUJobTimeForTestingSlow;
   }
 
+#if BUILDFLAG(IS_WIN)
   full_thread_time_on_windows_ = timeout_ * kMaxCountOfMoreGpuThreadTimeAllowed;
-#elif BUILDFLAG(IS_MAC)
-  int os_version = base::mac::internal::MacOSVersion();
-  // For Mac version <= 11.00
-  if (os_version <= 1100) {
-    timeout_ = kGpuWatchdogTimeoutForTestingSlow;
-    extra_gpu_job_time_ = kExtraGPUJobTimeForTestingSlow;
-  }
-#else
-  // Use a longer timeout for now. Will try to reduce it later.
-  timeout_ = kGpuWatchdogTimeoutForTestingSlow;
-  extra_gpu_job_time_ = kExtraGPUJobTimeForTestingSlow;
 #endif
 
   watchdog_thread_ = gpu::GpuWatchdogThread::Create(
@@ -189,7 +227,7 @@ void GpuWatchdogPowerTest::LongTaskOnResume(
 
 // Normal GPU Initialization.
 TEST_F(GpuWatchdogTest, GpuInitializationComplete) {
-  // Assume GPU initialization takes quarter of WatchdogTimeout time.
+  // Assume GPU initialization takes a quarter of WatchdogTimeout.
   auto normal_task_time = timeout_ / 4;
 
   SimpleTask(normal_task_time, /*extra_time=*/base::TimeDelta());

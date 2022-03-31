@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_NET_SECURE_DNS_UTIL_H_
 #define CHROME_BROWSER_NET_SECURE_DNS_UTIL_H_
 
-#include <string>
 #include <vector>
 
 #include "base/strings/string_piece.h"
@@ -38,14 +37,6 @@ net::DohProviderEntry::List RemoveDisabledProviders(
     const net::DohProviderEntry::List& providers,
     const std::vector<std::string>& disabled_providers);
 
-// Implements the whitespace-delimited group syntax for DoH templates.
-std::vector<base::StringPiece> SplitGroup(base::StringPiece group);
-
-// Returns true if a group of templates are all valid per
-// net::dns_util::IsValidDohTemplate().  This should be checked before updating
-// stored preferences.
-bool IsValidGroup(base::StringPiece group);
-
 // When the selected template changes, call this function to update the
 // Selected, Unselected, and Ignored histograms for all the included providers,
 // and also for the custom provider option.  If the old or new selection is the
@@ -56,9 +47,9 @@ void UpdateDropdownHistograms(const net::DohProviderEntry::List& providers,
 void UpdateValidationHistogram(bool valid);
 void UpdateProbeHistogram(bool success);
 
-// Modifies |overrides| to use the DoH server specified by |server_template|.
-void ApplyTemplate(net::DnsConfigOverrides* overrides,
-                   std::string server_template);
+// Modifies `overrides` to use the DoH servers specified by `doh_config`.
+void ApplyConfig(net::DnsConfigOverrides* overrides,
+                 base::StringPiece doh_config);
 
 // Registers the backup preference required for the DNS probes setting reset.
 // TODO(crbug.com/1062698): Remove this once the privacy settings redesign

@@ -154,18 +154,24 @@ void NetErrorHelperCore::OnFinishLoad(FrameType frame_type) {
   }
 }
 
-void NetErrorHelperCore::PrepareErrorPage(FrameType frame_type,
-                                          const error_page::Error& error,
-                                          bool is_failed_post,
-                                          std::string* error_html) {
+void NetErrorHelperCore::PrepareErrorPage(
+    FrameType frame_type,
+    const error_page::Error& error,
+    bool is_failed_post,
+    content::mojom::AlternativeErrorPageOverrideInfoPtr
+        alternative_error_page_info,
+    std::string* error_html) {
   if (frame_type == MAIN_FRAME) {
     pending_error_page_info_ =
         std::make_unique<ErrorPageInfo>(error, is_failed_post);
-    PrepareErrorPageForMainFrame(pending_error_page_info_.get(), error_html);
+    PrepareErrorPageForMainFrame(pending_error_page_info_.get(),
+                                 std::move(alternative_error_page_info),
+                                 error_html);
   } else if (error_html) {
     delegate_->GenerateLocalizedErrorPage(
         error, is_failed_post,
-        false /* No diagnostics dialogs allowed for subframes. */, error_html);
+        false /* No diagnostics dialogs allowed for subframes. */,
+        std::move(alternative_error_page_info), error_html);
   }
 }
 
@@ -199,11 +205,14 @@ void NetErrorHelperCore::OnEasterEggHighScoreReceived(int high_score) {
 
 void NetErrorHelperCore::PrepareErrorPageForMainFrame(
     ErrorPageInfo* pending_error_page_info,
+    content::mojom::AlternativeErrorPageOverrideInfoPtr
+        alternative_error_page_info,
     std::string* error_html) {
   std::string error_param;
   error_page::Error error = pending_error_page_info->error;
 
-  if (IsNetDnsError(pending_error_page_info->error)) {
+  if (!alternative_error_page_info &&
+      IsNetDnsError(pending_error_page_info->error)) {
     // The last probe status needs to be reset if this is a DNS error.  This
     // means that if a DNS error page is committed but has not yet finished
     // loading, a DNS probe status scheduled to be sent to it may be thrown
@@ -216,7 +225,8 @@ void NetErrorHelperCore::PrepareErrorPageForMainFrame(
   if (error_html) {
     pending_error_page_info->page_state = delegate_->GenerateLocalizedErrorPage(
         error, pending_error_page_info->was_failed_post,
-        can_show_network_diagnostics_dialog_, error_html);
+        can_show_network_diagnostics_dialog_,
+        std::move(alternative_error_page_info), error_html);
   }
 }
 

@@ -79,16 +79,16 @@ class FlagsDOMHandler : public web::WebUIIOSMessageHandler {
   void RegisterMessages() override;
 
   // Callback for the "requestExperimentFeatures" message.
-  void HandleRequestExperimentalFeatures(const base::ListValue* args);
+  void HandleRequestExperimentalFeatures(base::Value::ConstListView args);
 
   // Callback for the "enableExperimentalFeature" message.
-  void HandleEnableExperimentalFeatureMessage(const base::ListValue* args);
+  void HandleEnableExperimentalFeatureMessage(base::Value::ConstListView args);
 
   // Callback for the "restartBrowser" message. Restores all tabs on restart.
-  void HandleRestartBrowser(const base::ListValue* args);
+  void HandleRestartBrowser(base::Value::ConstListView args);
 
   // Callback for the "resetAllFlags" message.
-  void HandleResetAllFlags(const base::ListValue* args);
+  void HandleResetAllFlags(base::Value::ConstListView args);
 
  private:
   std::unique_ptr<flags_ui::FlagsStorage> flags_storage_;
@@ -96,20 +96,20 @@ class FlagsDOMHandler : public web::WebUIIOSMessageHandler {
 };
 
 void FlagsDOMHandler::RegisterMessages() {
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       flags_ui::kRequestExperimentalFeatures,
       base::BindRepeating(&FlagsDOMHandler::HandleRequestExperimentalFeatures,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       flags_ui::kEnableExperimentalFeature,
       base::BindRepeating(
           &FlagsDOMHandler::HandleEnableExperimentalFeatureMessage,
           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       flags_ui::kRestartBrowser,
       base::BindRepeating(&FlagsDOMHandler::HandleRestartBrowser,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       flags_ui::kResetAllFlags,
       base::BindRepeating(&FlagsDOMHandler::HandleResetAllFlags,
                           base::Unretained(this)));
@@ -123,10 +123,10 @@ void FlagsDOMHandler::Init(
 }
 
 void FlagsDOMHandler::HandleRequestExperimentalFeatures(
-    const base::ListValue* args) {
+    base::Value::ConstListView args) {
   DCHECK(flags_storage_);
-  DCHECK(!args->GetList().empty());
-  const base::Value& callback_id = args->GetList()[0];
+  DCHECK(!args.empty());
+  const base::Value& callback_id = args[0];
 
   std::vector<base::Value> supported_features;
   std::vector<base::Value> unsupported_features;
@@ -151,15 +151,14 @@ void FlagsDOMHandler::HandleRequestExperimentalFeatures(
 }
 
 void FlagsDOMHandler::HandleEnableExperimentalFeatureMessage(
-    const base::ListValue* args) {
-  base::Value::ConstListView args_list = args->GetList();
+    base::Value::ConstListView args) {
   DCHECK(flags_storage_);
-  DCHECK_EQ(2u, args_list.size());
-  if (args_list.size() != 2)
+  DCHECK_EQ(2u, args.size());
+  if (args.size() != 2)
     return;
 
-  const std::string* entry_internal_name = args_list[0].GetIfString();
-  const std::string* enable_str = args_list[1].GetIfString();
+  const std::string* entry_internal_name = args[0].GetIfString();
+  const std::string* enable_str = args[1].GetIfString();
   if (!entry_internal_name || !enable_str)
     return;
 
@@ -168,13 +167,13 @@ void FlagsDOMHandler::HandleEnableExperimentalFeatureMessage(
   flags_storage_->CommitPendingWrites();
 }
 
-void FlagsDOMHandler::HandleRestartBrowser(const base::ListValue* args) {
+void FlagsDOMHandler::HandleRestartBrowser(base::Value::ConstListView args) {
 #if BUILDFLAG(CHROMIUM_BRANDING)
   CHECK(false);
 #endif  // BUILDFLAG(CHROMIUM_BRANDING)
 }
 
-void FlagsDOMHandler::HandleResetAllFlags(const base::ListValue* args) {
+void FlagsDOMHandler::HandleResetAllFlags(base::Value::ConstListView args) {
   DCHECK(flags_storage_);
   ResetAllFlags(flags_storage_.get());
   flags_storage_->CommitPendingWrites();

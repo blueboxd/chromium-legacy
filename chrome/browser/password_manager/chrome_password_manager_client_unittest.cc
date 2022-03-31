@@ -188,7 +188,12 @@ class FakePasswordAutofillAgent
     called_set_logging_state_ = true;
     logging_state_active_ = active;
   }
+
+#if BUILDFLAG(IS_ANDROID)
   void TouchToFillClosed(bool show_virtual_keyboard) override {}
+
+  void TriggerFormSubmission() override {}
+#endif
 
   // Records whether SetLoggingState() gets called.
   bool called_set_logging_state_ = false;

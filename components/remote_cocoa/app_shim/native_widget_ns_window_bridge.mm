@@ -433,6 +433,7 @@ void NativeWidgetNSWindowBridge::InitWindow(
     mojom::NativeWidgetNSWindowInitParamsPtr params) {
   modal_type_ = params->modal_type;
   is_translucent_window_ = params->is_translucent;
+  is_headless_mode_window_ = params->is_headless_mode_window;
   pending_restoration_data_ = params->state_restoration_data;
 
   // Register for application hide notifications so that visibility can be
@@ -656,6 +657,10 @@ void NativeWidgetNSWindowBridge::CloseWindowNow() {
 
 void NativeWidgetNSWindowBridge::SetVisibilityState(
     WindowVisibilityState new_state) {
+  // Avoid changing headless mode window visibility state.
+  if (is_headless_mode_window_)
+    return;
+
   // During session restore this method gets called from RestoreTabsToBrowser()
   // with new_state = kShowAndActivateWindow. We consume restoration data on our
   // first time through this method so we can use its existence as an
@@ -1268,9 +1273,8 @@ base::TimeDelta NativeWidgetNSWindowBridge::PreCommitTimeout() {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetNSWindowBridge, CocoaMouseCaptureDelegate:
 
-bool NativeWidgetNSWindowBridge::PostCapturedEvent(NSEvent* event) {
+void NativeWidgetNSWindowBridge::PostCapturedEvent(NSEvent* event) {
   [bridged_view_ processCapturedMouseEvent:event];
-  return true;
 }
 
 void NativeWidgetNSWindowBridge::OnMouseCaptureLost() {

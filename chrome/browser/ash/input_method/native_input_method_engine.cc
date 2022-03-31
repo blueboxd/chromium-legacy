@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/input_method/assistive_suggester_client_filter.h"
+#include "chrome/browser/ash/input_method/assistive_suggester_prefs.h"
 #include "chrome/browser/ash/input_method/assistive_suggester_switch.h"
 #include "chrome/browser/ash/input_method/autocorrect_manager.h"
 #include "chrome/browser/ash/input_method/diacritics_checker.h"
@@ -84,12 +85,18 @@ bool IsJapaneseEngine(const std::string& engine_id) {
 }
 
 bool IsUsEnglishEngine(const std::string& engine_id) {
-  return (engine_id == "xkb:us::eng" || engine_id == "xkb:us:altgr-intl:eng" ||
-          engine_id == "xkb:us:colemak:eng" ||
-          engine_id == "xkb:us:dvorak:eng" || engine_id == "xkb:us:dvp:eng" ||
-          engine_id == "xkb:us:intl:eng" || engine_id == "xkb:us:intl_pc:eng" ||
-          engine_id == "xkb:us:workman-intl:eng" ||
-          engine_id == "xkb:us:workman:eng");
+  return engine_id == "xkb:us::eng";
+}
+
+bool IsTransliterationEngine(const std::string& engine_id) {
+  return engine_id == "ar-t-i0-und" || engine_id == "el-t-i0-und" ||
+         engine_id == "gu-t-i0-und" || engine_id == "he-t-i0-und" ||
+         engine_id == "hi-t-i0-und" || engine_id == "kn-t-i0-und" ||
+         engine_id == "ml-t-i0-und" || engine_id == "mr-t-i0-und" ||
+         engine_id == "ne-t-i0-und" || engine_id == "or-t-i0-und" ||
+         engine_id == "fa-t-i0-und" || engine_id == "pa-t-i0-und" ||
+         engine_id == "sa-t-i0-und" || engine_id == "ta-t-i0-und" ||
+         engine_id == "te-t-i0-und" || engine_id == "ur-t-i0-und";
 }
 
 bool CanRouteToNativeMojoEngine(const std::string& engine_id) {
@@ -101,13 +108,16 @@ bool CanRouteToNativeMojoEngine(const std::string& engine_id) {
     return false;
   }
 
-  return (features::IsSystemChinesePhysicalTypingEnabled() &&
+  return (base::FeatureList::IsEnabled(
+              features::kSystemChinesePhysicalTyping) &&
           IsChineseEngine(engine_id)) ||
-         (features::IsSystemJapanesePhysicalTypingEnabled() &&
+         (base::FeatureList::IsEnabled(
+              features::kSystemJapanesePhysicalTyping) &&
           IsJapaneseEngine(engine_id)) ||
-         (features::IsSystemKoreanPhysicalTypingEnabled() &&
-          IsKoreanEngine(engine_id)) ||
-         IsFstEngine(engine_id);
+         (base::FeatureList::IsEnabled(
+              features::kSystemTransliterationPhysicalTyping) &&
+          IsTransliterationEngine(engine_id)) ||
+         IsKoreanEngine(engine_id) || IsFstEngine(engine_id);
 }
 
 bool IsPhysicalKeyboardAutocorrectEnabled(PrefService* prefs,
@@ -126,16 +136,6 @@ bool IsPhysicalKeyboardAutocorrectEnabled(PrefService* prefs,
 
 bool IsLacrosEnabled() {
   return base::FeatureList::IsEnabled(chromeos::features::kLacrosSupport);
-}
-
-bool IsPredictiveWritingPrefEnabled(PrefService* pref_service,
-                                    const std::string& engine_id) {
-  const base::Value* input_method_settings = pref_service->GetDictionary(
-      ::prefs::kLanguageInputMethodSpecificSettings);
-  absl::optional<bool> predictive_writing_setting =
-      input_method_settings->FindBoolPath(
-          engine_id + ".physicalKeyboardEnablePredictiveWriting");
-  return predictive_writing_setting && *predictive_writing_setting;
 }
 
 bool IsPredictiveWritingEnabled(PrefService* pref_service,
@@ -493,6 +493,10 @@ void OverrideXkbLayoutIfNeeded(ImeKeyboard* keyboard,
   }
 }
 
+bool UseAssociatedInterfaces() {
+  return features::IsAssistiveMultiWordEnabled();
+}
+
 }  // namespace
 
 NativeInputMethodEngine::NativeInputMethodEngine()
@@ -634,6 +638,66 @@ bool NativeInputMethodEngine::ImeObserver::ShouldRouteToNativeMojoEngine(
   return use_ime_service_ && CanRouteToNativeMojoEngine(engine_id);
 }
 
+void NativeInputMethodEngine::ImeObserver::OnConnectionFactoryBound(
+    bool bound) {
+  if (bound)
+    return;
+
+  LOG(ERROR) << "ConnectionFactory failed to bind, abort.";
+  connection_factory_.reset();
+}
+
+void NativeInputMethodEngine::ImeObserver::ConnectToImeService(
+    mojom::ConnectionTarget connection_target,
+    const std::string& engine_id) {
+  if (!remote_manager_.is_bound()) {
+    auto* ime_manager = InputMethodManager::Get();
+    ime_manager->ConnectInputEngineManager(
+        remote_manager_.BindNewPipeAndPassReceiver());
+    remote_manager_.set_disconnect_handler(
+        base::BindOnce(&OnError, base::Time::Now()));
+    LogEvent(ImeServiceEvent::kInitSuccess);
+  }
+
+  if (!UseAssociatedInterfaces()) {
+    // Deactivate any existing engine.
+    input_method_.reset();
+    host_receiver_.reset();
+    remote_manager_->ConnectToInputMethod(
+        engine_id, input_method_.BindNewPipeAndPassReceiver(),
+        host_receiver_.BindNewPipeAndPassRemote(),
+        base::BindOnce(&OnConnected));
+    return;
+  }
+
+  // Deactivate any existing engine.
+  connection_factory_.reset();
+  associated_input_method_.reset();
+  associated_host_receiver_.reset();
+
+  remote_manager_->InitializeConnectionFactory(
+      connection_factory_.BindNewPipeAndPassReceiver(), connection_target,
+      base::BindOnce(
+          &NativeInputMethodEngine::ImeObserver::OnConnectionFactoryBound,
+          weak_ptr_factory_.GetWeakPtr()));
+
+  mojo::PendingAssociatedRemote<chromeos::ime::mojom::InputMethodHost>
+      input_method_host;
+  associated_host_receiver_.Bind(
+      input_method_host.InitWithNewEndpointAndPassReceiver());
+
+  connection_factory_->ConnectToInputMethod(
+      engine_id, associated_input_method_.BindNewEndpointAndPassReceiver(),
+      std::move(input_method_host), base::BindOnce(&OnConnected));
+}
+
+void NativeInputMethodEngine::ImeObserver::ActivateTextClient(
+    int context_id,
+    bool on_focus_success) {
+  if (text_client_ && text_client_->context_id == context_id)
+    text_client_->state = TextClientState::kActive;
+}
+
 void NativeInputMethodEngine::ImeObserver::OnActivate(
     const std::string& engine_id) {
   // TODO(b/181077907): Always launch the IME service and let IME service decide
@@ -642,62 +706,33 @@ void NativeInputMethodEngine::ImeObserver::OnActivate(
       // The FST Mojo engine is only needed if autocorrect is enabled.
       !IsPhysicalKeyboardAutocorrectEnabled(prefs_, engine_id) &&
       !IsPredictiveWritingEnabled(prefs_, engine_id)) {
+    connection_factory_.reset();
     remote_manager_.reset();
     input_method_.reset();
     host_receiver_.reset();
+    associated_input_method_.reset();
+    associated_host_receiver_.reset();
     return;
   }
 
   if (ShouldRouteToRuleBasedEngine(engine_id)) {
-    if (!remote_manager_.is_bound()) {
-      auto* ime_manager = InputMethodManager::Get();
-      ime_manager->ConnectInputEngineManager(
-          remote_manager_.BindNewPipeAndPassReceiver());
-      remote_manager_.set_disconnect_handler(
-          base::BindOnce(&OnError, base::Time::Now()));
-      LogEvent(ImeServiceEvent::kInitSuccess);
-    }
-
     const auto new_engine_id = NormalizeRuleBasedEngineId(engine_id);
-
-    // Deactivate any existing engine.
-    input_method_.reset();
-    host_receiver_.reset();
-
-    remote_manager_->ConnectToInputMethod(
-        new_engine_id, input_method_.BindNewPipeAndPassReceiver(),
-        host_receiver_.BindNewPipeAndPassRemote(),
-        base::BindOnce(&OnConnected));
-
+    ConnectToImeService(mojom::ConnectionTarget::kImeService, new_engine_id);
     // Notify the virtual keyboard extension that the IME has changed.
     ime_base_observer_->OnActivate(engine_id);
   } else if (ShouldRouteToNativeMojoEngine(engine_id)) {
-    if (!remote_manager_.is_bound()) {
-      auto* ime_manager = InputMethodManager::Get();
-      ime_manager->ConnectInputEngineManager(
-          remote_manager_.BindNewPipeAndPassReceiver());
-      remote_manager_.set_disconnect_handler(
-          base::BindOnce(&OnError, base::Time::Now()));
-      LogEvent(ImeServiceEvent::kInitSuccess);
-    }
-
-    // Deactivate any existing engine.
-    input_method_.reset();
-    host_receiver_.reset();
-
-    remote_manager_->ConnectToInputMethod(
-        engine_id, input_method_.BindNewPipeAndPassReceiver(),
-        host_receiver_.BindNewPipeAndPassRemote(),
-        base::BindOnce(&OnConnected));
-
+    ConnectToImeService(mojom::ConnectionTarget::kDecoder, engine_id);
     // Inform the assistive suggester of the new engine activation.
     assistive_suggester_->OnActivate(engine_id);
   } else {
     // Release the IME service.
     // TODO(b/147709499): A better way to cleanup all.
+    connection_factory_.reset();
     remote_manager_.reset();
     input_method_.reset();
     host_receiver_.reset();
+    associated_input_method_.reset();
+    associated_host_receiver_.reset();
 
     // It is possible that the extension has missed changes to the input method
     // options because the options were changed while it was sleeping.
@@ -712,6 +747,9 @@ void NativeInputMethodEngine::ImeObserver::OnFocus(
     const std::string& engine_id,
     int context_id,
     const IMEEngineHandlerInterface::InputContext& context) {
+  text_client_ =
+      TextClient{.context_id = context_id, .state = TextClientState::kPending};
+
   if (assistive_suggester_->IsAssistiveFeatureEnabled()) {
     assistive_suggester_->OnFocus(context_id);
   }
@@ -720,7 +758,7 @@ void NativeInputMethodEngine::ImeObserver::OnFocus(
     grammar_manager_->OnFocus(context_id, context.flags);
   }
   if (ShouldRouteToNativeMojoEngine(engine_id)) {
-    if (input_method_.is_bound()) {
+    if (IsInputMethodBound()) {
       InputFieldContext input_field_context =
           features::IsAssistiveMultiWordEnabled()
               ? CreateInputFieldContext(assistive_suggester_.get())
@@ -732,19 +770,32 @@ void NativeInputMethodEngine::ImeObserver::OnFocus(
       OverrideXkbLayoutIfNeeded(InputMethodManager::Get()->GetImeKeyboard(),
                                 settings);
 
-      input_method_->OnFocus(mojom::InputFieldInfo::New(
-                                 TextInputTypeToMojoType(context.type),
-                                 AutocorrectFlagsToMojoType(context.flags),
-                                 context.should_do_learning
-                                     ? mojom::PersonalizationMode::kEnabled
-                                     : mojom::PersonalizationMode::kDisabled),
-                             prefs_ ? std::move(settings) : nullptr);
+      auto input_field_info = mojom::InputFieldInfo::New(
+          TextInputTypeToMojoType(context.type),
+          AutocorrectFlagsToMojoType(context.flags),
+          context.should_do_learning ? mojom::PersonalizationMode::kEnabled
+                                     : mojom::PersonalizationMode::kDisabled);
+      auto on_focus_callback = base::BindOnce(
+          &NativeInputMethodEngine::ImeObserver::ActivateTextClient,
+          weak_ptr_factory_.GetWeakPtr(), text_client_->context_id);
+
+      if (UseAssociatedInterfaces()) {
+        associated_input_method_->OnFocus(
+            std::move(input_field_info), prefs_ ? std::move(settings) : nullptr,
+            std::move(on_focus_callback));
+      } else {
+        input_method_->OnFocus(std::move(input_field_info),
+                               prefs_ ? std::move(settings) : nullptr,
+                               std::move(on_focus_callback));
+      }
 
       // TODO(b/202224495): Send the surrounding text as part of InputFieldInfo.
       SendSurroundingTextToNativeMojoEngine(last_surrounding_text_);
     }
   } else {
+    // TODO(b/218608883): Support OnFocusCallback through extension based PK.
     ime_base_observer_->OnFocus(engine_id, context_id, context);
+    ActivateTextClient(context_id, true);
   }
 }
 
@@ -755,12 +806,18 @@ void NativeInputMethodEngine::ImeObserver::OnTouch(
 
 void NativeInputMethodEngine::ImeObserver::OnBlur(const std::string& engine_id,
                                                   int context_id) {
+  text_client_ = absl::nullopt;
+
   if (assistive_suggester_->IsAssistiveFeatureEnabled())
     assistive_suggester_->OnBlur();
 
   if (ShouldRouteToNativeMojoEngine(engine_id)) {
-    if (input_method_.is_bound()) {
-      input_method_->OnBlur();
+    if (IsInputMethodBound()) {
+      if (UseAssociatedInterfaces()) {
+        associated_input_method_->OnBlur();
+      } else {
+        input_method_->OnBlur();
+      }
     }
   } else {
     ime_base_observer_->OnBlur(engine_id, context_id);
@@ -789,7 +846,7 @@ void NativeInputMethodEngine::ImeObserver::OnKeyEvent(
 
   if (ShouldRouteToRuleBasedEngine(engine_id) ||
       ShouldRouteToNativeMojoEngine(engine_id)) {
-    if (input_method_.is_bound() && input_method_.is_connected()) {
+    if (IsInputMethodBound() && IsInputMethodConnected()) {
       // CharacterComposer only takes KEY_PRESSED events.
       const bool filtered = event.type() == ui::ET_KEY_PRESSED &&
                             character_composer_.FilterKeyPress(event);
@@ -821,16 +878,22 @@ void NativeInputMethodEngine::ImeObserver::OnKeyEvent(
             Utf16ToCodepoint(character_composer_.composed_character()));
       }
 
-      input_method_->ProcessKeyEvent(
-          std::move(key_event),
-          base::BindOnce(
-              [](ui::IMEEngineHandlerInterface::KeyEventDoneCallback
-                     original_callback,
-                 mojom::KeyEventResult result) {
-                std::move(original_callback)
-                    .Run(result == mojom::KeyEventResult::kConsumedByIme);
-              },
-              std::move(callback)));
+      auto process_key_event_callback = base::BindOnce(
+          [](ui::IMEEngineHandlerInterface::KeyEventDoneCallback
+                 original_callback,
+             mojom::KeyEventResult result) {
+            std::move(original_callback)
+                .Run(result == mojom::KeyEventResult::kConsumedByIme);
+          },
+          std::move(callback));
+
+      if (UseAssociatedInterfaces()) {
+        associated_input_method_->ProcessKeyEvent(
+            std::move(key_event), std::move(process_key_event_callback));
+      } else {
+        input_method_->ProcessKeyEvent(std::move(key_event),
+                                       std::move(process_key_event_callback));
+      }
     } else {
       std::move(callback).Run(false);
     }
@@ -843,8 +906,12 @@ void NativeInputMethodEngine::ImeObserver::OnReset(
     const std::string& engine_id) {
   if (ShouldRouteToNativeMojoEngine(engine_id) ||
       ShouldRouteToRuleBasedEngine(engine_id)) {
-    if (input_method_.is_bound()) {
-      input_method_->OnCompositionCanceledBySystem();
+    if (IsInputMethodBound()) {
+      if (UseAssociatedInterfaces()) {
+        associated_input_method_->OnCompositionCanceledBySystem();
+      } else {
+        input_method_->OnCompositionCanceledBySystem();
+      }
     }
   } else {
     ime_base_observer_->OnReset(engine_id);
@@ -854,7 +921,11 @@ void NativeInputMethodEngine::ImeObserver::OnReset(
 void NativeInputMethodEngine::ImeObserver::OnDeactivated(
     const std::string& engine_id) {
   if (ShouldRouteToRuleBasedEngine(engine_id)) {
-    input_method_.reset();
+    if (UseAssociatedInterfaces()) {
+      associated_input_method_.reset();
+    } else {
+      input_method_.reset();
+    }
   }
   ime_base_observer_->OnDeactivated(engine_id);
 }
@@ -889,7 +960,7 @@ void NativeInputMethodEngine::ImeObserver::OnSurroundingTextChanged(
     grammar_manager_->OnSurroundingTextChanged(text, cursor_pos, anchor_pos);
   }
   if (ShouldRouteToNativeMojoEngine(engine_id)) {
-    if (input_method_.is_bound()) {
+    if (IsInputMethodBound()) {
       SendSurroundingTextToNativeMojoEngine(last_surrounding_text_);
     }
   } else {
@@ -903,8 +974,12 @@ void NativeInputMethodEngine::ImeObserver::OnCandidateClicked(
     int candidate_id,
     MouseButtonEvent button) {
   if (ShouldRouteToNativeMojoEngine(component_id)) {
-    if (input_method_.is_bound()) {
-      input_method_->OnCandidateSelected(candidate_id);
+    if (IsInputMethodBound()) {
+      if (UseAssociatedInterfaces()) {
+        associated_input_method_->OnCandidateSelected(candidate_id);
+      } else {
+        input_method_->OnCandidateSelected(candidate_id);
+      }
     }
   } else {
     ime_base_observer_->OnCandidateClicked(component_id, candidate_id, button);
@@ -987,6 +1062,8 @@ void NativeInputMethodEngine::ImeObserver::OnInputMethodOptionsChanged(
 void NativeInputMethodEngine::ImeObserver::CommitText(
     const std::u16string& text,
     mojom::CommitTextCursorBehavior cursor_behavior) {
+  if (!IsTextClientActive())
+    return;
   ui::IMEBridge::Get()->GetInputContextHandler()->CommitText(
       text,
       cursor_behavior == mojom::CommitTextCursorBehavior::kMoveCursorBeforeText
@@ -998,6 +1075,8 @@ void NativeInputMethodEngine::ImeObserver::CommitText(
 void NativeInputMethodEngine::ImeObserver::DEPRECATED_SetComposition(
     const std::u16string& text,
     std::vector<mojom::CompositionSpanPtr> spans) {
+  if (!IsTextClientActive())
+    return;
   SetComposition(text, std::move(spans), text.length());
 }
 
@@ -1005,7 +1084,7 @@ void NativeInputMethodEngine::ImeObserver::SetComposition(
     const std::u16string& text,
     std::vector<mojom::CompositionSpanPtr> spans,
     uint32_t new_cursor_position) {
-  if (new_cursor_position > text.length()) {
+  if (!IsTextClientActive() || new_cursor_position > text.length()) {
     return;
   }
 
@@ -1026,6 +1105,9 @@ void NativeInputMethodEngine::ImeObserver::SetComposition(
 void NativeInputMethodEngine::ImeObserver::SetCompositionRange(
     uint32_t start_index,
     uint32_t end_index) {
+  if (!IsTextClientActive())
+    return;
+
   const auto ordered_range = std::minmax(start_index, end_index);
   // TODO(b/151884011): Turn on underlining for composition-based languages.
   ui::IMEBridge::Get()->GetInputContextHandler()->SetComposingRange(
@@ -1038,6 +1120,9 @@ void NativeInputMethodEngine::ImeObserver::SetCompositionRange(
 }
 
 void NativeInputMethodEngine::ImeObserver::FinishComposition() {
+  if (!IsTextClientActive())
+    return;
+
   ui::IMEInputContextHandlerInterface* input_context =
       ui::IMEBridge::Get()->GetInputContextHandler();
 
@@ -1064,6 +1149,8 @@ void NativeInputMethodEngine::ImeObserver::FinishComposition() {
 void NativeInputMethodEngine::ImeObserver::DeleteSurroundingText(
     uint32_t num_before_cursor,
     uint32_t num_after_cursor) {
+  if (!IsTextClientActive())
+    return;
   ui::IMEBridge::Get()->GetInputContextHandler()->DeleteSurroundingText(
       /*offset=*/-static_cast<int>(num_before_cursor),
       /*length=*/num_before_cursor + num_after_cursor);
@@ -1071,6 +1158,8 @@ void NativeInputMethodEngine::ImeObserver::DeleteSurroundingText(
 
 void NativeInputMethodEngine::ImeObserver::HandleAutocorrect(
     mojom::AutocorrectSpanPtr autocorrect_span) {
+  if (!IsTextClientActive())
+    return;
   autocorrect_manager_->HandleAutocorrect(autocorrect_span->autocorrect_range,
                                           autocorrect_span->original_text,
                                           autocorrect_span->current_text);
@@ -1088,11 +1177,16 @@ void NativeInputMethodEngine::ImeObserver::RequestSuggestions(
 
 void NativeInputMethodEngine::ImeObserver::DisplaySuggestions(
     const std::vector<ime::TextSuggestion>& suggestions) {
+  if (!IsTextClientActive())
+    return;
   assistive_suggester_->OnExternalSuggestionsUpdated(suggestions);
 }
 
 void NativeInputMethodEngine::ImeObserver::UpdateCandidatesWindow(
     chromeos::ime::mojom::CandidatesWindowPtr window) {
+  if (!IsTextClientActive())
+    return;
+
   IMECandidateWindowHandlerInterface* candidate_window_handler =
       ui::IMEBridge::Get()->GetCandidateWindowHandler();
   if (!candidate_window_handler) {
@@ -1115,9 +1209,9 @@ void NativeInputMethodEngine::ImeObserver::UpdateCandidatesWindow(
   }
 
   ui::CandidateWindow::CandidateWindowProperty property;
-  property.cursor_position = window->highlighted_candidate
-                                 ? window->highlighted_candidate->index
-                                 : window->DEPRECATED_highlighted_candidate;
+  property.is_cursor_visible = !window->highlighted_candidate.is_null();
+  property.cursor_position =
+      window->highlighted_candidate ? window->highlighted_candidate->index : 0;
   property.page_size = window->candidates.size();
   property.is_vertical = true;
   property.is_auxiliary_text_visible =
@@ -1154,15 +1248,42 @@ void NativeInputMethodEngine::ImeObserver::ReportKoreanSettings(
 }
 
 void NativeInputMethodEngine::ImeObserver::FlushForTesting() {
-  remote_manager_.FlushForTesting();
+  if (remote_manager_.is_bound())
+    remote_manager_.FlushForTesting();  // IN-TEST
+  if (connection_factory_.is_bound())
+    connection_factory_.FlushForTesting();  // IN-TEST
   if (host_receiver_.is_bound())
-    host_receiver_.FlushForTesting();
+    host_receiver_.FlushForTesting();  // IN-TEST
   if (input_method_.is_bound())
-    input_method_.FlushForTesting();
+    input_method_.FlushForTesting();  // IN-TEST
 }
 
 void NativeInputMethodEngine::ImeObserver::OnProfileWillBeDestroyed() {
   prefs_ = nullptr;
+}
+
+bool NativeInputMethodEngine::ImeObserver::IsInputMethodBound() {
+  return (!UseAssociatedInterfaces() && input_method_.is_bound()) ||
+         (UseAssociatedInterfaces() && connection_factory_.is_bound() &&
+          associated_input_method_.is_bound());
+}
+
+bool NativeInputMethodEngine::ImeObserver::IsInputMethodConnected() {
+  return (!UseAssociatedInterfaces() && input_method_.is_bound() &&
+          input_method_.is_connected()) ||
+         (UseAssociatedInterfaces() && connection_factory_.is_bound() &&
+          connection_factory_.is_connected() &&
+          associated_input_method_.is_bound() &&
+          associated_input_method_.is_connected());
+}
+
+bool NativeInputMethodEngine::ImeObserver::IsTextClientActive() {
+  // Only use the "activated" text client model if we are utilizing associated
+  // interfaces. Otherwise, fallback to old behaviour where a text client is
+  // always active.
+  if (!UseAssociatedInterfaces())
+    return true;
+  return text_client_ && text_client_->state == TextClientState::kActive;
 }
 
 void NativeInputMethodEngine::ImeObserver::
@@ -1178,8 +1299,15 @@ void NativeInputMethodEngine::ImeObserver::
   selection->anchor = selection_indices[0];
   selection->focus = selection_indices[1];
 
-  input_method_->OnSurroundingTextChanged(
-      std::move(utf8_text), surrounding_text.offset_pos, std::move(selection));
+  if (UseAssociatedInterfaces()) {
+    associated_input_method_->OnSurroundingTextChanged(
+        std::move(utf8_text), surrounding_text.offset_pos,
+        std::move(selection));
+  } else {
+    input_method_->OnSurroundingTextChanged(std::move(utf8_text),
+                                            surrounding_text.offset_pos,
+                                            std::move(selection));
+  }
 }
 
 void NativeInputMethodEngine::OnInputMethodOptionsChanged() {

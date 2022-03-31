@@ -27,7 +27,7 @@ FwupdClient* g_instance = nullptr;
 const char kCabFileExtension[] = ".cab";
 
 base::FilePath GetFilePathFromUri(const GURL uri) {
-  const std::string filepath = uri.ExtractFileName();
+  const std::string filepath = uri.spec();
 
   if (!filepath.empty()) {
     // Verify that the extension is .cab.
@@ -35,7 +35,7 @@ base::FilePath GetFilePathFromUri(const GURL uri) {
     if (extension_delim == std::string::npos ||
         filepath.substr(extension_delim) != kCabFileExtension) {
       // Bad file, return with empty file path;
-      LOG(ERROR) << "Bad file found: " << uri.spec();
+      LOG(ERROR) << "Bad file found: " << filepath;
       return base::FilePath();
     }
 
@@ -184,14 +184,16 @@ class FwupdClientImpl : public FwupdClient {
                               dbus::ErrorResponse* error_response) {
     bool can_parse = true;
     if (!response) {
-      LOG(ERROR) << "No Dbus response received from fwupd.";
+      // This isn't necessarily an error. Keep at verbose logging to prevent
+      // spam.
+      VLOG(1) << "No Dbus response received from fwupd.";
       can_parse = false;
     }
 
     dbus::MessageReader reader(response);
     dbus::MessageReader array_reader(nullptr);
 
-    if (!reader.PopArray(&array_reader)) {
+    if (can_parse && !reader.PopArray(&array_reader)) {
       LOG(ERROR) << "Failed to parse string from DBus Signal";
       can_parse = false;
     }

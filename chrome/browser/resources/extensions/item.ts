@@ -56,8 +56,11 @@ export interface ItemDelegate {
 
 export interface ExtensionsItemElement {
   $: {
+    a11yAssociation: HTMLElement,
     detailsButton: HTMLElement,
     enableToggle: CrToggleElement,
+    name: HTMLElement,
+    removeButton: HTMLElement,
   };
 }
 
@@ -327,6 +330,12 @@ export class ExtensionsItemElement extends ExtensionsItemElementBase {
     // warning will still be shown in the item detail view.
     return this.data.showSafeBrowsingAllowlistWarning &&
         !this.hasSevereWarnings_();
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'extensions-item': ExtensionsItemElement;
   }
 }
 

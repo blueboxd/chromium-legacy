@@ -7,31 +7,35 @@ import {Macro} from './macros/macro.js';
 import {MacroName} from './macros/macro_names.js';
 import {MetricsUtils} from './metrics_utils.js';
 import {SpeechParser} from './parse/speech_parser.js';
+import {HintContext, UIController, UIState} from './ui_controller.js';
 
 const ErrorEvent = chrome.speechRecognitionPrivate.SpeechRecognitionErrorEvent;
+const HintType = chrome.accessibilityPrivate.DictationBubbleHintType;
+const IconType = chrome.accessibilityPrivate.DictationBubbleIconType;
 const ResultEvent =
     chrome.speechRecognitionPrivate.SpeechRecognitionResultEvent;
 const StartOptions = chrome.speechRecognitionPrivate.StartOptions;
 const StopEvent = chrome.speechRecognitionPrivate.SpeechRecognitionStopEvent;
 const SpeechRecognitionType =
     chrome.speechRecognitionPrivate.SpeechRecognitionType;
-const IconType = chrome.accessibilityPrivate.DictationBubbleIconType;
 
-/**
- * Main class for the Chrome OS dictation feature.
- * Please note: this is being developed behind the flag
- * --enable-experimental-accessibility-dictation-extension
- */
+/** Main class for the Chrome OS dictation feature. */
 export class Dictation {
   constructor() {
     /** @private {InputController} */
     this.inputController_ = null;
+
+    /** @private {UIController} */
+    this.uiController_ = null;
 
     /** @private {SpeechParser} */
     this.speechParser_ = null;
 
     /** @private {boolean} */
     this.commandsFeatureEnabled_ = false;
+
+    /** @private {boolean} */
+    this.hintsFeatureEnabled_ = false;
 
     /** @private {string} */
     this.localePref_ = '';
@@ -52,10 +56,7 @@ export class Dictation {
     this.endTone_ = new Audio('dictation/earcons/audio_end.wav');
 
     /** @private {?number} */
-    this.timeoutId_ = null;
-
-    /** @private {?number} */
-    this.clearUITextTimeoutId_ = null;
+    this.stopTimeoutId_ = null;
 
     /** @private {string} */
     this.interimText_ = '';
@@ -78,6 +79,7 @@ export class Dictation {
    */
   initialize_() {
     this.inputController_ = new InputController(() => this.stopDictation_());
+    this.uiController_ = new UIController();
     this.speechParser_ = new SpeechParser(this.inputController_);
 
     // Set default speech recognition properties. Locale will be updated when
@@ -104,14 +106,28 @@ export class Dictation {
     chrome.accessibilityPrivate.onToggleDictation.addListener(
         activated => this.onToggleDictation_(activated));
 
-    chrome.accessibilityPrivate.isFeatureEnabled(
-        chrome.accessibilityPrivate.AccessibilityFeature.DICTATION_COMMANDS,
-        (result) => {
-          this.commandsFeatureEnabled_ = result;
-          if (this.commandsFeatureEnabled_ && this.localePref_) {
-            this.speechParser_.setCommandsEnabled(this.localePref_);
-          }
+    this.checkEnabledFeatures_();
+  }
+
+  /** @private */
+  checkEnabledFeatures_() {
+    const commandsFeature =
+        chrome.accessibilityPrivate.AccessibilityFeature.DICTATION_COMMANDS;
+    const hintsFeature =
+        chrome.accessibilityPrivate.AccessibilityFeature.DICTATION_HINTS;
+
+    chrome.accessibilityPrivate.isFeatureEnabled(commandsFeature, (result) => {
+      this.commandsFeatureEnabled_ = result;
+      if (this.commandsFeatureEnabled_ && this.localePref_) {
+        this.speechParser_.setCommandsEnabled(this.localePref_);
+      }
+      if (this.commandsFeatureEnabled_) {
+        chrome.accessibilityPrivate.isFeatureEnabled(hintsFeature, (result) => {
+          this.hintsFeatureEnabled_ = result;
+          this.uiController_.setEnabled(this.hintsFeatureEnabled_);
         });
+      }
+    });
   }
 
   /**
@@ -136,10 +152,10 @@ export class Dictation {
    * @private
    */
   setStopTimeout_(durationMs) {
-    if (this.timeoutId_ !== null) {
-      clearTimeout(this.timeoutId_);
+    if (this.stopTimeoutId_ !== null) {
+      clearTimeout(this.stopTimeoutId_);
     }
-    this.timeoutId_ = setTimeout(() => this.stopDictation_(), durationMs);
+    this.stopTimeoutId_ = setTimeout(() => this.stopDictation_(), durationMs);
   }
 
   /**
@@ -199,10 +215,7 @@ export class Dictation {
     }
 
     // Clear any timeouts.
-    if (this.timeoutId_ !== null) {
-      clearTimeout(this.timeoutId_);
-      this.timeoutId_ = null;
-    }
+    this.clearTimeoutIds_();
 
     if (this.commandsFeatureEnabled_) {
       this.inputController_.commitText(this.interimText_);
@@ -308,6 +321,9 @@ export class Dictation {
     // Record metrics.
     this.metricsUtils_ = new MetricsUtils(type, this.localePref_);
     this.metricsUtils_.recordSpeechRecognitionStarted();
+
+    this.uiController_.setState(
+        UIState.STANDBY, {context: HintContext.STANDBY});
   }
 
   /**
@@ -373,8 +389,7 @@ export class Dictation {
    * @private
    */
   setInterimText_(text) {
-    if (this.chromeVoxEnabled_ || !this.commandsFeatureEnabled_) {
-      // Using chrome.input.ime for UI causes too much verbosity with ChromeVox.
+    if (!this.commandsFeatureEnabled_) {
       return;
     }
 
@@ -383,12 +398,7 @@ export class Dictation {
     // although SODA does not seem to do that. The newline character looks wrong
     // here.
     this.interimText_ = text;
-    this.inputController_.showBubble(
-        /*icon=*/ IconType.HIDDEN, /*text=*/ this.interimText_);
-    if (this.clearUITextTimeoutId_) {
-      clearTimeout(this.clearUITextTimeoutId_);
-      this.clearUITextTimeoutId_ = null;
-    }
+    this.uiController_.setState(UIState.RECOGNIZING_TEXT, {text});
   }
 
   /**
@@ -396,17 +406,12 @@ export class Dictation {
    * @private
    */
   clearInterimText_() {
-    if (this.chromeVoxEnabled_ || !this.commandsFeatureEnabled_) {
-      // Using chrome.input.ime for UI causes too much verbosity with ChromeVox.
+    if (!this.commandsFeatureEnabled_) {
       return;
     }
 
     this.interimText_ = '';
-    this.inputController_.showBubble(/*icon=*/ IconType.STANDBY);
-    if (this.clearUITextTimeoutId_) {
-      clearTimeout(this.clearUITextTimeoutId_);
-      this.clearUITextTimeoutId_ = null;
-    }
+    this.uiController_.setState(UIState.STANDBY);
   }
 
   /**
@@ -417,8 +422,7 @@ export class Dictation {
    * @private
    */
   showMacroExecuted_(macro, transcript) {
-    if (this.chromeVoxEnabled_ || !this.commandsFeatureEnabled_) {
-      // Using chrome.input.ime for UI causes too much verbosity with ChromeVox.
+    if (!this.commandsFeatureEnabled_) {
       return;
     }
 
@@ -427,14 +431,16 @@ export class Dictation {
     if (macro.getMacroName() === MacroName.INPUT_TEXT_VIEW ||
         macro.getMacroName() === MacroName.NEW_LINE) {
       this.clearInterimText_();
+      this.uiController_.setState(
+          UIState.STANDBY, {context: HintContext.TEXT_COMMITTED});
       return;
     }
     this.interimText_ = '';
-    this.inputController_.showBubble(
-        /*icon=*/ IconType.MACRO_SUCCESS, /*text=*/ transcript);
-    this.clearUITextTimeoutId_ = setTimeout(
-        () => this.clearInterimText_(),
-        Dictation.Timeouts.SHOW_COMMAND_MESSAGE_MS);
+    const context = macro.getMacroName() === MacroName.SELECT_ALL_TEXT ?
+        HintContext.TEXT_SELECTED :
+        HintContext.MACRO_SUCCESS;
+    this.uiController_.setState(
+        UIState.MACRO_SUCCESS, {text: transcript, context});
   }
 
   /**
@@ -448,21 +454,18 @@ export class Dictation {
    * @private
    */
   showMacroExecutionFailed_(macro, transcript) {
-    if (this.chromeVoxEnabled_ || !this.commandsFeatureEnabled_) {
-      // Using chrome.input.ime for UI causes too much verbosity with ChromeVox.
+    if (!this.commandsFeatureEnabled_) {
       return;
     }
 
     MetricsUtils.recordMacroFailed(macro);
 
     this.interimText_ = '';
-    // TODO(crbug.com/1252037): Finalize string and internationalization.
-    this.inputController_.showBubble(
-        /*icon=*/ IconType.MACRO_FAIL,
-        /*text=*/ `Failed to run command: ` + transcript);
-    this.clearUITextTimeoutId_ = setTimeout(
-        () => this.clearInterimText_(),
-        Dictation.Timeouts.SHOW_COMMAND_MESSAGE_MS);
+    // TODO(crbug.com/1288964): Finalize string and internationalization.
+    this.uiController_.setState(UIState.MACRO_FAIL, {
+      text: `Failed to run command: ${transcript}`,
+      context: HintContext.STANDBY
+    });
   }
 
   /**
@@ -470,15 +473,19 @@ export class Dictation {
    * @private
    */
   hideCommandsUI_() {
-    if (this.chromeVoxEnabled_ || !this.commandsFeatureEnabled_) {
+    if (!this.commandsFeatureEnabled_) {
       return;
     }
 
     this.interimText_ = '';
-    this.inputController_.hideBubble();
-    if (this.clearUITextTimeoutId_) {
-      clearTimeout(this.clearUITextTimeoutId_);
-      this.clearUITextTimeoutId_ = null;
+    this.uiController_.setState(UIState.HIDDEN);
+  }
+
+  /** @private */
+  clearTimeoutIds_() {
+    if (this.stopTimeoutId_ !== null) {
+      clearTimeout(this.stopTimeoutId_);
+      this.stopTimeoutId_ = null;
     }
   }
 
@@ -525,5 +532,4 @@ Dictation.Timeouts = {
   NO_SPEECH_MS: 10 * 1000,
   NO_NEW_SPEECH_MS: 5 * 1000,
   NO_FOCUSED_IME_MS: 500,
-  SHOW_COMMAND_MESSAGE_MS: 2000,
 };

@@ -288,11 +288,8 @@
         "js_poster_circle": {
             "DEFAULT": "rendering_mobile_009.wprgo"
         },
-        "js_scroll_200_layer_grid": {
-            "DEFAULT": "rendering_mobile_009.wprgo"
-        },
         "js_scroll_text_only": {
-            "DEFAULT": "rendering_mobile_009.wprgo"
+            "DEFAULT": "rendering_mobile_56d3267d43.wprgo"
         },
         "kevs_3d": {
             "DEFAULT": "rendering_mobile_004.wprgo"
@@ -317,9 +314,6 @@
         },
         "list_recycle_transform": {
             "DEFAULT": "rendering_mobile_018.wprgo"
-        },
-        "lost_crypt": {
-            "DEFAULT": "rendering_mobile_fb80bbcb6f.wprgo"
         },
         "man_in_blue": {
             "DEFAULT": "rendering_mobile_004.wprgo"

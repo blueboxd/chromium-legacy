@@ -69,10 +69,8 @@ JNI_AutofillAssistantClient_CreateForWebContents(
     const JavaParamRef<jobject>& jweb_contents,
     const JavaParamRef<jobject>& jdependencies) {
   auto* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
-  std::unique_ptr<Dependencies> dependencies =
-      Dependencies::CreateFromJavaObject(
-          ScopedJavaGlobalRef<jobject>(jdependencies));
-  ClientAndroid::CreateForWebContents(web_contents, std::move(dependencies));
+  ClientAndroid::CreateForWebContents(
+      web_contents, ScopedJavaGlobalRef<jobject>(jdependencies));
   return ClientAndroid::FromWebContents(web_contents)->GetJavaObject();
 }
 
@@ -100,13 +98,14 @@ static void JNI_AutofillAssistantClient_OnOnboardingUiChange(
 }
 
 ClientAndroid::ClientAndroid(content::WebContents* web_contents,
-                             std::unique_ptr<Dependencies> dependencies)
+                             const ScopedJavaGlobalRef<jobject>& jdependencies)
     : content::WebContentsUserData<ClientAndroid>(*web_contents),
+      dependencies_(Dependencies::CreateFromJavaDependencies(jdependencies)),
+      jdependencies_(jdependencies),
       java_object_(Java_AutofillAssistantClient_Constructor(
           AttachCurrentThread(),
           reinterpret_cast<intptr_t>(this),
-          dependencies->CreateAccessTokenUtil())),
-      dependencies_(std::move(dependencies)) {}
+          dependencies_->CreateAccessTokenUtil())) {}
 
 ClientAndroid::~ClientAndroid() {
   if (controller_ != nullptr && started_) {
@@ -244,7 +243,7 @@ void ClientAndroid::FetchWebsiteActions(
     const base::android::JavaParamRef<jobject>& jcallback) {
   if (!controller_) {
     CreateController(ui_controller_android_utils::GetServiceToInject(env, this),
-                     absl::nullopt);
+                     /* trigger_script= */ absl::nullopt);
   }
 
   base::android::ScopedJavaGlobalRef<jobject> scoped_jcallback(env, jcallback);
@@ -257,7 +256,8 @@ void ClientAndroid::FetchWebsiteActions(
           base::android::JavaParamRef<jobjectArray>(nullptr),
           /* onboarding_shown = */ false,
           /* is_direct_action = */ true,
-          /* jinitial_url = */ nullptr),
+          /* jinitial_url = */ nullptr,
+          /* is_custom_tab = */ dependencies_->IsCustomTab(*GetWebContents())),
       base::BindOnce(&ClientAndroid::OnFetchWebsiteActions,
                      weak_ptr_factory_.GetWeakPtr(), scoped_jcallback));
 }
@@ -366,7 +366,9 @@ bool ClientAndroid::PerformDirectAction(
       base::android::JavaParamRef<jobjectArray>(nullptr),
       /* onboarding_shown = */ false,
       /* is_direct_action = */ true,
-      /* jinitial_url = */ nullptr);
+      /* jinitial_url = */
+      nullptr,
+      /* is_custom_tab = */ dependencies_->IsCustomTab(*GetWebContents()));
 
   int action_index = FindDirectAction(action_name);
   if (action_index == -1)
@@ -421,7 +423,7 @@ std::string ClientAndroid::GetDebugContext() {
 base::android::ScopedJavaGlobalRef<jobject> ClientAndroid::GetDependencies(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller) {
-  return dependencies_->GetJavaObject();
+  return jdependencies_;
 }
 
 int ClientAndroid::FindDirectAction(const std::string& action_name) {
@@ -450,7 +452,7 @@ void ClientAndroid::AttachUI(
     const base::android::JavaRef<jobject>& joverlay_coordinator) {
   if (!ui_controller_android_) {
     ui_controller_android_ = UiControllerAndroid::CreateFromWebContents(
-        GetWebContents(), dependencies_->GetJavaObject(), joverlay_coordinator);
+        GetWebContents(), jdependencies_, joverlay_coordinator);
     if (!ui_controller_android_) {
       // The activity is not or not yet in a mode where attaching the UI is
       // possible.
@@ -463,7 +465,8 @@ void ClientAndroid::AttachUI(
       (controller_ != nullptr &&
        !ui_controller_android_->IsAttachedTo(controller_.get()))) {
     if (!controller_)
-      CreateController(nullptr, absl::nullopt);
+      CreateController(/* service= */ nullptr,
+                       /* trigger_script= */ absl::nullopt);
     ui_controller_android_->Attach(GetWebContents(), this, controller_.get(),
                                    ui_controller_.get());
   }
@@ -515,13 +518,14 @@ void ClientAndroid::FetchPaymentsClientToken(
 void ClientAndroid::OnPaymentsClientToken(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
-    const JavaParamRef<jstring>& jclient_token) {
+    const JavaParamRef<jbyteArray>& jclient_token) {
   if (!fetch_payments_client_token_callback_) {
     return;
   }
-  std::move(fetch_payments_client_token_callback_)
-      .Run(ui_controller_android_utils::SafeConvertJavaStringToNative(
-          AttachCurrentThread(), jclient_token));
+  std::string client_token;
+  base::android::JavaByteArrayToString(AttachCurrentThread(), jclient_token,
+                                       &client_token);
+  std::move(fetch_payments_client_token_callback_).Run(client_token);
 }
 
 AccessTokenFetcher* ClientAndroid::GetAccessTokenFetcher() {
@@ -578,8 +582,7 @@ DeviceContext ClientAndroid::GetDeviceContext() const {
 }
 
 bool ClientAndroid::IsAccessibilityEnabled() const {
-  return Java_AutofillAssistantClient_isAccessibilityEnabled(
-      AttachCurrentThread(), dependencies_->GetJavaObject());
+  return dependencies_->IsAccessibilityEnabled();
 }
 
 bool ClientAndroid::IsSpokenFeedbackAccessibilityServiceEnabled() const {
@@ -684,7 +687,7 @@ void ClientAndroid::CreateController(
       base::DefaultTickClock::GetInstance(),
       RuntimeManager::GetForWebContents(GetWebContents())->GetWeakPtr(),
       std::move(service), ukm::UkmRecorder::Get(),
-      dependencies_->GetAnnotateDomModelService(
+      dependencies_->GetOrCreateAnnotateDomModelService(
           GetWebContents()->GetBrowserContext()));
   ui_controller_ = std::make_unique<UiController>(
       /* client= */ this, controller_.get(), std::move(tts_controller));

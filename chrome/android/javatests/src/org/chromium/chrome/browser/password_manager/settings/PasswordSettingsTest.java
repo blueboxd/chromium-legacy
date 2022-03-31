@@ -4,25 +4,11 @@
 
 package org.chromium.chrome.browser.password_manager.settings;
 
-import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.contrib.RecyclerViewActions.scrollToHolder;
-import static androidx.test.espresso.matcher.RootMatchers.withDecorView;
-import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
-import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.when;
 
-import static org.chromium.chrome.browser.password_manager.settings.PasswordSettingsTestHelper.hasTextInViewHolder;
 import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
-
-import android.view.View;
 
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
@@ -41,18 +27,16 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.password_check.PasswordCheck;
 import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.settings.DummySettingsForTest;
+import org.chromium.chrome.browser.settings.PlaceholderSettingsForTest;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.sync.ModelType;
@@ -68,8 +52,9 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PasswordSettingsTest {
     @Rule
-    public SettingsActivityTestRule<DummySettingsForTest> mDummySettingsActivityTestRule =
-            new SettingsActivityTestRule<>(DummySettingsForTest.class);
+    public SettingsActivityTestRule<PlaceholderSettingsForTest>
+            mPlaceholderSettingsActivityTestRule =
+                    new SettingsActivityTestRule<>(PlaceholderSettingsForTest.class);
 
     @Rule
     public SettingsActivityTestRule<PasswordSettings> mPasswordSettingsActivityTestRule =
@@ -95,9 +80,9 @@ public class PasswordSettingsTest {
         // This initializes the browser, so some tests can do setup before PasswordSettings is
         // launched. ChromeTabbedActivityTestRule.startMainActivityOnBlankPage() is more commonly
         // used for this end, but using another settings activity instead makes these tests more
-        // isolated, i.e. avoids exercising unnecessary logic. DummyUiActivityTestCase also won't
-        // fit here, it doesn't initialize enough of the browser.
-        mDummySettingsActivityTestRule.startSettingsActivity(null);
+        // isolated, i.e. avoids exercising unnecessary logic. BlankUiTestActivityTestCase also
+        // won't fit here, it doesn't initialize enough of the browser.
+        mPlaceholderSettingsActivityTestRule.startSettingsActivity(null);
     }
 
     @After
@@ -302,64 +287,6 @@ public class PasswordSettingsTest {
             Assert.assertNotNull(
                     passwordPrefs.findPreference(PasswordSettings.PREF_CHECK_PASSWORDS));
         });
-    }
-
-    /**
-     * Check whether the user is asked to set up a screen lock if attempting to view passwords.
-     */
-    @Test
-    @SmallTest
-    @Feature({"Preferences"})
-    @DisableFeatures({ChromeFeatureList.EDIT_PASSWORDS_IN_SETTINGS})
-    public void testViewPasswordNoLock() {
-        mTestHelper.setPasswordSource(
-                new SavedPasswordEntry("https://example.com", "test user", "password"));
-
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
-        ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OverrideState.UNAVAILABLE);
-
-        final SettingsActivity settingsActivity = mTestHelper.startPasswordSettingsFromMainSettings(
-                mPasswordSettingsActivityTestRule);
-
-        View mainDecorView = settingsActivity.getWindow().getDecorView();
-        onView(withId(R.id.recycler_view))
-                .perform(scrollToHolder(hasTextInViewHolder("test user")));
-        onView(withText(containsString("test user"))).perform(click());
-        onView(withContentDescription(R.string.password_entry_viewer_copy_stored_password))
-                .perform(click());
-        onView(withText(R.string.password_entry_viewer_set_lock_screen))
-                .inRoot(withDecorView(not(is(mainDecorView))))
-                .check(matches(isDisplayed()));
-    }
-
-    /**
-     * Check whether the user can view a saved password.
-     */
-    @Test
-    @SmallTest
-    @Feature({"Preferences"})
-    @DisableFeatures({ChromeFeatureList.EDIT_PASSWORDS_IN_SETTINGS})
-    public void testViewPassword() {
-        mTestHelper.setPasswordSource(
-                new SavedPasswordEntry("https://example.com", "test user", "test password"));
-
-        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
-        ReauthenticationManager.setScreenLockSetUpOverride(
-                ReauthenticationManager.OverrideState.AVAILABLE);
-
-        mTestHelper.startPasswordSettingsFromMainSettings(mPasswordSettingsActivityTestRule);
-        onView(withId(R.id.recycler_view))
-                .perform(scrollToHolder(hasTextInViewHolder("test user")));
-        onView(withText(containsString("test user"))).perform(click());
-
-        // Before tapping the view button, pretend that the last successful reauthentication just
-        // happened. This will allow showing the password.
-        ReauthenticationManager.recordLastReauth(
-                System.currentTimeMillis(), ReauthenticationManager.ReauthScope.ONE_AT_A_TIME);
-        onView(withContentDescription(R.string.password_entry_viewer_view_stored_password))
-                .perform(click());
-        onView(withText("test password")).check(matches(isDisplayed()));
     }
 
     @Test

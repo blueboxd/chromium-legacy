@@ -139,11 +139,9 @@ VideoEncoderTestEnvironment* VideoEncoderTestEnvironment::Create(
   }
 
   const VideoCodecProfile profile = it->profile;
-  if ((num_temporal_layers > 1u || num_spatial_layers > 1u) &&
-      profile != VP9PROFILE_PROFILE0 &&
-      !(profile >= H264PROFILE_MIN && profile <= H264PROFILE_HIGH)) {
-    LOG(ERROR) << "SVC encoding supported "
-               << "only if output profile is h264 or vp9";
+  if (num_spatial_layers > 1u && profile != VP9PROFILE_PROFILE0) {
+    LOG(ERROR) << "Spatial layer encoding is supported only if output profile "
+               << "is vp9";
     return nullptr;
   }
 
@@ -164,7 +162,7 @@ VideoEncoderTestEnvironment* VideoEncoderTestEnvironment::Create(
       media::kVaapiEnforceVideoMinMaxResolution);
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) && BUILDFLAG(USE_VAAPI)
+#if BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(USE_VAAPI)
   // TODO(crbug.com/1186051): remove once enabled by default.
   combined_enabled_features.push_back(media::kVaapiVp9kSVCHWEncoding);
 #endif

@@ -23,43 +23,13 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <variants name="ArcPerformanceAppCategories">
-  <variant name=".CasualGame" summary="Casual game.">
-    <obsolete>
-      Replaced with CasualGame2 in 2020/09.
-    </obsolete>
-  </variant>
-  <variant name=".CasualGame2" summary="Casual game 2.">
-    <obsolete>
-      Replaced in M91 by GachaClub
-    </obsolete>
-  </variant>
   <variant name=".GachaClub" summary="Casual game 2: Gacha Club"/>
   <variant name=".GarenaFreeFire" summary="Shooter game: Garena Free Fire"/>
-  <variant name=".HeavyGame" summary="Heavy Game.">
-    <obsolete>
-      Replaced in M91 by PUBGMobile
-    </obsolete>
-  </variant>
   <variant name=".MinecraftEducationEdition"
       summary="Online game 2: Minecraft: Education Edition"/>
   <variant name=".Netflix" summary="Video playback app: Netflix"/>
-  <variant name=".OnlineGame" summary="Online game.">
-    <obsolete>
-      Replaced in M91 by Roblox
-    </obsolete>
-  </variant>
   <variant name=".PUBGMobile" summary="Heavy Game: PUBG Mobile"/>
   <variant name=".Roblox" summary="Online game: Roblox"/>
-  <variant name=".ShooterGame" summary="Shooter game.">
-    <obsolete>
-      Replaced in M91 by GarenaFreeFire
-    </obsolete>
-  </variant>
-  <variant name=".Video" summary="Video playback app.">
-    <obsolete>
-      Replaced in M91 by Netflix
-    </obsolete>
-  </variant>
 </variants>
 
 <variants name="ArcUserTypes">
@@ -158,6 +128,80 @@ chromium-metrics-reviews@google.com.
     <variant name="SystemApp" summary="System components."/>
     <variant name="SystemServer" summary="System Server."/>
   </token>
+</histogram>
+
+<histogram name="Arc.App.LowMemoryKills.LinuxOOMCount10Minutes" units="Apps"
+    expires_after="2022-08-03">
+  <owner>cwd@google.com</owner>
+  <owner>cros-platform-kernel-core@google.com</owner>
+  <summary>
+    Number of ARC Apps killed by the Linux OOM Killer in each interval of 10
+    minutes.
+  </summary>
+</histogram>
+
+<histogram name="Arc.App.LowMemoryKills.LMKD.CachedCount10Minutes" units="Apps"
+    expires_after="2022-08-03">
+  <owner>cwd@google.com</owner>
+  <owner>cros-platform-kernel-core@google.com</owner>
+  <summary>
+    Number of &quot;cached&quot; ARC Apps killed in each interval of 10 minutes
+    by LMKD with oom_score_adj &gt;= CACHED_APP_MIN_ADJ.
+  </summary>
+</histogram>
+
+<histogram name="Arc.App.LowMemoryKills.LMKD.ForegroundCount10Minutes"
+    units="Apps" expires_after="2022-08-03">
+  <owner>cwd@google.com</owner>
+  <owner>cros-platform-kernel-core@google.com</owner>
+  <summary>
+    Number of &quot;foreground&quot; ARC Apps killed in each interval of 10
+    minutes by LMKD with oom_score_adj &lt;= FOREGROUND_APP_ADJ.
+  </summary>
+</histogram>
+
+<histogram name="Arc.App.LowMemoryKills.LMKD.PerceptibleCount10Minutes"
+    units="Apps" expires_after="2022-08-03">
+  <owner>cwd@google.com</owner>
+  <owner>cros-platform-kernel-core@google.com</owner>
+  <summary>
+    Number of &quot;perceptible&quot; ARC Apps killed in each interval of 10
+    minutes by LMKD with FOREGROUND_APP_ADJ &lt; oom_score_adj &lt;
+    CACHED_APP_MIN_ADJ.
+  </summary>
+</histogram>
+
+<histogram name="Arc.App.LowMemoryKills.Pressure.CachedCount10Minutes"
+    units="Apps" expires_after="2022-08-03">
+  <owner>cwd@google.com</owner>
+  <owner>cros-platform-kernel-core@google.com</owner>
+  <summary>
+    Number of &quot;cached&quot; ARC Apps killed in each interval of 10 minutes
+    by ApplyHostMemoryPressure with ProcessState &gt;=
+    PROCESS_STATE_CACHED_ACTIVITY.
+  </summary>
+</histogram>
+
+<histogram name="Arc.App.LowMemoryKills.Pressure.ForegroundCount10Minutes"
+    units="Apps" expires_after="2022-08-03">
+  <owner>cwd@google.com</owner>
+  <owner>cros-platform-kernel-core@google.com</owner>
+  <summary>
+    Number of &quot;foreground&quot; ARC Apps killed in each interval of 10
+    minutes by ApplyHostMemoryPressure with ProcessState &lt; PROCESS_STATE_TOP
+    or ProcessState == PROCESS_STATE_TOP and focused.
+  </summary>
+</histogram>
+
+<histogram name="Arc.App.LowMemoryKills.Pressure.PerceptibleCount10Minutes"
+    units="Apps" expires_after="2022-08-03">
+  <owner>cwd@google.com</owner>
+  <owner>cros-platform-kernel-core@google.com</owner>
+  <summary>
+    Number of &quot;perceptible&quot; ARC Apps killed in each interval of 10
+    minutes by ApplyHostMemoryPressure with PROCESS_STATE_TOP &lt;= ProcessState
+    &lt; PROCESS_STATE_CACHED_ACTIVITY and not focused.
+  </summary>
 </histogram>
 
 <histogram name="Arc.App.PrimaryAbi" enum="AppPrimaryAbi" expires_after="M102">
@@ -360,6 +404,26 @@ chromium-metrics-reviews@google.com.
     authorization operations. {ArcUserTypes}
   </summary>
   <token key="ArcUserTypes" variants="ArcUserTypes"/>
+</histogram>
+
+<histogram name="Arc.Auth.NumAccounts" units="count" expires_after="2022-06-01">
+  <owner>anastasiian@google.com</owner>
+  <owner>mhasank@google.com</owner>
+  <owner>arc-core@google.com</owner>
+  <summary>
+    Tracks the number of accounts in ARC. This is recorded only once per
+    session, at login time.
+  </summary>
+</histogram>
+
+<histogram name="Arc.Auth.PercentAccounts" units="%" expires_after="2022-06-01">
+  <owner>anastasiian@google.com</owner>
+  <owner>mhasank@google.com</owner>
+  <owner>arc-core@google.com</owner>
+  <summary>
+    Tracks the percentage of the accounts in session that are also available in
+    ARC. This is recorded only once per session, at login time.
+  </summary>
 </histogram>
 
 <histogram name="Arc.Auth.RequestAccountInfoResult.Primary"
@@ -1170,7 +1234,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Arc.PlayStoreLaunchWithinAWeek" enum="BooleanUsage"
     expires_after="2022-07-20">
-  <owner>tellier@google.com</owner>
+  <owner>rsorokin@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
     Whether the Play Store has been launched by the user within a week from the
@@ -1637,6 +1701,16 @@ chromium-metrics-reviews@google.com.
     reaching the retry threshold. Samples in between them with value n indicate
     that ARC successfully mounted the volume after n failures (= n retries).
     Emitted only on ARC-enabled Chrome OS devices.
+  </summary>
+</histogram>
+
+<histogram name="Arc.WindowPredictorLaunch" enum="WindowPredictorLaunchType"
+    expires_after="2022-10-01">
+  <owner>sstan@google.com</owner>
+  <owner>arc-framework@google.com</owner>
+  <summary>
+    Number of ARC app ghost window launches by ArcWindowPredictor. Counted when
+    user manually launches ARC app when ARC is still in boot stage.
   </summary>
 </histogram>
 

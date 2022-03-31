@@ -7,7 +7,7 @@ module content.mojom;
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
-// Represents StorableSource::SourceType.
+// Represents CommonSourceInfo::SourceType.
 enum SourceType {
   kNavigation,
   kEvent,
@@ -33,9 +33,13 @@ struct WebUIAttributionReport {
 
   enum Status {
     kPending,
-    kDroppedDueToRateLimiting,
+    kDroppedDueToExcessiveAttributions,
+    kDroppedDueToExcessiveReportingOrigins,
     kDroppedDueToLowPriority,
     kDroppedForNoise,
+    kDeduplicated,
+    kNoReportCapacityForDestinationSite,
+    kInternalError,
     kProhibitedByBrowserPolicy,
     kSent,
     kNetworkError,
@@ -45,6 +49,10 @@ struct WebUIAttributionReport {
 
   // Only valid if `status == kSent`.
   int32 http_response_code;
+};
+
+struct AttributionDebugKey {
+  uint64 value;
 };
 
 // Struct representing a stored attribution source that will be displayed by WebUI.
@@ -58,14 +66,21 @@ struct WebUIAttributionSource {
   double expiry_time;
   SourceType source_type;
   int64 priority;
-  array<int64> dedup_keys;
+  AttributionDebugKey? debug_key;
+  array<uint64> dedup_keys;
 
+  // Union of `StorableSource::Result` and `StoredSource::AttributionLogic`,
+  // and `AttributionStorage::DeactivatedSource::Reason`.
   enum Attributability {
     kAttributable,
-    // The source was dropped due to `StorableSource::AttributionLogic::kNever`.
+    // The source was dropped due to `CommonSourceInfo::AttributionLogic::kNever`.
     kNoised,
     kReplacedByNewerSource,
     kReachedAttributionLimit,
+    kInternalError,
+    kInsufficientSourceCapacity,
+    kInsufficientUniqueDestinationCapacity,
+    kExcessiveReportingOrigins,
   };
   Attributability attributability;
 };
@@ -80,8 +95,9 @@ interface AttributionInternalsObserver {
   // should call `AttributionInternalsHandler::GetReports()`.
   OnReportsChanged();
 
-  // Called when a source is deactivated.
-  OnSourceDeactivated(WebUIAttributionSource source);
+  // Called when a source-registration attempt fails or a stored source is
+  // deactivated.
+  OnSourceRejectedOrDeactivated(WebUIAttributionSource source);
 
   // Called when a report is sent, regardless of success.
   OnReportSent(WebUIAttributionReport report);

@@ -250,7 +250,7 @@ void DeskMiniView::OnDeskNameChanged(const std::u16string& new_name) {
   if (is_desk_name_being_modified_)
     return;
 
-  desk_name_view_->SetTextAndElideIfNeeded(new_name);
+  desk_name_view_->SetText(new_name);
   desk_name_view_->SetAccessibleName(new_name);
   desk_preview_->SetAccessibleName(new_name);
 
@@ -504,7 +504,7 @@ void DeskMiniView::LayoutDeskNameView(const gfx::Rect& preview_bounds) {
   gfx::Rect desk_name_view_bounds{desk_name_view_x,
                                   preview_bounds.bottom() -
                                       GetPreviewBorderInsets().bottom() +
-                                      kLabelPreviewSpacing + focus_ring_length,
+                                      kLabelPreviewSpacing,
                                   text_width, desk_name_view_size.height()};
   desk_name_view_->SetBoundsRect(desk_name_view_bounds);
 

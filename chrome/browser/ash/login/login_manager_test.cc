@@ -65,10 +65,11 @@ void LoginManagerTest::SetUpOnMainThread() {
 void LoginManagerTest::RegisterUser(const AccountId& account_id) {
   ListPrefUpdate users_pref(g_browser_process->local_state(), "LoggedInUsers");
   base::Value email_value(account_id.GetUserEmail());
-  if (!base::Contains(users_pref->GetList(), email_value))
+  if (!base::Contains(users_pref->GetListDeprecated(), email_value))
     users_pref->Append(std::move(email_value));
   if (user_manager::UserManager::IsInitialized()) {
-    user_manager::known_user::SaveKnownUser(account_id);
+    user_manager::KnownUser(g_browser_process->local_state())
+        .SaveKnownUser(account_id);
     user_manager::UserManager::Get()->SaveUserOAuthStatus(
         account_id, user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
   }

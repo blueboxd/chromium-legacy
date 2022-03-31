@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 #include "chrome/browser/media/webrtc/fake_desktop_media_picker_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -23,10 +22,10 @@
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/policy/dlp/dlp_content_manager_ash.h"
-#include "chrome/browser/ash/policy/dlp/mock_dlp_content_manager_ash.h"
-#endif
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/dlp/dlp_content_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/mock_dlp_content_manager.h"
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 namespace {
 constexpr char kOrigin[] = "https://origin/";
@@ -58,8 +57,7 @@ class TabCaptureAccessHandlerTest : public ChromeRenderViewHostTestHarness {
         blink::mojom::MediaStreamType::NO_SERVICE,
         blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE,
         /*disable_local_echo=*/false,
-        /*request_pan_tilt_zoom_permission=*/false,
-        /*region_capture_capable=*/false);
+        /*request_pan_tilt_zoom_permission=*/false);
 
     base::RunLoop wait_loop;
     content::MediaResponseCallback callback = base::BindOnce(
@@ -114,7 +112,7 @@ TEST_F(TabCaptureAccessHandlerTest, PermissionGiven) {
             devices[0].type);
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 TEST_F(TabCaptureAccessHandlerTest, DlpRestricted) {
   const content::DesktopMediaID source(
       content::DesktopMediaID::TYPE_WEB_CONTENTS,
@@ -124,8 +122,8 @@ TEST_F(TabCaptureAccessHandlerTest, DlpRestricted) {
           web_contents()->GetMainFrame()->GetRoutingID()));
 
   // Setup Data Leak Prevention restriction.
-  policy::MockDlpContentManagerAsh mock_dlp_content_manager;
-  policy::ScopedDlpContentManagerAshForTesting scoped_dlp_content_manager(
+  policy::MockDlpContentManager mock_dlp_content_manager;
+  policy::ScopedDlpContentObserverForTesting scoped_dlp_content_manager(
       &mock_dlp_content_manager);
   EXPECT_CALL(mock_dlp_content_manager, CheckScreenShareRestriction)
       .WillOnce([](const content::DesktopMediaID& media_id,
@@ -155,8 +153,8 @@ TEST_F(TabCaptureAccessHandlerTest, DlpNotRestricted) {
           web_contents()->GetMainFrame()->GetRoutingID()));
 
   // Setup Data Leak Prevention restriction.
-  policy::MockDlpContentManagerAsh mock_dlp_content_manager;
-  policy::ScopedDlpContentManagerAshForTesting scoped_dlp_content_manager(
+  policy::MockDlpContentManager mock_dlp_content_manager;
+  policy::ScopedDlpContentObserverForTesting scoped_dlp_content_manager(
       &mock_dlp_content_manager);
   EXPECT_CALL(mock_dlp_content_manager, CheckScreenShareRestriction)
       .WillOnce([](const content::DesktopMediaID& media_id,
@@ -186,8 +184,8 @@ TEST_F(TabCaptureAccessHandlerTest, DlpWebContentsDestroyed) {
           web_contents()->GetMainFrame()->GetRoutingID()));
 
   // Setup Data Leak Prevention restriction.
-  policy::MockDlpContentManagerAsh mock_dlp_content_manager;
-  policy::ScopedDlpContentManagerAshForTesting scoped_dlp_content_manager(
+  policy::MockDlpContentManager mock_dlp_content_manager;
+  policy::ScopedDlpContentObserverForTesting scoped_dlp_content_manager(
       &mock_dlp_content_manager);
   EXPECT_CALL(mock_dlp_content_manager, CheckScreenShareRestriction)
       .WillOnce([&](const content::DesktopMediaID& media_id,
@@ -208,4 +206,4 @@ TEST_F(TabCaptureAccessHandlerTest, DlpWebContentsDestroyed) {
   EXPECT_EQ(kInvalidResult, result);
   EXPECT_EQ(0u, devices.size());
 }
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS)

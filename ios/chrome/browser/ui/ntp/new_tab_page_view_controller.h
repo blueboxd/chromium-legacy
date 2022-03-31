@@ -16,7 +16,6 @@
 @class FeedMetricsRecorder;
 @class DiscoverFeedWrapperViewController;
 @class FeedHeaderViewController;
-@protocol FeedMenuCommands;
 @protocol NewTabPageContentDelegate;
 @protocol OverscrollActionsControllerDelegate;
 @class ViewRevealingVerticalPanHandler;
@@ -67,11 +66,12 @@
 // The view controller representing the NTP feed header.
 @property(nonatomic, assign) FeedHeaderViewController* feedHeaderViewController;
 
-// The handler for feed menu commands.
-@property(nonatomic, weak) id<FeedMenuCommands> feedMenuHandler;
-
 // Bubble presenter for displaying IPH bubbles relating to the NTP.
 @property(nonatomic, strong) BubblePresenter* bubblePresenter;
+
+// Whether or not this NTP has fully appeared for the first time yet. This value
+// remains YES if viewDidAppear has been called.
+@property(nonatomic, assign) BOOL viewDidAppear;
 
 // Initializes the new tab page view controller.
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
@@ -108,6 +108,13 @@
 // collection view, so this property is used to track the total height of those
 // additional views.
 - (CGFloat)heightAboveFeed;
+
+// Lays out and re-configures the NTP content after changing the containing
+// collection view, such as when changing feeds.
+- (void)layoutContentInParentCollectionView;
+
+// Resets hierarchy of views and view controllers.
+- (void)resetViewHierarchy;
 
 @end
 

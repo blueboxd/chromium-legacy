@@ -5,6 +5,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 
 #include <memory>
+#include <set>
 #include <string>
 
 #include "base/bind.h"
@@ -118,10 +119,10 @@ bool SetLocaleForNextStart(PrefService* local_state) {
   const base::ListValue* login_screen_locales = nullptr;
   if (cros_settings->GetList(ash::kDeviceLoginScreenLocales,
                              &login_screen_locales) &&
-      !login_screen_locales->GetList().empty() &&
-      login_screen_locales->GetList()[0].is_string()) {
+      !login_screen_locales->GetListDeprecated().empty() &&
+      login_screen_locales->GetListDeprecated()[0].is_string()) {
     std::string login_screen_locale =
-        login_screen_locales->GetList()[0].GetString();
+        login_screen_locales->GetListDeprecated()[0].GetString();
     local_state->SetString(language::prefs::kApplicationLocale,
                            login_screen_locale);
     return true;
@@ -206,10 +207,26 @@ void AttemptRestartInternal(IgnoreUnloadHandlers ignore_unload_handlers) {
 
 #if !BUILDFLAG(IS_ANDROID)
 void MarkAsCleanShutdown() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Tracks profiles that have pending write of the exit type.
+  std::set<Profile*> pending_profiles;
+#endif
+
   for (auto* browser : *BrowserList::GetInstance()) {
     if (ExitTypeService* exit_type_service =
             ExitTypeService::GetInstanceForProfile(browser->profile())) {
       exit_type_service->SetCurrentSessionExitType(ExitType::kClean);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      // Explicitly schedule pending writes on ChromeOS so that even if the
+      // UI thread is hosed (e.g. taking a long time to close all tabs because
+      // of page faults/swap-in), the clean shutdown flag still gets a chance
+      // to be persisted. See https://crbug.com/1294764
+      Profile* profile = browser->profile();
+      if (pending_profiles.insert(profile).second) {
+        profile->GetPrefs()->CommitPendingWrite();
+      }
+#endif
     }
   }
 }

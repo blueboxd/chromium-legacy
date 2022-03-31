@@ -60,7 +60,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/login/login_state/scoped_test_public_session_login_state.h"
 #include "components/account_id/account_id.h"
-#include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/base/command_line_switches.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
@@ -539,8 +539,7 @@ class ActiveTabManagedSessionTest : public ActiveTabTest {
 
     // Necessary to prevent instantiation of SyncService, which messes
     // with our signin state below.
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableSync);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(syncer::kDisableSync);
     // Necessary because no ProfileManager instance exists in this test.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ash::switches::kIgnoreUserProfileMappingForTests);

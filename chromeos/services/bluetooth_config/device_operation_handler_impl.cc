@@ -4,7 +4,6 @@
 
 #include "chromeos/services/bluetooth_config/device_operation_handler_impl.h"
 
-#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/bluetooth/bluetooth_common.h"
@@ -47,20 +46,22 @@ DeviceOperationHandlerImpl::~DeviceOperationHandlerImpl() = default;
 
 void DeviceOperationHandlerImpl::PerformConnect(const std::string& device_id) {
   device::BluetoothDevice* device = FindDevice(device_id);
-  last_reconnection_attempt_start_ = base::DefaultClock::GetInstance()->Now();
+  last_reconnection_attempt_start_ = base::Time::Now();
   if (!device) {
     BLUETOOTH_LOG(ERROR) << "Connect failed due to device not being "
                             "found, device id: "
                          << device_id;
     RecordUserInitiatedReconnectionMetrics(
         device::BluetoothTransport::BLUETOOTH_TRANSPORT_INVALID,
-        /*reconnection_attempt_start=*/absl::nullopt,
+        last_reconnection_attempt_start_,
         device::BluetoothDevice::ConnectErrorCode::ERROR_FAILED);
     HandleFinishedOperation(/*success=*/false);
     return;
   }
 
-  device->Connect(
+  // Explicitly create Bluetooth classic connections to avoid wrongfully
+  // establishing low-energy connections to a disconnected audio-capable device.
+  device->ConnectClassic(
       /*delegate=*/nullptr,
       base::BindOnce(&DeviceOperationHandlerImpl::OnDeviceConnect,
                      weak_ptr_factory_.GetWeakPtr(), device->GetType()));
@@ -145,8 +146,7 @@ void DeviceOperationHandlerImpl::RecordUserInitiatedReconnectionMetrics(
   if (reconnection_attempt_start) {
     device::RecordUserInitiatedReconnectionAttemptDuration(
         failure_reason, transport,
-        base::DefaultClock::GetInstance()->Now() -
-            reconnection_attempt_start.value());
+        base::Time::Now() - reconnection_attempt_start.value());
   }
 }
 

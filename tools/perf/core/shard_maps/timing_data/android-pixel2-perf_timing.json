@@ -1364,10 +1364,6 @@
         "name": "blink_perf.webaudio/biquad-filter-node.html"
     },
     {
-        "duration": "121.0",
-        "name": "blink_perf.webaudio/dynamics-compressor-node.html"
-    },
-    {
         "duration": "94.0",
         "name": "blink_perf.webaudio/gain-node.html"
     },
@@ -2216,14 +2212,6 @@
         "name": "rendering.mobile/card_flying"
     },
     {
-        "duration": "15.0",
-        "name": "rendering.mobile/cats_unscaled"
-    },
-    {
-        "duration": "12.0",
-        "name": "rendering.mobile/cats_viewport_width"
-    },
-    {
         "duration": "38.0",
         "name": "rendering.mobile/cc_poster_circle"
     },
@@ -2798,10 +2786,6 @@
     {
         "duration": "27.0",
         "name": "rendering.mobile/list_recycle_transform"
-    },
-    {
-        "duration": "62.0",
-        "name": "rendering.mobile/lost_crypt"
     },
     {
         "duration": "21.0",

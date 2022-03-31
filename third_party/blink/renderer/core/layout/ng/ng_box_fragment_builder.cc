@@ -93,8 +93,7 @@ void NGBoxFragmentBuilder::AddResult(
   // instead. The fact that we create a line box at all in such cases is just an
   // implementation detail -- anything of interest is stored on the child block
   // fragment.
-  scoped_refptr<const NGLayoutResult> result_for_propagation =
-      &child_layout_result;
+  const NGLayoutResult* result_for_propagation = &child_layout_result;
 
   if (!fragment.IsBox() && items_builder_) {
     if (const NGPhysicalLineBoxFragment* line =
@@ -128,6 +127,9 @@ void NGBoxFragmentBuilder::AddResult(
 
   if (UNLIKELY(has_block_fragmentation_))
     PropagateBreakInfo(*result_for_propagation, offset);
+  if (UNLIKELY(ConstraintSpace() &&
+               ConstraintSpace()->ShouldPropagateChildBreakValues()))
+    PropagateChildBreakValues(*result_for_propagation);
 }
 
 void NGBoxFragmentBuilder::AddChild(
@@ -384,6 +386,11 @@ void NGBoxFragmentBuilder::PropagateBreakInfo(
   block_size_for_fragmentation_ =
       std::max(block_size_for_fragmentation_, block_end_in_container);
 
+  if (ConstraintSpace()->RequiresContentBeforeBreaking()) {
+    if (child_layout_result.IsBlockSizeForFragmentationClamped())
+      is_block_size_for_fragmentation_clamped_ = true;
+  }
+
   const auto* child_box_fragment =
       DynamicTo<NGPhysicalBoxFragment>(&child_layout_result.PhysicalFragment());
   if (!child_box_fragment)
@@ -413,10 +420,14 @@ void NGBoxFragmentBuilder::PropagateBreakInfo(
         child_layout_result.TallestUnbreakableBlockSize());
   }
 
-  if (child_layout_result.HasForcedBreak())
+  if (child_layout_result.HasForcedBreak()) {
     SetHasForcedBreak();
-  else if (!IsInitialColumnBalancingPass())
-    PropagateSpaceShortage(child_layout_result.MinimalSpaceShortage());
+  } else if (!IsInitialColumnBalancingPass()) {
+    LayoutUnit space_shortage = child_layout_result.MinimalSpaceShortage();
+    // Only nodes that fragmented report any useful space shortage.
+    if (space_shortage)
+      PropagateSpaceShortage(space_shortage);
+  }
 
   // If a spanner was found inside the child, we need to finish up and propagate
   // the spanner to the column layout algorithm, so that it can take care of it.
@@ -432,7 +443,40 @@ void NGBoxFragmentBuilder::PropagateBreakInfo(
   }
 }
 
-scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
+void NGBoxFragmentBuilder::PropagateChildBreakValues(
+    const NGLayoutResult& child_layout_result) {
+  if (child_layout_result.Status() != NGLayoutResult::kSuccess)
+    return;
+
+  const auto& fragment = child_layout_result.PhysicalFragment();
+  if (fragment.IsInline() || !fragment.IsCSSBox() ||
+      fragment.IsFloatingOrOutOfFlowPositioned())
+    return;
+
+  const ComputedStyle& child_style = fragment.Style();
+
+  // We need to propagate the initial break-before value up our container
+  // chain, until we reach a container that's not a first child. If we get all
+  // the way to the root of the fragmentation context without finding any such
+  // container, we have no valid class A break point, and if a forced break
+  // was requested, none will be inserted.
+  EBreakBetween break_before = JoinFragmentainerBreakValues(
+      child_layout_result.InitialBreakBefore(), child_style.BreakBefore());
+  SetInitialBreakBeforeIfNeeded(break_before);
+
+  // We also need to store the previous break-after value we've seen, since it
+  // will serve as input to the next breakpoint (where we will combine the
+  // break-after value of the previous child and the break-before value of the
+  // next child, to figure out what to do at the breakpoint). The break-after
+  // value of the last child will also be propagated up our container chain,
+  // until we reach a container that's not a last child. This will be the
+  // class A break point that it affects.
+  EBreakBetween break_after = JoinFragmentainerBreakValues(
+      child_layout_result.FinalBreakAfter(), child_style.BreakAfter());
+  SetPreviousBreakAfter(break_after);
+}
+
+const NGLayoutResult* NGBoxFragmentBuilder::ToBoxFragment(
     WritingMode block_or_line_writing_mode) {
 #if DCHECK_IS_ON()
   if (ItemsBuilder()) {
@@ -461,7 +505,7 @@ scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
     OverflowClipAxes block_axis =
         GetWritingDirection().IsHorizontal() ? kOverflowClipY : kOverflowClipX;
     if ((To<NGBlockNode>(node_).GetOverflowClipAxes() & block_axis) ||
-        MustStayInCurrentFragmentainer()) {
+        is_block_size_for_fragmentation_clamped_) {
       // If block-axis overflow is clipped, ignore child overflow and just use
       // the border-box size of the fragment itself. Also do this if the node
       // was forced to stay in the current fragmentainer. We'll ignore overflow
@@ -484,9 +528,8 @@ scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
       NGPhysicalBoxFragment::Create(this, block_or_line_writing_mode);
   fragment->CheckType();
 
-  return base::AdoptRef(
-      new NGLayoutResult(NGLayoutResult::NGBoxFragmentBuilderPassKey(),
-                         std::move(fragment), this));
+  return MakeGarbageCollected<NGLayoutResult>(
+      NGLayoutResult::NGBoxFragmentBuilderPassKey(), std::move(fragment), this);
 }
 
 LogicalOffset NGBoxFragmentBuilder::GetChildOffset(
@@ -623,8 +666,11 @@ void NGBoxFragmentBuilder::CheckNoBlockFragmentation() const {
   DCHECK(!has_forced_break_);
   DCHECK(!HasBreakTokenData());
   DCHECK_EQ(minimal_space_shortage_, LayoutUnit::Max());
-  DCHECK(!initial_break_before_);
-  DCHECK_EQ(previous_break_after_, EBreakBetween::kAuto);
+  if (ConstraintSpace() &&
+      !ConstraintSpace()->ShouldPropagateChildBreakValues()) {
+    DCHECK(!initial_break_before_);
+    DCHECK_EQ(previous_break_after_, EBreakBetween::kAuto);
+  }
 }
 
 #endif

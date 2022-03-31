@@ -15,7 +15,6 @@
 #include "ash/services/ime/decoder/system_engine.h"
 #include "ash/services/ime/rule_based_engine.h"
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/notreached.h"
@@ -55,10 +54,20 @@ bool IsRuleBasedInputMethod(const std::string& engine_id) {
 
 }  // namespace
 
-ImeService::ImeService(mojo::PendingReceiver<mojom::ImeService> receiver)
-    : receiver_(this, std::move(receiver)),
-      main_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
+std::string FieldTrialParamsRetrieverImpl::GetFieldTrialParamValueByFeature(
+    const base::Feature& feature,
+    const std::string& param_name) {
+  return base::GetFieldTrialParamValueByFeature(feature, param_name);
 }
+
+ImeService::ImeService(
+    mojo::PendingReceiver<mojom::ImeService> receiver,
+    ImeDecoder* ime_decoder,
+    std::unique_ptr<FieldTrialParamsRetriever> field_trial_params_retriever)
+    : receiver_(this, std::move(receiver)),
+      main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      ime_decoder_(ime_decoder),
+      field_trial_params_retriever_(std::move(field_trial_params_retriever)) {}
 
 ImeService::~ImeService() = default;
 
@@ -87,13 +96,15 @@ void ImeService::ConnectToImeEngine(
   //
   // The extension will only use ConnectToImeEngine, and NativeInputMethodEngine
   // will only use ConnectToInputMethod.
-  if (input_engine_ && input_engine_->IsConnected()) {
+  if ((connection_factory_ && connection_factory_->IsConnected()) ||
+      (input_engine_ && input_engine_->IsConnected())) {
     std::move(callback).Run(/*bound=*/false);
     return;
   }
 
   input_engine_.reset();
-  decoder_engine_ = std::make_unique<DecoderEngine>(this);
+  decoder_engine_ = std::make_unique<DecoderEngine>(
+      this, ime_decoder_->MaybeLoadThenReturnEntryPoints());
   bool bound = decoder_engine_->BindRequest(
       ime_spec, std::move(to_engine_request), std::move(from_engine), extra);
   std::move(callback).Run(bound);
@@ -113,9 +124,34 @@ void ImeService::ConnectToInputMethod(
     return;
   }
 
-  auto system_engine = std::make_unique<SystemEngine>(this);
+  auto system_engine = std::make_unique<SystemEngine>(
+      this, ime_decoder_->MaybeLoadThenReturnEntryPoints());
   bool bound = system_engine->BindRequest(ime_spec, std::move(input_method),
                                           std::move(input_method_host));
+  input_engine_ = std::move(system_engine);
+  std::move(callback).Run(bound);
+}
+
+void ImeService::InitializeConnectionFactory(
+    mojo::PendingReceiver<mojom::ConnectionFactory> connection_factory,
+    mojom::ConnectionTarget connection_target,
+    InitializeConnectionFactoryCallback callback) {
+  // Drop any currently bound pipes.
+  connection_factory_.reset();
+  decoder_engine_.reset();
+  input_engine_.reset();
+
+  if (connection_target == mojom::ConnectionTarget::kImeService) {
+    connection_factory_ =
+        std::make_unique<ConnectionFactory>(std::move(connection_factory));
+    std::move(callback).Run(/*success=*/true);
+    return;
+  }
+
+  auto system_engine = std::make_unique<SystemEngine>(
+      this, ime_decoder_->MaybeLoadThenReturnEntryPoints());
+  bool bound =
+      system_engine->BindConnectionFactory(std::move(connection_factory));
   input_engine_ = std::move(system_engine);
   std::move(callback).Run(bound);
 }
@@ -140,6 +176,9 @@ void ImeService::RunInMainSequence(ImeSequencedTask task, int task_id) {
   main_task_runner_->PostTask(FROM_HERE, base::BindOnce(task, task_id));
 }
 
+// TODO(b/218815885): Use consistent feature flag names as in CrOS
+// base::Feature::name (instead of slightly-different bespoke names), and always
+// wire 1:1 to CrOS feature flags (instead of having any extra logic).
 bool ImeService::IsFeatureEnabled(const char* feature_name) {
   if (strcmp(feature_name, "AssistiveEmojiEnhanced") == 0) {
     return base::FeatureList::IsEnabled(
@@ -153,22 +192,48 @@ bool ImeService::IsFeatureEnabled(const char* feature_name) {
                chromeos::features::kAssistMultiWordLacrosSupport) &&
            chromeos::features::IsAssistiveMultiWordEnabled();
   }
+  if (strcmp(feature_name, chromeos::features::kAutocorrectParamsTuning.name) ==
+      0) {
+    return base::FeatureList::IsEnabled(
+        chromeos::features::kAutocorrectParamsTuning);
+  }
   if (strcmp(feature_name, "LacrosSupport") == 0) {
     return base::FeatureList::IsEnabled(chromeos::features::kLacrosSupport);
   }
   if (strcmp(feature_name, "SystemChinesePhysicalTyping") == 0) {
-    return features::IsSystemChinesePhysicalTypingEnabled();
+    return base::FeatureList::IsEnabled(
+        chromeos::features::kSystemChinesePhysicalTyping);
   }
   if (strcmp(feature_name, "SystemJapanesePhysicalTyping") == 0) {
-    return features::IsSystemJapanesePhysicalTypingEnabled();
+    return base::FeatureList::IsEnabled(
+        chromeos::features::kSystemJapanesePhysicalTyping);
   }
-  if (strcmp(feature_name, "SystemKoreanPhysicalTyping") == 0) {
-    return features::IsSystemKoreanPhysicalTypingEnabled();
-  }
-  if (strcmp(feature_name, "SystemLatinPhysicalTyping") == 0) {
-    return true;
+  if (strcmp(feature_name, "SystemTransliterationPhysicalTyping") == 0) {
+    return base::FeatureList::IsEnabled(
+        chromeos::features::kSystemTransliterationPhysicalTyping);
   }
   return false;
+}
+
+const char* ImeService::GetFieldTrialParamValueByFeature(
+    const char* feature_name,
+    const char* param_name) {
+  char* c_string_value;
+
+  if (strcmp(feature_name, chromeos::features::kAutocorrectParamsTuning.name) ==
+      0) {
+    std::string string_value =
+        field_trial_params_retriever_->GetFieldTrialParamValueByFeature(
+            chromeos::features::kAutocorrectParamsTuning, param_name);
+    c_string_value =
+        new char[string_value.length() + 1];  // extra slot for NULL '\0' char
+    strcpy(c_string_value, string_value.c_str());
+  } else {
+    c_string_value = new char[1];
+    c_string_value[0] = '\0';
+  }
+
+  return c_string_value;
 }
 
 void ImeService::Unused2() {

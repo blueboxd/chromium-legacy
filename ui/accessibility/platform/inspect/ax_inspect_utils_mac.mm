@@ -48,12 +48,18 @@ bool IsValidAXAttribute(const std::string& attribute) {
        NSAccessibilityARIASetSizeAttribute,
        NSAccessibilityAutocompleteValueAttribute,
        NSAccessibilityBlockQuoteLevelAttribute,
+       NSAccessibilityChromeAXNodeIdAttribute,
        NSAccessibilityColumnHeaderUIElementsAttribute,
        NSAccessibilityDetailsElementsAttribute,
        NSAccessibilityDOMClassList,
        NSAccessibilityDropEffectsAttribute,
+       NSAccessibilityElementBusyAttribute,
+       NSAccessibilityFocusableAncestorAttribute,
+       NSAccessibilityGrabbedAttribute,
        NSAccessibilityHasPopupAttribute,
        NSAccessibilityInvalidAttribute,
+       NSAccessibilityIsMultiSelectable,
+       NSAccessibilityKeyShortcutsValueAttribute,
        NSAccessibilityMathFractionNumeratorAttribute,
        NSAccessibilityMathFractionDenominatorAttribute,
        NSAccessibilityMathRootRadicandAttribute,
@@ -65,10 +71,12 @@ bool IsValidAXAttribute(const std::string& attribute) {
        NSAccessibilityMathOverAttribute,
        NSAccessibilityMathPostscriptsAttribute,
        NSAccessibilityMathPrescriptsAttribute,
+       NSAccessibilityOwnsAttribute,
        NSAccessibilityPopupValueAttribute,
        NSAccessibilityRequiredAttributeChrome,
        NSAccessibilityRoleDescriptionAttribute,
-       NSAccessibilityURLAttribute},
+       NSAccessibilityURLAttribute,
+       NSAccessibilityVisitedAttribute},
       NSStringComparator());
 
   return kValidAttributes.contains(base::SysUTF8ToNSString(attribute));
@@ -232,6 +240,21 @@ absl::optional<id> PerformAXSelector(const id node,
 
   if ([node respondsToSelector:selector])
     return [node valueForKey:selector_nsstring];
+  return absl::nullopt;
+}
+
+absl::optional<id> PerformAXSelector(const id node,
+                                     const std::string& selector_string,
+                                     const std::string& argument_string) {
+  if (![node conformsToProtocol:@protocol(NSAccessibility)])
+    return absl::nullopt;
+
+  SEL selector =
+      NSSelectorFromString(base::SysUTF8ToNSString(selector_string + ":"));
+  NSString* argument = base::SysUTF8ToNSString(argument_string);
+
+  if ([node respondsToSelector:selector])
+    return [node performSelector:selector withObject:argument];
   return absl::nullopt;
 }
 

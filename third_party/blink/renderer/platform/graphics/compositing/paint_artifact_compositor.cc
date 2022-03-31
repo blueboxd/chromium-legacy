@@ -264,10 +264,7 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
 
   gfx::Vector2dF layer_offset = pending_layer.LayerOffset();
   gfx::Size layer_bounds = pending_layer.LayerBounds();
-  auto cc_layer = content_layer_client->UpdateCcPictureLayer(
-      pending_layer.Chunks(), layer_offset, layer_bounds,
-      pending_layer.GetPropertyTreeState());
-
+  auto cc_layer = content_layer_client->UpdateCcPictureLayer(pending_layer);
   new_content_layer_clients.push_back(std::move(content_layer_client));
 
   // Set properties that foreign layers would normally control for themselves
@@ -311,6 +308,7 @@ bool NeedsFullUpdateAfterPaintingChunk(
 
   if (repainted.is_moved_from_cached_subsequence) {
     DCHECK_EQ(previous.bounds, repainted.bounds);
+    DCHECK_EQ(previous.DrawsContent(), repainted.DrawsContent());
     DCHECK_EQ(previous.rect_known_to_be_opaque,
               repainted.rect_known_to_be_opaque);
     DCHECK_EQ(previous.text_known_to_be_on_opaque_background,
@@ -359,6 +357,12 @@ bool NeedsFullUpdateAfterPaintingChunk(
   // |has_text| affects compositing decisions (see:
   // |PendingLayer::MergeInternal|).
   if (previous.has_text != repainted.has_text)
+    return true;
+
+  // |PaintChunk::DrawsContent()| affects whether a layer draws content which
+  // affects whether mask layers are created (see:
+  // |SwitchToEffectNodeWithSynthesizedClip|).
+  if (previous.DrawsContent() != repainted.DrawsContent())
     return true;
 
   // Debugging for https://crbug.com/1237389 and https://crbug.com/1230104.
@@ -472,10 +476,10 @@ bool PaintArtifactCompositor::DecompositeEffect(
       if (num_previous_siblings > 2)
         return false;
       if (num_previous_siblings == 2 &&
-          pending_layers_[first_layer_in_parent_group_index].MayDrawContent())
+          pending_layers_[first_layer_in_parent_group_index].DrawsContent())
         return false;
       const auto& previous_sibling = pending_layers_[layer_index - 1];
-      if (previous_sibling.MayDrawContent() &&
+      if (previous_sibling.DrawsContent() &&
           !previous_sibling.CanMerge(layer, *upcast_state, prefers_lcd_text_))
         return false;
     }
@@ -643,8 +647,7 @@ SynthesizedClip::PaintContentsToDisplayList() {
       const auto& translation = translation_2d_or_matrix_.Translation2D();
       cc_list->push<cc::TranslateOp>(translation.x(), translation.y());
     } else {
-      cc_list->push<cc::ConcatOp>(
-          TransformationMatrix::ToSkM44(translation_2d_or_matrix_.Matrix()));
+      cc_list->push<cc::ConcatOp>(translation_2d_or_matrix_.ToSkM44());
     }
     if (path_) {
       cc_list->push<cc::ClipPathOp>(path_->GetSkPath(), SkClipOp::kIntersect,
@@ -753,7 +756,8 @@ void PaintArtifactCompositor::Update(
   for (auto& request : transition_requests)
     host->AddDocumentTransitionRequest(std::move(request));
 
-  host->property_trees()->scroll_tree.SetScrollCallbacks(scroll_callbacks_);
+  host->property_trees()->scroll_tree_mutable().SetScrollCallbacks(
+      scroll_callbacks_);
   root_layer_->set_property_tree_sequence_number(
       g_s_property_tree_sequence_number);
 
@@ -783,7 +787,8 @@ void PaintArtifactCompositor::Update(
     entry.in_use = false;
 
   host->property_trees()
-      ->document_transition_layer_to_effect_node_index.clear();
+      ->effect_tree_mutable()
+      .ClearSharedElementResourceIdToNodeMap();
   cc::LayerSelection layer_selection;
   for (const auto& pending_layer : pending_layers_) {
     const auto& property_state = pending_layer.GetPropertyTreeState();
@@ -804,7 +809,7 @@ void PaintArtifactCompositor::Update(
         property_tree_manager.EnsureCompositorTransformNode(transform);
     int clip_id = property_tree_manager.EnsureCompositorClipNode(clip);
     int effect_id = property_tree_manager.SwitchToEffectNodeWithSynthesizedClip(
-        effect, clip, layer->DrawsContent());
+        effect, clip, layer->draws_content());
 
     // We need additional bookkeeping for backdrop-filter mask.
     if (effect.RequiresCompositingForBackdropFilterMask() &&
@@ -812,7 +817,7 @@ void PaintArtifactCompositor::Update(
       static_cast<cc::PictureLayer*>(layer.get())
           ->SetIsBackdropFilterMask(true);
       layer->SetElementId(effect.GetCompositorElementId());
-      auto& effect_tree = host->property_trees()->effect_tree;
+      auto& effect_tree = host->property_trees()->effect_tree_mutable();
       auto* cc_node = effect_tree.Node(effect_id);
       effect_tree.Node(cc_node->parent_id)->backdrop_mask_element_id =
           effect.GetCompositorElementId();
@@ -854,8 +859,8 @@ void PaintArtifactCompositor::Update(
     auto shared_element_id = layer->DocumentTransitionResourceId();
     if (shared_element_id.IsValid()) {
       host->property_trees()
-          ->document_transition_layer_to_effect_node_index[shared_element_id] =
-          effect_id;
+          ->effect_tree_mutable()
+          .SetSharedElementResourceIdForNodeId(effect_id, shared_element_id);
     }
   }
 
@@ -875,7 +880,8 @@ void PaintArtifactCompositor::Update(
   // This should be done before
   // property_tree_manager.UpdateConditionalRenderSurfaceReasons() for which to
   // get property tree node ids from the layers.
-  host->property_trees()->sequence_number = g_s_property_tree_sequence_number;
+  host->property_trees()->set_sequence_number(
+      g_s_property_tree_sequence_number);
 
   auto layers = layer_list_builder.Finalize();
   property_tree_manager.UpdateConditionalRenderSurfaceReasons(layers);
@@ -885,7 +891,7 @@ void PaintArtifactCompositor::Update(
   host->UpdateActiveElements();
 
   // Mark the property trees as having been rebuilt.
-  host->property_trees()->needs_rebuild = false;
+  host->property_trees()->set_needs_rebuild(false);
   host->property_trees()->ResetCachedData();
   previous_update_for_testing_ = PreviousUpdateType::kFull;
   needs_update_ = false;
@@ -935,9 +941,7 @@ void PaintArtifactCompositor::UpdateRepaintedContentLayerClient(
     content_layer_client.GetRasterInvalidator().SetOldPaintArtifact(
         &pending_layer.Chunks().GetPaintArtifact());
   } else {
-    content_layer_client.UpdateCcPictureLayer(
-        pending_layer.Chunks(), pending_layer.LayerOffset(),
-        pending_layer.LayerBounds(), pending_layer.GetPropertyTreeState());
+    content_layer_client.UpdateCcPictureLayer(pending_layer);
   }
 }
 
@@ -1107,7 +1111,7 @@ bool PaintArtifactCompositor::DirectlySetScrollOffset(
   if (!root_layer_ || !root_layer_->layer_tree_host())
     return false;
   auto* property_trees = root_layer_->layer_tree_host()->property_trees();
-  if (!property_trees->element_id_to_scroll_node_index.contains(element_id))
+  if (!property_trees->scroll_tree().FindNodeFromElementId(element_id))
     return false;
   PropertyTreeManager::DirectlySetScrollOffset(*root_layer_->layer_tree_host(),
                                                element_id, scroll_offset);

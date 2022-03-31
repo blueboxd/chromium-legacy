@@ -53,6 +53,28 @@ export function firmwareUpdateAppTest() {
   }
 
   /** @return {!CrDialogElement} */
+  function getConfirmationDialog() {
+    return page.shadowRoot.querySelector('firmware-confirmation-dialog')
+        .shadowRoot.querySelector('#confirmationDialog');
+  }
+
+  /** @return {!Promise} */
+  function confirmUpdate() {
+    const confirmationDialog = getConfirmationDialog();
+    assertTrue(confirmationDialog.open);
+    confirmationDialog.querySelector('#nextButton').click();
+    return flushTasks();
+  }
+
+  /** @return {!Promise} */
+  function cancelUpdate() {
+    const confirmationDialog = getConfirmationDialog();
+    assertTrue(confirmationDialog.open);
+    confirmationDialog.querySelector('#cancelButton').click();
+    return flushTasks();
+  }
+
+  /** @return {!CrDialogElement} */
   function getUpdateDialog() {
     return page.shadowRoot.querySelector('firmware-update-dialog')
         .shadowRoot.querySelector('#updateDialog');
@@ -62,6 +84,14 @@ export function firmwareUpdateAppTest() {
   function getUpdateCards() {
     const updateList = page.shadowRoot.querySelector('peripheral-updates-list');
     return updateList.shadowRoot.querySelectorAll('update-card');
+  }
+
+  /**
+   * @param {!CrDialogElement} dialogElement
+   */
+  function getNextButton(dialogElement) {
+    return /** @type {!CrButtonElement} */ (
+        dialogElement.querySelector('#nextButton'));
   }
 
   /** @return {!UpdateState} */
@@ -98,6 +128,22 @@ export function firmwareUpdateAppTest() {
     assertEquals(fake_provider, getUpdateProvider());
   });
 
+  test('OpenConfirmationDialog', async () => {
+    initializePage();
+    await flushTasks();
+    // Open dialog for first firmware update card.
+    const whenFired =
+        eventToPromise('cr-dialog-open', /** @type {!Element}*/ (page));
+    getUpdateCards()[0].shadowRoot.querySelector(`#updateButton`).click();
+    await flushTasks();
+    return whenFired
+        .then(() => {
+          assertTrue(getConfirmationDialog().open);
+          return cancelUpdate();
+        })
+        .then(() => assertFalse(!!getConfirmationDialog()));
+  });
+
   test('OpenUpdateDialog', async () => {
     initializePage();
     await flushTasks();
@@ -106,6 +152,7 @@ export function firmwareUpdateAppTest() {
     await flushTasks();
     const whenFired =
         eventToPromise('cr-dialog-open', /** @type {!Element}*/ (page));
+    await confirmUpdate();
     // Process |OnProgressChanged| call.
     await flushTasks();
     return whenFired.then(() => assertTrue(getUpdateDialog().open));
@@ -119,6 +166,9 @@ export function firmwareUpdateAppTest() {
     await flushTasks();
     const whenFired =
         eventToPromise('cr-dialog-open', /** @type {!Element}*/ (page));
+    await confirmUpdate();
+    // Process |OnProgressChanged| call.
+    await flushTasks();
     return whenFired
         .then(() => {
           assertEquals(UpdateState.kUpdating, getUpdateState());
@@ -153,6 +203,9 @@ export function firmwareUpdateAppTest() {
     await flushTasks();
     const whenFired =
         eventToPromise('cr-dialog-open', /** @type {!Element}*/ (page));
+    await confirmUpdate();
+    // Process |OnProgressChanged| call.
+    await flushTasks();
     return whenFired
         .then(() => {
           assertEquals(UpdateState.kUpdating, getUpdateState());

@@ -20,10 +20,11 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/holding_space/holding_space_animation_registry.h"
-#include "ash/system/holding_space/holding_space_progress_indicator.h"
+#include "ash/system/holding_space/holding_space_progress_indicator_util.h"
 #include "ash/system/holding_space/holding_space_tray_bubble.h"
 #include "ash/system/holding_space/holding_space_tray_icon.h"
 #include "ash/system/holding_space/pinned_files_section.h"
+#include "ash/system/progress_indicator/progress_indicator.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "base/bind.h"
@@ -241,8 +242,9 @@ HoldingSpaceTray::HoldingSpaceTray(Shelf* shelf) : TrayBackgroundView(shelf) {
   // NOTE: The `progress_indicator_` will only be visible when:
   //   * there is at least one in-progress item in the attached model, and
   //   * previews are hidden.
-  progress_indicator_ = HoldingSpaceProgressIndicator::CreateForController(
-      HoldingSpaceController::Get());
+  progress_indicator_ =
+      holding_space_util::CreateProgressIndicatorForController(
+          HoldingSpaceController::Get());
   layer()->Add(progress_indicator_->CreateLayer());
 
   // Subscribe to receive notification of changes to the `progress_indicator_`'s
@@ -535,14 +537,16 @@ HoldingSpaceTray::CreateContextMenuModel() {
         static_cast<int>(HoldingSpaceCommandId::kHidePreviews),
         l10n_util::GetStringUTF16(
             IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_HIDE_PREVIEWS),
-        ui::ImageModel::FromVectorIcon(kVisibilityOffIcon, ui::kColorMenuIcon,
+        ui::ImageModel::FromVectorIcon(kVisibilityOffIcon,
+                                       ui::kColorAshSystemUIMenuIcon,
                                        kHoldingSpaceIconSize));
   } else {
     context_menu_model->AddItemWithIcon(
         static_cast<int>(HoldingSpaceCommandId::kShowPreviews),
         l10n_util::GetStringUTF16(
             IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_SHOW_PREVIEWS),
-        ui::ImageModel::FromVectorIcon(kVisibilityIcon, ui::kColorMenuIcon,
+        ui::ImageModel::FromVectorIcon(kVisibilityIcon,
+                                       ui::kColorAshSystemUIMenuIcon,
                                        kHoldingSpaceIconSize));
   }
 
@@ -747,7 +751,7 @@ void HoldingSpaceTray::UpdateDefaultTrayIcon() {
   // If `progress` is not `complete`, there is potential for overlap between the
   // `default_tray_icon_` and the `progress_indicator_`'s inner icon. To address
   // this, hide the `default_tray_icon_` when `progress` is being indicated.
-  bool complete = progress == HoldingSpaceProgressIndicator::kProgressComplete;
+  bool complete = progress == ProgressIndicator::kProgressComplete;
   float target_opacity = complete ? 1.f : 0.f;
 
   // If `target_opacity` is already set there's nothing to do.

@@ -1,0 +1,69 @@
+<style include="cr-shared-style cr-icons shared-style">
+  #site-list-header-container {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  #no-sites {
+    color: var(--cr-secondary-text-color);
+    margin: var(--cr-section-padding);
+  }
+
+  .site-row {
+    align-items: center;
+    display: flex;
+    height: var(--cr-section-min-height);
+    margin-inline-start: 24px;
+  }
+
+  #sites-list {
+    margin: 12px 0;
+  }
+
+  .site {
+    flex-grow: 1;
+    margin: 0 calc(var(--cr-section-padding) + var(--cr-icon-ripple-margin));
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .separator {
+    margin: 0 calc(
+        var(--cr-section-padding) + var(--cr-icon-ripple-margin));
+  }
+</style>
+<div id="site-list-header-container">
+  <span>[[header]]</span>
+  <cr-button id="addSite" on-click="onAddSiteClick_">$i18n{add}</cr-button>
+</div>
+<div id="no-sites" hidden$="[[hasSites_(sites)]]">$i18n{noSitesAdded}</div>
+<div id="sites-list" hidden$="[[!hasSites_(sites)]]">
+  <template is="dom-repeat" items="[[sites]]">
+    <div class="site-row">
+      <div class="site-favicon"
+          style$="background-image:[[getFaviconUrl_(item)]]"></div>
+      <span class="site">[[item]]</span>
+      <cr-icon-button class="subpage-arrow no-overlap"></cr-icon-button>
+      <div class="separator"></div>
+      <cr-icon-button class="icon-more-vert no-overlap" on-click="onDotsClick_">
+      </cr-icon-button>
+    </div>
+  </template>
+</div>
+
+<cr-action-menu id="siteActionMenu">
+  <button class="dropdown-item" id="remove-site"
+      on-click="onActionMenuRemoveClick_">
+    $i18n{remove}
+  </button>
+</cr-action-menu>
+
+<template is="dom-if" if="[[showAddSiteDialog_]]" restamp>
+  <site-permissions-add-site-dialog
+      delegate="[[delegate]]"
+      site-set="[[siteSet]]"
+      on-close="onAddSiteDialogClose_"
+      on-cancel="onAddSiteDialogClose_">
+  </site-permissions-add-site-dialog>
+</template>

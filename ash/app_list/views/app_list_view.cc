@@ -659,8 +659,7 @@ void AppListView::InitContents() {
   SearchBoxViewBase::InitParams params;
   params.show_close_button_when_active = true;
   params.create_background = true;
-  params.animate_changing_search_icon =
-      features::IsProductivityLauncherAnimationEnabled();
+  params.animate_changing_search_icon = true;
   search_box_view_->Init(params);
 
   // Assign |app_list_main_view_| here since it is accessed during Init().
@@ -1705,6 +1704,10 @@ void AppListView::UpdateWindowTitle() {
         break;
     }
   }
+}
+
+void AppListView::OnAppListVisibilityChanged(bool shown) {
+  GetAppsContainerView()->OnAppListVisibilityChanged(shown);
 }
 
 base::TimeDelta AppListView::GetStateTransitionAnimationDuration(

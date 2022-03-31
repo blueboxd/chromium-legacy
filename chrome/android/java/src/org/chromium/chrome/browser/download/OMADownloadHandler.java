@@ -33,6 +33,7 @@ import org.xmlpull.v1.XmlPullParserFactory;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContentUriUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.PackageManagerUtils;
@@ -51,6 +52,7 @@ import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.net.ChromiumNetworkAdapter;
 import org.chromium.net.NetworkTrafficAnnotationTag;
+import org.chromium.url.GURL;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -91,6 +93,11 @@ public class OMADownloadHandler extends BroadcastReceiver {
     public interface TestObserver { void onDownloadEnqueued(long downloadId); }
 
     private static final String TAG = "OMADownloadHandler";
+
+    // Undocumented outside of Android source, but held by the Android Download Manager since at
+    // least Android M in order to send download completed broadcasts.
+    private static final String PERMISSION_SEND_DOWNLOAD_COMPLETED_INTENTS =
+            "android.permission.SEND_DOWNLOAD_COMPLETED_INTENTS";
 
     // Valid download descriptor attributes.
     protected static final String OMA_TYPE = "type";
@@ -738,12 +745,12 @@ public class OMADownloadHandler extends BroadcastReceiver {
             fileName = URLUtil.guessFileName(url, null, mimeType);
         }
         DownloadInfo newInfo = DownloadInfo.Builder.fromDownloadInfo(downloadInfo)
-                .setFileName(fileName)
-                .setUrl(url)
-                .setMimeType(mimeType)
-                .setDescription(omaInfo.getValue(OMA_DESCRIPTION))
-                .setBytesReceived(getSize(omaInfo))
-                .build();
+                                       .setFileName(fileName)
+                                       .setUrl(new GURL(url))
+                                       .setMimeType(mimeType)
+                                       .setDescription(omaInfo.getValue(OMA_DESCRIPTION))
+                                       .setBytesReceived(getSize(omaInfo))
+                                       .build();
         // If installNotifyURI is not empty, the downloaded content cannot
         // be used until the PostStatusTask gets a 200-series response.
         // Don't show complete notification until that happens.
@@ -799,8 +806,9 @@ public class OMADownloadHandler extends BroadcastReceiver {
         }
 
         if (mSystemDownloadIdMap.size() == 0) {
-            mContext.registerReceiver(
-                    this, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+            ContextUtils.registerExportedBroadcastReceiver(mContext, this,
+                    new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
+                    PERMISSION_SEND_DOWNLOAD_COMPLETED_INTENTS);
         }
         mSystemDownloadIdMap.put(response.downloadId, downloadItem);
 
@@ -874,10 +882,10 @@ public class OMADownloadHandler extends BroadcastReceiver {
     }
 
     private void showDownloadOnInfoBar(DownloadItem downloadItem, int downloadStatus) {
-        DownloadMessageUiController infobarController =
-                DownloadManagerService.getDownloadManagerService().getInfoBarController(
+        DownloadMessageUiController messageUiController =
+                DownloadManagerService.getDownloadManagerService().getMessageUiController(
                         downloadItem.getDownloadInfo().getOTRProfileId());
-        if (infobarController == null) return;
+        if (messageUiController == null) return;
         OfflineItem offlineItem = DownloadItem.createOfflineItem(downloadItem);
         offlineItem.id.namespace = LegacyHelpers.LEGACY_ANDROID_DOWNLOAD_NAMESPACE;
         if (downloadStatus == DownloadStatus.COMPLETE) {
@@ -886,7 +894,7 @@ public class OMADownloadHandler extends BroadcastReceiver {
             offlineItem.state = OfflineItemState.FAILED;
         }
 
-        infobarController.onItemUpdated(offlineItem, null);
+        messageUiController.onItemUpdated(offlineItem, null);
     }
 
     /**

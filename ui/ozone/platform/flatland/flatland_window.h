@@ -104,6 +104,8 @@ class COMPONENT_EXPORT(OZONE) FlatlandWindow : public PlatformWindow,
 
   void UpdateSize();
 
+  void OnViewControllerDisconnected(zx_status_t status);
+
   FlatlandWindowManager* const manager_;
   PlatformWindowDelegate* const window_delegate_;
   gfx::AcceleratedWidget const window_id_;
@@ -116,6 +118,9 @@ class COMPONENT_EXPORT(OZONE) FlatlandWindow : public PlatformWindow,
   // across the system. ViewRef consumers can access the handle by
   // calling CloneViewRef().
   fuchsia::ui::views::ViewRef view_ref_;
+
+  // Used to coordinate window closure requests with the shell.
+  fuchsia::element::ViewControllerPtr view_controller_;
 
   // Flatland session used for all drawing operations in this View and safely
   // queueing Present() operations.
@@ -160,6 +165,10 @@ class COMPONENT_EXPORT(OZONE) FlatlandWindow : public PlatformWindow,
 
   // True if |view_| is currently attached to a scene.
   bool is_view_attached_ = false;
+
+  // True if SetCapture() was called. Currently does not reflect capture state
+  // in Scenic.
+  bool has_capture_ = false;
 };
 
 }  // namespace ui

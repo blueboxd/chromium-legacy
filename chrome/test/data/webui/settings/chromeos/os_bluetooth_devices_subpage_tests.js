@@ -13,6 +13,7 @@
 // #import {createDefaultBluetoothDevice, FakeBluetoothConfig} from 'chrome://test/cr_components/chromeos/bluetooth/fake_bluetooth_config.js';
 // #import {setBluetoothConfigForTesting} from 'chrome://resources/cr_components/chromeos/bluetooth/cros_bluetooth_config.js';
 // #import {waitAfterNextRender, eventToPromise} from 'chrome://test/test_util.js';
+// #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 // clang-format on
 
 suite('OsBluetoothDevicesSubpageTest', function() {
@@ -43,7 +44,11 @@ suite('OsBluetoothDevicesSubpageTest', function() {
     settings.Router.getInstance().resetRouteForTesting();
   });
 
-  function init() {
+  /**
+   * @param {URLSearchParams=} opt_urlParams
+   * @return {!Promise}
+   */
+  function init(opt_urlParams) {
     bluetoothDevicesSubpage =
         document.createElement('os-settings-bluetooth-devices-subpage');
     document.body.appendChild(bluetoothDevicesSubpage);
@@ -60,7 +65,8 @@ suite('OsBluetoothDevicesSubpageTest', function() {
       }
     };
     bluetoothConfig.observeSystemProperties(propertiesObserver);
-    settings.Router.getInstance().navigateTo(settings.routes.BLUETOOTH_DEVICES);
+    settings.Router.getInstance().navigateTo(
+        settings.routes.BLUETOOTH_DEVICES, opt_urlParams);
     return flushAsync();
   }
 
@@ -172,10 +178,14 @@ suite('OsBluetoothDevicesSubpageTest', function() {
         /*id=*/ '123456789', /*publicName=*/ 'BeatsX',
         /*connectionState=*/
         chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnected);
-    const unconnectedDevice = createDefaultBluetoothDevice(
+    const notConnectedDevice = createDefaultBluetoothDevice(
         /*id=*/ '987654321', /*publicName=*/ 'MX 3',
         /*connectionState=*/
         chromeos.bluetoothConfig.mojom.DeviceConnectionState.kNotConnected);
+    const connectingDevice = createDefaultBluetoothDevice(
+        /*id=*/ '11111111', /*publicName=*/ 'MX 3',
+        /*connectionState=*/
+        chromeos.bluetoothConfig.mojom.DeviceConnectionState.kConnecting);
 
     // Pair connected device.
     bluetoothConfig.appendToPairedDeviceList([connectedDevice]);
@@ -186,14 +196,24 @@ suite('OsBluetoothDevicesSubpageTest', function() {
     assertFalse(!!getDeviceList(/*connected=*/ false));
     assertFalse(!!getNoDeviceText());
 
-    // Pair unconnected device
-    bluetoothConfig.appendToPairedDeviceList([unconnectedDevice]);
+    // Pair not connected device
+    bluetoothConfig.appendToPairedDeviceList([notConnectedDevice]);
     await flushAsync();
 
     assertTrue(!!getDeviceList(/*connected=*/ true));
     assertEquals(getDeviceList(/*connected=*/ true).devices.length, 1);
     assertTrue(!!getDeviceList(/*connected=*/ false));
     assertEquals(getDeviceList(/*connected=*/ false).devices.length, 1);
+    assertFalse(!!getNoDeviceText());
+
+    // Pair connecting device
+    bluetoothConfig.appendToPairedDeviceList([connectingDevice]);
+    await flushAsync();
+
+    assertTrue(!!getDeviceList(/*connected=*/ true));
+    assertEquals(getDeviceList(/*connected=*/ true).devices.length, 1);
+    assertTrue(!!getDeviceList(/*connected=*/ false));
+    assertEquals(getDeviceList(/*connected=*/ false).devices.length, 2);
     assertFalse(!!getNoDeviceText());
   });
 
@@ -270,4 +290,36 @@ suite('OsBluetoothDevicesSubpageTest', function() {
             getDeviceListItem(/*connected=*/ false, /*index=*/ 0),
             getDeviceList(/*connected=*/ false).shadowRoot.activeElement);
       });
+
+  test('Deep link to enable/disable Bluetooth toggle button', async () => {
+    Polymer.dom.flush();
+    const params = new URLSearchParams;
+    params.append('settingId', '100');
+    init(params);
+
+    const deepLinkElement = bluetoothDevicesSubpage.shadowRoot.querySelector(
+        '#enableBluetoothToggle');
+    await test_util.waitAfterNextRender(bluetoothDevicesSubpage);
+    assertEquals(
+        deepLinkElement, getDeepActiveElement(),
+        'On startup enable/disable Bluetooth toggle should be focused for settingId=100.');
+  });
+
+  // TODO(b/215724676): Re-enable this test once the suite is migrated to
+  // interactive UI tests. Focus is currently flaky in browser tests.
+  test.skip('Deep link to enable/disable Fast pair toggle button', async () => {
+    Polymer.dom.flush();
+    const params = new URLSearchParams;
+    params.append('settingId', '105');
+    init(params);
+
+    const fastPairToggle = bluetoothDevicesSubpage.shadowRoot.querySelector(
+        '#enableFastPairToggle');
+    const innerToggle = fastPairToggle.shadowRoot.querySelector('#toggle');
+    const deepLinkElement = innerToggle.shadowRoot.querySelector('#control');
+    await test_util.waitAfterNextRender(bluetoothDevicesSubpage);
+    assertEquals(
+        deepLinkElement, getDeepActiveElement(),
+        'Enable Fast Pair toggle should be focused for settingId=105.');
+  });
 });

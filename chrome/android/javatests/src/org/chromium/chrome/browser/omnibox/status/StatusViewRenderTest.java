@@ -43,7 +43,7 @@ import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
-import org.chromium.ui.test.util.DummyUiActivityTestCase;
+import org.chromium.ui.test.util.BlankUiTestActivityTestCase;
 
 import java.io.IOException;
 
@@ -51,7 +51,7 @@ import java.io.IOException;
  * Render tests for {@link StatusView}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-public class StatusViewRenderTest extends DummyUiActivityTestCase {
+public class StatusViewRenderTest extends BlankUiTestActivityTestCase {
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
             ChromeRenderTestRule.Builder.withPublicCorpus().build();
@@ -94,8 +94,6 @@ public class StatusViewRenderTest extends DummyUiActivityTestCase {
                     ToolbarTestUtils.OFFLINE_STATUS, mSearchEngineLogoUtils);
             // clang-format on
             mLocationBarModel.setTab(null, /*  incognito= */ false);
-            mStatusView.setLocationBarDataProvider(mLocationBarModel);
-            mStatusView.setSearchEngineLogoUtils(mSearchEngineLogoUtils);
             mStatusModel = new PropertyModel.Builder(StatusProperties.ALL_KEYS).build();
             PropertyModelChangeProcessor.create(mStatusModel, mStatusView, new StatusViewBinder());
 

@@ -350,8 +350,14 @@ class ContentAnalysisDialogAppearanceBrowserTest
     // The dialog initially shows the pending message for the appropriate access
     // point and scan type.
     std::u16string pending_message = dialog->GetMessageForTesting()->GetText();
-    std::u16string expected_message = l10n_util::GetPluralStringFUTF16(
-        IDS_DEEP_SCANNING_DIALOG_UPLOAD_PENDING_MESSAGE, file_scan() ? 1 : 0);
+    std::u16string expected_message;
+    if (access_point() == safe_browsing::DeepScanAccessPoint::PRINT) {
+      expected_message = l10n_util::GetStringUTF16(
+          IDS_DEEP_SCANNING_DIALOG_PRINT_PENDING_MESSAGE);
+    } else {
+      expected_message = l10n_util::GetPluralStringFUTF16(
+          IDS_DEEP_SCANNING_DIALOG_UPLOAD_PENDING_MESSAGE, file_scan() ? 1 : 0);
+    }
     ASSERT_EQ(pending_message, expected_message);
 
     // The top image is the pending one corresponding to the access point.
@@ -393,6 +399,12 @@ class ContentAnalysisDialogAppearanceBrowserTest
   }
 
   virtual std::u16string GetExpectedMessage() {
+    if (access_point() == safe_browsing::DeepScanAccessPoint::PRINT) {
+      return success() ? l10n_util::GetStringUTF16(
+                             IDS_DEEP_SCANNING_DIALOG_PRINT_SUCCESS_MESSAGE)
+                       : l10n_util::GetStringUTF16(
+                             IDS_DEEP_SCANNING_DIALOG_PRINT_WARNING_MESSAGE);
+    }
     int files_count = file_scan() ? 1 : 0;
     return success()
                ? l10n_util::GetPluralStringFUTF16(
@@ -423,6 +435,13 @@ class ContentAnalysisDialogCustomMessageAppearanceBrowserTest
     : public ContentAnalysisDialogAppearanceBrowserTest {
  private:
   std::u16string GetExpectedMessage() override {
+    if (access_point() == safe_browsing::DeepScanAccessPoint::PRINT) {
+      return success() ? l10n_util::GetStringUTF16(
+                             IDS_DEEP_SCANNING_DIALOG_PRINT_SUCCESS_MESSAGE)
+                       : l10n_util::GetStringFUTF16(
+                             IDS_DEEP_SCANNING_DIALOG_CUSTOM_MESSAGE,
+                             u"Custom message");
+    }
     int files_count = file_scan() ? 1 : 0;
     return success()
                ? l10n_util::GetPluralStringFUTF16(
@@ -867,7 +886,8 @@ IN_PROC_BROWSER_TEST_F(ContentAnalysisDialogPlainTests,
       u"This is a very long string. In fact, it is over two hundred characters "
       u"long because that is the maximum length of a bypass justification that "
       u"can be entered by a user. When the justification is this long, the "
-      u"user will not be able to submit it.");
+      u"user will not be able to submit it. The maximum length just happens to "
+      u"be the same as a popular bird-based service's character limit.");
   EXPECT_FALSE(dialog->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
 }
 

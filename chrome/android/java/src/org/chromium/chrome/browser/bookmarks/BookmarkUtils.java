@@ -156,17 +156,12 @@ public class BookmarkUtils {
      * @param activity The current Activity.
      * @param bottomSheetController The BottomsheetController, used to show the save flow.
      * @param fromExplicitTrackUi Whether the bookmark was added from the explicit UI.
-     * @param bookmarkId The BookmarkId to show the save flow for. Can be null in some cases.
+     * @param bookmarkId The BookmarkId to show the save flow for.
      * @param wasBookmarkMoved Whether the save flow is shown as a reslult of a moved bookmark.
      */
     public static void showSaveFlow(@NonNull Activity activity,
             @NonNull BottomSheetController bottomSheetController, boolean fromExplicitTrackUi,
-            @Nullable BookmarkId bookmarkId, boolean wasBookmarkMoved) {
-        if (bookmarkId == null) {
-            Log.e(TAG, "Null bookmark found when showing the save flow, aborting.");
-            return;
-        }
-
+            @NonNull BookmarkId bookmarkId, boolean wasBookmarkMoved) {
         SubscriptionsManager subscriptionService = null;
         if (ShoppingFeatures.isShoppingListEnabled()) {
             subscriptionService = new CommerceSubscriptionsServiceFactory()

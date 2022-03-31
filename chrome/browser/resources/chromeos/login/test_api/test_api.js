@@ -136,6 +136,10 @@ class HIDDetectionScreenTester extends ScreenElementApi {
     return keyboardTickIcon.isVisible();
   }
 
+  getNextButtonName() {
+    return loadTimeData.getString('hidDetectionContinue');
+  }
+
   canClickNext() {
     return this.nextButton.isEnabled();
   }
@@ -400,6 +404,7 @@ class OobeApiProvider {
       ConfirmSamlPasswordScreen: new ConfirmSamlPasswordScreenTester(),
       PinSetupScreen: new PinSetupScreenTester(),
       EnterpriseEnrollmentScreen: new EnterpriseEnrollmentScreenTester(),
+      GuestTosScreen: new GuestTosScreenTester(),
     };
 
     this.loginWithPin = function(username, pin) {
@@ -413,6 +418,33 @@ class OobeApiProvider {
     this.skipPostLoginScreens = function() {
       chrome.send('OobeTestApi.skipPostLoginScreens');
     };
+
+    this.loginAsGuest = function() {
+      chrome.send('OobeTestApi.loginAsGuest');
+    };
+  }
+}
+
+class GuestTosScreenTester extends ScreenElementApi {
+  constructor() {
+    super('guest-tos');
+    this.loadedStep = new PolymerElementApi(this, '#loaded');
+    this.nextButton = new PolymerElementApi(this, '#acceptButton');
+  }
+
+  /** @override */
+  shouldSkip() {
+    return loadTimeData.getBoolean('testapi_shouldSkipGuestTos');
+  }
+
+  /** @return {boolean} */
+  isReadyForTesting() {
+    return this.isVisible() && this.loadedStep.isVisible();
+  }
+
+  /** @return {string} */
+  getNextButtonName() {
+    return loadTimeData.getString('guestTosAccept');
   }
 }
 

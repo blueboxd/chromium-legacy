@@ -8,12 +8,14 @@
 
 #include "ash/constants/ash_constants.h"
 #include "ash/constants/ash_features.h"
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/rounded_corner_utils.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/desks/desks_controller.h"
@@ -77,10 +79,6 @@
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/window_util.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/display/screen_orientation_controller.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace exo {
 namespace {
@@ -744,6 +742,14 @@ void ShellSurfaceBase::RebindRootSurface(Surface* root_surface,
   container_ = container;
   this->root_surface()->RemoveSurfaceObserver(this);
   root_surface->AddSurfaceObserver(this);
+  // Reset throttle status of the old root surface and apply the status to the
+  // new root surface.
+  if (widget_ && widget_->GetNativeWindow()) {
+    if (widget_->GetNativeWindow()->GetProperty(ash::kFrameRateThrottleKey)) {
+      this->root_surface()->ThrottleFrameRate(false);
+      root_surface->ThrottleFrameRate(true);
+    }
+  }
   SetRootSurface(root_surface);
   host_window()->Show();
   if (widget_ && widget_->GetNativeWindow() &&
@@ -1111,6 +1117,8 @@ void ShellSurfaceBase::OnWindowDestroying(aura::Window* window) {
   if (window == parent_)
     SetParentInternal(nullptr);
   window->RemoveObserver(this);
+  if (widget_ && window == widget_->GetNativeWindow() && root_surface())
+    root_surface()->ThrottleFrameRate(false);
 }
 
 void ShellSurfaceBase::OnWindowPropertyChanged(aura::Window* window,
@@ -1125,6 +1133,9 @@ void ShellSurfaceBase::OnWindowPropertyChanged(aura::Window* window,
           window->GetProperty(chromeos::kFrameRestoreLookKey));
     } else if (key == aura::client::kWindowWorkspaceKey) {
       root_surface()->OnDeskChanged(GetWindowDeskStateChanged(window));
+    } else if (key == ash::kFrameRateThrottleKey) {
+      root_surface()->ThrottleFrameRate(
+          window->GetProperty(ash::kFrameRateThrottleKey));
     }
   }
 }
@@ -1286,15 +1297,6 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   window->AddObserver(this);
   ash::WindowState* window_state = ash::WindowState::Get(window);
   InitializeWindowState(window_state);
-  // TODO(1261321): correct the initial origin once lacros can communicate
-  // it instead of centering.
-  if (show_state == ui::SHOW_STATE_MAXIMIZED) {
-    gfx::Rect screen_size = display::Screen::GetScreen()
-                                ->GetDisplayNearestWindow(window)
-                                .work_area();
-    screen_size.ClampToCenteredSize(initial_size_);
-    window_state->SetRestoreBoundsInParent(screen_size);
-  }
 
   SetShellUseImmersiveForFullscreen(window, immersive_implied_by_fullscreen_);
 
@@ -1392,7 +1394,8 @@ void ShellSurfaceBase::UpdateSurfaceBounds() {
   origin -= ToFlooredVector2d(ScaleVector2d(
       root_surface_origin().OffsetFromOrigin(), 1.f / GetScale()));
 
-  host_window()->SetBounds(gfx::Rect(origin, host_window()->bounds().size()));
+  if (host_window()->bounds().origin() != origin)
+    host_window()->SetBounds(gfx::Rect(origin, host_window()->bounds().size()));
 }
 
 void ShellSurfaceBase::UpdateShadow() {
@@ -1648,11 +1651,38 @@ void ShellSurfaceBase::CommitWidget() {
 
   UpdateSurfaceBounds();
 
+  // Don't show yet if the shell surface doesn't have content or is minimized
+  // while waiting for content.
+  bool should_show =
+      !host_window()->bounds().IsEmpty() && !widget_->IsMinimized();
+
   // Show widget if needed.
-  if (pending_show_widget_) {
+  if (pending_show_widget_ && should_show) {
     DCHECK(!widget_->IsClosed());
     DCHECK(!widget_->IsVisible());
     pending_show_widget_ = false;
+
+    auto* window = widget_->GetNativeWindow();
+    auto* window_state = ash::WindowState::Get(window);
+
+    // TODO(crbug.com/1261321): correct the initial origin once lacros can
+    // communicate it instead of centering.
+    if (window_state->IsMaximizedOrFullscreenOrPinned()) {
+      gfx::Size current_content_size = CalculatePreferredSize();
+      gfx::Rect restore_bounds = display::Screen::GetScreen()
+                                     ->GetDisplayNearestWindow(window)
+                                     .work_area();
+      if (!current_content_size.IsEmpty())
+        restore_bounds.ClampToCenteredSize(current_content_size);
+
+      window_state->SetRestoreBoundsInScreen(restore_bounds);
+    }
+
+    // TODO(crbug.com/1291592): Hook this up with the WM's window positioning
+    // logic.
+    if (needs_layout_on_show_ && !is_popup_)
+      widget_->CenterWindow(widget_->GetWindowBoundsInScreen().size());
+
     widget_->Show();
     if (has_grab_)
       StartCapture();

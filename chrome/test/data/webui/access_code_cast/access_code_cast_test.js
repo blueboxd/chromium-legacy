@@ -58,9 +58,17 @@ export function createTestProxy(addResult, castResult, castCallback) {
 suite('AccessCodeCastAppTest', () => {
   /** @type {!AccessCodeCastElement} */
   let app;
+  let mockProxy;
 
   setup(async () => {
     PolymerTest.clearBody();
+
+    mockProxy = createTestProxy(
+      AddSinkResultCode.OK,
+      RouteRequestResultCode.OK,
+      () => {}
+    );
+    BrowserProxy.setInstance(mockProxy);
 
     app = document.createElement('access-code-cast-app');
     document.body.appendChild(app);
@@ -222,5 +230,24 @@ suite('AccessCodeCastAppTest', () => {
 
     await app.addSinkAndCast();
     assertEquals(5, app.$.errorMessage.getMessageCode());
+  });
+
+  test('enter key press can cast', async () => {
+    let visited = false;
+    app.setAccessCodeForTest('qwe');
+    const realAddSinkAndCast = app.addSinkAndCast;
+    app.addSinkAndCast = () => {
+      visited = true;
+    };
+
+    // Enter does nothing if the access code isn't the right length
+    document.dispatchEvent(new KeyboardEvent('keydown', {"key": "Enter"}));
+    await waitAfterNextRender();
+    assertFalse(visited);
+
+    app.setAccessCodeForTest('qwerty');
+    document.dispatchEvent(new KeyboardEvent('keydown', {"key": "Enter"}));
+    await waitAfterNextRender();
+    assertTrue(visited);
   });
 });

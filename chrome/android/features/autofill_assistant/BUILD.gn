@@ -12,6 +12,7 @@ import("//tools/grit/grit_rule.gni")
 android_library("java") {
   resources_package = "org.chromium.chrome.autofill_assistant"
   deps = [
+    ":public_java",
     "//base:base_java",
     "//chrome/android:base_module_java",
     "//chrome/android:chrome_java",
@@ -25,6 +26,7 @@ android_library("java") {
     "//chrome/browser/ui/messages/android:java",
     "//chrome/browser/util:java",
     "//components/autofill/android:autofill_java",
+    "//components/autofill_assistant/android:autofill_assistant_public_java",
     "//components/autofill_assistant/android:java_resources",
     "//components/browser_ui/bottomsheet/android:java",
     "//components/browser_ui/modaldialog/android:java",
@@ -58,45 +60,21 @@ android_library("java") {
     "//url:gurl_java",
   ]
 
-  if (enable_chrome_android_internal) {
-    deps += [
-      "//clank/components/autofill_assistant:gms_integrator_java",
-      "//clank/features/autofill_assistant:animated_poodle_java",
-    ]
-  } else {
-    deps += [
-      "//components/autofill_assistant/android:animated_poodle_java",
-      "//components/autofill_assistant/android:gms_integrator_java",
-    ]
-  }
-
   sources = [
     "java/src/org/chromium/chrome/browser/autofill_assistant/AbstractListObserver.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantAccessTokenUtilChrome.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantAccessibilityUtils.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantBottomBarCoordinator.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantBottomBarDelegate.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantBottomBarNativeDelegate.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantBottomSheetContent.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantBrowserControlsChrome.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantCoordinator.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantDependenciesChrome.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantDependenciesFactoryChrome.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantDialogButton.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantFeedbackUtilChrome.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantInfoPageUtilChrome.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantInfoPopup.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantKeyboardCoordinator.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantModel.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantOnboardingHelperImpl.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantPeekHeightCoordinator.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantProfileImageUtilChrome.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantRootViewContainer.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantSnackbarFactoryChrome.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantStaticDependenciesChrome.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantTabChangeObserverChrome.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantTabObscuringUtilChrome.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantTabUtilChrome.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantTagsForTesting.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantTextUtils.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantActionHandlerImpl.java",
@@ -180,6 +158,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantLoginChoice.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantLoginSection.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantPaymentMethodSection.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantPhoneNumberSection.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantShippingAddressSection.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantTermsSection.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/user_data/AssistantVerticalExpander.java",
@@ -194,6 +173,35 @@ android_library("java") {
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
+# Public dependencies of Autofill Assistant.
+# TODO(b/183478921): The java_sources.gni should eventually be dissolved and
+# added here. New entries should only be added here.
+android_library("public_java") {
+  resources_package = "org.chromium.chrome.autofill_assistant"
+
+  sources = [
+    "public/java/src/org/chromium/chrome/browser/autofill_assistant/AssistantAutofillCreditCard.java",
+    "public/java/src/org/chromium/chrome/browser/autofill_assistant/AssistantAutofillProfile.java",
+    "public/java/src/org/chromium/chrome/browser/autofill_assistant/AssistantContactEditorAccount.java",
+    "public/java/src/org/chromium/chrome/browser/autofill_assistant/AssistantEditor.java",
+    "public/java/src/org/chromium/chrome/browser/autofill_assistant/AssistantEditorFactory.java",
+    "public/java/src/org/chromium/chrome/browser/autofill_assistant/AssistantOptionModel.java",
+    "public/java/src/org/chromium/chrome/browser/autofill_assistant/AssistantPaymentInstrument.java",
+  ]
+
+  deps = [
+    "//base:base_java",
+    "//components/autofill/android:autofill_payments_java_resources",
+    "//components/autofill/android:main_autofill_java",
+    "//components/autofill_assistant/android:autofill_assistant_public_java",
+    "//components/payments/content/android:java_resources",
+    "//content/public/android:content_java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
+    "//ui/android:ui_java",
+    "//url:gurl_java",
+  ]
+}
+
 generate_jni("jni_headers") {
   sources = [
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantBottomBarNativeDelegate.java",
@@ -201,7 +209,6 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantInfoPopup.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantModel.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantOnboardingHelperImpl.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/AssistantStaticDependenciesChrome.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantClient.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantDependencyInjector.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantDirectActionImpl.java",
@@ -239,9 +246,12 @@ generate_jni("jni_headers") {
 
 generate_jni("jni_headers_public") {
   sources = [
+    "public/java/src/org/chromium/chrome/browser/autofill_assistant/AssistantAutofillCreditCard.java",
+    "public/java/src/org/chromium/chrome/browser/autofill_assistant/AssistantAutofillProfile.java",
     "public/java/src/org/chromium/chrome/browser/autofill_assistant/AssistantDependencies.java",
     "public/java/src/org/chromium/chrome/browser/autofill_assistant/AssistantFeatures.java",
     "public/java/src/org/chromium/chrome/browser/autofill_assistant/AssistantStaticDependencies.java",
+    "public/java/src/org/chromium/chrome/browser/autofill_assistant/AssistantStaticDependenciesChrome.java",
     "public/java/src/org/chromium/chrome/browser/autofill_assistant/Starter.java",
   ]
 }
@@ -341,6 +351,7 @@ android_library("test_java") {
   deps = [
     ":autofill_assistant_java_test_support",
     ":java",
+    ":public_java",
     ":test_support_jni_headers",
     "//base:base_java",
     "//base:base_java_test_support",

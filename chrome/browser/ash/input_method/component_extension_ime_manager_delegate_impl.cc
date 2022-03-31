@@ -195,12 +195,6 @@ void ComponentExtensionIMEManagerDelegateImpl::Load(
   // will improve the IME extension load latency a lot.
   // See http://b/192032670 for more details.
   if (extension_id == extension_ime_util::kXkbExtensionId) {
-    // Update manifest content inplace to load Mojo background page for ChromeOS
-    // IME extension when the feature 'ImeMojoDecoder' is enabled.
-    // See http://b/181170189 for more details.
-    // TODO(http://b/170278753): Remove this once NaCl decoder is removed.
-    base::ReplaceFirstSubstringAfterOffset(manifest_cp, 0, "background.html",
-                                           "background_mojo.html");
     DoLoadExtension(profile, extension_id, *manifest_cp, file_path);
     return;
   }
@@ -278,7 +272,7 @@ bool ComponentExtensionIMEManagerDelegateImpl::ReadEngineComponent(
     if (language_value->is_string()) {
       languages.insert(language_value->GetString());
     } else if (language_value->is_list()) {
-      for (const base::Value& elem : language_value->GetList()) {
+      for (const base::Value& elem : language_value->GetListDeprecated()) {
         if (elem.is_string())
           languages.insert(elem.GetString());
       }
@@ -296,7 +290,7 @@ bool ComponentExtensionIMEManagerDelegateImpl::ReadEngineComponent(
   if (!dict.GetList(extensions::manifest_keys::kLayouts, &layouts))
     return false;
 
-  base::Value::ConstListView layouts_list = layouts->GetList();
+  base::Value::ConstListView layouts_list = layouts->GetListDeprecated();
   if (!layouts_list.empty() && layouts_list[0].is_string())
     out->layout = layouts_list[0].GetString();
   else
@@ -419,7 +413,7 @@ void ComponentExtensionIMEManagerDelegateImpl::ReadComponentExtensionsInfo(
       continue;
     }
 
-    for (const base::Value& value : component_list->GetList()) {
+    for (const base::Value& value : component_list->GetListDeprecated()) {
       if (!value.is_dict())
         continue;
 

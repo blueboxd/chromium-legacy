@@ -27,7 +27,7 @@
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "components/account_id/account_id.h"
-#include "components/app_restore/features.h"
+#include "components/app_constants/constants.h"
 #include "components/app_restore/full_restore_save_handler.h"
 #include "components/app_restore/full_restore_utils.h"
 #include "components/services/app_service/app_service_mojom_impl.h"
@@ -36,7 +36,6 @@
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/user_manager/user.h"
-#include "extensions/common/constants.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace apps {
@@ -58,7 +57,7 @@ AppServiceProxyAsh::AppServiceProxyAsh(Profile* profile)
 }
 
 AppServiceProxyAsh::~AppServiceProxyAsh() {
-  if (IsValidProfile() && full_restore::features::IsFullRestoreEnabled()) {
+  if (IsValidProfile()) {
     ::full_restore::FullRestoreSaveHandler::GetInstance()->SetAppRegistryCache(
         profile_->GetPath(), nullptr);
   }
@@ -85,19 +84,16 @@ void AppServiceProxyAsh::Initialize() {
         account_id, &app_capability_access_cache_);
   }
 
-  if (full_restore::features::IsFullRestoreEnabled()) {
-    if (user == user_manager::UserManager::Get()->GetPrimaryUser()) {
-      ::full_restore::FullRestoreSaveHandler::GetInstance()
-          ->SetPrimaryProfilePath(profile_->GetPath());
+  if (user == user_manager::UserManager::Get()->GetPrimaryUser()) {
+    ::full_restore::SetPrimaryProfilePath(profile_->GetPath());
 
-      // In Multi-Profile mode, only set for the primary user. For other users,
-      // active profile path is set when switch users.
-      ::full_restore::SetActiveProfilePath(profile_->GetPath());
-    }
-
-    ::full_restore::FullRestoreSaveHandler::GetInstance()->SetAppRegistryCache(
-        profile_->GetPath(), &app_registry_cache_);
+    // In Multi-Profile mode, only set for the primary user. For other users,
+    // active profile path is set when switch users.
+    ::full_restore::SetActiveProfilePath(profile_->GetPath());
   }
+
+  ::full_restore::FullRestoreSaveHandler::GetInstance()->SetAppRegistryCache(
+      profile_->GetPath(), &app_registry_cache_);
 
   AppServiceProxyBase::Initialize();
 
@@ -322,7 +318,7 @@ void AppServiceProxyAsh::OnUninstallDialogClosed(
 
 bool AppServiceProxyAsh::MaybeShowLaunchPreventionDialog(
     const apps::AppUpdate& update) {
-  if (update.AppId() == extension_misc::kChromeAppId) {
+  if (update.AppId() == app_constants::kChromeAppId) {
     return false;
   }
 

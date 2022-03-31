@@ -10,14 +10,16 @@ static_library("common") {
     "intent_helper/activity_icon_loader.cc",
     "intent_helper/activity_icon_loader.h",
     "intent_helper/adaptive_icon_delegate.h",
+    "intent_helper/arc_icon_cache_delegate.cc",
+    "intent_helper/arc_icon_cache_delegate.h",
+    "intent_helper/arc_intent_helper_mojo_delegate.cc",
+    "intent_helper/arc_intent_helper_mojo_delegate.h",
     "intent_helper/link_handler_model.cc",
     "intent_helper/link_handler_model.h",
-    "intent_helper/link_handler_model_delegate.h",
-    "intent_helper/text_selection_action_delegate.cc",
-    "intent_helper/text_selection_action_delegate.h",
   ]
 
   deps = [
+    ":arc_intent_helper_constants",
     "//base",
     "//build:chromeos_buildflags",
     "//components/google/core/common",
@@ -42,6 +44,24 @@ static_library("common") {
       "//chromeos/lacros",
     ]
   }
+}
+
+static_library("arc_intent_helper_constants") {
+  sources = [ "intent_helper/arc_intent_helper_package.h" ]
+}
+
+static_library("arc_test_support") {
+  testonly = true
+  sources = [
+    "test/fake_arc_icon_cache.cc",
+    "test/fake_arc_icon_cache.h",
+    "test/fake_arc_intent_helper_mojo.cc",
+    "test/fake_arc_intent_helper_mojo.h",
+  ]
+  deps = [
+    "//components/arc/common",
+    "//ui/base",
+  ]
 }
 
 source_set("unit_tests") {

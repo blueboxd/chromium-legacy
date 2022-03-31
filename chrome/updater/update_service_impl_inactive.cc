@@ -25,7 +25,7 @@ class UpdateServiceImplInactive : public UpdateService {
 
   // Overrides for updater::UpdateService.
   void GetVersion(
-      base::OnceCallback<void(const base::Version&)> callback) const override {
+      base::OnceCallback<void(const base::Version&)> callback) override {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), base::Version()));
   }
@@ -39,7 +39,7 @@ class UpdateServiceImplInactive : public UpdateService {
   }
 
   void GetAppStates(base::OnceCallback<void(const std::vector<AppState>&)>
-                        callback) const override {
+                        callback) override {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), std::vector<AppState>()));

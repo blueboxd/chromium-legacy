@@ -37,6 +37,7 @@
 #include "chrome/browser/ash/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
 #include "chrome/browser/ash/arc/notification/arc_management_transition_notification.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
+#include "chrome/browser/ash/arc/window_predictor/window_predictor_utils.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/policy/handlers/powerwash_requirements_checker.h"
 #include "chrome/browser/browser_process.h"
@@ -53,7 +54,8 @@
 #include "chrome/browser/ui/ash/shelf/shelf_spinner_controller.h"
 #include "chrome/common/pref_names.h"
 #include "components/app_restore/app_restore_utils.h"
-#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/app_restore/features.h"
+#include "components/arc/common/intent_helper/arc_intent_helper_package.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -369,6 +371,16 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
       arc::ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMA(context);
     }
 
+    if (full_restore::features::IsArcWindowPredictorEnabled() &&
+        IsArcVmEnabled()) {
+      if (LaunchArcAppWithGhostWindow(profile, app_id, *app_info, event_flags,
+                                      user_action, window_info)) {
+        prefs->SetLastLaunchTime(app_id);
+        return true;
+      }
+      VLOG(2) << "Failed to launch ghost window, fallback to use shelf spinner";
+    }
+
     ChromeShelfController* chrome_controller =
         ChromeShelfController::instance();
     // chrome_controller may be null in tests.
@@ -466,12 +478,12 @@ bool SetTouchMode(bool enable) {
     return false;
 
   base::DictionaryValue extras;
-  extras.SetBoolean("inTouchMode", enable);
+  extras.SetBoolKey("inTouchMode", enable);
   std::string extras_string;
   base::JSONWriter::Write(extras, &extras_string);
-  intent_helper_instance->SendBroadcast(
-      kSetInTouchModeIntent, ArcIntentHelperBridge::kArcIntentHelperPackageName,
-      kIntentHelperClassName, extras_string);
+  intent_helper_instance->SendBroadcast(kSetInTouchModeIntent,
+                                        kArcIntentHelperPackageName,
+                                        kIntentHelperClassName, extras_string);
 
   return true;
 }
@@ -484,7 +496,7 @@ std::vector<std::string> GetSelectedPackagesFromPrefs(
 
   const base::Value* selected_package_prefs =
       prefs->GetList(arc::prefs::kArcFastAppReinstallPackages);
-  for (const base::Value& item : selected_package_prefs->GetList()) {
+  for (const base::Value& item : selected_package_prefs->GetListDeprecated()) {
     std::string item_str = item.is_string() ? item.GetString() : std::string();
     packages.push_back(std::move(item_str));
   }

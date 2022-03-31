@@ -1787,8 +1787,8 @@ void SkiaRenderer::FlushBatchedQuads() {
 void SkiaRenderer::DrawColoredQuad(SkColor color,
                                    const DrawRPDQParams* rpdq_params,
                                    DrawQuadParams* params) {
-  DCHECK(batched_quads_.empty());
   TRACE_EVENT0("viz", "SkiaRenderer::DrawColoredQuad");
+  DCHECK(batched_quads_.empty());
 
   SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
   PrepareCanvas(params->scissor_rect, params->rounded_corner_bounds,
@@ -1873,6 +1873,7 @@ void SkiaRenderer::DrawPaintOpBuffer(const cc::PaintOpBuffer* buffer,
                                      const absl::optional<SkColor>& clear_color,
                                      const TileDrawQuad* quad,
                                      const DrawQuadParams* params) {
+  TRACE_EVENT0("viz", "SkiaRenderer::DrawPaintOpBuffer");
   if (!batched_quads_.empty())
     FlushBatchedQuads();
 
@@ -1915,6 +1916,7 @@ void SkiaRenderer::DrawPaintOpBuffer(const cc::PaintOpBuffer* buffer,
 
 void SkiaRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad,
                                        DrawQuadParams* params) {
+  TRACE_EVENT0("viz", "SkiaRenderer::DrawDebugBorderQuad");
   DCHECK(batched_quads_.empty());
 
   SkAutoCanvasRestore acr(current_canvas_, true /* do_save */);
@@ -2007,6 +2009,7 @@ void SkiaRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
 void SkiaRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
                                        const DrawRPDQParams* rpdq_params,
                                        DrawQuadParams* params) {
+  TRACE_EVENT0("viz", "SkiaRenderer::DrawStreamVideoQuad");
   DCHECK(!MustFlushBatchedQuads(quad, rpdq_params, *params));
 
   absl::optional<gfx::ColorSpace> override_color_space;
@@ -2049,6 +2052,7 @@ void SkiaRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
 void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
                                    const DrawRPDQParams* rpdq_params,
                                    DrawQuadParams* params) {
+  TRACE_EVENT0("viz", "SkiaRenderer::DrawTextureQuad");
   const gfx::ColorSpace& src_color_space =
       resource_provider()->GetColorSpace(quad->resource_id());
   const bool needs_color_conversion_filter =
@@ -2204,6 +2208,7 @@ void SkiaRenderer::DrawTextureQuad(const TextureDrawQuad* quad,
 void SkiaRenderer::DrawTileDrawQuad(const TileDrawQuad* quad,
                                     const DrawRPDQParams* rpdq_params,
                                     DrawQuadParams* params) {
+  TRACE_EVENT0("viz", "SkiaRenderer::DrawTileDrawQuad");
   DCHECK(!MustFlushBatchedQuads(quad, rpdq_params, *params));
   // |resource_provider()| can be NULL in resourceless software draws, which
   // should never produce tile quads in the first place.
@@ -2228,7 +2233,13 @@ void SkiaRenderer::DrawTileDrawQuad(const TileDrawQuad* quad,
   UMA_HISTOGRAM_BOOLEAN(
       "Compositing.SkiaRenderer.DrawTileDrawQuad.CDT.IsTranslateOnly",
       translate_only);
-  if (builder.paint_op_buffer()) {
+  bool using_raw_draw = builder.paint_op_buffer();
+  if (is_using_raw_draw_) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Compositing.SkiaRenderer.DrawTileDrawQuad.UsingRawDraw",
+        using_raw_draw);
+  }
+  if (using_raw_draw) {
     DCHECK(!rpdq_params);
     DrawPaintOpBuffer(builder.paint_op_buffer(), builder.clear_color(), quad,
                       params);
@@ -2264,6 +2275,7 @@ void SkiaRenderer::DrawTileDrawQuad(const TileDrawQuad* quad,
 void SkiaRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
                                     const DrawRPDQParams* rpdq_params,
                                     DrawQuadParams* params) {
+  TRACE_EVENT0("viz", "SkiaRenderer::DrawYUVVideoQuad");
   // Since YUV quads always use a color filter, they require a complex skPaint
   // that precludes batching. If this changes, we could add YUV quads that don't
   // require a filter to the batch instead of drawing one at a time.
@@ -2476,59 +2488,10 @@ sk_sp<SkColorFilter> SkiaRenderer::GetColorSpaceConversionFilter(
   gfx::ColorSpace adjusted_src = src.GetWithSDRWhiteLevel(
       current_frame()->display_color_spaces.GetSDRMaxLuminanceNits());
 
-  ColorFilterCacheKey key;
-  key.src = src;
-  key.dst = dst;
-  key.resource_offset = resource_offset;
-  key.resource_multiplier = resource_multiplier;
-  key.sdr_max_luminance_nits =
-      current_frame()->display_color_spaces.GetSDRMaxLuminanceNits();
-  key.dst_max_luminance_relative =
-      current_frame()->display_color_spaces.GetHDRMaxLuminanceRelative();
-  sk_sp<SkRuntimeEffect>& effect = color_filter_cache_[key];
-  if (!effect) {
-    gfx::ColorTransform::Options options;
-    options.sdr_max_luminance_nits = key.sdr_max_luminance_nits;
-    options.dst_max_luminance_relative = key.dst_max_luminance_relative;
-    std::unique_ptr<gfx::ColorTransform> transform =
-        gfx::ColorTransform::NewColorTransform(adjusted_src, dst, options);
-
-    const char* hdr = R"(
-uniform half offset;
-uniform half multiplier;
-
-half4 main(half4 color) {
-  // un-premultiply alpha
-  if (color.a > 0)
-    color.rgb /= color.a;
-
-  color.rgb -= offset;
-  color.rgb *= multiplier;
-)";
-    const char* ftr = R"(
-  // premultiply alpha
-  color.rgb *= color.a;
-  return color;
-}
-)";
-
-    std::string shader = hdr + transform->GetSkShaderSource() + ftr;
-
-    auto result = SkRuntimeEffect::MakeForColorFilter(
-        SkString(shader.c_str(), shader.size()),
-        /*options=*/{});
-    DCHECK(result.effect) << std::endl
-                          << result.errorText.c_str() << "\n\nShader Source:\n"
-                          << shader;
-    effect = result.effect;
-  }
-
-  YUVInput input;
-  input.offset = resource_offset;
-  input.multiplier = resource_multiplier;
-  sk_sp<SkData> data = SkData::MakeWithCopy(&input, sizeof(input));
-
-  return effect->makeColorFilter(std::move(data));
+  return color_filter_cache_.Get(
+      adjusted_src, dst, resource_offset, resource_multiplier,
+      current_frame()->display_color_spaces.GetSDRMaxLuminanceNits(),
+      current_frame()->display_color_spaces.GetHDRMaxLuminanceRelative());
 }
 
 namespace {
@@ -2741,6 +2704,7 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
 
 void SkiaRenderer::DrawRenderPassQuad(const AggregatedRenderPassDrawQuad* quad,
                                       DrawQuadParams* params) {
+  TRACE_EVENT0("viz", "SkiaRenderer::DrawRenderPassQuad");
   DrawRPDQParams rpdq_params = CalculateRPDQParams(quad, params);
 
   // |filter_bounds| is the content space bounds that includes any filtered
@@ -2842,6 +2806,7 @@ void SkiaRenderer::DidChangeVisibility() {
 }
 
 void SkiaRenderer::FinishDrawingQuadList() {
+  TRACE_EVENT0("viz", "SkiaRenderer::FinishDrawingQuadList");
   if (!current_canvas_)
     return;
 
@@ -3249,28 +3214,5 @@ bool SkiaRenderer::ScopedReadLockComparator::operator()(
   return lhs < rhs.mailbox();
 }
 #endif  // BUILDFLAG(IS_APPLE) || defined(USE_OZONE)
-
-bool SkiaRenderer::ColorFilterCacheKey::operator==(
-    const ColorFilterCacheKey& other) const {
-  return src == other.src && dst == other.dst &&
-         resource_offset == other.resource_offset &&
-         resource_multiplier == other.resource_multiplier &&
-         sdr_max_luminance_nits == other.sdr_max_luminance_nits &&
-         dst_max_luminance_relative == other.dst_max_luminance_relative;
-}
-
-bool SkiaRenderer::ColorFilterCacheKey::operator!=(
-    const ColorFilterCacheKey& other) const {
-  return !(*this == other);
-}
-
-bool SkiaRenderer::ColorFilterCacheKey::operator<(
-    const ColorFilterCacheKey& other) const {
-  return std::tie(src, dst, resource_offset, resource_multiplier,
-                  sdr_max_luminance_nits, dst_max_luminance_relative) <
-         std::tie(other.src, other.dst, other.resource_offset,
-                  other.resource_multiplier, other.sdr_max_luminance_nits,
-                  other.dst_max_luminance_relative);
-}
 
 }  // namespace viz

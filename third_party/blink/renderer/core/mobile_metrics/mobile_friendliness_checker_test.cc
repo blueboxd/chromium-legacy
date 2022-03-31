@@ -39,6 +39,10 @@ static constexpr int kDeviceWidth = 480;
 static constexpr int kDeviceHeight = 800;
 static constexpr float kMinimumZoom = 0.25f;
 static constexpr float kMaximumZoom = 5;
+static constexpr char kInlineRedDot[] =
+    "data:image/"
+    "png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4/"
+    "/8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==";
 
 class MobileFriendlinessCheckerTest : public testing::Test {
   static void EvalMobileFriendliness(LocalFrameView* view,
@@ -75,6 +79,15 @@ class MobileFriendlinessCheckerTest : public testing::Test {
     helper->Resize(gfx::Size(kDeviceWidth, kDeviceHeight));
     helper->GetWebView()->GetPage()->SetDefaultPageScaleLimits(kMinimumZoom,
                                                                kMaximumZoom);
+    // Model Chrome text auto-sizing more accurately.
+    helper->GetWebView()->GetPage()->GetSettings().SetTextAutosizingEnabled(
+        true);
+    helper->GetWebView()
+        ->GetPage()
+        ->GetSettings()
+        .SetShrinksViewportContentToFit(true);
+    helper->GetWebView()->GetPage()->GetSettings().SetViewportStyle(
+        mojom::blink::ViewportStyle::kMobile);
     return helper;
   }
 
@@ -496,6 +509,25 @@ TEST_F(MobileFriendlinessCheckerTest, NormalTextAndWideImage) {
   EXPECT_GE(actual_mf.text_content_outside_viewport_percentage, 50);
 }
 
+TEST_F(MobileFriendlinessCheckerTest, SmallTextByWideTable) {
+  // Wide image forces Chrome to zoom out.
+  MobileFriendliness actual_mf = CalculateMetricsForHTMLString(R"(
+<html>
+  <body style="font-size: 12pt">
+    <table>
+      <tr>
+        <td width=100px>a</td>
+        <td width=100px>b</td>
+        <td width=100px>c</td>
+      </tr>
+    </table>
+  </body>
+</html>
+)");
+  EXPECT_EQ(actual_mf.small_text_ratio, 100);
+  EXPECT_GE(actual_mf.text_content_outside_viewport_percentage, 0);
+}
+
 TEST_F(MobileFriendlinessCheckerTest,
        NormalTextAndWideImageWithDeviceWidthViewport) {
   MobileFriendliness actual_mf = CalculateMetricsForHTMLString(R"(
@@ -547,6 +579,46 @@ TEST_F(MobileFriendlinessCheckerTest,
                                     /*device_scale=*/2.0);
   EXPECT_EQ(actual_mf.small_text_ratio, 100);
   EXPECT_GE(actual_mf.text_content_outside_viewport_percentage, 100);
+}
+
+// This test shows that text will grow with text-size-adjust: auto in a
+// fixed-width table.
+TEST_F(MobileFriendlinessCheckerTest, FixedWidthTableTextSizeAdjustAuto) {
+  MobileFriendliness actual_mf = CalculateMetricsForHTMLString(R"(
+<html>
+  <body>
+    <table width="800">
+      <tr><td style="font-size: 12px; text-size-adjust: auto">
+        blah blah blah blah blah blah blah blah blah blah blah blah blah blah
+        blah blah blah blah blah blah blah blah blah blah blah blah blah blah
+        blah blah blah blah blah blah blah blah blah blah blah blah blah blah
+        blah blah blah blah blah blah blah blah blah blah blah blah blah blah
+      </td></tr>
+    </table>
+  </body>
+</html>
+)");
+  EXPECT_EQ(actual_mf.small_text_ratio, 0);
+}
+
+// This test shows that text remains small with text-size-adjust: none in a
+// fixed-width table.
+TEST_F(MobileFriendlinessCheckerTest, FixedWidthTableTextSizeAdjustNone) {
+  MobileFriendliness actual_mf = CalculateMetricsForHTMLString(R"(
+<html>
+  <body>
+    <table width="800">
+      <tr><td style="font-size: 12px; text-size-adjust: none">
+        blah blah blah blah blah blah blah blah blah blah blah blah blah blah
+        blah blah blah blah blah blah blah blah blah blah blah blah blah blah
+        blah blah blah blah blah blah blah blah blah blah blah blah blah blah
+        blah blah blah blah blah blah blah blah blah blah blah blah blah blah
+      </td></tr>
+    </table>
+  </body>
+</html>
+)");
+  EXPECT_EQ(actual_mf.small_text_ratio, 100);
 }
 
 TEST_F(MobileFriendlinessCheckerTest, TextNarrow) {
@@ -801,6 +873,43 @@ TEST_F(ClockFixedMobileFriendlinessCheckerTest, SingleTapTarget) {
   EXPECT_EQ(actual_mf.bad_tap_targets_ratio, 0);
 }
 
+TEST_F(ClockFixedMobileFriendlinessCheckerTest, TwoImageTapTargetsClose) {
+  MobileFriendliness actual_mf = CalculateMetricsForHTMLString(
+      base::StringPrintf(R"(
+<html>
+  <head>
+    <meta name="viewport" content="width=480, initial-scale=1">
+  </head>
+  <body>
+    <img onclick="alert('clicked');" src="%s">
+    <img onclick="alert('clicked');" src="%s">
+  </body>
+</html>
+)",
+                         kInlineRedDot, kInlineRedDot));
+  // Two onclick images next to each other are both bad tap targets.
+  EXPECT_EQ(actual_mf.bad_tap_targets_ratio, 100);
+}
+
+TEST_F(ClockFixedMobileFriendlinessCheckerTest, TwoImageTapTargetsFar) {
+  MobileFriendliness actual_mf = CalculateMetricsForHTMLString(
+      base::StringPrintf(R"(
+<html>
+  <head>
+    <meta name="viewport" content="width=480, initial-scale=1">
+  </head>
+  <body>
+    <img onclick="alert('clicked');" src="%s">
+    <p style="line-height: 100px">some text</p>
+    <img onclick="alert('clicked');" src="%s">
+  </body>
+</html>
+)",
+                         kInlineRedDot, kInlineRedDot));
+  // Two onclick images aren't a problem if there's some distance between them.
+  EXPECT_EQ(actual_mf.bad_tap_targets_ratio, 0);
+}
+
 TEST_F(ClockFixedMobileFriendlinessCheckerTest, NoBadTapTarget) {
   MobileFriendliness actual_mf = CalculateMetricsForHTMLString(R"(
 <html>
@@ -898,6 +1007,27 @@ TEST_F(ClockFixedMobileFriendlinessCheckerTest, TooCloseTapTargetsVertical) {
         B
       </div>
     </a>
+  </body>
+</html>
+)");
+  EXPECT_EQ(actual_mf.bad_tap_targets_ratio, 50);
+}
+
+TEST_F(ClockFixedMobileFriendlinessCheckerTest,
+       TooCloseTapTargetsVerticalEventListener) {
+  MobileFriendliness actual_mf = CalculateMetricsForHTMLString(R"(
+<html>
+  <head>
+    <meta name="viewport" content="width=480, initial-scale=1">
+  </head>
+  <body style="font-size: 18px">
+    <div id="bigger" style="width: 400px; height: 400px; margin: 0px">bigger</div>
+    <div id="smaller" style="width: 10px; height: 10px; margin: 0px">smaller</div>
+    <script>
+      function noop() {}
+      document.getElementById("bigger").addEventListener("click", noop, false);
+      document.getElementById("smaller").addEventListener("click", noop, false);
+    </script>
   </body>
 </html>
 )");

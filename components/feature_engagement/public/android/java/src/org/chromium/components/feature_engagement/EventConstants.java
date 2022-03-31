@@ -192,6 +192,8 @@ public final class EventConstants {
 
     public static final String TAB_SWITCHER_BUTTON_CLICKED = "tab_switcher_button_clicked";
 
+    public static final String FOREGROUND_SESSION_DESTROYED = "foreground_session_destroyed";
+
     /** Read later related events. */
     public static final String APP_MENU_BOOKMARK_STAR_ICON_PRESSED =
             "app_menu_bookmark_star_icon_pressed";
@@ -259,6 +261,13 @@ public final class EventConstants {
     /** AdaptiveButtonInTopToolbarCustomization voice search events. */
     public static final String ADAPTIVE_TOOLBAR_CUSTOMIZATION_VOICE_SEARCH_OPENED =
             "adaptive_toolbar_customization_voice_search_opened";
+
+    /** Open new incognito tab from app menu. */
+    public static final String APP_MENU_NEW_INCOGNITO_TAB_CLICKED =
+            "app_menu_new_incognito_tab_clicked";
+
+    /** Voice search button click on NTP. */
+    public static final String NTP_VOICE_SEARCH_BUTTON_CLICKED = "ntp_voice_search_button_clicked";
 
     /** WebFeed events. */
     public static final String WEB_FEED_FOLLOW_INTRO_CLICKED = "web_feed_follow_intro_clicked";

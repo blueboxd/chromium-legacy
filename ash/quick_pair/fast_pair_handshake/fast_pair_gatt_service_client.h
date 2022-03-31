@@ -7,11 +7,7 @@
 
 #include "device/bluetooth/bluetooth_adapter.h"
 
-namespace {
-
-constexpr int kBlockByteSize = 16;
-
-}  // namespace
+inline constexpr int kBlockByteSize = 16;
 
 namespace ash {
 namespace quick_pair {
@@ -58,6 +54,9 @@ class FastPairGattServiceClient : public device::BluetoothAdapter::Observer {
       base::OnceCallback<
           void(absl::optional<device::BluetoothGattService::GattErrorCode>)>
           write_account_key_callback) = 0;
+
+  // Returns whether or not this client has an active GATT connection.
+  virtual bool IsConnected() = 0;
 };
 
 }  // namespace quick_pair

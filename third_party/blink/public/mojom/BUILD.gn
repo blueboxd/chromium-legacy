@@ -37,6 +37,7 @@ mojom("mojom_platform") {
     "choosers/date_time_chooser.mojom",
     "choosers/file_chooser.mojom",
     "choosers/popup_menu.mojom",
+    "chromeos/system_extensions/hid/cros_hid.mojom",
     "chromeos/system_extensions/window_management/cros_window_management.mojom",
     "clipboard/clipboard.mojom",
     "close_watcher/close_listener.mojom",
@@ -44,6 +45,7 @@ mojom("mojom_platform") {
     "compute_pressure/compute_pressure.mojom",
     "content_index/content_index.mojom",
     "context_menu/context_menu.mojom",
+    "conversions/attribution_data_host.mojom",
     "conversions/conversions.mojom",
     "cookie_manager/cookie_manager_automation.mojom",
     "cookie_store/cookie_store.mojom",
@@ -64,7 +66,6 @@ mojom("mojom_platform") {
     "drag/drag.mojom",
     "favicon/favicon_url.mojom",
     "feature_observer/feature_observer.mojom",
-    "federated_learning/floc.mojom",
     "fenced_frame/fenced_frame.mojom",
     "fetch/fetch_api_request.mojom",
     "fetch/fetch_api_response.mojom",
@@ -130,6 +131,7 @@ mojom("mojom_platform") {
     "mediastream/media_stream.mojom",
     "mime/mime_registry.mojom",
     "native_io/native_io.mojom",
+    "navigation/app_history_entry_arrays.mojom",
     "navigation/navigation_policy.mojom",
     "navigation/prefetched_signed_exchange_info.mojom",
     "navigation/renderer_eviction_reason.mojom",
@@ -188,6 +190,7 @@ mojom("mojom_platform") {
     "speech/speech_recognizer.mojom",
     "speech/speech_synthesis.mojom",
     "storage_access/storage_access_automation.mojom",
+    "storage_key/ancestor_chain_bit.mojom",
     "storage_key/storage_key.mojom",
     "subapps/sub_apps_service.mojom",
     "timing/performance_mark_or_measure.mojom",
@@ -309,6 +312,9 @@ mojom("mojom_platform") {
   }
   if (use_ozone) {
     enabled_features += [ "is_selection_clipboard_buffer_possible" ]
+  }
+  if (is_android || is_mac) {
+    enabled_features += [ "is_using_open_color_chooser" ]
   }
 
   shared_cpp_typemaps = [
@@ -802,6 +808,7 @@ mojom("android_mojo_bindings") {
     "//mojo/public/mojom/base",
     "//services/media_session/public/mojom",
     "//services/network/public/mojom",
+    "//services/network/public/mojom:mojom_schemeful_site",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]

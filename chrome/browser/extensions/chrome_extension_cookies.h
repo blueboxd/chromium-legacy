@@ -10,12 +10,14 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "net/cookies/cookie_store.h"
+#include "net/cookies/first_party_set_metadata.h"
 #include "services/network/cookie_settings.h"
 #include "services/network/public/mojom/cookie_manager.mojom-forward.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
@@ -83,10 +85,15 @@ class ChromeExtensionCookies
 
     ~IOData();
 
-    void CreateRestrictedCookieManager(
+    // Computes the First-Party Set metadata associated with this instance, and
+    // finishes creating the RestrictedCookieManager.
+    //
+    // The RestrictedCookieManager instance may be created either synchronously
+    // or asynchronously.
+    void ComputeFirstPartySetMetadataAndCreateRestrictedCookieManager(
         const url::Origin& origin,
         const net::IsolationInfo& isolation_info,
-        bool first_party_sets_enabled,
+        const bool first_party_sets_enabled,
         mojo::PendingReceiver<network::mojom::RestrictedCookieManager>
             receiver);
 
@@ -104,6 +111,14 @@ class ChromeExtensionCookies
     // Syncs |mojo_cookie_settings_| -> |network_cookie_settings_|.
     void UpdateNetworkCookieSettings();
 
+    // Asynchronously creates a RestrictedCookieManager.
+    void CreateRestrictedCookieManager(
+        const url::Origin& origin,
+        const net::IsolationInfo& isolation_info,
+        bool first_party_sets_enabled,
+        mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver,
+        net::FirstPartySetMetadata first_party_set_metadata);
+
     std::unique_ptr<content::CookieStoreConfig> creation_config_;
 
     std::unique_ptr<net::CookieStore> cookie_store_;
@@ -116,6 +131,8 @@ class ChromeExtensionCookies
 
     mojo::UniqueReceiverSet<network::mojom::RestrictedCookieManager>
         restricted_cookie_managers_;
+
+    base::WeakPtrFactory<IOData> weak_factory_{this};
   };
 
   explicit ChromeExtensionCookies(Profile* profile);

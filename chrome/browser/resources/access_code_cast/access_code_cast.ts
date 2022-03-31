@@ -13,6 +13,8 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
+import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 
@@ -41,7 +43,9 @@ interface AccessCodeCastElement {
   }
 }
 
-class AccessCodeCastElement extends PolymerElement {
+const AccessCodeCastElementBase = WebUIListenerMixin(I18nMixin(PolymerElement));
+
+class AccessCodeCastElement extends AccessCodeCastElementBase {
   static get is() {
     return 'access-code-cast-app';
   }
@@ -55,6 +59,7 @@ class AccessCodeCastElement extends PolymerElement {
 
   private static readonly ACCESS_CODE_LENGTH = 6;
   private accessCode: string;
+  private canCast: boolean;
   private state: PageState;
   private qrScannerEnabled: boolean;
 
@@ -62,6 +67,7 @@ class AccessCodeCastElement extends PolymerElement {
     super();
     this.listenerIds = [];
     this.router = BrowserProxy.getInstance().callbackRouter;
+    this.canCast = true;
 
     this.accessCode = '';
     BrowserProxy.getInstance().isQrScanningAvailable().then((available) => {
@@ -71,6 +77,12 @@ class AccessCodeCastElement extends PolymerElement {
     window.onblur = () => {
       this.close();
     };
+
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        this.handleEnterPressed();
+      }
+    });
   }
 
   ready() {
@@ -108,6 +120,12 @@ class AccessCodeCastElement extends PolymerElement {
     if (this.accessCode.length !== AccessCodeCastElement.ACCESS_CODE_LENGTH) {
       return;
     }
+    if (!this.canCast) {
+      return;
+    }
+
+    this.canCast = false;
+    this.$.errorMessage.setNoError();
 
     const method = this.state === PageState.CODE_INPUT ? 
       CastDiscoveryMethod.INPUT_ACCESS_CODE : CastDiscoveryMethod.QR_CODE;
@@ -118,6 +136,7 @@ class AccessCodeCastElement extends PolymerElement {
 
     if (addResult !== AddSinkResultCode.OK) {
       this.$.errorMessage.setAddSinkError(addResult);
+      this.canCast = true;
       return;
     }
 
@@ -127,6 +146,7 @@ class AccessCodeCastElement extends PolymerElement {
 
     if (castResult !== RouteRequestResultCode.OK) {
       this.$.errorMessage.setCastError(castResult);
+      this.canCast = true;
       return;
     }
 
@@ -135,7 +155,11 @@ class AccessCodeCastElement extends PolymerElement {
 
   // Even though we can get this.accessCode directly, passing it triggers
   // Polymer's data binding whenever this.accessCode updates.
-  castButtonDisabled(accessCode: string) {
+  castButtonDisabled(accessCode: string, canCast: boolean) {
+    if (!canCast) {
+      return true;
+    }
+
     return accessCode.length !== AccessCodeCastElement.ACCESS_CODE_LENGTH;
   }
 
@@ -160,6 +184,20 @@ class AccessCodeCastElement extends PolymerElement {
 
   private handleCodeInput(e: any) {
     this.accessCode = e.detail.value;
+  }
+
+  private handleEnterPressed() {
+    if (this.castButtonDisabled(this.accessCode, this.canCast)) {
+      return;
+    }
+    if (this.$.codeInput.getFocusedIndex() === -1) {
+      return;
+    }
+    if (this.state !== PageState.CODE_INPUT) {
+      return;
+    }
+
+    this.addSinkAndCast();
   }
 
   private async addSink(method: CastDiscoveryMethod):

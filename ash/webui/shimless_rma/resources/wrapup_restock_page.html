@@ -1,10 +1,10 @@
 <style include="cr-shared-style shimless-rma-shared">
 </style>
 
-<base-page orientation="column">
-  <div slot="header">
+<base-page>
+  <div slot="left-pane">
     <h1>[[i18n('restockTitleText')]]</h1>
-    <div>[[i18n('restockInstructionsText')]]</div>
+    <div class="instructions">[[i18n('restockInstructionsText')]]</div>
     <cr-button id="continue" on-click="onRestockContinueButtonClicked_"
         disabled="[[allButtonsDisabled]]">
       [[i18n('restockContinueButtonText')]]
@@ -14,8 +14,7 @@
       [[i18n('restockShutdownButtonText')]]
     </cr-button>
   </div>
-  <div slot="body">
-    <iron-icon icon="shimless:repair-start" class="large-icon">
-    </iron-icon>
+  <div slot="right-pane">
+    <img src="illustrations/repair_start.svg">
   </div>
 </base-page>

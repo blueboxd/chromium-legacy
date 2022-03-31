@@ -255,43 +255,59 @@ ExtensionDownloader::ExtensionDownloader(
 
 ExtensionDownloader::~ExtensionDownloader() = default;
 
-bool ExtensionDownloader::AddPendingExtension(
-    const std::string& id,
-    const GURL& update_url,
-    mojom::ManifestLocation install_location,
-    bool is_corrupt_reinstall,
-    int request_id,
-    ManifestFetchData::FetchPriority fetch_priority) {
-  // Use a zero version to ensure that a pending extension will always
-  // be updated, and thus installed (assuming all extensions have
-  // non-zero versions).
-  return AddPendingExtensionWithVersion(
-      id, update_url, install_location, is_corrupt_reinstall, request_id,
-      fetch_priority, base::Version("0.0.0.0"), Manifest::TYPE_UNKNOWN,
-      std::string());
-}
-
-bool ExtensionDownloader::AddPendingExtensionWithVersion(
-    const std::string& id,
-    const GURL& update_url,
+ExtensionDownloaderTask::ExtensionDownloaderTask(
+    std::string id,
+    GURL update_url,
     mojom::ManifestLocation install_location,
     bool is_corrupt_reinstall,
     int request_id,
     ManifestFetchData::FetchPriority fetch_priority,
     base::Version version,
     Manifest::Type type,
-    const std::string& update_url_data) {
-  DCHECK(version.IsValid());
+    std::string update_url_data)
+    : id(std::move(id)),
+      update_url(std::move(update_url)),
+      install_location(install_location),
+      is_corrupt_reinstall(is_corrupt_reinstall),
+      request_id(request_id),
+      fetch_priority(fetch_priority),
+      version(std::move(version)),
+      type(type),
+      update_url_data(std::move(update_url_data)) {
+  DCHECK(this->version.IsValid());
+}
+
+ExtensionDownloaderTask::ExtensionDownloaderTask(
+    std::string id,
+    GURL update_url,
+    mojom::ManifestLocation install_location,
+    bool is_corrupt_reinstall,
+    int request_id,
+    ManifestFetchData::FetchPriority fetch_priority)
+    : id(std::move(id)),
+      update_url(std::move(update_url)),
+      install_location(install_location),
+      is_corrupt_reinstall(is_corrupt_reinstall),
+      request_id(request_id),
+      fetch_priority(fetch_priority) {
+  DCHECK(this->version.IsValid());
+}
+
+ExtensionDownloaderTask::~ExtensionDownloaderTask() = default;
+
+bool ExtensionDownloader::AddPendingExtension(
+    const ExtensionDownloaderTask& task) {
   ExtraParams extra;
-  if (is_corrupt_reinstall)
+  if (task.is_corrupt_reinstall)
     extra.is_corrupt_reinstall = true;
-  if (!update_url_data.empty())
-    extra.update_url_data = update_url_data;
+  if (!task.update_url_data.empty())
+    extra.update_url_data = task.update_url_data;
 
   delegate_->OnExtensionDownloadStageChanged(
-      id, ExtensionDownloaderDelegate::Stage::PENDING);
-  return AddExtensionData(id, version, type, install_location, update_url,
-                          extra, request_id, fetch_priority);
+      task.id, ExtensionDownloaderDelegate::Stage::PENDING);
+  return AddExtensionData(task.id, task.version, task.type,
+                          task.install_location, task.update_url, extra,
+                          task.request_id, task.fetch_priority);
 }
 
 void ExtensionDownloader::StartAllPending(ExtensionCache* cache) {
@@ -334,6 +350,38 @@ void ExtensionDownloader::SetBackoffPolicyForTesting(
   manifests_queue_.set_backoff_policy(backoff_policy);
 }
 
+void ExtensionDownloader::UpdateURLStats(const GURL& update_url,
+                                         Manifest::Type extension_type) {
+  if (update_url.DomainIs(kGoogleDotCom)) {
+    url_stats_.google_url_count++;
+  } else if (update_url.is_empty()) {
+    url_stats_.no_url_count++;
+  } else {
+    url_stats_.other_url_count++;
+  }
+
+  switch (extension_type) {
+    case Manifest::TYPE_THEME:
+      ++url_stats_.theme_count;
+      break;
+    case Manifest::TYPE_EXTENSION:
+    case Manifest::TYPE_USER_SCRIPT:
+      ++url_stats_.extension_count;
+      break;
+    case Manifest::TYPE_HOSTED_APP:
+    case Manifest::TYPE_LEGACY_PACKAGED_APP:
+      ++url_stats_.app_count;
+      break;
+    case Manifest::TYPE_PLATFORM_APP:
+      ++url_stats_.platform_app_count;
+      break;
+    case Manifest::TYPE_UNKNOWN:
+    default:
+      ++url_stats_.pending_count;
+      break;
+  }
+}
+
 bool ExtensionDownloader::AddExtensionData(
     const std::string& id,
     const base::Version& version,
@@ -366,35 +414,10 @@ bool ExtensionDownloader::AddExtensionData(
     return false;
   }
 
-  if (update_url.DomainIs(kGoogleDotCom)) {
-    url_stats_.google_url_count++;
-  } else if (update_url.is_empty()) {
-    url_stats_.no_url_count++;
+  UpdateURLStats(update_url, extension_type);
+  if (update_url.is_empty()) {
     // Fill in default update URL.
     update_url = extension_urls::GetWebstoreUpdateUrl();
-  } else {
-    url_stats_.other_url_count++;
-  }
-
-  switch (extension_type) {
-    case Manifest::TYPE_THEME:
-      ++url_stats_.theme_count;
-      break;
-    case Manifest::TYPE_EXTENSION:
-    case Manifest::TYPE_USER_SCRIPT:
-      ++url_stats_.extension_count;
-      break;
-    case Manifest::TYPE_HOSTED_APP:
-    case Manifest::TYPE_LEGACY_PACKAGED_APP:
-      ++url_stats_.app_count;
-      break;
-    case Manifest::TYPE_PLATFORM_APP:
-      ++url_stats_.platform_app_count;
-      break;
-    case Manifest::TYPE_UNKNOWN:
-    default:
-      ++url_stats_.pending_count;
-      break;
   }
 
   DCHECK(!update_url.is_empty());

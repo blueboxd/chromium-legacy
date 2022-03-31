@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/safe_browsing/core/browser/db/hit_report.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 
 namespace {
@@ -185,6 +186,27 @@ void SafeBrowsingMetricsCollector::AddSafeBrowsingEventToPref(
   AddSafeBrowsingEventAndUserStateToPref(GetUserState(), event_type);
 }
 
+void SafeBrowsingMetricsCollector::AddBypassEventToPref(
+    ThreatSource threat_source) {
+  EventType event;
+  switch (threat_source) {
+    case ThreatSource::LOCAL_PVER4:
+    case ThreatSource::REMOTE:
+      event = EventType::DATABASE_INTERSTITIAL_BYPASS;
+      break;
+    case ThreatSource::CLIENT_SIDE_DETECTION:
+      event = EventType::CSD_INTERSTITIAL_BYPASS;
+      break;
+    case ThreatSource::REAL_TIME_CHECK:
+      event = EventType::REAL_TIME_INTERSTITIAL_BYPASS;
+      break;
+    default:
+      NOTREACHED() << "Unexpected threat source.";
+      event = EventType::DATABASE_INTERSTITIAL_BYPASS;
+  }
+  AddSafeBrowsingEventToPref(event);
+}
+
 absl::optional<base::Time>
 SafeBrowsingMetricsCollector::GetLatestEventTimestamp(EventType event_type) {
   return GetLatestEventTimestamp(base::BindRepeating(
@@ -238,8 +260,8 @@ void SafeBrowsingMetricsCollector::AddSafeBrowsingEventAndUserStateToPref(
   }
 
   // Remove the oldest timestamp if the length of the timestamps hits the limit.
-  while (timestamps->GetList().size() >= kTimestampsMaxLength) {
-    timestamps->EraseListIter(timestamps->GetList().begin());
+  while (timestamps->GetListDeprecated().size() >= kTimestampsMaxLength) {
+    timestamps->EraseListIter(timestamps->GetListDeprecated().begin());
   }
 
   timestamps->Append(TimeToPrefValue(base::Time::Now()));
@@ -282,8 +304,8 @@ SafeBrowsingMetricsCollector::GetLatestEventFromEventType(
   const base::Value* timestamps =
       event_dict->FindListKey(EventTypeToPrefKey(event_type));
 
-  if (timestamps && timestamps->GetList().size() > 0) {
-    base::Time time = PrefValueToTime(timestamps->GetList().back());
+  if (timestamps && timestamps->GetListDeprecated().size() > 0) {
+    base::Time time = PrefValueToTime(timestamps->GetListDeprecated().back());
     return Event(event_type, time);
   }
 
@@ -419,8 +441,8 @@ int SafeBrowsingMetricsCollector::GetEventCountSince(UserState user_state,
     return 0;
   }
 
-  return std::count_if(timestamps->GetList().begin(),
-                       timestamps->GetList().end(),
+  return std::count_if(timestamps->GetListDeprecated().begin(),
+                       timestamps->GetListDeprecated().end(),
                        [&](const base::Value& timestamp) {
                          return PrefValueToTime(timestamp) > since_time;
                        });

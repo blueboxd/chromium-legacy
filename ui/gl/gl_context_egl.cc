@@ -123,16 +123,13 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
 
   display_ = compatible_surface->GetDisplay();
 
+  EGLint context_client_major_version = attribs.client_major_es_version;
+  EGLint context_client_minor_version = attribs.client_minor_es_version;
+
   // Always prefer to use EGL_KHR_no_config_context so that all surfaces and
   // contexts are compatible
   if (!GLSurfaceEGL::IsEGLNoConfigContextSupported()) {
     config_ = compatible_surface->GetConfig();
-  }
-
-  EGLint context_client_major_version = attribs.client_major_es_version;
-  EGLint context_client_minor_version = attribs.client_minor_es_version;
-
-  if (config_) {
     EGLint config_renderable_type = 0;
     if (!eglGetConfigAttrib(display_, config_, EGL_RENDERABLE_TYPE,
                             &config_renderable_type)) {
@@ -428,8 +425,8 @@ void GLContextEGL::ReleaseYUVToRGBConvertersAndBackpressureFences() {
       // allocated in GLImageIOSurfaceEGL::CopyTexImage, which is only on
       // MacOS, where surfaceless EGL contexts are always supported.
       if (!eglMakeCurrent(display_, EGL_NO_SURFACE, EGL_NO_SURFACE, context_)) {
-        DVLOG(1) << "eglMakeCurrent failed with error "
-                 << GetLastEGLErrorString();
+        LOG(ERROR) << "eglMakeCurrent failed with error "
+                   << GetLastEGLErrorString();
       }
     }
 
@@ -446,8 +443,8 @@ void GLContextEGL::ReleaseYUVToRGBConvertersAndBackpressureFences() {
     if (context_ != current_egl_context) {
       if (!eglMakeCurrent(display_, current_draw_surface, current_read_surface,
                           current_egl_context)) {
-        DVLOG(1) << "eglMakeCurrent failed with error "
-                 << GetLastEGLErrorString();
+        LOG(ERROR) << "eglMakeCurrent failed with error "
+                   << GetLastEGLErrorString();
       }
     }
   }
@@ -455,8 +452,10 @@ void GLContextEGL::ReleaseYUVToRGBConvertersAndBackpressureFences() {
 
 bool GLContextEGL::MakeCurrentImpl(GLSurface* surface) {
   DCHECK(context_);
-  if (lost_)
+  if (lost_) {
+    LOG(ERROR) << "Failed to make context current since it is marked as lost";
     return false;
+  }
   if (IsCurrent(surface))
     return true;
 
@@ -473,8 +472,8 @@ bool GLContextEGL::MakeCurrentImpl(GLSurface* surface) {
                       surface->GetHandle(),
                       surface->GetHandle(),
                       context_)) {
-    DVLOG(1) << "eglMakeCurrent failed with error "
-             << GetLastEGLErrorString();
+    LOG(ERROR) << "eglMakeCurrent failed with error "
+               << GetLastEGLErrorString();
     return false;
   }
 
@@ -507,8 +506,8 @@ void GLContextEGL::ReleaseCurrent(GLSurface* surface) {
   SetCurrent(nullptr);
   if (!eglMakeCurrent(display_, EGL_NO_SURFACE, EGL_NO_SURFACE,
                       EGL_NO_CONTEXT)) {
-    DVLOG(1) << "eglMakeCurrent failed to release current with error "
-             << GetLastEGLErrorString();
+    LOG(ERROR) << "eglMakeCurrent failed to release current with error "
+               << GetLastEGLErrorString();
     lost_ = true;
   }
 

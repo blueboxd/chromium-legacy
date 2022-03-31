@@ -13,14 +13,14 @@ import androidx.preference.PreferenceFragmentCompat;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.accessibility.FontSizePrefs;
-import org.chromium.chrome.browser.accessibility.FontSizePrefs.FontSizePrefsObserver;
 import org.chromium.chrome.browser.image_descriptions.ImageDescriptionsController;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
+import org.chromium.components.browser_ui.accessibility.FontSizePrefs;
+import org.chromium.components.browser_ui.accessibility.FontSizePrefs.FontSizePrefsObserver;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.user_prefs.UserPrefs;
@@ -40,7 +40,8 @@ public class AccessibilitySettings
     private ChromeBaseCheckBoxPreference mForceEnableZoomPref;
     private boolean mRecordFontSizeChangeOnStop;
 
-    private FontSizePrefs mFontSizePrefs = FontSizePrefs.getInstance();
+    private FontSizePrefs mFontSizePrefs =
+            FontSizePrefs.getInstance(Profile.getLastUsedRegularProfile());
     private FontSizePrefsObserver mFontSizePrefsObserver = new FontSizePrefsObserver() {
         @Override
         public void onFontScaleFactorChanged(float fontScaleFactor, float userFontScaleFactor) {

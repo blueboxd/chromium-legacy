@@ -96,7 +96,7 @@ class ContentSubresourceFilterThrottleManager
     : public base::SupportsUserData::Data,
       public mojom::SubresourceFilterHost {
  public:
-  static constexpr int kUserDataKey = 0;
+  static const int kUserDataKey = 0;
 
   // Binds a remote in the given RenderFrame to the correct
   // ContentSubresourceFilterThrottleManager in the browser.
@@ -165,6 +165,10 @@ class ContentSubresourceFilterThrottleManager
       std::vector<std::unique_ptr<content::NavigationThrottle>>* throttles);
 
   PageLoadStatistics* page_load_statistics() const { return statistics_.get(); }
+
+  ProfileInteractionManager* profile_interaction_manager_for_testing() {
+    return profile_interaction_manager_.get();
+  }
 
   VerifiedRuleset::Handle* ruleset_handle_for_testing() {
     return ruleset_handle_.get();

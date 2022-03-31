@@ -254,7 +254,8 @@ class OzonePlatformWayland : public OzonePlatform,
     buffer_manager_ = std::make_unique<WaylandBufferManagerGpu>();
     surface_factory_ = std::make_unique<WaylandSurfaceFactory>(
         connection_.get(), buffer_manager_.get());
-    overlay_manager_ = std::make_unique<WaylandOverlayManager>();
+    overlay_manager_ =
+        std::make_unique<WaylandOverlayManager>(buffer_manager_.get());
   }
 
   const PlatformProperties& GetPlatformProperties() override {
@@ -323,6 +324,12 @@ class OzonePlatformWayland : public OzonePlatform,
       // accelerated widget to occlude contents below.
       properties.needs_background_image =
           ui::IsWaylandOverlayDelegationEnabled() && connection_->viewporter();
+
+      if (surface_factory_) {
+        DCHECK(has_initialized_gpu());
+        properties.supports_native_pixmaps =
+            surface_factory_->SupportsNativePixmaps();
+      }
     } else if (buffer_manager_) {
       DCHECK(has_initialized_gpu());
       // These properties are set when the GetPlatformRuntimeProperties is
@@ -334,6 +341,8 @@ class OzonePlatformWayland : public OzonePlatform,
       properties.needs_background_image =
           ui::IsWaylandOverlayDelegationEnabled() &&
           buffer_manager_->supports_viewporter();
+      properties.supports_native_pixmaps =
+          surface_factory_->SupportsNativePixmaps();
     }
     return properties;
   }

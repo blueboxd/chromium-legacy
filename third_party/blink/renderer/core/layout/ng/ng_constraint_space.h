@@ -366,16 +366,28 @@ class CORE_EXPORT NGConstraintSpace final {
     return true;
   }
 
-  // Return the block-offset from the block-start of the fragmentainer
-  // relative to the block-start of the current block formatting context in
-  // the current fragmentainer. Note that if the current block formatting
-  // context starts in a previous fragmentainer, we'll return the block-offset
-  // relative to the current fragmentainer.
+  // Return the border edge block-offset from the block-start of the
+  // fragmentainer relative to the block-start of the current block formatting
+  // context in the current fragmentainer. Note that if the current block
+  // formatting context starts in a previous fragmentainer, we'll return the
+  // block-offset relative to the current fragmentainer.
   LayoutUnit FragmentainerOffsetAtBfc() const {
     DCHECK(HasBlockFragmentation());
     if (HasRareData())
       return rare_data_->fragmentainer_offset_at_bfc;
     return LayoutUnit();
+  }
+
+  // Return true if we're at the start of the fragmentainer. In most cases this
+  // will be equal to "FragmentainerOffsetAtBfc() <= LayoutUnit()", but not
+  // necessarily for floats, since float margins are unbreakable. If a node is
+  // at the start of the fragmentainer, and the node has an untruncated positive
+  // block-start margin, FragmentainerOffsetAtBfc() will be greater than
+  // zero. This normally means that the node *isn't* at the start of the
+  // fragmentainer, but for floats, this should still be considered to be at the
+  // start.
+  bool IsAtFragmentainerStart() const {
+    return HasRareData() && rare_data_->is_at_fragmentainer_start;
   }
 
   // Whether the current constraint space is for the newly established
@@ -544,6 +556,16 @@ class CORE_EXPORT NGConstraintSpace final {
     if (!HasRareData())
       return kBreakAppealLastResort;
     return static_cast<NGBreakAppeal>(rare_data_->min_break_appeal);
+  }
+
+  // In some cases, we may want to calculate the intial-break-before and
+  // final-break-after values for a node outside of the normal fragmentation
+  // pass. For example, the break values of flex/grid items in a row are
+  // propagated to the row itself. Calculating the intial-break-before and
+  // final-break-after for these items can be used to determine the break
+  // appeal of a row before the full fragmentation layout pass is performed.
+  bool ShouldPropagateChildBreakValues() const {
+    return HasRareData() && rare_data_->propagate_child_break_values;
   }
 
   // Return true if the block size of the table-cell should be considered
@@ -798,7 +820,9 @@ class CORE_EXPORT NGConstraintSpace final {
           is_inside_balanced_columns(false),
           is_in_column_bfc(false),
           min_block_size_should_encompass_intrinsic_size(false),
-          min_break_appeal(kBreakAppealLastResort) {}
+          min_break_appeal(kBreakAppealLastResort),
+          propagate_child_break_values(false),
+          is_at_fragmentainer_start(false) {}
     RareData(const RareData& other)
         : percentage_resolution_size(other.percentage_resolution_size),
           replaced_percentage_resolution_block_size(
@@ -820,7 +844,9 @@ class CORE_EXPORT NGConstraintSpace final {
           is_in_column_bfc(other.is_in_column_bfc),
           min_block_size_should_encompass_intrinsic_size(
               other.min_block_size_should_encompass_intrinsic_size),
-          min_break_appeal(other.min_break_appeal) {
+          min_break_appeal(other.min_break_appeal),
+          propagate_child_break_values(other.propagate_child_break_values),
+          is_at_fragmentainer_start(other.is_at_fragmentainer_start) {
       switch (data_union_type) {
         case kNone:
           break;
@@ -875,9 +901,7 @@ class CORE_EXPORT NGConstraintSpace final {
     }
 
     bool MaySkipLayout(const RareData& other) const {
-      if (fragmentainer_block_size != other.fragmentainer_block_size ||
-          fragmentainer_offset_at_bfc != other.fragmentainer_offset_at_bfc ||
-          data_union_type != other.data_union_type ||
+      if (data_union_type != other.data_union_type ||
           is_line_clamp_context != other.is_line_clamp_context ||
           is_restricted_block_size_table_cell !=
               other.is_restricted_block_size_table_cell ||
@@ -888,7 +912,8 @@ class CORE_EXPORT NGConstraintSpace final {
               other.requires_content_before_breaking ||
           is_inside_balanced_columns != other.is_inside_balanced_columns ||
           is_in_column_bfc != other.is_in_column_bfc ||
-          min_break_appeal != other.min_break_appeal)
+          min_break_appeal != other.min_break_appeal ||
+          propagate_child_break_values != other.propagate_child_break_values)
         return false;
 
       switch (data_union_type) {
@@ -918,7 +943,8 @@ class CORE_EXPORT NGConstraintSpace final {
           is_restricted_block_size_table_cell || hide_table_cell_if_empty ||
           block_direction_fragmentation_type != kFragmentNone ||
           requires_content_before_breaking || is_inside_balanced_columns ||
-          is_in_column_bfc || min_break_appeal != kBreakAppealLastResort)
+          is_in_column_bfc || min_break_appeal != kBreakAppealLastResort ||
+          propagate_child_break_values || is_at_fragmentainer_start)
         return false;
 
       switch (data_union_type) {
@@ -1144,6 +1170,8 @@ class CORE_EXPORT NGConstraintSpace final {
     unsigned is_in_column_bfc : 1;
     unsigned min_block_size_should_encompass_intrinsic_size : 1;
     unsigned min_break_appeal : kNGBreakAppealBitsNeeded;
+    unsigned propagate_child_break_values : 1;
+    unsigned is_at_fragmentainer_start : 1;
 
    private:
     struct BlockData {

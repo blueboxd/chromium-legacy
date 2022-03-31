@@ -65,11 +65,11 @@ CalculationExpressionPixelsAndPercentNode::ResolvedResultType() const {
 }
 #endif
 
-// ------ CalculationExpressionOperatorNode ------
+// ------ CalculationExpressionOperationNode ------
 
 // static
 scoped_refptr<const CalculationExpressionNode>
-CalculationExpressionOperatorNode::CreateSimplified(Children&& children,
+CalculationExpressionOperationNode::CreateSimplified(Children&& children,
                                                     CalculationOperator op) {
   switch (op) {
     case CalculationOperator::kAdd:
@@ -77,7 +77,7 @@ CalculationExpressionOperatorNode::CreateSimplified(Children&& children,
       DCHECK_EQ(children.size(), 2u);
       if (!children[0]->IsPixelsAndPercent() ||
           !children[1]->IsPixelsAndPercent()) {
-        return base::MakeRefCounted<CalculationExpressionOperatorNode>(
+        return base::MakeRefCounted<CalculationExpressionOperationNode>(
             Children({std::move(children[0]), std::move(children[1])}), op);
       }
       const auto& left_pixels_and_percent =
@@ -100,7 +100,7 @@ CalculationExpressionOperatorNode::CreateSimplified(Children&& children,
       auto& maybe_pixels_and_percent_node =
           children[0]->IsNumber() ? children[1] : children[0];
       if (!maybe_pixels_and_percent_node->IsPixelsAndPercent()) {
-        return base::MakeRefCounted<CalculationExpressionOperatorNode>(
+        return base::MakeRefCounted<CalculationExpressionOperationNode>(
             Children({std::move(children[0]), std::move(children[1])}), op);
       }
       auto& number_node = children[0]->IsNumber() ? children[0] : children[1];
@@ -141,16 +141,44 @@ CalculationExpressionOperatorNode::CreateSimplified(Children&& children,
         return base::MakeRefCounted<CalculationExpressionPixelsAndPercentNode>(
             PixelsAndPercent(simplified_px, 0));
       }
-      return base::MakeRefCounted<CalculationExpressionOperatorNode>(
+      return base::MakeRefCounted<CalculationExpressionOperationNode>(
           std::move(children), op);
     }
-    default:
+    case CalculationOperator::kClamp: {
+      DCHECK_EQ(children.size(), 3u);
+      Vector<float> operand_pixels;
+      operand_pixels.ReserveCapacity(children.size());
+      bool can_simplify = true;
+      for (auto& child : children) {
+        const auto* pixels_and_percent =
+            DynamicTo<CalculationExpressionPixelsAndPercentNode>(*child);
+        if (!pixels_and_percent || pixels_and_percent->Percent()) {
+          can_simplify = false;
+          break;
+        }
+        operand_pixels.push_back(pixels_and_percent->Pixels());
+      }
+      if (can_simplify) {
+        float min_px = operand_pixels[0];
+        float val_px = operand_pixels[1];
+        float max_px = operand_pixels[2];
+        // clamp(MIN, VAL, MAX) is identical to max(MIN, min(VAL, MAX))
+        // according to the spec,
+        // https://drafts.csswg.org/css-values-4/#funcdef-clamp.
+        float clamped_px = std::max(min_px, std::min(val_px, max_px));
+        return base::MakeRefCounted<CalculationExpressionPixelsAndPercentNode>(
+            PixelsAndPercent(clamped_px, 0));
+      }
+      return base::MakeRefCounted<CalculationExpressionOperationNode>(
+          std::move(children), op);
+    }
+    case CalculationOperator::kInvalid:
       NOTREACHED();
       return nullptr;
   }
 }
 
-float CalculationExpressionOperatorNode::Evaluate(float max_value) const {
+float CalculationExpressionOperationNode::Evaluate(float max_value) const {
   switch (operator_) {
     case CalculationOperator::kAdd: {
       DCHECK_EQ(children_.size(), 2u);
@@ -184,7 +212,15 @@ float CalculationExpressionOperatorNode::Evaluate(float max_value) const {
         maximum = std::max(maximum, child->Evaluate(max_value));
       return maximum;
     }
-    default:
+    case CalculationOperator::kClamp: {
+      DCHECK(!children_.IsEmpty());
+      float min = children_[0]->Evaluate(max_value);
+      float val = children_[1]->Evaluate(max_value);
+      float max = children_[2]->Evaluate(max_value);
+      // clamp(MIN, VAL, MAX) is identical to max(MIN, min(VAL, MAX))
+      return std::max(min, std::min(val, max));
+    }
+    case CalculationOperator::kInvalid:
       break;
       // TODO(crbug.com/1284199): Support other math functions.
   }
@@ -192,17 +228,17 @@ float CalculationExpressionOperatorNode::Evaluate(float max_value) const {
   return std::numeric_limits<float>::quiet_NaN();
 }
 
-bool CalculationExpressionOperatorNode::operator==(
+bool CalculationExpressionOperationNode::operator==(
     const CalculationExpressionNode& other) const {
-  if (!other.IsOperator())
+  if (!other.IsOperation())
     return false;
-  const auto& other_operation = To<CalculationExpressionOperatorNode>(other);
+  const auto& other_operation = To<CalculationExpressionOperationNode>(other);
   return operator_ == other_operation.GetOperator() &&
          children_ == other_operation.GetChildren();
 }
 
 scoped_refptr<const CalculationExpressionNode>
-CalculationExpressionOperatorNode::Zoom(double factor) const {
+CalculationExpressionOperationNode::Zoom(double factor) const {
   switch (operator_) {
     case CalculationOperator::kAdd:
     case CalculationOperator::kSubtract:
@@ -219,7 +255,8 @@ CalculationExpressionOperatorNode::Zoom(double factor) const {
           Children({pixels_and_percent->Zoom(factor), number}), operator_);
     }
     case CalculationOperator::kMin:
-    case CalculationOperator::kMax: {
+    case CalculationOperator::kMax:
+    case CalculationOperator::kClamp: {
       DCHECK(children_.size());
       Vector<scoped_refptr<const CalculationExpressionNode>> cloned_operands;
       cloned_operands.ReserveCapacity(children_.size());
@@ -227,7 +264,7 @@ CalculationExpressionOperatorNode::Zoom(double factor) const {
         cloned_operands.push_back(child->Zoom(factor));
       return CreateSimplified(std::move(cloned_operands), operator_);
     }
-    default:
+    case CalculationOperator::kInvalid:
       NOTREACHED();
       return nullptr;
   }
@@ -235,7 +272,7 @@ CalculationExpressionOperatorNode::Zoom(double factor) const {
 
 #if DCHECK_IS_ON()
 CalculationExpressionNode::ResultType
-CalculationExpressionOperatorNode::ResolvedResultType() const {
+CalculationExpressionOperationNode::ResolvedResultType() const {
   switch (operator_) {
     case CalculationOperator::kAdd:
     case CalculationOperator::kSubtract: {
@@ -267,7 +304,8 @@ CalculationExpressionOperatorNode::ResolvedResultType() const {
       return ResultType::kNumber;
     }
     case CalculationOperator::kMin:
-    case CalculationOperator::kMax: {
+    case CalculationOperator::kMax:
+    case CalculationOperator::kClamp: {
       DCHECK(children_.size());
       auto first_child_type = children_.front()->ResolvedResultType();
       for (const auto& child : children_) {
@@ -277,7 +315,7 @@ CalculationExpressionOperatorNode::ResolvedResultType() const {
 
       return first_child_type;
     }
-    default:
+    case CalculationOperator::kInvalid:
       NOTREACHED();
       return result_type_;
   }

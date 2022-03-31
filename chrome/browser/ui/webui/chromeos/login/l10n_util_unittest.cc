@@ -25,12 +25,12 @@ namespace chromeos {
 namespace {
 
 void VerifyOnlyUILanguages(const base::ListValue& list) {
-  for (const base::Value& value : list.GetList()) {
+  for (const base::Value& value : list.GetListDeprecated()) {
     ASSERT_TRUE(value.is_dict());
     const base::DictionaryValue& dict = base::Value::AsDictionaryValue(value);
-    std::string code;
-    ASSERT_TRUE(dict.GetString("code", &code));
-    EXPECT_NE("ga", code)
+    const std::string* code = dict.FindStringKey("code");
+    ASSERT_TRUE(code);
+    EXPECT_NE("ga", *code)
         << "Irish is an example language which has input method "
         << "but can't use it as UI language.";
   }
@@ -39,12 +39,12 @@ void VerifyOnlyUILanguages(const base::ListValue& list) {
 void VerifyLanguageCode(const base::ListValue& list,
                         size_t index,
                         const std::string& expected_code) {
-  const base::Value& value = list.GetList()[index];
+  const base::Value& value = list.GetListDeprecated()[index];
   ASSERT_TRUE(value.is_dict());
   const base::DictionaryValue& dict = base::Value::AsDictionaryValue(value);
-  std::string actual_code;
-  ASSERT_TRUE(dict.GetString("code", &actual_code));
-  EXPECT_EQ(expected_code, actual_code)
+  const std::string* actual_code = dict.FindStringKey("code");
+  ASSERT_TRUE(actual_code);
+  EXPECT_EQ(expected_code, *actual_code)
       << "Wrong language code at index " << index << ".";
 }
 
@@ -108,13 +108,13 @@ TEST_F(L10nUtilTest, GetUILanguageList) {
 TEST_F(L10nUtilTest, FindMostRelevantLocale) {
   base::ListValue available_locales;
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  dict->SetString("value", "de");
+  dict->SetStringKey("value", "de");
   available_locales.Append(std::move(dict));
   dict = std::make_unique<base::DictionaryValue>();
-  dict->SetString("value", "fr");
+  dict->SetStringKey("value", "fr");
   available_locales.Append(std::move(dict));
   dict = std::make_unique<base::DictionaryValue>();
-  dict->SetString("value", "en-GB");
+  dict->SetStringKey("value", "en-GB");
   available_locales.Append(std::move(dict));
 
   std::vector<std::string> most_relevant_language_codes;
@@ -170,7 +170,7 @@ TEST_F(L10nUtilTest, GetUILanguageListMulti) {
   VerifyOnlyUILanguages(*list);
 
   // (4 languages (except Irish) + divider) = 5 + all other languages
-  ASSERT_LE(5u, list->GetList().size());
+  ASSERT_LE(5u, list->GetListDeprecated().size());
 
   VerifyLanguageCode(*list, 0, "fr");
   VerifyLanguageCode(*list, 1, "en-US");
@@ -191,7 +191,7 @@ TEST_F(L10nUtilTest, GetUILanguageListWithMostRelevant) {
 
   VerifyOnlyUILanguages(*list);
 
-  ASSERT_LE(3u, list->GetList().size());
+  ASSERT_LE(3u, list->GetListDeprecated().size());
 
   VerifyLanguageCode(*list, 0, "it");
   VerifyLanguageCode(*list, 1, "de");

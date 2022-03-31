@@ -47,14 +47,15 @@ class WebStateImpl::SerializedData {
   CRWSessionStorage* GetSessionStorage() const;
 
   // WebState:
+  base::Time GetLastActiveTime() const;
   BrowserState* GetBrowserState() const;
   NSString* GetStableIdentifier() const;
   const std::u16string& GetTitle() const;
   const FaviconStatus& GetFaviconStatus() const;
   void SetFaviconStatus(const FaviconStatus& favicon_status);
+  int GetNavigationItemCount() const;
   const GURL& GetVisibleURL() const;
   const GURL& GetLastCommittedURL() const;
-  const base::Time GetLastCommittedTimestamp() const;
 
  private:
   // Returns a reference to the owning WebState WebStateObserverList.

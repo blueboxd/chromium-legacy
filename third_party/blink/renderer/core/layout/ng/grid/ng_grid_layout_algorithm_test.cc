@@ -45,17 +45,17 @@ class NGGridLayoutAlgorithmTest
   void SetUp() override { NGBaseLayoutAlgorithmTest::SetUp(); }
 
   void BuildGridItemsAndTrackCollections(NGGridLayoutAlgorithm& algorithm) {
-    NGGridPlacement grid_placement(
-        algorithm.Style(), algorithm.ComputeAutomaticRepetitions(kForColumns),
+    NGGridPlacementData placement_data(
+        algorithm.Node().IsParentNGGrid(),
+        algorithm.ComputeAutomaticRepetitions(kForColumns),
         algorithm.ComputeAutomaticRepetitions(kForRows));
 
-    // Measure items.
-    algorithm.ConstructAndAppendGridItems(&grid_items_, &grid_placement);
+    grid_items_ = algorithm.Node().ConstructGridItems(&placement_data);
 
     // Build block track collections.
     NGGridBlockTrackCollection column_block_track_collection(kForColumns);
     NGGridBlockTrackCollection row_block_track_collection(kForRows);
-    algorithm.BuildBlockTrackCollections(grid_placement, &grid_items_,
+    algorithm.BuildBlockTrackCollections(placement_data, &grid_items_,
                                          &column_block_track_collection,
                                          &row_block_track_collection);
 
@@ -1629,10 +1629,14 @@ TEST_F(NGGridLayoutAlgorithmTest, NGGridAxisType) {
   const ComputedStyle& grid_style = grid_node.Style();
   const ComputedStyle& subgrid_style = subgrid_node.Style();
 
-  EXPECT_EQ(grid_style.GridColumnsAxisType(), GridAxisType::kStandaloneAxis);
-  EXPECT_EQ(grid_style.GridRowsAxisType(), GridAxisType::kStandaloneAxis);
-  EXPECT_EQ(subgrid_style.GridColumnsAxisType(), GridAxisType::kSubgriddedAxis);
-  EXPECT_EQ(subgrid_style.GridRowsAxisType(), GridAxisType::kSubgriddedAxis);
+  EXPECT_EQ(grid_style.GridTemplateColumns().axis_type,
+            GridAxisType::kStandaloneAxis);
+  EXPECT_EQ(grid_style.GridTemplateRows().axis_type,
+            GridAxisType::kStandaloneAxis);
+  EXPECT_EQ(subgrid_style.GridTemplateColumns().axis_type,
+            GridAxisType::kSubgriddedAxis);
+  EXPECT_EQ(subgrid_style.GridTemplateRows().axis_type,
+            GridAxisType::kSubgriddedAxis);
 }
 
 TEST_F(NGGridLayoutAlgorithmTest, SubgridLineNameList) {
@@ -1655,14 +1659,21 @@ TEST_F(NGGridLayoutAlgorithmTest, SubgridLineNameList) {
 
   NGBlockNode subgrid_node(GetLayoutBoxByElementId("subgrid"));
   const ComputedStyle& subgrid_style = subgrid_node.Style();
+  const ComputedGridTrackList& computed_grid_column_track_list =
+      subgrid_style.GridTemplateColumns();
+  const ComputedGridTrackList& computed_grid_row_track_list =
+      subgrid_style.GridTemplateRows();
 
-  EXPECT_EQ(subgrid_style.GridColumnsAxisType(), GridAxisType::kSubgriddedAxis);
-  EXPECT_EQ(subgrid_style.GridRowsAxisType(), GridAxisType::kSubgriddedAxis);
+  EXPECT_EQ(computed_grid_column_track_list.axis_type,
+            GridAxisType::kSubgriddedAxis);
+  EXPECT_EQ(computed_grid_row_track_list.axis_type,
+            GridAxisType::kSubgriddedAxis);
 
-  EXPECT_TRUE(subgrid_style.OrderedNamedGridColumnLines().IsEmpty());
+  EXPECT_TRUE(
+      computed_grid_column_track_list.ordered_named_grid_lines.IsEmpty());
 
   const OrderedNamedGridLines& ordered_named_grid_row_lines =
-      subgrid_style.OrderedNamedGridRowLines();
+      computed_grid_row_track_list.ordered_named_grid_lines;
   EXPECT_EQ(ordered_named_grid_row_lines.size(), 3u);
 
   const Vector<NamedGridLine> row_named_lines = {
@@ -1693,14 +1704,20 @@ TEST_F(NGGridLayoutAlgorithmTest, SubgridLineNameListWithRepeaters) {
 
   NGBlockNode subgrid_node(GetLayoutBoxByElementId("subgrid"));
   const ComputedStyle& subgrid_style = subgrid_node.Style();
+  const ComputedGridTrackList& computed_grid_column_track_list =
+      subgrid_style.GridTemplateColumns();
+  const ComputedGridTrackList& computed_grid_row_track_list =
+      subgrid_style.GridTemplateRows();
 
-  EXPECT_EQ(subgrid_style.GridColumnsAxisType(), GridAxisType::kSubgriddedAxis);
-  EXPECT_EQ(subgrid_style.GridRowsAxisType(), GridAxisType::kSubgriddedAxis);
+  EXPECT_EQ(computed_grid_column_track_list.axis_type,
+            GridAxisType::kSubgriddedAxis);
+  EXPECT_EQ(computed_grid_row_track_list.axis_type,
+            GridAxisType::kSubgriddedAxis);
 
   const OrderedNamedGridLines& ordered_named_grid_column_lines =
-      subgrid_style.OrderedNamedGridColumnLines();
+      computed_grid_column_track_list.ordered_named_grid_lines;
   const OrderedNamedGridLines& auto_repeat_ordered_named_grid_column_lines =
-      subgrid_style.AutoRepeatOrderedNamedGridColumnLines();
+      computed_grid_column_track_list.auto_repeat_ordered_named_grid_lines;
 
   EXPECT_EQ(ordered_named_grid_column_lines.size(), 2u);
   EXPECT_EQ(auto_repeat_ordered_named_grid_column_lines.size(), 2u);
@@ -1719,7 +1736,7 @@ TEST_F(NGGridLayoutAlgorithmTest, SubgridLineNameListWithRepeaters) {
   }
 
   const OrderedNamedGridLines& ordered_named_grid_row_lines =
-      subgrid_style.OrderedNamedGridRowLines();
+      computed_grid_row_track_list.ordered_named_grid_lines;
   EXPECT_EQ(ordered_named_grid_row_lines.size(), 6u);
 
   const Vector<NamedGridLine> row_named_lines = {

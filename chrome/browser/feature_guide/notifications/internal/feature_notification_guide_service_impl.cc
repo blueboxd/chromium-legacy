@@ -20,6 +20,7 @@
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
 #include "chrome/browser/notifications/scheduler/public/notification_schedule_service.h"
 #include "chrome/browser/notifications/scheduler/public/schedule_params.h"
+#include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "components/segmentation_platform/public/config.h"
@@ -54,6 +55,7 @@ FeatureNotificationGuideServiceImpl::FeatureNotificationGuideServiceImpl(
       clock_(clock),
       config_(config) {
   DCHECK(notification_scheduler_);
+  DCHECK(delegate_);
   delegate_->SetService(this);
 }
 
@@ -62,10 +64,10 @@ FeatureNotificationGuideServiceImpl::~FeatureNotificationGuideServiceImpl() =
 
 void FeatureNotificationGuideServiceImpl::OnSchedulerInitialized(
     const std::set<std::string>& guids) {
-  for (const std::string& guid : guids) {
-    scheduled_features_.emplace(NotificationIdToFeature(guid));
-  }
+  scheduled_feature_guids_ = guids;
 
+  VLOG(1) << __func__ << ": number of notifications scheduled: " << guids.size()
+          << ", config.featues_size: " << config_.enabled_features.size();
   tracker_->AddOnInitializedCallback(
       base::BindOnce(&FeatureNotificationGuideServiceImpl::OnTrackerInitialized,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -76,44 +78,100 @@ void FeatureNotificationGuideServiceImpl::OnTrackerInitialized(
   if (!init_success)
     return;
 
-  segmentation_platform_service_->GetSelectedSegment(
-      segmentation_platform::kChromeLowUserEngagementSegmentationKey,
-      base::BindOnce(
-          &FeatureNotificationGuideServiceImpl::OnQuerySegmentationPlatform,
-          weak_ptr_factory_.GetWeakPtr()));
-}
-
-void FeatureNotificationGuideServiceImpl::OnQuerySegmentationPlatform(
-    const segmentation_platform::SegmentSelectionResult& result) {
-  if (!result.is_ready || !result.segment.has_value())
-    return;
-  if (result.segment.value() !=
-      optimization_guide::proto::OptimizationTarget::
-          OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT) {
-    return;
-  }
-
+  CheckForLowEnagedUser();
   StartCheckingForEligibleFeatures();
 }
 
-void FeatureNotificationGuideServiceImpl::StartCheckingForEligibleFeatures() {
+void FeatureNotificationGuideServiceImpl::CheckForLowEnagedUser() {
+  // Skip low engagement check if enabled. For testing only.
+  if (base::FeatureList::IsEnabled(
+          feature_guide::features::kSkipCheckForLowEngagedUsers)) {
+    is_low_engaged_user_ = true;
+    return;
+  }
+
+  // Use tracker instead of segmentation if enabled.
+  if (base::FeatureList::IsEnabled(
+          feature_guide::features::kUseFeatureEngagementForUserTargeting)) {
+#if BUILDFLAG(IS_ANDROID)
+    if (tracker_->ShouldTriggerHelpUI(
+            feature_engagement::kIPHLowUserEngagementDetectorFeature)) {
+      is_low_engaged_user_ = true;
+    }
+#endif
+    return;
+  }
+
+  if (!base::FeatureList::IsEnabled(
+          feature_guide::features::kSegmentationModelLowEngagedUsers)) {
+    is_low_engaged_user_ = false;
+    return;
+  }
+
+  // Check segmentation model result.
+  auto result = segmentation_platform_service_->GetCachedSegmentResult(
+      segmentation_platform::kChromeLowUserEngagementSegmentationKey);
+  is_low_engaged_user_ =
+      result.is_ready && result.segment.has_value() &&
+      result.segment.value() ==
+          optimization_guide::proto::OptimizationTarget::
+              OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT;
+}
+
+void FeatureNotificationGuideServiceImpl::CloseRedundantNotifications() {
   for (auto feature : config_.enabled_features) {
-    if (base::Contains(scheduled_features_, feature))
+#if BUILDFLAG(IS_ANDROID)
+    const auto* used_iph_feature = GetUsedIphFeatureForFeature(feature);
+    bool feature_was_used =
+        used_iph_feature && tracker_->WouldTriggerHelpUI(*used_iph_feature);
+    if (!feature_was_used)
+      continue;
+#endif
+
+    std::string notification_guid =
+        delegate_->GetNotificationParamGuidForFeature(feature);
+    delegate_->CloseNotification(notification_guid);
+  }
+}
+
+void FeatureNotificationGuideServiceImpl::StartCheckingForEligibleFeatures() {
+  VLOG(1) << __func__ << ": is_low_engaged_user=" << is_low_engaged_user_;
+  bool schedule_immediately = true;
+  for (auto feature : config_.enabled_features) {
+    std::string guid = delegate_->GetNotificationParamGuidForFeature(feature);
+    if (base::Contains(scheduled_feature_guids_, guid))
+      continue;
+
+    if (!is_low_engaged_user_ && ShouldTargetLowEngagedUsers(feature))
+      continue;
+
+    if (delegate_->ShouldSkipFeature(feature))
       continue;
 
 #if BUILDFLAG(IS_ANDROID)
     if (!tracker_->WouldTriggerHelpUI(
             GetNotificationIphFeatureForFeature(feature))) {
+      VLOG(0) << __func__ << ": didn't meet trigger criteria for feature="
+              << static_cast<int>(feature);
       continue;
     }
 #endif
 
-    ScheduleNotification(feature);
+    ScheduleNotification(feature, schedule_immediately);
+
+    // For the second feature onwards, we need to schedule notification with a
+    // few days delay. Only the first feature is fired immediately.
+    schedule_immediately = false;
   }
+
+  // TODO(shaktisahu): Maybe post a task with few seconds delay.
+  CloseRedundantNotifications();
 }
 
 void FeatureNotificationGuideServiceImpl::ScheduleNotification(
-    FeatureType feature) {
+    FeatureType feature,
+    bool schedule_immediately) {
+  VLOG(1) << __func__ << ": feature=" << static_cast<int>(feature);
   notifications::NotificationData data;
   data.title = delegate_->GetNotificationTitle(feature);
   data.message = delegate_->GetNotificationMessage(feature);
@@ -124,16 +182,18 @@ void FeatureNotificationGuideServiceImpl::ScheduleNotification(
   schedule_params.priority =
       notifications::ScheduleParams::Priority::kNoThrottle;
 
-  // Show after a week.
+  // Show notification immediately or a few days.
   schedule_params.deliver_time_start =
       last_notification_schedule_time_.value_or(clock_->Now()) +
-      config_.notification_deliver_time_delta;
+      (schedule_immediately ? base::Days(0)
+                            : config_.notification_deliver_time_delta);
   schedule_params.deliver_time_end =
       schedule_params.deliver_time_start.value() + kDeliverEndTimeDelta;
   last_notification_schedule_time_ = schedule_params.deliver_time_start.value();
   auto params = std::make_unique<notifications::NotificationParams>(
       notifications::SchedulerClientType::kFeatureGuide, std::move(data),
       std::move(schedule_params));
+  params->guid = delegate_->GetNotificationParamGuidForFeature(feature);
   notification_scheduler_->Schedule(std::move(params));
 }
 
@@ -141,6 +201,7 @@ void FeatureNotificationGuideServiceImpl::BeforeShowNotification(
     std::unique_ptr<notifications::NotificationData> notification_data,
     NotificationDataCallback callback) {
   FeatureType feature = FeatureFromCustomData(notification_data->custom_data);
+  VLOG(1) << __func__ << ": checking feature=" << static_cast<int>(feature);
   DCHECK(feature != FeatureType::kInvalid);
 
 #if BUILDFLAG(IS_ANDROID)
@@ -150,6 +211,8 @@ void FeatureNotificationGuideServiceImpl::BeforeShowNotification(
     return;
   }
 #endif
+
+  VLOG(1) << __func__ << ": triggering feature " << static_cast<int>(feature);
   std::move(callback).Run(config_.feature_notification_tracking_only
                               ? nullptr
                               : std::move(notification_data));

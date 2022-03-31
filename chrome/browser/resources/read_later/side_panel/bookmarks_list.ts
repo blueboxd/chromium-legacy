@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 import {CrA11yAnnouncerElement} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
+import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {afterNextRender, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
-import {ReadLaterApiProxy, ReadLaterApiProxyImpl} from '../read_later_api_proxy.js';
 
 import {BookmarkFolderElement, FOLDER_OPEN_CHANGED_EVENT, getBookmarkFromElement, isBookmarkFolderElement} from './bookmark_folder.js';
 import {BookmarksApiProxy, BookmarksApiProxyImpl} from './bookmarks_api_proxy.js';
@@ -51,8 +50,7 @@ export class BookmarksListElement extends PolymerElement {
       BookmarksApiProxyImpl.getInstance();
   private bookmarksDragManager_: BookmarksDragManager =
       new BookmarksDragManager(this);
-  private readLaterApi_: ReadLaterApiProxy =
-      ReadLaterApiProxyImpl.getInstance();
+  private focusOutlineManager_: FocusOutlineManager;
   private listeners_ = new Map<string, Function>();
   private folders_: chrome.bookmarks.BookmarkTreeNode[];
   hoverVisible: boolean;
@@ -72,6 +70,7 @@ export class BookmarksListElement extends PolymerElement {
   connectedCallback() {
     super.connectedCallback();
     this.setAttribute('role', 'tree');
+    this.focusOutlineManager_ = FocusOutlineManager.forDocument(document);
     this.bookmarksApi_.getFolders().then(folders => {
       this.folders_ = folders;
 
@@ -104,10 +103,6 @@ export class BookmarksListElement extends PolymerElement {
 
       this.bookmarksDragManager_.startObserving();
     });
-    if (loadTimeData.getBoolean('unifiedSidePanel')) {
-      // Show the UI as soon as the app is connected.
-      this.readLaterApi_.showUI();
-    }
   }
 
   disconnectedCallback() {
@@ -146,6 +141,14 @@ export class BookmarksListElement extends PolymerElement {
 
     this.focusBookmark_(bookmarks[0]!.id);
     this.hoverVisible = false;
+
+    // Show the focus state immediately after dropping a bookmark to indicate
+    // where the bookmark was moved to, and remove the state immediately after
+    // the next mouse event.
+    this.focusOutlineManager_.visible = true;
+    document.addEventListener('mousedown', () => {
+      this.focusOutlineManager_.visible = false;
+    }, {once: true});
   }
 
   /** BookmarksDragDelegate */
@@ -272,11 +275,10 @@ export class BookmarksListElement extends PolymerElement {
     if (!event.ctrlKey && !event.metaKey) {
       return;
     }
-
     event.preventDefault();
     const eventTarget = event.composedPath()[0] as HTMLElement;
     const bookmarkData = getBookmarkFromElement(eventTarget);
-    if (!bookmarkData || !eventTarget.matches(':focus-visible')) {
+    if (!bookmarkData || !this.focusOutlineManager_.visible) {
       return;
     }
 

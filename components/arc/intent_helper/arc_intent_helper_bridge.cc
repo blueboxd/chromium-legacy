@@ -20,7 +20,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "components/arc/common/intent_helper/link_handler_model.h"
+#include "components/arc/common/intent_helper/arc_intent_helper_package.h"
 #include "components/arc/intent_helper/control_camera_app_delegate.h"
 #include "components/arc/intent_helper/intent_constants.h"
 #include "components/arc/intent_helper/open_url_delegate.h"
@@ -114,10 +114,6 @@ bool CanOpenWebAppForUrl(const GURL& url) {
 }  // namespace
 
 // static
-const char ArcIntentHelperBridge::kArcIntentHelperPackageName[] =
-    "org.chromium.arc.intent_helper";
-
-// static
 ArcIntentHelperBridge* ArcIntentHelperBridge::GetForBrowserContext(
     content::BrowserContext* context) {
   return ArcIntentHelperBridgeFactory::GetForBrowserContext(context);
@@ -161,13 +157,11 @@ ArcIntentHelperBridge::ArcIntentHelperBridge(content::BrowserContext* context,
       arc_bridge_service_(bridge_service),
       allowed_arc_schemes_(std::cbegin(kArcSchemes), std::cend(kArcSchemes)) {
   arc_bridge_service_->intent_helper()->SetHost(this);
-  LinkHandlerModel::SetDelegate(this);
 }
 
 ArcIntentHelperBridge::~ArcIntentHelperBridge() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   arc_bridge_service_->intent_helper()->SetHost(nullptr);
-  LinkHandlerModel::SetDelegate(nullptr);
 }
 
 void ArcIntentHelperBridge::Shutdown() {
@@ -373,58 +367,6 @@ ArcIntentHelperBridge::GetResult ArcIntentHelperBridge::GetActivityIcons(
   return icon_loader_.GetActivityIcons(activities, std::move(callback));
 }
 
-bool ArcIntentHelperBridge::RequestUrlHandlerList(
-    const std::string& url,
-    RequestUrlHandlerListCallback callback) {
-  auto* arc_service_manager = ArcServiceManager::Get();
-  arc::mojom::IntentHelperInstance* instance = nullptr;
-
-  if (arc_service_manager) {
-    instance = ARC_GET_INSTANCE_FOR_METHOD(
-        arc_service_manager->arc_bridge_service()->intent_helper(),
-        RequestUrlHandlerList);
-  }
-  if (!instance) {
-    LOG(ERROR) << "Failed to get instance for RequestUrlHandlerList().";
-    std::move(callback).Run(std::vector<IntentHandlerInfo>());
-    return false;
-  }
-
-  instance->RequestUrlHandlerList(
-      url, base::BindOnce(&ArcIntentHelperBridge::OnRequestUrlHandlerList,
-                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  return true;
-}
-
-void ArcIntentHelperBridge::OnRequestUrlHandlerList(
-    RequestUrlHandlerListCallback callback,
-    std::vector<mojom::IntentHandlerInfoPtr> handlers) {
-  std::vector<IntentHandlerInfo> converted_handlers;
-  for (auto const& handler : handlers) {
-    converted_handlers.push_back(IntentHandlerInfo(
-        handler->name, handler->package_name, handler->activity_name));
-  }
-  std::move(callback).Run(std::move(converted_handlers));
-}
-
-bool ArcIntentHelperBridge::HandleUrl(const std::string& url,
-                                      const std::string& package_name) {
-  auto* arc_service_manager = ArcServiceManager::Get();
-  arc::mojom::IntentHelperInstance* instance = nullptr;
-
-  if (arc_service_manager) {
-    instance = ARC_GET_INSTANCE_FOR_METHOD(
-        arc_service_manager->arc_bridge_service()->intent_helper(), HandleUrl);
-  }
-  if (!instance) {
-    LOG(ERROR) << "Failed to get instance for HandleUrl().";
-    return false;
-  }
-
-  instance->HandleUrl(url, package_name);
-  return true;
-}
-
 bool ArcIntentHelperBridge::ShouldChromeHandleUrl(const GURL& url) {
   if (!url.SchemeIsHTTPOrHTTPS()) {
     // Chrome will handle everything that is not http and https.
@@ -434,7 +376,7 @@ bool ArcIntentHelperBridge::ShouldChromeHandleUrl(const GURL& url) {
   for (auto& package_filters : intent_filters_) {
     // The intent helper package is used by ARC to send URLs to Chrome, so it
     // does not count as a candidate.
-    if (IsIntentHelperPackage(package_filters.first))
+    if (package_filters.first == kArcIntentHelperPackageName)
       continue;
     for (auto& filter : package_filters.second) {
       if (filter.Match(url))
@@ -513,18 +455,12 @@ void ArcIntentHelperBridge::SendNewCaptureBroadcast(bool is_video,
 }
 
 // static
-bool ArcIntentHelperBridge::IsIntentHelperPackage(
-    const std::string& package_name) {
-  return package_name == kArcIntentHelperPackageName;
-}
-
-// static
 std::vector<mojom::IntentHandlerInfoPtr>
 ArcIntentHelperBridge::FilterOutIntentHelper(
     std::vector<mojom::IntentHandlerInfoPtr> handlers) {
   std::vector<mojom::IntentHandlerInfoPtr> handlers_filtered;
   for (auto& handler : handlers) {
-    if (IsIntentHelperPackage(handler->package_name))
+    if (handler->package_name == kArcIntentHelperPackageName)
       continue;
     handlers_filtered.push_back(std::move(handler));
   }

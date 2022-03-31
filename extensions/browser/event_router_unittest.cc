@@ -113,11 +113,11 @@ scoped_refptr<const Extension> CreateExtension(bool component,
   ExtensionBuilder builder;
   std::unique_ptr<base::DictionaryValue> manifest =
       std::make_unique<base::DictionaryValue>();
-  manifest->SetString("name", "foo");
-  manifest->SetString("version", "1.0.0");
-  manifest->SetInteger("manifest_version", 2);
-  manifest->SetString("background.page", "background.html");
-  manifest->SetBoolean("background.persistent", persistent);
+  manifest->SetStringKey("name", "foo");
+  manifest->SetStringKey("version", "1.0.0");
+  manifest->SetIntKey("manifest_version", 2);
+  manifest->SetStringPath("background.page", "background.html");
+  manifest->SetBoolPath("background.persistent", persistent);
   builder.SetManifest(std::move(manifest));
   if (component)
     builder.SetLocation(mojom::ManifestLocation::kComponent);
@@ -128,10 +128,10 @@ scoped_refptr<const Extension> CreateExtension(bool component,
 scoped_refptr<const Extension> CreateServiceWorkerExtension() {
   ExtensionBuilder builder;
   auto manifest = std::make_unique<base::DictionaryValue>();
-  manifest->SetString("name", "foo");
-  manifest->SetString("version", "1.0.0");
-  manifest->SetInteger("manifest_version", 2);
-  manifest->SetString("background.service_worker", "worker.js");
+  manifest->SetStringKey("name", "foo");
+  manifest->SetStringKey("version", "1.0.0");
+  manifest->SetIntKey("manifest_version", 2);
+  manifest->SetStringPath("background.service_worker", "worker.js");
   builder.SetManifest(std::move(manifest));
   return builder.Build();
 }
@@ -236,12 +236,12 @@ class EventRouterFilterTest : public ExtensionsTest,
       return false;
     }
 
-    for (const base::Value& filter : filter_list->GetList()) {
+    for (const base::Value& filter : filter_list->GetListDeprecated()) {
       if (!filter.is_dict()) {
         ADD_FAILURE();
         return false;
       }
-      if (filter.Equals(&to_check))
+      if (filter == to_check)
         return true;
     }
     return false;
@@ -461,7 +461,7 @@ TEST_P(EventRouterFilterTest, Basic) {
   DictionaryValue::Iterator iter(*filtered_events);
   ASSERT_EQ(kEventName, iter.key());
   ASSERT_TRUE(iter.value().is_list());
-  ASSERT_EQ(3u, iter.value().GetList().size());
+  ASSERT_EQ(3u, iter.value().GetListDeprecated().size());
 
   ASSERT_TRUE(ContainsFilter(kExtensionId, kEventName, *filters[0]));
   ASSERT_TRUE(ContainsFilter(kExtensionId, kEventName, *filters[1]));

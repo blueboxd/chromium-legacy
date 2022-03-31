@@ -117,7 +117,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
   // Sets the day of the month on which traffic counters are automatically
   // reset.
   void SetDayOfTrafficCountersAutoReset(const std::string& network_guid,
-                                        int day);
+                                        const absl::optional<int>& day);
 
   // Returns whether traffic counters should be automatically reset. Returns
   // nullptr if no pref exists for |network_guid|.
@@ -153,8 +153,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkMetadataStore
 
   // Sets the owner metadata when there is an active user, otherwise a no-op.
   void SetIsCreatedByUser(const std::string& network_guid);
-  void OnDisableHiddenError(const std::string& error_name,
-                            std::unique_ptr<base::DictionaryValue> error_data);
+  void OnDisableHiddenError(const std::string& error_name);
 
   base::ObserverList<NetworkMetadataObserver> observers_;
   NetworkConfigurationHandler* network_configuration_handler_;

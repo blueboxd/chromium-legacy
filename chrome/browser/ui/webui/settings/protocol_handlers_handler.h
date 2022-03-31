@@ -12,6 +12,8 @@
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chrome/browser/web_applications/app_registrar_observer.h"
 #include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_install_manager.h"
+#include "chrome/browser/web_applications/web_app_install_manager_observer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
@@ -36,7 +38,8 @@ namespace settings {
 class ProtocolHandlersHandler
     : public SettingsPageUIHandler,
       public custom_handlers::ProtocolHandlerRegistry::Observer,
-      public web_app::AppRegistrarObserver {
+      public web_app::AppRegistrarObserver,
+      public web_app::WebAppInstallManagerObserver {
  public:
   explicit ProtocolHandlersHandler(Profile* profile);
 
@@ -53,33 +56,37 @@ class ProtocolHandlersHandler
   // ProtocolHandlerRegistry::Observer:
   void OnProtocolHandlerRegistryChanged() override;
 
-  // web_app::AppRegistrarObserver:
+  // web_app::WebAppInstallManagerObserver:
   void OnWebAppUninstalled(const web_app::AppId& app_id) override;
+  void OnWebAppInstallManagerDestroyed() override;
+
+  // web_app::AppRegistrarObserver:
   void OnWebAppProtocolSettingsChanged() override;
 
  private:
   // Called to fetch the state of the protocol handlers. If the full list of
   // handlers is not needed, consider HandleObserveProtocolHandlersEnabledState
   // instead.
-  void HandleObserveProtocolHandlers(const base::ListValue* args);
+  void HandleObserveProtocolHandlers(base::Value::ConstListView args);
 
   // Called to begin updates to the handlers enabled status. This is a subset
   // (lighter alternative) of HandleObserveProtocolHandlers. There's no need to
   // call this function if HandleObserveProtocolHandlers is called.
-  void HandleObserveProtocolHandlersEnabledState(const base::ListValue* args);
+  void HandleObserveProtocolHandlersEnabledState(
+      base::Value::ConstListView args);
 
   // Notifies the JS side whether the handlers are enabled or not.
   void SendHandlersEnabledValue();
 
   // Called when the user toggles whether custom handlers are enabled.
-  void HandleSetHandlersEnabled(const base::ListValue* args);
+  void HandleSetHandlersEnabled(base::Value::ConstListView args);
 
   // Called when the user sets a new default handler for a protocol.
-  void HandleSetDefault(const base::ListValue* args);
+  void HandleSetDefault(base::Value::ConstListView args);
 
   // Parses a ProtocolHandler out of the arguments passed back from the view.
   // |args| is a list of [protocol, url].
-  ProtocolHandler ParseHandlerFromArgs(const base::ListValue* args) const;
+  ProtocolHandler ParseHandlerFromArgs(base::Value::ConstListView args) const;
 
   // Returns a JSON object describing the set of protocol handlers for the
   // given protocol.
@@ -94,7 +101,7 @@ class ProtocolHandlersHandler
 
   // Remove a handler.
   // |args| is a list of [protocol, url].
-  void HandleRemoveHandler(const base::ListValue* args);
+  void HandleRemoveHandler(base::Value::ConstListView args);
 
   custom_handlers::ProtocolHandlerRegistry* GetProtocolHandlerRegistry();
 
@@ -138,6 +145,9 @@ class ProtocolHandlersHandler
   base::ScopedObservation<web_app::WebAppRegistrar,
                           web_app::AppRegistrarObserver>
       app_observation_{this};
+  base::ScopedObservation<web_app::WebAppInstallManager,
+                          web_app::WebAppInstallManagerObserver>
+      install_manager_observation_{this};
 };
 
 }  // namespace settings

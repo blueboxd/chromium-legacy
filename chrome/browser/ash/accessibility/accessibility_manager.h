@@ -388,6 +388,7 @@ class AccessibilityManager
   const std::set<std::string>& GetAccessibilityCommonEnabledFeaturesForTest() {
     return accessibility_common_enabled_features_;
   }
+  bool IsDisableAutoclickDialogVisibleForTest();
 
  protected:
   AccessibilityManager();

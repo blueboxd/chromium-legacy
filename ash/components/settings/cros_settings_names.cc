@@ -160,6 +160,10 @@ const char kReportDeviceNetworkInterfaces[] =
 const char kReportDeviceNetworkStatus[] =
     "cros.device_status.report_network_status";
 
+// A boolean pref that determines whether the device peripherals should be
+// included in reports to the telemetry API.
+const char kReportDevicePeripherals[] = "cros.device_status.report_peripherals";
+
 // A boolean pref that determines whether the device power status should be
 // included in status reports to the device management server.
 const char kReportDevicePowerStatus[] =
@@ -580,5 +584,10 @@ const char kDeviceRestrictedManagedGuestSessionEnabled[] =
 // updates. A boolean pref specifies whether this data can be also used for
 // overall improvements. This setting is available only on reven boards.
 const char kRevenEnableDeviceHWDataUsage[] = "cros.reven.enable_hw_data_usage";
+
+// A boolean that indicates whether the encrypted reporting pipeline is
+// enabled or not.
+const char kDeviceEncryptedReportingPipelineEnabled[] =
+    "cros.device.encrypted_reporting_pipeline_enabled";
 
 }  // namespace ash

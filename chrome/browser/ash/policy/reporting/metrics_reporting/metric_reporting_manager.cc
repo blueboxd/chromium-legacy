@@ -12,6 +12,7 @@
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/network/network_events_observer.h"
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/network/network_info_sampler.h"
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/network/network_telemetry_sampler.h"
+#include "chrome/browser/ash/policy/reporting/metrics_reporting/usb/usb_events_observer.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "components/reporting/client/report_queue.h"
 #include "components/reporting/client/report_queue_factory.h"
@@ -44,6 +45,10 @@ constexpr base::TimeDelta kDefaultNetworkTelemetryEventCheckingRate =
 constexpr base::TimeDelta kDefaultAudioTelemetryCollectionRate =
     base::Minutes(10);
 
+constexpr bool kReportDeviceNetworkStatusDefaultValue = true;
+constexpr bool kReportDeviceAudioStatusDefaultValue = true;
+constexpr bool kReportDevicePeripheralsDefaultValue = false;
+
 base::TimeDelta GetDefaultRate(base::TimeDelta default_rate,
                                base::TimeDelta testing_rate) {
   // If telemetry testing rates flag is enabled, use `testing_rate` to reduce
@@ -71,7 +76,7 @@ base::TimeDelta GetDefaulEventCheckingRate(base::TimeDelta default_rate) {
 
 // static
 const base::Feature MetricReportingManager::kEnableNetworkTelemetryReporting{
-    "EnableNetworkTelemetryReporting", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableNetworkTelemetryReporting", base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool MetricReportingManager::Delegate::IsAffiliated(Profile* profile) {
   const user_manager::User* const user =
@@ -221,8 +226,10 @@ void MetricReportingManager::OnLogin(Profile* profile) {
   if (!delegate_->IsAffiliated(profile)) {
     return;
   }
-  init_on_login_timer_.Start(FROM_HERE, delegate_->GetInitDelay(), this,
-                             &MetricReportingManager::InitOnAffiliatedLogin);
+  InitOnAffiliatedLogin();
+  delayed_init_on_login_timer_.Start(
+      FROM_HERE, delegate_->GetInitDelay(), this,
+      &MetricReportingManager::DelayedInitOnAffiliatedLogin);
 }
 
 void MetricReportingManager::DeviceSettingsUpdated() {
@@ -247,8 +254,8 @@ MetricReportingManager::MetricReportingManager(
       GetDefaultReportUploadFrequency());
   event_report_queue_ = delegate_->CreateMetricReportQueue(
       Destination::EVENT_METRIC, Priority::SLOW_BATCH);
-  init_timer_.Start(FROM_HERE, delegate_->GetInitDelay(), this,
-                    &MetricReportingManager::Init);
+  delayed_init_timer_.Start(FROM_HERE, delegate_->GetInitDelay(), this,
+                            &MetricReportingManager::DelayedInit);
 
   if (managed_session_service) {
     managed_session_observation_.Observe(managed_session_service);
@@ -268,21 +275,31 @@ void MetricReportingManager::Shutdown() {
   event_report_queue_.reset();
 }
 
-void MetricReportingManager::Init() {
+void MetricReportingManager::DelayedInit() {
   if (delegate_->IsDeprovisioned()) {
     return;
   }
 
-  InitCrosHealthdInfoCollector(
+  CreateCrosHealthdOneShotCollector(
       chromeos::cros_healthd::mojom::ProbeCategoryEnum::kCpu,
-      ::ash::kReportDeviceCpuInfo, /*default_value=*/false);
-  InitCrosHealthdInfoCollector(
+      CrosHealthdMetricSampler::MetricType::kInfo, ::ash::kReportDeviceCpuInfo,
+      /*default_value=*/false, info_report_queue_.get());
+  CreateCrosHealthdOneShotCollector(
       chromeos::cros_healthd::mojom::ProbeCategoryEnum::kMemory,
-      ::ash::kReportDeviceMemoryInfo, /*default_value=*/false);
-  InitCrosHealthdInfoCollector(
+      CrosHealthdMetricSampler::MetricType::kInfo,
+      ::ash::kReportDeviceMemoryInfo,
+      /*default_value=*/false, info_report_queue_.get());
+  CreateCrosHealthdOneShotCollector(
       chromeos::cros_healthd::mojom::ProbeCategoryEnum::kBus,
+      CrosHealthdMetricSampler::MetricType::kInfo,
       ::ash::kReportDeviceSecurityStatus,
-      /*default_value=*/false);
+      /*default_value=*/false, info_report_queue_.get());
+  CreateCrosHealthdOneShotCollector(
+      chromeos::cros_healthd::mojom::ProbeCategoryEnum::kBootPerformance,
+      CrosHealthdMetricSampler::MetricType::kTelemetry,
+      ::ash::kReportDeviceBootMode,
+      /*default_value=*/true, telemetry_report_queue_.get());
+
   if (base::FeatureList::IsEnabled(kEnableNetworkTelemetryReporting)) {
     // Network health info.
     // ReportDeviceNetworkConfiguration policy is enabled by default, so set its
@@ -298,6 +315,24 @@ void MetricReportingManager::Init() {
 }
 
 void MetricReportingManager::InitOnAffiliatedLogin() {
+  if (delegate_->IsDeprovisioned()) {
+    return;
+  }
+  InitEventObserverManager(
+      std::make_unique<AudioEventsObserver>(),
+      /*enable_setting_path=*/::ash::kReportDeviceAudioStatus,
+      kReportDeviceAudioStatusDefaultValue);
+  if (base::FeatureList::IsEnabled(kEnableNetworkTelemetryReporting)) {
+    // Network health events observer.
+    InitEventObserverManager(
+        std::make_unique<NetworkEventsObserver>(),
+        /*enable_setting_path=*/::ash::kReportDeviceNetworkStatus,
+        kReportDeviceNetworkStatusDefaultValue);
+  }
+  InitPeripheralsCollectors();
+}
+
+void MetricReportingManager::DelayedInitOnAffiliatedLogin() {
   if (delegate_->IsDeprovisioned()) {
     return;
   }
@@ -384,13 +419,15 @@ void MetricReportingManager::UploadTelemetry() {
   telemetry_report_queue_->Upload();
 }
 
-void MetricReportingManager::InitCrosHealthdInfoCollector(
+void MetricReportingManager::CreateCrosHealthdOneShotCollector(
     chromeos::cros_healthd::mojom::ProbeCategoryEnum probe_category,
+    CrosHealthdMetricSampler::MetricType metric_type,
     const std::string& setting_path,
-    bool default_value) {
-  auto info_sampler = std::make_unique<CrosHealthdMetricSampler>(
-      probe_category, CrosHealthdMetricSampler::MetricType::kInfo);
-  InitOneShotCollector(std::move(info_sampler), info_report_queue_.get(),
+    bool default_value,
+    MetricReportQueue* metric_report_queue) {
+  auto croshealthd_sampler =
+      std::make_unique<CrosHealthdMetricSampler>(probe_category, metric_type);
+  InitOneShotCollector(std::move(croshealthd_sampler), metric_report_queue,
                        setting_path, default_value);
 }
 
@@ -399,9 +436,6 @@ void MetricReportingManager::InitNetworkCollectors() {
   auto network_telemetry_sampler =
       std::make_unique<NetworkTelemetrySampler>(https_latency_sampler.get());
   // Network health telemetry.
-  // ReportDeviceNetworkStatus policy is enabled by default, so set its default
-  // value to true.
-  const bool kReportDeviceNetworkStatusDefaultValue = true;
   InitPeriodicCollector(
       std::move(network_telemetry_sampler),
       /*enable_setting_path=*/::ash::kReportDeviceNetworkStatus,
@@ -420,21 +454,9 @@ void MetricReportingManager::InitNetworkCollectors() {
       kReportDeviceNetworkStatusDefaultValue,
       ::ash::kReportDeviceNetworkTelemetryEventCheckingRateMs,
       GetDefaulEventCheckingRate(kDefaultNetworkTelemetryEventCheckingRate));
-  // Network health events observer.
-  InitEventObserverManager(
-      std::make_unique<NetworkEventsObserver>(),
-      /*enable_setting_path=*/::ash::kReportDeviceNetworkStatus,
-      kReportDeviceNetworkStatusDefaultValue);
 }
 
 void MetricReportingManager::InitAudioCollectors() {
-  const bool kReportDeviceAudioStatusDefaultValue = true;
-
-  InitEventObserverManager(
-      std::make_unique<AudioEventsObserver>(),
-      /*enable_setting_path=*/::ash::kReportDeviceAudioStatus,
-      kReportDeviceAudioStatusDefaultValue);
-
   auto audio_telemetry_sampler = std::make_unique<CrosHealthdMetricSampler>(
       chromeos::cros_healthd::mojom::ProbeCategoryEnum::kAudio,
       CrosHealthdMetricSampler::MetricType::kTelemetry);
@@ -446,4 +468,21 @@ void MetricReportingManager::InitAudioCollectors() {
       GetDefaulCollectionRate(kDefaultAudioTelemetryCollectionRate));
 }
 
+void MetricReportingManager::InitPeripheralsCollectors() {
+  // Peripheral events
+  InitEventObserverManager(std::make_unique<UsbEventsObserver>(),
+                           ::ash::kReportDevicePeripherals,
+                           kReportDevicePeripheralsDefaultValue);
+  auto peripheral_telemetry_sampler =
+      std::make_unique<CrosHealthdMetricSampler>(
+          chromeos::cros_healthd::mojom::ProbeCategoryEnum::kBus,
+          CrosHealthdMetricSampler::MetricType::kTelemetry);
+
+  // Peripheral telemetry
+  CreateCrosHealthdOneShotCollector(
+      chromeos::cros_healthd::mojom::ProbeCategoryEnum::kBus,
+      CrosHealthdMetricSampler::MetricType::kTelemetry,
+      ash::kReportDevicePeripherals, kReportDevicePeripheralsDefaultValue,
+      telemetry_report_queue_.get());
+}
 }  // namespace reporting

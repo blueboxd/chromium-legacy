@@ -41,7 +41,6 @@
 #include "chrome/browser/ui/webui/settings/metrics_reporting_handler.h"
 #include "chrome/browser/ui/webui/settings/on_startup_handler.h"
 #include "chrome/browser/ui/webui/settings/people_handler.h"
-#include "chrome/browser/ui/webui/settings/privacy_review_handler.h"
 #include "chrome/browser/ui/webui/settings/privacy_sandbox_handler.h"
 #include "chrome/browser/ui/webui/settings/profile_info_handler.h"
 #include "chrome/browser/ui/webui/settings/protocol_handlers_handler.h"
@@ -218,7 +217,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(std::make_unique<PeopleHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ProfileInfoHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ProtocolHandlersHandler>(profile));
-  AddSettingsPageUIHandler(std::make_unique<PrivacyReviewHandler>());
   AddSettingsPageUIHandler(std::make_unique<PrivacySandboxHandler>());
   AddSettingsPageUIHandler(std::make_unique<SearchEnginesHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<SecureDnsHandler>());
@@ -265,11 +263,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
         std::make_unique<IncompatibleApplicationsHandler>());
 #endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
-  html_source->AddString(
-      "enableBrandingUpdateAttribute",
-      base::FeatureList::IsEnabled(features::kWebUIBrandingUpdate)
-          ? "enable-branding-update"
-          : "");
+  // TODO(crbug.com/1286649): Remove after CSS has been updated to no longer
+  // need this attribute.
+  html_source->AddString("enableBrandingUpdateAttribute",
+                         "enable-branding-update");
 
   html_source->AddBoolean("signinAllowed", !profile->IsGuestSession() &&
                                                profile->GetPrefs()->GetBoolean(
@@ -278,6 +275,15 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("showImportPasswords",
                           base::FeatureList::IsEnabled(
                               password_manager::features::kPasswordImport));
+
+  html_source->AddBoolean(
+      "showDismissCompromisedPasswordOption",
+      base::FeatureList::IsEnabled(
+          password_manager::features::kMuteCompromisedPasswords));
+
+  html_source->AddBoolean(
+      "enablePasswordNotes",
+      base::FeatureList::IsEnabled(password_manager::features::kPasswordNotes));
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
   html_source->AddBoolean("enableDesktopRestructuredLanguageSettings",
@@ -296,9 +302,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean(
       "userCannotManuallyEnterPassword",
       !ash::password_visibility::AccountHasUserFacingPassword(
-          ash::ProfileHelper::Get()
-              ->GetUserByProfile(profile)
-              ->GetAccountId()));
+          g_browser_process->local_state(), ash::ProfileHelper::Get()
+                                                ->GetUserByProfile(profile)
+                                                ->GetAccountId()));
 
   // This is the browser settings page.
   html_source->AddBoolean("isOSSettings", false);
@@ -313,9 +319,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
   html_source->AddBoolean(
-      "privacyReviewEnabled",
+      "privacyGuideEnabled",
       !chrome::ShouldDisplayManagedUi(profile) &&
-          base::FeatureList::IsEnabled(features::kPrivacyReview));
+          base::FeatureList::IsEnabled(features::kPrivacyGuide));
 
   AddSettingsPageUIHandler(std::make_unique<AboutHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ResetSettingsHandler>(profile));

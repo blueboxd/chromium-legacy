@@ -13,8 +13,12 @@
 #include "content/browser/media/capture/desktop_capturer_lacros.h"
 #endif
 
-namespace content {
-namespace desktop_capture {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "content/browser/media/capture/aura_window_to_mojo_device_adapter.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#endif
+
+namespace content::desktop_capture {
 
 webrtc::DesktopCaptureOptions CreateDesktopCaptureOptions() {
   auto options = webrtc::DesktopCaptureOptions::CreateDefault();
@@ -30,6 +34,8 @@ webrtc::DesktopCaptureOptions CreateDesktopCaptureOptions() {
   } else {
     options.set_allow_use_magnification_api(true);
   }
+  options.set_enumerate_current_process_windows(
+      ShouldEnumerateCurrentProcessWindows());
 #elif BUILDFLAG(IS_MAC)
   if (base::FeatureList::IsEnabled(features::kIOSurfaceCapturer)) {
     options.set_allow_iosurface(true);
@@ -65,6 +71,15 @@ std::unique_ptr<webrtc::DesktopCapturer> CreateWindowCapturer() {
 #endif
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void BindAuraWindowCapturer(
+    mojo::PendingReceiver<video_capture::mojom::Device> receiver,
+    const content::DesktopMediaID& id) {
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<AuraWindowToMojoDeviceAdapter>(id), std::move(receiver));
+}
+#endif
+
 bool CanUsePipeWire() {
 #if defined(WEBRTC_USE_PIPEWIRE)
   return webrtc::DesktopCapturer::IsRunningUnderWayland() &&
@@ -74,5 +89,12 @@ bool CanUsePipeWire() {
 #endif
 }
 
-}  // namespace desktop_capture
-}  // namespace content
+bool ShouldEnumerateCurrentProcessWindows() {
+#if BUILDFLAG(IS_WIN)
+  return false;
+#else
+  return true;
+#endif
+}
+
+}  // namespace content::desktop_capture

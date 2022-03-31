@@ -82,7 +82,7 @@ bool SurfaceSavedFrame::IsValid() const {
 void SurfaceSavedFrame::RequestCopyOfOutput(Surface* surface) {
   DCHECK(surface->HasActiveFrame());
 
-  if (surface->GetActiveFrame().metadata.has_shared_element_resources) {
+  if (directive_.is_renderer_driven_animation()) {
     // TODO(khushalsagar) : This should be the only mode once renderer based SET
     // lands.
     copy_root_render_pass_ = false;
@@ -299,9 +299,11 @@ void SurfaceSavedFrame::NotifyCopyOfOutputComplete(
   }
 
   // Return if the result is empty.
-  // TODO(vmpstr): We should log / trace this.
-  if (output_copy->IsEmpty())
+  if (output_copy->IsEmpty()) {
+    LOG(ERROR) << "SurfaceSavedFrame copy output result for shared index "
+               << shared_index << " is empty.";
     return;
+  }
 
   ++valid_result_count_;
   if (!frame_result_) {

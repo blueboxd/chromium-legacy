@@ -287,6 +287,12 @@ class CORE_EXPORT LayoutView : public LayoutBlockFlow {
   // Returns the viewport size in (CSS pixels) that vh and vw units are
   // calculated from.
   gfx::SizeF ViewportSizeForViewportUnits() const;
+  // https://drafts.csswg.org/css-values-4/#small-viewport-size
+  gfx::SizeF SmallViewportSizeForViewportUnits() const;
+  // https://drafts.csswg.org/css-values-4/#large-viewport-size
+  gfx::SizeF LargeViewportSizeForViewportUnits() const;
+  // https://drafts.csswg.org/css-values-4/#dynamic-viewport-size
+  gfx::SizeF DynamicViewportSizeForViewportUnits() const;
 
   void PushLayoutState(LayoutState& layout_state) {
     NOT_DESTROYED();
@@ -354,6 +360,11 @@ class CORE_EXPORT LayoutView : public LayoutBlockFlow {
 
   LogicalSize InitialContainingBlockSize() const;
 
+  TrackedDescendantsMap& SvgTextDescendantsMap();
+
+ protected:
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
+
  private:
   bool CanHaveChildren() const override;
 
@@ -397,6 +408,12 @@ class CORE_EXPORT LayoutView : public LayoutBlockFlow {
   unsigned layout_counter_count_ = 0;
   unsigned layout_list_item_count_ = 0;
   bool needs_marker_counter_update_ = false;
+
+  // This map keeps track of SVG <text> descendants.
+  // LayoutNGSVGText needs to do re-layout on transform changes of any ancestor
+  // because LayoutNGSVGText's layout result depends on scaling factors
+  // computed with ancestor transforms.
+  Member<TrackedDescendantsMap> svg_text_descendants_;
 
   unsigned hit_test_count_;
   unsigned hit_test_cache_hits_;

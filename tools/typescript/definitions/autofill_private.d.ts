@@ -30,6 +30,8 @@ declare global {
         isLocal?: boolean;
         isCached?: boolean;
         isMigratable?: boolean;
+        isVirtualCardEnrollmentEligible?: boolean;
+        isVirtualCardEnrolled?: boolean;
       }
 
       export interface AddressEntry {
@@ -109,6 +111,8 @@ declare global {
       export function setCreditCardFIDOAuthEnabledState(enabled: boolean): void;
       export function getUpiIdList(callback: (items: Array<string>) => void):
           void;
+      export function addVirtualCard(cardId: string): void;
+      export function removeVirtualCard(cardId: string): void;
 
       export const onPersonalDataChanged: ChromeEvent<
           (addresses: Array<AddressEntry>,

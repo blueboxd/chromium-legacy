@@ -223,11 +223,8 @@ void AuditsIssue::ReportNavigatorUserAgentAccess(
           .build();
 
   // Try to get only the script name quickly.
-  String script_url = GetCurrentScriptUrl(5);
-  if (script_url.IsEmpty())
-    script_url = GetCurrentScriptUrl(200);
-
   std::unique_ptr<SourceLocation> location;
+  String script_url = GetCurrentScriptUrl();
   if (!script_url.IsEmpty())
     location = std::make_unique<SourceLocation>(script_url, 1, 0, nullptr);
   else
@@ -248,32 +245,6 @@ void AuditsIssue::ReportNavigatorUserAgentAccess(
               protocol::Audits::InspectorIssueCodeEnum::NavigatorUserAgentIssue)
           .setDetails(std::move(details))
           .build();
-  execution_context->AddInspectorIssue(AuditsIssue(std::move(issue)));
-}
-
-void AuditsIssue::ReportCrossOriginWasmModuleSharingIssue(
-    ExecutionContext* execution_context,
-    const std::string& wasm_source_url,
-    WTF::String source_origin,
-    WTF::String target_origin,
-    bool is_warning) {
-  auto details =
-      protocol::Audits::WasmCrossOriginModuleSharingIssueDetails::create()
-          .setWasmModuleUrl(WTF::String::FromUTF8(wasm_source_url))
-          .setSourceOrigin(source_origin)
-          .setTargetOrigin(target_origin)
-          .setIsWarning(is_warning)
-          .build();
-
-  auto issue_details =
-      protocol::Audits::InspectorIssueDetails::create()
-          .setWasmCrossOriginModuleSharingIssue(std::move(details))
-          .build();
-  auto issue = protocol::Audits::InspectorIssue::create()
-                   .setCode(protocol::Audits::InspectorIssueCodeEnum::
-                                WasmCrossOriginModuleSharingIssue)
-                   .setDetails(std::move(issue_details))
-                   .build();
   execution_context->AddInspectorIssue(AuditsIssue(std::move(issue)));
 }
 
@@ -315,6 +286,8 @@ protocol::Audits::MixedContentResourceType
 RequestContextToMixedContentResourceType(
     mojom::blink::RequestContextType request_context) {
   switch (request_context) {
+    case mojom::blink::RequestContextType::ATTRIBUTION_SRC:
+      return protocol::Audits::MixedContentResourceTypeEnum::AttributionSrc;
     case mojom::blink::RequestContextType::AUDIO:
       return protocol::Audits::MixedContentResourceTypeEnum::Audio;
     case mojom::blink::RequestContextType::BEACON:

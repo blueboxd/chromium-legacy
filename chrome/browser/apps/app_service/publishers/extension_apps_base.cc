@@ -178,11 +178,22 @@ void ExtensionAppsBase::OnExtensionUninstalled(
   SetShowInFields(mojom_app, extension);
   PublisherBase::Publish(std::move(mojom_app), subscribers_);
 
-  std::unique_ptr<App> app = std::make_unique<App>(app_type(), extension->id());
+  auto app = std::make_unique<App>(app_type(), extension->id());
   app->readiness = reason == extensions::UNINSTALL_REASON_MIGRATED
                        ? Readiness::kUninstalledByMigration
                        : Readiness::kUninstalledByUser;
   AppPublisher::Publish(std::move(app));
+}
+
+void ExtensionAppsBase::SetShowInFields(const extensions::Extension* extension,
+                                        App& app) {
+  auto show =
+      ShouldShow(extension, profile_) && ShouldShownInLauncher(extension);
+  app.show_in_launcher = show;
+  app.show_in_shelf = show;
+  app.show_in_search = show;
+  app.show_in_management = show;
+  app.handles_intents = show;
 }
 
 void ExtensionAppsBase::SetShowInFields(
@@ -206,16 +217,15 @@ void ExtensionAppsBase::SetShowInFields(
   }
 }
 
-std::unique_ptr<App> ExtensionAppsBase::CreateAppImpl(
-    const extensions::Extension* extension,
-    Readiness readiness) {
+AppPtr ExtensionAppsBase::CreateAppImpl(const extensions::Extension* extension,
+                                        Readiness readiness) {
   auto install_reason = ConvertMojomInstallReasonToInstallReason(
       GetInstallReason(profile_, extension));
-  std::unique_ptr<App> app = AppPublisher::MakeApp(
-      app_type(), extension->id(), readiness, extension->name(), install_reason,
-      install_reason == InstallReason::kSystem
-          ? InstallSource::kSystem
-          : InstallSource::kChromeWebStore);
+  auto app = AppPublisher::MakeApp(app_type(), extension->id(), readiness,
+                                   extension->name(), install_reason,
+                                   install_reason == InstallReason::kSystem
+                                       ? InstallSource::kSystem
+                                       : InstallSource::kChromeWebStore);
   app->short_name = extension->short_name();
   app->description = extension->description();
   app->version = extension->GetVersionForDisplay();
@@ -227,6 +237,16 @@ std::unique_ptr<App> ExtensionAppsBase::CreateAppImpl(
       app->install_time = prefs->GetInstallTime(extension->id());
     }
   }
+
+  app->is_platform_app = extension->is_platform_app();
+
+  SetShowInFields(extension, *app);
+
+  const extensions::ManagementPolicy* policy =
+      extensions::ExtensionSystem::Get(profile())->management_policy();
+  DCHECK(policy);
+  app->allow_uninstall = policy->UserMayModifySettings(extension, nullptr) &&
+                         !policy->MustRemainInstalled(extension, nullptr);
 
   // TODO(crbug.com/1253250): Add other fields for the App struct.
   return app;
@@ -374,7 +394,7 @@ void ExtensionAppsBase::Initialize() {
 }
 
 void ExtensionAppsBase::OnExtensionsReady() {
-  std::vector<std::unique_ptr<App>> apps;
+  std::vector<AppPtr> apps;
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile_);
   CreateAppVector(registry->enabled_extensions(), Readiness::kReady, &apps);
@@ -382,7 +402,8 @@ void ExtensionAppsBase::OnExtensionsReady() {
                   &apps);
   CreateAppVector(registry->terminated_extensions(), Readiness::kTerminated,
                   &apps);
-  AppPublisher::Publish(std::move(apps));
+  AppPublisher::Publish(std::move(apps), app_type(),
+                        /*should_notify_initialized=*/true);
 
   // blocklisted_extensions and blocked_extensions, corresponding to
   // kDisabledByBlocklist and kDisabledByPolicy, are deliberately ignored.
@@ -720,7 +741,7 @@ void ExtensionAppsBase::OnExtensionUnloaded(
   mojom_app->readiness = mojom_readiness;
   PublisherBase::Publish(std::move(mojom_app), subscribers_);
 
-  std::unique_ptr<App> app = std::make_unique<App>(app_type(), extension->id());
+  auto app = std::make_unique<App>(app_type(), extension->id());
   app->readiness = readiness;
   AppPublisher::Publish(std::move(app));
 }
@@ -799,7 +820,7 @@ void ExtensionAppsBase::PopulateIntentFilters(
 void ExtensionAppsBase::CreateAppVector(
     const extensions::ExtensionSet& extensions,
     Readiness readiness,
-    std::vector<std::unique_ptr<App>>* apps_out) {
+    std::vector<AppPtr>* apps_out) {
   for (const auto& extension : extensions) {
     if (Accepts(extension.get())) {
       apps_out->push_back(CreateApp(extension.get(), readiness));

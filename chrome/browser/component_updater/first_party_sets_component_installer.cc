@@ -80,13 +80,21 @@ void SetFirstPartySetsConfig(SetsReadyOnceCallback on_sets_ready) {
     return;
   }
 
+  // We use USER_BLOCKING here since First-Party Set initialization blocks
+  // network navigations at startup.
   base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&OpenFile, instance_path), std::move(on_sets_ready));
 }
 
 std::string BoolToString(bool b) {
   return b ? "true" : "false";
+}
+
+base::TaskPriority GetTaskPriority() {
+  return FirstPartySetsUtil::GetInstance()->IsFirstPartySetsEnabled()
+             ? base::TaskPriority::USER_BLOCKING
+             : base::TaskPriority::BEST_EFFORT;
 }
 
 }  // namespace
@@ -202,14 +210,19 @@ void FirstPartySetsComponentInstallerPolicy::ResetForTesting() {
   GetConfigPathInstance().clear();
 }
 
+// static
+void FirstPartySetsComponentInstallerPolicy::SendFileToNetworkService(
+    base::File sets_file) {
+  VLOG(1) << "Received First-Party Sets";
+  content::GetNetworkService()->SetFirstPartySets(std::move(sets_file));
+}
+
 void RegisterFirstPartySetsComponent(ComponentUpdateService* cus) {
   VLOG(1) << "Registering First-Party Sets component.";
 
   auto policy = std::make_unique<FirstPartySetsComponentInstallerPolicy>(
-      /*on_sets_ready=*/base::BindOnce([](base::File sets_file) {
-        VLOG(1) << "Received First-Party Sets";
-        content::GetNetworkService()->SetFirstPartySets(std::move(sets_file));
-      }));
+      /*on_sets_ready=*/base::BindOnce(
+          &FirstPartySetsComponentInstallerPolicy::SendFileToNetworkService));
 
   FirstPartySetsComponentInstallerPolicy* raw_policy = policy.get();
   // Dereferencing `raw_policy` this way is safe because the closure is invoked
@@ -217,11 +230,13 @@ void RegisterFirstPartySetsComponent(ComponentUpdateService* cus) {
   // same lifetime). Therefore if/when the closure is invoked, `policy` is still
   // alive.
   base::MakeRefCounted<ComponentInstaller>(std::move(policy))
-      ->Register(cus, base::BindOnce(
-                          [](FirstPartySetsComponentInstallerPolicy* policy) {
-                            policy->OnRegistrationComplete();
-                          },
-                          raw_policy));
+      ->Register(cus,
+                 base::BindOnce(
+                     [](FirstPartySetsComponentInstallerPolicy* policy) {
+                       policy->OnRegistrationComplete();
+                     },
+                     raw_policy),
+                 GetTaskPriority());
 }
 
 // static

@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
@@ -77,6 +78,10 @@ class ZeroStateFileProvider : public SearchProvider,
   std::unique_ptr<MrfuCache> files_ranker_;
 
   base::TimeTicks query_start_time_;
+
+  // A file needs to have been modified more recently than this to be considered
+  // valid.
+  const base::TimeDelta max_last_modified_time_;
 
   base::ScopedObservation<file_manager::file_tasks::FileTasksNotifier,
                           file_manager::file_tasks::FileTasksObserver>

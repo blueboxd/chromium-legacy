@@ -150,7 +150,10 @@ void ProductivityLauncherSearchView::OnSearchResultContainerResultsChanged() {
     result_count += view->num_results();
   }
 
-  if (features::IsProductivityLauncherAnimationEnabled()) {
+  // If the user cleared the search box text, skip animating the views. The
+  // visible views will animate out and the whole search page will be hidden.
+  // See AppListBubbleSearchPage::AnimateHidePage().
+  if (search_box_view_->HasSearch()) {
     using AnimationInfo = SearchResultContainerView::ResultsAnimationInfo;
     AnimationInfo aggregate_animation_info;
     for (SearchResultContainerView* view : result_container_views_) {
@@ -163,6 +166,7 @@ void ProductivityLauncherSearchView::OnSearchResultContainerResultsChanged() {
           container_animation_info->animating_views;
     }
   }
+  Layout();
 
   last_search_result_count_ = result_count;
 
@@ -290,6 +294,12 @@ int ProductivityLauncherSearchView::TabletModePreferredHeight() {
     }
   }
   return max_height;
+}
+
+ui::Layer* ProductivityLauncherSearchView::GetPageAnimationLayer() const {
+  // The scroll view has a layer containing all the visible contents, so use
+  // that for "whole page" animations.
+  return scroll_view_->contents()->layer();
 }
 
 BEGIN_METADATA(ProductivityLauncherSearchView, views::View)

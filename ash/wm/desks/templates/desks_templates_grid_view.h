@@ -18,8 +18,8 @@ class DesksTemplatesItemView;
 class DeskTemplate;
 class PillButton;
 
-// A view that acts as the content view of the desks templates widget.
-// TODO(richui): Add details and ASCII.
+// A view that acts as the content view of the desks templates widget. Displays
+// each desk template as a DesksTemplatesItemView.
 class DesksTemplatesGridView : public views::View, public aura::WindowObserver {
  public:
   METADATA_HEADER(DesksTemplatesGridView);
@@ -31,8 +31,6 @@ class DesksTemplatesGridView : public views::View, public aura::WindowObserver {
 
   // Creates and returns the widget that contains the DesksTemplatesGridView in
   // overview mode. This does not show the widget.
-  // TODO(sammiequon): We might want this view to be part of the DesksWidget
-  // depending on the animations.
   static std::unique_ptr<views::Widget> CreateDesksTemplatesGridWidget(
       aura::Window* root);
 
@@ -42,8 +40,16 @@ class DesksTemplatesGridView : public views::View, public aura::WindowObserver {
 
   // Updates the UI by creating a grid layout and populating the grid with the
   // provided list of desk templates.
-  void UpdateGridUI(const std::vector<DeskTemplate*>& desk_templates,
-                    const gfx::Rect& grid_bounds);
+  void PopulateGridUI(const std::vector<DeskTemplate*>& desk_templates,
+                      const gfx::Rect& grid_bounds);
+
+  // Updates existing templates and adds new templates to the grid. Also sorts
+  // `grid_items_` in alphabetical order. Currently only allows a maximum of 6
+  // templates to be shown in the grid.
+  void AddOrUpdateTemplates(const std::vector<const DeskTemplate*>& entries);
+
+  // Removes templates from the grid by UUID.
+  void DeleteTemplates(const std::vector<std::string>& uuids);
 
   // Returns true if a template name is being modified using an item view's
   // `DesksTemplatesNameView` in this grid.
@@ -58,7 +64,6 @@ class DesksTemplatesGridView : public views::View, public aura::WindowObserver {
 
  private:
   friend class DesksTemplatesEventHandler;
-  friend class DesksTemplatesGridViewTestApi;
 
   // Updates the visibility state of the hover buttons on all the `grid_items_`
   // as a result of mouse and gesture events.

@@ -28,6 +28,8 @@
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
+#include "components/sync/base/command_line_switches.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/sync_util.h"
@@ -38,13 +40,11 @@
 #include "components/sync/driver/fake_sync_api_component_factory.h"
 #include "components/sync/driver/mock_trusted_vault_client.h"
 #include "components/sync/driver/sync_client_mock.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service_impl_bundle.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/driver/sync_token_status.h"
 #include "components/sync/engine/nigori/key_derivation_params.h"
-#include "components/sync/invalidations/switches.h"
 #include "components/sync/test/engine/fake_sync_engine.h"
 #include "components/version_info/version_info_values.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -92,7 +92,7 @@ class SyncServiceImplTest : public ::testing::Test {
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kSyncDeferredStartupTimeoutSeconds, "0");
+        kSyncDeferredStartupTimeoutSeconds, "0");
   }
 
   void TearDown() override {
@@ -258,8 +258,7 @@ class SyncServiceImplTestWithSyncInvalidationsServiceCreated
     : public SyncServiceImplTest {
  public:
   SyncServiceImplTestWithSyncInvalidationsServiceCreated() {
-    override_features_.InitAndEnableFeature(
-        switches::kSyncSendInterestedDataTypes);
+    override_features_.InitAndEnableFeature(kSyncSendInterestedDataTypes);
   }
 
   ~SyncServiceImplTestWithSyncInvalidationsServiceCreated() override = default;
@@ -362,7 +361,7 @@ TEST_F(SyncServiceImplTest, SetupInProgress) {
 // Verify that we wait for policies to load before starting the sync engine.
 TEST_F(SyncServiceImplTest, WaitForPoliciesToStart) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(switches::kSyncRequiresPoliciesLoaded);
+  feature_list.InitAndEnableFeature(kSyncRequiresPoliciesLoaded);
   std::unique_ptr<policy::PolicyServiceImpl> policy_service =
       policy::PolicyServiceImpl::CreateWithThrottledInitialization(
           policy::PolicyServiceImpl::Providers());
@@ -460,25 +459,6 @@ TEST_F(SyncServiceImplTest, DisabledByPolicyAfterInit) {
                 SyncService::DISABLE_REASON_USER_CHOICE),
             service()->GetDisableReasons());
   EXPECT_EQ(SyncService::TransportState::DISABLED,
-            service()->GetTransportState());
-}
-
-TEST_F(SyncServiceImplTest,
-       ShouldDisableSyncFeatureWhenSyncDisallowedByPlatform) {
-  SignIn();
-  CreateService(SyncServiceImpl::MANUAL_START);
-  InitializeForNthSync();
-
-  ASSERT_EQ(SyncService::DisableReasonSet(), service()->GetDisableReasons());
-  ASSERT_EQ(SyncService::TransportState::ACTIVE,
-            service()->GetTransportState());
-
-  service()->SetSyncAllowedByPlatform(false);
-  EXPECT_FALSE(service()->IsSyncFeatureEnabled());
-  EXPECT_FALSE(service()->IsSyncFeatureActive());
-  // Sync-the-transport should become active again.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SyncService::TransportState::ACTIVE,
             service()->GetTransportState());
 }
 
@@ -983,13 +963,13 @@ TEST_F(SyncServiceImplTest, CredentialErrorClearsOnNewToken) {
 
 // Verify that the disable sync flag disables sync.
 TEST_F(SyncServiceImplTest, DisableSyncFlag) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSync);
-  EXPECT_FALSE(switches::IsSyncAllowedByFlag());
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(kDisableSync);
+  EXPECT_FALSE(IsSyncAllowedByFlag());
 }
 
 // Verify that no disable sync flag enables sync.
 TEST_F(SyncServiceImplTest, NoDisableSyncFlag) {
-  EXPECT_TRUE(switches::IsSyncAllowedByFlag());
+  EXPECT_TRUE(IsSyncAllowedByFlag());
 }
 
 // Test that when SyncServiceImpl receives actionable error
@@ -1132,36 +1112,6 @@ TEST_F(SyncServiceImplTest, ShouldProvideDisableReasonsAfterShutdown) {
   service()->Shutdown();
   EXPECT_FALSE(service()->GetDisableReasons().Empty());
 }
-
-#if BUILDFLAG(IS_ANDROID)
-TEST_F(SyncServiceImplTest, DecoupleFromMasterSyncIfInitializedSignedOut) {
-  SyncPrefs sync_prefs(prefs());
-  CreateService(SyncServiceImpl::MANUAL_START);
-  ASSERT_FALSE(sync_prefs.GetDecoupledFromAndroidMasterSync());
-
-  service()->Initialize();
-  EXPECT_TRUE(sync_prefs.GetDecoupledFromAndroidMasterSync());
-}
-
-TEST_F(SyncServiceImplTest, DecoupleFromMasterSyncIfSignsOut) {
-  SyncPrefs sync_prefs(prefs());
-  SignIn();
-  CreateService(SyncServiceImpl::MANUAL_START);
-  InitializeForNthSync();
-  ASSERT_FALSE(sync_prefs.GetDecoupledFromAndroidMasterSync());
-
-  // Sign-out.
-  signin::PrimaryAccountMutator* account_mutator =
-      identity_manager()->GetPrimaryAccountMutator();
-  DCHECK(account_mutator) << "Account mutator should only be null on ChromeOS.";
-  account_mutator->ClearPrimaryAccount(
-      signin_metrics::SIGNOUT_TEST,
-      signin_metrics::SignoutDelete::kIgnoreMetric);
-  // Wait for SyncServiceImpl to be notified.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(sync_prefs.GetDecoupledFromAndroidMasterSync());
-}
-#endif  // BUILDFLAG(IS_ANDROID)
 
 TEST_F(SyncServiceImplTestWithSyncInvalidationsServiceCreated,
        ShouldSendDataTypesToSyncInvalidationsService) {

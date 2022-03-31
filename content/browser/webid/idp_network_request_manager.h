@@ -30,7 +30,7 @@ class SimpleURLLoader;
 
 namespace content {
 
-class RenderFrameHost;
+class RenderFrameHostImpl;
 
 // Manages network requests and maintains relevant state for interaction with
 // the Identity Provider across a FedCM transaction. Owned by
@@ -42,7 +42,7 @@ class RenderFrameHost;
 //  |Browser|                           |IDP|
 //  '-------'                           '---'
 //      |                                 |
-//      |     GET /.well-known/fedcm      |
+//      |     GET /fedcm.json             |
 //      |-------------------------------->|
 //      |                                 |
 //      |        JSON{idp_url}            |
@@ -95,26 +95,26 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
     std::string idp;
     std::string token;
     std::string accounts;
-    std::string client_id_metadata;
+    std::string client_metadata;
     std::string revoke;
   };
 
-  struct ClientIdMetadata {
+  struct ClientMetadata {
     std::string privacy_policy_url;
     std::string terms_of_service_url;
   };
 
-  static constexpr char kWellKnownFilePath[] = ".well-known/fedcm";
+  static constexpr char kManifestFilePath[] = "fedcm.json";
 
   using AccountList = std::vector<content::IdentityRequestAccount>;
   using BrandIconDownloader =
       base::OnceCallback<void(const GURL& /*icon_url*/,
                               int /*ideal_icon_size*/,
                               WebContents::ImageDownloadCallback)>;
-  using FetchWellKnownCallback =
+  using FetchManifestCallback =
       base::OnceCallback<void(FetchStatus, Endpoints)>;
-  using FetchClientIdMetadataCallback =
-      base::OnceCallback<void(FetchStatus, ClientIdMetadata)>;
+  using FetchClientMetadataCallback =
+      base::OnceCallback<void(FetchStatus, ClientMetadata)>;
   using SigninRequestCallback =
       base::OnceCallback<void(SigninResponse, const std::string&)>;
   using AccountsRequestCallback = base::OnceCallback<
@@ -126,7 +126,7 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
 
   static std::unique_ptr<IdpNetworkRequestManager> Create(
       const GURL& provider,
-      RenderFrameHost* host);
+      RenderFrameHostImpl* host);
 
   IdpNetworkRequestManager(
       const GURL& provider,
@@ -138,12 +138,12 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
   IdpNetworkRequestManager(const IdpNetworkRequestManager&) = delete;
   IdpNetworkRequestManager& operator=(const IdpNetworkRequestManager&) = delete;
 
-  // Attempt to fetch the IDP's WebID parameters from the its .well-known file.
-  virtual void FetchIdpWellKnown(FetchWellKnownCallback);
+  // Attempt to fetch the IDP's FedCM parameters from the fedcm.json manifest.
+  virtual void FetchManifest(FetchManifestCallback);
 
-  virtual void FetchClientIdMetadata(const GURL& endpoint,
-                                     const std::string& client_id,
-                                     FetchClientIdMetadataCallback);
+  virtual void FetchClientMetadata(const GURL& endpoint,
+                                   const std::string& client_id,
+                                   FetchClientMetadataCallback);
 
   // Transmit the OAuth request to the IDP.
   virtual void SendSigninRequest(const GURL& signin_url,
@@ -155,6 +155,7 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
                                    int idp_brand_icon_ideal_size,
                                    int idp_brand_icon_minimum_size,
                                    BrandIconDownloader icon_downloader,
+                                   const std::string& client_id,
                                    AccountsRequestCallback callback);
 
   // Request a new token for this user account and RP from the IDP.
@@ -177,7 +178,8 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
     AccountRequestInfo(AccountsRequestCallback callback,
                        int idp_brand_icon_ideal_size,
                        int idp_brand_icon_minimum_size,
-                       BrandIconDownloader idp_brand_icon_downloader);
+                       BrandIconDownloader idp_brand_icon_downloader,
+                       const std::string& client_id);
     ~AccountRequestInfo();
     AccountRequestInfo(AccountRequestInfo&&);
 
@@ -185,12 +187,13 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
     int idp_brand_icon_ideal_size;
     int idp_brand_icon_minimum_size;
     BrandIconDownloader idp_brand_icon_downloader;
+    std::string client_id;
   };
 
-  void OnWellKnownLoaded(std::unique_ptr<std::string> response_body);
-  void OnWellKnownParsed(data_decoder::DataDecoder::ValueOrError result);
-  void OnClientIdMetadataLoaded(std::unique_ptr<std::string> response_body);
-  void OnClientIdMetadataParsed(data_decoder::DataDecoder::ValueOrError result);
+  void OnManifestLoaded(std::unique_ptr<std::string> response_body);
+  void OnManifestParsed(data_decoder::DataDecoder::ValueOrError result);
+  void OnClientMetadataLoaded(std::unique_ptr<std::string> response_body);
+  void OnClientMetadataParsed(data_decoder::DataDecoder::ValueOrError result);
   void OnSigninRequestResponse(std::unique_ptr<std::string> response_body);
   void OnSigninRequestParsed(data_decoder::DataDecoder::ValueOrError result);
   void OnAccountsRequestResponse(AccountRequestInfo request_info,
@@ -211,11 +214,12 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
   void OnLogoutCompleted(std::unique_ptr<std::string> response_body);
 
   std::unique_ptr<network::SimpleURLLoader> CreateUncredentialedUrlLoader(
-      const GURL& url) const;
+      const GURL& url,
+      bool send_referrer) const;
   std::unique_ptr<network::SimpleURLLoader> CreateCredentialedUrlLoader(
       const GURL& url,
-      absl::optional<std::string> request_body = absl::nullopt,
-      absl::optional<net::ReferrerPolicy> policy = absl::nullopt) const;
+      bool send_referrer,
+      absl::optional<std::string> request_body = absl::nullopt) const;
 
   // URL of the Identity Provider.
   GURL provider_;
@@ -224,8 +228,8 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
 
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 
-  FetchWellKnownCallback idp_well_known_callback_;
-  FetchClientIdMetadataCallback client_metadata_callback_;
+  FetchManifestCallback idp_manifest_callback_;
+  FetchClientMetadataCallback client_metadata_callback_;
   SigninRequestCallback signin_request_callback_;
   TokenRequestCallback token_request_callback_;
   RevokeCallback revoke_callback_;

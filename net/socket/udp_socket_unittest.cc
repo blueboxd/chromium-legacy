@@ -665,7 +665,7 @@ TEST_F(UDPSocketTest, JoinMulticastGroup) {
 
 // TODO(https://crbug.com/947115): failing on device on iOS 12.2.
 // TODO(https://crbug.com/1227554): flaky on Mac 11.
-#if BUILDFLAG(IS_IOS) || defined(OS_MAC)
+#if BUILDFLAG(IS_IOS) || BUILDFLAG(IS_MAC)
 #define MAYBE_SharedMulticastAddress DISABLED_SharedMulticastAddress
 #else
 #define MAYBE_SharedMulticastAddress SharedMulticastAddress
@@ -784,54 +784,50 @@ TEST_F(UDPSocketTest, SetDSCP) {
   client.Close();
 }
 
-TEST_F(UDPSocketTest, TestBindToNetwork) {
-  UDPSocket socket(DatagramSocket::RANDOM_BIND, nullptr, NetLogSource());
+TEST_F(UDPSocketTest, ConnectUsingNetwork) {
+  // The specific value of this address doesn't really matter, and no
+  // server needs to be running here. The test only needs to call
+  // ConnectUsingNetwork() and won't send any datagrams.
+  const IPEndPoint fake_server_address(IPAddress::IPv4Localhost(), 8080);
+  const NetworkChangeNotifier::NetworkHandle wrong_network_handle = 65536;
 #if BUILDFLAG(IS_ANDROID)
   NetworkChangeNotifierFactoryAndroid ncn_factory;
   NetworkChangeNotifier::DisableForTest ncn_disable_for_test;
   std::unique_ptr<NetworkChangeNotifier> ncn(ncn_factory.CreateInstance());
-#endif
-  ASSERT_EQ(OK, socket.Open(ADDRESS_FAMILY_IPV4));
-  // Test unsuccessful binding, by attempting to bind to a bogus NetworkHandle.
-  int rv = socket.BindToNetwork(65536);
-#if !BUILDFLAG(IS_ANDROID)
-  EXPECT_EQ(ERR_NOT_IMPLEMENTED, rv);
-#else
-  if (base::android::BuildInfo::GetInstance()->sdk_int() <
-      base::android::SDK_VERSION_LOLLIPOP) {
-    EXPECT_EQ(ERR_NOT_IMPLEMENTED, rv);
-  } else if (base::android::BuildInfo::GetInstance()->sdk_int() >=
-                 base::android::SDK_VERSION_LOLLIPOP &&
-             base::android::BuildInfo::GetInstance()->sdk_int() <
-                 base::android::SDK_VERSION_MARSHMALLOW) {
-    // On Lollipop, we assume if the user has a NetworkHandle that they must
-    // have gotten it from a legitimate source, so if binding to the network
-    // fails it's assumed to be because the network went away so
-    // ERR_NETWORK_CHANGED is returned. In this test the network never existed
-    // anyhow.  ConnectivityService.MAX_NET_ID is 65535, so 65536 won't be used.
-    EXPECT_EQ(ERR_NETWORK_CHANGED, rv);
-  } else if (base::android::BuildInfo::GetInstance()->sdk_int() >=
-             base::android::SDK_VERSION_MARSHMALLOW) {
-    // On Marshmallow and newer releases, the NetworkHandle is munged by
-    // Network.getNetworkHandle() and 65536 isn't munged so it's rejected.
-    EXPECT_EQ(ERR_INVALID_ARGUMENT, rv);
+  if (!NetworkChangeNotifier::AreNetworkHandlesSupported())
+    GTEST_SKIP() << "Network handles are required to test BindToNetwork.";
+
+  {
+    // Connecting using a not existing network should fail but not report
+    // ERR_NOT_IMPLEMENTED when network handles are supported.
+    UDPClientSocket socket(DatagramSocket::RANDOM_BIND, nullptr,
+                           NetLogSource());
+    int rv =
+        socket.ConnectUsingNetwork(wrong_network_handle, fake_server_address);
+    EXPECT_NE(ERR_NOT_IMPLEMENTED, rv);
+    EXPECT_NE(OK, rv);
+    EXPECT_NE(wrong_network_handle, socket.GetBoundNetwork());
   }
 
-  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
-      base::android::SDK_VERSION_LOLLIPOP) {
-    EXPECT_EQ(
-        ERR_INVALID_ARGUMENT,
-        socket.BindToNetwork(NetworkChangeNotifier::kInvalidNetworkHandle));
-
-    // Test successful binding, if possible.
-    EXPECT_TRUE(NetworkChangeNotifier::AreNetworkHandlesSupported());
-    NetworkChangeNotifier::NetworkHandle network_handle =
+  {
+    // Connecting using an existing network should succeed when
+    // NetworkChangeNotifier returns a valid default network.
+    UDPClientSocket socket(DatagramSocket::RANDOM_BIND, nullptr,
+                           NetLogSource());
+    const NetworkChangeNotifier::NetworkHandle network_handle =
         NetworkChangeNotifier::GetDefaultNetwork();
     if (network_handle != NetworkChangeNotifier::kInvalidNetworkHandle) {
-      EXPECT_EQ(OK, socket.BindToNetwork(network_handle));
+      EXPECT_EQ(
+          OK, socket.ConnectUsingNetwork(network_handle, fake_server_address));
+      EXPECT_EQ(network_handle, socket.GetBoundNetwork());
     }
   }
-#endif
+#else
+  UDPClientSocket socket(DatagramSocket::RANDOM_BIND, nullptr, NetLogSource());
+  EXPECT_EQ(
+      ERR_NOT_IMPLEMENTED,
+      socket.ConnectUsingNetwork(wrong_network_handle, fake_server_address));
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 }  // namespace
@@ -1411,6 +1407,39 @@ TEST_F(UDPSocketTest, RecordRadioWakeUpTrigger) {
   // Check the write is recorded as a possible radio wake-up trigger.
   histograms.ExpectTotalCount(
       android::kUmaNamePossibleWakeupTriggerUDPWriteAnnotationId, 1);
+}
+
+TEST_F(UDPSocketTest, BindToNetwork) {
+  // The specific value of this address doesn't really matter, and no
+  // server needs to be running here. The test only needs to call
+  // Connect() and won't send any datagrams.
+  const IPEndPoint fake_server_address(IPAddress::IPv4Localhost(), 8080);
+  NetworkChangeNotifierFactoryAndroid ncn_factory;
+  NetworkChangeNotifier::DisableForTest ncn_disable_for_test;
+  std::unique_ptr<NetworkChangeNotifier> ncn(ncn_factory.CreateInstance());
+  if (!NetworkChangeNotifier::AreNetworkHandlesSupported())
+    GTEST_SKIP() << "Network handles are required to test BindToNetwork.";
+
+  // Binding the socket to a not existing network should fail at connect time.
+  const NetworkChangeNotifier::NetworkHandle wrong_network_handle = 65536;
+  UDPClientSocket socket(DatagramSocket::RANDOM_BIND, nullptr, NetLogSource(),
+                         wrong_network_handle);
+  // Different Android versions might report different errors. Hence, just check
+  // what shouldn't happen.
+  int rv = socket.Connect(fake_server_address);
+  EXPECT_NE(OK, rv);
+  EXPECT_NE(ERR_NOT_IMPLEMENTED, rv);
+  EXPECT_NE(wrong_network_handle, socket.GetBoundNetwork());
+
+  // Binding the socket to an existing network should succeed.
+  const NetworkChangeNotifier::NetworkHandle network_handle =
+      NetworkChangeNotifier::GetDefaultNetwork();
+  if (network_handle != NetworkChangeNotifier::kInvalidNetworkHandle) {
+    UDPClientSocket socket(DatagramSocket::RANDOM_BIND, nullptr, NetLogSource(),
+                           network_handle);
+    EXPECT_EQ(OK, socket.Connect(fake_server_address));
+    EXPECT_EQ(network_handle, socket.GetBoundNetwork());
+  }
 }
 
 #endif  // BUILDFLAG(IS_ANDROID)

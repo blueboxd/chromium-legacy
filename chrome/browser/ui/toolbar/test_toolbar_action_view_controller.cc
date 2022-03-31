@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/site_permissions_helper.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -74,20 +75,22 @@ ui::MenuModel* TestToolbarActionViewController::GetContextMenu(
   return nullptr;
 }
 
-bool TestToolbarActionViewController::ExecuteAction(bool by_user,
-                                                    InvocationSource source) {
+void TestToolbarActionViewController::ExecuteUserAction(
+    InvocationSource source) {
   ++execute_action_count_;
-  return false;
 }
+
+void TestToolbarActionViewController::TriggerPopupForAPI(
+    ShowPopupCallback callback) {}
 
 void TestToolbarActionViewController::UpdateState() {
   UpdateDelegate();
 }
 
-ToolbarActionViewController::PageInteractionStatus
-TestToolbarActionViewController::GetPageInteractionStatus(
+extensions::SitePermissionsHelper::SiteInteraction
+TestToolbarActionViewController::GetSiteInteraction(
     content::WebContents* web_contents) const {
-  return PageInteractionStatus::kNone;
+  return extensions::SitePermissionsHelper::SiteInteraction::kNone;
 }
 
 void TestToolbarActionViewController::ShowPopup(bool by_user) {

@@ -13,19 +13,21 @@
 #include "chromecast/base/bitstream_audio_codecs.h"
 #include "chromecast/base/cast_features.h"
 #include "chromecast/base/chromecast_switches.h"
+#include "chromecast/common/cors_exempt_headers.h"
 #include "chromecast/crash/app_state_tracker.h"
 #include "chromecast/media/base/media_codec_support.h"
 #include "chromecast/media/base/supported_codec_profile_levels_memo.h"
 #include "chromecast/public/media/media_capabilities_shlib.h"
 #include "chromecast/renderer/cast_url_loader_throttle_provider.h"
 #include "chromecast/renderer/cast_websocket_handshake_throttle_provider.h"
-#include "chromecast/renderer/identification_settings_manager_renderer.h"
 #include "chromecast/renderer/js_channel_bindings.h"
 #include "chromecast/renderer/media/key_systems_cast.h"
 #include "chromecast/renderer/media/media_caps_observer_impl.h"
+#include "chromecast/renderer/url_rewrite_rules_provider.h"
 #include "components/media_control/renderer/media_playback_options.h"
 #include "components/network_hints/renderer/web_prescient_networking_impl.h"
 #include "components/on_load_script_injector/renderer/on_load_script_injector.h"
+#include "components/url_rewrite/common/url_request_rewrite_rules.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
@@ -56,7 +58,6 @@
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
 #include "chromecast/common/cast_extensions_client.h"
 #include "chromecast/renderer/cast_extensions_renderer_client.h"
-#include "components/guest_view/renderer/guest_view_container_dispatcher.h"
 #include "content/public/common/content_constants.h"
 #include "extensions/common/common_manifest_handlers.h"  // nogncheck
 #include "extensions/common/extension_urls.h"            // nogncheck
@@ -72,6 +73,10 @@ bool IsSupportedBitstreamAudioCodecHelper(::media::AudioCodec codec, int mask) {
           (kBitstreamAudioCodecAc3 & mask)) ||
          (codec == ::media::AudioCodec::kEAC3 &&
           (kBitstreamAudioCodecEac3 & mask)) ||
+         (codec == ::media::AudioCodec::kDTS &&
+          (kBitstreamAudioCodecDts & mask)) ||
+         (codec == ::media::AudioCodec::kDTSXP2 &&
+          (kBitstreamAudioCodecDtsXP2 & mask)) ||
          (codec == ::media::AudioCodec::kMpegHAudio &&
           (kBitstreamAudioCodecMpegHAudio & mask));
 }
@@ -148,10 +153,6 @@ void CastContentRendererClient::RenderThreadStarted() {
   extensions::ExtensionsRendererClient::Set(extensions_renderer_client_.get());
 
   thread->AddObserver(extensions_renderer_client_->GetDispatcher());
-
-  guest_view_container_dispatcher_ =
-      std::make_unique<guest_view::GuestViewContainerDispatcher>();
-  thread->AddObserver(guest_view_container_dispatcher_.get());
 #endif
 }
 
@@ -201,15 +202,14 @@ void CastContentRendererClient::RenderFrameCreated(
   activity_url_filter_manager_->OnRenderFrameCreated(render_frame);
 
   // |base::Unretained| is safe here since the callback is triggered before the
-  // destruction of IdentificationSettingsManager by which point
+  // destruction of UrlRewriteRulesProvider by which point
   // CastContentRendererClient should be alive.
-  settings_managers_.emplace(
+  url_rewrite_rules_providers_.emplace(
       render_frame->GetRoutingID(),
-      base::MakeRefCounted<IdentificationSettingsManagerRenderer>(
+      std::make_unique<UrlRewriteRulesProvider>(
           render_frame,
           base::BindOnce(&CastContentRendererClient::OnRenderFrameRemoved,
-                         base::Unretained(this),
-                         render_frame->GetRoutingID())));
+                         base::Unretained(this))));
 }
 
 void CastContentRendererClient::RunScriptsAtDocumentStart(
@@ -228,12 +228,13 @@ void CastContentRendererClient::RunScriptsAtDocumentEnd(
 #endif
 }
 
-void CastContentRendererClient::AddSupportedKeySystems(
-    std::vector<std::unique_ptr<::media::KeySystemProperties>>*
-        key_systems_properties) {
-  media::AddChromecastKeySystems(key_systems_properties,
+void CastContentRendererClient::GetSupportedKeySystems(
+    ::media::GetSupportedKeySystemsCB cb) {
+  ::media::KeySystemPropertiesVector key_systems;
+  media::AddChromecastKeySystems(&key_systems,
                                  false /* enable_persistent_license_support */,
                                  false /* enable_playready */);
+  std::move(cb).Run(std::move(key_systems));
 }
 
 bool CastContentRendererClient::IsSupportedAudioType(
@@ -250,6 +251,14 @@ bool CastContentRendererClient::IsSupportedAudioType(
   }
   if (type.codec == ::media::AudioCodec::kAC3) {
     return kBitstreamAudioCodecAc3 &
+           supported_bitstream_audio_codecs_info_.codecs;
+  }
+  if (type.codec == ::media::AudioCodec::kDTS) {
+    return kBitstreamAudioCodecDts &
+           supported_bitstream_audio_codecs_info_.codecs;
+  }
+  if (type.codec == ::media::AudioCodec::kDTSXP2) {
+    return kBitstreamAudioCodecDtsXP2 &
            supported_bitstream_audio_codecs_info_.codecs;
   }
   if (type.codec == ::media::AudioCodec::kMpegHAudio) {
@@ -385,7 +394,8 @@ std::unique_ptr<blink::URLLoaderThrottleProvider>
 CastContentRendererClient::CreateURLLoaderThrottleProvider(
     blink::URLLoaderThrottleProviderType type) {
   return std::make_unique<CastURLLoaderThrottleProvider>(
-      type, activity_url_filter_manager(), this);
+      type, activity_url_filter_manager(), this,
+      base::BindRepeating(&IsCorsExemptHeader));
 }
 
 absl::optional<::media::AudioRendererAlgorithmParameters>
@@ -406,21 +416,24 @@ CastContentRendererClient::GetAudioRendererAlgorithmParameters(
 #endif
 }
 
-scoped_refptr<IdentificationSettingsManager>
-CastContentRendererClient::GetSettingsManagerFromRenderFrameID(
-    int render_frame_id) {
-  const auto& it = settings_managers_.find(render_frame_id);
-  if (it == settings_managers_.end()) {
+scoped_refptr<url_rewrite::UrlRequestRewriteRules>
+CastContentRendererClient::GetUrlRequestRewriteRules(
+    int render_frame_id) const {
+  auto it = url_rewrite_rules_providers_.find(render_frame_id);
+  if (it == url_rewrite_rules_providers_.end()) {
+    LOG(WARNING)
+        << "Can't find the URL rewrite rules provider for render frame: "
+        << render_frame_id;
     return nullptr;
   }
-  return it->second;
+  return it->second->GetCachedRules();
 }
 
 void CastContentRendererClient::OnRenderFrameRemoved(int render_frame_id) {
-  size_t result = settings_managers_.erase(render_frame_id);
+  size_t result = url_rewrite_rules_providers_.erase(render_frame_id);
   if (result != 1U) {
     LOG(WARNING)
-        << "Can't find the identification settings manager for render frame: "
+        << "Can't find the URL rewrite rules provider for render frame: "
         << render_frame_id;
   }
 }

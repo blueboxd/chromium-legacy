@@ -143,7 +143,7 @@ bool GetExtensionIdSet(const base::DictionaryValue& dictionary,
   const base::ListValue* id_list = nullptr;
   if (!dictionary.GetList(key, &id_list))
     return false;
-  for (const auto& entry : id_list->GetList()) {
+  for (const auto& entry : id_list->GetListDeprecated()) {
     if (!entry.is_string()) {
       return false;
     }
@@ -165,18 +165,18 @@ InstallSignature::~InstallSignature() {
 void InstallSignature::ToValue(base::DictionaryValue* value) const {
   CHECK(value);
 
-  value->SetInteger(kSignatureFormatVersionKey, kSignatureFormatVersion);
+  value->SetIntKey(kSignatureFormatVersionKey, kSignatureFormatVersion);
   SetExtensionIdSet(value, kIdsKey, ids);
   SetExtensionIdSet(value, kInvalidIdsKey, invalid_ids);
-  value->SetString(kExpireDateKey, expire_date);
+  value->SetStringKey(kExpireDateKey, expire_date);
   std::string salt_base64;
   std::string signature_base64;
   base::Base64Encode(salt, &salt_base64);
   base::Base64Encode(signature, &signature_base64);
-  value->SetString(kSaltKey, salt_base64);
-  value->SetString(kSignatureKey, signature_base64);
-  value->SetString(kTimestampKey,
-                   base::NumberToString(timestamp.ToInternalValue()));
+  value->SetStringKey(kSaltKey, salt_base64);
+  value->SetStringKey(kSignatureKey, signature_base64);
+  value->SetStringKey(kTimestampKey,
+                      base::NumberToString(timestamp.ToInternalValue()));
 }
 
 // static
@@ -342,8 +342,8 @@ void InstallSigner::GetSignature(SignatureCallback callback) {
   //   "ids": [ "<id1>", "id2" ]
   // }
   base::DictionaryValue dictionary;
-  dictionary.SetInteger(kProtocolVersionKey, 1);
-  dictionary.SetString(kHashKey, hash_base64);
+  dictionary.SetIntKey(kProtocolVersionKey, 1);
+  dictionary.SetStringKey(kHashKey, hash_base64);
   std::unique_ptr<base::ListValue> id_list(new base::ListValue);
   for (auto i = ids_.begin(); i != ids_.end(); ++i) {
     id_list->Append(*i);
@@ -428,7 +428,8 @@ void InstallSigner::ParseFetchResponse(
   ExtensionIdSet invalid_ids;
   const base::Value* invalid_ids_list = dictionary->FindListKey(kInvalidIdsKey);
   if (invalid_ids_list) {
-    for (const base::Value& invalid_id : invalid_ids_list->GetList()) {
+    for (const base::Value& invalid_id :
+         invalid_ids_list->GetListDeprecated()) {
       const std::string* id = invalid_id.GetIfString();
       if (!id) {
         ReportErrorViaCallback();

@@ -39,8 +39,8 @@ namespace arc {
 namespace {
 
 apps::mojom::IntentPtr CreateIntent(
-    arc::TextSelectionActionDelegate::IntentInfo arc_intent,
-    arc::TextSelectionActionDelegate::ActivityName activity) {
+    arc::ArcIntentHelperMojoDelegate::IntentInfo arc_intent,
+    arc::ArcIntentHelperMojoDelegate::ActivityName activity) {
   auto intent = apps::mojom::Intent::New();
   intent->action = std::move(arc_intent.action);
   intent->data = std::move(arc_intent.data);
@@ -64,7 +64,7 @@ constexpr size_t kMaxMainMenuCommands = 5;
 StartSmartSelectionActionMenu::StartSmartSelectionActionMenu(
     content::BrowserContext* context,
     RenderViewContextMenuProxy* proxy,
-    std::unique_ptr<TextSelectionActionDelegate> delegate)
+    std::unique_ptr<ArcIntentHelperMojoDelegate> delegate)
     : context_(context), proxy_(proxy), delegate_(std::move(delegate)) {}
 
 StartSmartSelectionActionMenu::~StartSmartSelectionActionMenu() = default;
@@ -76,6 +76,29 @@ void StartSmartSelectionActionMenu::InitMenu(
     return;
 
   DCHECK(delegate_);
+  if (!delegate_->IsRequestTextSelectionActionsAvailable()) {
+    // RequestTextSelectionActions is either not supported or not yet ready.
+    // In this case, immediately stop menu initialization instead of calling
+    // callback HandleTextSelectionActions with empty result.
+    //
+    // This conditions is required to avoid accessing to null menu due to the
+    // timing issue.
+    //
+    // In Lacros, RequestTextSelectionActions API will return false
+    // synchronously when mojo API is not supported in Lacros-side. In this
+    // case, the context menu is not initialized yet, so Lacros tries to access
+    // to null menu in HandleTextSelectionActions. To avoid this, we skip the
+    // following operation when RequestTextSelectionActions API is not supported
+    // in Lacros-side. Note that we can ignore the case where
+    // RequestTextSelectionActions API fails remotely since it runs
+    // asynchronously anyway.
+    //
+    // In Ash, it will always return false synchronously when mojo API is not
+    // supported in Ash-side or ARC-side. In both cases, we need to skip the
+    // following operation with the same reason above.
+    return;
+  }
+
   if (!delegate_->RequestTextSelectionActions(
           converted_text, ui::GetSupportedResourceScaleFactors().back(),
           base::BindOnce(
@@ -130,7 +153,7 @@ void StartSmartSelectionActionMenu::ExecuteCommand(int command_id) {
 }
 
 void StartSmartSelectionActionMenu::HandleTextSelectionActions(
-    std::vector<TextSelectionActionDelegate::TextSelectionAction> actions) {
+    std::vector<ArcIntentHelperMojoDelegate::TextSelectionAction> actions) {
   actions_ = std::move(actions);
 
   for (size_t i = 0; i < actions_.size(); ++i) {

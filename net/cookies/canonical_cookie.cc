@@ -485,6 +485,12 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
     return nullptr;
   }
 
+  // Record warning for non-ASCII octecs in the Domain attribute.
+  // This should lead to rejection of the cookie in the future.
+  UMA_HISTOGRAM_BOOLEAN("Cookie.DomainHasNonASCII",
+                        parsed_cookie.HasDomain() &&
+                            !base::IsStringASCII(parsed_cookie.Domain()));
+
   std::string cookie_domain;
   if (!GetCookieDomain(url, parsed_cookie, &cookie_domain)) {
     DVLOG(net::cookie_util::kVlogSetCookies)
@@ -520,7 +526,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
 
   // Collect metrics on whether usage of SameParty attribute is correct.
   if (parsed_cookie.IsSameParty())
-    base::UmaHistogramBoolean("Cookie.IsSamePartyValid", is_same_party_valid);
+    UMA_HISTOGRAM_BOOLEAN("Cookie.IsSamePartyValid", is_same_party_valid);
 
   bool partition_has_nonce = CookiePartitionKey::HasNonce(cookie_partition_key);
   bool is_partitioned_valid =
@@ -533,8 +539,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   // Collect metrics on whether usage of the Partitioned attribute is correct.
   // Do not include implicit nonce-based partitioned cookies in these metrics.
   if (parsed_cookie.IsPartitioned()) {
-    base::UmaHistogramBoolean("Cookie.IsPartitionedValid",
-                              is_partitioned_valid);
+    UMA_HISTOGRAM_BOOLEAN("Cookie.IsPartitionedValid", is_partitioned_valid);
   } else if (!partition_has_nonce) {
     cookie_partition_key = absl::nullopt;
   }
@@ -1083,6 +1088,18 @@ CookieAccessResult CanonicalCookie::IncludeForRequestURL(
     }
   }
 
+  using ContextRedirectTypeBug1221316 = CookieOptions::SameSiteCookieContext::
+      ContextMetadata::ContextRedirectTypeBug1221316;
+
+  ContextRedirectTypeBug1221316 redirect_type_for_metrics =
+      options.same_site_cookie_context()
+          .GetMetadataForCurrentSchemefulMode()
+          .redirect_type_bug_1221316;
+  if (redirect_type_for_metrics != ContextRedirectTypeBug1221316::kUnset) {
+    UMA_HISTOGRAM_ENUMERATION("Cookie.CrossSiteRedirectType.Read",
+                              redirect_type_for_metrics);
+  }
+
   if (status.HasWarningReason(
           CookieInclusionStatus::
               WARN_CROSS_SITE_REDIRECT_DOWNGRADE_CHANGES_INCLUSION)) {
@@ -1100,8 +1117,13 @@ CookieAccessResult CanonicalCookie::IsSetPermittedInContext(
     const GURL& source_url,
     const CookieOptions& options,
     const CookieAccessParams& params,
-    const std::vector<std::string>& cookieable_schemes) const {
+    const std::vector<std::string>& cookieable_schemes,
+    const CookieAccessResult* cookie_access_result) const {
   CookieAccessResult access_result;
+  if (cookie_access_result) {
+    access_result = *cookie_access_result;
+  }
+
   if (!base::Contains(cookieable_schemes, source_url.scheme())) {
     access_result.status.AddExclusionReason(
         CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME);
@@ -1302,6 +1324,18 @@ CookieAccessResult CanonicalCookie::IsSetPermittedInContext(
             SameSiteNonePartyContextType::kSameSiteStrict);
       }
     }
+  }
+
+  using ContextRedirectTypeBug1221316 = CookieOptions::SameSiteCookieContext::
+      ContextMetadata::ContextRedirectTypeBug1221316;
+
+  ContextRedirectTypeBug1221316 redirect_type_for_metrics =
+      options.same_site_cookie_context()
+          .GetMetadataForCurrentSchemefulMode()
+          .redirect_type_bug_1221316;
+  if (redirect_type_for_metrics != ContextRedirectTypeBug1221316::kUnset) {
+    UMA_HISTOGRAM_ENUMERATION("Cookie.CrossSiteRedirectType.Write",
+                              redirect_type_for_metrics);
   }
 
   if (access_result.status.HasWarningReason(
@@ -1547,7 +1581,10 @@ bool CanonicalCookie::IsCookiePartitionedValid(
     return true;
   if (partition_has_nonce)
     return true;
-  return prefix == CookiePrefix::COOKIE_PREFIX_HOST && !is_same_party;
+  bool result = prefix == CookiePrefix::COOKIE_PREFIX_HOST && !is_same_party;
+  DLOG_IF(WARNING, !result)
+      << "CanonicalCookie has invalid Partitioned attribute";
+  return result;
 }
 
 CookieAndLineWithAccessResult::CookieAndLineWithAccessResult() = default;

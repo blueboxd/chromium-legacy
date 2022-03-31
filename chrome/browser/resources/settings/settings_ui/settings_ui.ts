@@ -28,7 +28,7 @@ import {CrDrawerElement} from 'chrome://resources/cr_elements/cr_drawer/cr_drawe
 import {CrToolbarElement} from 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.js';
 import {FindShortcutMixin, FindShortcutMixinInterface} from 'chrome://resources/cr_elements/find_shortcut_mixin.js';
 import {listenOnce} from 'chrome://resources/js/util.m.js';
-import {DomIf, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {DomIf, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {resetGlobalScrollTargetForTesting, setGlobalScrollTarget} from '../global_scroll_target_mixin.js';
 import {loadTimeData} from '../i18n_setup.js';
@@ -38,6 +38,8 @@ import {routes} from '../route.js';
 import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
 import {SettingsMainElement} from '../settings_main/settings_main.js';
 import {SettingsMenuElement} from '../settings_menu/settings_menu.js';
+
+import {getTemplate} from './settings_ui.html.js';
 
 declare global {
   interface HTMLElementEventMap {
@@ -73,7 +75,7 @@ export class SettingsUiElement extends SettingsUiElementBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -203,7 +205,11 @@ export class SettingsUiElement extends SettingsUiElementBase {
 
   currentRouteChanged(route: Route) {
     if (document.documentElement.hasAttribute('enable-branding-update')) {
-      if (route.depth <= 1) {
+      if (route === routes.PRIVACY_GUIDE) {
+        // Privacy guide has a multi-card layout, which only needs shadows to
+        // show when there is more content to scroll.
+        this.enableShadowBehavior(true);
+      } else if (route.depth <= 1) {
         // Main page uses scroll position to determine whether a shadow should
         // be shown.
         this.enableShadowBehavior(true);

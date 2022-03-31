@@ -83,8 +83,6 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState()
       is_transform_invertible_(true),
       has_clip_(false),
       has_complex_clip_(false),
-      letter_spacing_is_set_(false),
-      word_spacing_is_set_(false),
       fill_style_dirty_(true),
       stroke_style_dirty_(true),
       line_dash_dirty_(false),
@@ -150,8 +148,6 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState(
       is_transform_invertible_(other.is_transform_invertible_),
       has_clip_(other.has_clip_),
       has_complex_clip_(other.has_complex_clip_),
-      letter_spacing_is_set_(other.letter_spacing_is_set_),
-      word_spacing_is_set_(other.word_spacing_is_set_),
       fill_style_dirty_(other.fill_style_dirty_),
       stroke_style_dirty_(other.stroke_style_dirty_),
       line_dash_dirty_(other.line_dash_dirty_),
@@ -161,7 +157,9 @@ CanvasRenderingContext2DState::CanvasRenderingContext2DState(
   if (mode == kCopyClipList) {
     clip_list_ = other.clip_list_;
   }
-  if (realized_font_)
+  // Since FontSelector is weakly persistent with |font_|, the memory may be
+  // freed even |font_| is valid.
+  if (realized_font_ && font_.GetFontSelector())
     font_.GetFontSelector()->RegisterForInvalidationCallbacks(this);
   ValidateFilterState();
 }
@@ -317,23 +315,15 @@ void CanvasRenderingContext2DState::SetFont(
       1.0f /*Deliberately ignore zoom on the canvas element*/);
   conversion_data.SetFontSizes(font_size);
 
-  // If wordSpacing is set in CanvasRenderingContext2D, then update the
-  // information in fontDescription.
-  if (word_spacing_is_set_) {
-    // Convert word spacing to pixel length and set it in font_description.
-    float word_spacing_in_pixel =
-        conversion_data.ZoomedComputedPixels(word_spacing_, word_spacing_unit_);
-    font_description.SetWordSpacing(word_spacing_in_pixel);
-  }
+  // Convert word spacing to pixel length and set it in font_description.
+  float word_spacing_in_pixel =
+      conversion_data.ZoomedComputedPixels(word_spacing_, word_spacing_unit_);
+  font_description.SetWordSpacing(word_spacing_in_pixel);
 
-  // If wordSpacing is set in CanvasRenderingContext2D, then update the
-  // information in fontDescription.
-  if (letter_spacing_is_set_) {
-    // Convert letter spacing to pixel length and set it in font_description.
-    float letter_spacing_in_pixel = conversion_data.ZoomedComputedPixels(
-        letter_spacing_, letter_spacing_unit_);
-    font_description.SetLetterSpacing(letter_spacing_in_pixel);
-  }
+  // Convert letter spacing to pixel length and set it in font_description.
+  float letter_spacing_in_pixel = conversion_data.ZoomedComputedPixels(
+      letter_spacing_, letter_spacing_unit_);
+  font_description.SetLetterSpacing(letter_spacing_in_pixel);
 
   font_ = Font(font_description, selector);
   realized_font_ = true;
@@ -785,8 +775,6 @@ bool CanvasRenderingContext2DState::PatternIsAccelerated(
 void CanvasRenderingContext2DState::SetLetterSpacing(
     const String& letter_spacing) {
   DCHECK(realized_font_);
-  if (!letter_spacing_is_set_)
-    letter_spacing_is_set_ = true;
   if (parsed_letter_spacing_ == letter_spacing)
     return;
   float num_spacing;
@@ -808,8 +796,6 @@ void CanvasRenderingContext2DState::SetLetterSpacing(
 
 void CanvasRenderingContext2DState::SetWordSpacing(const String& word_spacing) {
   DCHECK(realized_font_);
-  if (!word_spacing_is_set_)
-    word_spacing_is_set_ = true;
   if (parsed_word_spacing_ == word_spacing)
     return;
   float num_spacing;

@@ -80,7 +80,7 @@ def _package_dmg(paths, config):
         '--copy',
         '{}:/'.format(app_path),
         '--copy',
-        '{}/chrome/updater/.install:/'.format(paths.input),
+        '{}/chrome/updater/.install:/.keystone_install'.format(paths.input),
     ]
     commands.run_command(pkg_dmg)
     return dmg_path
@@ -90,7 +90,8 @@ def sign_all(orig_paths,
              config,
              disable_packaging=False,
              do_notarization=True,
-             skip_brands=[]):
+             skip_brands=[],
+             channels=[]):
     """Code signs, packages, and signs the package, placing the result into
     |orig_paths.output|. |orig_paths.input| must contain the products to
     customize and sign.
@@ -104,6 +105,7 @@ def sign_all(orig_paths,
             be stapled. The stapled application will be packaged in the DMG and
             then the DMG itself will be notarized and stapled.
         skip_brands: Ignored.
+        channels: Ignored.
     """
     with commands.WorkDirectory(orig_paths) as notary_paths:
         # First, sign and optionally submit the notarization requests.
@@ -128,7 +130,8 @@ def sign_all(orig_paths,
             for _ in notarize.wait_for_results([uuid], config):
                 pass  # We are only waiting for a single notarization.
             notarize.staple_bundled_parts(
-                parts.get_parts(config),
+                # Only staple to the outermost app.
+                parts.get_parts(config)[-1:],
                 notary_paths.replace_work(
                     os.path.join(notary_paths.work,
                                  config.packaging_basename)))

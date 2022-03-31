@@ -34,6 +34,10 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "base/time/time.h"
+#endif
+
 #if BUILDFLAG(IS_WIN)
 #include "ui/base/win/shell.h"
 #endif
@@ -117,6 +121,12 @@ MessageView::MessageView(const Notification& notification)
 
 MessageView::~MessageView() {
   RemovedFromWidget();
+}
+
+views::View* MessageView::FindGroupNotificationView(
+    const std::string& notification_id) {
+  // Not implemented by default.
+  return nullptr;
 }
 
 void MessageView::UpdateWithNotification(const Notification& notification) {
@@ -238,6 +248,10 @@ void MessageView::OnMouseReleased(const ui::MouseEvent& event) {
     return;
 
   MessageCenter::Get()->ClickOnNotification(notification_id_);
+}
+
+void MessageView::OnMouseEntered(const ui::MouseEvent& event) {
+  MessageCenter::Get()->OnMessageViewHovered(notification_id_);
 }
 
 bool MessageView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -464,6 +478,13 @@ void MessageView::OnSnoozeButtonPressed(const ui::Event& event) {
   for (auto& observer : observers_)
     observer.OnSnoozeButtonPressed(notification_id_);
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+base::TimeDelta MessageView::GetBoundsAnimationDuration(
+    const Notification& notification) const {
+  return base::Milliseconds(0);
+}
+#endif
 
 bool MessageView::ShouldShowControlButtons() const {
 #if BUILDFLAG(IS_CHROMEOS_ASH)

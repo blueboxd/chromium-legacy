@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/numerics/checked_math.h"
 #include "base/trace_event/trace_event.h"
 #include "mojo/core/core.h"
 #include "mojo/core/data_pipe_control_message.h"
@@ -584,10 +583,8 @@ void DataPipeConsumerDispatcher::UpdateSignalsStateNoLock() {
         TRACE_EVENT0("ipc",
                      "DataPipeConsumerDispatcher received DATA_WAS_WRITTEN");
 
-        uint32_t new_bytes_available;
-        if (!base::CheckAdd(bytes_available_, m->num_bytes)
-                 .AssignIfValid(&new_bytes_available) ||
-            new_bytes_available > options_.capacity_num_bytes) {
+        if (static_cast<size_t>(bytes_available_) + m->num_bytes >
+            options_.capacity_num_bytes) {
           DLOG(ERROR) << "Producer claims to have written too many bytes.";
           peer_closed_ = true;
           break;
@@ -597,7 +594,7 @@ void DataPipeConsumerDispatcher::UpdateSignalsStateNoLock() {
                  << m->num_bytes << " bytes were written. [control_port="
                  << control_port_.name() << "]";
 
-        bytes_available_ = new_bytes_available;
+        bytes_available_ += m->num_bytes;
       }
     } while (message_event);
   }

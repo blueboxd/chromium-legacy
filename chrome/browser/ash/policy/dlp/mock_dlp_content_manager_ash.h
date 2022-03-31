@@ -26,19 +26,24 @@ class MockDlpContentManagerAsh : public DlpContentManagerAsh {
               (const GURL&),
               (const));
   MOCK_METHOD(void, OnVisibilityChanged, (content::WebContents*));
-  MOCK_METHOD(bool,
-              IsScreenshotApiRestricted,
-              (const ScreenshotArea& area),
-              (override));
-  MOCK_METHOD(bool,
-              IsScreenCaptureRestricted,
-              (const content::DesktopMediaID& media_id),
-              (override));
   MOCK_METHOD(void,
               CheckScreenShareRestriction,
               (const content::DesktopMediaID& media_id,
                const std::u16string& application_title,
                OnDlpRestrictionCheckedCallback callback),
+              (override));
+  MOCK_METHOD(void,
+              OnScreenShareStarted,
+              (const std::string&,
+               std::vector<content::DesktopMediaID>,
+               const std::u16string&,
+               base::RepeatingClosure,
+               content::MediaStreamUI::StateChangeCallback,
+               content::MediaStreamUI::SourceCallback),
+              (override));
+  MOCK_METHOD(void,
+              OnScreenShareStopped,
+              (const std::string&, const content::DesktopMediaID&),
               (override));
 
  protected:

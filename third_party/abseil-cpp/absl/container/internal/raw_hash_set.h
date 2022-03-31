@@ -535,15 +535,19 @@ size_t SelectBucketCountForIterRange(InputIter first, InputIter last,
 }
 
 inline void AssertIsFull(ctrl_t* ctrl) {
-  ABSL_HARDENING_ASSERT((ctrl != nullptr && IsFull(*ctrl)) &&
-                        "Invalid operation on iterator. The element might have "
-                        "been erased, or the table might have rehashed.");
+  ABSL_HARDENING_ASSERT(
+      (ctrl != nullptr && IsFull(*ctrl)) &&
+      "Invalid operation on iterator. The element might have "
+      "been erased, the table might have rehashed, or this may "
+      "be an end() iterator.");
 }
 
 inline void AssertIsValid(ctrl_t* ctrl) {
-  ABSL_HARDENING_ASSERT((ctrl == nullptr || IsFull(*ctrl)) &&
-                        "Invalid operation on iterator. The element might have "
-                        "been erased, or the table might have rehashed.");
+  ABSL_HARDENING_ASSERT(
+      (ctrl == nullptr || IsFull(*ctrl)) &&
+      "Invalid operation on iterator. The element might have "
+      "been erased, the table might have rehashed, or this may "
+      "be an end() iterator.");
 }
 
 struct FindInfo {
@@ -1537,6 +1541,14 @@ class raw_hash_set {
 
   friend bool operator!=(const raw_hash_set& a, const raw_hash_set& b) {
     return !(a == b);
+  }
+
+  template <typename H>
+  friend typename std::enable_if<H::template is_hashable<value_type>::value,
+                                 H>::type
+  AbslHashValue(H h, const raw_hash_set& s) {
+    return H::combine(H::combine_unordered(std::move(h), s.begin(), s.end()),
+                      s.size());
   }
 
   friend void swap(raw_hash_set& a,

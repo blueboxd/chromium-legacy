@@ -20,6 +20,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/clock.h"
+#include "base/values.h"
 #include "chromeos/components/onc/variable_expander.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/certificate_helper.h"
@@ -529,7 +530,7 @@ bool ClientCertResolver::IsAnyResolveTaskRunning() const {
 bool ClientCertResolver::ResolveClientCertificateSync(
     const client_cert::ConfigType client_cert_type,
     const client_cert::ClientCertConfig& client_cert_config,
-    base::DictionaryValue* shill_properties) {
+    base::Value* shill_properties) {
   if (!ShouldResolveCert(client_cert_config))
     return false;
 
@@ -706,7 +707,7 @@ void ClientCertResolver::ResolveNetworks(
       continue;
 
     ::onc::ONCSource onc_source = ::onc::ONC_SOURCE_NONE;
-    const base::DictionaryValue* policy =
+    const base::Value* policy =
         managed_network_config_handler_->FindPolicyByGuidAndProfile(
             network->guid(), network->profile_path(), &onc_source);
 
@@ -811,7 +812,7 @@ void ClientCertResolver::ConfigureCertificates(
     NET_LOG(EVENT) << "Configuring certificate for network: "
                    << GetNetworkIdWithGuid(network_state);
 
-    base::DictionaryValue shill_properties;
+    base::Value shill_properties{base::Value::Type::DICTIONARY};
     if (match.matching_cert.has_value()) {
       const MatchingCert& matching_cert = match.matching_cert.value();
       client_cert::SetShillProperties(

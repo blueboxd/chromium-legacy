@@ -14,6 +14,9 @@
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/files/file_result.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 
 namespace app_list {
 namespace {
@@ -21,7 +24,8 @@ namespace {
 using chromeos::string_matching::TokenizedString;
 
 constexpr char kDriveSearchSchema[] = "drive_search://";
-constexpr int kMaxResults = 10;
+constexpr int kMaxResults = 50;
+constexpr size_t kMinQuerySizeForSharedFiles = 5u;
 
 // Outcome of a call to DriveSearchProvider::Start. These values persist
 // to logs. Entries should not be renumbered and numeric values should never be
@@ -89,6 +93,16 @@ void DriveSearchProvider::SetSearchResults(
     return;
   }
 
+  // Filter out shared files if the query length is below a threshold.
+  if (last_query_.size() < kMinQuerySizeForSharedFiles) {
+    std::vector<drivefs::mojom::QueryItemPtr> filtered_items;
+    for (auto& item : items) {
+      if (!item->metadata->shared)
+        filtered_items.push_back(std::move(item));
+    }
+    items = std::move(filtered_items);
+  }
+
   SearchProvider::Results results;
   for (size_t i = 0; i < items.size(); ++i) {
     const auto& item = items[i];
@@ -131,8 +145,12 @@ std::unique_ptr<FileResult> DriveSearchProvider::MakeResult(
   const base::FilePath& reparented_path =
       drive_service_->GetMountPointPath().Append(relative_path.value());
 
+  // Add "Google Drive" as details.
+  std::u16string details =
+      l10n_util::GetStringUTF16(IDS_FILE_BROWSER_DRIVE_DIRECTORY_LABEL);
+
   return std::make_unique<FileResult>(
-      kDriveSearchSchema, reparented_path,
+      kDriveSearchSchema, reparented_path, details,
       ash::AppListSearchResultType::kDriveSearch,
       ash::SearchResultDisplayType::kList, relevance, last_query_, type,
       profile_);

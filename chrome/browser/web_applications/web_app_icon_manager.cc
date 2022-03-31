@@ -412,10 +412,6 @@ gfx::ImageSkia ConvertUiScaleFactorsBitmapsToImageSkia(
   return image_skia;
 }
 
-constexpr base::TaskTraits kTaskTraits = {
-    base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-    base::TaskShutdownBehavior::BLOCK_SHUTDOWN};
-
 void WrapReadIconCallback(WebAppIconManager::ReadIconCallback callback,
                           IconPurpose ignored,
                           SkBitmap bitmap) {
@@ -696,8 +692,14 @@ class WriteIconsJob {
 
 WebAppIconManager::WebAppIconManager(Profile* profile,
                                      WebAppRegistrar& registrar,
+                                     WebAppInstallManager& install_manager,
                                      scoped_refptr<FileUtilsWrapper> utils)
-    : registrar_(registrar), utils_(std::move(utils)) {
+    : registrar_(registrar),
+      install_manager_(install_manager),
+      utils_(std::move(utils)),
+      icon_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})) {
   web_apps_directory_ = GetWebAppsRootDirectory(profile);
   if (base::FeatureList::IsEnabled(features::kRecordWebAppDebugInfo))
     error_log_ = std::make_unique<std::vector<std::string>>();
@@ -713,8 +715,8 @@ void WebAppIconManager::WriteData(
     WriteDataCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, kTaskTraits,
+  icon_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(
           &WriteIconsJob::WriteIconsBlocking, utils_, web_apps_directory_,
           std::move(app_id), std::move(icon_bitmaps),
@@ -726,8 +728,8 @@ void WebAppIconManager::WriteData(
 void WebAppIconManager::DeleteData(AppId app_id, WriteDataCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, kTaskTraits,
+  icon_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(DeleteDataBlocking, utils_, web_apps_directory_,
                      std::move(app_id)),
       std::move(callback));
@@ -742,7 +744,7 @@ void WebAppIconManager::Start() {
       ReadMonochromeFavicon(app_id);
     }
   }
-  registrar_observation_.Observe(&registrar_);
+  install_manager_observation_.Observe(&install_manager_);
 }
 
 void WebAppIconManager::Shutdown() {}
@@ -795,8 +797,8 @@ void WebAppIconManager::ReadIcons(const AppId& app_id,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(HasIcons(app_id, purpose, icon_sizes));
 
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, kTaskTraits,
+  icon_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(
           ReadIconsBlocking, utils_, web_apps_directory_, app_id, purpose,
           std::vector<SquareSizePx>(icon_sizes.begin(), icon_sizes.end())),
@@ -821,8 +823,8 @@ void WebAppIconManager::ReadAllIcons(const AppId& app_id,
         std::vector<SquareSizePx>(sizes_px.begin(), sizes_px.end());
   }
 
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, kTaskTraits,
+  icon_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(ReadAllIconsBlocking, utils_, web_apps_directory_, app_id,
                      std::move(icon_purposes_to_sizes)),
       base::BindOnce(&LogErrorsCallCallback<IconBitmaps>,
@@ -839,8 +841,8 @@ void WebAppIconManager::ReadAllShortcutsMenuIcons(
     return;
   }
 
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, kTaskTraits,
+  icon_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(ReadShortcutsMenuIconsBlocking, utils_,
                      web_apps_directory_, app_id,
                      web_app->downloaded_shortcuts_menu_icons_sizes()),
@@ -862,8 +864,8 @@ void WebAppIconManager::ReadSmallestIcon(
   ReadIconCallback wrapped = base::BindOnce(
       WrapReadIconWithPurposeCallback, std::move(callback), best_icon->purpose);
 
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, kTaskTraits,
+  icon_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(ReadIconBlocking, utils_, web_apps_directory_,
                      std::move(icon_id)),
       base::BindOnce(&LogErrorsCallCallback<SkBitmap>,
@@ -885,8 +887,8 @@ void WebAppIconManager::ReadSmallestCompressedIcon(
       base::BindOnce(WrapReadCompressedIconWithPurposeCallback,
                      std::move(callback), best_icon->purpose);
 
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, kTaskTraits,
+  icon_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(ReadCompressedIconBlocking, utils_, web_apps_directory_,
                      std::move(icon_id)),
       base::BindOnce(&LogErrorsCallCallback<std::vector<uint8_t>>,
@@ -945,8 +947,8 @@ void WebAppIconManager::OnWebAppInstalled(const AppId& app_id) {
   }
 }
 
-void WebAppIconManager::OnAppRegistrarDestroyed() {
-  registrar_observation_.Reset();
+void WebAppIconManager::OnWebAppInstallManagerDestroyed() {
+  install_manager_observation_.Reset();
 }
 
 void WebAppIconManager::ReadIconAndResize(const AppId& app_id,
@@ -965,8 +967,8 @@ void WebAppIconManager::ReadIconAndResize(const AppId& app_id,
   }
 
   IconId icon_id(app_id, best_icon->purpose, best_icon->size_px);
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, kTaskTraits,
+  icon_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(ReadIconAndResizeBlocking, utils_, web_apps_directory_,
                      std::move(icon_id), desired_icon_size),
       base::BindOnce(&LogErrorsCallCallback<std::map<SquareSizePx, SkBitmap>>,
@@ -1091,8 +1093,8 @@ void WebAppIconManager::OnReadMonochromeFavicon(
 
   manifest_monochrome_image.MakeThreadSafe();
 
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, kTaskTraits,
+  icon_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(ConvertImageToSolidFillMonochrome, solid_color,
                      std::move(manifest_monochrome_image)),
       base::BindOnce(&WebAppIconManager::OnMonochromeIconConverted,

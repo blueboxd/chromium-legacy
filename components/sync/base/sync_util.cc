@@ -9,7 +9,7 @@
 #include "base/strings/stringize_macros.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "components/sync/base/sync_base_switches.h"
+#include "components/sync/base/command_line_switches.h"
 #include "google_apis/gaia/gaia_config.h"
 #include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
@@ -52,11 +52,6 @@ std::string GetSystemString() {
 namespace syncer {
 namespace internal {
 
-const char* const kSyncServerUrl = "https://clients4.google.com/chrome-sync";
-
-const char* const kSyncDevServerUrl =
-    "https://clients4.google.com/chrome-sync/dev";
-
 std::string FormatUserAgentForSync(const std::string& system,
                                    version_info::Channel channel) {
   std::string product = STRINGIZE(SYNC_USER_AGENT_PRODUCT);
@@ -84,9 +79,8 @@ GURL GetSyncServiceURL(const base::CommandLine& command_line,
 
   // 1. Get the sync server URL from the --sync-url command-line param, if
   // specified.
-  if (command_line.HasSwitch(switches::kSyncServiceURL)) {
-    std::string value(
-        command_line.GetSwitchValueASCII(switches::kSyncServiceURL));
+  if (command_line.HasSwitch(kSyncServiceURL)) {
+    std::string value(command_line.GetSwitchValueASCII(kSyncServiceURL));
     if (!value.empty()) {
       GURL custom_sync_url(value);
       if (custom_sync_url.is_valid()) {

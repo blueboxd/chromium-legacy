@@ -64,7 +64,7 @@ bool ConvertManifestRule(const DeclarativeManifestData::Rule& rule,
           if (type == declarative_content_constants::kLegacyShowAction)
             type = declarative_content_constants::kShowAction;
           dictionary->RemoveKey("type");
-          dictionary->SetString("instanceType", type);
+          dictionary->SetStringKey("instanceType", type);
         }
         return true;
       };
@@ -131,7 +131,7 @@ std::unique_ptr<DeclarativeManifestData> DeclarativeManifestData::FromValue(
     return nullptr;
   }
 
-  for (const auto& element : value.GetList()) {
+  for (const auto& element : value.GetListDeprecated()) {
     const base::DictionaryValue* dict = nullptr;
     if (!element.GetAsDictionary(&dict)) {
       error_builder.Append("expected dictionary, got %s",

@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/values.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -34,7 +35,7 @@ base::Value ConnectionEndpointMetadata::ToValue() const {
   }
   dict.emplace(kSupportedProtocolAlpnsKey, std::move(alpns_list));
 
-  dict.emplace(kEchConfigListKey, ech_config_list);
+  dict.emplace(kEchConfigListKey, base::Base64Encode(ech_config_list));
 
   return base::Value(std::move(dict));
 }
@@ -47,8 +48,8 @@ ConnectionEndpointMetadata::FromValue(const base::Value& value) {
 
   const base::Value* alpns_value =
       value.FindListKey(kSupportedProtocolAlpnsKey);
-  const std::vector<uint8_t>* ech_config_list_value =
-      value.FindBlobKey(kEchConfigListKey);
+  const std::string* ech_config_list_value =
+      value.FindStringKey(kEchConfigListKey);
 
   if (!alpns_value || !ech_config_list_value)
     return absl::nullopt;
@@ -56,13 +57,17 @@ ConnectionEndpointMetadata::FromValue(const base::Value& value) {
   ConnectionEndpointMetadata metadata;
 
   std::vector<std::string> alpns;
-  for (const base::Value& value : alpns_value->GetList()) {
+  for (const base::Value& value : alpns_value->GetListDeprecated()) {
     if (!value.is_string())
       return absl::nullopt;
     metadata.supported_protocol_alpns.push_back(value.GetString());
   }
 
-  metadata.ech_config_list = *ech_config_list_value;
+  absl::optional<std::vector<uint8_t>> decoded =
+      base::Base64Decode(*ech_config_list_value);
+  if (!decoded)
+    return absl::nullopt;
+  metadata.ech_config_list = std::move(*decoded);
 
   return metadata;
 }

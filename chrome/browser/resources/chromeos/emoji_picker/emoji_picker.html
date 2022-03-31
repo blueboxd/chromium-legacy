@@ -10,7 +10,11 @@
     --emoji-spacing: 0;
     --emoji-per-row: 0;
     /* Values set in css only. */
+    --emoji-group-heading-padding-bottom: 10px;
+    --emoji-group-heading-padding-top: 16px;
+    --emoji-group-heading-size: 32px;
     --emoji-group-tabs-left: 0;
+    --emoji-hover-background: var(--cros-ripple-color);
     --emoji-picker-bottom-padding: 14px;
     --emoji-picker-last-emoji-left: calc(var(--emoji-picker-side-padding)
             + var(--emoji-size) * (var(--emoji-per-row) - 1)
@@ -117,6 +121,11 @@
     width: var(--emoji-picker-width);
   }
 
+  :host([v2-enabled]) .divider {
+    margin-inline: var(--emoji-picker-subcategory-bar-inline-margin);
+    width: unset;
+  }
+
   .sr-only {
     color: transparent;
     position: absolute;
@@ -168,7 +177,7 @@
 
   :host([v2-enabled]) #tabs {
     padding-bottom: 5px;
-    padding-top: 12px;
+    padding-top: 5px;
   }
 
   /* v2Enabled without text bar specifies the v2 emoji-based subcategory bar. */
@@ -219,6 +228,10 @@
     margin-inline: 4px;
     padding-inline: 0;
   }
+
+  :host([v2-enabled]) .category-gap {
+    height: 16px;
+  }
 </style>
 
 <div class="sr-only" aria-live="polite">
@@ -232,8 +245,10 @@
     class="side-padding"
     id="search-container"
     emoji-data="[[emojiData]]"
+    emoticon-data="[[emoticonData]]"
     search="{{search}}"
     on-scroll="onSearchScroll"
+    category-metadata="[[getCategoryMetadata(category)]]"
     v2-enabled="[[v2Enabled]]">
   </emoji-search>
 
@@ -338,18 +353,38 @@
       whereas the other groups are created from the emoji metadata.
     -->
     <div data-group="history">
-      <template is="dom-if" if="[[history.emoji.length]]">
-        <emoji-group data="[[history]]" preferred="{}" clearable
+      <template is="dom-if" if="[[emojiHistory.emoji.length]]">
+        <emoji-group data="[[emojiHistory.emoji]]"
+          group="[[emojiHistory.group]]" preferred="{}" clearable class="group"
           v2-enabled$="[[v2Enabled]]">
         </emoji-group>
       </template>
     </div>
     <template is="dom-repeat" items="[[emojiData]]">
-      <div data-group$="[[index]]">
-        <emoji-group data="[[item]]" preferred="[[preferenceMapping]]"
+      <div data-group$="[[getDataGroupIndex('emoji', index)]]">
+        <emoji-group data="[[item.emoji]]" group="[[item.group]]"
+          preferred="[[preferenceMapping]]" class="group"
           v2-enabled$="[[v2Enabled]]">
         </emoji-group>
       </div>
+    </template>
+    <div class="category-gap"></div>
+    <template is="dom-if" if="[[v2Enabled]]">
+      <div data-group="emoticon-history">
+        <template is="dom-if" if="[[emoticonHistory.emoji.length]]">
+            <emoticon-group data="[[emoticonHistory.emoji]]"
+              group="[[emoticonHistory.group]]" class="group"
+              data-group="emoticon-history">
+            </emoticon-group>
+        </template>
+      </div>
+      <template is="dom-repeat" items="[[emoticonData]]">
+        <div data-group$="[[getDataGroupIndex('emoticon', index)]]">
+          <emoticon-group data="[[item.emoji]]" group="[[item.group]]"
+            class="group">
+          </emoticon-group>
+        </div>
+      </template>
     </template>
   </div>
 

@@ -104,13 +104,13 @@ public class AutofillAssistantOverlayUiTest {
             AssistantOverlayModel model, @Nullable Bitmap overlayImage) throws ExecutionException {
         ChromeActivity activity = mTestRule.getActivity();
         return runOnUiThreadBlocking(() -> {
-            return new AssistantOverlayCoordinator(activity, activity.getBrowserControlsManager(),
+            return new AssistantOverlayCoordinator(activity,
+                    ()
+                            -> new AssistantBrowserControlsChrome(
+                                    activity.getBrowserControlsManager()),
                     activity.getCompositorViewHolderForTesting(),
                     mTestRule.getActivity().getRootUiCoordinatorForTesting().getScrimCoordinator(),
-                    model,
-                    new AssistantDependenciesFactoryChrome()
-                            .createStaticDependencies()
-                            .getAccessibilityUtil());
+                    model, new AssistantStaticDependenciesChrome().getAccessibilityUtil());
         });
     }
 

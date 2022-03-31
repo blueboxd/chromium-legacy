@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BrowserService, ensureLazyLoaded} from 'chrome://history/history.js';
+import {BrowserServiceImpl, ensureLazyLoaded} from 'chrome://history/history.js';
 import {isMac, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {TestBrowserService} from 'chrome://test/history/test_browser_service.js';
-import {createHistoryEntry, createHistoryInfo, polymerSelectAll, shiftClick, waitForEvent} from 'chrome://test/history/test_util.js';
-import {flushTasks, waitAfterNextRender} from 'chrome://test/test_util.js';
+import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/test_util.js';
+
+import {TestBrowserService} from './test_browser_service.js';
+import {createHistoryEntry, createHistoryInfo, polymerSelectAll, shiftClick, waitForEvent} from './test_util.js';
 
 window.history_list_test = {};
 history_list_test.suiteName = 'HistoryListTest';
@@ -69,7 +70,7 @@ suite(history_list_test.suiteName, function() {
     window.history.replaceState({}, '', '/');
     document.body.innerHTML = '';
     testService = new TestBrowserService();
-    BrowserService.setInstance(testService);
+    BrowserServiceImpl.setInstance(testService);
 
     app = document.createElement('history-app');
   });
@@ -95,17 +96,21 @@ suite(history_list_test.suiteName, function() {
     ]);
   }
 
+  function getHistoryData() {
+    return element.$['infinite-list'].items;
+  }
+
   test(history_list_test.TestNames.DeletingSingleItem, function() {
     return finishSetup([createHistoryEntry('2015-01-01', 'http://example.com')])
         .then(flushTasks)
         .then(function() {
-          assertEquals(element.historyData_.length, 1);
+          assertEquals(getHistoryData().length, 1);
           flush();
           const items = polymerSelectAll(element, 'history-item');
 
           assertEquals(1, items.length);
           items[0].$.checkbox.click();
-          assertDeepEquals([true], element.historyData_.map(i => i.selected));
+          assertDeepEquals([true], getHistoryData().map(i => i.selected));
           return flushTasks();
         })
         .then(function() {
@@ -122,7 +127,7 @@ suite(history_list_test.suiteName, function() {
         .then(function(visits) {
           assertEquals(1, visits.length);
           assertEquals('http://example.com', visits[0].url);
-          assertEquals('2015-01-01 UTC', visits[0].timestamps[0]);
+          assertEquals(Date.parse('2015-01-01 UTC'), visits[0].timestamps[0]);
 
           // The list should fire a query-history event which results in a
           // queryHistory call, since deleting the only item results in an
@@ -152,7 +157,7 @@ suite(history_list_test.suiteName, function() {
               // items.
               assertDeepEquals(
                   [false, false, true, true],
-                  element.historyData_.map(i => i.selected));
+                  getHistoryData().map(i => i.selected));
 
               toolbar.clearSelectedItems();
 
@@ -160,7 +165,7 @@ suite(history_list_test.suiteName, function() {
               // and the actual history-items affected.
               assertDeepEquals(
                   [false, false, false, false],
-                  element.historyData_.map(i => i.selected));
+                  getHistoryData().map(i => i.selected));
 
               assertFalse(items[2].selected);
               assertFalse(items[3].selected);
@@ -183,14 +188,14 @@ suite(history_list_test.suiteName, function() {
               items[1].$.checkbox.click();
               assertDeepEquals(
                   [false, true, false, false],
-                  element.historyData_.map(i => i.selected));
+                  getHistoryData().map(i => i.selected));
               assertDeepEquals([1], Array.from(element.selectedItems).sort());
 
               // Shift-select to the last item.
               shiftClick(items[3].$.checkbox);
               assertDeepEquals(
                   [false, true, true, true],
-                  element.historyData_.map(i => i.selected));
+                  getHistoryData().map(i => i.selected));
               assertDeepEquals(
                   [1, 2, 3], Array.from(element.selectedItems).sort());
 
@@ -198,7 +203,7 @@ suite(history_list_test.suiteName, function() {
               shiftClick(items[0].$.checkbox);
               assertDeepEquals(
                   [true, true, true, true],
-                  element.historyData_.map(i => i.selected));
+                  getHistoryData().map(i => i.selected));
               assertDeepEquals(
                   [0, 1, 2, 3], Array.from(element.selectedItems).sort());
 
@@ -206,14 +211,14 @@ suite(history_list_test.suiteName, function() {
               shiftClick(items[2].$.checkbox);
               assertDeepEquals(
                   [false, false, false, true],
-                  element.historyData_.map(i => i.selected));
+                  getHistoryData().map(i => i.selected));
               assertDeepEquals([3], Array.from(element.selectedItems).sort());
 
               // Select the second item.
               items[1].$.checkbox.click();
               assertDeepEquals(
                   [false, true, false, true],
-                  element.historyData_.map(i => i.selected));
+                  getHistoryData().map(i => i.selected));
               assertDeepEquals(
                   [1, 3], Array.from(element.selectedItems).sort());
 
@@ -221,14 +226,14 @@ suite(history_list_test.suiteName, function() {
               shiftClick(items[3].$.checkbox);
               assertDeepEquals(
                   [false, false, false, false],
-                  element.historyData_.map(i => i.selected));
+                  getHistoryData().map(i => i.selected));
               assertDeepEquals([], Array.from(element.selectedItems).sort());
 
               // Shift-select back to the third item.
               shiftClick(items[2].$.checkbox);
               assertDeepEquals(
                   [false, false, true, true],
-                  element.historyData_.map(i => i.selected));
+                  getHistoryData().map(i => i.selected));
               assertDeepEquals(
                   [2, 3], Array.from(element.selectedItems).sort());
 
@@ -236,7 +241,7 @@ suite(history_list_test.suiteName, function() {
               element.removeItemsByIndex_(Array.from(element.selectedItems));
               assertDeepEquals(
                   ['https://www.google.com', 'https://www.example.com'],
-                  element.historyData_.map(i => i.title));
+                  getHistoryData().map(i => i.title));
             });
       });
 
@@ -248,7 +253,7 @@ suite(history_list_test.suiteName, function() {
           return flushTasks();
         })
         .then(function() {
-          const field = toolbar.$['main-toolbar'].getSearchField();
+          const field = toolbar.$.mainToolbar.getSearchField();
           field.blur();
           assertFalse(field.showingSearch);
 
@@ -257,7 +262,7 @@ suite(history_list_test.suiteName, function() {
 
           assertDeepEquals(
               [false, false, false, false],
-              element.historyData_.map(i => i.selected));
+              getHistoryData().map(i => i.selected));
         });
   });
 
@@ -328,10 +333,11 @@ suite(history_list_test.suiteName, function() {
           flush();
           const items = polymerSelectAll(element, 'history-item');
 
-          assertEquals(element.historyData_.length, 5);
-          assertEquals(element.historyData_[0].dateRelativeDay, '2016-03-15');
-          assertEquals(element.historyData_[2].dateRelativeDay, '2016-03-13');
-          assertEquals(element.historyData_[4].dateRelativeDay, '2016-03-11');
+          const historyData = getHistoryData();
+          assertEquals(historyData.length, 5);
+          assertEquals(historyData[0].dateRelativeDay, '2016-03-15');
+          assertEquals(historyData[2].dateRelativeDay, '2016-03-13');
+          assertEquals(historyData[4].dateRelativeDay, '2016-03-11');
 
           // Checks that the first and last items have been reset correctly.
           assertTrue(items[2].isCardStart);
@@ -422,7 +428,7 @@ suite(history_list_test.suiteName, function() {
             .then(function() {
               assertEquals(
                   'www.google.com',
-                  toolbar.$['main-toolbar'].getSearchField().getValue());
+                  toolbar.$.mainToolbar.getSearchField().getValue());
 
               element.$.sharedMenu.get().close();
               items[0].$['menu-button'].click();
@@ -550,10 +556,11 @@ suite(history_list_test.suiteName, function() {
         })
         .then(flushTasks)
         .then(function() {
-          assertEquals(5, element.historyData_.length);
-          assertEquals(element.historyData_[0].dateRelativeDay, '2016-03-15');
-          assertEquals(element.historyData_[2].dateRelativeDay, '2016-03-13');
-          assertEquals(element.historyData_[4].dateRelativeDay, '2016-03-11');
+          const historyData = getHistoryData();
+          assertEquals(5, historyData.length);
+          assertEquals(historyData[0].dateRelativeDay, '2016-03-15');
+          assertEquals(historyData[2].dateRelativeDay, '2016-03-13');
+          assertEquals(historyData[4].dateRelativeDay, '2016-03-11');
           assertFalse(dialog.open);
 
           flush();
@@ -602,7 +609,7 @@ suite(history_list_test.suiteName, function() {
                 'https://www.google.com',
                 'https://en.wikipedia.org',
               ],
-              element.historyData_.map(item => item.title));
+              getHistoryData().map(item => item.title));
 
           // Deletion should deselect all.
           assertDeepEquals(
@@ -727,8 +734,10 @@ suite(history_list_test.suiteName, function() {
         .then(function(toRemove) {
           assertEquals('https://www.example.com', toRemove[0].url);
           assertEquals('https://www.google.com', toRemove[1].url);
-          assertEquals('2016-03-14 10:00 UTC', toRemove[0].timestamps[0]);
-          assertEquals('2016-03-14 9:00 UTC', toRemove[1].timestamps[0]);
+          assertEquals(
+              Date.parse('2016-03-14 10:00 UTC'), toRemove[0].timestamps[0]);
+          assertEquals(
+              Date.parse('2016-03-14 9:00 UTC'), toRemove[1].timestamps[0]);
         });
   });
 

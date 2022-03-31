@@ -361,13 +361,17 @@ TEST_F(ScrollbarLayerTest, ScrollElementIdPushedAcrossCommit) {
   // layer_tree_host_->active_commit_state() is populated, which is required
   // during FinishCommitOnImplThread().
   auto& unsafe_state = layer_tree_host_->GetThreadUnsafeCommitState();
+  auto completion_event_ptr = std::make_unique<CompletionEvent>(
+      base::WaitableEvent::ResetPolicy::MANUAL);
+  auto* completion_event = completion_event_ptr.get();
   std::unique_ptr<CommitState> commit_state =
-      layer_tree_host_->WillCommit(/*completion=*/nullptr,
+      layer_tree_host_->WillCommit(std::move(completion_event_ptr),
                                    /*has_updates=*/true);
   {
     DebugScopedSetImplThread scoped_impl_thread(
         layer_tree_host_->GetTaskRunnerProvider());
     layer_tree_host_->host_impl()->FinishCommit(*commit_state, unsafe_state);
+    completion_event->Signal();
   }
   layer_tree_host_->CommitComplete({base::TimeTicks(), base::TimeTicks::Now()});
 
@@ -756,13 +760,14 @@ TEST_F(ScrollbarLayerTest, ScrollbarLayerOpacity) {
   // Building property trees twice shouldn't change the size of
   // PropertyTrees::always_use_active_tree_opacity_effect_ids.
   layer_tree_host_->BuildPropertyTreesForTesting();
-  layer_tree_host_->property_trees()->needs_rebuild = true;
+  layer_tree_host_->property_trees()->set_needs_rebuild(true);
   layer_tree_host_->BuildPropertyTreesForTesting();
 
   // A solid color scrollbar layer's opacity is initialized to 0 on main thread
   layer_tree_host_->UpdateLayers();
-  EffectNode* node = layer_tree_host_->property_trees()->effect_tree.Node(
-      scrollbar_layer->effect_tree_index());
+  const EffectNode* node =
+      layer_tree_host_->property_trees()->effect_tree().Node(
+          scrollbar_layer->effect_tree_index());
   EXPECT_EQ(node->opacity, 0.f);
 
   // This tests that the initial opacity(0) of the scrollbar gets pushed onto
@@ -773,12 +778,12 @@ TEST_F(ScrollbarLayerTest, ScrollbarLayerOpacity) {
       layer_tree_host_->CommitAndCreatePendingTree();
   LayerTreeImpl* layer_tree_impl = layer_impl_tree_root->layer_tree_impl();
   EXPECT_TRUE(layer_tree_impl->IsPendingTree());
-  node = layer_tree_impl->property_trees()->effect_tree.Node(
+  node = layer_tree_impl->property_trees()->effect_tree().Node(
       scrollbar_layer->effect_tree_index());
   EXPECT_EQ(node->opacity, 0.f);
   host_impl->ActivateSyncTree();
   layer_tree_impl = host_impl->active_tree();
-  node = layer_tree_impl->property_trees()->effect_tree.Node(
+  node = layer_tree_impl->property_trees()->effect_tree().Node(
       scrollbar_layer->effect_tree_index());
   EXPECT_EQ(node->opacity, 0.f);
 
@@ -791,12 +796,12 @@ TEST_F(ScrollbarLayerTest, ScrollbarLayerOpacity) {
   layer_impl_tree_root = layer_tree_host_->CommitAndCreatePendingTree();
   layer_tree_impl = layer_impl_tree_root->layer_tree_impl();
   EXPECT_TRUE(layer_tree_impl->IsPendingTree());
-  node = layer_tree_impl->property_trees()->effect_tree.Node(
+  node = layer_tree_impl->property_trees()->effect_tree().Node(
       scrollbar_layer->effect_tree_index());
   EXPECT_EQ(node->opacity, 0.f);
   host_impl->ActivateSyncTree();
   layer_tree_impl = host_impl->active_tree();
-  node = layer_tree_impl->property_trees()->effect_tree.Node(
+  node = layer_tree_impl->property_trees()->effect_tree().Node(
       scrollbar_layer->effect_tree_index());
   EXPECT_EQ(node->opacity, 0.25f);
 }
@@ -841,8 +846,8 @@ TEST_F(AuraScrollbarLayerTest, ScrollbarLayerPushProperties) {
   host_impl->CreatePendingTree();
   layer_tree_host_->CommitAndCreatePendingTree();
   host_impl->ActivateSyncTree();
-  EffectNode* node =
-      host_impl->active_tree()->property_trees()->effect_tree.Node(
+  const EffectNode* node =
+      host_impl->active_tree()->property_trees()->effect_tree().Node(
           scrollbar_layer->effect_tree_index());
   EXPECT_EQ(node->opacity, 1.f);
 }
@@ -1017,8 +1022,8 @@ TEST_F(AuraScrollbarLayerTest, ScrollbarLayerCreateAfterSetScrollable) {
 
   EXPECT_TRUE(host_impl->ScrollbarAnimationControllerForElementId(
       scroll_layer->element_id()));
-  EffectNode* node =
-      host_impl->active_tree()->property_trees()->effect_tree.Node(
+  const EffectNode* node =
+      host_impl->active_tree()->property_trees()->effect_tree().Node(
           scrollbar_layer->effect_tree_index());
   EXPECT_EQ(node->opacity, 1.f);
 }

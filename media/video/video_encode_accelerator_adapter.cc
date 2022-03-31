@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/bind_post_task.h"
@@ -33,6 +34,15 @@ namespace {
 // to estimate bits per second for ~30 fps with ~1/16 compression rate.
 constexpr int kVEADefaultBitratePerPixel = 2;
 
+uint32_t ComputeCheckedDefaultBitrate(const gfx::Size& frame_size) {
+  base::CheckedNumeric<uint32_t> checked_bitrate_product =
+      base::CheckMul<uint32_t>(frame_size.width(), frame_size.height(),
+                               kVEADefaultBitratePerPixel);
+  // If the product has overflowed, clamp it to uint32_t max
+  return checked_bitrate_product.ValueOrDefault(
+      std::numeric_limits<uint32_t>::max());
+}
+
 VideoEncodeAccelerator::Config SetUpVeaConfig(
     VideoCodecProfile profile,
     const VideoEncoder::Options& opts,
@@ -42,9 +52,7 @@ VideoEncodeAccelerator::Config SetUpVeaConfig(
   if (opts.framerate.has_value())
     initial_framerate = static_cast<uint32_t>(opts.framerate.value());
 
-  uint64_t default_bitrate = opts.frame_size.width() *
-                             opts.frame_size.height() *
-                             kVEADefaultBitratePerPixel;
+  uint32_t default_bitrate = ComputeCheckedDefaultBitrate(opts.frame_size);
   Bitrate bitrate =
       opts.bitrate.value_or(Bitrate::ConstantBitrate(default_bitrate));
   auto config =
@@ -364,10 +372,8 @@ void VideoEncodeAcceleratorAdapter::ChangeOptionsOnAcceleratorThread(
     return;
   }
 
-  uint32_t default_bitrate = options.frame_size.width() *
-                             options.frame_size.height() *
-                             kVEADefaultBitratePerPixel;
-  auto bitrate =
+  uint32_t default_bitrate = ComputeCheckedDefaultBitrate(options.frame_size);
+  Bitrate bitrate =
       options.bitrate.value_or(Bitrate::ConstantBitrate(default_bitrate));
 
   uint32_t framerate = base::ClampRound<uint32_t>(
@@ -486,55 +492,56 @@ void VideoEncodeAcceleratorAdapter::BitstreamBufferReady(
       output_handle_holder_->GetMapping();
   DCHECK_LE(result.size, mapping.size());
 
+  if (result.size > 0) {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  if (h264_converter_) {
-    uint8_t* src = static_cast<uint8_t*>(mapping.memory());
-    size_t dst_size = result.size;
-    size_t actual_output_size = 0;
-    bool config_changed = false;
-    std::unique_ptr<uint8_t[]> dst(new uint8_t[dst_size]);
+    if (h264_converter_) {
+      uint8_t* src = static_cast<uint8_t*>(mapping.memory());
+      size_t dst_size = result.size;
+      size_t actual_output_size = 0;
+      bool config_changed = false;
+      std::unique_ptr<uint8_t[]> dst(new uint8_t[dst_size]);
 
-    auto status =
-        h264_converter_->ConvertChunk(base::span<uint8_t>(src, result.size),
-                                      base::span<uint8_t>(dst.get(), dst_size),
-                                      &config_changed, &actual_output_size);
-    if (status.code() == StatusCode::kH264BufferTooSmall) {
-      // Between AnnexB and AVCC bitstream formats, the start code length and
-      // the nal size length can be different. See H.264 specification at
-      // http://www.itu.int/rec/T-REC-H.264. Retry the conversion if the output
-      // buffer size is too small.
-      dst_size = actual_output_size;
-      dst.reset(new uint8_t[dst_size]);
-      status = h264_converter_->ConvertChunk(
+      auto status = h264_converter_->ConvertChunk(
           base::span<uint8_t>(src, result.size),
           base::span<uint8_t>(dst.get(), dst_size), &config_changed,
           &actual_output_size);
-    }
+      if (status.code() == MP4Status::Codes::kBufferTooSmall) {
+        // Between AnnexB and AVCC bitstream formats, the start code length and
+        // the nal size length can be different. See H.264 specification at
+        // http://www.itu.int/rec/T-REC-H.264. Retry the conversion if the
+        // output buffer size is too small.
+        dst_size = actual_output_size;
+        dst.reset(new uint8_t[dst_size]);
+        status = h264_converter_->ConvertChunk(
+            base::span<uint8_t>(src, result.size),
+            base::span<uint8_t>(dst.get(), dst_size), &config_changed,
+            &actual_output_size);
+      }
 
-    if (!status.is_ok()) {
-      LOG(ERROR) << status.message();
-      NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
-      return;
-    }
-    result.size = actual_output_size;
-    result.data = std::move(dst);
-
-    if (config_changed) {
-      const auto& config = h264_converter_->GetCurrentConfig();
-      desc = CodecDescription();
-      if (!config.Serialize(desc.value())) {
+      if (!status.is_ok()) {
+        LOG(ERROR) << status.message();
         NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
         return;
       }
-    }
-  } else {
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
-    result.data.reset(new uint8_t[result.size]);
-    memcpy(result.data.get(), mapping.memory(), result.size);
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  }
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+      result.size = actual_output_size;
+      result.data = std::move(dst);
 
+      if (config_changed) {
+        const auto& config = h264_converter_->GetCurrentConfig();
+        desc = CodecDescription();
+        if (!config.Serialize(desc.value())) {
+          NotifyError(VideoEncodeAccelerator::kPlatformFailureError);
+          return;
+        }
+      }
+    } else {
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+      result.data.reset(new uint8_t[result.size]);
+      memcpy(result.data.get(), mapping.memory(), result.size);
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+    }
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+  }
   // Give the buffer back to |accelerator_|
   const base::UnsafeSharedMemoryRegion& region =
       output_handle_holder_->GetRegion();
@@ -552,7 +559,11 @@ void VideoEncodeAcceleratorAdapter::BitstreamBufferReady(
     }
   }
   DCHECK(erased_active_encode);
-  output_cb_.Run(std::move(result), std::move(desc));
+  if (result.size > 0) {
+    // Size = 0 means that frame was dropped by the platform encoder, we don't
+    // need to call the output callback in such cases.
+    output_cb_.Run(std::move(result), std::move(desc));
+  }
   if (active_encodes_.empty() && !flush_support_.value()) {
     // Manually call FlushCompleted(), since |accelerator_| won't do it for us.
     FlushCompleted(true);

@@ -10,6 +10,8 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/metrics/histogram_functions.h"
+#include "content/browser/attribution_reporting/attribution_report.h"
+#include "content/browser/attribution_reporting/attribution_utils.h"
 #include "content/browser/attribution_reporting/send_result.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/isolation_info.h"
@@ -48,8 +50,7 @@ AttributionNetworkSenderImpl::AttributionNetworkSenderImpl(
 AttributionNetworkSenderImpl::~AttributionNetworkSenderImpl() = default;
 
 void AttributionNetworkSenderImpl::SendReport(
-    GURL report_url,
-    std::string report_body,
+    AttributionReport report,
     ReportSentCallback sent_callback) {
   // The browser process URLLoaderFactory is not created by default, so don't
   // create it until it is directly needed.
@@ -59,7 +60,7 @@ void AttributionNetworkSenderImpl::SendReport(
   }
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = std::move(report_url);
+  resource_request->url = report.ReportURL();
   resource_request->method = net::HttpRequestHeaders::kPostMethod;
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->load_flags =
@@ -103,7 +104,8 @@ void AttributionNetworkSenderImpl::SendReport(
                                         std::move(simple_url_loader));
   simple_url_loader_ptr->SetTimeoutDuration(base::Seconds(30));
 
-  simple_url_loader_ptr->AttachStringForUpload(report_body, "application/json");
+  simple_url_loader_ptr->AttachStringForUpload(
+      SerializeAttributionJson(report.ReportBody()), "application/json");
 
   // Retry once on network change. A network change during DNS resolution
   // results in a DNS error rather than a network change error, so retry in
@@ -119,7 +121,7 @@ void AttributionNetworkSenderImpl::SendReport(
   simple_url_loader_ptr->DownloadHeadersOnly(
       url_loader_factory_.get(),
       base::BindOnce(&AttributionNetworkSenderImpl::OnReportSent,
-                     base::Unretained(this), std::move(it),
+                     base::Unretained(this), std::move(it), std::move(report),
                      std::move(sent_callback)));
 }
 
@@ -130,6 +132,7 @@ void AttributionNetworkSenderImpl::SetURLLoaderFactoryForTesting(
 
 void AttributionNetworkSenderImpl::OnReportSent(
     UrlLoaderList::iterator it,
+    AttributionReport report,
     ReportSentCallback sent_callback,
     scoped_refptr<net::HttpResponseHeaders> headers) {
   network::SimpleURLLoader* loader = it->get();
@@ -178,7 +181,8 @@ void AttributionNetworkSenderImpl::OnReportSent(
                           : SendResult::Status::kFailure);
 
   std::move(sent_callback)
-      .Run(SendResult(report_status, headers ? headers->response_code() : 0));
+      .Run(std::move(report),
+           SendResult(report_status, headers ? headers->response_code() : 0));
 }
 
 }  // namespace content

@@ -103,10 +103,12 @@ class OzonePlatformFlatland : public OzonePlatform,
       CHECK_EQ(ZX_OK, status) << "zx_channel_create";
       properties.view_creation_token = std::move(child_token);
       properties.view_ref_pair = scenic::ViewRefPair::New();
-      ::ui::fuchsia::GetFlatlandViewPresenter().Run(std::move(parent_token));
+      properties.view_controller =
+          ::ui::fuchsia::GetFlatlandViewPresenter().Run(
+              std::move(parent_token));
     }
 
-    // TODO(crbug.com/1230150): Add a hook for the RootPresenter equivalent of
+    // TODO(fxbug.dev/93998): Add a hook for the RootPresenter equivalent of
     // Flatland to ui::fuchsia::InitializeViewTokenAndPresentView() create a
     // window.
     CHECK(properties.view_creation_token.value.is_valid());
@@ -190,7 +192,18 @@ class OzonePlatformFlatland : public OzonePlatform,
       surface_factory_->Initialize(std::move(flatland_gpu_host_remote));
     }
 
-    // TODO(crbug.com/1230150): Add overlay manager.
+    // TODO(crbug.com/1146006): Add overlay manager.
+  }
+
+  const PlatformRuntimeProperties& GetPlatformRuntimeProperties() override {
+    static OzonePlatform::PlatformRuntimeProperties properties;
+
+    // This property is set when the GetPlatformRuntimeProperties is
+    // called on the gpu process side.
+    if (has_initialized_gpu())
+      properties.supports_native_pixmaps = true;
+
+    return properties;
   }
 
   void AddInterfaces(mojo::BinderMap* binders) override {

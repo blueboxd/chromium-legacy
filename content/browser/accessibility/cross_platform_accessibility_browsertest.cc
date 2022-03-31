@@ -1130,7 +1130,7 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   TestLocalizedRoleDescription(14, u"week picker");
   TestLocalizedRoleDescription(15, u"highlight");
   TestLocalizedRoleDescription(16, u"meter");
-  TestLocalizedRoleDescription(17, u"output");
+  TestLocalizedRoleDescription(17, u"status");
   TestLocalizedRoleDescription(18, u"time");
   TestLocalizedRoleDescription(19, u"content information");
 }
@@ -1352,8 +1352,14 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
                 .ToString());
 }
 
+// Flaky on Lacros: https://crbug.com/1292527
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_ControlsIdsForDateTimePopup DISABLED_ControlsIdsForDateTimePopup
+#else
+#define MAYBE_ControlsIdsForDateTimePopup ControlsIdsForDateTimePopup
+#endif
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
-                       ControlsIdsForDateTimePopup) {
+                       MAYBE_ControlsIdsForDateTimePopup) {
   LoadInitialAccessibilityTreeFromHtml(R"HTML(
       <!DOCTYPE html>
       <html>
@@ -1664,11 +1670,9 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 
 // This test is checking behavior when ImplicitRootScroller is enabled which
 // applies only on Android.
-// TODO(http://crbug.com/1137425): Re-enable the test after it gets fixed on
-// Android O.
 #if BUILDFLAG(IS_ANDROID)
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
-                       DISABLED_ImplicitRootScroller) {
+                       ImplicitRootScroller) {
   LoadInitialAccessibilityTreeFromHtmlFilePath(
       "/accessibility/scrolling/implicit-root-scroller.html");
 

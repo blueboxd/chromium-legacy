@@ -88,7 +88,7 @@ void ConfigureAndroidCompositing(WebSettings* settings) {
 }
 
 const cc::EffectNode* GetEffectNode(const cc::Layer* layer) {
-  return layer->layer_tree_host()->property_trees()->effect_tree.Node(
+  return layer->layer_tree_host()->property_trees()->effect_tree().Node(
       layer->effect_tree_index());
 }
 
@@ -1856,7 +1856,7 @@ TEST_P(VisualViewportTest, SlowScrollAfterImplScroll) {
   gsb.data.scroll_begin.delta_x_hint = -50;
   gsb.data.scroll_begin.delta_x_hint = -60;
   gsb.data.scroll_begin.delta_hint_units =
-      ScrollGranularity::kScrollByPrecisePixel;
+      ui::ScrollGranularity::kScrollByPrecisePixel;
   GetFrame()->GetEventHandler().HandleGestureEvent(gsb);
 
   WebGestureEvent gsu(
@@ -1865,7 +1865,7 @@ TEST_P(VisualViewportTest, SlowScrollAfterImplScroll) {
   gsu.SetFrameScale(1);
   gsu.data.scroll_update.delta_x = -50;
   gsu.data.scroll_update.delta_y = -60;
-  gsu.data.scroll_update.delta_units = ScrollGranularity::kScrollByPrecisePixel;
+  gsu.data.scroll_update.delta_units = ui::ScrollGranularity::kScrollByPrecisePixel;
   gsu.data.scroll_update.velocity_x = 1;
   gsu.data.scroll_update.velocity_y = 1;
 
@@ -2301,18 +2301,20 @@ TEST_P(VisualViewportTest, EnsureEffectNodeForScrollbars) {
   EXPECT_EQ(vertical_scrollbar->effect_tree_index(),
             vertical_scrollbar->layer_tree_host()
                 ->property_trees()
-                ->element_id_to_effect_node_index
-                    [visual_viewport.GetScrollbarElementId(
-                        ScrollbarOrientation::kVerticalScrollbar)]);
+                ->effect_tree()
+                .FindNodeFromElementId((visual_viewport.GetScrollbarElementId(
+                    ScrollbarOrientation::kVerticalScrollbar)))
+                ->id);
   EXPECT_EQ(vertical_scrollbar->offset_to_transform_parent(),
             gfx::Vector2dF(400 - scrollbar_thickness, 0));
 
   EXPECT_EQ(horizontal_scrollbar->effect_tree_index(),
             horizontal_scrollbar->layer_tree_host()
                 ->property_trees()
-                ->element_id_to_effect_node_index
-                    [visual_viewport.GetScrollbarElementId(
-                        ScrollbarOrientation::kHorizontalScrollbar)]);
+                ->effect_tree()
+                .FindNodeFromElementId(visual_viewport.GetScrollbarElementId(
+                    ScrollbarOrientation::kHorizontalScrollbar))
+                ->id);
   EXPECT_EQ(horizontal_scrollbar->offset_to_transform_parent(),
             gfx::Vector2dF(0, 400 - scrollbar_thickness));
 
@@ -2594,7 +2596,7 @@ TEST_P(VisualViewportTest, PaintScrollbar) {
   UpdateAllLifecyclePhases();
 
   auto check_scrollbar = [](const cc::Layer* scrollbar, float scale) {
-    EXPECT_TRUE(scrollbar->DrawsContent());
+    EXPECT_TRUE(scrollbar->draws_content());
     EXPECT_FALSE(scrollbar->HitTestable());
     EXPECT_TRUE(scrollbar->IsScrollbarLayerForTesting());
     EXPECT_EQ(
@@ -2611,11 +2613,11 @@ TEST_P(VisualViewportTest, PaintScrollbar) {
 
     gfx::Transform transform;
     transform.Scale(scale, scale);
-    EXPECT_EQ(transform,
-              scrollbar->layer_tree_host()
-                  ->property_trees()
-                  ->transform_tree.Node(scrollbar->transform_tree_index())
-                  ->local);
+    EXPECT_EQ(transform, scrollbar->layer_tree_host()
+                             ->property_trees()
+                             ->transform_tree()
+                             .Node(scrollbar->transform_tree_index())
+                             ->local);
   };
 
   // The last layer should be the vertical scrollbar.
@@ -2756,7 +2758,7 @@ TEST_P(VisualViewportTest, SetLocationBeforePrePaint) {
   auto* layer_tree_host = GetFrame()->View()->RootCcLayer()->layer_tree_host();
   EXPECT_EQ(
       gfx::PointF(12, 34),
-      layer_tree_host->property_trees()->scroll_tree.current_scroll_offset(
+      layer_tree_host->property_trees()->scroll_tree().current_scroll_offset(
           visual_viewport.GetScrollElementId()));
 }
 
@@ -2796,6 +2798,33 @@ TEST_P(VisualViewportTest, ScrollbarGeometryOnSizeChange) {
             vertical_scrollbar->offset_to_transform_parent());
   EXPECT_EQ(gfx::Size(93, 7), horizontal_scrollbar->bounds());
   EXPECT_EQ(gfx::Size(7, 113), vertical_scrollbar->bounds());
+}
+
+TEST_F(VisualViewportSimTest, PreferredOverlayScrollbarColorTheme) {
+  ColorSchemeHelper color_scheme_helper(*(WebView().GetPage()));
+  color_scheme_helper.SetPreferredColorScheme(
+      mojom::blink::PreferredColorScheme::kDark);
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <meta name="color-scheme" content="light dark">
+          <style>
+            html { height: 2000px; }
+          </style>
+      )HTML");
+  Compositor().BeginFrame();
+
+  const VisualViewport& visual_viewport =
+      WebView().GetPage()->GetVisualViewport();
+  EXPECT_EQ(ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeLight,
+            visual_viewport.GetScrollbarOverlayColorTheme());
+
+  color_scheme_helper.SetPreferredColorScheme(
+      mojom::blink::PreferredColorScheme::kLight);
+  Compositor().BeginFrame();
+  EXPECT_EQ(ScrollbarOverlayColorTheme::kScrollbarOverlayColorThemeDark,
+            visual_viewport.GetScrollbarOverlayColorTheme());
 }
 
 }  // namespace

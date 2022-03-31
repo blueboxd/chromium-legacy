@@ -38,6 +38,8 @@ AX_EXPORT constexpr NSString* const NSAccessibilityAutocompleteValueAttribute =
     @"AXAutocompleteValue";
 AX_EXPORT constexpr NSString* const NSAccessibilityBlockQuoteLevelAttribute =
     @"AXBlockQuoteLevel";
+AX_EXPORT constexpr NSString* const NSAccessibilityChromeAXNodeIdAttribute =
+    @"ChromeAXNodeId";
 AX_EXPORT constexpr NSString* const NSAccessibilityDetailsElementsAttribute =
     @"AXDetailsElements";
 AX_EXPORT constexpr NSString* const NSAccessibilityDOMClassList =
@@ -46,10 +48,25 @@ AX_EXPORT constexpr NSString* const NSAccessibilityDOMIdentifierAttribute =
     @"AXDOMIdentifier";
 AX_EXPORT constexpr NSString* const NSAccessibilityDropEffectsAttribute =
     @"AXDropEffects";
+AX_EXPORT constexpr NSString* const NSAccessibilityEditableAncestorAttribute =
+    @"AXEditableAncestor";
+AX_EXPORT constexpr NSString* const NSAccessibilityElementBusyAttribute =
+    @"AXElementBusy";
+AX_EXPORT constexpr NSString* const NSAccessibilityFocusableAncestorAttribute =
+    @"AXFocusableAncestor";
+AX_EXPORT constexpr NSString* const NSAccessibilityGrabbedAttribute =
+    @"AXGrabbed";
 AX_EXPORT constexpr NSString* const NSAccessibilityHasPopupAttribute =
     @"AXHasPopup";
+AX_EXPORT constexpr NSString* const
+    NSAccessibilityHighestEditableAncestorAttribute =
+        @"AXHighestEditableAncestor";
 AX_EXPORT constexpr NSString* const NSAccessibilityInvalidAttribute =
     @"AXInvalid";
+AX_EXPORT constexpr NSString* const NSAccessibilityIsMultiSelectable =
+    @"AXIsMultiSelectable";
+AX_EXPORT constexpr NSString* const NSAccessibilityKeyShortcutsValueAttribute =
+    @"AXKeyShortcutsValue";
 AX_EXPORT constexpr NSString* const
     NSAccessibilityMathFractionNumeratorAttribute = @"AXMathFractionNumerator";
 AX_EXPORT constexpr NSString* const
@@ -73,8 +90,11 @@ AX_EXPORT constexpr NSString* const NSAccessibilityMathPostscriptsAttribute =
     @"AXMathPostscripts";
 AX_EXPORT constexpr NSString* const NSAccessibilityMathPrescriptsAttribute =
     @"AXMathPrescripts";
+AX_EXPORT constexpr NSString* const NSAccessibilityOwnsAttribute = @"AXOwns";
 AX_EXPORT constexpr NSString* const NSAccessibilityPopupValueAttribute =
     @"AXPopupValue";
+AX_EXPORT constexpr NSString* const NSAccessibilityVisitedAttribute =
+    @"AXVisited";
 
 #if defined(MAC_OS_X_VERSION_10_12) && \
     (MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_12)

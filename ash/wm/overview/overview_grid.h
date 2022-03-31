@@ -27,13 +27,17 @@ namespace views {
 class Widget;
 }
 
+namespace ui {
+class PresentationTimeRecorder;
+}
+
 namespace ash {
 
 class DesksBarView;
 class DesksTemplatesGridView;
 class OverviewGridEventHandler;
 class OverviewItem;
-class PresentationTimeRecorder;
+class SaveDeskTemplateButton;
 
 // Represents a grid of windows in the Overview Mode in a particular root
 // window, and manages a selection widget that can be moved with the arrow keys.
@@ -208,6 +212,10 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
                          const gfx::PointF& location_in_screen,
                          bool should_drop_window_into_overview,
                          bool snap);
+
+  // Called when a WebUI Tab Strip thumbnail is dropped into overview grid.
+  void MergeWindowIntoOverviewForWebUITabStrip(aura::Window* dragged_window);
+
   // Shows/Hides windows during window dragging. Used when swiping up a window
   // from shelf.
   void SetVisibleDuringWindowDragging(bool visible, bool animate);
@@ -363,6 +371,9 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
 
   bool IsSaveDeskAsTemplateButtonVisible() const;
 
+  // Returns the button if available, otherwise null.
+  SaveDeskTemplateButton* GetSaveDeskAsTemplateButton() const;
+
   // SplitViewObserver:
   void OnSplitViewStateChanged(SplitViewController::State previous_state,
                                SplitViewController::State state) override;
@@ -425,6 +436,10 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   views::Widget* save_desk_as_template_widget() const {
     return save_desk_as_template_widget_.get();
   }
+
+  int num_incognito_windows() const { return num_incognito_windows_; }
+
+  int num_unsupported_windows() const { return num_unsupported_windows_; }
 
  private:
   class TargetWindowObserver;
@@ -497,9 +512,6 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
 
   void UpdateCannotSnapWarningVisibility();
 
-  // Updates frame throttling on overview item windows.
-  void UpdateFrameThrottling();
-
   // Called back when the button to save a desk template is pressed.
   void OnSaveDeskAsTemplateButtonPressed();
 
@@ -510,6 +522,11 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // Called when the animation for fading the `save_desk_as_template_widget_`
   // out is completed.
   void OnSaveDeskAsTemplateButtonFadedOut();
+
+  // Either increment or decrement `num_incognito_windows_` and
+  // `num_unsupported_windows`.
+  void UpdateNumIncognitoUnsupportedWindows(aura::Window* window,
+                                            bool increment);
 
   // Returns the height of `desks_bar_view_`.
   int GetDesksBarHeight() const;
@@ -584,7 +601,7 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   std::unique_ptr<OverviewGridEventHandler> grid_event_handler_;
 
   // Records the presentation time of scrolling the grid in overview mode.
-  std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;
+  std::unique_ptr<ui::PresentationTimeRecorder> presentation_time_recorder_;
 
   // Weak pointer to the window that is being dragged from the top, if there is
   // one.
@@ -599,6 +616,14 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // A widget that contains a button which creates a new desk template when
   // pressed.
   std::unique_ptr<views::Widget> save_desk_as_template_widget_;
+
+  // The number of incognito windows in this grid. Used by Desk Templates to
+  // identify the unsupported window type to the user.
+  int num_incognito_windows_ = 0;
+
+  // The number of unsupported windows in this grid. Used by Desk Templates to
+  // identify the unsupported window type to the user.
+  int num_unsupported_windows_ = 0;
 
   base::WeakPtrFactory<OverviewGrid> weak_ptr_factory_{this};
 };

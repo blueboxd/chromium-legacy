@@ -4,8 +4,14 @@
 
 #import "ios/chrome/browser/ui/settings/content_settings/default_page_mode_table_view_controller.h"
 
+#import "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
 #import "ios/chrome/browser/ui/settings/content_settings/default_page_mode_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
+#include "ios/chrome/grit/ios_chromium_strings.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -20,6 +26,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeMobile = kItemTypeEnumZero,
   ItemTypeDesktop,
+  ItemTypeFooter,
 };
 
 }  // namespace
@@ -34,6 +41,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+  self.title = l10n_util::GetNSString(IDS_IOS_DEFAULT_PAGE_MODE_TITLE);
   [self loadModel];
 }
 
@@ -47,12 +55,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   TableViewDetailIconItem* mobileItem =
       [[TableViewDetailIconItem alloc] initWithType:ItemTypeMobile];
-  mobileItem.text = @"TEST - Mobile";
+  mobileItem.text = l10n_util::GetNSString(IDS_IOS_DEFAULT_PAGE_MODE_MOBILE);
   [model addItem:mobileItem toSectionWithIdentifier:SectionIdentifierMode];
 
   TableViewDetailIconItem* desktopItem =
       [[TableViewDetailIconItem alloc] initWithType:ItemTypeDesktop];
-  desktopItem.text = @"TEST - Desktop";
+  desktopItem.text = l10n_util::GetNSString(IDS_IOS_DEFAULT_PAGE_MODE_DESKTOP);
   [model addItem:desktopItem toSectionWithIdentifier:SectionIdentifierMode];
 
   for (TableViewItem* item in [self.tableViewModel
@@ -61,6 +69,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
       item.accessoryType = UITableViewCellAccessoryCheckmark;
     }
   }
+
+  TableViewLinkHeaderFooterItem* footer =
+      [[TableViewLinkHeaderFooterItem alloc] initWithType:ItemTypeFooter];
+  if (self.chosenItemType == ItemTypeDesktop) {
+    footer.text =
+        l10n_util::GetNSString(IDS_IOS_DEFAULT_PAGE_MODE_DESKTOP_SUBTITLE);
+  } else {
+    footer.text =
+        l10n_util::GetNSString(IDS_IOS_DEFAULT_PAGE_MODE_MOBILE_SUBTITLE);
+  }
+  [model setFooter:footer forSectionWithIdentifier:SectionIdentifierMode];
 }
 
 - (void)tableView:(UITableView*)tableView
@@ -73,6 +92,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
                                    : DefaultPageModeDesktop;
 
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
+
+  base::RecordAction(
+      base::UserMetricsAction("MobileDefaultPageModeSettingsClose"));
 
   [self.delegate didSelectMode:chosenMode];
 }
@@ -94,19 +116,37 @@ typedef NS_ENUM(NSInteger, ItemType) {
     }
   }
 
-  [self reloadCellsForItems:[self.tableViewModel itemsInSectionWithIdentifier:
-                                                     SectionIdentifierMode]
-           withRowAnimation:UITableViewRowAnimationAutomatic];
+  TableViewLinkHeaderFooterItem* footer =
+      base::mac::ObjCCastStrict<TableViewLinkHeaderFooterItem>(
+          [self.tableViewModel
+              footerForSectionWithIdentifier:SectionIdentifierMode]);
+  if (mode == DefaultPageModeDesktop) {
+    footer.text =
+        l10n_util::GetNSString(IDS_IOS_DEFAULT_PAGE_MODE_DESKTOP_SUBTITLE);
+  } else {
+    footer.text =
+        l10n_util::GetNSString(IDS_IOS_DEFAULT_PAGE_MODE_MOBILE_SUBTITLE);
+  }
+
+  base::RecordAction(
+      base::UserMetricsAction("MobileDefaultPageModeSettingsToggled"));
+  NSIndexSet* section = [NSIndexSet
+      indexSetWithIndex:[self.tableViewModel
+                            sectionForSectionIdentifier:SectionIdentifierMode]];
+  [self.tableView reloadSections:section
+                withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 
 #pragma mark - SettingsControllerProtocol
 
 - (void)reportDismissalUserAction {
-  // TODO(crbug.com/1276922): Add UserAction recording.
+  base::RecordAction(
+      base::UserMetricsAction("MobileDefaultPageModeSettingsClose"));
 }
 
 - (void)reportBackUserAction {
-  // TODO(crbug.com/1276922): Add UserAction recording.
+  base::RecordAction(
+      base::UserMetricsAction("MobileDefaultPageModeSettingsBack"));
 }
 
 @end

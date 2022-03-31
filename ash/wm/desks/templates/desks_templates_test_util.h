@@ -45,25 +45,6 @@ class DesksTemplatesPresenterTestApi {
   DesksTemplatesPresenter* const presenter_;
 };
 
-// Wrapper for `DesksTemplatesGridView` that exposes internal state to test
-// functions.
-class DesksTemplatesGridViewTestApi {
- public:
-  explicit DesksTemplatesGridViewTestApi(
-      const DesksTemplatesGridView* grid_view);
-  DesksTemplatesGridViewTestApi(const DesksTemplatesGridViewTestApi&) = delete;
-  DesksTemplatesGridViewTestApi& operator=(
-      const DesksTemplatesGridViewTestApi&) = delete;
-  ~DesksTemplatesGridViewTestApi();
-
-  const std::vector<DesksTemplatesItemView*>& grid_items() const {
-    return grid_view_->grid_items_;
-  }
-
- private:
-  const DesksTemplatesGridView* grid_view_;
-};
-
 // Wrapper for `DesksTemplatesItemView` that exposes internal state to test
 // functions.
 class DesksTemplatesItemViewTestApi {
@@ -122,25 +103,6 @@ class DesksTemplatesIconViewTestApi {
 
  private:
   const DesksTemplatesIconView* desks_templates_icon_view_;
-};
-
-// Wrapper for `DesksTemplatesNameView` that exposes internal state to test
-// functions.
-class DesksTemplatesNameViewTestApi {
- public:
-  explicit DesksTemplatesNameViewTestApi(
-      const DesksTemplatesNameView* desks_templates_name_view);
-  DesksTemplatesNameViewTestApi(const DesksTemplatesNameViewTestApi&) = delete;
-  DesksTemplatesNameViewTestApi& operator=(
-      const DesksTemplatesNameViewTestApi&) = delete;
-  ~DesksTemplatesNameViewTestApi();
-
-  const std::u16string full_text() const {
-    return desks_templates_name_view_->full_text_;
-  }
-
- private:
-  const DesksTemplatesNameView* desks_templates_name_view_;
 };
 
 // Return the `grid_item_index`th `DesksTemplatesItemView` from the first

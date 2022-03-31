@@ -16,6 +16,7 @@
 namespace content {
 
 class FederatedAuthRequestImpl;
+class RenderFrameHostImpl;
 
 // FederatedAuthRequestService handles mojo connections from the renderer to
 // fulfill WebID-related requests.
@@ -28,11 +29,11 @@ class FederatedAuthRequestImpl;
 class CONTENT_EXPORT FederatedAuthRequestService
     : public DocumentService<blink::mojom::FederatedAuthRequest> {
  public:
-  static void Create(RenderFrameHost*,
+  static void Create(RenderFrameHostImpl*,
                      mojo::PendingReceiver<blink::mojom::FederatedAuthRequest>);
 
   FederatedAuthRequestService(
-      RenderFrameHost*,
+      RenderFrameHostImpl*,
       mojo::PendingReceiver<blink::mojom::FederatedAuthRequest>);
 
   FederatedAuthRequestService(const FederatedAuthRequestService&) = delete;
@@ -53,8 +54,8 @@ class CONTENT_EXPORT FederatedAuthRequestService
               const std::string& client_id,
               const std::string& account_id,
               RevokeCallback callback) override;
-  void Logout(std::vector<blink::mojom::LogoutRequestPtr> logout_requests,
-              LogoutCallback) override;
+  void LogoutRps(std::vector<blink::mojom::LogoutRpsRequestPtr> logout_requests,
+                 LogoutRpsCallback) override;
 
   FederatedAuthRequestImpl* GetImplForTesting() { return impl_.get(); }
 

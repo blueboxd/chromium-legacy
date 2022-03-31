@@ -544,7 +544,7 @@ bool ExtraInfoSpec::InitFromValue(content::BrowserContext* browser_context,
   *extra_info_spec = 0;
   if (!value.is_list())
     return false;
-  base::Value::ConstListView value_list = value.GetList();
+  base::Value::ConstListView value_list = value.GetListDeprecated();
   for (size_t i = 0; i < value_list.size(); ++i) {
     const std::string* str = value_list[i].GetIfString();
     if (!str)
@@ -1720,9 +1720,9 @@ std::unique_ptr<base::DictionaryValue> CreateHeaderDictionary(
     const std::string& name,
     const std::string& value) {
   auto header = std::make_unique<base::DictionaryValue>();
-  header->SetString(keys::kHeaderNameKey, name);
+  header->SetStringKey(keys::kHeaderNameKey, name);
   if (base::IsStringUTF8(value)) {
-    header->SetString(keys::kHeaderValueKey, value);
+    header->SetStringKey(keys::kHeaderValueKey, value);
   } else {
     header->Set(keys::kHeaderBinaryValueKey,
                 std::make_unique<base::Value>(StringToCharList(value)));

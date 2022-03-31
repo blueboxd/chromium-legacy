@@ -51,13 +51,17 @@ class BatchElementCheckerTest : public testing::Test {
             ClientStatus(ELEMENT_RESOLUTION_FAILED), nullptr));
   }
 
-  void OnElementExistenceCheck(const std::string& name,
-                               const ClientStatus& result,
-                               const ElementFinder::Result& ignored_element) {
+  void OnElementExistenceCheck(
+      const std::string& name,
+      const ClientStatus& result,
+      const std::vector<std::string>& ignored_payloads,
+      const std::vector<std::string>& ignored_tags,
+      const base::flat_map<std::string, DomObjectFrameStack>&
+          ignored_elements) {
     element_exists_results_[name] = result.ok();
   }
 
-  BatchElementChecker::ElementCheckCallback ElementExistenceCallback(
+  BatchElementChecker::ElementConditionCheckCallback ElementExistenceCallback(
       const std::string& name) {
     return base::BindOnce(&BatchElementCheckerTest::OnElementExistenceCheck,
                           base::Unretained(this), name);
@@ -95,6 +99,17 @@ class BatchElementCheckerTest : public testing::Test {
     checks_.Run(&mock_web_controller_);
   }
 
+  ElementConditionProto Match(const Selector& selector, bool strict = false) {
+    ElementConditionProto condition;
+    *condition.mutable_match() = selector.proto;
+    condition.set_require_unique_element(strict);
+    return condition;
+  }
+
+  ElementConditionProto StrictMatch(const Selector& selector) {
+    return Match(selector, /* strict= */ true);
+  }
+
   MockWebController mock_web_controller_;
   BatchElementChecker checks_;
   base::flat_map<std::string, bool> element_exists_results_;
@@ -103,6 +118,7 @@ class BatchElementCheckerTest : public testing::Test {
   base::MockCallback<base::OnceCallback<void(
       const ClientStatus&,
       const std::vector<std::string>&,
+      const std::vector<std::string>&,
       const base::flat_map<std::string, DomObjectFrameStack>&)>>
       mock_callback_;
   ElementConditionProto condition_;
@@ -110,8 +126,8 @@ class BatchElementCheckerTest : public testing::Test {
 
 TEST_F(BatchElementCheckerTest, Empty) {
   EXPECT_TRUE(checks_.empty());
-  checks_.AddElementCheck(Selector({"exists"}), /* strict= */ false,
-                          ElementExistenceCallback("exists"));
+  checks_.AddElementConditionCheck(Match(Selector({"exists"})),
+                                   ElementExistenceCallback("exists"));
   EXPECT_FALSE(checks_.empty());
   Run("all_done");
   EXPECT_THAT(all_done_, Contains("all_done"));
@@ -120,8 +136,8 @@ TEST_F(BatchElementCheckerTest, Empty) {
 TEST_F(BatchElementCheckerTest, OneElementFound) {
   Selector expected_selector({"exists"});
   test_util::MockFindElement(mock_web_controller_, expected_selector);
-  checks_.AddElementCheck(expected_selector, /* strict= */ false,
-                          ElementExistenceCallback("exists"));
+  checks_.AddElementConditionCheck(Match(expected_selector),
+                                   ElementExistenceCallback("exists"));
   Run("was_run");
 
   EXPECT_THAT(element_exists_results_, Contains(Pair("exists", true)));
@@ -130,8 +146,8 @@ TEST_F(BatchElementCheckerTest, OneElementFound) {
 
 TEST_F(BatchElementCheckerTest, OneElementNotFound) {
   Selector expected_notexists_selector({"does_not_exist"});
-  checks_.AddElementCheck(expected_notexists_selector, /* strict= */ false,
-                          ElementExistenceCallback("does_not_exist"));
+  checks_.AddElementConditionCheck(Match(expected_notexists_selector),
+                                   ElementExistenceCallback("does_not_exist"));
   Run("was_run");
 
   EXPECT_THAT(element_exists_results_, Contains(Pair("does_not_exist", false)));
@@ -143,8 +159,8 @@ TEST_F(BatchElementCheckerTest, TooManyElementsForStrict) {
   EXPECT_CALL(mock_web_controller_,
               FindElement(expected_multiple_selector, /* strict= */ true, _))
       .WillOnce(RunOnceCallback<2>(ClientStatus(TOO_MANY_ELEMENTS), nullptr));
-  checks_.AddElementCheck(expected_multiple_selector, /* strict= */ true,
-                          ElementExistenceCallback("multiple"));
+  checks_.AddElementConditionCheck(StrictMatch(expected_multiple_selector),
+                                   ElementExistenceCallback("multiple"));
   Run("was_run");
 
   EXPECT_THAT(element_exists_results_, Contains(Pair("multiple", false)));
@@ -221,14 +237,14 @@ TEST_F(BatchElementCheckerTest, MultipleElements) {
       .WillOnce(RunOnceCallback<1>(ClientStatus(ELEMENT_RESOLUTION_FAILED),
                                    std::string()));
 
-  checks_.AddElementCheck(expected_selector_1, /* strict= */ false,
-                          ElementExistenceCallback("1"));
-  checks_.AddElementCheck(expected_selector_2, /* strict= */ false,
-                          ElementExistenceCallback("2"));
-  checks_.AddElementCheck(expected_selector_3, /* strict= */ false,
-                          ElementExistenceCallback("3"));
-  checks_.AddElementCheck(expected_selector_4, /* strict= */ true,
-                          ElementExistenceCallback("4"));
+  checks_.AddElementConditionCheck(Match(expected_selector_1),
+                                   ElementExistenceCallback("1"));
+  checks_.AddElementConditionCheck(Match(expected_selector_2),
+                                   ElementExistenceCallback("2"));
+  checks_.AddElementConditionCheck(Match(expected_selector_3),
+                                   ElementExistenceCallback("3"));
+  checks_.AddElementConditionCheck(StrictMatch(expected_selector_4),
+                                   ElementExistenceCallback("4"));
   checks_.AddFieldValueCheck(expected_selector_5, FieldValueCallback("5"));
   checks_.AddFieldValueCheck(expected_selector_6, FieldValueCallback("6"));
   Run("was_run");
@@ -261,16 +277,16 @@ TEST_F(BatchElementCheckerTest, DeduplicateElementExists) {
         std::move(callback).Run(OkClientStatus(), std::move(element_result));
       }));
 
-  checks_.AddElementCheck(expected_selector_1, /* strict= */ false,
-                          ElementExistenceCallback("first 1"));
-  checks_.AddElementCheck(expected_selector_1, /* strict= */ false,
-                          ElementExistenceCallback("second 1"));
-  checks_.AddElementCheck(expected_selector_2, /* strict= */ false,
-                          ElementExistenceCallback("2"));
-  checks_.AddElementCheck(expected_selector_3, /* strict= */ true,
-                          ElementExistenceCallback("first 3"));
-  checks_.AddElementCheck(expected_selector_3, /* strict= */ false,
-                          ElementExistenceCallback("second 3"));
+  checks_.AddElementConditionCheck(Match(expected_selector_1),
+                                   ElementExistenceCallback("first 1"));
+  checks_.AddElementConditionCheck(Match(expected_selector_1),
+                                   ElementExistenceCallback("second 1"));
+  checks_.AddElementConditionCheck(Match(expected_selector_2),
+                                   ElementExistenceCallback("2"));
+  checks_.AddElementConditionCheck(StrictMatch(expected_selector_3),
+                                   ElementExistenceCallback("first 3"));
+  checks_.AddElementConditionCheck(Match(expected_selector_3),
+                                   ElementExistenceCallback("second 3"));
 
   Run("was_run");
 
@@ -285,8 +301,8 @@ TEST_F(BatchElementCheckerTest, DeduplicateElementExists) {
 TEST_F(BatchElementCheckerTest, CallMultipleAllDoneCallbacks) {
   Selector expected_selector({"exists"});
   test_util::MockFindElement(mock_web_controller_, expected_selector);
-  checks_.AddElementCheck(expected_selector, /* strict= */ false,
-                          ElementExistenceCallback("exists"));
+  checks_.AddElementConditionCheck(Match(expected_selector),
+                                   ElementExistenceCallback("exists"));
   checks_.AddAllDoneCallback(DoneCallback("1"));
   checks_.AddAllDoneCallback(DoneCallback("2"));
   checks_.AddAllDoneCallback(DoneCallback("3"));
@@ -304,8 +320,9 @@ TEST_F(BatchElementCheckerTest, NonEmpty) {
 }
 
 TEST_F(BatchElementCheckerTest, NoConditions) {
-  EXPECT_CALL(mock_callback_,
-              Run(Property(&ClientStatus::proto_status, ACTION_APPLIED), _, _));
+  EXPECT_CALL(
+      mock_callback_,
+      Run(Property(&ClientStatus::proto_status, ACTION_APPLIED), _, _, _));
   CheckElementCondition();
 }
 
@@ -314,15 +331,16 @@ TEST_F(BatchElementCheckerTest, EmptySelector) {
 
   EXPECT_CALL(mock_callback_, Run(Property(&ClientStatus::proto_status,
                                            ELEMENT_RESOLUTION_FAILED),
-                                  _, _));
+                                  _, _, _));
   CheckElementCondition();
 }
 
 TEST_F(BatchElementCheckerTest, ElementExists) {
   *condition_.mutable_match() = ToSelectorProto("exists");
 
-  EXPECT_CALL(mock_callback_,
-              Run(Property(&ClientStatus::proto_status, ACTION_APPLIED), _, _));
+  EXPECT_CALL(
+      mock_callback_,
+      Run(Property(&ClientStatus::proto_status, ACTION_APPLIED), _, _, _));
   CheckElementCondition();
 }
 
@@ -331,7 +349,7 @@ TEST_F(BatchElementCheckerTest, ElementDoesNotExist) {
 
   EXPECT_CALL(mock_callback_, Run(Property(&ClientStatus::proto_status,
                                            ELEMENT_RESOLUTION_FAILED),
-                                  _, _));
+                                  _, _, _));
   CheckElementCondition();
 }
 
@@ -340,7 +358,7 @@ TEST_F(BatchElementCheckerTest, AnyOfEmpty) {
 
   EXPECT_CALL(mock_callback_, Run(Property(&ClientStatus::proto_status,
                                            ELEMENT_RESOLUTION_FAILED),
-                                  _, _));
+                                  _, _, _));
   CheckElementCondition();
 }
 
@@ -352,7 +370,7 @@ TEST_F(BatchElementCheckerTest, AnyOfNoneMatch) {
 
   EXPECT_CALL(mock_callback_, Run(Property(&ClientStatus::proto_status,
                                            ELEMENT_RESOLUTION_FAILED),
-                                  _, _));
+                                  _, _, _));
   CheckElementCondition();
 }
 
@@ -362,8 +380,9 @@ TEST_F(BatchElementCheckerTest, AnyOfSomeMatch) {
   *condition_.mutable_any_of()->add_conditions()->mutable_match() =
       ToSelectorProto("does_not_exist");
 
-  EXPECT_CALL(mock_callback_,
-              Run(Property(&ClientStatus::proto_status, ACTION_APPLIED), _, _));
+  EXPECT_CALL(
+      mock_callback_,
+      Run(Property(&ClientStatus::proto_status, ACTION_APPLIED), _, _, _));
   CheckElementCondition();
 }
 
@@ -373,16 +392,18 @@ TEST_F(BatchElementCheckerTest, AnyOfAllMatch) {
   *condition_.mutable_any_of()->add_conditions()->mutable_match() =
       ToSelectorProto("exists_too");
 
-  EXPECT_CALL(mock_callback_,
-              Run(Property(&ClientStatus::proto_status, ACTION_APPLIED), _, _));
+  EXPECT_CALL(
+      mock_callback_,
+      Run(Property(&ClientStatus::proto_status, ACTION_APPLIED), _, _, _));
   CheckElementCondition();
 }
 
 TEST_F(BatchElementCheckerTest, AllOfEmpty) {
   condition_.mutable_all_of();
 
-  EXPECT_CALL(mock_callback_,
-              Run(Property(&ClientStatus::proto_status, ACTION_APPLIED), _, _));
+  EXPECT_CALL(
+      mock_callback_,
+      Run(Property(&ClientStatus::proto_status, ACTION_APPLIED), _, _, _));
   CheckElementCondition();
 }
 
@@ -394,7 +415,7 @@ TEST_F(BatchElementCheckerTest, AllOfNoneMatch) {
 
   EXPECT_CALL(mock_callback_, Run(Property(&ClientStatus::proto_status,
                                            ELEMENT_RESOLUTION_FAILED),
-                                  _, _));
+                                  _, _, _));
   CheckElementCondition();
 }
 
@@ -406,7 +427,7 @@ TEST_F(BatchElementCheckerTest, AllOfSomeMatch) {
 
   EXPECT_CALL(mock_callback_, Run(Property(&ClientStatus::proto_status,
                                            ELEMENT_RESOLUTION_FAILED),
-                                  _, _));
+                                  _, _, _));
   CheckElementCondition();
 }
 
@@ -416,16 +437,18 @@ TEST_F(BatchElementCheckerTest, AllOfAllMatch) {
   *condition_.mutable_all_of()->add_conditions()->mutable_match() =
       ToSelectorProto("exists_too");
 
-  EXPECT_CALL(mock_callback_,
-              Run(Property(&ClientStatus::proto_status, ACTION_APPLIED), _, _));
+  EXPECT_CALL(
+      mock_callback_,
+      Run(Property(&ClientStatus::proto_status, ACTION_APPLIED), _, _, _));
   CheckElementCondition();
 }
 
 TEST_F(BatchElementCheckerTest, NoneOfEmpty) {
   condition_.mutable_none_of();
 
-  EXPECT_CALL(mock_callback_,
-              Run(Property(&ClientStatus::proto_status, ACTION_APPLIED), _, _));
+  EXPECT_CALL(
+      mock_callback_,
+      Run(Property(&ClientStatus::proto_status, ACTION_APPLIED), _, _, _));
   CheckElementCondition();
 }
 
@@ -435,8 +458,9 @@ TEST_F(BatchElementCheckerTest, NoneOfNoneMatch) {
   *condition_.mutable_none_of()->add_conditions()->mutable_match() =
       ToSelectorProto("does_not_exist_either");
 
-  EXPECT_CALL(mock_callback_,
-              Run(Property(&ClientStatus::proto_status, ACTION_APPLIED), _, _));
+  EXPECT_CALL(
+      mock_callback_,
+      Run(Property(&ClientStatus::proto_status, ACTION_APPLIED), _, _, _));
   CheckElementCondition();
 }
 
@@ -448,7 +472,7 @@ TEST_F(BatchElementCheckerTest, NoneOfSomeMatch) {
 
   EXPECT_CALL(mock_callback_, Run(Property(&ClientStatus::proto_status,
                                            ELEMENT_RESOLUTION_FAILED),
-                                  _, _));
+                                  _, _, _));
   CheckElementCondition();
 }
 
@@ -460,7 +484,7 @@ TEST_F(BatchElementCheckerTest, NoneOfAllMatch) {
 
   EXPECT_CALL(mock_callback_, Run(Property(&ClientStatus::proto_status,
                                            ELEMENT_RESOLUTION_FAILED),
-                                  _, _));
+                                  _, _, _));
   CheckElementCondition();
 }
 
@@ -477,7 +501,7 @@ TEST_F(BatchElementCheckerTest, PayloadConditionMet) {
 
   EXPECT_CALL(mock_callback_,
               Run(Property(&ClientStatus::proto_status, ACTION_APPLIED),
-                  ElementsAre("exists", "exists_too", "any_of"), _));
+                  ElementsAre("exists", "exists_too", "any_of"), _, _));
   CheckElementCondition();
 }
 
@@ -494,7 +518,7 @@ TEST_F(BatchElementCheckerTest, PayloadConditionNotMet) {
 
   EXPECT_CALL(mock_callback_, Run(Property(&ClientStatus::proto_status,
                                            ELEMENT_RESOLUTION_FAILED),
-                                  ElementsAre("exists", "exists_too"), _));
+                                  ElementsAre("exists", "exists_too"), _, _));
   CheckElementCondition();
 }
 
@@ -524,7 +548,7 @@ TEST_F(BatchElementCheckerTest, Complex) {
 
   EXPECT_CALL(mock_callback_,
               Run(Property(&ClientStatus::proto_status, ACTION_APPLIED),
-                  ElementsAre("none_of", "exists in any_of", "any_of"), _));
+                  ElementsAre("none_of", "exists in any_of", "any_of"), _, _));
   CheckElementCondition();
 }
 
@@ -532,16 +556,19 @@ TEST_F(BatchElementCheckerTest, ReturnsFoundElements) {
   auto* exists = condition_.mutable_all_of()->add_conditions();
   *exists->mutable_match() = ToSelectorProto("exists");
   exists->set_payload("exists");
+  exists->set_tag("exists_tag");
   exists->mutable_client_id()->set_identifier("exists");
 
   auto* exists_too = condition_.mutable_all_of()->add_conditions();
   *exists_too->mutable_match() = ToSelectorProto("exists_too");
   exists_too->set_payload("exists_too");
+  exists_too->set_tag("exists_too_tag");
   exists_too->mutable_client_id()->set_identifier("exists_too");
 
   EXPECT_CALL(mock_callback_,
               Run(Property(&ClientStatus::proto_status, ACTION_APPLIED),
                   ElementsAre("exists", "exists_too"),
+                  ElementsAre("exists_tag", "exists_too_tag"),
                   UnorderedElementsAre(Key("exists"), Key("exists_too"))));
   CheckElementCondition();
 }

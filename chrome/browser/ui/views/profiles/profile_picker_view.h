@@ -30,7 +30,9 @@ class ProfilePickerDiceSignInProvider;
 class ProfilePickerDiceSignInToolbar;
 #endif
 
+class Profile;
 class ProfilePickerSignedInFlowController;
+class ScopedProfileKeepAlive;
 
 namespace base {
 class FilePath;
@@ -43,10 +45,6 @@ class RenderFrameHost;
 class WebContents;
 }  // namespace content
 
-namespace ui {
-class ThemeProvider;
-}  // namespace ui
-
 // Dialog widget that contains the Desktop Profile picker webui.
 class ProfilePickerView : public views::WidgetDelegateView,
                           public ProfilePickerWebContentsHost {
@@ -56,7 +54,7 @@ class ProfilePickerView : public views::WidgetDelegateView,
   ProfilePickerView(const ProfilePickerView&) = delete;
   ProfilePickerView& operator=(const ProfilePickerView&) = delete;
 
-  const ui::ThemeProvider* GetThemeProviderForProfileBeingCreated() const;
+  Profile* GetProfileBeingCreated() const;
   ui::ColorProviderManager::InitializerSupplier*
   GetCustomThemeForProfileBeingCreated() const;
 
@@ -223,6 +221,7 @@ class ProfilePickerView : public views::WidgetDelegateView,
   GURL GetOnSelectProfileTargetUrl() const;
 
   ScopedKeepAlive keep_alive_;
+  std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive_;
   ProfilePicker::EntryPoint entry_point_ =
       ProfilePicker::EntryPoint::kOnStartup;
   State state_ = State::kNotStarted;

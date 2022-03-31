@@ -74,6 +74,7 @@ void GestureManager::Clear() {
 void GestureManager::ResetLongTapContextMenuStates() {
   gesture_context_menu_deferred_ = false;
   long_press_position_in_root_frame_ = gfx::PointF();
+  drag_in_progress_ = false;
 }
 
 void GestureManager::Trace(Visitor* visitor) const {
@@ -100,6 +101,7 @@ HitTestRequest::HitTestRequestType GestureManager::GetHitTypeForGestureType(
     case WebInputEvent::Type::kGestureTap:
       return hit_type | HitTestRequest::kRelease;
     case WebInputEvent::Type::kGestureTapDown:
+    case WebInputEvent::Type::kGestureShortPress:
     case WebInputEvent::Type::kGestureLongPress:
     case WebInputEvent::Type::kGestureLongTap:
     case WebInputEvent::Type::kGestureTwoFingerTap:
@@ -149,6 +151,8 @@ WebInputEventResult GestureManager::HandleGestureEventInFrame(
       return HandleGestureTap(targeted_event);
     case WebInputEvent::Type::kGestureShowPress:
       return HandleGestureShowPress();
+    case WebInputEvent::Type::kGestureShortPress:
+      return HandleGestureShortPress(targeted_event);
     case WebInputEvent::Type::kGestureLongPress:
       return HandleGestureLongPress(targeted_event);
     case WebInputEvent::Type::kGestureLongTap:
@@ -373,6 +377,17 @@ WebInputEventResult GestureManager::HandleGestureTap(
   return event_result;
 }
 
+WebInputEventResult GestureManager::HandleGestureShortPress(
+    const GestureEventWithHitTestResults& targeted_event) {
+  drag_in_progress_ = false;
+  if (RuntimeEnabledFeatures::TouchDragAndContextMenuEnabled()) {
+    drag_in_progress_ =
+        mouse_event_manager_->HandleDragDropIfPossible(targeted_event);
+  }
+  return drag_in_progress_ ? WebInputEventResult::kHandledSystem
+                           : WebInputEventResult::kNotHandled;
+}
+
 WebInputEventResult GestureManager::HandleGestureLongPress(
     const GestureEventWithHitTestResults& targeted_event) {
   const WebGestureEvent& gesture_event = targeted_event.Event();
@@ -390,23 +405,30 @@ WebInputEventResult GestureManager::HandleGestureLongPress(
 
   gesture_context_menu_deferred_ = false;
 
-  bool hit_test_contains_links = hit_test_result.URLElement() ||
-                                 !hit_test_result.AbsoluteImageURL().IsNull() ||
-                                 !hit_test_result.AbsoluteMediaURL().IsNull();
-  if (!hit_test_contains_links &&
-      mouse_event_manager_->HandleDragDropIfPossible(targeted_event)) {
-    gesture_context_menu_deferred_ = true;
-    return WebInputEventResult::kHandledSystem;
+  if (!RuntimeEnabledFeatures::TouchDragAndContextMenuEnabled() &&
+      frame_->GetSettings() &&
+      frame_->GetSettings()->GetTouchDragDropEnabled() && frame_->View()) {
+    bool hit_test_contains_links =
+        hit_test_result.URLElement() ||
+        !hit_test_result.AbsoluteImageURL().IsNull() ||
+        !hit_test_result.AbsoluteMediaURL().IsNull();
+    if (!hit_test_contains_links &&
+        mouse_event_manager_->HandleDragDropIfPossible(targeted_event)) {
+      gesture_context_menu_deferred_ = true;
+      return WebInputEventResult::kHandledSystem;
+    }
   }
 
   Node* inner_node = hit_test_result.InnerNode();
-  if (inner_node && inner_node->GetLayoutObject() &&
+  if (!drag_in_progress_ && inner_node && inner_node->GetLayoutObject() &&
       selection_controller_->HandleGestureLongPress(hit_test_result)) {
     mouse_event_manager_->FocusDocumentView();
   }
 
   if (frame_->GetSettings() &&
       frame_->GetSettings()->GetShowContextMenuOnMouseUp()) {
+    // TODO(https://crbug.com/1290905): Prevent a contextmenu after a
+    // finger-drag when TouchDragAndContextMenu is enabled.
     gesture_context_menu_deferred_ = true;
     return WebInputEventResult::kNotHandled;
   }
@@ -510,7 +532,7 @@ WebInputEventResult GestureManager::HandleGestureShowPress() {
   LocalFrameView* view = frame_->View();
   if (!view)
     return WebInputEventResult::kNotHandled;
-  const LocalFrameView::ScrollableAreaSet* areas = view->ScrollableAreas();
+  const LocalFrameView::ScrollableAreaSet* areas = view->UserScrollableAreas();
   if (!areas)
     return WebInputEventResult::kNotHandled;
   for (PaintLayerScrollableArea* scrollable_area : *areas) {

@@ -106,18 +106,19 @@ static_assert(sizeof(void*) != 8, "");
 // hence enabled by default.
 #define PA_THREAD_CACHE_ENABLE_STATISTICS
 
-// Enable free list hardening as much as possible.
+// Enable free list shadow entry to strengthen hardening as much as possible.
+// The shadow entry is an inversion (bitwise-NOT) of the encoded `next` pointer.
 //
-// Disabled when putting refcount in the previous slot, which is what
-// PUT_REF_COUNT_IN_PREVIOUS_SLOT does. In this case the refcount overlaps with
-// the next pointer shadow for the smallest bucket.
+// Disabled when ref-count is placed in the previous slot, as it will overlap
+// with the shadow for the smallest slots.
 //
-// Only for Little endian CPUs, as the freelist encoding used on big endian
-// platforms complicates things. Note that Chromium is not officially supported
-// on any big endian architecture as well.
+// Disabled on Big Endian CPUs, because encoding is also a bitwise-NOT there,
+// making the shadow entry equal to the original, valid pointer to the next
+// slot. In case Use-after-Free happens, we'd rather not hand out a valid,
+// ready-to-use pointer.
 #if !BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT) && \
     defined(ARCH_CPU_LITTLE_ENDIAN)
-#define PA_HAS_FREELIST_HARDENING
+#define PA_HAS_FREELIST_SHADOW_ENTRY
 #endif
 
 // Specifies whether allocation extras need to be added.
@@ -161,6 +162,12 @@ static_assert(sizeof(void*) != 8, "");
 #define PA_HAS_ALLOCATION_GUARD
 #endif
 
+#if defined(ARCH_CPU_ARM64) && defined(__clang__) && \
+    (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_ANDROID))
+static_assert(sizeof(void*) == 8);
+#define PA_HAS_MEMORY_TAGGING
+#endif
+
 // Lazy commit should only be enabled on Windows, because commit charge is
 // only meaningful and limited on Windows. It affects performance on other
 // platforms and is simply not needed there due to OS supporting overcommit.
@@ -168,6 +175,27 @@ static_assert(sizeof(void*) != 8, "");
 constexpr bool kUseLazyCommit = true;
 #else
 constexpr bool kUseLazyCommit = false;
+#endif
+
+// On these platforms, lock all the partitions before fork(), and unlock after.
+// This may be required on more platforms in the future.
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#define PA_HAS_ATFORK_HANDLER
+#endif
+
+// PartitionAlloc uses PartitionRootEnumerator to acquire all
+// PartitionRoots at BeforeFork and to release at AfterFork.
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_HAS_ATFORK_HANDLER)
+#define PA_USE_PARTITION_ROOT_ENUMERATOR
+#endif
+
+// Due to potential conflict with the free list pointer in the "previous slot"
+// mode in the smallest bucket, we can't check both the cookie and the dangling
+// raw_ptr at the same time.
+#if !(BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS) &&  \
+      BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)) && \
+    (DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS))
+#define PA_REF_COUNT_CHECK_COOKIE
 #endif
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ALLOC_CONFIG_H_

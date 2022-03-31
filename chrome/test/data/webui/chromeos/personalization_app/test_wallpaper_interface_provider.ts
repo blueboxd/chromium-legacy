@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {CurrentWallpaper, FetchGooglePhotosAlbumsResponse, GooglePhotosAlbum, OnlineImageType, WallpaperCollection, WallpaperImage, WallpaperLayout, WallpaperObserverInterface, WallpaperObserverRemote, WallpaperProviderInterface, WallpaperType} from 'chrome://personalization/trusted/personalization_app.mojom-webui.js';
+import {CurrentWallpaper, FetchGooglePhotosAlbumsResponse, FetchGooglePhotosPhotosResponse, GooglePhotosAlbum, GooglePhotosPhoto, OnlineImageType, WallpaperCollection, WallpaperImage, WallpaperLayout, WallpaperObserverInterface, WallpaperObserverRemote, WallpaperProviderInterface, WallpaperType} from 'chrome://personalization/trusted/personalization_app.mojom-webui.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 import {assertTrue} from 'chrome://webui-test/chai_assert.js';
@@ -18,9 +18,11 @@ export class TestWallpaperProvider extends
       'fetchImagesForCollection',
       'fetchGooglePhotosAlbums',
       'fetchGooglePhotosCount',
+      'fetchGooglePhotosPhotos',
       'getLocalImages',
       'getLocalImageThumbnail',
       'setWallpaperObserver',
+      'selectGooglePhotosPhoto',
       'selectWallpaper',
       'selectLocalImage',
       'setCustomWallpaperLayout',
@@ -95,6 +97,9 @@ export class TestWallpaperProvider extends
   private images_: WallpaperImage[]|null;
   private googlePhotosAlbums_: GooglePhotosAlbum[]|undefined = [];
   private googlePhotosCount_: number = 0;
+  private googlePhotosPhotos_: GooglePhotosPhoto[]|undefined = [];
+  private googlePhotosPhotosByAlbumId_:
+      Record<string, GooglePhotosPhoto[]|undefined> = {};
   localImages: FilePath[]|null;
   localImageData: Record<string, string>;
   currentWallpaper: CurrentWallpaper;
@@ -151,6 +156,18 @@ export class TestWallpaperProvider extends
     return Promise.resolve({count});
   }
 
+  fetchGooglePhotosPhotos(itemId: string, albumId: string) {
+    this.methodCalled('fetchGooglePhotosPhotos', itemId, albumId);
+    const response = new FetchGooglePhotosPhotosResponse();
+    response.photos =
+        loadTimeData.getBoolean('isGooglePhotosIntegrationEnabled') ?
+        albumId ? this.googlePhotosPhotosByAlbumId_[albumId] :
+                  this.googlePhotosPhotos_ :
+        undefined;
+    response.resumeToken = undefined;
+    return Promise.resolve({response});
+  }
+
   getLocalImages() {
     this.methodCalled('getLocalImages');
     return Promise.resolve({images: this.localImages});
@@ -172,6 +189,11 @@ export class TestWallpaperProvider extends
   selectWallpaper(assetId: bigint, previewMode: boolean) {
     this.methodCalled('selectWallpaper', assetId, previewMode);
     return Promise.resolve({success: this.selectWallpaperResponse});
+  }
+
+  selectGooglePhotosPhoto(id: string) {
+    this.methodCalled('selectGooglePhotosPhoto', id);
+    return Promise.resolve({success: false});
   }
 
   selectLocalImage(
@@ -225,6 +247,15 @@ export class TestWallpaperProvider extends
 
   setGooglePhotosCount(googlePhotosCount: number) {
     this.googlePhotosCount_ = googlePhotosCount;
+  }
+
+  setGooglePhotosPhotos(googlePhotosPhotos: GooglePhotosPhoto[]|undefined) {
+    this.googlePhotosPhotos_ = googlePhotosPhotos;
+  }
+
+  setGooglePhotosPhotosByAlbumId(
+      albumId: string, googlePhotosPhotos: GooglePhotosPhoto[]|undefined) {
+    this.googlePhotosPhotosByAlbumId_[albumId] = googlePhotosPhotos;
   }
 
   setImages(images: WallpaperImage[]) {

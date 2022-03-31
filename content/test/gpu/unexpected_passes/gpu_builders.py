@@ -3,20 +3,11 @@
 # found in the LICENSE file.
 """GPU-specific implementation of the unexpected passes' builders module."""
 
-from __future__ import print_function
-
-import os
-import sys
-
 from unexpected_passes_common import builders
 from unexpected_passes_common import constants
 from unexpected_passes_common import data_types
 
-TOOLS_PERF_DIR = os.path.join(constants.CHROMIUM_SRC_DIR, 'tools', 'perf')
-
-sys.path.append(TOOLS_PERF_DIR)
 from chrome_telemetry_build import android_browser_types as abt
-sys.path.remove(TOOLS_PERF_DIR)
 
 
 class GpuBuilders(builders.Builders):
@@ -38,8 +29,8 @@ class GpuBuilders(builders.Builders):
   def GetIsolateNames(self):
     if self._isolate_names is None:
       self._isolate_names = {
-          'fuchsia_telemetry_gpu_integration_test',
           'telemetry_gpu_integration_test',
+          'telemetry_gpu_integration_test_fuchsia',
       }
       # Android targets are split based on binary type, so add those using the
       # maintained list of suffixes.

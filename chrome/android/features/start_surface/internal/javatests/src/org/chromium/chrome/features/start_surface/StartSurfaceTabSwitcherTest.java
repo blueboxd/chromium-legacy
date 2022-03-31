@@ -306,6 +306,7 @@ public class StartSurfaceTabSwitcherTest {
     @Test
     @LargeTest
     @Feature({"StartSurface"})
+    @FlakyTest
     @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS + "/show_tabs_in_mru_order/true"})
     public void test_CarouselTabSwitcherShowTabsInMRUOrder() {
         if (!mImmediateReturn) {
@@ -336,7 +337,7 @@ public class StartSurfaceTabSwitcherTest {
                 withId(org.chromium.chrome.tab_ui.R.id.tab_list_view)));
 
         RecyclerView recyclerView = cta.findViewById(org.chromium.chrome.tab_ui.R.id.tab_list_view);
-        assertEquals(2, recyclerView.getChildCount());
+        CriteriaHelper.pollUiThread(() -> 2 == recyclerView.getChildCount());
         // Verifies that the tabs are shown in MRU order: the first card in the carousel Tab
         // switcher is the last created Tab by tapping the MV tile; the second card is the Tab
         // created or restored in setup().

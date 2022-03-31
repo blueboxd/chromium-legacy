@@ -10,6 +10,7 @@ import org.chromium.cc.base.CcSwitches;
 import org.chromium.components.autofill.AutofillFeatures;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.metrics.MetricsSwitches;
+import org.chromium.components.network_session_configurator.NetworkSessionSwitches;
 import org.chromium.components.power_scheduler.PowerSchedulerFeatures;
 import org.chromium.components.viz.common.VizFeatures;
 import org.chromium.content_public.common.ContentFeatures;
@@ -90,6 +91,10 @@ public final class ProductionSupportedFlagList {
                             + "this mode, each renderer process will contain pages from at most "
                             + "one site, using out-of-process iframes when needed. Highly "
                             + "experimental."),
+            Flag.commandLine(NetworkSessionSwitches.ENABLE_HTTP2_GREASE_SETTINGS,
+                    "Enable sending HTTP/2 SETTINGS parameters with reserved identifiers."),
+            Flag.commandLine(NetworkSessionSwitches.DISABLE_HTTP2_GREASE_SETTINGS,
+                    "Disable sending HTTP/2 SETTINGS parameters with reserved identifiers."),
             Flag.baseFeature(GpuFeatures.WEBVIEW_VULKAN,
                     "Use Vulkan for composite. Requires Android device and OS support. May crash "
                             + "if enabled on unsupported device."),
@@ -145,6 +150,10 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.GMS_CORE_EMOJI,
                     "Enables retrieval of the emoji font through GMS Core "
                             + "improving emoji glyph coverage."),
+            Flag.baseFeature(
+                    AutofillFeatures.AUTOFILL_FIX_SERVER_QUERIES_IF_PASSWORD_MANAGER_IS_ENABLED,
+                    "Enables a autofill server queries if the password manager is enabled but "
+                            + "autofill for addresses and credit cards are disabled."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ACROSS_IFRAMES,
                     "Enable Autofill for frame-transcending forms (forms whose fields live in "
                             + "different frames)."),
@@ -182,6 +191,8 @@ public final class ProductionSupportedFlagList {
             Flag.commandLine(AwSwitches.WEBVIEW_DISABLE_APPS_PACKAGE_NAMES_ALLOWLIST_COMPONENT,
                     "Disable downloading the apps package names allowlist component by the "
                             + "component updater."),
+            Flag.baseFeature(AwFeatures.WEBVIEW_EMPTY_COMPONENT_LOADER_POLICY,
+                    "Enables loading a fake empty (no-op) component during WebView startup."),
             Flag.commandLine(AwSwitches.WEBVIEW_SELECTIVE_IMAGE_INVERSION_DARKENING,
                     "Enables use selective image inversion to automatically darken page, it will be"
                             + " used when WebView is in dark mode, but website doesn't provide dark"
@@ -206,10 +217,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AwFeatures.WEBVIEW_LOG_FIRST_PARTY_PAGE_TIME_SPENT,
                     "Enables logging whether it was a first party page when logging"
                             + " PageTimeSpent."),
-            Flag.baseFeature(BlinkFeatures.FORCE_MAJOR_VERSION100_IN_USER_AGENT,
-                    "Force the Chrome major version number to 100 in the User-Agent string."),
-            Flag.baseFeature(BlinkFeatures.FORCE_MINOR_VERSION100_IN_USER_AGENT,
-                    "Force the Chrome minor version number to 100 in the User-Agent string."),
             Flag.baseFeature(BlinkFeatures.FORCE_MAJOR_VERSION_IN_MINOR_POSITION_IN_USER_AGENT,
                     "Force the Chrome major version number to 99 and put the major version"
                             + " number in the minor version position in the User-Agent string."),
@@ -223,6 +230,8 @@ public final class ProductionSupportedFlagList {
                     "Defers the first commit until FCP or timeout for cross-origin navigations."),
             Flag.baseFeature(BlinkFeatures.EARLY_CODE_CACHE,
                     "Enables fetching the code cache earlier in navigation."),
+            Flag.baseFeature(ContentFeatures.NAVIGATION_REQUEST_PRECONNECT,
+                    "Enables preconnecting for frame requests."),
             Flag.baseFeature(ContentFeatures.NAVIGATION_NETWORK_RESPONSE_QUEUE,
                     "Schedules tasks related to the navigation network responses on a higher "
                             + "priority task queue."),
@@ -240,7 +249,27 @@ public final class ProductionSupportedFlagList {
                     "Enables more efficient scheduling of work in WebRTC."),
             Flag.baseFeature(BlinkFeatures.INITIAL_NAVIGATION_ENTRY,
                     "Enables creation of initial NavigationEntries on WebContents creation."),
+            Flag.baseFeature(BlinkFeatures.CANVAS2D_STAYS_GPU_ON_READBACK,
+                    "Accelerated canvases that a read back from remain accelerated."),
+            Flag.baseFeature(BlinkFeatures.EARLY_BODY_LOAD,
+                    "Enables loading the response body earlier in navigation."),
+            Flag.baseFeature(BlinkFeatures.DEFAULT_STYLE_SHEETS_EARLY_INIT,
+                    "Initialize CSSDefaultStyleSheets early in renderer startup."),
+            Flag.baseFeature(ContentFeatures.THREADING_OPTIMIZATIONS_ON_IO,
+                    "Moves navigation threading optimizations to the IO thread."),
+            Flag.baseFeature(ContentFeatures.EARLY_ESTABLISH_GPU_CHANNEL,
+                    "Enable establishing the GPU channel early in renderer startup."),
+            Flag.baseFeature(ContentFeatures.OPTIMIZE_EARLY_NAVIGATION,
+                    "Temporarily pauses the compositor early in navigation."),
             Flag.baseFeature(AwFeatures.WEBVIEW_SEND_VARIATIONS_HEADERS,
                     "Whether WebView will send variations headers on URLs where applicable."),
+            Flag.baseFeature(ContentFeatures.INCLUDE_IPC_OVERHEAD_IN_NAVIGATION_START,
+                    "Whether navigation metrics include ipc overhead."),
+            Flag.baseFeature(ContentFeatures.AVOID_UNNECESSARY_BEFORE_UNLOAD_CHECK,
+                    "Avoids an unnecessary renderer ipc during navigation for before-unload "
+                            + "handlers."),
+            Flag.baseFeature(AwFeatures.WEBVIEW_X_REQUESTED_WITH_HEADER,
+                    "Enables automatic insertion of XRequestedWith header "
+                            + "on all outgoing requests."),
     };
 }

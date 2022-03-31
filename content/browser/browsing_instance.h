@@ -92,10 +92,13 @@ class CONTENT_EXPORT BrowsingInstance final
   // should contain only cross-origin isolated pages, i.e. pages with
   // cross-origin-opener-policy set to same-origin and
   // cross-origin-embedder-policy set to require-corp, and if so, from which
-  // top level origin.
+  // top level origin. |is_guest| specifies whether this BrowsingInstance will
+  // be used in a <webview> guest; note that this cannot change over the
+  // lifetime of the BrowsingInstance.
   explicit BrowsingInstance(
       BrowserContext* context,
-      const WebExposedIsolationInfo& web_exposed_isolation_info);
+      const WebExposedIsolationInfo& web_exposed_isolation_info,
+      bool is_guest);
 
   ~BrowsingInstance();
 
@@ -130,6 +133,13 @@ class CONTENT_EXPORT BrowsingInstance final
   scoped_refptr<SiteInstanceImpl> GetSiteInstanceForURL(
       const UrlInfo& url_info,
       bool allow_default_instance);
+
+  // Searches existing SiteInstances in the BrowsingInstance and returns a
+  // pointer to the (unique) SiteInstance that matches `site_info`, if any.
+  // If no matching SiteInstance is found, then a new SiteInstance is created
+  // in this BrowsingInstance with its site set to `site_info`.
+  scoped_refptr<SiteInstanceImpl> GetSiteInstanceForSiteInfo(
+      const SiteInfo& site_info);
 
   // Returns a SiteInfo with site and process-lock URLs for |url_info| that are
   // identical with what these values would be if we called
@@ -238,6 +248,10 @@ class CONTENT_EXPORT BrowsingInstance final
   // should only be set if kProcessSharingWithStrictSiteInstances is not
   // enabled. This is a raw pointer to avoid a reference cycle between the
   // BrowsingInstance and the SiteInstanceImpl.
+  // Note: This can hold cross-origin isolated SiteInstances. It will however
+  // only do so under certain specific circumstances (for example on a low
+  // memory device), which don't use the COOP isolation heuristic that normally
+  // prevents the use of default SiteInstances for cross-origin isolated pages.
   raw_ptr<SiteInstanceImpl> default_site_instance_;
 
   // The cross-origin isolation status of the BrowsingInstance. This indicates

@@ -153,9 +153,9 @@ class FunctorHasRestrictedIdentities
 // Returns the PatternAccountRestriction according to the given PrefService.
 PatternAccountRestriction PatternAccountRestrictionFromPreference(
     PrefService* pref_service) {
-  auto maybe_restriction =
-      PatternAccountRestrictionFromValue(&base::Value::AsListValue(
-          *pref_service->GetList(prefs::kRestrictAccountsToPatterns)));
+  auto maybe_restriction = PatternAccountRestrictionFromValue(
+      pref_service->GetList(prefs::kRestrictAccountsToPatterns)
+          ->GetListDeprecated());
   return *std::move(maybe_restriction);
 }
 
@@ -279,6 +279,13 @@ void ChromeAccountManagerService::AddObserver(Observer* observer) {
 
 void ChromeAccountManagerService::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
+}
+
+void ChromeAccountManagerService::OnAccessTokenRefreshFailed(
+    ChromeIdentity* identity,
+    NSDictionary* user_info) {
+  for (auto& observer : observer_list_)
+    observer.OnAccessTokenRefreshFailed(identity, user_info);
 }
 
 void ChromeAccountManagerService::OnIdentityListChanged(

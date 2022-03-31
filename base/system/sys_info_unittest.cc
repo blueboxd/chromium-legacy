@@ -144,6 +144,12 @@ TEST_F(SysInfoTest, NestedVolumesAmountOfTotalDiskSpace) {
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
+
+TEST_F(SysInfoTest, OperatingSystemVersion) {
+  std::string version = SysInfo::OperatingSystemVersion();
+  EXPECT_FALSE(version.empty());
+}
+
 TEST_F(SysInfoTest, OperatingSystemVersionNumbers) {
   int32_t os_major_version = -1;
   int32_t os_minor_version = -1;
@@ -421,6 +427,54 @@ TEST_F(SysInfoTest, ScopedRunningOnChromeOS) {
   }
   // Previous value restored.
   EXPECT_EQ(was_running, SysInfo::IsRunningOnChromeOS());
+}
+
+SysInfo::GetAppOutputCallback MockGetAppOutputTestCallback(
+    const std::string& mock_output,
+    bool mock_ret) {
+  return BindRepeating(
+      [](const std::string& expected_output, bool return_value,
+         const CommandLine& cl, std::string* out) -> bool {
+        *out = expected_output;
+        return return_value;
+      },
+      mock_output, mock_ret);
+}
+
+TEST_F(SysInfoTest, SpacedValidQuery) {
+  FilePath dummy_path("/a/b/c");
+  auto mock_get_app_output = MockGetAppOutputTestCallback("1234", true);
+  SysInfo::SetChromeOSGetAppOutputForTest(&mock_get_app_output);
+  EXPECT_EQ(SysInfo::GetTotalDiskSpaceFromSpaced(dummy_path), 1234);
+  EXPECT_EQ(SysInfo::GetFreeDiskSpaceFromSpaced(dummy_path), 1234);
+  SysInfo::SetChromeOSGetAppOutputForTest(nullptr);
+}
+
+TEST_F(SysInfoTest, SpacedInternalFailure) {
+  FilePath dummy_path("/a/b/c");
+  auto mock_get_app_output = MockGetAppOutputTestCallback("-1", true);
+  SysInfo::SetChromeOSGetAppOutputForTest(&mock_get_app_output);
+  EXPECT_EQ(SysInfo::GetTotalDiskSpaceFromSpaced(dummy_path), -1);
+  EXPECT_EQ(SysInfo::GetFreeDiskSpaceFromSpaced(dummy_path), -1);
+  SysInfo::SetChromeOSGetAppOutputForTest(nullptr);
+}
+
+TEST_F(SysInfoTest, SpacedFailedInvocation) {
+  FilePath dummy_path("/a/b/c");
+  auto mock_get_app_output = MockGetAppOutputTestCallback("5", false);
+  SysInfo::SetChromeOSGetAppOutputForTest(&mock_get_app_output);
+  EXPECT_EQ(SysInfo::GetTotalDiskSpaceFromSpaced(dummy_path), -1);
+  EXPECT_EQ(SysInfo::GetFreeDiskSpaceFromSpaced(dummy_path), -1);
+  SysInfo::SetChromeOSGetAppOutputForTest(nullptr);
+}
+
+TEST_F(SysInfoTest, SpacedInvalidOutput) {
+  FilePath dummy_path("/a/b/c");
+  auto mock_get_app_output = MockGetAppOutputTestCallback("foo", true);
+  SysInfo::SetChromeOSGetAppOutputForTest(&mock_get_app_output);
+  EXPECT_EQ(SysInfo::GetTotalDiskSpaceFromSpaced(dummy_path), -1);
+  EXPECT_EQ(SysInfo::GetFreeDiskSpaceFromSpaced(dummy_path), -1);
+  SysInfo::SetChromeOSGetAppOutputForTest(nullptr);
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)

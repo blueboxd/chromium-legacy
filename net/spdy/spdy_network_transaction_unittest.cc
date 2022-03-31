@@ -271,7 +271,7 @@ class SpdyNetworkTransactionTest : public TestWithTaskEnvironment {
       std::unique_ptr<base::Value> value(
           session_->spdy_session_pool()->SpdySessionPoolInfoToValue());
       CHECK(value && value->is_list());
-      return value->GetList().size();
+      return value->GetListDeprecated().size();
     }
 
     HttpNetworkTransaction* trans() { return trans_.get(); }
@@ -4862,23 +4862,24 @@ TEST_F(SpdyNetworkTransactionTest, NetLog) {
   auto* header_list = entries[pos].params.FindKey("headers");
   ASSERT_TRUE(header_list);
   ASSERT_TRUE(header_list->is_list());
-  ASSERT_EQ(5u, header_list->GetList().size());
+  ASSERT_EQ(5u, header_list->GetListDeprecated().size());
 
-  ASSERT_TRUE(header_list->GetList()[0].is_string());
-  EXPECT_EQ(":method: GET", header_list->GetList()[0].GetString());
+  ASSERT_TRUE(header_list->GetListDeprecated()[0].is_string());
+  EXPECT_EQ(":method: GET", header_list->GetListDeprecated()[0].GetString());
 
-  ASSERT_TRUE(header_list->GetList()[1].is_string());
+  ASSERT_TRUE(header_list->GetListDeprecated()[1].is_string());
   EXPECT_EQ(":authority: www.example.org",
-            header_list->GetList()[1].GetString());
+            header_list->GetListDeprecated()[1].GetString());
 
-  ASSERT_TRUE(header_list->GetList()[2].is_string());
-  EXPECT_EQ(":scheme: https", header_list->GetList()[2].GetString());
+  ASSERT_TRUE(header_list->GetListDeprecated()[2].is_string());
+  EXPECT_EQ(":scheme: https", header_list->GetListDeprecated()[2].GetString());
 
-  ASSERT_TRUE(header_list->GetList()[3].is_string());
-  EXPECT_EQ(":path: /", header_list->GetList()[3].GetString());
+  ASSERT_TRUE(header_list->GetListDeprecated()[3].is_string());
+  EXPECT_EQ(":path: /", header_list->GetListDeprecated()[3].GetString());
 
-  ASSERT_TRUE(header_list->GetList()[4].is_string());
-  EXPECT_EQ("user-agent: Chrome", header_list->GetList()[4].GetString());
+  ASSERT_TRUE(header_list->GetListDeprecated()[4].is_string());
+  EXPECT_EQ("user-agent: Chrome",
+            header_list->GetListDeprecated()[4].GetString());
 }
 
 // Since we buffer the IO from the stream to the renderer, this test verifies
@@ -8719,8 +8720,8 @@ TEST_F(SpdyNetworkTransactionTest, WebSocketOpensNewConnection) {
   StaticSocketDataProvider data2(reads2, writes2);
 
   auto ssl_provider2 = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
-  // Test that request has empty |alpn_protos|, that is, HTTP/2 is disabled.
-  ssl_provider2->next_protos_expected_in_ssl_config = NextProtoVector{};
+  // Test that the request has HTTP/2 disabled.
+  ssl_provider2->next_protos_expected_in_ssl_config = {kProtoHTTP11};
   // Force socket to use HTTP/1.1, the default protocol without ALPN.
   ssl_provider2->next_proto = kProtoHTTP11;
   ssl_provider2->ssl_info.cert =
@@ -8842,8 +8843,8 @@ TEST_F(SpdyNetworkTransactionTest,
   SequencedSocketData data2(MockConnect(ASYNC, ERR_IO_PENDING), reads2,
                             writes2);
   auto ssl_provider2 = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
-  // Test that request has empty |alpn_protos|, that is, HTTP/2 is disabled.
-  ssl_provider2->next_protos_expected_in_ssl_config = NextProtoVector{};
+  // Test that the request has HTTP/2 disabled.
+  ssl_provider2->next_protos_expected_in_ssl_config = {kProtoHTTP11};
   // Force socket to use HTTP/1.1, the default protocol without ALPN.
   ssl_provider2->next_proto = kProtoHTTP11;
   helper.AddDataWithSSLSocketDataProvider(&data2, std::move(ssl_provider2));
@@ -9118,8 +9119,8 @@ TEST_F(SpdyNetworkTransactionTest,
       &tunnel_ssl_data2);
 
   auto ssl_provider2 = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
-  // Test that request has empty |alpn_protos|, that is, HTTP/2 is disabled.
-  ssl_provider2->next_protos_expected_in_ssl_config = NextProtoVector{};
+  // Test that the request has HTTP/2 disabled.
+  ssl_provider2->next_protos_expected_in_ssl_config = {kProtoHTTP11};
   // Force socket to use HTTP/1.1, the default protocol without ALPN.
   ssl_provider2->next_proto = kProtoHTTP11;
   helper.AddDataWithSSLSocketDataProvider(&data2, std::move(ssl_provider2));
@@ -9384,8 +9385,8 @@ TEST_F(SpdyNetworkTransactionTest,
                "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n")};
   StaticSocketDataProvider data2(reads2, writes2);
   auto ssl_provider2 = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
-  // Test that request has empty |alpn_protos|, that is, HTTP/2 is disabled.
-  ssl_provider2->next_protos_expected_in_ssl_config = NextProtoVector{};
+  // Test that the request has HTTP/2 disabled.
+  ssl_provider2->next_protos_expected_in_ssl_config = {kProtoHTTP11};
   // Force socket to use HTTP/1.1, the default protocol without ALPN.
   ssl_provider2->next_proto = kProtoHTTP11;
   ssl_provider2->ssl_info.cert =
@@ -9493,8 +9494,8 @@ TEST_F(SpdyNetworkTransactionTest, WebSocketNegotiatesHttp2) {
   StaticSocketDataProvider data;
 
   auto ssl_provider = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
-  // Test that request has empty |alpn_protos|, that is, HTTP/2 is disabled.
-  ssl_provider->next_protos_expected_in_ssl_config = NextProtoVector{};
+  // Test that the request has HTTP/2 disabled.
+  ssl_provider->next_protos_expected_in_ssl_config = {kProtoHTTP11};
   // Force socket to use HTTP/2, which should never happen (TLS implementation
   // should fail TLS handshake if server chooses HTTP/2 without client
   // advertising support).
@@ -9584,8 +9585,8 @@ TEST_F(SpdyNetworkTransactionTest, WebSocketHttp11Required) {
                "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n")};
   StaticSocketDataProvider data2(reads2, writes2);
   auto ssl_provider2 = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
-  // Test that request has empty |alpn_protos|, that is, HTTP/2 is disabled.
-  ssl_provider2->next_protos_expected_in_ssl_config = NextProtoVector{};
+  // Test that the request has HTTP/2 disabled.
+  ssl_provider2->next_protos_expected_in_ssl_config = {kProtoHTTP11};
   // Force socket to use HTTP/1.1, the default protocol without ALPN.
   ssl_provider2->next_proto = kProtoHTTP11;
   ssl_provider2->ssl_info.cert =
@@ -9757,7 +9758,7 @@ TEST_F(SpdyNetworkTransactionTest, SecureWebSocketOverHttp2Proxy) {
   ssl_provider.ssl_info.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem");
   // A WebSocket request should not advertise HTTP/2 support.
-  ssl_provider.next_protos_expected_in_ssl_config = NextProtoVector{};
+  ssl_provider.next_protos_expected_in_ssl_config = {kProtoHTTP11};
   // This test uses WebSocket over HTTP/1.1.
   ssl_provider.next_proto = kProtoHTTP11;
   helper.session_deps()->socket_factory->AddSSLSocketDataProvider(
@@ -9817,7 +9818,7 @@ TEST_F(SpdyNetworkTransactionTest,
   ssl_provider.ssl_info.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem");
   // A WebSocket request should not advertise HTTP/2 support.
-  ssl_provider.next_protos_expected_in_ssl_config = NextProtoVector{};
+  ssl_provider.next_protos_expected_in_ssl_config = {kProtoHTTP11};
   // The server should not negotiate HTTP/2 over the tunnelled connection,
   // but it must be handled gracefully if it does.
   ssl_provider.next_proto = kProtoHTTP2;
@@ -10464,7 +10465,7 @@ TEST_F(SpdyNetworkTransactionTest, GreaseSettings) {
   ASSERT_TRUE(settings);
   ASSERT_TRUE(settings->is_list());
 
-  base::Value::ConstListView list = settings->GetList();
+  base::Value::ConstListView list = settings->GetListDeprecated();
   ASSERT_FALSE(list.empty());
   // Get last setting parameter.
   const base::Value& greased_setting = list[list.size() - 1];

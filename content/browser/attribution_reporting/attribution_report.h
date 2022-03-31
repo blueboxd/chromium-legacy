@@ -7,18 +7,20 @@
 
 #include <stdint.h>
 
-#include <string>
-
 #include "base/guid.h"
 #include "base/time/time.h"
 #include "base/types/strong_alias.h"
 #include "content/browser/attribution_reporting/aggregatable_attribution.h"
-#include "content/browser/attribution_reporting/storable_source.h"
+#include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 class GURL;
+
+namespace base {
+class Value;
+}  // namespace base
 
 namespace content {
 
@@ -55,23 +57,24 @@ class CONTENT_EXPORT AttributionReport {
     // `attribution_test_utils.h` should also be updated.
   };
 
-  // Struct that contains the data specific to the aggregate report.
-  struct CONTENT_EXPORT AggregateContributionData {
-    using Id = base::StrongAlias<AggregateContributionData, int64_t>;
+  // Struct that contains the data specific to the aggregatable report.
+  struct CONTENT_EXPORT AggregatableContributionData {
+    using Id = base::StrongAlias<AggregatableContributionData, int64_t>;
 
-    AggregateContributionData(HistogramContribution contribution,
-                              absl::optional<Id> id);
-    AggregateContributionData(const AggregateContributionData& other);
-    AggregateContributionData& operator=(
-        const AggregateContributionData& other);
-    AggregateContributionData(AggregateContributionData&& other);
-    AggregateContributionData& operator=(AggregateContributionData&& other);
-    ~AggregateContributionData();
+    AggregatableContributionData(HistogramContribution contribution,
+                                 absl::optional<Id> id);
+    AggregatableContributionData(const AggregatableContributionData& other);
+    AggregatableContributionData& operator=(
+        const AggregatableContributionData& other);
+    AggregatableContributionData(AggregatableContributionData&& other);
+    AggregatableContributionData& operator=(
+        AggregatableContributionData&& other);
+    ~AggregatableContributionData();
 
     // The historgram contribution.
     HistogramContribution contribution;
 
-    // Id assigned by storage to uniquely identify an aggregate contribution.
+    // Id assigned by storage to uniquely identify an aggregatable contribution.
     // If null, an ID has not been assigned yet.
     absl::optional<Id> id;
 
@@ -79,14 +82,14 @@ class CONTENT_EXPORT AttributionReport {
     // `attribution_test_utils.h` should also be updated.
   };
 
-  using Id = absl::variant<EventLevelData::Id, AggregateContributionData::Id>;
+  using Id =
+      absl::variant<EventLevelData::Id, AggregatableContributionData::Id>;
 
   AttributionReport(
-      StorableSource source,
-      base::Time trigger_time,
+      AttributionInfo attribution_info,
       base::Time report_time,
       base::GUID external_report_id,
-      absl::variant<EventLevelData, AggregateContributionData> data);
+      absl::variant<EventLevelData, AggregatableContributionData> data);
   AttributionReport(const AttributionReport& other);
   AttributionReport& operator=(const AttributionReport& other);
   AttributionReport(AttributionReport&& other);
@@ -96,14 +99,11 @@ class CONTENT_EXPORT AttributionReport {
   // Returns the URL to which the report will be sent.
   GURL ReportURL() const;
 
-  // Returns the JSON for the report body.
-  std::string ReportBody(bool pretty_print = false) const;
+  base::Value ReportBody() const;
 
   absl::optional<Id> ReportId() const;
 
-  const StorableSource& source() const { return source_; }
-
-  base::Time trigger_time() const { return trigger_time_; }
+  const AttributionInfo& attribution_info() const { return attribution_info_; }
 
   base::Time report_time() const { return report_time_; }
 
@@ -111,11 +111,12 @@ class CONTENT_EXPORT AttributionReport {
 
   int failed_send_attempts() const { return failed_send_attempts_; }
 
-  const absl::variant<EventLevelData, AggregateContributionData>& data() const {
+  const absl::variant<EventLevelData, AggregatableContributionData>& data()
+      const {
     return data_;
   }
 
-  absl::variant<EventLevelData, AggregateContributionData>& data() {
+  absl::variant<EventLevelData, AggregatableContributionData>& data() {
     return data_;
   }
 
@@ -126,11 +127,8 @@ class CONTENT_EXPORT AttributionReport {
   void SetExternalReportIdForTesting(base::GUID external_report_id);
 
  private:
-  // Source associated with this conversion report.
-  StorableSource source_;
-
-  // The time the trigger occurred.
-  base::Time trigger_time_;
+  // The attribution info.
+  AttributionInfo attribution_info_;
 
   // The time this conversion report should be sent.
   base::Time report_time_;
@@ -143,7 +141,7 @@ class CONTENT_EXPORT AttributionReport {
   int failed_send_attempts_ = 0;
 
   // Only one type of data may be stored at once.
-  absl::variant<EventLevelData, AggregateContributionData> data_;
+  absl::variant<EventLevelData, AggregatableContributionData> data_;
 
   // When adding new members, the corresponding `operator==()` definition in
   // `attribution_test_utils.h` should also be updated.

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "ash/components/arc/arc_util.h"
+#include "ash/components/cryptohome/userdataauth_util.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/components/timezone/timezone_resolver.h"
 #include "ash/constants/ash_pref_names.h"
@@ -85,7 +86,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/components/onc/certificate_scope.h"
-#include "chromeos/cryptohome/userdataauth_util.h"
 #include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -358,7 +358,7 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
       kAccountsPrefUsers,
       base::BindRepeating(&UserManager::NotifyUsersSignInConstraintsChanged,
                           weak_factory_.GetWeakPtr()));
-  users_subscription_ = cros_settings_->AddSettingsObserver(
+  family_link_accounts_subscription_ = cros_settings_->AddSettingsObserver(
       kAccountsPrefFamilyLinkAccountsAllowed,
       base::BindRepeating(&UserManager::NotifyUsersSignInConstraintsChanged,
                           weak_factory_.GetWeakPtr()));
@@ -717,12 +717,12 @@ bool ChromeUserManagerImpl::IsEnterpriseManaged() const {
 
 void ChromeUserManagerImpl::LoadDeviceLocalAccounts(
     std::set<AccountId>* device_local_accounts_set) {
-  const base::ListValue* prefs_device_local_accounts =
-      &base::Value::AsListValue(
-          *GetLocalState()->GetList(kDeviceLocalAccountsWithSavedData));
+  const base::Value* prefs_device_local_accounts =
+      GetLocalState()->GetList(kDeviceLocalAccountsWithSavedData);
   std::vector<AccountId> device_local_accounts;
-  ParseUserList(*prefs_device_local_accounts, std::set<AccountId>(),
-                &device_local_accounts, device_local_accounts_set);
+  ParseUserList(prefs_device_local_accounts->GetListDeprecated(),
+                std::set<AccountId>(), &device_local_accounts,
+                device_local_accounts_set);
   for (const AccountId& account_id : device_local_accounts) {
     policy::DeviceLocalAccount::Type type;
     if (!policy::IsDeviceLocalAccountUser(account_id.GetUserEmail(), &type)) {
@@ -1308,9 +1308,10 @@ bool ChromeUserManagerImpl::ShouldReportUser(const std::string& user_id) const {
   base::Value user_id_value(FullyCanonicalize(user_id));
   // TODO(crbug.com/1187106): Use base::Contains once |reporting_users| is not a
   // ListValue.
-  return !(std::find(reporting_users.GetList().begin(),
-                     reporting_users.GetList().end(),
-                     user_id_value) == reporting_users.GetList().end());
+  return !(std::find(reporting_users.GetListDeprecated().begin(),
+                     reporting_users.GetListDeprecated().end(),
+                     user_id_value) ==
+           reporting_users.GetListDeprecated().end());
 }
 
 bool ChromeUserManagerImpl::IsManagedSessionEnabledForUser(
@@ -1351,14 +1352,15 @@ bool ChromeUserManagerImpl::IsFullManagementDisclosureNeeded(
 void ChromeUserManagerImpl::AddReportingUser(const AccountId& account_id) {
   ListPrefUpdate users_update(GetLocalState(), ::prefs::kReportingUsers);
   base::Value email_value(account_id.GetUserEmail());
-  if (!base::Contains(users_update->GetList(), email_value))
+  if (!base::Contains(users_update->GetListDeprecated(), email_value))
     users_update->Append(std::move(email_value));
 }
 
 void ChromeUserManagerImpl::RemoveReportingUser(const AccountId& account_id) {
   ListPrefUpdate users_update(GetLocalState(), ::prefs::kReportingUsers);
   users_update->EraseListIter(
-      std::find(users_update->GetList().begin(), users_update->GetList().end(),
+      std::find(users_update->GetListDeprecated().begin(),
+                users_update->GetListDeprecated().end(),
                 base::Value(FullyCanonicalize(account_id.GetUserEmail()))));
 }
 

@@ -26,8 +26,8 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/allow_service_worker_result.h"
-#include "content/public/browser/document_user_data.h"
 #include "content/public/browser/navigation_handle_user_data.h"
+#include "content/public/browser/page_user_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -71,7 +71,7 @@ namespace content_settings {
 // loaded page once the navigation commits or discarded if it does not.
 class PageSpecificContentSettings
     : public content_settings::Observer,
-      public content::DocumentUserData<PageSpecificContentSettings> {
+      public content::PageUserData<PageSpecificContentSettings> {
  public:
   // Fields describing the current mic/camera state. If a page has attempted to
   // access a device, the XXX_ACCESSED bit will be set. If access was blocked,
@@ -370,6 +370,8 @@ class PageSpecificContentSettings
                               const std::string& name,
                               const blink::StorageKey& storage_key,
                               bool blocked_by_policy);
+  void OnInterestGroupJoined(const url::Origin api_origin,
+                             bool blocked_by_policy);
   void OnWebDatabaseAccessed(const GURL& url, bool blocked_by_policy);
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
   void OnProtectedMediaIdentifierPermissionSet(const GURL& requesting_frame,
@@ -400,8 +402,12 @@ class PageSpecificContentSettings
   // since the last navigation.
   bool HasContentSettingChangedViaPageInfo(ContentSettingsType type) const;
 
+  // Returns true if the user was joined to an interest group and if the page
+  // is the joining origin.
+  bool HasJoinedUserToInterestGroup() const;
+
  private:
-  friend class content::DocumentUserData<PageSpecificContentSettings>;
+  friend class content::PageUserData<PageSpecificContentSettings>;
 
   // Keeps track of cookie and service worker access during a navigation.
   // These types of access can happen for the current page or for a new
@@ -504,7 +510,7 @@ class PageSpecificContentSettings
   };
 
   explicit PageSpecificContentSettings(
-      content::RenderFrameHost* rfh,
+      content::Page& page,
       PageSpecificContentSettings::WebContentsHandler& handler,
       Delegate* delegate);
 
@@ -574,6 +580,11 @@ class PageSpecificContentSettings
   std::string media_stream_requested_audio_device_;
   std::string media_stream_requested_video_device_;
 
+  // Contains URLs which attempted to join interest groups. Note: The UI will
+  // only currently show the top frame as having attempted to join.
+  std::vector<url::Origin> allowed_interest_group_api_;
+  std::vector<url::Origin> blocked_interest_group_api_;
+
   // The Geolocation, camera, and/or microphone permission was granted to this
   // origin from a permission prompt that was triggered by the currently active
   // document.
@@ -593,7 +604,7 @@ class PageSpecificContentSettings
   // the page is prerendering. These calls are run when the page is activated.
   std::unique_ptr<PendingUpdates> updates_queued_during_prerender_;
 
-  DOCUMENT_USER_DATA_KEY_DECL();
+  PAGE_USER_DATA_KEY_DECL();
 
   base::WeakPtrFactory<PageSpecificContentSettings> weak_factory_{this};
 };

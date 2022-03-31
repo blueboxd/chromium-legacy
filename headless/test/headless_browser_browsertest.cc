@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -48,8 +49,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
+#include "third_party/blink/public/resources/grit/blink_resources.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/size.h"
 
 #if !BUILDFLAG(IS_FUCHSIA)
@@ -615,7 +619,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest,
 
   std::unique_ptr<base::ListValue> tracing_data = helper.TakeTracingData();
   EXPECT_TRUE(tracing_data);
-  EXPECT_LT(0u, tracing_data->GetList().size());
+  EXPECT_LT(0u, tracing_data->GetListDeprecated().size());
 }
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, WindowPrint) {
@@ -690,15 +694,12 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestAppendCommandLineFlags,
   // Create a new renderer process, and verify that callback was executed.
   HeadlessBrowserContext* browser_context =
       browser()->CreateBrowserContextBuilder().Build();
-  HeadlessWebContents* web_contents =
-      browser_context->CreateWebContentsBuilder()
-          .SetInitialURL(GURL("about:blank"))
-          .Build();
+  // Used only for lifetime, thus std::ignore.
+  std::ignore = browser_context->CreateWebContentsBuilder()
+                    .SetInitialURL(GURL("about:blank"))
+                    .Build();
 
   EXPECT_TRUE(callback_was_run_);
-
-  // Used only for lifetime.
-  (void)web_contents;
 }
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ServerWantsClientCertificate) {
@@ -772,9 +773,9 @@ class HeadlessBrowserTestWithExplicitlyAllowedPorts
   bool is_port_allowed() { return GetParam(); }
 };
 
-INSTANTIATE_TEST_CASE_P(HeadlessBrowserTestWithExplicitlyAllowedPorts,
-                        HeadlessBrowserTestWithExplicitlyAllowedPorts,
-                        testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(HeadlessBrowserTestWithExplicitlyAllowedPorts,
+                         HeadlessBrowserTestWithExplicitlyAllowedPorts,
+                         testing::Values(false, true));
 
 IN_PROC_BROWSER_TEST_P(HeadlessBrowserTestWithExplicitlyAllowedPorts,
                        AllowedPort) {
@@ -794,6 +795,18 @@ IN_PROC_BROWSER_TEST_P(HeadlessBrowserTestWithExplicitlyAllowedPorts,
     EXPECT_NE(error, net::ERR_UNSAFE_PORT);
   else
     EXPECT_EQ(error, net::ERR_UNSAFE_PORT);
+}
+
+// This assures that both string and data blink resources are
+// present. These are essential for correct rendering.
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, LocalizedResources) {
+  EXPECT_THAT(
+      ui::ResourceBundle::GetSharedInstance().LoadLocalizedResourceString(
+          IDS_FORM_SUBMIT_LABEL),
+      testing::Eq("Submit"));
+  EXPECT_THAT(ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+                  IDR_UASTYLE_HTML_CSS),
+              testing::Ne(""));
 }
 
 }  // namespace headless

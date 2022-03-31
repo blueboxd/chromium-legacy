@@ -18,6 +18,9 @@ constexpr const base::Feature* kPreinstalledAppInstallFeatures[] = {
     &kMigrateDefaultChromeAppToWebAppsGSuite,
     &kMigrateDefaultChromeAppToWebAppsNonGSuite,
     &kDefaultCalculatorWebApp,
+#if BUILDFLAG(IS_CHROMEOS)
+    &kCursiveStylusPreinstall,
+#endif
 };
 
 bool g_always_enabled_for_testing = false;
@@ -75,6 +78,11 @@ const base::Feature kAllowDefaultWebAppMigrationForChromeOsManagedUsers{
     "AllowDefaultWebAppMigrationForChromeOsManagedUsers",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables installing the Cursive app on devices with a built-in stylus-capable
+// screen.
+const base::Feature kCursiveStylusPreinstall{"CursiveStylusPreinstall",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 bool IsPreinstalledAppInstallFeatureEnabled(base::StringPiece feature_name,
@@ -87,6 +95,7 @@ bool IsPreinstalledAppInstallFeatureEnabled(base::StringPiece feature_name,
     // See |kAllowDefaultWebAppMigrationForChromeOsManagedUsers| comment above.
     if (base::FeatureList::IsEnabled(*feature) &&
         feature->name == feature_name && IsMigrationFeature(*feature) &&
+        profile.GetProfilePolicyConnector() &&
         profile.GetProfilePolicyConnector()->IsManaged()) {
       return base::FeatureList::IsEnabled(
           kAllowDefaultWebAppMigrationForChromeOsManagedUsers);

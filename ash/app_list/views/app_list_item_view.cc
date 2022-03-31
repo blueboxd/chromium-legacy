@@ -360,7 +360,8 @@ AppListItemView::AppListItemView(const AppListConfig* app_list_config,
   title_ = AddChildView(std::move(title));
 
   new_install_dot_ = AddChildView(std::make_unique<DotView>());
-  new_install_dot_->SetVisible(item_weak_->is_new_install());
+  if (features::IsProductivityLauncherEnabled())
+    new_install_dot_->SetVisible(item_weak_->is_new_install());
 
   SetIcon(item_weak_->GetIcon(app_list_config_->type()));
   SetItemName(base::UTF8ToUTF16(item->GetDisplayName()),
@@ -527,6 +528,9 @@ void AppListItemView::SetTouchDragging(bool touch_dragging) {
 
   touch_dragging_ = touch_dragging;
 
+  if (context_menu_for_folder_)
+    context_menu_for_folder_->set_owner_touch_dragging(touch_dragging_);
+
   SetState(STATE_NORMAL);
   SetUIState(touch_dragging_ ? UI_STATE_DRAGGING : UI_STATE_NORMAL);
 
@@ -589,16 +593,20 @@ void AppListItemView::OnDragEnded() {
   touch_dragging_ = false;
   touch_drag_timer_.Stop();
 
+  if (context_menu_for_folder_)
+    context_menu_for_folder_->set_owner_touch_dragging(false);
+
   SetUIState(UI_STATE_NORMAL);
   drag_state_ = DragState::kNone;
 }
 
 void AppListItemView::CancelContextMenu() {
-  if (!item_menu_model_adapter_)
-    return;
-
-  menu_close_initiated_from_drag_ = true;
-  item_menu_model_adapter_->Cancel();
+  if (item_menu_model_adapter_) {
+    menu_close_initiated_from_drag_ = true;
+    item_menu_model_adapter_->Cancel();
+  }
+  if (context_menu_for_folder_)
+    context_menu_for_folder_->Cancel();
 }
 
 gfx::Point AppListItemView::GetDragImageOffset() {
@@ -690,7 +698,7 @@ void AppListItemView::OnContextMenuModelReceived(
     grid_delegate_->ClearSelectedView();
 
   int run_types = views::MenuRunner::HAS_MNEMONICS |
-                  views::MenuRunner::USE_TOUCHABLE_LAYOUT |
+                  views::MenuRunner::USE_ASH_SYS_UI_LAYOUT |
                   views::MenuRunner::FIXED_ANCHOR |
                   views::MenuRunner::CONTEXT_MENU;
 
@@ -778,17 +786,25 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
   if (drag_state_ != DragState::kNone)
     return;
 
-  // TODO(ginko) focus and selection should be unified.
   if ((grid_delegate_->IsSelectedView(this) || HasFocus()) &&
       (view_delegate_->KeyboardTraversalEngaged() ||
        waiting_for_context_menu_options_ || IsShowingAppMenu())) {
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
-    if (view_delegate_->KeyboardTraversalEngaged()) {
+    // Clamshell ProductivityLauncher always has keyboard traversal engaged, so
+    // explicitly check HasFocus() before drawing focus ring. This allows
+    // right-click "selected" apps to avoid drawing the focus ring.
+    const bool draw_focus_ring =
+        features::IsProductivityLauncherEnabled() &&
+                !view_delegate_->IsInTabletMode()
+            ? HasFocus()
+            : view_delegate_->KeyboardTraversalEngaged();
+    if (draw_focus_ring) {
       flags.setColor(AppListColorProvider::Get()->GetFocusRingColor());
       flags.setStyle(cc::PaintFlags::kStroke_Style);
       flags.setStrokeWidth(kFocusRingWidth);
     } else {
+      // Draw a background highlight ("selected" in the UI spec).
       const AppListColorProvider* color_provider = AppListColorProvider::Get();
       const SkColor bg_color = grid_delegate_->IsInFolder()
                                    ? color_provider->GetFolderBackgroundColor()
@@ -1217,7 +1233,8 @@ void AppListItemView::ItemBadgeColorChanged() {
 
 void AppListItemView::ItemIsNewInstallChanged() {
   DCHECK(item_weak_);
-  new_install_dot_->SetVisible(item_weak_->is_new_install());
+  if (features::IsProductivityLauncherEnabled())
+    new_install_dot_->SetVisible(item_weak_->is_new_install());
 }
 
 void AppListItemView::ItemBeingDestroyed() {

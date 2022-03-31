@@ -8,7 +8,6 @@
 
 #include "base/feature_list.h"
 #include "base/time/time.h"
-#include "content/browser/renderer_host/cross_origin_embedder_policy.h"
 #include "content/browser/renderer_host/cross_origin_opener_policy_access_report_manager.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
@@ -391,8 +390,15 @@ void CrossOriginOpenerPolicyStatus::SanitizeCoopHeaders(
     network::mojom::URLResponseHead* response_head) const {
   network::CrossOriginOpenerPolicy& coop =
       response_head->parsed_headers->cross_origin_opener_policy;
+
+  // Base COOP class cannot include feature checking due to circular
+  // dependencies. Instead we check it from content and pass it back to the
+  // AugmentCoopWithCoep function.
+  bool is_coop_soap_plus_coep_enabled = base::FeatureList::IsEnabled(
+      network::features::kCoopSameOriginAllowPopupsPlusCoep);
   network::AugmentCoopWithCoep(
-      &coop, CoepFromMainResponse(response_url, response_head));
+      &coop, response_head->parsed_headers->cross_origin_embedder_policy,
+      is_coop_soap_plus_coep_enabled);
 
   if (coop == network::CrossOriginOpenerPolicy())
     return;

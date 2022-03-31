@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/capture_mode/capture_mode_ash_notification_view.h"
+#include "ash/capture_mode/capture_mode_camera_controller.h"
 #include "ash/capture_mode/capture_mode_metrics.h"
 #include "ash/capture_mode/capture_mode_notification_view.h"
 #include "ash/capture_mode/capture_mode_session.h"
@@ -341,6 +342,9 @@ void EmitServiceRecordingStatus(recording::mojom::RecordingStatus status) {
     case RecordingStatus::kLowDiskSpace:
       RecordEndRecordingReason(EndRecordingReason::kLowDiskSpace);
       break;
+    case RecordingStatus::kLowDriveFsQuota:
+      RecordEndRecordingReason(EndRecordingReason::kLowDriveFsQuota);
+      break;
   }
 }
 
@@ -360,11 +364,19 @@ base::FilePath GetTempDir() {
   return temp_dir;
 }
 
+std::unique_ptr<CaptureModeCameraController> MaybeCreateCameraController(
+    CaptureModeDelegate* delegate) {
+  if (!features::IsCaptureModeSelfieCameraEnabled())
+    return nullptr;
+  return std::make_unique<CaptureModeCameraController>(delegate);
+}
+
 }  // namespace
 
 CaptureModeController::CaptureModeController(
     std::unique_ptr<CaptureModeDelegate> delegate)
     : delegate_(std::move(delegate)),
+      camera_controller_(MaybeCreateCameraController(delegate_.get())),
       blocking_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           // A task priority of BEST_EFFORT is good enough for this runner,
           // since it's used for blocking file IO such as saving the screenshots
@@ -372,7 +384,6 @@ CaptureModeController::CaptureModeController(
           // service.
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
-      recording_service_client_receiver_(this),
       num_consecutive_screenshots_scheduler_(
           FROM_HERE,
           kConsecutiveScreenshotThreshold,
@@ -513,6 +524,9 @@ void CaptureModeController::SetUserCaptureRegion(const gfx::Rect& region,
   user_capture_region_ = region;
   if (!user_capture_region_.IsEmpty() && by_user)
     last_capture_region_update_time_ = base::TimeTicks::Now();
+
+  if (camera_controller_ && !is_recording_in_progress())
+    camera_controller_->MaybeReparentPreviewWidget();
 }
 
 bool CaptureModeController::CanShowFolderSelectionNudge() const {
@@ -703,14 +717,49 @@ bool CaptureModeController::IsAndroidFilesPath(
   return path == delegate_->GetAndroidFilesPath();
 }
 
+aura::Window* CaptureModeController::GetCameraPreviewParentWindow() const {
+  // Trying to get camera preview's parent from `video_recording_watcher_` first
+  // if a video recording is in progress. As a capture session can be started
+  // with `kImage` type while recording, and we should get the parent of the
+  // camera preview with the settings inside VideoRecordingWatcher in this case,
+  // e.g, CaptureModeSource for taking the video.
+  if (is_recording_in_progress())
+    return video_recording_watcher_->GetCameraPreviewParentWindow();
+
+  if (IsActive())
+    return capture_mode_session_->GetCameraPreviewParentWindow();
+
+  return nullptr;
+}
+
+gfx::Rect CaptureModeController::GetCameraPreviewConfineBounds() const {
+  // Getting the bounds from `video_recording_watcher_` first if a video
+  // recording is in progress. As a capture session can be started with `kImage`
+  // type while recording, and we should get the bounds with the settings inside
+  // VideoRecordingWatcher in this case, e.g, user-selected region.
+  if (is_recording_in_progress())
+    return video_recording_watcher_->GetCameraPreviewConfineBounds();
+
+  if (IsActive())
+    return capture_mode_session_->GetCameraPreviewConfineBounds();
+
+  return gfx::Rect();
+}
+
 void CaptureModeController::OnRecordingEnded(
     recording::mojom::RecordingStatus status,
     const gfx::ImageSkia& thumbnail) {
   low_disk_space_threshold_reached_ =
-      status == recording::mojom::RecordingStatus::kLowDiskSpace;
+      status == recording::mojom::RecordingStatus::kLowDiskSpace ||
+      status == recording::mojom::RecordingStatus::kLowDriveFsQuota;
   EmitServiceRecordingStatus(status);
   FinalizeRecording(status == recording::mojom::RecordingStatus::kSuccess,
                     thumbnail);
+}
+
+void CaptureModeController::GetDriveFsFreeSpaceBytes(
+    GetDriveFsFreeSpaceBytesCallback callback) {
+  delegate_->GetDriveFsFreeSpaceBytes(std::move(callback));
 }
 
 void CaptureModeController::OnActiveUserSessionChanged(
@@ -886,6 +935,7 @@ void CaptureModeController::LaunchRecordingServiceAndStartRecording(
 
   recording_service_remote_.reset();
   recording_service_client_receiver_.reset();
+  drive_fs_quota_delegate_receiver_.reset();
 
   recording_service_remote_ = delegate_->LaunchRecordingService();
   recording_service_remote_.set_disconnect_handler(
@@ -916,6 +966,17 @@ void CaptureModeController::LaunchRecordingServiceAndStartRecording(
         audio_stream_factory.InitWithNewPipeAndPassReceiver());
   }
 
+  // Only act as a `DriveFsQuotaDelegate` for the recording service if the video
+  // file will be saved to a location in DriveFS.
+  mojo::PendingRemote<recording::mojom::DriveFsQuotaDelegate>
+      drive_fs_quota_delegate;
+  const auto file_location = GetSaveToOption(current_video_file_path_);
+  if (file_location == CaptureModeSaveToLocation::kDrive ||
+      file_location == CaptureModeSaveToLocation::kDriveFolder) {
+    drive_fs_quota_delegate =
+        drive_fs_quota_delegate_receiver_.BindNewPipeAndPassRemote();
+  }
+
   auto* root_window = capture_params.window->GetRootWindow();
   const auto frame_sink_id = root_window->GetFrameSinkId();
   DCHECK(frame_sink_id.is_valid());
@@ -928,8 +989,9 @@ void CaptureModeController::LaunchRecordingServiceAndStartRecording(
     case CaptureModeSource::kFullscreen:
       recording_service_remote_->RecordFullscreen(
           std::move(client), video_capturer_remote.Unbind(),
-          std::move(audio_stream_factory), current_video_file_path_,
-          frame_sink_id, frame_sink_size_dip, device_scale_factor);
+          std::move(audio_stream_factory), std::move(drive_fs_quota_delegate),
+          current_video_file_path_, frame_sink_id, frame_sink_size_dip,
+          device_scale_factor);
       break;
 
     case CaptureModeSource::kWindow:
@@ -943,16 +1005,18 @@ void CaptureModeController::LaunchRecordingServiceAndStartRecording(
 
       recording_service_remote_->RecordWindow(
           std::move(client), video_capturer_remote.Unbind(),
-          std::move(audio_stream_factory), current_video_file_path_,
-          frame_sink_id, frame_sink_size_dip, device_scale_factor,
-          capture_params.window->subtree_capture_id(), bounds.size());
+          std::move(audio_stream_factory), std::move(drive_fs_quota_delegate),
+          current_video_file_path_, frame_sink_id, frame_sink_size_dip,
+          device_scale_factor, capture_params.window->subtree_capture_id(),
+          bounds.size());
       break;
 
     case CaptureModeSource::kRegion:
       recording_service_remote_->RecordRegion(
           std::move(client), video_capturer_remote.Unbind(),
-          std::move(audio_stream_factory), current_video_file_path_,
-          frame_sink_id, frame_sink_size_dip, device_scale_factor, bounds);
+          std::move(audio_stream_factory), std::move(drive_fs_quota_delegate),
+          current_video_file_path_, frame_sink_id, frame_sink_size_dip,
+          device_scale_factor, bounds);
       break;
   }
 }
@@ -982,6 +1046,7 @@ void CaptureModeController::FinalizeRecording(bool success,
   recording_service_remote_.reset();
   delegate_->OnServiceRemoteReset();
   recording_service_client_receiver_.reset();
+  drive_fs_quota_delegate_receiver_.reset();
   const bool was_in_projector_mode =
       video_recording_watcher_->is_in_projector_mode();
   video_recording_watcher_.reset();

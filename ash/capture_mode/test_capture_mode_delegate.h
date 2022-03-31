@@ -5,6 +5,7 @@
 #ifndef ASH_CAPTURE_MODE_TEST_CAPTURE_MODE_DELEGATE_H_
 #define ASH_CAPTURE_MODE_TEST_CAPTURE_MODE_DELEGATE_H_
 
+#include <limits>
 #include <memory>
 
 #include "ash/public/cpp/capture_mode/capture_mode_delegate.h"
@@ -22,6 +23,8 @@ class RecordingServiceTestApi;
 
 namespace ash {
 
+class FakeVideoSourceProvider;
+
 class TestCaptureModeDelegate : public CaptureModeDelegate {
  public:
   TestCaptureModeDelegate();
@@ -31,6 +34,9 @@ class TestCaptureModeDelegate : public CaptureModeDelegate {
 
   recording::RecordingServiceTestApi* recording_service() const {
     return recording_service_.get();
+  }
+  FakeVideoSourceProvider* video_source_provider() {
+    return video_source_provider_.get();
   }
   void set_on_session_state_changed_callback(base::OnceClosure callback) {
     on_session_state_changed_callback_ = std::move(callback);
@@ -42,6 +48,9 @@ class TestCaptureModeDelegate : public CaptureModeDelegate {
   void set_is_allowed_by_policy(bool value) { is_allowed_by_policy_ = value; }
   void set_should_save_after_dlp_check(bool value) {
     should_save_after_dlp_check_ = value;
+  }
+  void set_fake_drive_fs_free_bytes(int64_t bytes) {
+    fake_drive_fs_free_bytes_ = bytes;
   }
 
   // Resets |is_allowed_by_policy_| and |is_allowed_by_dlp_| back to true.
@@ -94,10 +103,15 @@ class TestCaptureModeDelegate : public CaptureModeDelegate {
   base::FilePath GetAndroidFilesPath() const override;
   std::unique_ptr<RecordingOverlayView> CreateRecordingOverlayView()
       const override;
+  void ConnectToVideoSourceProvider(
+      mojo::PendingReceiver<video_capture::mojom::VideoSourceProvider> receiver)
+      override;
+  void GetDriveFsFreeSpaceBytes(OnGotDriveFsFreeSpace callback) override;
 
  private:
   std::unique_ptr<recording::RecordingServiceTestApi> recording_service_;
-  base::FilePath fake_downloads_dir_;
+  std::unique_ptr<FakeVideoSourceProvider> video_source_provider_;
+  base::ScopedTempDir fake_downloads_dir_;
   base::OnceClosure on_session_state_changed_callback_;
   base::OnceClosure on_recording_started_callback_;
   bool is_allowed_by_dlp_ = true;
@@ -105,6 +119,7 @@ class TestCaptureModeDelegate : public CaptureModeDelegate {
   bool should_save_after_dlp_check_ = true;
   base::ScopedTempDir fake_drive_fs_mount_path_;
   base::ScopedTempDir fake_android_files_path_;
+  int64_t fake_drive_fs_free_bytes_ = std::numeric_limits<int64_t>::max();
 };
 
 }  // namespace ash

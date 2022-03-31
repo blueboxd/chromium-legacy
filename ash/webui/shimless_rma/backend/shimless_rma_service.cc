@@ -85,7 +85,7 @@ ShimlessRmaService::ShimlessRmaService(
     std::unique_ptr<ShimlessRmaDelegate> shimless_rma_delegate)
     : shimless_rma_delegate_(std::move(shimless_rma_delegate)) {
   chromeos::RmadClient::Get()->AddObserver(this);
-  version_updater_.SetStatusCallback(
+  version_updater_.SetOsUpdateStatusCallback(
       base::BindRepeating(&ShimlessRmaService::OnOsUpdateStatusCallback,
                           weak_ptr_factory_.GetWeakPtr()));
   // Check if an OS update is available to minimize delays if needed later.
@@ -234,7 +234,7 @@ void ShimlessRmaService::UpdateOsSkipped(UpdateOsSkippedCallback callback) {
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
-  if (!version_updater_.IsIdle()) {
+  if (!version_updater_.IsUpdateEngineIdle()) {
     LOG(ERROR) << "UpdateOsSkipped called while UpdateEngine active";
     // Override the rmad state (kWelcome) with the mojo sub-state for OS
     // updates.
@@ -437,6 +437,7 @@ void ShimlessRmaService::SetComponentList(
         state_proto_.mutable_components_repair()->add_components();
     proto_component->set_component(component.component());
     proto_component->set_repair_status(component.repair_status());
+    proto_component->set_identifier(component.identifier());
   }
   TransitionNextStateGeneric(std::move(callback));
 }
@@ -795,7 +796,8 @@ void ShimlessRmaService::GetLog(GetLogCallback callback) {
   if (state_proto_.state_case() != rmad::RmadState::kRepairComplete) {
     LOG(ERROR) << "GetLog called from incorrect state "
                << state_proto_.state_case();
-    std::move(callback).Run("");
+    std::move(callback).Run("",
+                            rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
   chromeos::RmadClient::Get()->GetLog(
@@ -804,12 +806,15 @@ void ShimlessRmaService::GetLog(GetLogCallback callback) {
 }
 
 void ShimlessRmaService::OnGetLog(GetLogCallback callback,
-                                  absl::optional<std::string> log) {
-  if (!log) {
-    std::move(callback).Run("");
+                                  absl::optional<rmad::GetLogReply> response) {
+  if (!response) {
+    LOG(ERROR) << "Failed to call rmad::GetLog";
+    std::move(callback).Run("",
+                            rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
-  std::move(callback).Run(*log);
+
+  std::move(callback).Run(response->log(), response->error());
 }
 
 void ShimlessRmaService::LaunchDiagnostics() {
@@ -1102,9 +1107,7 @@ void ShimlessRmaService::OnAbortRmaResponse(
               : "Rebooting after user cancelled RMA.");
     } else {
       VLOG(1) << "Restarting Chrome to bypass RMA after cancel request.";
-      // TODO(gavindodd): Append switches::kNoShimlessRma when autolaunch is
-      // implemented.
-      shimless_rma_delegate_->RestartChrome();
+      shimless_rma_delegate_->ExitRmaThenRestartChrome();
     }
   }
 }

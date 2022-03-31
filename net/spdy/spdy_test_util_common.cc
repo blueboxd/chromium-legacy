@@ -323,10 +323,11 @@ SpdySessionDependencies::SpdySessionDependencies(
       key_auth_cache_server_entries_by_network_isolation_key(false),
       enable_priority_update(false),
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_IOS)
-      go_away_on_ip_change(true) {
+      go_away_on_ip_change(true),
 #else
-      go_away_on_ip_change(false) {
+      go_away_on_ip_change(false),
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_IOS)
+      ignore_ip_address_changes(false) {
   http2_settings[spdy::SETTINGS_INITIAL_WINDOW_SIZE] =
       kDefaultInitialWindowSize;
 }
@@ -392,6 +393,7 @@ HttpNetworkSessionParams SpdySessionDependencies::CreateSessionParams(
       session_deps->key_auth_cache_server_entries_by_network_isolation_key;
   params.enable_priority_update = session_deps->enable_priority_update;
   params.spdy_go_away_on_ip_change = session_deps->go_away_on_ip_change;
+  params.ignore_ip_address_changes = session_deps->ignore_ip_address_changes;
   return params;
 }
 
@@ -481,22 +483,24 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
     bool enable_ip_based_pooling) {
   EXPECT_FALSE(http_session->spdy_session_pool()->FindAvailableSession(
       key, enable_ip_based_pooling,
-      /* is_websocket = */ false, NetLogWithSource()));
+      /*is_websocket=*/false, NetLogWithSource()));
 
   auto connection = std::make_unique<ClientSocketHandle>();
   TestCompletionCallback callback;
 
+  auto ssl_config = std::make_unique<SSLConfig>();
+  ssl_config->alpn_protos = http_session->GetAlpnProtos();
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       base::MakeRefCounted<ClientSocketPool::SocketParams>(
-          std::make_unique<SSLConfig>() /* ssl_config_for_origin */,
-          nullptr /* ssl_config_for_proxy */);
+          /*ssl_config_for_origin=*/std::move(ssl_config),
+          /*ssl_config_for_proxy=*/nullptr);
   int rv = connection->Init(
       ClientSocketPool::GroupId(
           url::SchemeHostPort(url::kHttpsScheme,
                               key.host_port_pair().HostForURL(),
                               key.host_port_pair().port()),
           key.privacy_mode(), NetworkIsolationKey(), SecureDnsPolicy::kAllow),
-      socket_params, absl::nullopt /* proxy_annotation_tag */, MEDIUM,
+      socket_params, /*proxy_annotation_tag=*/absl::nullopt, MEDIUM,
       key.socket_tag(), ClientSocketPool::RespectLimits::ENABLED,
       callback.callback(), ClientSocketPool::ProxyAuthCallback(),
       http_session->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,

@@ -82,10 +82,11 @@ const base::Feature kAutofillEnableOffersInClankKeyboardAccessory{
     "AutofillEnableOffersInClankKeyboardAccessory",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, offer data will be retrieved during downstream and shown in
-// the dropdown list.
-const base::Feature kAutofillEnableOffersInDownstream{
-    "kAutofillEnableOffersInDownstream", base::FEATURE_ENABLED_BY_DEFAULT};
+// Controls whether we send billing customer number in GetUploadDetails
+// preflight call.
+const base::Feature kAutofillEnableSendingBcnInGetUploadDetails{
+    "AutofillEnableSendingBcnInGetUploadDetails",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, if the user interacts with the manual fallback bottom sheet
 // on Android, it'll remain sticky until the user dismisses it.
@@ -97,6 +98,12 @@ const base::Feature kAutofillEnableStickyManualFallbackForCards{
 // chip in toolbar along with the avatar toolbar button.
 const base::Feature kAutofillEnableToolbarStatusChip{
     "AutofillEnableToolbarStatusChip", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, UnmaskCardRequest will set instrument id, which is Chrome-side
+// field for non-legacy ID.
+const base::Feature kAutofillEnableUnmaskCardRequestSetInstrumentId{
+    "AutofillEnableUnmaskCardRequestSetInstrumentId",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, the user will have the ability to update the virtual card
 // enrollment of a credit card through their chrome browser after certain
@@ -110,6 +117,13 @@ const base::Feature kAutofillEnableUpdateVirtualCardEnrollment{
 // when all requirements are met.
 const base::Feature kAutofillEnableVirtualCard{
     "AutofillEnableVirtualCard", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, in the payments settings page on desktop, virtual card
+// enrollment management will be provided so that the user can enroll/unenroll a
+// card in virtual card.
+const base::Feature kAutofillEnableVirtualCardManagementInDesktopSettingsPage{
+    "AutofillEnableVirtualCardManagementInDesktopSettingsPage",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, virtual card retrieval will pass an optional
 // authentication based on risk level.
@@ -166,11 +180,9 @@ const base::Feature kAutofillSuggestVirtualCardsOnIncompleteForm{
 
 // Controls offering credit card upload to Google Payments. Cannot ever be
 // ENABLED_BY_DEFAULT because the feature state depends on the user's country.
-// There are countries we simply can't turn this on for, and they change over
-// time, so it's important that we can flip a switch and be done instead of
-// having old versions of Chrome forever do the wrong thing. Enabling it by
-// default would mean that any first-run client without a Finch config won't get
-// the overriding command to NOT turn it on, which becomes an issue.
+// The set of launched countries is listed in autofill_experiments.cc, and this
+// flag remains as a way to easily enable upload credit card save for testers,
+// as well as enable non-fully-launched countries on a trial basis.
 const base::Feature kAutofillUpstream{"AutofillUpstream",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 

@@ -102,9 +102,12 @@ bool AffiliationFetcherBase::ParseResponse(
   //     case so the caller can be notified and it can act accordingly.
   //   * The |result| will be free of duplicate or empty equivalence classes.
 
-  affiliation_pb::LookupAffiliationResponse response;
-  if (!response.ParseFromString(serialized_response))
+  affiliation_pb::LookupAffiliationByHashPrefixResponse response;
+  if (!response.ParseFromString(serialized_response)) {
+    base::UmaHistogramBoolean(
+        "PasswordManager.AffiliationFetcher.FailedToParseResponse", true);
     return false;
+  }
 
   return ParseLookupAffiliationResponse(GetRequestedFacetURIs(), response,
                                         result);

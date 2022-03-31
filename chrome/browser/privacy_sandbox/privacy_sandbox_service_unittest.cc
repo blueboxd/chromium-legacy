@@ -4,6 +4,7 @@
 
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
 
+#include "base/test/bind.h"
 #include "base/test/gtest_util.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -11,19 +12,17 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/federated_learning/floc_id_provider.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/ui/webui/federated_learning/floc_internals.mojom.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
-#include "components/federated_learning/features/features.h"
-#include "components/federated_learning/floc_id.h"
 #include "components/policy/core/common/mock_policy_service.h"
+#include "components/privacy_sandbox/canonical_topic.h"
+#include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "components/privacy_sandbox/privacy_sandbox_settings.h"
 #include "components/privacy_sandbox/privacy_sandbox_test_util.h"
@@ -34,30 +33,597 @@
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "content/public/browser/interest_group_manager.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/federated_learning/floc.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/origin.h"
 
 namespace {
+using privacy_sandbox::CanonicalTopic;
+using testing::ElementsAre;
 
-class MockFlocIdProvider : public federated_learning::FlocIdProvider {
+class TestInterestGroupManager : public content::InterestGroupManager {
  public:
-  blink::mojom::InterestCohortPtr GetInterestCohortForJsApi(
-      const GURL& url,
-      const absl::optional<url::Origin>& top_frame_origin) const override {
-    return blink::mojom::InterestCohort::New();
+  void SetInterestGroupJoiningOrigins(const std::vector<url::Origin>& origins) {
+    origins_ = origins;
   }
-  MOCK_METHOD(federated_learning::mojom::WebUIFlocStatusPtr,
-              GetFlocStatusForWebUi,
-              (),
-              (const, override));
-  MOCK_METHOD(void, MaybeRecordFlocToUkm, (ukm::SourceId), (override));
-  MOCK_METHOD(base::Time, GetApproximateNextComputeTime, (), (const, override));
+
+  // content::InterestGroupManager:
+  void GetAllInterestGroupJoiningOrigins(
+      base::OnceCallback<void(std::vector<url::Origin>)> callback) override {
+    std::move(callback).Run(origins_);
+  }
+
+ private:
+  std::vector<url::Origin> origins_;
 };
+
+struct DialogTestState {
+  bool consent_required;
+  bool old_api_pref;
+  bool new_api_pref;
+  bool notice_displayed;
+  bool consent_decision_made;
+  bool confirmation_not_shown;
+};
+
+struct ExpectedDialogOutput {
+  bool dcheck_failure;
+  PrivacySandboxService::DialogType dialog_type;
+  bool new_api_pref;
+};
+
+struct DialogTestCase {
+  DialogTestState test_setup;
+  ExpectedDialogOutput expected_output;
+};
+
+std::vector<DialogTestCase> kDialogTestCases = {
+    {{/*consent_required=*/false, /*old_api_pref=*/false,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/false, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/false,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/false, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/true,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/false, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNotice,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/true,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/false, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kConsent,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/false,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/false, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/true,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/false,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/false, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/true,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/true,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/false, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/true,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/true,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/false, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/true,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/false,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/true, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/false,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/true, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/true,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/true, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/true,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/true, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/false,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/true, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/false,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/true, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kConsent,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/true,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/true, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/true,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/true, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kConsent,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/false,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/false, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/false,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/false, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/true,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/false, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/true,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/false, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/false,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/false, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/false,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/false, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/true,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/false, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/true,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/false, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/false,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/true, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/false,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/true, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/true,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/true, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/true,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/true, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/false,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/true, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/false,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/true, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/true,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/true, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/true,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/true, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/false},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/false,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/false, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/false,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/false, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/true,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/false, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/true,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/false, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/false,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/false, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/false,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/false, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/true,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/false, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/true,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/false, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/false,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/true, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/false,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/true, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/true,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/true, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/true,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/true, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/false,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/true, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/false,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/true, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/true,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/true, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/true,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/true, /*consent_decision_made=*/false,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/false,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/false, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/false,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/false, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/true,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/false, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/true,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/false, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/false,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/false, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/false,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/false, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/true,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/false, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/true,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/false, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/false,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/true, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/false,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/true, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/true,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/true, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/true,
+      /*new_api_pref=*/false,
+      /*notice_displayed=*/true, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/false}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/false,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/true, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/false,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/true, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/false, /*old_api_pref=*/true,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/true, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+
+    {{/*consent_required=*/true, /*old_api_pref=*/true,
+      /*new_api_pref=*/true,
+      /*notice_displayed=*/true, /*consent_decision_made=*/true,
+      /*confirmation_not_shown=*/true},
+     {/*dcheck_failure=*/false,
+      /*dialog_type=*/PrivacySandboxService::DialogType::kNone,
+      /*new_api_pref=*/true}},
+};
+
+void SetupDialogTestState(
+    base::test::ScopedFeatureList* feature_list,
+    sync_preferences::TestingPrefServiceSyncable* pref_service,
+    const DialogTestState& test_state) {
+  feature_list->Reset();
+  feature_list->InitAndEnableFeatureWithParameters(
+      privacy_sandbox::kPrivacySandboxSettings3,
+      {{"consent-required", test_state.consent_required ? "true" : "false"}});
+
+  pref_service->SetUserPref(
+      prefs::kPrivacySandboxApisEnabled,
+      std::make_unique<base::Value>(test_state.old_api_pref));
+
+  pref_service->SetUserPref(
+      prefs::kPrivacySandboxApisEnabledV2,
+      std::make_unique<base::Value>(test_state.new_api_pref));
+
+  pref_service->SetUserPref(
+      prefs::kPrivacySandboxNoticeDisplayed,
+      std::make_unique<base::Value>(test_state.notice_displayed));
+
+  pref_service->SetUserPref(
+      prefs::kPrivacySandboxConsentDecisionMade,
+      std::make_unique<base::Value>(test_state.consent_decision_made));
+
+  pref_service->SetUserPref(
+      prefs::kPrivacySandboxNoConfirmationSandboxDisabled,
+      std::make_unique<base::Value>(test_state.confirmation_not_shown));
+}
 
 }  // namespace
 
@@ -72,9 +638,10 @@ class PrivacySandboxServiceTest : public testing::Test {
 
     privacy_sandbox_service_ = std::make_unique<PrivacySandboxService>(
         PrivacySandboxSettingsFactory::GetForProfile(profile()),
-        CookieSettingsFactory::GetForProfile(profile()).get(), profile()->GetPrefs(),
-        policy_service(), sync_service(), identity_test_env()->identity_manager(),
-        mock_floc_id_provider(), GetProfileType());
+        CookieSettingsFactory::GetForProfile(profile()).get(),
+        profile()->GetPrefs(), policy_service(), sync_service(),
+        identity_test_env()->identity_manager(), test_interest_group_manager(),
+        GetProfileType());
   }
 
   virtual void InitializePrefsBeforeStart() {}
@@ -83,9 +650,19 @@ class PrivacySandboxServiceTest : public testing::Test {
     return profile_metrics::BrowserProfileType::kRegular;
   }
 
+  void ConfirmRequiredDialogType(
+      PrivacySandboxService::DialogType dialog_type) {
+    // The required dialog type should never change between successive calls to
+    // GetRequiredDialogType.
+    EXPECT_EQ(dialog_type, privacy_sandbox_service()->GetRequiredDialogType());
+  }
+
   TestingProfile* profile() { return &profile_; }
   PrivacySandboxService* privacy_sandbox_service() {
     return privacy_sandbox_service_.get();
+  }
+  PrivacySandboxSettings* privacy_sandbox_settings() {
+    return PrivacySandboxSettingsFactory::GetForProfile(profile());
   }
   base::test::ScopedFeatureList* feature_list() { return &feature_list_; }
   sync_preferences::TestingPrefServiceSyncable* prefs() {
@@ -99,8 +676,8 @@ class PrivacySandboxServiceTest : public testing::Test {
   signin::IdentityTestEnvironment* identity_test_env() {
     return &identity_test_env_;
   }
-  MockFlocIdProvider* mock_floc_id_provider() {
-    return &mock_floc_id_provider_;
+  TestInterestGroupManager* test_interest_group_manager() {
+    return &test_interest_group_manager_;
   }
 
  private:
@@ -111,257 +688,53 @@ class PrivacySandboxServiceTest : public testing::Test {
   TestingProfile profile_;
   base::test::ScopedFeatureList feature_list_;
   syncer::TestSyncService sync_service_;
-  MockFlocIdProvider mock_floc_id_provider_;
+  TestInterestGroupManager test_interest_group_manager_;
 
   std::unique_ptr<PrivacySandboxService> privacy_sandbox_service_;
 };
 
 TEST_F(PrivacySandboxServiceTest, GetFlocDescriptionForDisplay) {
-  // Check that the returned FLoC description correctly takes into account the
-  // time between FLoC recomputes.
-  std::map<std::string, std::u16string> param_to_expected_string = {
-      {"1h", l10n_util::GetPluralStringFUTF16(
-                 IDS_PRIVACY_SANDBOX_FLOC_DESCRIPTION, 0)},
-      {"23h", l10n_util::GetPluralStringFUTF16(
-                  IDS_PRIVACY_SANDBOX_FLOC_DESCRIPTION, 0)},
-      {"24h", l10n_util::GetPluralStringFUTF16(
-                  IDS_PRIVACY_SANDBOX_FLOC_DESCRIPTION, 1)},
-      {"25h", l10n_util::GetPluralStringFUTF16(
-                  IDS_PRIVACY_SANDBOX_FLOC_DESCRIPTION, 1)},
-      {"60h", l10n_util::GetPluralStringFUTF16(
-                  IDS_PRIVACY_SANDBOX_FLOC_DESCRIPTION, 3)},
-      {"167h", l10n_util::GetPluralStringFUTF16(
-                   IDS_PRIVACY_SANDBOX_FLOC_DESCRIPTION, 7)},
-      {"168h", l10n_util::GetPluralStringFUTF16(
-                   IDS_PRIVACY_SANDBOX_FLOC_DESCRIPTION, 7)}};
-
-  for (const auto& param_expected : param_to_expected_string) {
-    feature_list()->InitAndEnableFeatureWithParameters(
-        federated_learning::kFederatedLearningOfCohorts,
-        {{"update_interval", param_expected.first}});
-    EXPECT_EQ(param_expected.second,
-              privacy_sandbox_service()->GetFlocDescriptionForDisplay());
-    feature_list()->Reset();
-  }
+  EXPECT_EQ(
+      l10n_util::GetPluralStringFUTF16(IDS_PRIVACY_SANDBOX_FLOC_DESCRIPTION, 7),
+      privacy_sandbox_service()->GetFlocDescriptionForDisplay());
 }
 
 TEST_F(PrivacySandboxServiceTest, GetFlocIdForDisplay) {
-  // Check that the cohort identifier is correctly converted to a string when
-  // available.
-  feature_list()->InitWithFeatures(
-      {blink::features::kInterestCohortAPIOriginTrial}, {});
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxFlocEnabled, true);
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxApisEnabled, true);
-  federated_learning::FlocId floc_id = federated_learning::FlocId::CreateValid(
-      123456, base::Time(), base::Time::Now(),
-      /*sorting_lsh_version=*/0);
-  floc_id.SaveToPrefs(profile()->GetTestingPrefService());
-
-  EXPECT_EQ(std::u16string(u"123456"),
-            privacy_sandbox_service()->GetFlocIdForDisplay());
-
-  // If the FLoC preference, the Sandbox Preference, or the feature is disabled,
-  // or the FLoC ID is invalid, the invalid string should be returned.
-  feature_list()->Reset();
-  feature_list()->InitWithFeatures(
-      {}, {blink::features::kInterestCohortAPIOriginTrial});
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PRIVACY_SANDBOX_FLOC_INVALID),
-            privacy_sandbox_service()->GetFlocIdForDisplay());
-
-  feature_list()->Reset();
-  feature_list()->InitWithFeatures(
-      {blink::features::kInterestCohortAPIOriginTrial}, {});
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxApisEnabled, false);
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PRIVACY_SANDBOX_FLOC_INVALID),
-            privacy_sandbox_service()->GetFlocIdForDisplay());
-
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxApisEnabled, true);
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxFlocEnabled, false);
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PRIVACY_SANDBOX_FLOC_INVALID),
-            privacy_sandbox_service()->GetFlocIdForDisplay());
-
-  floc_id.UpdateStatusAndSaveToPrefs(
-      profile()->GetTestingPrefService(),
-      federated_learning::FlocId::Status::kInvalidReset);
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PRIVACY_SANDBOX_FLOC_INVALID),
             privacy_sandbox_service()->GetFlocIdForDisplay());
 }
 
 TEST_F(PrivacySandboxServiceTest, GetFlocIdNextUpdateForDisplay) {
-  // Check that date FLoC will be next updated is returned when available.
-  feature_list()->InitWithFeatures(
-      {blink::features::kInterestCohortAPIOriginTrial}, {});
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxApisEnabled, true);
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxFlocEnabled, true);
-
-  std::map<base::TimeDelta, std::u16string> offsets_to_expected_string = {
-      {base::Hours(23), l10n_util::GetPluralStringFUTF16(
-                            IDS_PRIVACY_SANDBOX_FLOC_TIME_TO_NEXT_COMPUTE, 0)},
-      {base::Hours(25), l10n_util::GetPluralStringFUTF16(
-                            IDS_PRIVACY_SANDBOX_FLOC_TIME_TO_NEXT_COMPUTE, 1)},
-      {base::Days(2), l10n_util::GetPluralStringFUTF16(
-                          IDS_PRIVACY_SANDBOX_FLOC_TIME_TO_NEXT_COMPUTE, 2)},
-      {base::Hours(60), l10n_util::GetPluralStringFUTF16(
-                            IDS_PRIVACY_SANDBOX_FLOC_TIME_TO_NEXT_COMPUTE, 3)},
-      {base::Hours(167),  // 1 hour less than 7 days.
-       l10n_util::GetPluralStringFUTF16(
-           IDS_PRIVACY_SANDBOX_FLOC_TIME_TO_NEXT_COMPUTE, 7)}};
-
-  for (const auto& offset_expected : offsets_to_expected_string) {
-    EXPECT_CALL(*mock_floc_id_provider(), GetApproximateNextComputeTime)
-        .WillOnce(testing::Return(base::Time::Now() + offset_expected.first));
-    EXPECT_EQ(offset_expected.second,
-              privacy_sandbox_service()->GetFlocIdNextUpdateForDisplay(
-                  base::Time::Now()));
-    testing::Mock::VerifyAndClearExpectations(mock_floc_id_provider());
-  }
-
-  // Check that disabling FLoC is also reflected in the returned string.
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxFlocEnabled, false);
-  EXPECT_CALL(*mock_floc_id_provider(), GetApproximateNextComputeTime).Times(0);
   EXPECT_EQ(l10n_util::GetStringUTF16(
                 IDS_PRIVACY_SANDBOX_FLOC_TIME_TO_NEXT_COMPUTE_INVALID),
             privacy_sandbox_service()->GetFlocIdNextUpdateForDisplay(
                 base::Time::Now()));
-  testing::Mock::VerifyAndClearExpectations(mock_floc_id_provider());
-
-  // Disabling the FLoC feature should also invalidate the next compute time.
-  feature_list()->Reset();
-  feature_list()->InitWithFeatures(
-      {}, {blink::features::kInterestCohortAPIOriginTrial});
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxFlocEnabled, true);
-  testing::Mock::VerifyAndClearExpectations(mock_floc_id_provider());
 }
 
 TEST_F(PrivacySandboxServiceTest, GetFlocResetExplanationForDisplay) {
-  // Check that the string description indicating what happens when the user
-  // resets the FLoC ID updates appropriately based on the feature parameter.
-  std::map<std::string, std::u16string> param_to_expected_string = {
-      {"1h", l10n_util::GetPluralStringFUTF16(
-                 IDS_PRIVACY_SANDBOX_FLOC_RESET_EXPLANATION, 0)},
-      {"23h", l10n_util::GetPluralStringFUTF16(
-                  IDS_PRIVACY_SANDBOX_FLOC_RESET_EXPLANATION, 0)},
-      {"24h", l10n_util::GetPluralStringFUTF16(
-                  IDS_PRIVACY_SANDBOX_FLOC_RESET_EXPLANATION, 1)},
-      {"25h", l10n_util::GetPluralStringFUTF16(
-                  IDS_PRIVACY_SANDBOX_FLOC_RESET_EXPLANATION, 1)},
-      {"60h", l10n_util::GetPluralStringFUTF16(
-                  IDS_PRIVACY_SANDBOX_FLOC_RESET_EXPLANATION, 3)},
-      {"167h", l10n_util::GetPluralStringFUTF16(
-                   IDS_PRIVACY_SANDBOX_FLOC_RESET_EXPLANATION, 7)},
-      {"168h", l10n_util::GetPluralStringFUTF16(
-                   IDS_PRIVACY_SANDBOX_FLOC_RESET_EXPLANATION, 7)}};
-
-  for (const auto& param_expected : param_to_expected_string) {
-    feature_list()->InitAndEnableFeatureWithParameters(
-        federated_learning::kFederatedLearningOfCohorts,
-        {{"update_interval", param_expected.first}});
-    EXPECT_EQ(param_expected.second,
-              privacy_sandbox_service()->GetFlocResetExplanationForDisplay());
-    feature_list()->Reset();
-  }
+  EXPECT_EQ(l10n_util::GetPluralStringFUTF16(
+                IDS_PRIVACY_SANDBOX_FLOC_RESET_EXPLANATION, 7),
+            privacy_sandbox_service()->GetFlocResetExplanationForDisplay());
 }
 
 TEST_F(PrivacySandboxServiceTest, GetFlocStatusForDisplay) {
-  // Check the status of the user's FLoC is correctly returned. This depends
-  // on whether the FLoC origin trial feature is enabled, and whether the user
-  // has FLoC enabled.
-  // TODO(crbug.com/1287951): FLoC is always disabled if OT is not active.
-  feature_list()->InitWithFeatures(
-      {blink::features::kInterestCohortAPIOriginTrial}, {});
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxFlocEnabled, true);
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxApisEnabled, true);
-  EXPECT_EQ(
-      l10n_util::GetStringUTF16(IDS_PRIVACY_SANDBOX_FLOC_STATUS_NOT_ACTIVE),
-      privacy_sandbox_service()->GetFlocStatusForDisplay());
-
-  // The Privacy Sandbox APIs pref & FLoC pref should disable the trial when
-  // either is disabled.
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxApisEnabled, false);
-  EXPECT_EQ(
-      l10n_util::GetStringUTF16(IDS_PRIVACY_SANDBOX_FLOC_STATUS_NOT_ACTIVE),
-      privacy_sandbox_service()->GetFlocStatusForDisplay());
-
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxApisEnabled, true);
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxFlocEnabled, false);
-  EXPECT_EQ(
-      l10n_util::GetStringUTF16(IDS_PRIVACY_SANDBOX_FLOC_STATUS_NOT_ACTIVE),
-      privacy_sandbox_service()->GetFlocStatusForDisplay());
-
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxFlocEnabled, true);
-  feature_list()->Reset();
-  feature_list()->InitWithFeatures(
-      {}, {blink::features::kInterestCohortAPIOriginTrial});
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_PRIVACY_SANDBOX_FLOC_STATUS_NOT_ACTIVE),
       privacy_sandbox_service()->GetFlocStatusForDisplay());
 }
 
 TEST_F(PrivacySandboxServiceTest, IsFlocIdResettable) {
-  // Check that if FLoC is functional the FLoC ID is resettable, regardless of
-  // whether the FLoC ID is currently valid.
-  feature_list()->InitWithFeatures(
-      {blink::features::kInterestCohortAPIOriginTrial}, {});
-  federated_learning::FlocId floc_id = federated_learning::FlocId::CreateValid(
-      123456, base::Time(), base::Time::Now(),
-      /*sorting_lsh_version=*/0);
-  floc_id.SaveToPrefs(profile()->GetTestingPrefService());
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxFlocEnabled, true);
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxApisEnabled, true);
-  EXPECT_TRUE(privacy_sandbox_service()->IsFlocIdResettable());
-
-  feature_list()->Reset();
-  feature_list()->InitWithFeatures(
-      {}, {blink::features::kInterestCohortAPIOriginTrial});
   EXPECT_FALSE(privacy_sandbox_service()->IsFlocIdResettable());
-
-  feature_list()->Reset();
-  feature_list()->InitWithFeatures(
-      {blink::features::kInterestCohortAPIOriginTrial}, {});
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxFlocEnabled, false);
-  EXPECT_FALSE(privacy_sandbox_service()->IsFlocIdResettable());
-
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxFlocEnabled, true);
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxFlocEnabled, false);
-  EXPECT_FALSE(privacy_sandbox_service()->IsFlocIdResettable());
-
-  floc_id.UpdateStatusAndSaveToPrefs(
-      profile()->GetTestingPrefService(),
-      federated_learning::FlocId::Status::kInvalidReset);
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxFlocEnabled, true);
-  EXPECT_TRUE(privacy_sandbox_service()->IsFlocIdResettable());
 }
 
 TEST_F(PrivacySandboxServiceTest, UserResetFlocID) {
   // Check that the PrivacySandboxSettings is informed, and the appropriate
   // actions are logged, in response to a user resetting the floc id.
-  auto* privacy_sandbox_settings =
-      PrivacySandboxSettingsFactory::GetForProfile(profile());
-  EXPECT_EQ(base::Time(), privacy_sandbox_settings->FlocDataAccessibleSince());
+  EXPECT_EQ(base::Time(),
+            privacy_sandbox_settings()->FlocDataAccessibleSince());
 
   privacy_sandbox_test_util::MockPrivacySandboxObserver observer;
-  privacy_sandbox_settings->AddObserver(&observer);
+  privacy_sandbox_settings()->AddObserver(&observer);
   EXPECT_CALL(observer, OnFlocDataAccessibleSinceUpdated(true)).Times(2);
 
   base::UserActionTester user_action_tester;
@@ -370,7 +743,8 @@ TEST_F(PrivacySandboxServiceTest, UserResetFlocID) {
 
   privacy_sandbox_service()->ResetFlocId(/*user_initiated=*/true);
 
-  EXPECT_NE(base::Time(), privacy_sandbox_settings->FlocDataAccessibleSince());
+  EXPECT_NE(base::Time(),
+            privacy_sandbox_settings()->FlocDataAccessibleSince());
   ASSERT_EQ(1, user_action_tester.GetActionCount(
                    "Settings.PrivacySandbox.ResetFloc"));
 
@@ -458,6 +832,147 @@ TEST_F(PrivacySandboxServiceTest, OnPrivacySandboxPrefChanged) {
   profile()->GetTestingPrefService()->SetBoolean(
       prefs::kPrivacySandboxApisEnabled, true);
   testing::Mock::VerifyAndClearExpectations(&mock_privacy_sandbox_observer);
+}
+
+TEST_F(PrivacySandboxServiceTest, GetFledgeJoiningEtldPlusOne) {
+  // Confirm that the set of FLEDGE origins which were top-frame for FLEDGE join
+  // actions is correctly converted into a list of eTLD+1s.
+
+  using TestCase =
+      std::pair<std::vector<url::Origin>, std::vector<std::string>>;
+
+  // Items which map to the same eTLD+1 should be coalesced into a single entry.
+  TestCase test_case_1 = {
+      {url::Origin::Create(GURL("https://www.example.com")),
+       url::Origin::Create(GURL("https://example.com:8080")),
+       url::Origin::Create(GURL("http://www.example.com"))},
+      {"example.com"}};
+
+  // eTLD's should return the host instead, this is relevant for sites which
+  // are themselves on the PSL, e.g. github.io.
+  TestCase test_case_2 = {{
+                              url::Origin::Create(GURL("https://co.uk")),
+                              url::Origin::Create(GURL("http://co.uk")),
+                              url::Origin::Create(GURL("http://example.co.uk")),
+                          },
+                          {"co.uk", "example.co.uk"}};
+
+  // IP addresses should also return the host.
+  TestCase test_case_3 = {
+      {
+          url::Origin::Create(GURL("https://192.168.1.2")),
+          url::Origin::Create(GURL("https://192.168.1.2:8080")),
+          url::Origin::Create(GURL("https://192.168.1.3:8080")),
+      },
+      {"192.168.1.2", "192.168.1.3"}};
+
+  std::vector<TestCase> test_cases = {test_case_1, test_case_2, test_case_3};
+
+  for (const auto& origins_to_expected : test_cases) {
+    test_interest_group_manager()->SetInterestGroupJoiningOrigins(
+        {origins_to_expected.first});
+
+    bool callback_called = false;
+    auto callback = base::BindLambdaForTesting(
+        [&](std::vector<std::string> items_for_display) {
+          ASSERT_EQ(items_for_display.size(),
+                    origins_to_expected.second.size());
+          for (size_t i = 0; i < items_for_display.size(); i++)
+            EXPECT_EQ(origins_to_expected.second[i], items_for_display[i]);
+          callback_called = true;
+        });
+
+    privacy_sandbox_service()->GetFledgeJoiningEtldPlusOneForDisplay(callback);
+    EXPECT_TRUE(callback_called);
+  }
+}
+
+TEST_F(PrivacySandboxServiceTest, GetFledgeBlockedEtldPlusOne) {
+  // Confirm that blocked FLEDGE top frame eTLD+1's are correctly produced
+  // for display.
+  const std::vector<std::string> sites = {"google.com", "example.com",
+                                          "google.com.au"};
+  for (const auto& site : sites)
+    privacy_sandbox_settings()->SetFledgeJoiningAllowed(site, false);
+
+  // Sites should be returned in lexographical order.
+  auto returned_sites =
+      privacy_sandbox_service()->GetBlockedFledgeJoiningTopFramesForDisplay();
+  ASSERT_EQ(3u, returned_sites.size());
+  EXPECT_EQ(returned_sites[0], sites[1]);
+  EXPECT_EQ(returned_sites[1], sites[0]);
+  EXPECT_EQ(returned_sites[2], sites[2]);
+
+  // Settings a site back to allowed should appropriately remove it from the
+  // display list.
+  privacy_sandbox_settings()->SetFledgeJoiningAllowed("google.com", true);
+  returned_sites =
+      privacy_sandbox_service()->GetBlockedFledgeJoiningTopFramesForDisplay();
+  ASSERT_EQ(2u, returned_sites.size());
+  EXPECT_EQ(returned_sites[0], sites[1]);
+  EXPECT_EQ(returned_sites[1], sites[2]);
+}
+
+TEST_F(PrivacySandboxServiceTest, DialogActionUpdatesRequiredDialog) {
+  // Confirm that when the service is informed a dialog action occurred, it
+  // correctly adjusts the required dialog type and Privacy Sandbox pref.
+
+  // Consent accepted:
+  SetupDialogTestState(feature_list(), prefs(),
+                       {/*consent_required=*/true,
+                        /*old_api_pref=*/true,
+                        /*new_api_pref=*/false,
+                        /*notice_displayed=*/false,
+                        /*consent_decision_made=*/false,
+                        /*confirmation_not_shown=*/false});
+  EXPECT_EQ(PrivacySandboxService::DialogType::kConsent,
+            privacy_sandbox_service()->GetRequiredDialogType());
+  EXPECT_FALSE(prefs()->GetBoolean(prefs::kPrivacySandboxApisEnabledV2));
+
+  privacy_sandbox_service()->DialogActionOccurred(
+      PrivacySandboxService::DialogAction::kConsentAccepted);
+
+  EXPECT_EQ(PrivacySandboxService::DialogType::kNone,
+            privacy_sandbox_service()->GetRequiredDialogType());
+  EXPECT_TRUE(prefs()->GetBoolean(prefs::kPrivacySandboxApisEnabledV2));
+
+  // Consent declined:
+  SetupDialogTestState(feature_list(), prefs(),
+                       {/*consent_required=*/true,
+                        /*old_api_pref=*/true,
+                        /*new_api_pref=*/false,
+                        /*notice_displayed=*/false,
+                        /*consent_decision_made=*/false,
+                        /*confirmation_not_shown=*/false});
+  EXPECT_EQ(PrivacySandboxService::DialogType::kConsent,
+            privacy_sandbox_service()->GetRequiredDialogType());
+  EXPECT_FALSE(prefs()->GetBoolean(prefs::kPrivacySandboxApisEnabledV2));
+
+  privacy_sandbox_service()->DialogActionOccurred(
+      PrivacySandboxService::DialogAction::kConsentDeclined);
+
+  EXPECT_EQ(PrivacySandboxService::DialogType::kNone,
+            privacy_sandbox_service()->GetRequiredDialogType());
+  EXPECT_FALSE(prefs()->GetBoolean(prefs::kPrivacySandboxApisEnabledV2));
+
+  // Notice shown:
+  SetupDialogTestState(feature_list(), prefs(),
+                       {/*consent_required=*/false,
+                        /*old_api_pref=*/true,
+                        /*new_api_pref=*/false,
+                        /*notice_displayed=*/false,
+                        /*consent_decision_made=*/false,
+                        /*confirmation_not_shown=*/false});
+  EXPECT_EQ(PrivacySandboxService::DialogType::kNotice,
+            privacy_sandbox_service()->GetRequiredDialogType());
+  EXPECT_FALSE(prefs()->GetBoolean(prefs::kPrivacySandboxApisEnabledV2));
+
+  privacy_sandbox_service()->DialogActionOccurred(
+      PrivacySandboxService::DialogAction::kNoticeShown);
+
+  EXPECT_EQ(PrivacySandboxService::DialogType::kNone,
+            privacy_sandbox_service()->GetRequiredDialogType());
+  EXPECT_TRUE(prefs()->GetBoolean(prefs::kPrivacySandboxApisEnabledV2));
 }
 
 class PrivacySandboxServiceTestReconciliationBlocked
@@ -1159,4 +1674,127 @@ TEST_F(PrivacySandboxServiceTestNonRegularProfile, NoMetricsRecorded) {
 
   // The histogram should remain empty.
   histograms.ExpectTotalCount(histogram_name, 0);
+}
+
+TEST_F(PrivacySandboxServiceTestNonRegularProfile, TestFakeTopics) {
+  CanonicalTopic topic1(1, CanonicalTopic::AVAILABLE_TAXONOMY);
+  CanonicalTopic topic2(2, CanonicalTopic::AVAILABLE_TAXONOMY);
+  CanonicalTopic topic3(3, CanonicalTopic::AVAILABLE_TAXONOMY);
+  CanonicalTopic topic4(4, CanonicalTopic::AVAILABLE_TAXONOMY);
+
+  auto* service = privacy_sandbox_service();
+  EXPECT_THAT(service->GetCurrentTopTopics(), ElementsAre(topic1, topic2));
+  EXPECT_THAT(service->GetBlockedTopics(), ElementsAre(topic3, topic4));
+
+  service->SetTopicAllowed(topic1, false);
+  EXPECT_THAT(service->GetCurrentTopTopics(), ElementsAre(topic2));
+  EXPECT_THAT(service->GetBlockedTopics(), ElementsAre(topic1, topic3, topic4));
+
+  service->SetTopicAllowed(topic4, true);
+  EXPECT_THAT(service->GetCurrentTopTopics(), ElementsAre(topic2, topic4));
+  EXPECT_THAT(service->GetBlockedTopics(), ElementsAre(topic1, topic3));
+}
+
+TEST_F(PrivacySandboxServiceTestNonRegularProfile, NoDialogRequired) {
+  // Non-regular profiles should never have a dialog shown.
+  SetupDialogTestState(feature_list(), prefs(),
+                       {/*consent_required=*/true,
+                        /*old_api_pref=*/true,
+                        /*new_api_pref=*/false,
+                        /*notice_displayed=*/false,
+                        /*consent_decision_made=*/false,
+                        /*confirmation_not_shown=*/false});
+  EXPECT_EQ(PrivacySandboxService::DialogType::kNone,
+            privacy_sandbox_service()->GetRequiredDialogType());
+
+  SetupDialogTestState(feature_list(), prefs(),
+                       {/*consent_required=*/false,
+                        /*old_api_pref=*/true,
+                        /*new_api_pref=*/false,
+                        /*notice_displayed=*/false,
+                        /*consent_decision_made=*/false,
+                        /*confirmation_not_shown=*/false});
+  EXPECT_EQ(PrivacySandboxService::DialogType::kNone,
+            privacy_sandbox_service()->GetRequiredDialogType());
+}
+
+class PrivacySandboxServiceDeathTest : public testing::TestWithParam<int> {
+ public:
+  PrivacySandboxServiceDeathTest() {
+    privacy_sandbox::RegisterProfilePrefs(prefs()->registry());
+  }
+
+ protected:
+  base::test::ScopedFeatureList* feature_list() { return &feature_list_; }
+  sync_preferences::TestingPrefServiceSyncable* prefs() {
+    return &pref_service_;
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  sync_preferences::TestingPrefServiceSyncable pref_service_;
+};
+
+TEST_P(PrivacySandboxServiceDeathTest, GetRequiredDialogType) {
+  const auto& test_case = kDialogTestCases[GetParam()];
+
+  testing::Message scope_message;
+  scope_message << "consent_required:" << test_case.test_setup.consent_required
+                << " old_api_pref:" << test_case.test_setup.old_api_pref
+                << " new_api_pref:" << test_case.test_setup.new_api_pref
+                << " notice_displayed:" << test_case.test_setup.notice_displayed
+                << " consent_decision_made:"
+                << test_case.test_setup.consent_decision_made
+                << " confirmation_not_shown:"
+                << test_case.test_setup.confirmation_not_shown;
+  SCOPED_TRACE(scope_message);
+
+  SetupDialogTestState(feature_list(), prefs(), test_case.test_setup);
+  if (test_case.expected_output.dcheck_failure) {
+    EXPECT_DCHECK_DEATH(PrivacySandboxService::GetRequiredDialogTypeInternal(
+        prefs(), profile_metrics::BrowserProfileType::kRegular));
+    return;
+  }
+
+  // Returned dialog type should never change between successive calls.
+  EXPECT_EQ(test_case.expected_output.dialog_type,
+            PrivacySandboxService::GetRequiredDialogTypeInternal(
+                prefs(), profile_metrics::BrowserProfileType::kRegular));
+  EXPECT_EQ(test_case.expected_output.dialog_type,
+            PrivacySandboxService::GetRequiredDialogTypeInternal(
+                prefs(), profile_metrics::BrowserProfileType::kRegular));
+
+  EXPECT_EQ(test_case.expected_output.new_api_pref,
+            prefs()->GetBoolean(prefs::kPrivacySandboxApisEnabledV2));
+
+  // The old Privacy Sandbox pref should never change from the initial test
+  // state.
+  EXPECT_EQ(test_case.test_setup.old_api_pref,
+            prefs()->GetBoolean(prefs::kPrivacySandboxApisEnabled));
+}
+
+INSTANTIATE_TEST_SUITE_P(PrivacySandboxServiceDeathTestInstance,
+                         PrivacySandboxServiceDeathTest,
+                         testing::Range(0, 64));
+
+using PrivacySandboxServiceTestCoverageTest = testing::Test;
+
+TEST_F(PrivacySandboxServiceTestCoverageTest, DialogTestCoverage) {
+  // Confirm that the set of dialog test cases exhaustively covers all possible
+  // combinations of input.
+  std::set<int> test_case_properties;
+  for (const auto& test_case : kDialogTestCases) {
+    int test_case_property = 0;
+    test_case_property |= test_case.test_setup.consent_required ? 1 << 0 : 0;
+    test_case_property |= test_case.test_setup.old_api_pref ? 1 << 1 : 0;
+    test_case_property |= test_case.test_setup.new_api_pref ? 1 << 2 : 0;
+    test_case_property |= test_case.test_setup.notice_displayed ? 1 << 3 : 0;
+    test_case_property |=
+        test_case.test_setup.consent_decision_made ? 1 << 4 : 0;
+    test_case_property |=
+        test_case.test_setup.confirmation_not_shown ? 1 << 5 : 0;
+    test_case_properties.insert(test_case_property);
+  }
+  EXPECT_EQ(test_case_properties.size(), kDialogTestCases.size());
+  EXPECT_EQ(64u, test_case_properties.size());
 }

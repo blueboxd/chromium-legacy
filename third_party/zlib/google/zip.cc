@@ -4,6 +4,7 @@
 
 #include "third_party/zlib/google/zip.h"
 
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -23,10 +24,6 @@ namespace {
 
 bool IsHiddenFile(const base::FilePath& file_path) {
   return file_path.BaseName().value()[0] == '.';
-}
-
-bool ExcludeNoFilesFilter(const base::FilePath& file_path) {
-  return true;
 }
 
 // Creates a directory at |extract_dir|/|entry_path|, including any parents.
@@ -169,79 +166,72 @@ bool Zip(const ZipParams& params) {
   return zip_writer->Close();
 }
 
-bool Unzip(const base::FilePath& src_file, const base::FilePath& dest_dir) {
-  return UnzipWithFilterCallback(
-      src_file, dest_dir, base::BindRepeating(&ExcludeNoFilesFilter), true);
-}
-
-bool UnzipWithFilterCallback(const base::FilePath& src_file,
-                             const base::FilePath& dest_dir,
-                             FilterCallback filter_cb,
-                             bool log_skipped_files) {
+bool Unzip(const base::FilePath& src_file,
+           const base::FilePath& dest_dir,
+           UnzipOptions options) {
   base::File file(src_file, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file.IsValid()) {
     DLOG(WARNING) << "Cannot open '" << src_file << "'";
     return false;
   }
 
-  return UnzipWithFilterAndWriters(
-      file.GetPlatformFile(),
-      base::BindRepeating(&CreateFilePathWriterDelegate, dest_dir),
-      base::BindRepeating(&CreateDirectory, dest_dir), std::move(filter_cb),
-      log_skipped_files);
+  return Unzip(file.GetPlatformFile(),
+               base::BindRepeating(&CreateFilePathWriterDelegate, dest_dir),
+               base::BindRepeating(&CreateDirectory, dest_dir),
+               std::move(options));
 }
 
-bool UnzipWithFilterAndWriters(const base::PlatformFile& src_file,
-                               WriterFactory writer_factory,
-                               DirectoryCreator directory_creator,
-                               FilterCallback filter_cb,
-                               bool log_skipped_files) {
+bool Unzip(const base::PlatformFile& src_file,
+           WriterFactory writer_factory,
+           DirectoryCreator directory_creator,
+           UnzipOptions options) {
   ZipReader reader;
+  reader.SetPassword(std::move(options.password));
+
   if (!reader.OpenFromPlatformFile(src_file)) {
-    DLOG(WARNING) << "Cannot open '" << src_file << "'";
+    DLOG(WARNING) << "Cannot open ZIP from file handle " << src_file;
     return false;
   }
-  while (reader.HasMore()) {
-    if (!reader.OpenCurrentEntryInZip()) {
-      DLOG(WARNING) << "Failed to open the current file in zip";
+
+  while (const ZipReader::Entry* const entry = reader.Next()) {
+    if (entry->is_unsafe) {
+      DLOG(WARNING) << "Found unsafe entry in ZIP: " << entry->path;
       return false;
-    }
-    const base::FilePath& entry_path = reader.current_entry_info()->file_path();
-    if (reader.current_entry_info()->is_unsafe()) {
-      DLOG(WARNING) << "Found an unsafe file in zip " << entry_path;
-      return false;
-    }
-    if (filter_cb.Run(entry_path)) {
-      if (reader.current_entry_info()->is_directory()) {
-        if (!directory_creator.Run(entry_path))
-          return false;
-      } else {
-        std::unique_ptr<WriterDelegate> writer = writer_factory.Run(entry_path);
-        if (!reader.ExtractCurrentEntry(writer.get(),
-                                        std::numeric_limits<uint64_t>::max())) {
-          DLOG(WARNING) << "Failed to extract " << entry_path;
-          return false;
-        }
-      }
-    } else if (log_skipped_files) {
-      DLOG(WARNING) << "Skipped file " << entry_path;
     }
 
-    if (!reader.AdvanceToNextEntry()) {
-      DLOG(WARNING) << "Failed to advance to the next file";
+    if (options.filter && !options.filter.Run(entry->path)) {
+      DLOG_IF(WARNING, options.log_skipped_files)
+          << "Skipped ZIP entry " << entry->path;
+      continue;
+    }
+
+    if (entry->is_directory) {
+      // It's a directory.
+      if (!directory_creator.Run(entry->path))
+        return false;
+
+      continue;
+    }
+
+    // It's a file.
+    std::unique_ptr<WriterDelegate> writer = writer_factory.Run(entry->path);
+    if (!writer || !reader.ExtractCurrentEntry(
+                       writer.get(), std::numeric_limits<uint64_t>::max())) {
+      DLOG(WARNING) << "Cannot extract " << entry->path;
       return false;
     }
   }
-  return true;
+
+  return reader.ok();
 }
 
 bool ZipWithFilterCallback(const base::FilePath& src_dir,
                            const base::FilePath& dest_file,
-                           FilterCallback filter_cb) {
+                           FilterCallback filter) {
   DCHECK(base::DirectoryExists(src_dir));
   return Zip({.src_dir = src_dir,
               .dest_file = dest_file,
-              .filter_callback = std::move(filter_cb)});
+              .filter_callback = std::move(filter)});
 }
 
 bool Zip(const base::FilePath& src_dir,

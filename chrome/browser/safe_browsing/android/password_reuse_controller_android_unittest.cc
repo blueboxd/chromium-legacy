@@ -102,11 +102,12 @@ TEST_F(PasswordReuseControllerAndroidTest, VerifyButtonText) {
   }
 
   {
+    // TODO(crbug.com/1237388): Remove it once the flags are completed removed.
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitWithFeatures(
         {safe_browsing::
              kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid},
-        {});
+        {safe_browsing::kPasswordProtectionForSignedInUsers});
 
     password_type.set_account_type(ReusedPasswordAccountType::GMAIL);
     password_type.set_is_account_syncing(true);
@@ -267,24 +268,6 @@ TEST_F(PasswordReuseControllerAndroidTest, VerifyButtonText) {
   }
 
   delete controller;
-}
-
-TEST_F(PasswordReuseControllerAndroidTest, WebContentDestroyed) {
-  base::HistogramTester histograms;
-  ReusedPasswordAccountType password_type;
-
-  MakeController(
-      nullptr, password_type,
-      base::BindOnce(
-          &PasswordReuseControllerAndroidTest::AssertWarningActionEquality,
-          base::Unretained(this), WarningAction::IGNORE_WARNING));
-
-  DeleteContents();
-  // This histogram is logged in the destructor of the controller. If it is
-  // logged, it indicates that the controller is properly destroyed after the
-  // WebContents is destroyed.
-  histograms.ExpectTotalCount("PasswordProtection.ModalWarningDialogLifetime",
-                              /*count=*/1);
 }
 
 }  // namespace safe_browsing

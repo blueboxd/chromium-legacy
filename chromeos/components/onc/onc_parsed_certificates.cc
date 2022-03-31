@@ -49,7 +49,7 @@ bool HasWebTrustFlag(const base::Value& onc_certificate) {
   if (!trust_list)
     return false;
 
-  for (const base::Value& trust_entry : trust_list->GetList()) {
+  for (const base::Value& trust_entry : trust_list->GetListDeprecated()) {
     DCHECK(trust_entry.is_string());
 
     if (trust_entry.GetString() == ::onc::certificate::kWeb) {
@@ -175,7 +175,7 @@ bool OncParsedCertificates::ClientCertificate::operator!=(
 }
 
 OncParsedCertificates::OncParsedCertificates()
-    : OncParsedCertificates(base::ListValue()) {}
+    : OncParsedCertificates(base::Value(base::Value::Type::LIST)) {}
 
 OncParsedCertificates::OncParsedCertificates(
     const base::Value& onc_certificates) {
@@ -185,8 +185,9 @@ OncParsedCertificates::OncParsedCertificates(
     return;
   }
 
-  for (size_t i = 0; i < onc_certificates.GetList().size(); ++i) {
-    const base::Value& onc_certificate = onc_certificates.GetList()[i];
+  for (size_t i = 0; i < onc_certificates.GetListDeprecated().size(); ++i) {
+    const base::Value& onc_certificate =
+        onc_certificates.GetListDeprecated()[i];
     DCHECK(onc_certificate.is_dict());
 
     VLOG(2) << "Parsing certificate at index " << i << ": " << onc_certificate;

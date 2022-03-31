@@ -39,6 +39,7 @@ include_rules = [
   "+chromeos",
   "+components/about_ui",
   "+components/account_id",
+  "+components/app_constants/constants.h",
   "+components/federated_learning",
   # TODO(b/129295708): Remove after move is complete.
   "+components/arc",
@@ -65,6 +66,7 @@ include_rules = [
   "+components/bookmarks/test",
   "+components/breadcrumbs/core",
   "+components/browser_sync",
+  "+components/browser_ui/accessibility",
   "+components/browser_ui/bottomsheet",
   "+components/browser_ui/modaldialog",
   "+components/browser_ui/notifications",
@@ -228,6 +230,7 @@ include_rules = [
   "+components/open_from_clipboard",
   "+components/optimization_guide/content",
   "+components/optimization_guide",
+  "+components/optimization_guide/optimization_guide_internals",
   "+components/os_crypt",
   "+components/ownership",
   "+components/page_info",

@@ -130,7 +130,7 @@ void LoginManagerMixin::SetUpLocalState() {
     ListPrefUpdate users_pref(g_browser_process->local_state(),
                               "LoggedInUsers");
     base::Value email_value(user.account_id.GetUserEmail());
-    if (!base::Contains(users_pref->GetList(), email_value))
+    if (!base::Contains(users_pref->GetListDeprecated(), email_value))
       users_pref->Append(std::move(email_value));
 
     DictionaryPrefUpdate user_type_update(g_browser_process->local_state(),
@@ -143,17 +143,18 @@ void LoginManagerMixin::SetUpLocalState() {
     user_token_update->SetIntKey(user.account_id.GetUserEmail(),
                                  static_cast<int>(user.token_status));
 
+    user_manager::KnownUser known_user(g_browser_process->local_state());
     user_manager::known_user::UpdateId(user.account_id);
 
     if (user.user_type == user_manager::USER_TYPE_CHILD) {
-      user_manager::known_user::SetProfileRequiresPolicy(
+      known_user.SetProfileRequiresPolicy(
           user.account_id,
           user_manager::ProfileRequiresPolicy::kPolicyRequired);
     }
 
     if (base::EndsWith(kManagedDomain, gaia::ExtractDomainName(
                                            user.account_id.GetUserEmail()))) {
-      user_manager::known_user::SetIsEnterpriseManaged(user.account_id, true);
+      known_user.SetIsEnterpriseManaged(user.account_id, true);
     }
   }
 

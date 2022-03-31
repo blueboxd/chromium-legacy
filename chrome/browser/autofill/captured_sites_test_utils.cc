@@ -38,6 +38,7 @@
 #include "components/permissions/permission_request_manager.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -58,6 +59,7 @@ using base::JSONParserOptions;
 using base::JSONReader;
 
 namespace {
+
 // The command-line flag to specify the command file flag.
 const char kCommandFileFlag[] = "command_file";
 
@@ -229,6 +231,57 @@ ExecutionState ProcessCommands(ExecutionState execution_state,
   return execution_state;
 }
 
+struct AllowNull {
+  inline constexpr AllowNull() = default;
+};
+
+absl::optional<std::string> FindPopulateString(
+    const base::Value::DictStorage& container,
+    base::StringPiece key_name,
+    absl::variant<base::StringPiece, AllowNull> key_descriptor) {
+  auto container_iter = container.find(key_name);
+  if (container_iter == container.end() ||
+      !container_iter->second.is_string()) {
+    if (absl::holds_alternative<base::StringPiece>(key_descriptor)) {
+      ADD_FAILURE() << "Failed to extract '"
+                    << absl::get<base::StringPiece>(key_descriptor)
+                    << "' string from container!";
+    }
+    return absl::nullopt;
+  }
+
+  return container_iter->second.GetString();
+}
+
+absl::optional<std::vector<std::string>> FindPopulateStringVector(
+    const base::Value::DictStorage& container,
+    base::StringPiece key_name,
+    absl::variant<base::StringPiece, AllowNull> key_descriptor) {
+  auto container_iter = container.find(key_name);
+  if (container_iter == container.end() || !container_iter->second.is_list()) {
+    if (absl::holds_alternative<base::StringPiece>(key_descriptor)) {
+      ADD_FAILURE() << "Failed to extract '"
+                    << absl::get<base::StringPiece>(key_descriptor)
+                    << "' strings from container!";
+    }
+    return absl::nullopt;
+  }
+
+  std::vector<std::string> strings;
+  for (const base::Value& item : container_iter->second.GetListDeprecated()) {
+    if (!item.is_string()) {
+      if (absl::holds_alternative<base::StringPiece>(key_descriptor)) {
+        ADD_FAILURE() << "Failed to extract element of '"
+                      << absl::get<base::StringPiece>(key_descriptor)
+                      << "' vector from container!";
+      }
+      return absl::nullopt;
+    }
+    strings.push_back(item.GetString());
+  }
+  return strings;
+}
+
 }  // namespace
 
 namespace captured_sites_test_utils {
@@ -282,7 +335,7 @@ std::vector<CapturedSiteParams> GetCapturedSites(
   }
 
   bool also_run_disabled = testing::FLAGS_gtest_also_run_disabled_tests == 1;
-  for (auto& item : list_node->GetList()) {
+  for (auto& item : list_node->GetListDeprecated()) {
     if (!item.is_dict())
       continue;
     CapturedSiteParams param;
@@ -382,7 +435,7 @@ IFrameWaiter::~IFrameWaiter() {}
 content::RenderFrameHost* IFrameWaiter::WaitForFrameMatchingName(
     const std::string& name,
     const base::TimeDelta timeout) {
-  content::RenderFrameHost* frame = FrameMatchingPredicate(
+  content::RenderFrameHost* frame = FrameMatchingPredicateOrNullptr(
       web_contents()->GetPrimaryPage(),
       base::BindRepeating(&content::FrameMatchesName, name));
   if (frame) {
@@ -400,9 +453,9 @@ content::RenderFrameHost* IFrameWaiter::WaitForFrameMatchingName(
 content::RenderFrameHost* IFrameWaiter::WaitForFrameMatchingOrigin(
     const GURL origin,
     const base::TimeDelta timeout) {
-  content::RenderFrameHost* frame =
-      FrameMatchingPredicate(web_contents()->GetPrimaryPage(),
-                             base::BindRepeating(&FrameHasOrigin, origin));
+  content::RenderFrameHost* frame = FrameMatchingPredicateOrNullptr(
+      web_contents()->GetPrimaryPage(),
+      base::BindRepeating(&FrameHasOrigin, origin));
   if (frame) {
     return frame;
   } else {
@@ -418,7 +471,7 @@ content::RenderFrameHost* IFrameWaiter::WaitForFrameMatchingOrigin(
 content::RenderFrameHost* IFrameWaiter::WaitForFrameMatchingUrl(
     const GURL url,
     const base::TimeDelta timeout) {
-  content::RenderFrameHost* frame = FrameMatchingPredicate(
+  content::RenderFrameHost* frame = FrameMatchingPredicateOrNullptr(
       web_contents()->GetPrimaryPage(),
       base::BindRepeating(&content::FrameHasSourceUrl, url));
   if (frame) {
@@ -903,21 +956,6 @@ void TestRecipeReplayer::CleanupSiteData() {
   completion_observer.BlockUntilCompletion();
 }
 
-absl::optional<std::string> FindPopulateString(
-    const base::Value::DictStorage& container,
-    const std::string key_name,
-    const std::string key_descriptor) {
-  auto container_iter = container.find(key_name);
-  if (container_iter == container.end() ||
-      !container_iter->second.is_string()) {
-    ADD_FAILURE() << "Failed to extract '" << key_descriptor
-                  << "' from container!";
-    return absl::nullopt;
-  }
-
-  return container_iter->second.GetString();
-}
-
 bool TestRecipeReplayer::ReplayRecordedActions(
     const base::FilePath& recipe_file_path,
     const absl::optional<base::FilePath>& command_file_path) {
@@ -937,7 +975,8 @@ bool TestRecipeReplayer::ReplayRecordedActions(
   }
 
   DCHECK(parsed_json->is_dict());
-  base::Value::DictStorage recipe = std::move(*parsed_json).TakeDict();
+  base::Value::DictStorage recipe =
+      std::move(*parsed_json).TakeDictDeprecated();
   if (!InitializeBrowserToExecuteRecipe(recipe))
     return false;
 
@@ -949,7 +988,7 @@ bool TestRecipeReplayer::ReplayRecordedActions(
     return false;
   }
 
-  auto action_list = action_list_container_iter->second.GetList();
+  auto action_list = action_list_container_iter->second.GetListDeprecated();
   ExecutionState execution_state{.length =
                                      static_cast<int>(action_list.size())};
   if (command_file_path.has_value()) {
@@ -991,7 +1030,7 @@ bool TestRecipeReplayer::ReplayRecordedActions(
     }
 
     base::Value::DictStorage action =
-        std::move(action_list[execution_state.index]).TakeDict();
+        std::move(action_list[execution_state.index]).TakeDictDeprecated();
     absl::optional<std::string> type =
         FindPopulateString(action, "type", "action type");
 
@@ -1095,7 +1134,7 @@ bool TestRecipeReplayer::InitializeBrowserToExecuteRecipe(
     }
 
     base::Value::ListStorage autofill_profile_container =
-        std::move(autofill_profile_container_iter->second).TakeList();
+        std::move(autofill_profile_container_iter->second).TakeListDeprecated();
     if (!SetupSavedAutofillProfile(std::move(autofill_profile_container)))
       return false;
   }
@@ -1110,7 +1149,7 @@ bool TestRecipeReplayer::InitializeBrowserToExecuteRecipe(
     }
 
     base::Value::ListStorage saved_password_container =
-        std::move(saved_password_container_iter->second).TakeList();
+        std::move(saved_password_container_iter->second).TakeListDeprecated();
     if (!SetupSavedPasswords(std::move(saved_password_container)))
       return false;
   }
@@ -1331,7 +1370,7 @@ bool TestRecipeReplayer::ExecuteRunCommandAction(
     return false;
   }
 
-  for (const auto& command : list_container_iter->second.GetList()) {
+  for (const auto& command : list_container_iter->second.GetListDeprecated()) {
     if (!command.is_string()) {
       ADD_FAILURE() << "command is not a string: " << command;
       return false;
@@ -1512,20 +1551,31 @@ bool TestRecipeReplayer::ExecuteValidateFieldValueAction(
         autofill_prediction_container_iter->second.GetString();
     VLOG(1) << "Checking the field `" << xpath << "` has the autofill type '"
             << expected_autofill_prediction_type << "'";
-    ExpectElementPropertyEquals(
-        frame, xpath,
-        "return target.getAttribute('autofill-prediction');",
-        expected_autofill_prediction_type, "autofill type mismatch", true);
+    ExpectElementPropertyEqualsAnyOf(
+        frame, xpath, "return target.getAttribute('autofill-prediction');",
+        {expected_autofill_prediction_type}, "autofill type mismatch",
+        IgnoreCase(true));
   }
 
+  absl::optional<std::vector<std::string>> expected_values =
+      FindPopulateStringVector(action, "expectedValues", AllowNull());
   absl::optional<std::string> expected_value =
-      FindPopulateString(action, "expectedValue", "validation expected value");
-  if (!expected_value)
+      FindPopulateString(action, "expectedValue", AllowNull());
+  if (!!expected_values == !!expected_value) {
+    ADD_FAILURE() << "Failed to extract 'expectedValue' xor 'expectedValues' "
+                     "vector from container !";
     return false;
+  }
 
   VLOG(1) << "Checking the field `" << xpath << "`.";
-  ExpectElementPropertyEquals(frame, xpath, "return target.value;",
-                              *expected_value, "text value mismatch");
+  if (expected_value) {
+    ExpectElementPropertyEqualsAnyOf(frame, xpath, "return target.value;",
+                                     {*expected_value}, "text value mismatch");
+  }
+  if (expected_values) {
+    ExpectElementPropertyEqualsAnyOf(frame, xpath, "return target.value;",
+                                     *expected_values, "text value mismatch");
+  }
   return true;
 }
 
@@ -1598,7 +1648,8 @@ bool TestRecipeReplayer::ExecuteWaitForStateAction(
     ADD_FAILURE() << "Failed to extract wait assertions list from action";
     return false;
   }
-  for (const base::Value& assertion : list_container_iter->second.GetList()) {
+  for (const base::Value& assertion :
+       list_container_iter->second.GetListDeprecated()) {
     if (!assertion.is_string()) {
       ADD_FAILURE() << "Assertion is not a string: " << assertion;
       return false;
@@ -1711,7 +1762,7 @@ bool TestRecipeReplayer::GetTargetFrameFromAction(
     ADD_FAILURE() << "The recipe does not specify a way to find the iframe!";
   }
 
-  if (frame == nullptr) {
+  if (*frame == nullptr) {
     ADD_FAILURE() << "Failed to find iframe!";
     return false;
   }
@@ -1787,7 +1838,7 @@ bool TestRecipeReplayer::GetIFramePathFromAction(
     ADD_FAILURE() << "The action's iframe path is not a list!";
     return false;
   }
-  for (const auto& xpath : iframe_path_container->GetList()) {
+  for (const auto& xpath : iframe_path_container->GetListDeprecated()) {
     if (!xpath.is_string()) {
       ADD_FAILURE() << "Failed to extract the iframe xpath from action!";
       return false;
@@ -1918,27 +1969,33 @@ bool TestRecipeReplayer::GetElementProperty(
       property);
 }
 
-bool TestRecipeReplayer::ExpectElementPropertyEquals(
+bool TestRecipeReplayer::ExpectElementPropertyEqualsAnyOf(
     const content::ToRenderFrameHost& frame,
     const std::string& element_xpath,
     const std::string& get_property_function_body,
-    const std::string& expected_value,
+    const std::vector<std::string>& expected_values,
     const std::string& validation_field,
-    bool ignore_case) {
-  std::string value;
+    IgnoreCase ignore_case) {
+  std::string actual_value;
   if (!GetElementProperty(frame, element_xpath, get_property_function_body,
-                          &value)) {
+                          &actual_value)) {
     ADD_FAILURE() << "Failed to extract element property! " << element_xpath
                   << ", " << get_property_function_body;
     return false;
   }
 
-  if ((ignore_case &&
-       !base::EqualsCaseInsensitiveASCII(expected_value, value)) ||
-      (!ignore_case && expected_value != value)) {
+  auto is_expected = [ignore_case,
+                      &actual_value](base::StringPiece expected_value) {
+    return ignore_case
+               ? base::EqualsCaseInsensitiveASCII(expected_value, actual_value)
+               : expected_value == actual_value;
+  };
+
+  if (base::ranges::none_of(expected_values, is_expected)) {
     std::string error_message = base::StrCat(
-      {"Field xpath: `", element_xpath, "` ", validation_field, ", ",
-       "Expected: '" , expected_value, "', actual: '", value, "'"});
+        {"Field xpath: `", element_xpath, "` ", validation_field, ", ",
+         "Expected: '", base::JoinString(expected_values, " or "),
+         "', actual: '", actual_value, "'"});
     VLOG(1) << error_message;
     validation_failures_.push_back(testing::AssertionFailure()
                                    << error_message);
@@ -2191,7 +2248,7 @@ bool TestRecipeReplayer::SetupSavedAutofillProfile(
     }
 
     const base::Value::DictStorage list_entry_dict =
-        std::move(list_entry).TakeDict();
+        std::move(list_entry).TakeDictDeprecated();
     absl::optional<std::string> type =
         FindPopulateString(list_entry_dict, "type", "profile field type");
     absl::optional<std::string> value =
@@ -2226,7 +2283,8 @@ bool TestRecipeReplayer::SetupSavedPasswords(
       return false;
     }
 
-    const base::Value::DictStorage entry_dict = std::move(entry).TakeDict();
+    const base::Value::DictStorage entry_dict =
+        std::move(entry).TakeDictDeprecated();
 
     absl::optional<std::string> origin =
         FindPopulateString(entry_dict, "website", "Website");

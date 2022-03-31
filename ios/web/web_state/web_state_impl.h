@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_WEB_STATE_WEB_STATE_IMPL_H_
 #define IOS_WEB_WEB_STATE_WEB_STATE_IMPL_H_
 
+#import <Foundation/Foundation.h>
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -16,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #import "ios/web/js_messaging/web_frames_manager_impl.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
@@ -30,8 +33,6 @@
 @class CRWSessionStorage;
 @class CRWWebController;
 @protocol CRWWebViewProxy;
-@class NSURLRequest;
-@class NSURLResponse;
 @protocol CRWWebViewNavigationProxy;
 @class UIViewController;
 
@@ -41,8 +42,8 @@ class BrowserState;
 struct FaviconURL;
 class NavigationContextImpl;
 class NavigationManager;
-enum class Permission;
-enum class PermissionState;
+enum Permission : NSUInteger;
+enum PermissionState : NSUInteger;
 class SessionCertificatePolicyCacheImpl;
 class WebFrame;
 
@@ -262,6 +263,7 @@ class WebStateImpl final : public WebState {
   UIView* GetView() final;
   void DidCoverWebContent() final;
   void DidRevealWebContent() final;
+  base::Time GetLastActiveTime() const final;
   void WasShown() final;
   void WasHidden() final;
   void SetKeepRenderProcessAlive(bool keep_alive) final;
@@ -294,9 +296,9 @@ class WebStateImpl final : public WebState {
   bool IsBeingDestroyed() const final;
   const FaviconStatus& GetFaviconStatus() const final;
   void SetFaviconStatus(const FaviconStatus& favicon_status) final;
+  int GetNavigationItemCount() const final;
   const GURL& GetVisibleURL() const final;
   const GURL& GetLastCommittedURL() const final;
-  const base::Time GetLastCommittedTimestamp() const final;
   GURL GetCurrentURL(URLVerificationTrustLevel* trust_level) const final;
   base::CallbackListSubscription AddScriptCommandCallback(
       const ScriptCommandCallback& callback,
@@ -318,6 +320,8 @@ class WebStateImpl final : public WebState {
   PermissionState GetStateForPermission(Permission permission) const final
       API_AVAILABLE(ios(15.0));
   void SetStateForPermission(PermissionState state, Permission permission) final
+      API_AVAILABLE(ios(15.0));
+  NSDictionary<NSNumber*, NSNumber*>* GetStatesForAllPermissions() const final
       API_AVAILABLE(ios(15.0));
 
  protected:

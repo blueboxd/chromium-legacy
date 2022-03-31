@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/peerconnection/webrtc_video_perf_reporter.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/prefinalizer.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_binding_context.h"
@@ -194,8 +195,6 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
   std::unique_ptr<IpcPacketSocketFactory> socket_factory_;
 
   scoped_refptr<webrtc::PeerConnectionFactoryInterface> pc_factory_;
-  // The metronome should only be used if kWebRtcMetronomeTaskQueue is enabled
-  // and there exists open RTCPeerConnection objects.
   scoped_refptr<MetronomeProvider> metronome_provider_;
   scoped_refptr<MetronomeSource> metronome_source_;
 
@@ -205,6 +204,8 @@ class MODULES_EXPORT PeerConnectionDependencyFactory
   scoped_refptr<blink::WebRtcAudioDeviceImpl> audio_device_;
 
   media::GpuVideoAcceleratorFactories* gpu_factories_;
+
+  WebrtcVideoPerfReporter webrtc_video_perf_reporter_;
 
   bool encode_decode_capabilities_reported_ = false;
 

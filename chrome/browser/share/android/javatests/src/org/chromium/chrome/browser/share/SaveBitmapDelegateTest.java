@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.share;
 
-import android.Manifest.permission;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -23,9 +22,9 @@ import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.UiThreadTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.ui.base.AndroidPermissionDelegate;
-import org.chromium.ui.base.PermissionCallback;
-import org.chromium.ui.test.util.DummyUiActivity;
+import org.chromium.ui.permissions.AndroidPermissionDelegate;
+import org.chromium.ui.permissions.PermissionCallback;
+import org.chromium.ui.test.util.BlankUiTestActivity;
 
 /**
  * Tests for the {@link SaveBitmapDelegate}.
@@ -35,8 +34,8 @@ public class SaveBitmapDelegateTest {
     private SaveBitmapDelegate mSaveBitmapDelegate;
 
     @Rule
-    public BaseActivityTestRule<DummyUiActivity> mActivityTestRule =
-            new BaseActivityTestRule<>(DummyUiActivity.class);
+    public BaseActivityTestRule<BlankUiTestActivity> mActivityTestRule =
+            new BaseActivityTestRule<>(BlankUiTestActivity.class);
 
     @Mock
     private Runnable mCloseDialogRunnable;

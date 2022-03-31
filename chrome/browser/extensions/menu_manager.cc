@@ -77,7 +77,7 @@ MenuItem::OwnedList MenuItemsFromValue(const std::string& extension_id,
   if (!value || !value->is_list())
     return items;
 
-  for (const base::Value& elem : value->GetList()) {
+  for (const base::Value& elem : value->GetListDeprecated()) {
     std::unique_ptr<MenuItem> item =
         MenuItem::Populate(extension_id, elem, nullptr);
     if (!item)
@@ -105,7 +105,7 @@ bool GetStringList(const base::Value& dict,
 
   if (!value->is_list())
     return false;
-  base::Value::ConstListView list = value->GetList();
+  base::Value::ConstListView list = value->GetListDeprecated();
 
   for (const auto& pattern : list) {
     if (!pattern.is_string())
@@ -747,7 +747,7 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
         webview_guest ? events::WEB_VIEW_INTERNAL_CONTEXT_MENUS
                       : events::CONTEXT_MENUS,
         webview_guest ? kOnWebviewContextMenus : kOnContextMenus,
-        base::Value(args).TakeList(), context);
+        base::Value(args).TakeListDeprecated(), context);
     event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
     event_router->DispatchEventToExtension(item->extension_id(),
                                            std::move(event));

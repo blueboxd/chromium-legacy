@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -38,7 +37,6 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -54,13 +52,13 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
-#include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper_delegate_impl.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/signin_ui_error.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/browser/ui/webui/signin/signin_utils_desktop.h"
+#include "chrome/browser/ui/webui/signin/turn_sync_on_helper.h"
+#include "chrome/browser/ui/webui/signin/turn_sync_on_helper_delegate_impl.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -115,13 +113,13 @@ HandlerSigninReason GetHandlerSigninReason(const GURL& url) {
   }
 }
 
-// Specific implementation of DiceTurnSyncOnHelper::Delegate for forced
+// Specific implementation of TurnSyncOnHelper::Delegate for forced
 // signin flows. Some confirmation prompts are skipped.
-class ForcedSigninDiceTurnSyncOnHelperDelegate
-    : public DiceTurnSyncOnHelperDelegateImpl {
+class ForcedSigninTurnSyncOnHelperDelegate
+    : public TurnSyncOnHelperDelegateImpl {
  public:
-  explicit ForcedSigninDiceTurnSyncOnHelperDelegate(Browser* browser)
-      : DiceTurnSyncOnHelperDelegateImpl(browser) {}
+  explicit ForcedSigninTurnSyncOnHelperDelegate(Browser* browser)
+      : TurnSyncOnHelperDelegateImpl(browser) {}
 
  protected:
   void ShouldEnterpriseConfirmationPromptForNewProfile(
@@ -134,20 +132,8 @@ class ForcedSigninDiceTurnSyncOnHelperDelegate
   void ShowMergeSyncDataConfirmation(
       const std::string& previous_email,
       const std::string& new_email,
-      DiceTurnSyncOnHelper::SigninChoiceCallback callback) override {
+      TurnSyncOnHelper::SigninChoiceCallback callback) override {
     NOTREACHED();
-  }
-
-  void ShowEnterpriseAccountConfirmation(
-      const AccountInfo& account_info,
-      DiceTurnSyncOnHelper::SigninChoiceCallback callback) override {
-    if (base::FeatureList::IsEnabled(kAccountPoliciesLoadedWithoutSync)) {
-      DiceTurnSyncOnHelperDelegateImpl::ShowEnterpriseAccountConfirmation(
-          account_info, std::move(callback));
-      return;
-    }
-    std::move(callback).Run(
-        DiceTurnSyncOnHelper ::SigninChoice::SIGNIN_CHOICE_CONTINUE);
   }
 };
 
@@ -469,15 +455,14 @@ void InlineSigninHelper::CreateSyncStarter(const std::string& refresh_token) {
           signin_metrics::SourceForRefreshTokenOperation::
               kInlineLoginHandler_Signin);
 
-  std::unique_ptr<DiceTurnSyncOnHelper::Delegate> delegate =
-      std::make_unique<ForcedSigninDiceTurnSyncOnHelperDelegate>(browser);
+  std::unique_ptr<TurnSyncOnHelper::Delegate> delegate =
+      std::make_unique<ForcedSigninTurnSyncOnHelperDelegate>(browser);
 
-  new DiceTurnSyncOnHelper(
+  new TurnSyncOnHelper(
       profile_, signin::GetAccessPointForEmbeddedPromoURL(current_url_),
       signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO,
       signin::GetSigninReasonForEmbeddedPromoURL(current_url_), account_id,
-      DiceTurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT,
-      std::move(delegate),
+      TurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT, std::move(delegate),
       base::BindOnce(&OnSigninComplete, profile_, email_, password_,
                      is_force_sign_in_with_usermanager_));
 }
@@ -506,22 +491,22 @@ InlineLoginHandlerImpl::~InlineLoginHandlerImpl() {}
 
 // static
 void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
-  params.SetString("service", "chromiumsync");
+  params.SetStringKey("service", "chromiumsync");
 
   // If this was called from the user manager to reauthenticate the profile,
   // make sure the webui is aware.
   Profile* profile = Profile::FromWebUI(web_ui());
   if (profile->IsSystemProfile())
-    params.SetBoolean("dontResizeNonEmbeddedPages", true);
+    params.SetBoolKey("dontResizeNonEmbeddedPages", true);
 
   content::WebContents* contents = web_ui()->GetWebContents();
   const GURL& current_url = contents->GetLastCommittedURL();
   HandlerSigninReason reason = GetHandlerSigninReason(current_url);
 
   const GURL& url = GaiaUrls::GetInstance()->embedded_signin_url();
-  params.SetString("clientId",
-                   GaiaUrls::GetInstance()->oauth2_chrome_client_id());
-  params.SetString("gaiaPath", url.path().substr(1));
+  params.SetStringKey("clientId",
+                      GaiaUrls::GetInstance()->oauth2_chrome_client_id());
+  params.SetStringKey("gaiaPath", url.path().substr(1));
 
 #if BUILDFLAG(IS_WIN)
   if (reason == HandlerSigninReason::kFetchLstOnly) {
@@ -532,23 +517,23 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
       std::vector<std::string> all_email_domains =
           GetEmailDomainsFromParameter(email_domains);
       if (all_email_domains.size() == 1)
-        params.SetString("emailDomain", all_email_domains[0]);
+        params.SetStringKey("emailDomain", all_email_domains[0]);
     }
 
     std::string show_tos;
     if (net::GetValueForKeyInQuery(
             current_url, credential_provider::kShowTosSwitch, &show_tos)) {
       if (!show_tos.empty())
-        params.SetString("showTos", show_tos);
+        params.SetStringKey("showTos", show_tos);
     }
 
     // Prevent opening a new window if the embedded page fails to load.
     // This will keep the user from being able to access a fully functional
     // Chrome window in incognito mode.
-    params.SetBoolean("dontResizeNonEmbeddedPages", true);
+    params.SetBoolKey("dontResizeNonEmbeddedPages", true);
 
     // Scrape the SAML password if possible.
-    params.SetBoolean("extractSamlPasswordAttributes", true);
+    params.SetBoolKey("extractSamlPasswordAttributes", true);
 
     GURL windows_url = GaiaUrls::GetInstance()->embedded_setup_windows_url();
     // Redirect to specified gaia endpoint path for GCPW:
@@ -560,7 +545,7 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
             &gcpw_endpoint_path)) {
       windows_endpoint_path = gcpw_endpoint_path;
     }
-    params.SetString("gaiaPath", windows_endpoint_path);
+    params.SetStringKey("gaiaPath", windows_endpoint_path);
   }
 #endif
 
@@ -591,7 +576,7 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
 #endif
     } break;
   }
-  params.SetString("flow", flow);
+  params.SetStringKey("flow", flow);
 
   LogHistogramValue(signin_metrics::HISTOGRAM_SHOWN);
 }

@@ -13,8 +13,8 @@ import android.view.View;
 import android.widget.ListView;
 
 import androidx.annotation.IntDef;
+import androidx.appcompat.content.res.AppCompatResources;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.LifetimeAssert;
 import org.chromium.chrome.tab_ui.R;
@@ -105,13 +105,12 @@ public class TabGridDialogMenuCoordinator {
         ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
 
         mMenuWindow = new AnchoredPopupWindow(mContext, decorView,
-                ApiCompatibilityUtils.getDrawable(
-                        mContext.getResources(), R.drawable.menu_bg_tinted),
-                contentView, rectProvider);
+                AppCompatResources.getDrawable(mContext, R.drawable.menu_bg_tinted), contentView,
+                rectProvider);
         mMenuWindow.setFocusable(true);
         mMenuWindow.setHorizontalOverlapAnchor(true);
         mMenuWindow.setVerticalOverlapAnchor(true);
-        mMenuWindow.setAnimationStyle(R.style.OverflowMenuAnim);
+        mMenuWindow.setAnimationStyle(R.style.EndIconMenuAnim);
         int popupWidth = mContext.getResources().getDimensionPixelSize(R.dimen.menu_width);
         mMenuWindow.setMaxWidth(popupWidth);
 

@@ -8,6 +8,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/scoped_observation.h"
+#include "base/sequence_checker.h"
 #include "chrome/common/extensions/api/web_authentication_proxy.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -32,8 +33,6 @@ class WebAuthenticationProxyService
       public KeyedService,
       public ExtensionRegistryObserver {
  public:
-  using EventId = int32_t;
-
   // Returns the extension registered as the request proxy, or `nullptr` if none
   // is active.
   const Extension* GetActiveRequestProxy();
@@ -46,14 +45,22 @@ class WebAuthenticationProxyService
   // Unregisters the currently active request proxy extension, if any.
   void ClearActiveRequestProxy();
 
-  // Injects the result for the
-  // `events::WEB_AUTHENTICATION_PROXY_CREATE_REQUEST` with `EventId` matching
-  // the one in `details`.
+  // Injects the result for the `onCreateRequest` extension API event
+  // with `EventId` matching the one in `details`.
   //
   // Returns whether completing the request succeeded. If it didn't, `error_out`
   // contains an error message.
   bool CompleteCreateRequest(
       const api::web_authentication_proxy::CreateResponseDetails& details,
+      std::string* error_out);
+
+  // Injects the result for the `onGetRequest` extension API event with
+  // `EventId` matching the one in `details`.
+  //
+  // Returns whether completing the request succeeded. If it didn't, `error_out`
+  // contains an error message.
+  bool CompleteGetRequest(
+      const api::web_authentication_proxy::GetResponseDetails& details,
       std::string* error_out);
 
   // Injects the result for the
@@ -73,13 +80,18 @@ class WebAuthenticationProxyService
   ~WebAuthenticationProxyService() override;
 
   void CancelPendingCallbacks();
+  RequestId NewRequestId();
 
-  // content::WebAuthnRequestProxy:
+  // content::WebAuthenticationRequestProxy:
   bool IsActive() override;
-  void SignalCreateRequest(
+  RequestId SignalCreateRequest(
       const blink::mojom::PublicKeyCredentialCreationOptionsPtr& options,
       CreateCallback callback) override;
-  void SignalIsUvpaaRequest(IsUvpaaCallback callback) override;
+  RequestId SignalGetRequest(
+      const blink::mojom::PublicKeyCredentialRequestOptionsPtr& options,
+      GetCallback callback) override;
+  RequestId SignalIsUvpaaRequest(IsUvpaaCallback callback) override;
+  void CancelRequest(RequestId request_id) override;
 
   // ExtensionRegistryObserver:
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
@@ -97,8 +109,11 @@ class WebAuthenticationProxyService
   // unregisters by calling `detach()` or getting unloaded.
   absl::optional<std::string> active_request_proxy_extension_id_;
 
-  std::map<EventId, IsUvpaaCallback> pending_is_uvpaa_callbacks_;
-  std::map<EventId, CreateCallback> pending_create_callbacks_;
+  std::map<RequestId, IsUvpaaCallback> pending_is_uvpaa_callbacks_;
+  std::map<RequestId, CreateCallback> pending_create_callbacks_;
+  std::map<RequestId, GetCallback> pending_get_callbacks_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 // WebAuthenticationProxyServiceFactory creates instances of

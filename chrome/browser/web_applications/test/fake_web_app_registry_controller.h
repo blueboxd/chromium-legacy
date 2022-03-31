@@ -9,8 +9,10 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "chrome/browser/web_applications/test/fake_externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/test/fake_os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_install_delegate.h"
 #include "components/sync/model/metadata_batch.h"
@@ -24,14 +26,16 @@ namespace web_app {
 
 class FakeWebAppDatabaseFactory;
 class WebAppSyncBridge;
+class WebAppTranslationManager;
 class WebApp;
+class WebAppPolicyManager;
 
 class FakeWebAppRegistryController : public SyncInstallDelegate {
  public:
   FakeWebAppRegistryController();
   ~FakeWebAppRegistryController() override;
 
-  void SetUp(Profile* profile);
+  void SetUp(base::raw_ptr<Profile> profile);
 
   // Synchronously init the sync bridge: open database, read all data and
   // metadata.
@@ -74,9 +78,13 @@ class FakeWebAppRegistryController : public SyncInstallDelegate {
   WebAppRegistrarMutable& mutable_registrar() { return *mutable_registrar_; }
   syncer::MockModelTypeChangeProcessor& processor() { return mock_processor_; }
   WebAppSyncBridge& sync_bridge() { return *sync_bridge_; }
+  WebAppTranslationManager& translation_manager() {
+    return *translation_manager_;
+  }
   FakeOsIntegrationManager& os_integration_manager() {
     return *os_integration_manager_;
   }
+  WebAppPolicyManager& policy_manager() { return *policy_manager_; }
 
  private:
   InstallWebAppsAfterSyncDelegate install_web_apps_after_sync_delegate_;
@@ -89,6 +97,10 @@ class FakeWebAppRegistryController : public SyncInstallDelegate {
   testing::NiceMock<syncer::MockModelTypeChangeProcessor> mock_processor_;
   std::unique_ptr<WebAppSyncBridge> sync_bridge_;
   std::unique_ptr<FakeOsIntegrationManager> os_integration_manager_;
+  std::unique_ptr<WebAppTranslationManager> translation_manager_;
+  std::unique_ptr<WebAppPolicyManager> policy_manager_;
+  std::unique_ptr<FakeExternallyManagedAppManager>
+      fake_externally_managed_app_manager_;
 };
 
 }  // namespace web_app

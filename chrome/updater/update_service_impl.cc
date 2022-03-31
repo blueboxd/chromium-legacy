@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -20,6 +21,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/version.h"
 #include "chrome/updater/check_for_updates_task.h"
 #include "chrome/updater/configurator.h"
@@ -29,8 +31,11 @@
 #include "chrome/updater/policy/service.h"
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/registration_data.h"
+#include "chrome/updater/remove_uninstalled_apps_task.h"
 #include "chrome/updater/update_block_check.h"
 #include "chrome/updater/update_service.h"
+#include "chrome/updater/update_usage_stats_task.h"
+#include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
 #include "components/prefs/pref_service.h"
 #include "components/update_client/crx_update_item.h"
@@ -205,7 +210,7 @@ UpdateServiceImpl::UpdateServiceImpl(scoped_refptr<Configurator> config)
       update_client_(update_client::UpdateClientFactory(config)) {}
 
 void UpdateServiceImpl::GetVersion(
-    base::OnceCallback<void(const base::Version&)> callback) const {
+    base::OnceCallback<void(const base::Version&)> callback) {
   VLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   main_task_runner_->PostTask(
@@ -250,7 +255,7 @@ void UpdateServiceImpl::RegisterApp(
 }
 
 void UpdateServiceImpl::GetAppStates(
-    base::OnceCallback<void(const std::vector<AppState>&)> callback) const {
+    base::OnceCallback<void(const std::vector<AppState>&)> callback) {
   VLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -274,6 +279,9 @@ void UpdateServiceImpl::RunPeriodicTasks(base::OnceClosure callback) {
   VLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  persisted_data_->SetLastStarted(base::Time::NowFromSystemTime());
+  DVLOG(1) << "last_started updated.";
+
   // The installer should make an updater registration, but in case it halts
   // before it does, synthesize a registration if necessary here.
   if (!base::Contains(persisted_data_->GetAppIds(), kUpdaterAppId)) {
@@ -283,24 +291,40 @@ void UpdateServiceImpl::RunPeriodicTasks(base::OnceClosure callback) {
     RegisterApp(updater_request, base::DoNothing());
   }
 
-  tasks_.push(base::MakeRefCounted<CheckForUpdatesTask>(
-      config_,
-      base::BindOnce(&UpdateServiceImpl::UpdateAll, this, base::DoNothing()),
-      base::BindOnce(&UpdateServiceImpl::TaskDone, this, std::move(callback))));
-  if (tasks_.size() == 1)
+  std::vector<base::OnceCallback<void(base::OnceClosure)>> new_tasks;
+  new_tasks.push_back(
+      base::BindOnce(&RemoveUninstalledAppsTask::Run,
+                     base::MakeRefCounted<RemoveUninstalledAppsTask>(config_)));
+  new_tasks.push_back(base::BindOnce(&UpdateUsageStatsTask::Run,
+                                     base::MakeRefCounted<UpdateUsageStatsTask>(
+                                         GetUpdaterScope(), persisted_data_)));
+  new_tasks.push_back(
+      base::BindOnce(&CheckForUpdatesTask::Run,
+                     base::MakeRefCounted<CheckForUpdatesTask>(
+                         config_, base::BindOnce(&UpdateServiceImpl::UpdateAll,
+                                                 this, base::DoNothing()))));
+  const auto barrier_closure =
+      base::BarrierClosure(new_tasks.size(), std::move(callback));
+  for (auto& task : new_tasks) {
+    tasks_.push(base::BindOnce(std::move(task),
+                               barrier_closure.Then(base::BindRepeating(
+                                   &UpdateServiceImpl::TaskDone, this))));
+  }
+
+  if (tasks_.size() == new_tasks.size()) {
     TaskStart();
+  }
 }
 
 void UpdateServiceImpl::TaskStart() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!tasks_.empty()) {
-    tasks_.front()->Run();
+    std::move(tasks_.front()).Run();
   }
 }
 
-void UpdateServiceImpl::TaskDone(base::OnceClosure callback) {
+void UpdateServiceImpl::TaskDone() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::move(callback).Run();
   tasks_.pop();
   TaskStart();
 }
@@ -313,12 +337,27 @@ void UpdateServiceImpl::UpdateAll(StateChangeCallback state_update,
   const auto app_ids = persisted_data_->GetAppIds();
   DCHECK(base::Contains(app_ids, kUpdaterAppId));
 
+  using Callback = base::OnceCallback<void(Result)>;
+
   const Priority priority = Priority::kBackground;
   ShouldBlockUpdateForMeteredNetwork(
       priority,
-      base::BindOnce(&UpdateServiceImpl::OnShouldBlockUpdateForMeteredNetwork,
-                     this, state_update, std::move(callback), app_ids, priority,
-                     UpdateService::PolicySameVersionUpdate::kNotAllowed));
+      base::BindOnce(
+          &UpdateServiceImpl::OnShouldBlockUpdateForMeteredNetwork, this,
+          state_update,
+          base::BindOnce(
+              [](Callback callback, scoped_refptr<PersistedData> persisted_data,
+                 Result result) {
+                if (result == Result::kSuccess) {
+                  persisted_data->SetLastChecked(
+                      base::Time::NowFromSystemTime());
+                  DVLOG(1) << "last_checked updated.";
+                }
+                std::move(callback).Run(result);
+              },
+              std::move(callback), persisted_data_),
+          app_ids, priority,
+          UpdateService::PolicySameVersionUpdate::kNotAllowed));
 }
 
 void UpdateServiceImpl::Update(

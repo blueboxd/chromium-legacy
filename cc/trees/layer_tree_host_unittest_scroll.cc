@@ -83,8 +83,10 @@ class LayerTreeHostScrollTest : public LayerTreeTest, public ScrollCallbacks {
                                   root_layer->bounds().height() + 100);
 
     SetupViewport(root_layer, root_layer->bounds(), scroll_layer_bounds);
-    layer_tree_host()->property_trees()->scroll_tree.SetScrollCallbacks(
-        weak_ptr_factory_.GetWeakPtr());
+    layer_tree_host()
+        ->property_trees()
+        ->scroll_tree_mutable()
+        .SetScrollCallbacks(weak_ptr_factory_.GetWeakPtr());
   }
 
   // ScrollCallbacks
@@ -101,10 +103,10 @@ class LayerTreeHostScrollTest : public LayerTreeTest, public ScrollCallbacks {
       DidScrollOuterViewport(scroll_offset);
     }
     if (snap_target_ids.has_value()) {
-      ScrollNode* scroller_node =
-          layer_tree_host()
-              ->property_trees()
-              ->scroll_tree.FindNodeFromElementId(element_id);
+      ScrollNode* scroller_node = layer_tree_host()
+                                      ->property_trees()
+                                      ->scroll_tree_mutable()
+                                      .FindNodeFromElementId(element_id);
       scroller_node->snap_container_data.value().SetTargetSnapAreaElementIds(
           snap_target_ids.value());
     }
@@ -925,19 +927,15 @@ class LayerTreeHostScrollTestImplOnlyScroll : public LayerTreeHostScrollTest {
         layer_tree_host()->OuterViewportScrollLayerForTesting();
     switch (commit_state.source_frame_number) {
       case 0:
-        EXPECT_TRUE(
-            const_cast<const LayerTreeHost*>(layer_tree_host())
-                ->thread_unsafe_commit_state()
-                .layers_that_should_push_properties.contains(scroll_layer));
+        EXPECT_TRUE(commit_state.layers_that_should_push_properties.contains(
+            scroll_layer));
         break;
       case 1:
         // Even if this layer doesn't need push properties, it should
         // still pick up scrolls that happen on the active layer during
         // commit.
-        EXPECT_FALSE(
-            const_cast<const LayerTreeHost*>(layer_tree_host())
-                ->thread_unsafe_commit_state()
-                .layers_that_should_push_properties.contains(scroll_layer));
+        EXPECT_FALSE(commit_state.layers_that_should_push_properties.contains(
+            scroll_layer));
         break;
     }
   }
@@ -1006,11 +1004,11 @@ class LayerTreeHostScrollTestImplOnlyScroll : public LayerTreeHostScrollTest {
         impl->pending_tree()->OuterViewportScrollLayerForTesting();
     gfx::PointF scroll_offset = CurrentScrollOffset(scroll_layer);
     int transform_index = scroll_layer->transform_tree_index();
-    gfx::PointF transform_tree_scroll_offset =
-        impl->pending_tree()
-            ->property_trees()
-            ->transform_tree.Node(transform_index)
-            ->scroll_offset;
+    gfx::PointF transform_tree_scroll_offset = impl->pending_tree()
+                                                   ->property_trees()
+                                                   ->transform_tree()
+                                                   .Node(transform_index)
+                                                   ->scroll_offset;
     EXPECT_EQ(scroll_offset, transform_tree_scroll_offset);
   }
 
@@ -1167,10 +1165,11 @@ MULTI_THREAD_TEST_F(SmoothScrollAnimationEndNotification);
 
 void DoGestureScroll(LayerTreeHostImpl* host_impl,
                      const scoped_refptr<Layer>& scroller,
-                     gfx::Vector2dF offset) {
+                     gfx::Vector2dF offset,
+                     ElementId scroller_element_id) {
   ScrollStateData begin_scroll_state_data;
   begin_scroll_state_data.set_current_native_scrolling_element(
-      scroller->element_id());
+      scroller_element_id);
   begin_scroll_state_data.delta_x_hint = offset.x();
   begin_scroll_state_data.delta_y_hint = offset.y();
   std::unique_ptr<ScrollState> begin_scroll_state(
@@ -1180,7 +1179,7 @@ void DoGestureScroll(LayerTreeHostImpl* host_impl,
   EXPECT_EQ(ScrollThread::SCROLL_ON_IMPL_THREAD, scroll_status.thread);
   auto* scrolling_node = host_impl->CurrentlyScrollingNode();
   EXPECT_TRUE(scrolling_node);
-  EXPECT_EQ(scrolling_node->element_id, scroller->element_id());
+  EXPECT_EQ(scrolling_node->element_id, scroller_element_id);
 
   ScrollStateData update_scroll_state_data;
   update_scroll_state_data.delta_x = offset.x();
@@ -1209,7 +1208,8 @@ class LayerTreeHostScrollTestImplOnlyScrollSnap
     Layer* root = layer_tree_host()->root_layer();
     container_ = Layer::Create();
     scroller_ = Layer::Create();
-    scroller_->SetElementId(LayerIdToElementIdForTesting(scroller_->id()));
+    scroller_element_id_ = LayerIdToElementIdForTesting(scroller_->id());
+    scroller_->SetElementId(scroller_element_id_);
 
     container_->SetBounds(gfx::Size(100, 100));
     CopyProperties(root, container_.get());
@@ -1256,7 +1256,8 @@ class LayerTreeHostScrollTestImplOnlyScrollSnap
       LayerImpl* scroller_impl =
           host_impl->active_tree()->LayerById(scroller_->id());
 
-      DoGestureScroll(host_impl, scroller_, impl_thread_scroll_);
+      DoGestureScroll(host_impl, scroller_, impl_thread_scroll_,
+                      scroller_element_id_);
 
       EXPECT_TRUE(
           host_impl->GetInputHandler().animating_for_snap_for_testing());
@@ -1268,8 +1269,8 @@ class LayerTreeHostScrollTestImplOnlyScrollSnap
   }
 
   void UpdateLayerTreeHost() override {
-    ScrollNode* scroller_node =
-        layer_tree_host()->property_trees()->scroll_tree.Node(
+    const ScrollNode* scroller_node =
+        layer_tree_host()->property_trees()->scroll_tree().Node(
             scroller_->scroll_tree_index());
     auto snap_target_ids = scroller_node->snap_container_data.value()
                                .GetTargetSnapAreaElementIds();
@@ -1302,6 +1303,7 @@ class LayerTreeHostScrollTestImplOnlyScrollSnap
   gfx::PointF initial_scroll_;
   gfx::Vector2dF impl_thread_scroll_;
 
+  ElementId scroller_element_id_;
   ElementId snap_area_id_;
 
   bool snap_animation_finished_ = false;
@@ -1334,8 +1336,10 @@ class LayerTreeHostScrollTestImplOnlyMultipleScrollSnap
     container_ = Layer::Create();
     scroller_a_ = Layer::Create();
     scroller_b_ = Layer::Create();
-    scroller_a_->SetElementId(LayerIdToElementIdForTesting(scroller_a_->id()));
-    scroller_b_->SetElementId(LayerIdToElementIdForTesting(scroller_b_->id()));
+    scroller_a_element_id_ = LayerIdToElementIdForTesting(scroller_a_->id());
+    scroller_a_->SetElementId(scroller_a_element_id_);
+    scroller_b_element_id_ = LayerIdToElementIdForTesting(scroller_b_->id());
+    scroller_b_->SetElementId(scroller_b_element_id_);
 
     container_->SetBounds(gfx::Size(100, 100));
     CopyProperties(root, container_.get());
@@ -1394,11 +1398,11 @@ class LayerTreeHostScrollTestImplOnlyMultipleScrollSnap
   }
 
   void UpdateLayerTreeHost() override {
-    ScrollNode* scroller_node_a =
-        layer_tree_host()->property_trees()->scroll_tree.Node(
+    const ScrollNode* scroller_node_a =
+        layer_tree_host()->property_trees()->scroll_tree().Node(
             scroller_a_->scroll_tree_index());
-    ScrollNode* scroller_node_b =
-        layer_tree_host()->property_trees()->scroll_tree.Node(
+    const ScrollNode* scroller_node_b =
+        layer_tree_host()->property_trees()->scroll_tree().Node(
             scroller_b_->scroll_tree_index());
     auto snap_target_ids_a = scroller_node_a->snap_container_data.value()
                                  .GetTargetSnapAreaElementIds();
@@ -1432,8 +1436,10 @@ class LayerTreeHostScrollTestImplOnlyMultipleScrollSnap
       LayerImpl* scroller_impl_b =
           host_impl->active_tree()->LayerById(scroller_b_->id());
 
-      DoGestureScroll(host_impl, scroller_a_, impl_thread_scroll_a_);
-      DoGestureScroll(host_impl, scroller_b_, impl_thread_scroll_b_);
+      DoGestureScroll(host_impl, scroller_a_, impl_thread_scroll_a_,
+                      scroller_a_element_id_);
+      DoGestureScroll(host_impl, scroller_b_, impl_thread_scroll_b_,
+                      scroller_b_element_id_);
 
       EXPECT_VECTOR2DF_EQ(impl_thread_scroll_a_, ScrollDelta(scroller_impl_a));
       EXPECT_VECTOR2DF_EQ(impl_thread_scroll_b_, ScrollDelta(scroller_impl_b));
@@ -1452,6 +1458,8 @@ class LayerTreeHostScrollTestImplOnlyMultipleScrollSnap
   gfx::Vector2dF impl_thread_scroll_a_;
   gfx::Vector2dF impl_thread_scroll_b_;
 
+  ElementId scroller_a_element_id_;
+  ElementId scroller_b_element_id_;
   ElementId snap_area_a_id_;
   ElementId snap_area_b_id_;
 };
@@ -1494,7 +1502,8 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
 
     ++cur_step_;
 
-    ScrollTree& scroll_tree = layer_tree_host()->property_trees()->scroll_tree;
+    ScrollTree& scroll_tree =
+        layer_tree_host()->property_trees()->scroll_tree_mutable();
     ScrollNode* scroll_node = scroll_tree.Node(scroll_tree_index_);
     switch (cur_step_) {
       case 1:
@@ -1519,9 +1528,9 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
     if (TestEnded())
       return;
 
-    ScrollTree& scroll_tree =
-        impl->active_tree()->property_trees()->scroll_tree;
-    ScrollNode* scroll_node = scroll_tree.Node(scroll_tree_index_);
+    const ScrollTree& scroll_tree =
+        impl->active_tree()->property_trees()->scroll_tree();
+    const ScrollNode* scroll_node = scroll_tree.Node(scroll_tree_index_);
 
     ScrollStateData scroll_state_data;
     scroll_state_data.is_beginning = true;
@@ -1571,7 +1580,7 @@ class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
 
  private:
   int cur_step_ = 0;
-  int scroll_tree_index_ = ScrollTree::kInvalidNodeId;
+  int scroll_tree_index_ = kInvalidPropertyNodeId;
   scoped_refptr<Layer> scroller_;
 };
 
@@ -1657,9 +1666,10 @@ class LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    ScrollTree& scroll_tree =
-        impl->active_tree()->property_trees()->scroll_tree;
-    ScrollNode* scroller_scroll_node = scroll_tree.Node(scroll_tree_index_);
+    const ScrollTree& scroll_tree =
+        impl->active_tree()->property_trees()->scroll_tree();
+    const ScrollNode* scroller_scroll_node =
+        scroll_tree.Node(scroll_tree_index_);
 
     ScrollStateData scroll_state_data;
     scroll_state_data.is_beginning = true;
@@ -1720,7 +1730,7 @@ class LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent
 
  private:
   scoped_refptr<Layer> scroller_;
-  int scroll_tree_index_ = ScrollTree::kInvalidNodeId;
+  int scroll_tree_index_ = kInvalidPropertyNodeId;
 };
 
 // This test is flaky in the single threaded configuration, only on the
@@ -1870,8 +1880,8 @@ class LayerTreeHostScrollTestLayerStructureChange
                                    const gfx::Vector2dF& delta) {
     if (layer_impl->layer_tree_impl()
             ->property_trees()
-            ->scroll_tree.SetScrollOffsetDeltaForTesting(
-                layer_impl->element_id(), delta))
+            ->scroll_tree_mutable()
+            .SetScrollOffsetDeltaForTesting(layer_impl->element_id(), delta))
       layer_impl->layer_tree_impl()->DidUpdateScrollOffset(
           layer_impl->element_id());
   }
@@ -2513,11 +2523,11 @@ class LayerTreeHostScrollTestImplSideInvalidation
         host_impl->pending_tree()->OuterViewportScrollLayerForTesting();
     gfx::PointF scroll_offset = CurrentScrollOffset(scroll_layer);
     int transform_index = scroll_layer->transform_tree_index();
-    gfx::PointF transform_tree_scroll_offset =
-        host_impl->pending_tree()
-            ->property_trees()
-            ->transform_tree.Node(transform_index)
-            ->scroll_offset;
+    gfx::PointF transform_tree_scroll_offset = host_impl->pending_tree()
+                                                   ->property_trees()
+                                                   ->transform_tree()
+                                                   .Node(transform_index)
+                                                   ->scroll_offset;
     EXPECT_EQ(scroll_offset, transform_tree_scroll_offset);
   }
 
@@ -2689,8 +2699,8 @@ class NonScrollingNonFastScrollableRegion : public LayerTreeHostScrollTest {
     if (TestEnded())
       return;
 
-    ScrollNode* scroll_node =
-        impl->active_tree()->property_trees()->scroll_tree.Node(
+    const ScrollNode* scroll_node =
+        impl->active_tree()->property_trees()->scroll_tree().Node(
             middle_scrollable_scroll_tree_index_);
 
     // The top-left hit should immediately hit the top layer's non-fast region.
@@ -2762,7 +2772,7 @@ class NonScrollingNonFastScrollableRegion : public LayerTreeHostScrollTest {
   scoped_refptr<Layer> bottom_;
   scoped_refptr<Layer> middle_scrollable_;
   scoped_refptr<Layer> top_;
-  int middle_scrollable_scroll_tree_index_ = ScrollTree::kInvalidNodeId;
+  int middle_scrollable_scroll_tree_index_ = kInvalidPropertyNodeId;
 };
 
 SINGLE_THREAD_TEST_F(NonScrollingNonFastScrollableRegion);
@@ -2802,8 +2812,8 @@ class UnifiedScrollingRepaintOnScroll : public LayerTreeTest {
     is_done_ = true;
     EndTest();
 
-    TransformTree& transform_tree =
-        impl->active_tree()->property_trees()->transform_tree;
+    const TransformTree& transform_tree =
+        impl->active_tree()->property_trees()->transform_tree();
     ASSERT_FALSE(transform_tree.needs_update());
 
     // Perform a scroll over our FakePictureLayer.
@@ -2829,7 +2839,7 @@ class UnifiedScrollingRepaintOnScroll : public LayerTreeTest {
  private:
   bool is_done_ = false;
   scoped_refptr<Layer> layer_;
-  int scroll_tree_index_ = ScrollTree::kInvalidNodeId;
+  int scroll_tree_index_ = kInvalidPropertyNodeId;
   FakeContentLayerClient client_;
   base::test::ScopedFeatureList scoped_feature_list;
 };

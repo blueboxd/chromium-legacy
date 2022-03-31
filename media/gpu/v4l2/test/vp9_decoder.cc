@@ -7,6 +7,7 @@
 #include <linux/media/vp9-ctrls.h>
 #include <sys/ioctl.h>
 
+#include "base/bits.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -17,6 +18,12 @@
 namespace media {
 
 namespace v4l2_test {
+
+constexpr uint32_t kNumberOfBuffersInCaptureQueue = 10;
+
+static_assert(kNumberOfBuffersInCaptureQueue <= 16,
+              "Too many CAPTURE buffers are used. The number of CAPTURE "
+              "buffers is currently assumed to be no larger than 16.");
 
 #define SET_IF(bit_field, cond, mask) (bit_field) |= ((cond) ? (mask) : 0)
 
@@ -122,6 +129,109 @@ void FillV4L2VP9SegmentationParams(const Vp9SegmentationParams& vp9_seg_params,
   SafeArrayMemcpy(v4l2_seg->feature_data, vp9_seg_params.feature_data);
 }
 
+// Detiles a single MM21 plane. MM21 is an NV12-like pixel format that is stored
+// in 16x32 tiles in the Y plane and 16x16 tiles in the UV plane (since it's
+// 4:2:0 subsampled, but UV are interlaced). This function converts a single
+// MM21 plane into its equivalent NV12 plane.
+void DetilePlane(std::vector<char>& dest,
+                 char* src,
+                 gfx::Size size,
+                 gfx::Size tile_size) {
+  // Tile size in bytes.
+  const int tile_len = tile_size.GetArea();
+  // |width| rounded down to the nearest multiple of |tile_width|.
+  const int aligned_width =
+      base::bits::AlignDown(size.width(), tile_size.width());
+  // |width| rounded up to the nearest multiple of |tile_width|.
+  const int padded_width = base::bits::AlignUp(size.width(), tile_size.width());
+  // |height| rounded up to the nearest multiple of |tile_height|.
+  const int padded_height =
+      base::bits::AlignUp(size.height(), tile_size.height());
+  // Size of one row of tiles in bytes.
+  const int src_row_size = padded_width * tile_size.height();
+  // Size of the entire coded image.
+  const int coded_image_num_pixels = padded_width * padded_height;
+
+  // Index in bytes to the start of the current tile row.
+  int src_tile_row_start = 0;
+  // Offset in pixels from top of the screen of the current tile row.
+  int y_offset = 0;
+
+  // Iterates over each row of tiles.
+  while (src_tile_row_start < coded_image_num_pixels) {
+    // Maximum relative y-axis value that we should process for the given tile
+    // row. Important for cropping.
+    const int max_in_tile_row_index =
+        size.height() - y_offset < tile_size.height()
+            ? (size.height() - y_offset)
+            : tile_size.height();
+
+    // Offset in bytes into the current tile row to start reading data for the
+    // next pixel row.
+    int src_row_start = 0;
+
+    // Iterates over each row of pixels within the tile row.
+    for (int in_tile_row_index = 0; in_tile_row_index < max_in_tile_row_index;
+         in_tile_row_index++) {
+      int src_index = src_tile_row_start + src_row_start;
+
+      // Iterates over each pixel in the row of pixels.
+      for (int col_index = 0; col_index < aligned_width;
+           col_index += tile_size.width()) {
+        dest.insert(dest.end(), src + src_index,
+                    src + src_index + tile_size.width());
+        src_index += tile_len;
+      }
+      // Finish last partial tile in the row.
+      dest.insert(dest.end(), src + src_index,
+                  src + src_index + size.width() - aligned_width);
+
+      // Shift to the next pixel row in the tile row.
+      src_row_start += tile_size.width();
+    }
+
+    src_tile_row_start += src_row_size;
+    y_offset += tile_size.height();
+  }
+}
+
+// Unpacks an NV12 UV plane into separate U and V planes.
+void UnpackUVPlane(std::vector<char>& dest_u,
+                   std::vector<char>& dest_v,
+                   std::vector<char>& src_uv,
+                   gfx::Size size) {
+  dest_u.reserve(size.GetArea() / 4);
+  dest_v.reserve(size.GetArea() / 4);
+  for (int i = 0; i < size.GetArea() / 4; i++) {
+    dest_u.push_back(src_uv[2 * i]);
+    dest_v.push_back(src_uv[2 * i + 1]);
+  }
+}
+
+void ConvertMM21ToYUV(std::vector<char>& dest_y,
+                      std::vector<char>& dest_u,
+                      std::vector<char>& dest_v,
+                      char* src_y,
+                      char* src_uv,
+                      gfx::Size size) {
+  // Detile MM21's luma plane.
+  constexpr int kMM21TileWidth = 16;
+  constexpr int kMM21TileHeight = 32;
+  constexpr gfx::Size kYTileSize(kMM21TileWidth, kMM21TileHeight);
+  dest_y.reserve(size.GetArea());
+  DetilePlane(dest_y, src_y, size, kYTileSize);
+
+  // Detile MM21's chroma plane in a temporary |detiled_uv|.
+  std::vector<char> detiled_uv;
+  const gfx::Size uv_size(size.width(), size.height() / 2);
+  constexpr gfx::Size kUVTileSize(kMM21TileWidth, kMM21TileHeight / 2);
+  detiled_uv.reserve(size.GetArea() / 2);
+  DetilePlane(detiled_uv, src_uv, uv_size, kUVTileSize);
+
+  // Unpack NV12's UV plane into separate U and V planes.
+  UnpackUVPlane(dest_u, dest_v, detiled_uv, size);
+}
+
 Vp9Decoder::Vp9Decoder(std::unique_ptr<IvfParser> ivf_parser,
                        std::unique_ptr<V4L2IoctlShim> v4l2_ioctl,
                        std::unique_ptr<V4L2Queue> OUTPUT_queue,
@@ -170,7 +280,7 @@ std::unique_ptr<Vp9Decoder> Vp9Decoder::Create(
   auto CAPTURE_queue = std::make_unique<V4L2Queue>(
       V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE, kUncompressedFourcc,
       gfx::Size(file_header.width, file_header.height), /*num_planes=*/2,
-      V4L2_MEMORY_MMAP, /*num_buffers=*/8);
+      V4L2_MEMORY_MMAP, /*num_buffers=*/kNumberOfBuffersInCaptureQueue);
 
   return base::WrapUnique(
       new Vp9Decoder(std::move(ivf_parser), std::move(v4l2_ioctl),
@@ -237,18 +347,65 @@ bool Vp9Decoder::Initialize() {
   return true;
 }
 
-void Vp9Decoder::RefreshReferenceSlots(const uint8_t refresh_frame_flags,
-                                       scoped_refptr<MmapedBuffer> buffer) {
-  const std::bitset<kVp9NumRefFrames> slots(refresh_frame_flags);
+std::set<int> Vp9Decoder::RefreshReferenceSlots(
+    const uint8_t refresh_frame_flags,
+    scoped_refptr<MmapedBuffer> buffer) {
+  const std::bitset<kVp9NumRefFrames> refresh_frame_slots(refresh_frame_flags);
+
+  std::set<int> reusable_buffer_slots;
 
   static_assert(kVp9NumRefFrames == sizeof(refresh_frame_flags) * CHAR_BIT,
                 "|refresh_frame_flags| size should not be larger than "
                 "|kVp9NumRefFrames|");
 
-  for (size_t i = 0; i < kVp9NumRefFrames; i++) {
-    if (slots[i])
-      ref_frames_[i] = buffer;
+  constexpr uint8_t kRefreshFrameFlagsNone = 0;
+  if (refresh_frame_flags == kRefreshFrameFlagsNone) {
+    // Indicates to reuse currently decoded CAPTURE buffer.
+    reusable_buffer_slots.insert(buffer->buffer_id());
+
+    return reusable_buffer_slots;
   }
+
+  constexpr uint8_t kRefreshFrameFlagsAll = 0xFF;
+  if (refresh_frame_flags == kRefreshFrameFlagsAll) {
+    // After decoding a key frame, all CAPTURE buffers can be reused except the
+    // CAPTURE buffer corresponding to the key frame.
+    for (size_t i = 0; i < kNumberOfBuffersInCaptureQueue; i++)
+      reusable_buffer_slots.insert(i);
+
+    reusable_buffer_slots.erase(buffer->buffer_id());
+
+    // Updates to assign current key frame as a reference frame for all
+    // reference frame slots in the reference frames list.
+    ref_frames_.fill(buffer);
+
+    return reusable_buffer_slots;
+  }
+
+  // More than one reference frame slots can be true.
+  uint16_t reusable_candidate_buffer_id;
+  for (size_t i = 0; i < kVp9NumRefFrames; i++) {
+    if (!refresh_frame_slots[i])
+      continue;
+    // It is not required to check whether existing reference frame slot is
+    // already pointing to a reference frame. This is because reference
+    // frame slots are empty only after the first key frame decoding.
+    reusable_candidate_buffer_id = ref_frames_[i]->buffer_id();
+    reusable_buffer_slots.insert(reusable_candidate_buffer_id);
+    // Checks to make sure |reusable_candidate_buffer_id| is not used in
+    // different reference frame slots in the reference frames list.
+    for (size_t j = 0; j < kVp9NumRefFrames; j++) {
+      if (refresh_frame_slots[j] == false) {
+        if (ref_frames_[j]->buffer_id() == reusable_candidate_buffer_id) {
+          reusable_buffer_slots.erase(reusable_candidate_buffer_id);
+          break;
+        }
+      }
+    }
+    ref_frames_[i] = buffer;
+  }
+
+  return reusable_buffer_slots;
 }
 
 Vp9Parser::Result Vp9Decoder::ReadNextFrame(Vp9FrameHeader& vp9_frame_header,
@@ -358,8 +515,23 @@ void Vp9Decoder::SetupFrameParams(
         "The number of reference frames in |Vp9FrameHeader| does not match "
         "|v4l2_ctrl_vp9_frame_decode_params|. Fix |Vp9FrameHeader|.");
 
+    // Buffer ID (|v4l2_buffer.index| in the CAPTURE queue) needs to be
+    // converted to reference ID. Reference ID of a frame can be specified by
+    // converting its buffer ID (microseconds) into nanoseconds. This is
+    // required because |ref| field of |v4l2_ctrl_vp9_frame_decode_params| for
+    // VIDIOC_S_EXT_CTRLS ioctl call is expected to be in nanoseconds. Thus,
+    // |kTimestampToNanoSecs| is multiplied to the buffer ID to get a reference
+    // ID. Technically, v4l2_timeval_to_ns() is suggested to be used to convert
+    // timestamp to nanoseconds, but multiplying the microseconds part of
+    // timestamp |tv_usec| by |kTimestampToNanoSecs| to make it nanoseconds
+    // is also known to work. This is how it is implemented in v4l2 video decode
+    // accelerator tests as well as in gstreamer.
+    // https://www.kernel.org/doc/html/v5.10/userspace-api/media/v4l/dev-stateless-decoder.html#buffer-management-while-decoding
+    constexpr size_t kTimestampToNanoSecs = 1000;
+
     v4l2_frame_params->refs[i] =
-        ref_frames_[idx] ? ref_frames_[idx]->reference_id() : kInvalidSurface;
+        ref_frames_[idx] ? ref_frames_[idx]->buffer_id() * kTimestampToNanoSecs
+                         : kInvalidSurface;
   }
   // TODO(stevecho): fill in the rest of |v4l2_frame_params| fields.
   FillV4L2VP9QuantizationParams(frame_hdr.quant_params,
@@ -388,8 +560,11 @@ bool Vp9Decoder::CopyFrameData(const Vp9FrameHeader& frame_hdr,
                 frame_hdr.data, frame_hdr.frame_size);
 }
 
-Vp9Decoder::Result Vp9Decoder::DecodeNextFrame() {
-  gfx::Size size;
+Vp9Decoder::Result Vp9Decoder::DecodeNextFrame(std::vector<char>& y_plane,
+                                               std::vector<char>& u_plane,
+                                               std::vector<char>& v_plane,
+                                               gfx::Size& size,
+                                               const int frame_number) {
   Vp9FrameHeader frame_hdr{};
 
   Vp9Parser::Result parser_res = ReadNextFrame(frame_hdr, size);
@@ -408,6 +583,12 @@ Vp9Decoder::Result Vp9Decoder::DecodeNextFrame() {
 
   if (!CopyFrameData(frame_hdr, OUTPUT_queue_))
     LOG(FATAL) << "Failed to copy the frame data into the V4L2 buffer.";
+
+  LOG_ASSERT(OUTPUT_queue_->num_buffers() == 1)
+      << "Too many buffers in OUTPUT queue. It is currently designed to "
+         "support only 1 request at a time.";
+
+  OUTPUT_queue_->GetBuffer(0)->set_frame_number(frame_number);
 
   if (!v4l2_ioctl_->QBuf(OUTPUT_queue_, 0))
     LOG(ERROR) << "VIDIOC_QBUF failed for OUTPUT queue.";
@@ -428,8 +609,26 @@ Vp9Decoder::Result Vp9Decoder::DecodeNextFrame() {
   if (!v4l2_ioctl_->DQBuf(CAPTURE_queue_, &index))
     LOG(ERROR) << "VIDIOC_DQBUF failed for CAPTURE queue.";
 
-  RefreshReferenceSlots(frame_hdr.refresh_frame_flags,
-                        CAPTURE_queue_->GetBuffer(index));
+  scoped_refptr<MmapedBuffer> buffer = CAPTURE_queue_->GetBuffer(index);
+  CHECK_EQ(buffer->mmaped_planes().size(), 2u)
+      << "MM21 should have exactly 2 planes but CAPTURE queue does not.";
+
+  CHECK_EQ(CAPTURE_queue_->fourcc(), v4l2_fourcc('M', 'M', '2', '1'));
+  size = CAPTURE_queue_->display_size();
+  ConvertMM21ToYUV(y_plane, u_plane, v_plane,
+                   static_cast<char*>(buffer->mmaped_planes()[0].start_addr),
+                   static_cast<char*>(buffer->mmaped_planes()[1].start_addr),
+                   size);
+
+  CHECK_LE(kNumberOfBuffersInCaptureQueue, 16u);
+
+  const std::set<int> reusable_buffer_slots = RefreshReferenceSlots(
+      frame_hdr.refresh_frame_flags, CAPTURE_queue_->GetBuffer(index));
+
+  for (const auto reusable_buffer_slot : reusable_buffer_slots) {
+    if (!v4l2_ioctl_->QBuf(CAPTURE_queue_, reusable_buffer_slot))
+      LOG(ERROR) << "VIDIOC_QBUF failed for CAPTURE queue.";
+  }
 
   if (!v4l2_ioctl_->DQBuf(OUTPUT_queue_, &index))
     LOG(ERROR) << "VIDIOC_DQBUF failed for OUTPUT queue.";

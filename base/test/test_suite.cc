@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/allocator/partition_allocator/tagging.h"
 #include "base/at_exit.h"
 #include "base/base_paths.h"
 #include "base/base_switches.h"
@@ -23,7 +24,6 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/tagging.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -69,6 +69,10 @@
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #include "third_party/test_fonts/fontconfig/fontconfig_util_linux.h"
+#endif
+
+#if BUILDFLAG(IS_FUCHSIA)
+#include "base/fuchsia/build_info.h"
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -416,15 +420,26 @@ int TestSuite::Run() {
   mac::ScopedNSAutoreleasePool scoped_pool;
 #endif
 
-  Initialize();
-
   std::string client_func =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kTestChildProcess);
 
+#if BUILDFLAG(IS_FUCHSIA)
+  // Cache the BuildInfo so individual tests do not need to worry about it.
+  // Some ProcessUtilTest cases, which use kTestChildProcess, do not pass any
+  // services, so skip this if that switch is not found.
+  // This must be called before Initialize() because, for example,
+  // content::ContentTestSuite::Initialize() may use the cached values.
+  if (client_func.empty())
+    FetchAndCacheSystemBuildInfo();
+#endif
+
+  Initialize();
+
   // Check to see if we are being run as a client process.
   if (!client_func.empty())
     return multi_process_function_list::InvokeChildProcessTest(client_func);
+
 #if BUILDFLAG(IS_IOS)
   test_listener_ios::RegisterTestEndListener();
 #endif
@@ -433,8 +448,8 @@ int TestSuite::Run() {
   // There's no standard way to opt processes into MTE on Linux just yet,
   // so this call explicitly opts this test into synchronous MTE mode, where
   // pointer mismatches are detected immediately.
-  base::memory::ChangeMemoryTaggingModeForCurrentThread(
-      base::memory::TagViolationReportingMode::kSynchronous);
+  ::partition_alloc::ChangeMemoryTaggingModeForCurrentThread(
+      ::partition_alloc::TagViolationReportingMode::kSynchronous);
 #elif BUILDFLAG(IS_ANDROID)
     // On Android, the tests are opted into synchronous MTE mode by the
     // memtagMode attribute in an AndroidManifest.xml file or via an `am compat`

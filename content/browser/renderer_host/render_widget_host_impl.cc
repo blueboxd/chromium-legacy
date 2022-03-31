@@ -774,7 +774,7 @@ void RenderWidgetHostImpl::Init() {
   if (pending_show_params_) {
     DCHECK(blink_widget_.is_bound());
     blink_widget_->WasShown(
-        pending_show_params_->is_evicted,
+        pending_show_params_->is_evicted, view_ && view_->IsInActiveWindow(),
         std::move(pending_show_params_->visible_time_request));
     pending_show_params_.reset();
   }
@@ -864,7 +864,7 @@ void RenderWidgetHostImpl::WasShown(
 
   DCHECK(!pending_show_params_);
   if (!waiting_for_init_) {
-    blink_widget_->WasShown(view_->is_evicted(),
+    blink_widget_->WasShown(view_->is_evicted(), view_->IsInActiveWindow(),
                             std::move(record_tab_switch_time_request));
   } else {
     // Delay the WasShown message until Init is called.
@@ -900,6 +900,11 @@ void RenderWidgetHostImpl::WasShown(
   // resize from SynchronizeVisualProperties is usually processed before the
   // renderer is painted.
   SynchronizeVisualProperties();
+}
+
+void RenderWidgetHostImpl::OnActiveWindowChanged(bool in_active_window) {
+  if (!waiting_for_init_)
+    blink_widget_->OnActiveWindowChanged(in_active_window);
 }
 
 void RenderWidgetHostImpl::RequestPresentationTimeForNextFrame(
@@ -2034,7 +2039,9 @@ void RenderWidgetHostImpl::DragTargetDrop(const DropData& drop_data,
     blink_frame_widget_->DragTargetDrop(
         DropDataToDragData(drop_data_with_permissions,
                            storage_partition->GetFileSystemAccessManager(),
-                           GetProcess()->GetID()),
+                           GetProcess()->GetID(),
+                           ChromeBlobStorageContext::GetFor(
+                               GetProcess()->GetBrowserContext())),
         ConvertWindowPointToViewport(client_point), screen_point, key_modifiers,
         std::move(callback));
   }
@@ -2832,13 +2839,11 @@ void RenderWidgetHostImpl::StartDragging(
   float scale = GetScaleFactorForView(GetView());
   gfx::ImageSkia image = gfx::ImageSkia::CreateFromBitmap(bitmap, scale);
   gfx::Vector2d offset = bitmap_offset_in_dip;
-#if BUILDFLAG(IS_WIN)
-  // On Windows, scale the offset by device scale factor, otherwise the drag
+  // Scale the offset by device scale factor, otherwise the drag
   // image location doesn't line up with the drop location (drag destination).
   gfx::Vector2dF scaled_offset = gfx::Vector2dF(offset);
   scaled_offset.Scale(scale);
   offset = gfx::ToRoundedVector2d(scaled_offset);
-#endif
   view->StartDragging(filtered_data, drag_operations_mask, image, offset,
                       *event_info, this);
 }

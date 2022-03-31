@@ -14,6 +14,10 @@ GEN('#include "content/public/test/browser_test.h"');
 [
   ['BasePage', 'bluetooth/bluetooth_base_page_test.js'],
   ['BluetoothIcon', 'bluetooth/bluetooth_icon_test.js'],
+  [
+    'BatteryIconPercentage',
+    'bluetooth/bluetooth_battery_icon_percentage_tests.js'
+  ],
   ['DeviceBatteryInfo', 'bluetooth/bluetooth_device_battery_info_tests.js'],
   [
     'DeviceSelectionPage',
@@ -32,14 +36,9 @@ GEN('#include "content/public/test/browser_test.h"');
     'PairingEnterCodePage',
     'bluetooth/bluetooth_pairing_enter_code_page_test.js'
   ],
+  ['PairingUi', 'bluetooth/bluetooth_pairing_ui_test.js'],
   ['SpinnerPage', 'bluetooth/bluetooth_spinner_page_test.js'],
  ].forEach(test => registerTest('Bluetooth', 'bluetooth-pairing', ...test));
-
-// Flaky on release bots: https://crbug.com/1286680
-GEN('#if !defined(NDEBUG)');
-[['PairingUi', 'bluetooth/bluetooth_pairing_ui_test.js'],
-].forEach(test => registerTest('Bluetooth', 'bluetooth-pairing', ...test));
-GEN('#endif');
 
 [['CrPolicyNetworkBehaviorMojo', 'network/cr_policy_network_behavior_mojo_tests.m.js'],
  ['CrPolicyNetworkIndicatorMojo', 'network/cr_policy_network_indicator_mojo_tests.m.js'],

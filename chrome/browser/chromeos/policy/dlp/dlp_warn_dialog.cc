@@ -26,6 +26,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/style/color_provider.h"
+#include "ash/public/cpp/style/scoped_light_mode_as_default.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace policy {
@@ -70,9 +71,6 @@ constexpr int kTitleFontSize = 16;
 
 // The line height of the title.
 constexpr int kTitleLineHeight = 24;
-
-// The width of the dialog.
-constexpr int kDialogWidth = 360;
 
 // The line height of the confidential content title label.
 constexpr int kConfidentialContentLineHeight = 20;
@@ -159,6 +157,10 @@ void AddGeneralInformation(views::View* upper_panel,
                            DlpWarnDialog::DlpWarnDialogOptions options) {
 // TODO(crbug.com/1261496) Enable dynamic UI color & theme in lacros
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  // When #dark-light-mode flag is disabled (default setting), the color mode is
+  // by default set to dark mode. The warn dialog has white background for the
+  // default setting, so it should use light mode color palette.
+  ash::ScopedLightModeAsDefault scoped_light_mode_as_default;
   ash::ColorProvider* color_provider = ash::ColorProvider::Get();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -208,7 +210,17 @@ void AddGeneralInformation(views::View* upper_panel,
   message->SetFontList(gfx::FontList({kFontName}, gfx::Font::NORMAL,
                                      kBodyFontSize, gfx::Font::Weight::NORMAL));
   message->SetLineHeight(kBodyLineHeight);
-  message->SizeToFit(kDialogWidth);
+}
+
+// TODO(crbug.com/682266) Remove this function.
+int GetMaxConfidentialTitleWidth() {
+  int total_width = views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
+  int margin_width = kMarginInsets.width() + kConfidentialListInsets.width() +
+                     kConfidentialRowInsets.width();
+  int image_width = kFaviconSize;
+  int spacing = kBetweenChildSpacing;
+  return total_width - margin_width - image_width - spacing;
 }
 
 // Adds icon and title pair of the |confidential_content| to the container.
@@ -217,6 +229,10 @@ void AddConfidentialContentRow(
     const DlpConfidentialContent& confidential_content) {
 // TODO(crbug.com/1261496) Enable dynamic UI color & theme in lacros
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  // When #dark-light-mode flag is disabled (default setting), the color mode is
+  // by default set to dark mode. The warn dialog has white background for the
+  // default setting, so it should use light mode color palette.
+  ash::ScopedLightModeAsDefault scoped_light_mode_as_default;
   ash::ColorProvider* color_provider = ash::ColorProvider::Get();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -233,6 +249,8 @@ void AddConfidentialContentRow(
   views::Label* title = row->AddChildView(
       std::make_unique<views::Label>(confidential_content.title));
   title->SetMultiLine(true);
+  // TODO(crbug.com/682266) Remove the next line that sets the line size.
+  title->SetMaximumWidth(GetMaxConfidentialTitleWidth());
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title->SetAllowCharacterBreak(true);
 // TODO(crbug.com/1261496) Enable dynamic UI color & theme in lacros
@@ -243,7 +261,6 @@ void AddConfidentialContentRow(
   title->SetFontList(gfx::FontList({kFontName}, gfx::Font::NORMAL,
                                    kBodyFontSize, gfx::Font::Weight::NORMAL));
   title->SetLineHeight(kConfidentialContentLineHeight);
-  title->SizeToFit(kDialogWidth);
 }
 
 // Adds a scrollable child view to |parent| that lists the information from
@@ -262,7 +279,7 @@ void MaybeAddConfidentialContent(
   views::BoxLayout* layout =
       container->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kVertical, kConfidentialListInsets,
-          kBetweenChildSpacing));
+          /*between_child_spacing=*/0));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
 
@@ -314,7 +331,8 @@ DlpWarnDialog::DlpWarnDialog(OnDlpRestrictionCheckedCallback callback,
   SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                  GetDialogButtonCancelLabel(options.restriction));
 
-  set_fixed_width(kDialogWidth);
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
   set_corner_radius(kDialogCornerRadius);
   set_margins(kMarginInsets);
 

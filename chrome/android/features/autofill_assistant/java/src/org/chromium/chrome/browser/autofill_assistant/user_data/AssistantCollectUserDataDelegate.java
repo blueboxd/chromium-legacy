@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.chrome.browser.autofill_assistant.AssistantOptionModel;
 import org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantValue;
 
 /**
@@ -16,16 +17,20 @@ import org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantValue;
  */
 public interface AssistantCollectUserDataDelegate {
     /** The currently selected contact has changed. */
-    void onContactInfoChanged(@Nullable AssistantCollectUserDataModel.ContactModel contactModel,
+    void onContactInfoChanged(@Nullable AssistantOptionModel.ContactModel contactModel,
+            @AssistantUserDataEventType int eventType);
+
+    /** The currently selected phone number has changed. */
+    void onPhoneNumberChanged(@Nullable AssistantOptionModel.ContactModel phoneNumberModel,
             @AssistantUserDataEventType int eventType);
 
     /** The currently selected shipping address has changed. */
-    void onShippingAddressChanged(@Nullable AssistantCollectUserDataModel.AddressModel addressModel,
+    void onShippingAddressChanged(@Nullable AssistantOptionModel.AddressModel addressModel,
             @AssistantUserDataEventType int eventType);
 
     /** The currently selected payment method has changed. */
     void onPaymentMethodChanged(
-            @Nullable AssistantCollectUserDataModel.PaymentInstrumentModel paymentInstrumentModel,
+            @Nullable AssistantOptionModel.PaymentInstrumentModel paymentInstrumentModel,
             @AssistantUserDataEventType int eventType);
 
     /** The currently selected terms & conditions state has changed. */

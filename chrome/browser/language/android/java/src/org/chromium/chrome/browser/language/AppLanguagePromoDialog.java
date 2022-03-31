@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -27,7 +28,6 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.language.settings.LanguageItem;
 import org.chromium.chrome.browser.language.settings.LanguagesManager;
 import org.chromium.chrome.browser.translate.TranslateBridge;
-import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.language.AndroidLanguageMetricsBridge;
 import org.chromium.components.language.GeoLanguageProviderBridge;
 import org.chromium.net.NetworkChangeNotifier;
@@ -237,13 +237,18 @@ public class AppLanguagePromoDialog {
         }
 
         @Override
-        public void onClick(View v) {
+        public void onClick(View row) {
             LanguageItemAdapter adapter = (LanguageItemAdapter) getBindingAdapter();
             adapter.setSelectedLanguage(getBindingAdapterPosition());
+            View positiveButton = row.getRootView().findViewById(R.id.positive_button);
+            if (positiveButton != null) {
+                positiveButton.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
+            }
         }
 
         public void bindViewHolder(LanguageItem languageItem, boolean checked) {
             mRadioButton.setChecked(checked);
+            mRadioButton.setContentDescription(languageItem.getDisplayName());
             if (languageItem.isSystemDefault()) {
                 // For the system default locale the display name should be the primary TextView.
                 mPrimaryNameTextView.setText(languageItem.getDisplayName());
@@ -513,14 +518,11 @@ public class AppLanguagePromoDialog {
             if (TranslateBridge.getAppLanguagePromptShown()) return false;
         }
 
-        boolean isAccessibilityEnabled = ChromeAccessibilityUtil.get().isAccessibilityEnabled();
-        recordIsAccessibilityEnabled(isAccessibilityEnabled);
-
         boolean isOnline = NetworkChangeNotifier.isOnline();
         recordOnlineStatus(isOnline);
 
-        // Only show the prompt if online and accessibility features are not enabled.
-        return isOnline && !isAccessibilityEnabled;
+        // Only show the prompt if online.
+        return isOnline;
     }
 
     /**
@@ -552,12 +554,6 @@ public class AppLanguagePromoDialog {
     private static void recordOnlineStatus(boolean isOnline) {
         RecordHistogram.recordBooleanHistogram(
                 "LanguageSettings.AppLanguagePrompt.IsOnline", isOnline);
-    }
-
-    private static void recordIsAccessibilityEnabled(boolean isAccessibilityEnabled) {
-        RecordHistogram.recordBooleanHistogram(
-                "LanguageSettings.AppLanguagePrompt.IsAccessibilityEnabled",
-                isAccessibilityEnabled);
     }
 
     private static void recordOpenDuration(String type, long displayTime) {

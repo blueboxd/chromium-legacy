@@ -19,18 +19,15 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/lru_cache.h"
 #include "base/memory/memory_pressure_listener.h"
-#include "base/memory/raw_ptr.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
-#include "cc/base/synced_property.h"
 #include "cc/benchmarks/micro_benchmark_controller_impl.h"
 #include "cc/cc_export.h"
 #include "cc/input/actively_scrolling_type.h"
 #include "cc/input/browser_controls_offset_manager_client.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/scrollbar_animation_controller.h"
-#include "cc/input/scrollbar_controller.h"
 #include "cc/input/threaded_input_handler.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/metrics/average_lag_tracking_manager.h"
@@ -39,17 +36,12 @@
 #include "cc/metrics/events_metrics_manager.h"
 #include "cc/metrics/frame_sequence_tracker_collection.h"
 #include "cc/metrics/total_frame_counter.h"
-#include "cc/paint/discardable_image_map.h"
 #include "cc/paint/paint_worklet_job.h"
-#include "cc/raster/raster_query_queue.h"
-#include "cc/resources/ui_resource_client.h"
 #include "cc/scheduler/begin_frame_tracker.h"
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/draw_result.h"
 #include "cc/scheduler/scheduler.h"
 #include "cc/scheduler/video_frame_controller.h"
-#include "cc/tiles/decoded_image_tracker.h"
-#include "cc/tiles/image_decode_cache.h"
 #include "cc/tiles/tile_manager.h"
 #include "cc/trees/animated_paint_worklet_tracker.h"
 #include "cc/trees/de_jelly_state.h"
@@ -75,29 +67,21 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_range.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "ui/events/types/scroll_input_type.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
 class PointF;
 }
 
-namespace viz {
-class CompositorFrame;
-class CompositorFrameMetadata;
-struct FrameTimingDetails;
-}  // namespace viz
-
 namespace cc {
 
-enum class ActivelyScrollingType;
 class BrowserControlsOffsetManager;
 class CompositorFrameReportingController;
 class RasterDarkModeFilter;
 class DebugRectHistory;
 class EvictionTilePriorityQueue;
-class DroppedFrameCounter;
 class ImageAnimationController;
+class ImageDecodeCache;
 class LCDTextMetricsReporter;
 class LatencyInfoSwapPromiseMonitor;
 class LayerImpl;
@@ -111,6 +95,7 @@ class PageScaleAnimation;
 class PendingTreeRasterDurationHistogramTimer;
 class RasterTilePriorityQueue;
 class RasterBufferProvider;
+class RasterQueryQueue;
 class RenderFrameMetadataObserver;
 class RenderingStatsInstrumentation;
 class ResourcePool;
@@ -348,7 +333,7 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
       const BeginMainFrameMetrics* begin_main_frame_metrics);
   virtual void BeginCommit(int source_frame_number);
   virtual void FinishCommit(CommitState& commit_state,
-                            ThreadUnsafeCommitState& unsafe_state);
+                            const ThreadUnsafeCommitState& unsafe_state);
   virtual void CommitComplete();
   virtual void UpdateAnimationState(bool start_ready_animations);
   void PullLayerTreeHostPropertiesFrom(const CommitState&);
@@ -430,6 +415,11 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   bool NeedUpdateGpuRasterizationStatusForTesting() const {
     return need_update_gpu_rasterization_status_;
   }
+
+  // ProtectedSequenceSynchronizer implementation.
+  bool IsOwnerThread() const override;
+  bool InProtectedSequence() const override;
+  void WaitForProtectedSequenceCompletion() const override;
 
   // MutatorHostClient implementation.
   bool IsElementInPropertyTrees(ElementId element_id,
@@ -527,9 +517,9 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   std::unique_ptr<EvictionTilePriorityQueue> BuildEvictionQueue(
       TreePriority tree_priority) override;
   void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) override;
-  gfx::ColorSpace GetRasterColorSpace(
+  std::unique_ptr<OccludedTileIterator> CreateOccludedTileIterator() override;
+  TargetColorParams GetTargetColorParams(
       gfx::ContentColorUsage content_color_usage) const override;
-  float GetSDRWhiteLevel() const override;
   void RequestImplSideInvalidationForCheckerImagedTiles() override;
   size_t GetFrameIndexForImage(const PaintImage& paint_image,
                                WhichTree tree) const override;
@@ -590,13 +580,9 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
 
   void GetGpuRasterizationCapabilities(bool* gpu_rasterization_enabled,
                                        bool* gpu_rasterization_supported,
-                                       int* max_msaa_samples,
+                                       bool* can_use_msaa,
                                        bool* supports_disable_msaa);
   bool use_gpu_rasterization() const { return use_gpu_rasterization_; }
-  bool can_use_oop_rasterization() const { return can_use_oop_rasterization_; }
-  bool use_oop_rasterization() const {
-    return use_gpu_rasterization_ && can_use_oop_rasterization_;
-  }
 
   GpuRasterizationStatus gpu_rasterization_status() const {
     return gpu_rasterization_status_;
@@ -1080,7 +1066,6 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
 
   bool need_update_gpu_rasterization_status_ = false;
   bool use_gpu_rasterization_ = false;
-  bool can_use_oop_rasterization_ = false;
   GpuRasterizationStatus gpu_rasterization_status_ =
       GpuRasterizationStatus::OFF_DEVICE;
   std::unique_ptr<RasterBufferProvider> raster_buffer_provider_;

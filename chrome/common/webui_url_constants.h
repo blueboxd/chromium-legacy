@@ -95,7 +95,6 @@ extern const char kChromeUIFeedbackURL[];
 extern const char kChromeUIFileiconURL[];
 extern const char kChromeUIFlagsHost[];
 extern const char kChromeUIFlagsURL[];
-extern const char kChromeUIFlocInternalsHost[];
 extern const char kChromeUIGCMInternalsHost[];
 extern const char kChromeUIHangUIHost[];
 extern const char kChromeUIHelpHost[];
@@ -152,11 +151,10 @@ extern const char kChromeUIPolicyURL[];
 extern const char kChromeUIPredictorsHost[];
 extern const char kChromeUIPrefsInternalsHost[];
 extern const char kChromeUIPrintURL[];
+extern const char kChromeUIPrivacySandboxDialogHost[];
+extern const char kChromeUIPrivacySandboxDialogURL[];
 extern const char kChromeUIQuitHost[];
 extern const char kChromeUIQuitURL[];
-// TODO(crbug.com/1202165): Remove when new quota-internals page is done.
-extern const char kChromeUIQuotaInternalsHost[];
-extern const char kChromeUIQuotaInternals2Host[];
 extern const char kChromeUIResetPasswordHost[];
 extern const char kChromeUIResetPasswordURL[];
 extern const char kChromeUIRestartHost[];
@@ -227,6 +225,8 @@ extern const char kChromeUIWebApksHost[];
 #else
 extern const char kChromeUIAppServiceInternalsHost[];
 extern const char kChromeUINearbyInternalsHost[];
+extern const char kChromeUIBookmarksSidePanelHost[];
+extern const char kChromeUIBookmarksSidePanelURL[];
 extern const char kChromeUIReadLaterHost[];
 extern const char kChromeUIReadLaterURL[];
 extern const char kChromeUIWebAppInternalsHost[];
@@ -305,8 +305,6 @@ extern const char kChromeUIPasswordChangeUrl[];
 extern const char kChromeUIPrintManagementUrl[];
 extern const char kChromeUIPowerHost[];
 extern const char kChromeUIPowerUrl[];
-extern const char kChromeUIProjectorHost[];
-extern const char kChromeUIProjectorURL[];
 extern const char kChromeUIScanningAppURL[];
 extern const char kChromeUIScreenlockIconHost[];
 extern const char kChromeUIScreenlockIconURL[];
@@ -347,12 +345,12 @@ extern const char kOsUIHistogramsURL[];
 extern const char kOsUIInvalidationsUrl[];
 extern const char kOsUILockScreenNetworkURL[];
 extern const char kOsUINetworkUrl[];
-extern const char kOsUIOSSettingsURL[];
 extern const char kOsUIRestartURL[];
 extern const char kOsUIScanningAppURL[];
 extern const char kOsUISettingsURL[];
 extern const char kOsUISignInInternalsUrl[];
 extern const char kOsUISyncInternalsUrl[];
+extern const char kOsUITerms[];
 
 // Returns true if this web UI is part of the "system UI". Generally this is
 // UI that opens in a window (not a browser tab) and that on other operating
@@ -385,6 +383,12 @@ extern const char kChromeUIConnectorsInternalsHost[];
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
 extern const char kChromeUIDiscardsHost[];
 extern const char kChromeUIDiscardsURL[];
+#endif
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_FUCHSIA)
+extern const char kChromeUIWebAppSettingsURL[];
+extern const char kChromeUIWebAppSettingsHost[];
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -469,7 +473,7 @@ extern const char kPasswordManagerSubPage[];
 extern const char kPaymentsSubPage[];
 extern const char kPeopleSubPage[];
 extern const char kPrintingSettingsSubPage[];
-extern const char kPrivacyReviewSubPage[];
+extern const char kPrivacyGuideSubPage[];
 extern const char kPrivacySubPage[];
 extern const char kResetSubPage[];
 extern const char kResetProfileSettingsSubPage[];
@@ -480,6 +484,7 @@ extern const char kSearchEnginesSubPage[];
 extern const char kSignOutSubPage[];
 extern const char kSyncSetupSubPage[];
 extern const char kTriggeredResetProfileSettingsSubPage[];
+extern const char kPrivacySandboxSubPage[];
 
 #if !BUILDFLAG(IS_ANDROID)
 extern const char kPrivacySandboxSubPagePath[];

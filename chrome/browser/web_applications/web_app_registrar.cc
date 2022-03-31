@@ -20,7 +20,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/web_applications/app_registrar_observer.h"
 #include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
-#include "chrome/browser/web_applications/install_bounce_metric.h"
+#include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_prefs_utils.h"
@@ -59,6 +59,13 @@ bool WebAppRegistrar::IsLocallyInstalled(const GURL& start_url) const {
       GenerateAppId(/*manifest_id=*/absl::nullopt, start_url));
 }
 
+std::vector<PermissionsPolicyDeclaration> WebAppRegistrar::GetPermissionsPolicy(
+    const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->permissions_policy()
+                 : std::vector<PermissionsPolicyDeclaration>();
+}
+
 bool WebAppRegistrar::IsPlaceholderApp(const AppId& app_id) const {
   return ExternallyInstalledWebAppPrefs(profile_->GetPrefs())
       .IsPlaceholderApp(app_id);
@@ -83,34 +90,10 @@ void WebAppRegistrar::NotifyWebAppFileHandlerApprovalStateChanged(
     observer.OnWebAppFileHandlerApprovalStateChanged(app_id);
 }
 
-void WebAppRegistrar::NotifyWebAppInstalled(const AppId& app_id) {
-  for (AppRegistrarObserver& observer : observers_)
-    observer.OnWebAppInstalled(app_id);
-  // TODO(alancutter): Call RecordWebAppInstallation here when we get access to
-  // the webapps::WebappInstallSource in this event.
-}
-
-void WebAppRegistrar::NotifyWebAppManifestUpdated(const AppId& app_id,
-                                                  base::StringPiece old_name) {
-  for (AppRegistrarObserver& observer : observers_)
-    observer.OnWebAppManifestUpdated(app_id, old_name);
-}
-
 void WebAppRegistrar::NotifyWebAppsWillBeUpdatedFromSync(
     const std::vector<const WebApp*>& new_apps_state) {
   for (AppRegistrarObserver& observer : observers_)
     observer.OnWebAppsWillBeUpdatedFromSync(new_apps_state);
-}
-
-void WebAppRegistrar::NotifyWebAppUninstalled(const AppId& app_id) {
-  for (AppRegistrarObserver& observer : observers_)
-    observer.OnWebAppUninstalled(app_id);
-}
-
-void WebAppRegistrar::NotifyWebAppWillBeUninstalled(const AppId& app_id) {
-  for (AppRegistrarObserver& observer : observers_)
-    observer.OnWebAppWillBeUninstalled(app_id);
-  RecordWebAppUninstallation(profile()->GetPrefs(), app_id);
 }
 
 void WebAppRegistrar::NotifyWebAppLocallyInstalledStateChanged(
@@ -156,11 +139,6 @@ void WebAppRegistrar::NotifyWebAppProfileWillBeDeleted(const AppId& app_id) {
     observer.OnWebAppProfileWillBeDeleted(app_id);
 }
 
-void WebAppRegistrar::NotifyWebAppInstalledWithOsHooks(const AppId& app_id) {
-  for (AppRegistrarObserver& observer : observers_)
-    observer.OnWebAppInstalledWithOsHooks(app_id);
-}
-
 void WebAppRegistrar::NotifyWebAppUserDisplayModeChanged(
     const AppId& app_id,
     DisplayMode user_display_mode) {
@@ -168,9 +146,16 @@ void WebAppRegistrar::NotifyWebAppUserDisplayModeChanged(
     observer.OnWebAppUserDisplayModeChanged(app_id, user_display_mode);
 }
 
-void WebAppRegistrar::NotifyAppRegistrarShutdown() {
+void WebAppRegistrar::NotifyWebAppRunOnOsLoginModeChanged(
+    const AppId& app_id,
+    RunOnOsLoginMode run_on_os_login_mode) {
   for (AppRegistrarObserver& observer : observers_)
-    observer.OnAppRegistrarShutdown();
+    observer.OnWebAppRunOnOsLoginModeChanged(app_id, run_on_os_login_mode);
+}
+
+void WebAppRegistrar::NotifyWebAppSettingsPolicyChanged() {
+  for (AppRegistrarObserver& observer : observers_)
+    observer.OnWebAppSettingsPolicyChanged();
 }
 
 std::map<AppId, GURL> WebAppRegistrar::GetExternallyInstalledApps(
@@ -448,6 +433,10 @@ void WebAppRegistrar::Shutdown() {
     g_browser_process->profile_manager()->RemoveObserver(this);
 }
 
+void WebAppRegistrar::SetSubsystems(WebAppPolicyManager* policy_manager) {
+  policy_manager_ = policy_manager;
+}
+
 bool WebAppRegistrar::IsInstalled(const AppId& app_id) const {
   const WebApp* web_app = GetAppById(app_id);
   return web_app && !web_app->is_from_sync_and_pending_installation() &&
@@ -709,6 +698,28 @@ base::Time WebAppRegistrar::GetAppInstallTime(const AppId& app_id) const {
   return web_app ? web_app->install_time() : base::Time();
 }
 
+absl::optional<webapps::WebappInstallSource>
+WebAppRegistrar::GetAppInstallSourceForMetrics(const AppId& app_id) const {
+  const WebApp* web_app = GetAppById(app_id);
+  if (!web_app)
+    return absl::nullopt;
+
+  absl::optional<webapps::WebappInstallSource> value =
+      web_app->install_source_for_metrics();
+
+  // If the migration code hasn't run yet, `WebApp::install_source_for_metrics_`
+  // may not be populated. After migration code is removed, this branch can be
+  // deleted.
+  if (!value) {
+    absl::optional<int> old_value =
+        GetWebAppInstallSourceDeprecated(profile_->GetPrefs(), app_id);
+    if (old_value)
+      return static_cast<webapps::WebappInstallSource>(*old_value);
+  }
+
+  return value;
+}
+
 std::vector<apps::IconInfo> WebAppRegistrar::GetAppIconInfos(
     const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
@@ -754,10 +765,31 @@ std::vector<AppId> WebAppRegistrar::GetAllSubAppIds(
   return sub_app_ids;
 }
 
-RunOnOsLoginMode WebAppRegistrar::GetAppRunOnOsLoginMode(
+ValueWithPolicy<RunOnOsLoginMode> WebAppRegistrar::GetAppRunOnOsLoginMode(
+    const AppId& app_id) const {
+  RunOnOsLoginPolicy login_policy =
+      policy_manager_->GetUrlRunOnOsLoginPolicy(app_id);
+
+  switch (login_policy) {
+    case RunOnOsLoginPolicy::kAllowed: {
+      auto* web_app = GetAppById(app_id);
+      return {
+          web_app ? web_app->run_on_os_login_mode() : RunOnOsLoginMode::kNotRun,
+          true};
+    }
+    case RunOnOsLoginPolicy::kBlocked:
+      return {RunOnOsLoginMode::kNotRun, false};
+    case RunOnOsLoginPolicy::kRunWindowed:
+      return {RunOnOsLoginMode::kWindowed, false};
+  }
+}
+
+absl::optional<RunOnOsLoginMode>
+WebAppRegistrar::GetExpectedRunOnOsLoginOsIntegrationState(
     const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
-  return web_app ? web_app->run_on_os_login_mode() : RunOnOsLoginMode::kNotRun;
+  return web_app ? web_app->run_on_os_login_os_integration_state()
+                 : absl::nullopt;
 }
 
 bool WebAppRegistrar::GetWindowControlsOverlayEnabled(

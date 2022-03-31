@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_policy.h"
+#include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/common/url_utils.h"
 #include "content/public/browser/browser_context.h"
@@ -23,14 +24,12 @@ namespace content {
 
 namespace attribution_host_utils {
 
-namespace {
 bool IsOriginTrustworthyForAttributions(const url::Origin& origin) {
   return IsAndroidAppOrigin(origin) ||
          network::IsOriginPotentiallyTrustworthy(origin);
 }
-}  // namespace
 
-VerifyResult VerifyAndStoreImpression(StorableSource::SourceType source_type,
+VerifyResult VerifyAndStoreImpression(CommonSourceInfo::SourceType source_type,
                                       const url::Origin& impression_origin,
                                       const blink::Impression& impression,
                                       BrowserContext* browser_context,
@@ -58,18 +57,18 @@ VerifyResult VerifyAndStoreImpression(StorableSource::SourceType source_type,
     return VerifyResult{.allowed = true, .stored = false};
   }
 
-  const AttributionPolicy& policy = attribution_manager.GetAttributionPolicy();
-  AttributionPolicy::AttributionMode mode =
-      policy.GetAttributionMode(source_type);
   StorableSource storable_impression(
       // Impression data doesn't need to be sanitized.
-      impression.impression_data, impression_origin,
-      impression.conversion_destination, reporting_origin, impression_time,
-      policy.GetExpiryTimeForImpression(impression.expiry, impression_time,
-                                        source_type),
-      source_type, impression.priority, mode.logic(), mode.fake_trigger_data(),
-      /*source_id=*/absl::nullopt);
+      CommonSourceInfo(
+          impression.impression_data, impression_origin,
+          impression.conversion_destination, reporting_origin, impression_time,
+          GetExpiryTimeForImpression(impression.expiry, impression_time,
+                                     source_type),
+          source_type, impression.priority, /*debug_key=*/absl::nullopt));
 
+  // TODO(apaseltiner): It would be nice to be able to report an issue in
+  // DevTools in the event that a debug key is present but the corresponding
+  // cookie is not.
   attribution_manager.HandleSource(std::move(storable_impression));
   return VerifyResult{.allowed = true, .stored = true};
 }

@@ -64,7 +64,7 @@
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/host_zoom_level_context.h"
 #include "content/browser/indexed_db/indexed_db_control_wrapper.h"
-#include "content/browser/interest_group/interest_group_manager.h"
+#include "content/browser/interest_group/interest_group_manager_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/locks/lock_manager.h"
 #include "content/browser/native_io/native_io_context_impl.h"
@@ -132,6 +132,10 @@
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/browser/plugin_private_storage_helper.h"
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
+
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#include "content/browser/media/media_license_manager.h"
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 using CookieDeletionFilter = network::mojom::CookieDeletionFilter;
 using CookieDeletionFilterPtr = network::mojom::CookieDeletionFilterPtr;
@@ -651,15 +655,10 @@ void CallCancelRequest(
 bool CancelIfPrerendering(int frame_tree_node_id,
                           PrerenderHost::FinalStatus final_status) {
   auto* frame_tree_node = FrameTreeNode::GloballyFindByID(frame_tree_node_id);
-  if (frame_tree_node && frame_tree_node->frame_tree()->is_prerendering()) {
-    auto* web_contents = WebContentsImpl::FromFrameTreeNode(frame_tree_node);
-    int root_node_id =
-        frame_tree_node->frame_tree()->root()->frame_tree_node_id();
-    web_contents->GetPrerenderHostRegistry()->CancelHost(root_node_id,
-                                                         final_status);
-    return true;
-  }
-  return false;
+  if (!frame_tree_node)
+    return false;
+  auto* web_contents = WebContentsImpl::FromFrameTreeNode(frame_tree_node);
+  return web_contents->CancelPrerendering(frame_tree_node, final_status);
 }
 
 // Cancels prerendering if `render_frame_host_id` is in a prerendered frame
@@ -669,13 +668,9 @@ bool CancelIfPrerendering(GlobalRenderFrameHostId render_frame_host_id,
                           PrerenderHost::FinalStatus final_status) {
   auto* render_frame_host_impl =
       RenderFrameHostImpl::FromID(render_frame_host_id);
-  if (render_frame_host_impl &&
-      render_frame_host_impl->lifecycle_state() ==
-          RenderFrameHostImpl::LifecycleStateImpl::kPrerendering) {
-    render_frame_host_impl->CancelPrerendering(final_status);
-    return true;
-  }
-  return false;
+  if (!render_frame_host_impl)
+    return false;
+  return render_frame_host_impl->CancelPrerendering(final_status);
 }
 
 void OnCertificateRequestedContinuation(
@@ -964,7 +959,7 @@ class StoragePartitionImpl::DataDeletionHelper {
       storage::SpecialStoragePolicy* special_storage_policy,
       storage::FileSystemContext* filesystem_context,
       network::mojom::CookieManager* cookie_manager,
-      InterestGroupManager* interest_group_manager,
+      InterestGroupManagerImpl* interest_group_manager,
       AttributionManagerImpl* attribution_manager,
       AggregationServiceImpl* aggregation_service,
       bool perform_storage_cleanup,
@@ -1316,7 +1311,7 @@ void StoragePartitionImpl::Initialize(
   }
 
   if (base::FeatureList::IsEnabled(blink::features::kInterestGroupStorage)) {
-    interest_group_manager_ = std::make_unique<InterestGroupManager>(
+    interest_group_manager_ = std::make_unique<InterestGroupManagerImpl>(
         path, is_in_memory(), GetURLLoaderFactoryForBrowserProcess());
   }
 
@@ -1353,6 +1348,12 @@ void StoragePartitionImpl::Initialize(
     aggregation_service_ =
         std::make_unique<AggregationServiceImpl>(is_in_memory(), path, this);
   }
+
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  media_license_manager_ = std::make_unique<MediaLicenseManager>(
+      GetBucketBasePath(), browser_context_->GetSpecialStoragePolicy(),
+      quota_manager_proxy);
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 }
 
 void StoragePartitionImpl::OnStorageServiceDisconnected() {
@@ -1631,6 +1632,13 @@ void StoragePartitionImpl::SetFontAccessManagerForTesting(
   DCHECK(font_access_manager);
   font_access_manager_ = std::move(font_access_manager);
 }
+
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+MediaLicenseManager* StoragePartitionImpl::GetMediaLicenseManager() {
+  DCHECK(initialized_);
+  return media_license_manager_.get();
+}
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 InterestGroupManager* StoragePartitionImpl::GetInterestGroupManager() {
   DCHECK(initialized_);
@@ -2345,7 +2353,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
     storage::SpecialStoragePolicy* special_storage_policy,
     storage::FileSystemContext* filesystem_context,
     network::mojom::CookieManager* cookie_manager,
-    InterestGroupManager* interest_group_manager,
+    InterestGroupManagerImpl* interest_group_manager,
     AttributionManagerImpl* attribution_manager,
     AggregationServiceImpl* aggregation_service,
     bool perform_storage_cleanup,

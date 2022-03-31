@@ -105,7 +105,7 @@ TEST(CSSCalculationValue, AccumulatePixelsAndPercent) {
 
   TestAccumulatePixelsAndPercent(
       conversion_data,
-      CSSMathExpressionBinaryOperation::Create(
+      CSSMathExpressionOperation::CreateArithmeticOperation(
           CSSMathExpressionNumericLiteral::Create(
               CSSNumericLiteralValue::Create(
                   10, CSSPrimitiveValue::UnitType::kPixels)),
@@ -117,7 +117,7 @@ TEST(CSSCalculationValue, AccumulatePixelsAndPercent) {
 
   TestAccumulatePixelsAndPercent(
       conversion_data,
-      CSSMathExpressionBinaryOperation::Create(
+      CSSMathExpressionOperation::CreateArithmeticOperation(
           CSSMathExpressionNumericLiteral::Create(
               CSSNumericLiteralValue::Create(
                   1, CSSPrimitiveValue::UnitType::kInches)),
@@ -129,8 +129,8 @@ TEST(CSSCalculationValue, AccumulatePixelsAndPercent) {
 
   TestAccumulatePixelsAndPercent(
       conversion_data,
-      CSSMathExpressionBinaryOperation::Create(
-          CSSMathExpressionBinaryOperation::Create(
+      CSSMathExpressionOperation::CreateArithmeticOperation(
+          CSSMathExpressionOperation::CreateArithmeticOperation(
               CSSMathExpressionNumericLiteral::Create(
                   CSSNumericLiteralValue::Create(
                       50, CSSPrimitiveValue::UnitType::kPixels)),
@@ -138,7 +138,7 @@ TEST(CSSCalculationValue, AccumulatePixelsAndPercent) {
                   CSSNumericLiteralValue::Create(
                       0.25, CSSPrimitiveValue::UnitType::kNumber)),
               CSSMathOperator::kMultiply),
-          CSSMathExpressionBinaryOperation::Create(
+          CSSMathExpressionOperation::CreateArithmeticOperation(
               CSSMathExpressionNumericLiteral::Create(
                   CSSNumericLiteralValue::Create(
                       20, CSSPrimitiveValue::UnitType::kPixels)),
@@ -273,7 +273,8 @@ TEST(CSSMathExpressionNode, TestParseDeeplyNestedExpression) {
     CSSTokenizer tokenizer(String(ss.str().c_str()));
     const auto tokens = tokenizer.TokenizeToEOF();
     const CSSParserTokenRange range(tokens);
-    const CSSMathExpressionNode* res = CSSMathExpressionNode::ParseCalc(range);
+    const CSSMathExpressionNode* res =
+        CSSMathExpressionNode::ParseMathFunction(CSSValueID::kCalc, range);
 
     if (test_case.expected) {
       EXPECT_TRUE(res);

@@ -161,8 +161,7 @@ FilePath GetAppBundlePath(const FilePath& exec_name) {
   const size_t kExtLength = base::size(kExt) - 1;
 
   // Split the path into components.
-  std::vector<std::string> components;
-  exec_name.GetComponents(&components);
+  std::vector<std::string> components = exec_name.GetComponents();
 
   // It's an error if we don't get any components.
   if (components.empty())
@@ -230,16 +229,6 @@ TYPE_NAME_FOR_CF_TYPE_DEFN(SecPolicy)
 #endif
 
 #undef TYPE_NAME_FOR_CF_TYPE_DEFN
-
-void NSObjectRetain(void* obj) {
-  id<NSObject> nsobj = static_cast<id<NSObject> >(obj);
-  [nsobj retain];
-}
-
-void NSObjectRelease(void* obj) {
-  id<NSObject> nsobj = static_cast<id<NSObject> >(obj);
-  [nsobj release];
-}
 
 static const char* base_bundle_id;
 

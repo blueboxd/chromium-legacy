@@ -285,12 +285,18 @@ test("accessibility_unittests") {
     "//ui/gfx:test_support",
   ]
 
+  data_deps = [ "//testing/buildbot/filters:accessibility_unittests_filters" ]
+
   if (is_fuchsia) {
-    sources += [ "platform/fuchsia/semantic_provider_unittest.cc" ]
+    sources += [
+      "platform/fuchsia/accessibility_bridge_fuchsia_unittest.cc",
+      "platform/fuchsia/semantic_provider_unittest.cc",
+    ]
 
     deps += [
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.accessibility.semantics",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.math",
+      "//third_party/fuchsia-sdk/sdk/pkg/inspect",
       "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
       "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     ]

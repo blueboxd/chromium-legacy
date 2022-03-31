@@ -5,17 +5,16 @@
 #ifndef CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_STORAGE_DELEGATE_IMPL_H_
 #define CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_STORAGE_DELEGATE_IMPL_H_
 
-#include "base/sequence_checker.h"
-#include "content/browser/attribution_reporting/attribution_storage.h"
-#include "content/browser/attribution_reporting/storable_source.h"
-#include "content/common/content_export.h"
+#include <vector>
 
-namespace base {
-class GUID;
-class Time;
-}  // namespace base
+#include "base/sequence_checker.h"
+#include "content/browser/attribution_reporting/attribution_storage_delegate.h"
+#include "content/common/content_export.h"
+#include "content/public/browser/attribution_reporting.h"
 
 namespace content {
+
+class CommonSourceInfo;
 
 // Implementation of the storage delegate. This class handles assigning
 // report times to newly created reports. It
@@ -23,9 +22,11 @@ namespace content {
 // AttributionStorageSql, and should only be accessed on the attribution storage
 // task runner.
 class CONTENT_EXPORT AttributionStorageDelegateImpl
-    : public AttributionStorage::Delegate {
+    : public AttributionStorageDelegate {
  public:
-  explicit AttributionStorageDelegateImpl(bool debug_mode = false);
+  explicit AttributionStorageDelegateImpl(
+      AttributionNoiseMode noise_mode = AttributionNoiseMode::kDefault,
+      AttributionDelayMode delay_mode = AttributionDelayMode::kDefault);
   AttributionStorageDelegateImpl(const AttributionStorageDelegateImpl& other) =
       delete;
   AttributionStorageDelegateImpl& operator=(
@@ -37,23 +38,47 @@ class CONTENT_EXPORT AttributionStorageDelegateImpl
   ~AttributionStorageDelegateImpl() override = default;
 
   // AttributionStorageDelegate:
-  base::Time GetReportTime(const StorableSource& source,
+  base::Time GetReportTime(const CommonSourceInfo& source,
                            base::Time trigger_time) const override;
   int GetMaxAttributionsPerSource(
-      StorableSource::SourceType source_type) const override;
+      CommonSourceInfo::SourceType source_type) const override;
   int GetMaxSourcesPerOrigin() const override;
   int GetMaxAttributionsPerOrigin() const override;
-  int GetMaxAttributionDestinationsPerEventSource() const override;
-  RateLimitConfig GetRateLimits(
-      AttributionStorage::AttributionType attribution_type) const override;
+  int GetMaxDestinationsPerSourceSiteReportingOrigin() const override;
+  RateLimitConfig GetRateLimits() const override;
   base::TimeDelta GetDeleteExpiredSourcesFrequency() const override;
   base::TimeDelta GetDeleteExpiredRateLimitsFrequency() const override;
   base::GUID NewReportID() const override;
+  absl::optional<OfflineReportDelayConfig> GetOfflineReportDelayConfig()
+      const override;
+  void ShuffleReports(std::vector<AttributionReport>& reports) const override;
+  RandomizedResponse GetRandomizedResponse(
+      const CommonSourceInfo& source) const override;
+
+  // Generates fake reports using a random "stars and bars" sequence index of a
+  // possible output of the API.
+  //
+  // Exposed for testing.
+  std::vector<FakeReport> GetRandomFakeReports(
+      const CommonSourceInfo& source) const;
+
+  // Generates fake reports from the "stars and bars" sequence index of a
+  // possible output of the API. This output is determined by the following
+  // algorithm:
+  // 1. Find all stars before the first bar. These stars represent suppressed
+  //    reports.
+  // 2. For all other stars, count the number of bars that precede them. Each
+  //    star represents a report where the reporting window and trigger data is
+  //    uniquely determined by that number.
+  //
+  // Exposed for testing.
+  std::vector<FakeReport> GetFakeReportsForSequenceIndex(
+      const CommonSourceInfo& source,
+      int random_stars_and_bars_sequence_index) const;
 
  private:
-  // Whether the API is running in debug mode, meaning that there should be
-  // no delays or noise added to reports.
-  const bool debug_mode_;
+  const AttributionNoiseMode noise_mode_;
+  const AttributionDelayMode delay_mode_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

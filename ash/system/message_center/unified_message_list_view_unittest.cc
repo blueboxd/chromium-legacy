@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/message_center/message_center.h"
@@ -477,7 +478,8 @@ TEST_P(ParameterizedUnifiedMessageListViewTest, RemovingNotificationAnimation) {
   EXPECT_EQ(0, message_list_view()->GetPreferredSize().height());
 }
 
-TEST_P(ParameterizedUnifiedMessageListViewTest, ResetAnimation) {
+// Flaky: https://crbug.com/1292774.
+TEST_P(ParameterizedUnifiedMessageListViewTest, DISABLED_ResetAnimation) {
   auto id0 = AddNotification();
   auto id1 = AddNotification();
   CreateMessageListView();
@@ -665,7 +667,9 @@ TEST_P(ParameterizedUnifiedMessageListViewTest,
   EXPECT_EQ(1u, message_list_view()->children().size());
 }
 
-TEST_P(ParameterizedUnifiedMessageListViewTest, UserSwipesAwayNotification) {
+// Flaky: https://crbug.com/1292701.
+TEST_P(ParameterizedUnifiedMessageListViewTest,
+       DISABLED_UserSwipesAwayNotification) {
   // Show message list with two notifications.
   AddNotification();
   auto id1 = AddNotification();
@@ -899,8 +903,9 @@ TEST_F(RefreshedUnifiedMessageListView, RemoveNotificationDuringCollapse) {
 
 // Tests that expanding a notification at various stages while it is being
 // closed does not result in an animation.
+// TODO(crbug.com/1292775): Test is flaky.
 TEST_F(RefreshedUnifiedMessageListView,
-       CollapseDuringCloseResultsInNoCollapseAnimation) {
+       DISABLED_CollapseDuringCloseResultsInNoCollapseAnimation) {
   auto id1 = AddNotification(/*pinned=*/false, /*expandable=*/true);
   AddNotification(/*pinned=*/false, /*expandable=*/true);
   CreateMessageListView();
@@ -936,7 +941,9 @@ TEST_F(RefreshedUnifiedMessageListView,
 
 // Tests that collapsing a notification while it is being moved automatically
 // completes both animations.
-TEST_F(RefreshedUnifiedMessageListView, CollapseDuringMoveNoAnimation) {
+// TODO(crbug.com/1292816): Test is flaky.
+TEST_F(RefreshedUnifiedMessageListView,
+       DISABLED_CollapseDuringMoveNoAnimation) {
   auto to_be_removed_notification =
       AddNotification(/*pinned=*/false, /*expandable=*/true);
   auto to_be_collapsed_notification =

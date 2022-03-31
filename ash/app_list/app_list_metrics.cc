@@ -114,6 +114,16 @@ constexpr char kAppListAppLaunchedHomecherAllApps[] =
 constexpr char kAppListAppLaunchedHomecherSearch[] =
     "Apps.AppListAppLaunchedV2.HomecherSearch";
 
+constexpr char kClamshellReorderAnimationSmoothnessHistogram[] =
+    "Apps.Launcher.ProductivityReorderAnimationSmoothness.ClamshellMode";
+constexpr char kTabletReorderAnimationSmoothnessHistogram[] =
+    "Apps.Launcher.ProductivityReorderAnimationSmoothness.TabletMode";
+
+constexpr char kClamshellReorderActionHistogram[] =
+    "Apps.Launcher.ProductivityReorderAction.ClamshellMode";
+constexpr char kTabletReorderActionHistogram[] =
+    "Apps.Launcher.ProductivityReorderAction.TabletMode";
+
 // The prefix for all the variants that track how long the app list is kept
 // open by open method. Suffix is decided in `GetAppListOpenMethod`
 constexpr char kAppListOpenTimePrefix[] = "Apps.AppListOpenTime.";
@@ -470,6 +480,29 @@ void ReportCardifiedSmoothness(bool is_entering_cardified, int smoothness) {
     UMA_HISTOGRAM_PERCENTAGE(kCardifiedStateAnimationSmoothnessExit,
                              smoothness);
   }
+}
+
+// Reports reorder animation smoothness.
+void ReportReorderAnimationSmoothness(bool in_tablet, int smoothness) {
+  if (in_tablet) {
+    base::UmaHistogramPercentage(kTabletReorderAnimationSmoothnessHistogram,
+                                 smoothness);
+  } else {
+    base::UmaHistogramPercentage(kClamshellReorderAnimationSmoothnessHistogram,
+                                 smoothness);
+  }
+}
+
+void RecordAppListSortAction(AppListSortOrder new_order, bool in_tablet) {
+  // NOTE: (1) kNameReverseAlphabetical is not used for now; (2) Resetting the
+  // sort order is not recorded here.
+  DCHECK(new_order != AppListSortOrder::kNameReverseAlphabetical &&
+         new_order != AppListSortOrder::kCustom);
+
+  if (in_tablet)
+    base::UmaHistogramEnumeration(kTabletReorderActionHistogram, new_order);
+  else
+    base::UmaHistogramEnumeration(kClamshellReorderActionHistogram, new_order);
 }
 
 }  // namespace ash

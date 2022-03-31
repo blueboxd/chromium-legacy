@@ -31,7 +31,8 @@
   <cr-toggle id="enableBluetoothToggle"
       checked="{{isBluetoothToggleOn_}}"
       disabled="[[isToggleDisabled_(systemProperties.systemState)]]"
-      aria-label="$i18n{bluetoothToggleA11yLabel}">
+      aria-label="$i18n{bluetoothToggleA11yLabel}"
+      deep-link-focus-id$="[[Setting.kBluetoothOnOff]]">
   </cr-toggle>
 </div>
 <div class="device-lists-separator"></div>
@@ -70,6 +71,10 @@
     </div>
   </template>
 </div>
-<template is="dom-if" if="[[isFastPairAllowed_]]">
-  <settings-fast-pair-toggle prefs="{{prefs}}"></settings-fast-pair-toggle>
+<template is="dom-if"
+    if="[[isFastPairToggleVisible_(isFastPairSupportedByDevice_)]]">
+  <settings-fast-pair-toggle prefs="{{prefs}}"
+      id="enableFastPairToggle"
+      deep-link-focus-id$="[[Setting.kFastPairOnOff]]">
+  </settings-fast-pair-toggle>
 </template>

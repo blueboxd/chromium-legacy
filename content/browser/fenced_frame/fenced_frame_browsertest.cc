@@ -93,7 +93,8 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, CreateFromScriptAndDestroy) {
   EXPECT_TRUE(fenced_frame_root_node->IsInFencedFrameTree());
 
   EXPECT_TRUE(ExecJs(primary_rfh.get(),
-                     "document.querySelector('fencedframe').remove();"));
+                     "const ff = document.querySelector('fencedframe');\
+                     ff.remove();"));
   ASSERT_TRUE(fenced_frame_rfh.WaitUntilRenderFrameDeleted());
 
   EXPECT_TRUE(primary_rfh->GetFencedFrames().empty());
@@ -144,6 +145,40 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, Navigation) {
   EXPECT_EQ(fenced_frame_url, fenced_frame_rfh->GetLastCommittedURL());
   EXPECT_EQ(url::Origin::Create(fenced_frame_url),
             fenced_frame_rfh->GetLastCommittedOrigin());
+}
+
+IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, AboutBlankNavigation) {
+  const GURL main_url =
+      embedded_test_server()->GetURL("a.test", "/title1.html");
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  RenderFrameHostImpl* primary_rfh = primary_main_frame_host();
+
+  const GURL fenced_frame_url = embedded_test_server()->GetURL(
+      "fencedframe.test", "/fenced_frames/title1.html");
+  fenced_frame_test_helper().CreateFencedFrame(primary_rfh, fenced_frame_url);
+
+  std::vector<FencedFrame*> fenced_frames = primary_rfh->GetFencedFrames();
+  ASSERT_EQ(1ul, fenced_frames.size());
+  FencedFrame* fenced_frame = fenced_frames.back();
+
+  // Exepct the origin is correct.
+  EXPECT_EQ(url::Origin::Create(fenced_frame_url),
+            EvalJs(fenced_frame->GetInnerRoot(), "self.origin;"));
+
+  // Assigning the location from the parent cause the SiteInstance
+  // to be calculated incorrectly and crash. see https://crbug.com/1268238.
+  // We can't use `NavigateFrameInFencedFrameTree` because that navigates
+  // from the inner frame tree and we want the navigation to occur from
+  // the outer frame tree.
+  EXPECT_TRUE(
+      ExecJs(primary_rfh,
+             "document.querySelector('fencedframe').src = 'about:blank';"));
+
+  fenced_frame->WaitForDidStopLoadingForTesting();
+  EXPECT_TRUE(!fenced_frame->GetInnerRoot()->IsErrorDocument());
+
+  EXPECT_EQ("null", EvalJs(fenced_frame->GetInnerRoot(), "self.origin;"));
 }
 
 IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, FrameIteration) {
@@ -235,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, CrossOriginMessagePost) {
 IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest,
                        DocumentOnLoadCompletedInPrimaryMainFrame) {
   // Initialize a MockWebContentsObserver to ensure that
-  // DocumentAvailableInMainFrame is only invoked for primary main
+  // DocumentOnLoadCompletedInPrimaryMainFrame is only invoked for primary main
   // RenderFrameHosts.
   testing::NiceMock<MockWebContentsObserver> web_contents_observer(
       web_contents());
@@ -265,28 +300,28 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest,
 }
 
 // Test that when the documents inside the fenced frame tree are loading,
-// WebContentsObserver::DocumentAvailableInMainFrame is not invoked for fenced
-// frames as it is only invoked for primary main frames.
-IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, DocumentAvailableInMainFrame) {
+// WebContentsObserver::PrimaryMainDocumentElementAvailable is not invoked for
+// fenced frames as it is only invoked for primary main frames.
+IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest,
+                       PrimaryMainDocumentElementAvailable) {
   // Initialize a MockWebContentsObserver to ensure that
-  // DocumentAvailableInMainFrame is only invoked for primary main
+  // PrimaryMainDocumentElementAvailable is only invoked for primary main
   // RenderFrameHosts.
   testing::NiceMock<MockWebContentsObserver> web_contents_observer(
       web_contents());
   testing::InSequence s;
 
   // Navigate to an initial primary page. This should result in invoking
-  // DocumentAvailableInMainFrame once.
-  EXPECT_CALL(web_contents_observer,
-              DocumentAvailableInMainFrame(primary_main_frame_host()))
+  // PrimaryMainDocumentElementAvailable once.
+  EXPECT_CALL(web_contents_observer, PrimaryMainDocumentElementAvailable())
       .Times(1);
   EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
                                          "fencedframe.test", "/title1.html")));
   RenderFrameHostImplWrapper primary_rfh(primary_main_frame_host());
 
   // Once the fenced frame completes loading, it shouldn't result in
-  // invoking DocumentAvailableInMainFrame.
-  EXPECT_CALL(web_contents_observer, DocumentAvailableInMainFrame(testing::_))
+  // invoking PrimaryMainDocumentElementAvailable.
+  EXPECT_CALL(web_contents_observer, PrimaryMainDocumentElementAvailable())
       .Times(0);
   const GURL fenced_frame_url = embedded_test_server()->GetURL(
       "fencedframe.test", "/fenced_frames/title1.html");
@@ -330,6 +365,100 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, ViewportSettings) {
   EXPECT_EQ(EvalJs(fenced_frame->GetInnerRoot(), "window.visualViewport.scale")
                 .ExtractDouble(),
             1.0);
+}
+
+// Test that FrameTree::CollectNodesForIsLoading doesn't include inner
+// WebContents nodes.
+IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, NodesForIsLoading) {
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/page_with_iframe.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  GURL fenced_frame_url(embedded_test_server()->GetURL(
+      "fencedframe.test", "/fenced_frames/title1.html"));
+
+  // 1. Navigate to an initial primary page.
+  EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
+                                         "a.com", "/page_with_iframe.html")));
+  RenderFrameHostImplWrapper primary_rfh(primary_main_frame_host());
+  FrameTree& primary_frame_tree = web_contents()->GetPrimaryFrameTree();
+
+  // 2. Create a fenced frame embedded inside primary page.
+  RenderFrameHostImplWrapper outer_fenced_frame_rfh(
+      fenced_frame_test_helper().CreateFencedFrame(primary_rfh.get(),
+                                                   fenced_frame_url));
+
+  // 3. Create a inner WebContents and attach it to the main contents. Navigate
+  // the inner web contents to an initial page.
+  WebContentsImpl* inner_contents =
+      static_cast<WebContentsImpl*>(CreateAndAttachInnerContents(
+          primary_rfh.get()->child_at(0)->current_frame_host()));
+  ASSERT_TRUE(NavigateToURLFromRenderer(inner_contents, url_b));
+
+  RenderFrameHostImpl* inner_contents_rfh = inner_contents->GetMainFrame();
+  FrameTree& inner_contents_primary_frame_tree =
+      inner_contents->GetPrimaryFrameTree();
+  ASSERT_TRUE(inner_contents_rfh);
+
+  // 4. Create a fenced frame embedded inside inner WebContents.
+  RenderFrameHostImplWrapper inner_fenced_frame_rfh(
+      fenced_frame_test_helper().CreateFencedFrame(inner_contents_rfh,
+                                                   fenced_frame_url));
+
+  // 5. FrameTree::CollectNodesForIsLoading should only include primary_rfh and
+  // outer_fenced_frame_rfh when checked against outer delegate FrameTree.
+  std::vector<RenderFrameHostImpl*> outer_web_contents_frames;
+  for (auto* ftn :
+       web_contents()->GetPrimaryFrameTree().CollectNodesForIsLoading()) {
+    outer_web_contents_frames.push_back(ftn->current_frame_host());
+  }
+  EXPECT_EQ(outer_web_contents_frames.size(), 2u);
+  EXPECT_THAT(outer_web_contents_frames,
+              testing::UnorderedElementsAre(primary_rfh.get(),
+                                            outer_fenced_frame_rfh.get()));
+
+  // 6. FrameTree::CollectNodesForIsLoading should only include
+  // inner_contents_rfh and inner_fenced_frame_rfh when checked against inner
+  // delegate FrameTree.
+  std::vector<RenderFrameHostImpl*> inner_web_contents_frames;
+  for (auto* ftn :
+       inner_contents->GetPrimaryFrameTree().CollectNodesForIsLoading()) {
+    inner_web_contents_frames.push_back(ftn->current_frame_host());
+  }
+  EXPECT_EQ(inner_web_contents_frames.size(), 2u);
+  EXPECT_THAT(inner_web_contents_frames,
+              testing::UnorderedElementsAre(inner_contents_rfh,
+                                            inner_fenced_frame_rfh.get()));
+
+  // 7. Check that FrameTree::LoadingTree returns the correct FrameTree for both
+  // outer and inner WebContents frame trees.
+  EXPECT_NE(primary_frame_tree.LoadingTree(),
+            inner_contents_primary_frame_tree.LoadingTree());
+  EXPECT_EQ(primary_frame_tree.LoadingTree(), &primary_frame_tree);
+  EXPECT_EQ(inner_contents_primary_frame_tree.LoadingTree(),
+            &inner_contents_primary_frame_tree);
+}
+
+IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest,
+                       NoErrorPageOnEmptyFrameHttpError) {
+  const GURL kInitialUrl(
+      embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL kEmpty404Url(
+      embedded_test_server()->GetURL("a.com", "/fenced_frames/empty404.html"));
+
+  // Load an initial page.
+  EXPECT_TRUE(NavigateToURL(shell(), kInitialUrl));
+  RenderFrameHostImplWrapper initial_rfh(primary_main_frame_host());
+
+  // Add a fenced frame empty page with 404 status.
+  RenderFrameHostImplWrapper fenced_frame_rfh(
+      fenced_frame_test_helper().CreateFencedFrame(initial_rfh.get(),
+                                                   kEmpty404Url));
+  ASSERT_TRUE(fenced_frame_rfh);
+
+  // Confirm no error page was generated in its place.
+  std::string contents =
+      EvalJs(fenced_frame_rfh.get(), "document.body.textContent;")
+          .ExtractString();
+  EXPECT_EQ(contents, std::string());
 }
 
 namespace {

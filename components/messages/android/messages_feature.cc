@@ -9,13 +9,16 @@
 namespace messages {
 
 const base::Feature kMessagesForAndroidAdsBlocked{
-    "MessagesForAndroidAdsBlocked", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MessagesForAndroidAdsBlocked", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMessagesForAndroidChromeSurvey{
     "MessagesForAndroidChromeSurvey", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kMessagesForAndroidInfrastructure{
     "MessagesForAndroidInfrastructure", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kMessagesForAndroidInstantApps{
+    "MessagesForAndroidInstantApps", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kMessagesForAndroidNearOomReduction{
     "MessagesForAndroidNearOomReduction", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -70,6 +73,11 @@ const base::Feature kMessagesForAndroidReduceLayoutChanges{
 bool IsAdsBlockedMessagesUiEnabled() {
   return base::FeatureList::IsEnabled(kMessagesForAndroidInfrastructure) &&
          base::FeatureList::IsEnabled(kMessagesForAndroidAdsBlocked);
+}
+
+bool IsInstantAppsMessagesUiEnabled() {
+  return base::FeatureList::IsEnabled(kMessagesForAndroidInfrastructure) &&
+         base::FeatureList::IsEnabled(kMessagesForAndroidInstantApps);
 }
 
 bool IsNearOomReductionMessagesUiEnabled() {

@@ -38,12 +38,13 @@ class MockLinkToTextMenuObserver : public LinkToTextMenuObserver {
     }
 
     DCHECK(render_frame_host);
-    return base::WrapUnique(
-        new MockLinkToTextMenuObserver(proxy, render_frame_host));
+    return base::WrapUnique(new MockLinkToTextMenuObserver(
+        proxy, render_frame_host, base::BindOnce([]() {})));
   }
   MockLinkToTextMenuObserver(RenderViewContextMenuProxy* proxy,
-                             content::RenderFrameHost* render_frame_host)
-      : LinkToTextMenuObserver(proxy, render_frame_host) {}
+                             content::RenderFrameHost* render_frame_host,
+                             CompletionCallback callback)
+      : LinkToTextMenuObserver(proxy, render_frame_host, std::move(callback)) {}
 
   void SetGenerationResults(
       std::string selector,
@@ -163,9 +164,9 @@ IN_PROC_BROWSER_TEST_F(LinkToTextMenuObserverTest, AddsCopyAndRemoveMenuItems) {
   EXPECT_EQ(2u, menu()->GetMenuSize());
   MockRenderViewContextMenu::MockMenuItem item;
 
-  // Check Copy item.
+  // Check Reshare item.
   menu()->GetMenuItem(0, &item);
-  EXPECT_EQ(IDC_CONTENT_CONTEXT_COPYLINKTOTEXT, item.command_id);
+  EXPECT_EQ(IDC_CONTENT_CONTEXT_RESHARELINKTOTEXT, item.command_id);
   EXPECT_FALSE(item.checked);
   EXPECT_FALSE(item.hidden);
   EXPECT_TRUE(item.enabled);
@@ -335,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(LinkToTextMenuObserverTest,
   params.opened_from_highlight = true;
   observer()->SetReshareSelector("hello%20world");
   InitMenu(params);
-  menu()->ExecuteCommand(IDC_CONTENT_CONTEXT_COPYLINKTOTEXT, 0);
+  menu()->ExecuteCommand(IDC_CONTENT_CONTEXT_RESHARELINKTOTEXT, 0);
 
   // Verify that the copy type metric was correctly set
   histogram_tester.ExpectTotalCount("SharedHighlights.Desktop.CopiedLinkType",

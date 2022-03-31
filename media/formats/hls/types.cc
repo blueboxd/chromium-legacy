@@ -9,7 +9,7 @@
 
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
-#include "media/formats/hls/parse_context.h"
+#include "media/formats/hls/source_string.h"
 #include "third_party/re2/src/re2/re2.h"
 
 namespace media {
@@ -19,6 +19,10 @@ namespace types {
 namespace {
 re2::StringPiece to_re2(base::StringPiece str) {
   return re2::StringPiece(str.data(), str.size());
+}
+
+re2::StringPiece to_re2(SourceString str) {
+  return to_re2(str.Str());
 }
 
 // Returns the substring matching a valid AttributeName, advancing `source_str`
@@ -305,6 +309,18 @@ ParseStatus AttributeMap::FillUntilError(AttributeListIterator* iter) {
     // discover common unhandled attributes. Since we can't plug arbitrary
     // strings into UMA this will require some additional design work.
   }
+}
+
+ParseStatus::Or<VariableName> ParseVariableName(SourceString source_str) {
+  static const base::NoDestructor<re2::RE2> variable_name_regex(
+      "[a-zA-Z0-9_-]+");
+
+  // This source_str must match completely
+  if (!re2::RE2::FullMatch(to_re2(source_str), *variable_name_regex)) {
+    return ParseStatusCode::kMalformedVariableName;
+  }
+
+  return VariableName{.name = source_str.Str()};
 }
 
 }  // namespace types

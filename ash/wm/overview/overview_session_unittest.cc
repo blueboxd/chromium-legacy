@@ -21,6 +21,8 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/drag_drop/drag_drop_controller.h"
+#include "ash/frame_throttler/frame_throttling_controller.h"
+#include "ash/frame_throttler/mock_frame_throttling_observer.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_properties.h"
@@ -28,6 +30,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
+#include "ash/style/close_button.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_window_builder.h"
 #include "ash/wm/desks/desks_bar_view.h"
@@ -98,7 +101,6 @@
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/transform_util.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -3219,6 +3221,158 @@ TEST_P(OverviewSessionTest, ClosingTransientTree) {
   EXPECT_TRUE(child_widget_observer.widget_destroyed());
 }
 
+TEST_P(OverviewSessionTest, FrameThrottlingBrowser) {
+  FrameThrottlingController* frame_throttling_controller =
+      Shell::Get()->frame_throttling_controller();
+  const int window_count = 5;
+  std::vector<viz::FrameSinkId> ids{
+      {1u, 1u}, {2u, 2u}, {3u, 3u}, {4u, 4u}, {5u, 5u}};
+  std::vector<std::unique_ptr<aura::Window>> windows;
+  windows.reserve(window_count + 1);
+  for (int i = 0; i < window_count; ++i) {
+    windows.emplace_back(
+        CreateTestWindowInShellWithDelegate(nullptr, -1, gfx::Rect()));
+    windows[i]->SetProperty(aura::client::kAppType,
+                            static_cast<int>(AppType::BROWSER));
+    windows[i]->SetEmbedFrameSinkId(ids[i]);
+  }
+
+  ToggleOverview();
+  EXPECT_THAT(frame_throttling_controller->GetFrameSinkIdsToThrottle(),
+              testing::UnorderedElementsAreArray(ids));
+
+  // Add a new window to overview.
+  std::unique_ptr<aura::Window> new_window(
+      CreateTestWindowInShellWithDelegate(nullptr, -1, gfx::Rect()));
+  constexpr viz::FrameSinkId new_window_id{6u, 6u};
+  new_window->SetEmbedFrameSinkId(new_window_id);
+  new_window->SetProperty(aura::client::kAppType,
+                          static_cast<int>(AppType::BROWSER));
+  OverviewGrid* grid = GetOverviewSession()->grid_list()[0].get();
+  grid->AppendItem(new_window.get(), /*reposition=*/false, /*animate=*/false,
+                   /*use_spawn_animation=*/false);
+  windows.push_back(std::move(new_window));
+  ids.push_back(new_window_id);
+  EXPECT_THAT(frame_throttling_controller->GetFrameSinkIdsToThrottle(),
+              testing::UnorderedElementsAreArray(ids));
+
+  // Remove windows one by one.
+  for (int i = 0; i < window_count + 1; ++i) {
+    aura::Window* window = windows[i].get();
+    ids.erase(ids.begin());
+    OverviewItem* item = grid->GetOverviewItemContaining(window);
+    grid->RemoveItem(item, /*item_destroying=*/false, /*reposition=*/false);
+    EXPECT_THAT(frame_throttling_controller->GetFrameSinkIdsToThrottle(),
+                testing::UnorderedElementsAreArray(ids));
+  }
+}
+
+TEST_P(OverviewSessionTest, FrameThrottlingLacros) {
+  FrameThrottlingController* frame_throttling_controller =
+      Shell::Get()->frame_throttling_controller();
+  const int window_count = 5;
+  std::vector<viz::FrameSinkId> ids{
+      {1u, 1u}, {2u, 2u}, {3u, 3u}, {4u, 4u}, {5u, 5u}};
+  std::vector<std::unique_ptr<aura::Window>> windows;
+  windows.reserve(window_count + 1);
+  for (int i = 0; i < window_count; ++i) {
+    windows.emplace_back(
+        CreateTestWindowInShellWithDelegate(nullptr, -1, gfx::Rect()));
+    windows[i]->SetProperty(aura::client::kAppType,
+                            static_cast<int>(AppType::LACROS));
+    windows[i]->SetEmbedFrameSinkId(ids[i]);
+  }
+  for (auto& w : windows)
+    EXPECT_FALSE(w->GetProperty(ash::kFrameRateThrottleKey));
+
+  ToggleOverview();
+  EXPECT_THAT(frame_throttling_controller->GetFrameSinkIdsToThrottle(),
+              testing::UnorderedElementsAreArray(ids));
+  for (auto& w : windows)
+    EXPECT_TRUE(w->GetProperty(ash::kFrameRateThrottleKey));
+
+  // Add a new window to overview.
+  std::unique_ptr<aura::Window> new_window(
+      CreateTestWindowInShellWithDelegate(nullptr, -1, gfx::Rect()));
+  constexpr viz::FrameSinkId new_window_id{6u, 6u};
+  new_window->SetEmbedFrameSinkId(new_window_id);
+  new_window->SetProperty(aura::client::kAppType,
+                          static_cast<int>(AppType::LACROS));
+  OverviewGrid* grid = GetOverviewSession()->grid_list()[0].get();
+  grid->AppendItem(new_window.get(), /*reposition=*/false, /*animate=*/false,
+                   /*use_spawn_animation=*/false);
+  windows.push_back(std::move(new_window));
+  ids.push_back(new_window_id);
+  EXPECT_THAT(frame_throttling_controller->GetFrameSinkIdsToThrottle(),
+              testing::UnorderedElementsAreArray(ids));
+  for (auto& w : windows)
+    EXPECT_TRUE(w->GetProperty(ash::kFrameRateThrottleKey));
+
+  // Remove windows one by one.
+  for (int i = 0; i < window_count + 1; ++i) {
+    aura::Window* window = windows[i].get();
+    ids.erase(ids.begin());
+    OverviewItem* item = grid->GetOverviewItemContaining(window);
+    grid->RemoveItem(item, /*item_destroying=*/false, /*reposition=*/false);
+    EXPECT_THAT(frame_throttling_controller->GetFrameSinkIdsToThrottle(),
+                testing::UnorderedElementsAreArray(ids));
+    EXPECT_FALSE(window->GetProperty(ash::kFrameRateThrottleKey));
+  }
+}
+
+TEST_P(OverviewSessionTest, FrameThrottlingArc) {
+  testing::NiceMock<MockFrameThrottlingObserver> observer;
+  FrameThrottlingController* frame_throttling_controller =
+      Shell::Get()->frame_throttling_controller();
+  uint8_t throttled_fps = frame_throttling_controller->throttled_fps();
+  frame_throttling_controller->AddArcObserver(&observer);
+
+  const int window_count = 5;
+  std::vector<std::unique_ptr<aura::Window>> windows;
+  windows.reserve(window_count + 1);
+  for (int i = 0; i < window_count; ++i) {
+    windows.emplace_back(
+        CreateTestWindowInShellWithDelegate(nullptr, -1, gfx::Rect()));
+    windows[i]->SetProperty(aura::client::kAppType,
+                            static_cast<int>(AppType::ARC_APP));
+  }
+
+  std::vector<aura::Window*> windows_to_throttle(window_count, nullptr);
+  std::transform(windows.begin(), windows.end(), windows_to_throttle.begin(),
+                 [](std::unique_ptr<aura::Window>& w) { return w.get(); });
+  EXPECT_CALL(observer, OnThrottlingStarted(testing::UnorderedElementsAreArray(
+                                                windows_to_throttle),
+                                            throttled_fps));
+  ToggleOverview();
+
+  // Add a new window to overview.
+  std::unique_ptr<aura::Window> new_window(
+      CreateTestWindowInShellWithDelegate(nullptr, -1, gfx::Rect()));
+  new_window->SetProperty(aura::client::kAppType,
+                          static_cast<int>(AppType::ARC_APP));
+  windows_to_throttle.push_back(new_window.get());
+  EXPECT_CALL(observer, OnThrottlingEnded());
+  EXPECT_CALL(observer, OnThrottlingStarted(testing::UnorderedElementsAreArray(
+                                                windows_to_throttle),
+                                            throttled_fps));
+  OverviewGrid* grid = GetOverviewSession()->grid_list()[0].get();
+  grid->AppendItem(new_window.get(), /*reposition=*/false, /*animate=*/false,
+                   /*use_spawn_animation=*/false);
+  windows.push_back(std::move(new_window));
+
+  // Remove windows one by one. Once one window is out of the overview grid, no
+  // more windows will be throttled.
+  for (int i = 0; i < window_count + 1; ++i) {
+    aura::Window* window = windows[i].get();
+    if (i == 0)
+      EXPECT_CALL(observer, OnThrottlingEnded());
+    EXPECT_CALL(observer, OnThrottlingStarted(testing::_, testing::_)).Times(0);
+    OverviewItem* item = grid->GetOverviewItemContaining(window);
+    grid->RemoveItem(item, /*item_destroying=*/false, /*reposition=*/false);
+  }
+  frame_throttling_controller->RemoveArcObserver(&observer);
+}
+
 INSTANTIATE_TEST_SUITE_P(All, OverviewSessionTest, testing::Bool());
 
 class TabletModeOverviewSessionTest : public OverviewTestBase {
@@ -4254,6 +4408,7 @@ TEST_F(SplitViewOverviewSessionTest, OverviewDragControllerBehavior) {
   ui::GestureConfiguration* gesture_config =
       ui::GestureConfiguration::GetInstance();
   gesture_config->set_long_press_time_in_ms(1);
+  gesture_config->set_short_press_time(base::Milliseconds(1));
   gesture_config->set_show_press_delay_in_ms(1);
 
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
@@ -5175,6 +5330,7 @@ TEST_F(SplitViewOverviewSessionTest,
   ui::GestureConfiguration* gesture_config =
       ui::GestureConfiguration::GetInstance();
   gesture_config->set_long_press_time_in_ms(1);
+  gesture_config->set_short_press_time(base::Milliseconds(1));
   gesture_config->set_show_press_delay_in_ms(1);
 
   std::unique_ptr<aura::Window> snapped_window = CreateTestWindow();

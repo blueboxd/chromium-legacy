@@ -40,6 +40,8 @@
 namespace autofill {
 
 class AutofillPopupControllerImpl;
+struct VirtualCardEnrollmentFields;
+class VirtualCardEnrollmentManager;
 
 // Chrome implementation of AutofillClient.
 class ChromeAutofillClient
@@ -96,6 +98,12 @@ class ChromeAutofillClient
           confirm_unmask_challenge_option_callback,
       base::OnceClosure cancel_unmasking_closure) override;
   void DismissUnmaskAuthenticatorSelectionDialog(bool server_success) override;
+  raw_ptr<VirtualCardEnrollmentManager> GetVirtualCardEnrollmentManager()
+      override;
+  void ShowVirtualCardEnrollDialog(
+      const raw_ptr<VirtualCardEnrollmentFields> virtual_card_enrollment_fields,
+      base::OnceClosure accept_virtual_card_callback,
+      base::OnceClosure decline_virtual_card_callback) override;
 #if !BUILDFLAG(IS_ANDROID)
   std::vector<std::string> GetAllowedMerchantsForVirtualCards() override;
   std::vector<std::string> GetAllowedBinRangesForVirtualCards() override;
@@ -162,8 +170,9 @@ class ChromeAutofillClient
   void UpdatePopup(const std::vector<Suggestion>& suggestions,
                    PopupType popup_type) override;
   void HideAutofillPopup(PopupHidingReason reason) override;
-  void ShowOfferNotificationIfApplicable(
-      const AutofillOfferData* offer) override;
+  void UpdateOfferNotification(const AutofillOfferData* offer,
+                               bool notification_has_been_shown) override;
+  void DismissOfferNotification() override;
   void OnVirtualCardDataAvailable(
       const std::u16string& masked_card_identifier_string,
       const CreditCard* credit_card,
@@ -175,6 +184,7 @@ class ChromeAutofillClient
       bool show_confirmation_before_closing) override;
   bool IsAutofillAssistantShowing() override;
   bool IsAutocompleteEnabled() override;
+  bool IsPasswordManagerEnabled() override;
   void PropagateAutofillPredictions(
       content::RenderFrameHost* rfh,
       const std::vector<FormStructure*>& forms) override;

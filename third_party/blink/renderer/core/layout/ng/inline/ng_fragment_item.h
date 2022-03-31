@@ -180,6 +180,10 @@ class CORE_EXPORT NGFragmentItem {
     return GetLayoutObject();
   }
 
+  bool IsRelayoutBoundary() const {
+    return layout_object_->IsRelayoutBoundary();
+  }
+
   wtf_size_t DeltaToNextForSameLayoutObject() const {
     return delta_to_next_for_same_layout_object_;
   }
@@ -251,8 +255,9 @@ class CORE_EXPORT NGFragmentItem {
     return nullptr;
   }
 
-  // Returns block of block-in-inline.
-  LayoutBlock& BlockInInline() const;
+  // Returns block of block-in-inline. Note: We can have LayoutBlock and
+  // LayoutImage. See http://crbug.com/1295087
+  LayoutObject& BlockInInline() const;
 
   bool HasNonVisibleOverflow() const;
   bool IsScrollContainer() const;

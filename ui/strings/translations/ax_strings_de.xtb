@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="1018939186200882850">Menüpunkt</translation>
-<translation id="10623998915015855">Ein-/Aus-Schaltfläche</translation>
+<translation id="10623998915015855">Schaltfläche zum Umschalten</translation>
 <translation id="1188858454923323853">ergänzend</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1206693055195146388">Schieberegler</translation>
@@ -13,9 +13,9 @@
 <translation id="1359897965706325498">Banner</translation>
 <translation id="1589122976691792535">Region</translation>
 <translation id="1650423536718072820">Textzitat</translation>
-<translation id="1806710327868736751">alert_dialog</translation>
 <translation id="1821985195704844674">Baumraster</translation>
 <translation id="1823704031293214298">Fußzeile</translation>
+<translation id="1838681052457320736">Dialogfeld für eine Benachrichtigung</translation>
 <translation id="1842960171412779397">auswählen</translation>
 <translation id="190587075670221089">Löschen</translation>
 <translation id="1907737156431278478">Beispiel</translation>

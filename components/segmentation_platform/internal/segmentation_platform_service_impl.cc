@@ -18,12 +18,14 @@
 #include "components/leveldb_proto/public/shared_proto_database_client_list.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/segmentation_platform/internal/constants.h"
+#include "components/segmentation_platform/internal/data_collection/training_data_collector.h"
 #include "components/segmentation_platform/internal/database/database_maintenance_impl.h"
 #include "components/segmentation_platform/internal/database/metadata_utils.h"
 #include "components/segmentation_platform/internal/database/segment_info_database.h"
 #include "components/segmentation_platform/internal/database/signal_database_impl.h"
 #include "components/segmentation_platform/internal/database/signal_storage_config.h"
 #include "components/segmentation_platform/internal/execution/feature_aggregator_impl.h"
+#include "components/segmentation_platform/internal/execution/feature_list_query_processor.h"
 #include "components/segmentation_platform/internal/execution/model_execution_manager.h"
 #include "components/segmentation_platform/internal/execution/model_execution_manager_factory.h"
 #include "components/segmentation_platform/internal/platform_options.h"
@@ -38,6 +40,7 @@
 #include "components/segmentation_platform/internal/signals/signal_filter_processor.h"
 #include "components/segmentation_platform/internal/signals/user_action_signal_handler.h"
 #include "components/segmentation_platform/internal/stats.h"
+#include "components/segmentation_platform/internal/ukm_data_manager.h"
 #include "components/segmentation_platform/public/config.h"
 
 using optimization_guide::proto::OptimizationTarget;
@@ -56,6 +59,7 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
     optimization_guide::OptimizationGuideModelProvider* model_provider,
     leveldb_proto::ProtoDatabaseProvider* db_provider,
     const base::FilePath& storage_dir,
+    UkmDataManager* ukm_data_manager,
     PrefService* pref_service,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     base::Clock* clock,
@@ -73,6 +77,7 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
               leveldb_proto::ProtoDbType::SIGNAL_STORAGE_CONFIG_DATABASE,
               storage_dir.Append(kSignalStorageConfigDBName),
               task_runner),
+          ukm_data_manager,
           model_provider,
           pref_service,
           task_runner,
@@ -85,6 +90,7 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
     std::unique_ptr<leveldb_proto::ProtoDatabase<proto::SignalData>> signal_db,
     std::unique_ptr<leveldb_proto::ProtoDatabase<proto::SignalStorageConfigs>>
         signal_storage_config_db,
+    UkmDataManager* ukm_data_manager,
     optimization_guide::OptimizationGuideModelProvider* model_provider,
     PrefService* pref_service,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
@@ -94,7 +100,9 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
       task_runner_(task_runner),
       clock_(clock),
       platform_options_(PlatformOptions::CreateDefault()),
-      configs_(std::move(configs)) {
+      configs_(std::move(configs)),
+      ukm_data_manager_(ukm_data_manager) {
+  ukm_data_manager_->AddRef();
   // Construct databases.
   segment_info_database_ =
       std::make_unique<SegmentInfoDatabase>(std::move(segment_db));
@@ -150,7 +158,9 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
       weak_ptr_factory_.GetWeakPtr()));
 }
 
-SegmentationPlatformServiceImpl::~SegmentationPlatformServiceImpl() = default;
+SegmentationPlatformServiceImpl::~SegmentationPlatformServiceImpl() {
+  ukm_data_manager_->RemoveRef();
+}
 
 void SegmentationPlatformServiceImpl::GetSelectedSegment(
     const std::string& segmentation_key,
@@ -216,10 +226,16 @@ void SegmentationPlatformServiceImpl::MaybeRunPostInitializationRoutines() {
     return;
   }
 
+  feature_list_query_processor_ = std::make_unique<FeatureListQueryProcessor>(
+      signal_database_.get(), std::make_unique<FeatureAggregatorImpl>());
+
+  training_data_collector_ = std::make_unique<TrainingDataCollector>(
+      feature_list_query_processor_.get());
+
   model_execution_manager_ = CreateModelExecutionManager(
       model_provider_, task_runner_, all_segment_ids_, clock_,
       segment_info_database_.get(), signal_database_.get(),
-      std::make_unique<FeatureAggregatorImpl>(),
+      feature_list_query_processor_.get(),
       base::BindRepeating(
           &SegmentationPlatformServiceImpl::OnSegmentationModelUpdated,
           weak_ptr_factory_.GetWeakPtr()));

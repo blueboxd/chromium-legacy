@@ -6,10 +6,11 @@
 
 #include <utility>
 
-#include "ash/grit/ash_media_app_resources.h"
+#include "ash/webui/grit/ash_media_app_resources.h"
 #include "ash/webui/media_app_ui/media_app_page_handler.h"
 #include "ash/webui/media_app_ui/url_constants.h"
 #include "ash/webui/web_applications/webui_test_prod_util.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/grit/chromeos_media_app_bundle_resources.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -36,7 +37,13 @@ content::WebUIDataSource* CreateHostDataSource() {
       content::WebUIDataSource::Create(kChromeUIMediaAppHost);
 
   // Add resources from ash_media_app_resources.pak.
-  source->SetDefaultResource(IDR_MEDIA_APP_INDEX_HTML);
+  // TODO(b/218419680): Remove index_dark_light_html when the dark/light flag is
+  // no longer needed.
+  if (chromeos::features::IsDarkLightModeEnabled()) {
+    source->SetDefaultResource(IDR_MEDIA_APP_INDEX_DARK_LIGHT_HTML);
+  } else {
+    source->SetDefaultResource(IDR_MEDIA_APP_INDEX_HTML);
+  }
   source->AddResourcePath("launch.js", IDR_MEDIA_APP_LAUNCH_JS);
 
   source->AddLocalizedStrings(kLocalizedStrings);
@@ -64,6 +71,8 @@ content::WebUIDataSource* CreateHostDataSource() {
   source->AddResourcePath("system_assets/app_icon_256.png",
                           IDR_MEDIA_APP_GALLERY_ICON_256_PNG);
   // Favicons.
+  source->AddResourcePath("system_assets/pdf_icon.svg",
+                          IDR_MEDIA_APP_PDF_ICON_SVG);
   source->AddResourcePath("system_assets/video_icon.svg",
                           IDR_MEDIA_APP_VIDEO_ICON_SVG);
   source->AddResourcePath("system_assets/image_icon.svg",

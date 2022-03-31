@@ -41,12 +41,13 @@ class ResolutionNotificationControllerTest
 
   std::u16string ExpectedNotificationMessage(int64_t display_id,
                                              const gfx::Size& new_resolution,
-                                             float new_refresh_rate) {
+                                             float new_refresh_rate,
+                                             uint16_t timeout_count) {
     const std::u16string display_name =
         base::UTF8ToUTF16(display_manager()->GetDisplayNameForId(display_id));
-    const std::u16string countdown =
-        ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
-                               ui::TimeFormat::LENGTH_LONG, base::Seconds(15));
+    const std::u16string countdown = ui::TimeFormat::Simple(
+        ui::TimeFormat::FORMAT_DURATION, ui::TimeFormat::LENGTH_LONG,
+        base::Seconds(timeout_count));
     if (::display::features::IsListAllDisplayModesEnabled()) {
       return l10n_util::GetStringFUTF16(
           IDS_ASH_RESOLUTION_REFRESH_CHANGE_DIALOG_CHANGED, display_name,
@@ -63,12 +64,13 @@ class ResolutionNotificationControllerTest
       const gfx::Size& specified_resolution,
       float specified_refresh_rate,
       const gfx::Size& fallback_resolution,
-      float fallback_refresh_rate) {
+      float fallback_refresh_rate,
+      uint16_t timeout_count) {
     const std::u16string display_name =
         base::UTF8ToUTF16(display_manager()->GetDisplayNameForId(display_id));
-    const std::u16string countdown =
-        ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_DURATION,
-                               ui::TimeFormat::LENGTH_LONG, base::Seconds(15));
+    const std::u16string countdown = ui::TimeFormat::Simple(
+        ui::TimeFormat::FORMAT_DURATION, ui::TimeFormat::LENGTH_LONG,
+        base::Seconds(timeout_count));
     if (::display::features::IsListAllDisplayModesEnabled()) {
       return l10n_util::GetStringFUTF16(
           IDS_ASH_RESOLUTION_REFRESH_CHANGE_DIALOG_FALLBACK,
@@ -153,6 +155,10 @@ class ResolutionNotificationControllerTest
     return controller()->dialog_for_testing()->label_->GetText();
   }
 
+  static uint16_t GetTimeoutCount() {
+    return controller()->dialog_for_testing()->timeout_count_;
+  }
+
   static void ClickOnNotification() {
     controller()->dialog_for_testing()->AcceptDialog();
   }
@@ -201,7 +207,9 @@ TEST_P(ResolutionNotificationControllerTest, Basic) {
                                 gfx::Size(300, 200), 59, /*old_is_native=*/true,
                                 /*new_is_native=*/false);
   EXPECT_TRUE(IsNotificationVisible());
-  EXPECT_EQ(ExpectedNotificationMessage(id2, gfx::Size(300, 200), 59),
+
+  EXPECT_EQ(ExpectedNotificationMessage(id2, gfx::Size(300, 200), 59,
+                                        GetTimeoutCount()),
             GetNotificationMessage());
   display::ManagedDisplayMode mode;
   EXPECT_TRUE(display_manager()->GetSelectedModeForDisplayId(id2, &mode));
@@ -428,7 +436,8 @@ TEST_P(ResolutionNotificationControllerTest, Fallback) {
       gfx::Size(300, 200), 60, /*old_is_native=*/true, /*new_is_native=*/false);
   EXPECT_TRUE(IsNotificationVisible());
   EXPECT_EQ(ExpectedFallbackNotificationMessage(id2, gfx::Size(220, 210), 60,
-                                                gfx::Size(300, 200), 60),
+                                                gfx::Size(300, 200), 60,
+                                                GetTimeoutCount()),
             GetNotificationMessage());
   display::ManagedDisplayMode mode;
   EXPECT_TRUE(display_manager()->GetSelectedModeForDisplayId(id2, &mode));

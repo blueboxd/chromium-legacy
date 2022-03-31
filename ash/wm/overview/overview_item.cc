@@ -16,6 +16,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/default_color_constants.h"
 #include "ash/style/default_colors.h"
+#include "ash/style/system_shadow.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/templates/desks_templates_animations.h"
 #include "ash/wm/drag_window_controller.h"
@@ -75,8 +76,6 @@ constexpr float kClosingItemOpacity = 0.8f;
 // this fraction of size.
 constexpr float kPreCloseScale = 0.02f;
 
-constexpr int kShadowElevation = 16;
-
 // The amount of translation an item animates by when it is closed by using
 // swipe to close.
 constexpr int kSwipeToCloseCloseTranslationDp = 96;
@@ -86,6 +85,12 @@ constexpr int kSwipeToCloseCloseTranslationDp = 96;
 // outset in each dimension is on both sides, for a total of twice this much
 // change in the size of the item along that dimension.
 constexpr float kDragWindowScale = 0.05f;
+
+// The shadow types corresponding to the default and dragged states.
+constexpr SystemShadow::Type kDefaultShadowType =
+    SystemShadow::Type::kElevation12;
+constexpr SystemShadow::Type kDraggedShadowType =
+    SystemShadow::Type::kElevation24;
 
 // A self-deleting animation observer that runs the given callback when its
 // associated animation completes. Optionally takes a callback that is run when
@@ -209,18 +214,18 @@ bool OverviewItem::Contains(const aura::Window* target) const {
   return transform_window_.Contains(target);
 }
 
-void OverviewItem::HideForDesksTemplatesGrid() {
+void OverviewItem::HideForDesksTemplatesGrid(bool animate) {
   // To hide the window, we will set its layer opacity to 0. This would normally
   // also hide the window from the mini view, which we don't want. By setting a
   // property on the window, we can force it to stay visible.
   GetWindow()->SetProperty(kForceVisibleInMiniViewKey, true);
 
   DCHECK(item_widget_);
-  PerformFadeOutLayer(item_widget_->GetLayer());
+  PerformFadeOutLayer(item_widget_->GetLayer(), animate, base::DoNothing());
 
   for (aura::Window* transient_child : GetTransientTreeIterator(GetWindow())) {
     transient_child->SetProperty(kForceVisibleInMiniViewKey, true);
-    PerformFadeOutLayer(transient_child->layer());
+    PerformFadeOutLayer(transient_child->layer(), animate, base::DoNothing());
   }
 
   item_widget_event_blocker_ =
@@ -228,14 +233,14 @@ void OverviewItem::HideForDesksTemplatesGrid() {
           item_widget_->GetNativeWindow());
 }
 
-void OverviewItem::RevertHideForDesksTemplatesGrid() {
+void OverviewItem::RevertHideForDesksTemplatesGrid(bool animate) {
   // `item_widget_` may be null during shutdown if the window is minimized.
   if (item_widget_)
-    PerformFadeInLayer(item_widget_->GetLayer());
+    PerformFadeInLayer(item_widget_->GetLayer(), animate);
 
   for (aura::Window* transient_child :
        GetTransientTreeIterator(transform_window_.window())) {
-    PerformFadeInLayer(transient_child->layer());
+    PerformFadeInLayer(transient_child->layer(), animate);
   }
 
   item_widget_event_blocker_.reset();
@@ -763,6 +768,10 @@ void OverviewItem::UpdateRoundedCornersAndShadow() {
   }
 }
 
+void OverviewItem::UpdateShadowTypeForDrag(bool is_dragging) {
+  shadow_->SetType(is_dragging ? kDraggedShadowType : kDefaultShadowType);
+}
+
 void OverviewItem::OnStartingAnimationComplete() {
   DCHECK(item_widget_);
   if (transform_window_.IsMinimized()) {
@@ -1246,8 +1255,7 @@ void OverviewItem::CreateItemWidget() {
   aura::Window* widget_window = item_widget_->GetNativeWindow();
   widget_window->parent()->StackChildBelow(widget_window, GetWindow());
 
-  shadow_ = std::make_unique<ui::Shadow>();
-  shadow_->Init(kShadowElevation);
+  shadow_ = std::make_unique<SystemShadow>(kDefaultShadowType);
   item_widget_->GetLayer()->Add(shadow_->layer());
 
   overview_item_view_ =

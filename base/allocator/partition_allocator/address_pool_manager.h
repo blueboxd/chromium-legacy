@@ -23,7 +23,17 @@ namespace base {
 template <typename Type>
 struct LazyInstanceTraitsBase;
 
-namespace internal {
+}  // namespace base
+
+namespace partition_alloc {
+
+class AddressSpaceStatsDumper;
+struct AddressSpaceStats;
+struct PoolStats;
+
+}  // namespace partition_alloc
+
+namespace partition_alloc::internal {
 
 // (64bit version)
 // AddressPoolManager takes a reserved virtual address space and manages address
@@ -83,11 +93,18 @@ class BASE_EXPORT AddressPoolManager {
   }
 #endif  // !defined(PA_HAS_64_BITS_POINTERS)
 
+  void DumpStats(AddressSpaceStatsDumper* dumper);
+
  private:
   friend class AddressPoolManagerForTesting;
 
   AddressPoolManager();
   ~AddressPoolManager();
+
+  // Populates `stats` if applicable.
+  // Returns whether `stats` was populated. (They might not be, e.g.
+  // if PartitionAlloc is wholly unused in this process.)
+  bool GetStats(AddressSpaceStats* stats);
 
 #if defined(PA_HAS_64_BITS_POINTERS)
   class Pool {
@@ -107,8 +124,10 @@ class BASE_EXPORT AddressPoolManager {
     void GetUsedSuperPages(std::bitset<kMaxSuperPagesInPool>& used);
     uintptr_t GetBaseAddress();
 
+    void GetStats(PoolStats* stats);
+
    private:
-    PartitionLock lock_;
+    Lock lock_;
 
     // The bitset stores the allocation state of the address pool. 1 bit per
     // super-page: 1 = allocated, 0 = free.
@@ -132,6 +151,10 @@ class BASE_EXPORT AddressPoolManager {
     return &pools_[handle - 1];
   }
 
+  // Gets the stats for the pool identified by `handle`, if
+  // initialized.
+  void GetPoolStats(pool_handle handle, PoolStats* stats);
+
   Pool pools_[kNumPools];
 
 #endif  // defined(PA_HAS_64_BITS_POINTERS)
@@ -152,8 +175,15 @@ ALWAYS_INLINE pool_handle GetConfigurablePool() {
   return kConfigurablePoolHandle;
 }
 
-}  // namespace internal
+}  // namespace partition_alloc::internal
 
-}  // namespace base
+namespace base::internal {
+
+using ::partition_alloc::internal::AddressPoolManager;
+using ::partition_alloc::internal::GetBRPPool;
+using ::partition_alloc::internal::GetConfigurablePool;
+using ::partition_alloc::internal::GetRegularPool;
+
+}  // namespace base::internal
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_ADDRESS_POOL_MANAGER_H_

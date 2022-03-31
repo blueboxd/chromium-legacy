@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/grit/ash_sample_system_web_app_resources.h"
+#include "ash/webui/grit/ash_sample_system_web_app_resources.h"
 #include "ash/webui/sample_system_web_app_ui/url_constants.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/web_applications/system_web_app_install_utils.h"
@@ -37,6 +37,16 @@ std::unique_ptr<WebAppInstallInfo> CreateWebAppInfoForSampleSystemWebApp() {
   info->dark_mode_background_color = 0xFFff8888;
   info->display_mode = blink::mojom::DisplayMode::kStandalone;
   info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
+
+  info->share_target = apps::ShareTarget();
+  info->share_target->action =
+      GURL("chrome://sample-system-web-app/share.html");
+  {
+    apps::ShareTarget::Files icon_files;
+    icon_files.name = "icons";
+    icon_files.accept.push_back("image/x-xbitmap");
+    info->share_target->params.files.push_back(std::move(icon_files));
+  }
 
   {
     WebAppShortcutsMenuItemInfo shortcut;

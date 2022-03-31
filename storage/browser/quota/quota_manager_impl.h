@@ -49,10 +49,6 @@ class SingleThreadTaskRunner;
 class TaskRunner;
 }  // namespace base
 
-namespace quota_internals {
-class QuotaInternalsProxy;
-}  // namespace quota_internals
-
 namespace storage {
 
 class QuotaManagerProxy;
@@ -333,9 +329,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
 
   // Deletes buckets of a particular blink::mojom::StorageType with storage keys
   // that match the specified host.
+  //
+  // `callback` is always called. If this QuotaManager gets destroyed during
+  // deletion, `callback` may be called with a kErrorAbort status.
   void DeleteHostData(const std::string& host,
                       blink::mojom::StorageType type,
-                      QuotaClientTypes quota_client_types,
                       StatusCallback callback);
 
   // Queries QuotaDatabase for the bucket with `storage_key` and `bucket_name`
@@ -362,8 +360,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   void SetPersistentHostQuota(const std::string& host,
                               int64_t new_quota,
                               QuotaCallback callback);
-  void GetGlobalUsage(blink::mojom::StorageType type,
-                      GlobalUsageCallback callback);
+  void GetGlobalUsage(blink::mojom::StorageType type, UsageCallback callback);
   void GetHostUsageWithBreakdown(const std::string& host,
                                  blink::mojom::StorageType type,
                                  UsageWithBreakdownCallback callback);
@@ -441,19 +438,18 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
  private:
   friend class base::DeleteHelper<QuotaManagerImpl>;
   friend class base::RefCountedDeleteOnSequence<QuotaManagerImpl>;
-  friend class quota_internals::QuotaInternalsProxy;
   friend class MockQuotaManager;
   friend class MockQuotaClient;
   friend class QuotaManagerProxy;
   friend class QuotaManagerImplTest;
   friend class QuotaTemporaryStorageEvictor;
+  friend class UsageTrackerTest;
 
   class EvictionRoundInfoHelper;
   class UsageAndQuotaInfoGatherer;
   class GetUsageInfoTask;
   class StorageKeyGathererTask;
   class BucketDataDeleter;
-  class StorageKeyDataDeleter;
   class HostDataDeleter;
   class DumpQuotaTableHelper;
   class DumpBucketTableHelper;
@@ -534,6 +530,15 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
                                 QuotaClientTypes quota_client_types,
                                 StatusCallback callback);
 
+  // Removes the HostDataDeleter that completed its work.
+  //
+  // This method is static because it must call `delete_host_data_callback` even
+  // if the QuotaManagerImpl was destroyed.
+  static void DidDeleteHostData(base::WeakPtr<QuotaManagerImpl> quota_manager,
+                                StatusCallback delete_host_data_callback,
+                                HostDataDeleter* deleter,
+                                blink::mojom::QuotaStatusCode status_code);
+
   // Removes the BucketDataDeleter that completed its work.
   //
   // This method is static because it must call `delete_bucket_data_callback`
@@ -545,8 +550,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
 
   // Methods for eviction logic.
   void StartEviction();
-  void DeleteStorageKeyFromDatabase(const blink::StorageKey& storage_key,
-                                    blink::mojom::StorageType type);
   void DeleteBucketFromDatabase(BucketId bucket_id,
                                 base::OnceCallback<void(QuotaError)> callback);
 
@@ -605,6 +608,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
                     QuotaErrorOr<BucketInfo> result);
   void DidGetBucketForDeletion(StatusCallback callback,
                                QuotaErrorOr<BucketInfo> result);
+  void DidGetBucketForUsage(QuotaClientType client_type,
+                            int64_t delta,
+                            base::Time modification_time,
+                            base::OnceClosure callback,
+                            QuotaErrorOr<BucketInfo> result);
   void DidGetStorageKeys(GetStorageKeysCallback callback,
                          QuotaErrorOr<std::set<blink::StorageKey>> result);
   void DidGetBuckets(
@@ -621,7 +629,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
                                        int64_t available_space);
   // Used from quota-internals page to test behavior of the storage pressure
   // callback.
-  void SimulateStoragePressure(const blink::StorageKey& storage_key);
+  void SimulateStoragePressure(const url::Origin& origin_url) override;
 
   // Evaluates disk statistics to identify storage pressure
   // (low disk space availability) and starts the storage
@@ -705,7 +713,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   std::map<blink::StorageKey, QuotaOverride> devtools_overrides_;
   int next_override_handle_id_ = 0;
 
-  // Serve mojo connections for chrome://quota-internals-2 pages.
+  // Serve mojo connections for chrome://quota-internals pages.
   mojo::ReceiverSet<mojom::QuotaInternalsHandler> internals_handlers_receivers_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
@@ -757,7 +765,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   GetVolumeInfoFn get_volume_info_fn_;
 
   std::unique_ptr<EvictionRoundInfoHelper> eviction_helper_;
-  std::vector<std::unique_ptr<BucketDataDeleter>> bucket_data_deleters_;
+  std::map<HostDataDeleter*, std::unique_ptr<HostDataDeleter>>
+      host_data_deleters_;
+  std::map<BucketDataDeleter*, std::unique_ptr<BucketDataDeleter>>
+      bucket_data_deleters_;
   std::unique_ptr<StorageKeyGathererTask> storage_key_gatherer_;
 
   SEQUENCE_CHECKER(sequence_checker_);

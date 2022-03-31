@@ -168,8 +168,7 @@ void AppendDeviceState(
 
 void NetworkHandlerFailureCallback(
     NetworkingPrivateDelegate::FailureCallback callback,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
+    const std::string& error_name) {
   std::move(callback).Run(error_name);
 }
 
@@ -339,8 +338,8 @@ void NetworkingPrivateChromeOS::GetState(const std::string& guid,
     return;
   }
 
-  base::Value network_properties = base::Value::FromUniquePtrValue(
-      chromeos::network_util::TranslateNetworkStateToONC(network_state));
+  base::Value network_properties =
+      chromeos::network_util::TranslateNetworkStateToONC(network_state);
   AppendThirdPartyProviderName(&network_properties);
 
   std::move(success_callback).Run(std::move(network_properties));
@@ -494,11 +493,11 @@ void NetworkingPrivateChromeOS::GetNetworks(
       (!visible_only && network_type == ::onc::network_type::kEthernet)
           ? NetworkTypePattern::EthernetOrEthernetEAP()
           : chromeos::onc::NetworkTypePatternFromOncType(network_type);
-  std::unique_ptr<base::ListValue> network_properties_list =
+  base::Value network_properties_list =
       chromeos::network_util::TranslateNetworkListToONC(
           pattern, configured_only, visible_only, limit);
 
-  for (auto& value : network_properties_list->GetList()) {
+  for (auto& value : network_properties_list.GetListDeprecated()) {
     base::DictionaryValue* network_dict = nullptr;
     value.GetAsDictionary(&network_dict);
     DCHECK(network_dict);
@@ -506,7 +505,9 @@ void NetworkingPrivateChromeOS::GetNetworks(
       AppendThirdPartyProviderName(network_dict);
   }
 
-  std::move(success_callback).Run(std::move(network_properties_list));
+  std::move(success_callback)
+      .Run(base::ListValue::From(
+          base::Value::ToUniquePtrValue(std::move(network_properties_list))));
 }
 
 void NetworkingPrivateChromeOS::StartConnect(const std::string& guid,
@@ -724,7 +725,7 @@ NetworkingPrivateChromeOS::GetDeviceStateList() {
 
 base::Value NetworkingPrivateChromeOS::GetGlobalPolicy() {
   base::Value result(base::Value::Type::DICTIONARY);
-  const base::DictionaryValue* global_network_config =
+  const base::Value* global_network_config =
       GetManagedConfigurationHandler()->GetGlobalConfigFromPolicy(
           std::string() /* no username hash, device policy */);
   if (global_network_config)

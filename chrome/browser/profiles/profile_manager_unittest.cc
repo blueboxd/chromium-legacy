@@ -278,9 +278,8 @@ class ProfileManagerTest : public testing::Test {
     builder.SetPath(dest_path);
     builder.SetIsNewProfile(profile_is_new);
 
-    if (profile_is_child) {
-      builder.SetSupervisedUserId(supervised_users::kChildAccountSUID);
-    }
+    if (profile_is_child)
+      builder.SetIsSupervisedProfile();
 
     builder.OverridePolicyConnectorIsManagedForTesting(profile_is_managed);
     std::unique_ptr<Profile> profile = builder.Build();
@@ -1563,9 +1562,10 @@ TEST_F(ProfileManagerTest, CleanUpEphemeralProfiles) {
   EXPECT_TRUE(base::DirectoryExists(path2));
   EXPECT_EQ(profile_name2, local_state->GetString(prefs::kProfileLastUsed));
   ASSERT_EQ(1u, storage.GetNumberOfProfiles());
-  ASSERT_EQ(1u, final_last_active_profile_list->GetList().size());
-  ASSERT_EQ(path2.BaseName().MaybeAsASCII(),
-            (final_last_active_profile_list->GetList())[0].GetString());
+  ASSERT_EQ(1u, final_last_active_profile_list->GetListDeprecated().size());
+  ASSERT_EQ(
+      path2.BaseName().MaybeAsASCII(),
+      (final_last_active_profile_list->GetListDeprecated())[0].GetString());
 
   // Mark the remaining profile ephemeral and clean up.
   storage.GetAllProfilesAttributes()[0]->SetIsEphemeral(true);
@@ -1576,7 +1576,7 @@ TEST_F(ProfileManagerTest, CleanUpEphemeralProfiles) {
   EXPECT_FALSE(base::DirectoryExists(path2));
   EXPECT_EQ(0u, storage.GetNumberOfProfiles());
   EXPECT_EQ("Profile 1", local_state->GetString(prefs::kProfileLastUsed));
-  ASSERT_EQ(0u, final_last_active_profile_list->GetList().size());
+  ASSERT_EQ(0u, final_last_active_profile_list->GetListDeprecated().size());
 }
 
 TEST_F(ProfileManagerGuestTest, CleanUpOnlyEphemeralProfiles) {
@@ -1633,9 +1633,10 @@ TEST_F(ProfileManagerGuestTest, CleanUpOnlyEphemeralProfiles) {
   EXPECT_EQ(guest_profile_name,
             local_state->GetString(prefs::kProfileLastUsed));
   ASSERT_EQ(1u, storage.GetNumberOfProfiles());
-  ASSERT_EQ(2u, final_last_active_profile_list->GetList().size());
-  ASSERT_EQ(guest_path.BaseName().MaybeAsASCII(),
-            (final_last_active_profile_list->GetList())[0].GetString());
+  ASSERT_EQ(2u, final_last_active_profile_list->GetListDeprecated().size());
+  ASSERT_EQ(
+      guest_path.BaseName().MaybeAsASCII(),
+      (final_last_active_profile_list->GetListDeprecated())[0].GetString());
 }
 
 TEST_F(ProfileManagerTest, CleanUpEphemeralProfilesWithGuestLastUsedProfile) {

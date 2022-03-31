@@ -18,6 +18,7 @@
 #include "chrome/browser/web_applications/app_service/web_app_publisher_helper.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/publisher_base.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
@@ -77,7 +78,7 @@ class WebApps : public apps::PublisherBase,
   Profile* profile() const { return profile_; }
   WebAppProvider* provider() const { return provider_; }
 
-  apps::mojom::AppType app_type() { return app_type_; }
+  apps::AppType app_type() { return app_type_; }
 
   WebAppPublisherHelper& publisher_helper() { return publisher_helper_; }
 
@@ -120,22 +121,25 @@ class WebApps : public apps::PublisherBase,
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission) override;
   void OpenNativeSettings(const std::string& app_id) override;
+  void SetWindowMode(const std::string& app_id,
+                     apps::mojom::WindowMode window_mode) override;
+  void SetRunOnOsLoginMode(
+      const std::string& app_id,
+      apps::mojom::RunOnOsLoginMode run_on_os_login_mode) override;
 
   // WebAppPublisherHelper::Delegate overrides.
-  void PublishWebApps(std::vector<apps::mojom::AppPtr> mojom_apps) override;
-  void PublishWebApp(apps::mojom::AppPtr mojom_app) override;
+  void PublishWebApps(std::vector<apps::AppPtr> apps) override;
+  void PublishWebApp(apps::AppPtr app) override;
   void ModifyWebAppCapabilityAccess(
       const std::string& app_id,
       absl::optional<bool> accessing_camera,
       absl::optional<bool> accessing_microphone) override;
 
-  std::vector<std::unique_ptr<apps::App>> CreateWebApps();
+  std::vector<apps::AppPtr> CreateWebApps();
   void ConvertWebApps(std::vector<apps::mojom::AppPtr>* apps_out);
   void InitWebApps();
   void StartPublishingWebApps(
       mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote);
-  void SetWindowMode(const std::string& app_id,
-                     apps::mojom::WindowMode window_mode) override;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // apps::mojom::Publisher overrides.
@@ -178,7 +182,7 @@ class WebApps : public apps::PublisherBase,
 
   // The app type of the publisher. The app type is kSystemWeb if the web apps
   // are serving from Lacros, and the app type is kWeb for all other cases.
-  const apps::mojom::AppType app_type_;
+  const apps::AppType app_type_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   apps::InstanceRegistry* const instance_registry_;

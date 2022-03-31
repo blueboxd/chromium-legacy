@@ -568,7 +568,7 @@ class TraceEventDataSourceTest
 
     if (absolute_timestamp > 0) {
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
-      // TODO(skyostil): Implement delta timestamps.
+      // TODO(eseckler): Support microsecond encoding.
       EXPECT_EQ(packet->timestamp(), absolute_timestamp * 1000);
 #else
       EXPECT_EQ(packet->timestamp_clock_id(), kClockIdAbsolute);
@@ -576,9 +576,18 @@ class TraceEventDataSourceTest
 #endif  // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
     } else {
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
-      // TODO(skyostil): Implement delta timestamps.
-      EXPECT_LE(last_timestamp_, packet->timestamp());
-      last_timestamp_ = packet->timestamp();
+      if (packet->has_clock_snapshot()) {
+        for (auto& clock : packet->clock_snapshot().clocks()) {
+          if (clock.is_incremental()) {
+            EXPECT_LE(last_timestamp_, clock.timestamp());
+            last_timestamp_ = clock.timestamp();
+          }
+        }
+      } else if (!packet->has_timestamp_clock_id()) {
+        // Packets that don't have a timestamp_clock_id default to the
+        // incremental clock.
+        last_timestamp_ += packet->timestamp();
+      }
 #else   // !BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
       // Default to kClockIdIncremental.
       EXPECT_FALSE(packet->has_timestamp_clock_id());

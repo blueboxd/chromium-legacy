@@ -12,14 +12,9 @@ class PrefService;
 
 namespace send_tab_to_self {
 
-// If this feature is enabled, we will use signed-in, ephemeral data rather than
-// persistent sync data. Users who are signed in can use the feature regardless
-// of whether they have the sync feature enabled.
-extern const base::Feature kSendTabToSelfWhenSignedIn;
-
-// If this feature is enabled, a link to manage the user's devices will be shown
-// below the device list when sharing.
-extern const base::Feature kSendTabToSelfManageDevicesLink;
+// If this feature is enabled and a signed-out user attempts to share a tab,
+// they will see a promo to sign-in.
+extern const base::Feature kSendTabToSelfSigninPromo;
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 // If this feature is enabled, show received tabs in a new UI next to the

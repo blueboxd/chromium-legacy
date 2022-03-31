@@ -7,9 +7,10 @@
 #include "third_party/blink/public/mojom/webid/federated_auth_request.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_federated_credential_init.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_federated_credential_logout_request.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_federated_credential_logout_rps_request.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_federated_identity_provider.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/modules/credentialmanager/credential_manager_proxy.h"
 #include "third_party/blink/renderer/modules/credentialmanager/credential_manager_type_converters.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -18,17 +19,33 @@
 namespace blink {
 
 namespace {
-using mojom::blink::LogoutStatus;
+using mojom::blink::LogoutRpsStatus;
 using mojom::blink::RevokeStatus;
 
 constexpr char kFederatedCredentialType[] = "federated";
 
-void OnLogoutResponse(ScriptPromiseResolver* resolver, LogoutStatus status) {
+bool MaybeRejectDueToCSP(ContentSecurityPolicy* policy,
+                         ScriptPromiseResolver* resolver,
+                         const KURL& provider_url) {
+  if (policy->AllowConnectToSource(provider_url, provider_url,
+                                   RedirectStatus::kNoRedirect)) {
+    return true;
+  }
+
+  WTF::String error =
+      "Refused to connect to '" + provider_url.ElidedString() +
+      "' because it violates the document's Content Security Policy.";
+  resolver->Reject(MakeGarbageCollected<DOMException>(
+      DOMExceptionCode::kNetworkError, error));
+  return false;
+}
+
+void OnLogoutResponse(ScriptPromiseResolver* resolver, LogoutRpsStatus status) {
   // TODO(kenrb); There should be more thought put into how this API works.
   // Returning success or failure doesn't have a lot of meaning. If some
   // logout attempts fail and others succeed, and even different attempts
   // fail for different reasons, how does that get conveyed to the caller?
-  if (status != LogoutStatus::kSuccess) {
+  if (status != LogoutRpsStatus::kSuccess) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNetworkError, "Error logging out endpoints."));
 
@@ -104,11 +121,12 @@ bool FederatedCredential::IsFederatedCredential() const {
   return true;
 }
 
-ScriptPromise FederatedCredential::logout(
+ScriptPromise FederatedCredential::logoutRps(
     ScriptState* script_state,
-    const HeapVector<Member<FederatedCredentialLogoutRequest>>&
+    const HeapVector<Member<FederatedCredentialLogoutRpsRequest>>&
         logout_endpoints) {
-  if (!RuntimeEnabledFeatures::WebIDEnabled()) {
+  if (!RuntimeEnabledFeatures::WebIDEnabled(
+          ExecutionContext::From(script_state))) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kNotSupportedError,
@@ -119,32 +137,33 @@ ScriptPromise FederatedCredential::logout(
     return ScriptPromise();
   }
 
-  Vector<mojom::blink::LogoutRequestPtr> logout_requests;
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  ContentSecurityPolicy* policy =
+      resolver->GetExecutionContext()
+          ->GetContentSecurityPolicyForCurrentWorld();
+  Vector<mojom::blink::LogoutRpsRequestPtr> logout_requests;
   for (auto& request : logout_endpoints) {
-    auto logout_request = mojom::blink::LogoutRequest::From(*request);
+    auto logout_request = mojom::blink::LogoutRpsRequest::From(*request);
     if (!logout_request->url.IsValid()) {
-      ScriptPromise::RejectWithDOMException(
-          script_state,
-          MakeGarbageCollected<DOMException>(DOMExceptionCode::kSyntaxError,
-                                             "Invalid logout endpoint URL."));
-      return ScriptPromise();
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSyntaxError, "Invalid logout endpoint URL."));
+      return promise;
     }
+    if (!MaybeRejectDueToCSP(policy, resolver, logout_request->url))
+      return promise;
     if (logout_request->account_id.IsEmpty()) {
-      ScriptPromise::RejectWithDOMException(
-          script_state,
-          MakeGarbageCollected<DOMException>(DOMExceptionCode::kSyntaxError,
-                                             "Account ID cannot be empty."));
-      return ScriptPromise();
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kSyntaxError, "Account ID cannot be empty."));
+      return promise;
     }
     logout_requests.push_back(std::move(logout_request));
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
-
   auto* fedcm_logout_request =
-      CredentialManagerProxy::From(script_state)->FedCmLogoutRequest();
-  fedcm_logout_request->Logout(
+      CredentialManagerProxy::From(script_state)->FedCmLogoutRpsRequest();
+  fedcm_logout_request->LogoutRps(
       std::move(logout_requests),
       WTF::Bind(&OnLogoutResponse, WrapPersistent(resolver)));
   return promise;
@@ -173,6 +192,12 @@ ScriptPromise FederatedCredential::revoke(ScriptState* script_state,
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
+
+  ContentSecurityPolicy* policy =
+      resolver->GetExecutionContext()
+          ->GetContentSecurityPolicyForCurrentWorld();
+  if (!MaybeRejectDueToCSP(policy, resolver, provider_url))
+    return promise;
 
   auth_request->Revoke(provider_url, client_id, account_id,
                        WTF::Bind(&OnRevoke, WrapPersistent(resolver)));

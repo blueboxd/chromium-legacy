@@ -10,6 +10,7 @@
 #include <set>
 
 #include "base/callback_forward.h"
+#include "base/observer_list_types.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/services/storage/public/mojom/cache_storage_control.mojom-forward.h"
@@ -70,6 +71,7 @@ class FileSystemAccessEntryFactory;
 class GeneratedCodeCacheContext;
 class HostZoomLevelContext;
 class HostZoomMap;
+class InterestGroupManager;
 class NativeIOContext;
 class PlatformNotificationContext;
 class ServiceWorkerContext;
@@ -152,6 +154,7 @@ class CONTENT_EXPORT StoragePartition {
   virtual HostZoomLevelContext* GetHostZoomLevelContext() = 0;
   virtual ZoomLevelDelegate* GetZoomLevelDelegate() = 0;
   virtual PlatformNotificationContext* GetPlatformNotificationContext() = 0;
+  virtual InterestGroupManager* GetInterestGroupManager() = 0;
 
   virtual leveldb_proto::ProtoDatabaseProvider* GetProtoDatabaseProvider() = 0;
   // Must be set before the first call to GetProtoDatabaseProvider(), or a new

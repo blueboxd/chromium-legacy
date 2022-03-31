@@ -64,20 +64,20 @@ using ::testing::_;
   EXPECT_TRUE(top->subtree_property_changed());                               \
   EXPECT_TRUE(                                                                \
       base::Contains(const_cast<const LayerTreeHost*>(top->layer_tree_host()) \
-                         ->thread_unsafe_commit_state()                       \
-                         .layers_that_should_push_properties,                 \
+                         ->pending_commit_state()                             \
+                         ->layers_that_should_push_properties,                \
                      top.get()));                                             \
   EXPECT_TRUE(child->subtree_property_changed());                             \
   EXPECT_TRUE(base::Contains(                                                 \
       const_cast<const LayerTreeHost*>(child->layer_tree_host())              \
-          ->thread_unsafe_commit_state()                                      \
-          .layers_that_should_push_properties,                                \
+          ->pending_commit_state()                                            \
+          ->layers_that_should_push_properties,                               \
       child.get()));                                                          \
   EXPECT_TRUE(grand_child->subtree_property_changed());                       \
   EXPECT_TRUE(base::Contains(                                                 \
       const_cast<const LayerTreeHost*>(grand_child->layer_tree_host())        \
-          ->thread_unsafe_commit_state()                                      \
-          .layers_that_should_push_properties,                                \
+          ->pending_commit_state()                                            \
+          ->layers_that_should_push_properties,                               \
       grand_child.get()));
 
 #define EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(code_to_test) \
@@ -480,8 +480,9 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   gfx::PointF arbitrary_point_f = gfx::PointF(0.125f, 0.25f);
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
   top->SetPosition(arbitrary_point_f);
-  TransformNode* node = layer_tree_host_->property_trees()->transform_tree.Node(
-      top->transform_tree_index());
+  TransformNode* node =
+      layer_tree_host_->property_trees()->transform_tree_mutable().Node(
+          top->transform_tree_index());
   EXPECT_TRUE(node->transform_changed);
 
   commit_state = layer_tree_host_->WillCommit(/*completion=*/nullptr,
@@ -498,7 +499,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
   child->SetPosition(arbitrary_point_f);
-  node = layer_tree_host_->property_trees()->transform_tree.Node(
+  node = layer_tree_host_->property_trees()->transform_tree_mutable().Node(
       child->transform_tree_index());
   EXPECT_TRUE(node->transform_changed);
 
@@ -510,14 +511,14 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
                                     unsafe_state);
       layer_tree_host_->property_trees()->ResetAllChangeTracking());
   layer_tree_host_->CommitComplete({base::TimeTicks(), base::TimeTicks::Now()});
-  node = layer_tree_host_->property_trees()->transform_tree.Node(
+  node = layer_tree_host_->property_trees()->transform_tree_mutable().Node(
       child->transform_tree_index());
   EXPECT_FALSE(node->transform_changed);
 
   gfx::Point3F arbitrary_point_3f = gfx::Point3F(0.125f, 0.25f, 0.f);
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
   top->SetTransformOrigin(arbitrary_point_3f);
-  node = layer_tree_host_->property_trees()->transform_tree.Node(
+  node = layer_tree_host_->property_trees()->transform_tree_mutable().Node(
       top->transform_tree_index());
   EXPECT_TRUE(node->transform_changed);
 
@@ -536,7 +537,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   arbitrary_transform.Scale3d(0.1f, 0.2f, 0.3f);
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
   top->SetTransform(arbitrary_transform);
-  node = layer_tree_host_->property_trees()->transform_tree.Node(
+  node = layer_tree_host_->property_trees()->transform_tree_mutable().Node(
       top->transform_tree_index());
   EXPECT_TRUE(node->transform_changed);
 }
@@ -666,8 +667,8 @@ TEST_F(LayerTest, ReorderChildren) {
   EXPECT_EQ(child3, parent->children()[2]);
 
   // This is normally done by TreeSynchronizer::PushLayerProperties().
-  auto& unsafe_state = layer_tree_host_->GetThreadUnsafeCommitState();
-  unsafe_state.layers_that_should_push_properties.clear();
+  layer_tree_host_->GetPendingCommitState()
+      ->layers_that_should_push_properties.clear();
 
   LayerList new_children_order;
   new_children_order.emplace_back(child3);
@@ -679,8 +680,8 @@ TEST_F(LayerTest, ReorderChildren) {
   EXPECT_EQ(child2, parent->children()[2]);
 
   for (const auto& child : parent->children()) {
-    EXPECT_FALSE(base::Contains(layer_tree_host_->GetThreadUnsafeCommitState()
-                                    .layers_that_should_push_properties,
+    EXPECT_FALSE(base::Contains(layer_tree_host_->GetPendingCommitState()
+                                    ->layers_that_should_push_properties,
                                 child.get()));
     EXPECT_TRUE(child->subtree_property_changed());
   }
@@ -1364,7 +1365,7 @@ TEST_F(LayerTest, SafeOpaqueBackgroundColor) {
         layer_tree_host->set_background_color(
             host_opaque ? SK_ColorRED : SK_ColorTRANSPARENT);
 
-        layer_tree_host->property_trees()->needs_rebuild = true;
+        layer_tree_host->property_trees()->set_needs_rebuild(true);
         layer_tree_host->BuildPropertyTreesForTesting();
         SkColor safe_color = layer->SafeOpaqueBackgroundColor();
         if (contents_opaque) {
@@ -1398,7 +1399,7 @@ class DrawsContentChangeLayer : public Layer {
 
   void SetFakeDrawsContent(bool fake_draws_content) {
     fake_draws_content_ = fake_draws_content;
-    UpdateDrawsContent(HasDrawableContent());
+    SetDrawsContent(HasDrawableContent());
   }
 
  private:
@@ -1438,7 +1439,7 @@ TEST_F(LayerTest, PushUpdatesShouldHitTest) {
   root_layer->SetIsDrawable(true);
   root_layer->SetHitTestable(true);
   CommitAndPushProperties(root_layer.get(), impl_layer.get());
-  EXPECT_TRUE(impl_layer->DrawsContent());
+  EXPECT_TRUE(impl_layer->draws_content());
   EXPECT_TRUE(impl_layer->HitTestable());
 
   // A layer that does not draw content and does not hit test without drawing
@@ -1446,14 +1447,14 @@ TEST_F(LayerTest, PushUpdatesShouldHitTest) {
   root_layer->SetIsDrawable(false);
   root_layer->SetHitTestable(false);
   CommitAndPushProperties(root_layer.get(), impl_layer.get());
-  EXPECT_FALSE(impl_layer->DrawsContent());
+  EXPECT_FALSE(impl_layer->draws_content());
   EXPECT_FALSE(impl_layer->HitTestable());
 
   // |SetHitTestableWithoutDrawsContent| should cause a layer to become hit
   // testable even though it does not draw content.
   root_layer->SetHitTestable(true);
   CommitAndPushProperties(root_layer.get(), impl_layer.get());
-  EXPECT_FALSE(impl_layer->DrawsContent());
+  EXPECT_FALSE(impl_layer->draws_content());
   EXPECT_TRUE(impl_layer->HitTestable());
 }
 
@@ -1691,54 +1692,56 @@ TEST_F(LayerTest, SetElementIdNotUsingLayerLists) {
 TEST_F(LayerTest, UpdateMirrorCount) {
   scoped_refptr<Layer> test_layer = Layer::Create();
   test_layer->SetLayerTreeHost(layer_tree_host_.get());
-  auto& unsafe_state = layer_tree_host_->GetThreadUnsafeCommitState();
 
   // This is normally done by TreeSynchronizer::PushLayerProperties().
-  unsafe_state.layers_that_should_push_properties.clear();
+  layer_tree_host_->GetPendingCommitState()
+      ->layers_that_should_push_properties.clear();
 
-  layer_tree_host_->property_trees()->needs_rebuild = false;
+  layer_tree_host_->property_trees()->set_needs_rebuild(false);
   EXPECT_EQ(0, test_layer->mirror_count());
-  EXPECT_FALSE(layer_tree_host_->property_trees()->needs_rebuild);
-  EXPECT_EQ(0u, layer_tree_host_->GetThreadUnsafeCommitState()
-                    .layers_that_should_push_properties.size());
+  EXPECT_FALSE(layer_tree_host_->property_trees()->needs_rebuild());
+  EXPECT_EQ(0u, layer_tree_host_->GetPendingCommitState()
+                    ->layers_that_should_push_properties.size());
 
   // Incrementing mirror count from zero should trigger property trees rebuild.
   test_layer->IncrementMirrorCount();
   EXPECT_EQ(1, test_layer->mirror_count());
-  EXPECT_TRUE(layer_tree_host_->property_trees()->needs_rebuild);
-  EXPECT_TRUE(base::Contains(layer_tree_host_->GetThreadUnsafeCommitState()
-                                 .layers_that_should_push_properties,
+  EXPECT_TRUE(layer_tree_host_->property_trees()->needs_rebuild());
+  EXPECT_TRUE(base::Contains(layer_tree_host_->GetPendingCommitState()
+                                 ->layers_that_should_push_properties,
                              test_layer.get()));
 
-  unsafe_state.layers_that_should_push_properties.clear();
-  layer_tree_host_->property_trees()->needs_rebuild = false;
+  layer_tree_host_->GetPendingCommitState()
+      ->layers_that_should_push_properties.clear();
+  layer_tree_host_->property_trees()->set_needs_rebuild(false);
 
   // Incrementing mirror count from non-zero should not trigger property trees
   // rebuild.
   test_layer->IncrementMirrorCount();
   EXPECT_EQ(2, test_layer->mirror_count());
-  EXPECT_FALSE(layer_tree_host_->property_trees()->needs_rebuild);
-  EXPECT_TRUE(base::Contains(layer_tree_host_->GetThreadUnsafeCommitState()
-                                 .layers_that_should_push_properties,
+  EXPECT_FALSE(layer_tree_host_->property_trees()->needs_rebuild());
+  EXPECT_TRUE(base::Contains(layer_tree_host_->GetPendingCommitState()
+                                 ->layers_that_should_push_properties,
                              test_layer.get()));
 
-  unsafe_state.layers_that_should_push_properties.clear();
+  layer_tree_host_->GetPendingCommitState()
+      ->layers_that_should_push_properties.clear();
 
   // Decrementing mirror count to non-zero should not trigger property trees
   // rebuild.
   test_layer->DecrementMirrorCount();
   EXPECT_EQ(1, test_layer->mirror_count());
-  EXPECT_FALSE(layer_tree_host_->property_trees()->needs_rebuild);
-  EXPECT_TRUE(base::Contains(layer_tree_host_->GetThreadUnsafeCommitState()
-                                 .layers_that_should_push_properties,
+  EXPECT_FALSE(layer_tree_host_->property_trees()->needs_rebuild());
+  EXPECT_TRUE(base::Contains(layer_tree_host_->GetPendingCommitState()
+                                 ->layers_that_should_push_properties,
                              test_layer.get()));
 
   // Decrementing mirror count to zero should trigger property trees rebuild.
   test_layer->DecrementMirrorCount();
   EXPECT_EQ(0, test_layer->mirror_count());
-  EXPECT_TRUE(layer_tree_host_->property_trees()->needs_rebuild);
-  EXPECT_TRUE(base::Contains(layer_tree_host_->GetThreadUnsafeCommitState()
-                                 .layers_that_should_push_properties,
+  EXPECT_TRUE(layer_tree_host_->property_trees()->needs_rebuild());
+  EXPECT_TRUE(base::Contains(layer_tree_host_->GetPendingCommitState()
+                                 ->layers_that_should_push_properties,
                              test_layer.get()));
 
   test_layer->SetLayerTreeHost(nullptr);
@@ -1790,13 +1793,13 @@ TEST_F(LayerTest, UpdatingClipRect) {
   EXPECT_EQ(clipped_4->clip_rect(), kClipRect);
 
   root->layer_tree_host()->BuildPropertyTreesForTesting();
-  ClipNode* node_1 = layer_tree_host_->property_trees()->clip_tree.Node(
+  const ClipNode* node_1 = layer_tree_host_->property_trees()->clip_tree().Node(
       clipped_1->clip_tree_index());
-  ClipNode* node_2 = layer_tree_host_->property_trees()->clip_tree.Node(
+  const ClipNode* node_2 = layer_tree_host_->property_trees()->clip_tree().Node(
       clipped_2->clip_tree_index());
-  ClipNode* node_3 = layer_tree_host_->property_trees()->clip_tree.Node(
+  const ClipNode* node_3 = layer_tree_host_->property_trees()->clip_tree().Node(
       clipped_3->clip_tree_index());
-  ClipNode* node_4 = layer_tree_host_->property_trees()->clip_tree.Node(
+  const ClipNode* node_4 = layer_tree_host_->property_trees()->clip_tree().Node(
       clipped_4->clip_tree_index());
 
   EXPECT_EQ(gfx::RectF(kClipRect) + kParentOffset, node_1->clip);
@@ -1828,13 +1831,13 @@ TEST_F(LayerTest, UpdatingClipRect) {
   clipped_3->SetClipRect(kUpdatedClipRect_3);
   clipped_4->SetClipRect(kUpdatedClipRect_4);
 
-  node_1 = layer_tree_host_->property_trees()->clip_tree.Node(
+  node_1 = layer_tree_host_->property_trees()->clip_tree().Node(
       clipped_1->clip_tree_index());
-  node_2 = layer_tree_host_->property_trees()->clip_tree.Node(
+  node_2 = layer_tree_host_->property_trees()->clip_tree().Node(
       clipped_2->clip_tree_index());
-  node_3 = layer_tree_host_->property_trees()->clip_tree.Node(
+  node_3 = layer_tree_host_->property_trees()->clip_tree().Node(
       clipped_3->clip_tree_index());
-  node_4 = layer_tree_host_->property_trees()->clip_tree.Node(
+  node_4 = layer_tree_host_->property_trees()->clip_tree().Node(
       clipped_4->clip_tree_index());
 
   EXPECT_EQ(node_1->clip,
@@ -1899,16 +1902,21 @@ TEST_F(LayerTest, UpdatingRoundedCorners) {
   EXPECT_EQ(layer_5->corner_radii(), kRoundedCorners);
 
   root->layer_tree_host()->BuildPropertyTreesForTesting();
-  EffectNode* node_1 = layer_tree_host_->property_trees()->effect_tree.Node(
-      layer_1->effect_tree_index());
-  EffectNode* node_2 = layer_tree_host_->property_trees()->effect_tree.Node(
-      layer_2->effect_tree_index());
-  EffectNode* node_3 = layer_tree_host_->property_trees()->effect_tree.Node(
-      layer_3->effect_tree_index());
-  EffectNode* node_4 = layer_tree_host_->property_trees()->effect_tree.Node(
-      layer_4->effect_tree_index());
-  EffectNode* node_5 = layer_tree_host_->property_trees()->effect_tree.Node(
-      layer_5->effect_tree_index());
+  const EffectNode* node_1 =
+      layer_tree_host_->property_trees()->effect_tree().Node(
+          layer_1->effect_tree_index());
+  const EffectNode* node_2 =
+      layer_tree_host_->property_trees()->effect_tree().Node(
+          layer_2->effect_tree_index());
+  const EffectNode* node_3 =
+      layer_tree_host_->property_trees()->effect_tree().Node(
+          layer_3->effect_tree_index());
+  const EffectNode* node_4 =
+      layer_tree_host_->property_trees()->effect_tree().Node(
+          layer_4->effect_tree_index());
+  const EffectNode* node_5 =
+      layer_tree_host_->property_trees()->effect_tree().Node(
+          layer_5->effect_tree_index());
 
   EXPECT_EQ(gfx::RRectF(gfx::RectF(kClipRect), kRoundedCorners),
             node_1->mask_filter_info.rounded_corner_bounds());
@@ -1936,15 +1944,15 @@ TEST_F(LayerTest, UpdatingRoundedCorners) {
   layer_4->SetClipRect(kUpdatedClipRect);
   layer_5->SetRoundedCorner(kUpdatedRoundedCorners);
 
-  node_1 = layer_tree_host_->property_trees()->effect_tree.Node(
+  node_1 = layer_tree_host_->property_trees()->effect_tree().Node(
       layer_1->effect_tree_index());
-  node_2 = layer_tree_host_->property_trees()->effect_tree.Node(
+  node_2 = layer_tree_host_->property_trees()->effect_tree().Node(
       layer_2->effect_tree_index());
-  node_3 = layer_tree_host_->property_trees()->effect_tree.Node(
+  node_3 = layer_tree_host_->property_trees()->effect_tree().Node(
       layer_3->effect_tree_index());
-  node_4 = layer_tree_host_->property_trees()->effect_tree.Node(
+  node_4 = layer_tree_host_->property_trees()->effect_tree().Node(
       layer_4->effect_tree_index());
-  node_5 = layer_tree_host_->property_trees()->effect_tree.Node(
+  node_5 = layer_tree_host_->property_trees()->effect_tree().Node(
       layer_5->effect_tree_index());
 
   EXPECT_EQ(gfx::RRectF(gfx::RectF(gfx::IntersectRects(gfx::Rect(kLayerSize),

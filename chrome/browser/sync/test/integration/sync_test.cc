@@ -46,7 +46,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
-#include "components/federated_learning/features/features.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/invalidation/impl/fcm_invalidation_service.h"
@@ -61,14 +60,12 @@
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/public/base/consent_level.h"
+#include "components/sync/base/command_line_switches.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/invalidation_helper.h"
-#include "components/sync/base/sync_base_switches.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service_impl.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/engine/sync_scheduler_impl.h"
-#include "components/sync/invalidations/switches.h"
 #include "components/sync/invalidations/sync_invalidations_service_impl.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "content/public/browser/navigation_entry.h"
@@ -217,10 +214,6 @@ instance_id::InstanceIDDriver* GetOrCreateInstanceIDDriver(
 
 }  // namespace
 
-const char switches::kPasswordFileForTest[] = "password-file-for-test";
-const char switches::kSyncUserForTest[] = "sync-user-for-test";
-const char switches::kSyncPasswordForTest[] = "sync-password-for-test";
-
 SyncTest::FakeInstanceID::FakeInstanceID(const std::string& app_id,
                                          gcm::GCMDriver* gcm_driver)
     : instance_id::InstanceID(app_id, gcm_driver),
@@ -315,7 +308,6 @@ SyncTest::~SyncTest() = default;
 void SyncTest::SetUp() {
 #if BUILDFLAG(IS_ANDROID)
   sync_test_utils_android::SetUpAuthForTesting();
-  sync_test_utils_android::SetUpAndroidSyncSettingsForTesting();
 #endif
 
   // Sets |server_type_| if it wasn't specified by the test.
@@ -384,11 +376,11 @@ void SyncTest::AddTestSwitches(base::CommandLine* cl) {
   if (!cl->HasSwitch(switches::kDisableBackgroundNetworking))
     cl->AppendSwitch(switches::kDisableBackgroundNetworking);
 
-  if (!cl->HasSwitch(switches::kSyncShortInitialRetryOverride))
-    cl->AppendSwitch(switches::kSyncShortInitialRetryOverride);
+  if (!cl->HasSwitch(syncer::kSyncShortInitialRetryOverride))
+    cl->AppendSwitch(syncer::kSyncShortInitialRetryOverride);
 
-  if (!cl->HasSwitch(switches::kSyncShortNudgeDelayForTest))
-    cl->AppendSwitch(switches::kSyncShortNudgeDelayForTest);
+  if (!cl->HasSwitch(syncer::kSyncShortNudgeDelayForTest))
+    cl->AppendSwitch(syncer::kSyncShortNudgeDelayForTest);
 
   // TODO(crbug.com/1060366): This is a temporary switch to allow having two
   // profiles syncing the same account. Having a profile outside of the user
@@ -396,11 +388,11 @@ void SyncTest::AddTestSwitches(base::CommandLine* cl) {
   if (!cl->HasSwitch(switches::kAllowProfilesOutsideUserDir))
     cl->AppendSwitch(switches::kAllowProfilesOutsideUserDir);
 
-  if (cl->HasSwitch(switches::kSyncServiceURL)) {
+  if (cl->HasSwitch(syncer::kSyncServiceURL)) {
     // TODO(crbug.com/1243653): setup real SecurityDomainService if
     // UsingExternalServers().
     // Effectively disables kSyncTrustedVaultPassphraseRecovery for E2E tests.
-    cl->AppendSwitchASCII(switches::kTrustedVaultServiceURL, "broken_url");
+    cl->AppendSwitchASCII(syncer::kTrustedVaultServiceURL, "broken_url");
   }
 }
 
@@ -617,8 +609,8 @@ bool SyncTest::SetupClients() {
   fake_server_invalidation_observers_.resize(num_clients_);
 
   auto* cl = base::CommandLine::ForCurrentProcess();
-  if (!cl->HasSwitch(switches::kSyncDeferredStartupTimeoutSeconds)) {
-    cl->AppendSwitchASCII(switches::kSyncDeferredStartupTimeoutSeconds, "1");
+  if (!cl->HasSwitch(syncer::kSyncDeferredStartupTimeoutSeconds)) {
+    cl->AppendSwitchASCII(syncer::kSyncDeferredStartupTimeoutSeconds, "1");
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1083,7 +1075,7 @@ std::unique_ptr<KeyedService> SyncTest::CreateSyncInvalidationsService(
         profile_to_instance_id_driver_map,
     std::vector<syncer::FCMHandler*>* sync_invalidations_fcm_handlers,
     content::BrowserContext* context) {
-  if (!base::FeatureList::IsEnabled(switches::kSyncSendInterestedDataTypes)) {
+  if (!base::FeatureList::IsEnabled(syncer::kSyncSendInterestedDataTypes)) {
     return nullptr;
   }
 
@@ -1244,7 +1236,7 @@ void SyncTest::DecideServerType() {
   // tests to explicitly set this value in each test class if needed.
   if (server_type_ == SERVER_TYPE_UNDECIDED) {
     base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-    if (!cl->HasSwitch(switches::kSyncServiceURL)) {
+    if (!cl->HasSwitch(syncer::kSyncServiceURL)) {
       // If no sync server URL is provided, start up a local sync test server
       // and point Chrome to its URL. This is the most common configuration,
       server_type_ = IN_PROCESS_FAKE_SERVER;

@@ -60,6 +60,12 @@ struct HttpAuthDynamicParams {
   // List of allowed auth schemes. Unrecognized schemes are ignored.
   array<string>? allowed_schemes;
 
+  // List of origins patterns that are allowed the use of all the HTTP auth
+  // schemes recognized and supported by the browser regardless of
+  // `allowed_schemes`. The accepted format is documented at
+  // http://www.chromium.org/administrators/url-blocklist-filter-format.
+  array<string> patterns_allowed_to_use_all_schemes;
+
   // Comma / semi-colon delimited allowlist of server origins which the network
   // service may send the default credentials for NTLM or Negotiate
   // authentication.
@@ -178,7 +184,7 @@ interface NetworkService {
   // https://tools.ietf.org/html/rfc1034#section-5.3.1 for definition of a stub
   // resolver.
   //
-  // `dns_over_https_servers` is a list of DNS over HTTPS servers.
+  // `dns_over_https_config` provides zero or more DNS over HTTPS servers.
   // DnsTransactions will by default follow the behavior of `secure_dns_mode`.
   // In SECURE mode, only DoH lookups will be performed. In AUTOMATIC mode,
   // DoH lookups to available servers will be performed first, and insecure
@@ -199,7 +205,7 @@ interface NetworkService {
   // Secure DNS which always allows additional types.
   ConfigureStubHostResolver(bool insecure_dns_client_enabled,
                             SecureDnsMode secure_dns_mode,
-                            array<DnsOverHttpsServer> dns_over_https_servers,
+                            DnsOverHttpsConfig dns_over_https_config,
                             bool additional_dns_types_enabled);
 
   // Disables QUIC for the NetworkService. Affects all existing NetworkContexts,
@@ -307,15 +313,13 @@ interface NetworkService {
   ClearSCTAuditingCache();
 
   // Configures SCT auditing.
-  // This allows the embedder to specify whether SCT auditing should be enabled,
-  // what sampling rate to use on reports, where reports should be sent, and the
-  // traffic annotation to use.
+  // This allows the embedder to specify what sampling rate to use on SCT
+  // auditing reports, where reports should be sent, and the traffic annotation
+  // to use.
   [EnableIf=is_ct_supported]
-  ConfigureSCTAuditing(bool enabled,
-                       double sampling_rate,
+  ConfigureSCTAuditing(double sampling_rate,
                        url.mojom.Url report_uri,
                        MutableNetworkTrafficAnnotationTag traffic_annotation);
-
 
   // Updates the log list used for CT verification. `update_time` should
   // contain the timestamp that the log list was considered fresh/current, in
@@ -323,6 +327,10 @@ interface NetworkService {
   // date.
   [EnableIf=is_ct_supported]
   UpdateCtLogList(array<CTLogInfo> log_list, mojo_base.mojom.Time update_time);
+
+  // Updates the list of popular SCTs queried during CT hashdance auditing.
+  [EnableIf=is_ct_supported]
+  UpdateCtKnownPopularSCTs(array<array<uint8>> sct_hashes);
 
   // Disables or enables CT Enforcement.
   [EnableIf=is_ct_supported]

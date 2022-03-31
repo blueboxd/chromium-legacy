@@ -15,7 +15,7 @@
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
-#include "base/memory/tagging.h"
+#include "base/allocator/partition_allocator/tagging.h"
 #include "build/build_config.h"
 
 #if BUILDFLAG(IS_APPLE) && defined(ARCH_CPU_64_BITS)
@@ -212,8 +212,12 @@ constexpr size_t kSuperPageBaseMask = ~kSuperPageOffsetMask & kMemTagUnmask;
 #if defined(PA_HAS_64_BITS_POINTERS)
 // The Configurable Pool is only available in 64-bit mode
 constexpr size_t kNumPools = 3;
-
-#if BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1250788): Remove the iOS special case, once larger address
+// space can be used there. This limitation isn't meant for releasing, but is ok
+// to keep for now only because nothing uses PartitionAlloc on iOS yet.
+#if BUILDFLAG(IS_IOS)
+constexpr size_t kPoolMaxSize = kGiB / 4;
+#elif BUILDFLAG(IS_MAC)
 // Special-case macOS. Contrary to other platforms, there is no sandbox limit
 // there, meaning that a single renderer could "happily" consume >8GiB. So the
 // 8GiB pool size is a regression. Make the limit higher on this platform only
@@ -221,9 +225,8 @@ constexpr size_t kNumPools = 3;
 constexpr size_t kPoolMaxSize = 16 * kGiB;
 #else
 constexpr size_t kPoolMaxSize = 8 * kGiB;
-#endif  // BUILDFLAG(IS_MAC)
-
-#else
+#endif
+#else  // defined(PA_HAS_64_BITS_POINTERS)
 constexpr size_t kNumPools = 2;
 constexpr size_t kPoolMaxSize = 4 * kGiB;
 #endif
@@ -241,7 +244,7 @@ static constexpr pool_handle kConfigurablePoolHandle = 3;
 // PROT_MTE.
 constexpr size_t kMaxMemoryTaggingSize = 1024;
 
-#if HAS_MEMORY_TAGGING
+#if defined(PA_HAS_MEMORY_TAGGING)
 // Returns whether the tag of a pointer/slot overflowed and slot needs to be
 // moved to quarantine.
 constexpr ALWAYS_INLINE bool HasOverflowTag(uintptr_t ptr) {
@@ -251,7 +254,7 @@ constexpr ALWAYS_INLINE bool HasOverflowTag(uintptr_t ptr) {
                 "Overflow tag must be in tag bits");
   return (ptr & ~kMemTagUnmask) == kOverflowTag;
 }
-#endif  // HAS_MEMORY_TAGGING
+#endif  // defined(PA_HAS_MEMORY_TAGGING)
 
 PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
 NumPartitionPagesPerSuperPage() {
@@ -331,8 +334,7 @@ constexpr size_t kMinDirectMappedDownsize = kMaxBucketed + 1;
 // fails. This is a security choice in Chrome, to help making size_t vs int bugs
 // harder to exploit.
 //
-// There are matching limits in other allocators, such as tcmalloc. See
-// crbug.com/998048 for details.
+
 PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
 MaxDirectMapped() {
   // Subtract kSuperPageSize to accommodate for granularity inside
@@ -418,9 +420,9 @@ namespace base {
 using ::partition_alloc::internal::DirectMapAllocationGranularity;
 using ::partition_alloc::internal::DirectMapAllocationGranularityOffsetMask;
 using ::partition_alloc::internal::DirectMapAllocationGranularityShift;
-#if HAS_MEMORY_TAGGING
+#if defined(PA_HAS_MEMORY_TAGGING)
 using ::partition_alloc::internal::HasOverflowTag;
-#endif  // HAS_MEMORY_TAGGING
+#endif  // defined(PA_HAS_MEMORY_TAGGING)
 using ::partition_alloc::internal::kBitsPerSizeT;
 using ::partition_alloc::internal::kBRPPoolHandle;
 using ::partition_alloc::internal::kConfigurablePoolHandle;

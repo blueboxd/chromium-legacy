@@ -344,7 +344,7 @@ CanvasResourceRasterSharedImage::CanvasResourceRasterSharedImage(
       size_(info.width(), info.height()),
       is_origin_top_left_(is_origin_top_left),
       is_accelerated_(is_accelerated),
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
       // On Mac, WebGPU usage is always backed by an IOSurface which should
       // should also use the GL_TEXTURE_RECTANGLE target instead of
       // GL_TEXTURE_2D. Setting |is_overlay_candidate_| both allows overlays,
@@ -357,6 +357,8 @@ CanvasResourceRasterSharedImage::CanvasResourceRasterSharedImage(
       is_overlay_candidate_(shared_image_usage_flags &
                             gpu::SHARED_IMAGE_USAGE_SCANOUT),
 #endif
+      supports_display_compositing_(shared_image_usage_flags &
+                                    gpu::SHARED_IMAGE_USAGE_DISPLAY),
       texture_target_(is_overlay_candidate_
                           ? gpu::GetBufferTextureTarget(
                                 gfx::BufferUsage::SCANOUT,
@@ -489,10 +491,14 @@ void CanvasResourceRasterSharedImage::EndWriteAccess() {
 }
 
 GrBackendTexture CanvasResourceRasterSharedImage::CreateGrTexture() const {
+  const auto& capabilities =
+      context_provider_wrapper_->ContextProvider()->GetCapabilities();
+
   GrGLTextureInfo texture_info = {};
   texture_info.fID = GetTextureIdForWriteAccess();
   texture_info.fTarget = TextureTarget();
-  texture_info.fFormat = viz::TextureStorageFormat(GetResourceFormat());
+  texture_info.fFormat = viz::TextureStorageFormat(
+      GetResourceFormat(), capabilities.angle_rgbx_internal_format);
   return GrBackendTexture(Size().width(), Size().height(), GrMipMapped::kNo,
                           texture_info);
 }
@@ -643,9 +649,10 @@ scoped_refptr<StaticBitmapImage> CanvasResourceRasterSharedImage::Bitmap() {
     owning_thread_data().mailbox_sync_mode = kUnverifiedSyncToken;
   }
   image = AcceleratedStaticBitmapImage::CreateFromCanvasMailbox(
-      mailbox(), GetSyncToken(), texture_id_for_image, image_info, texture_target_,
-      is_origin_top_left_, context_provider_wrapper_, owning_thread_ref_,
-      owning_thread_task_runner_, std::move(release_callback));
+      mailbox(), GetSyncToken(), texture_id_for_image, image_info,
+      texture_target_, is_origin_top_left_, context_provider_wrapper_,
+      owning_thread_ref_, owning_thread_task_runner_,
+      std::move(release_callback), supports_display_compositing_);
 
   DCHECK(image);
   return image;
@@ -800,7 +807,7 @@ bool CanvasResourceSkiaDawnSharedImage::IsValid() const {
 }
 
 GLenum CanvasResourceSkiaDawnSharedImage::TextureTarget() const {
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   return GL_TEXTURE_RECTANGLE_ARB;
 #else
   return GL_TEXTURE_2D;
@@ -875,7 +882,7 @@ void CanvasResourceSkiaDawnSharedImage::EndAccess() {
 GrBackendTexture CanvasResourceSkiaDawnSharedImage::CreateGrTexture() const {
   GrDawnTextureInfo info = {};
   info.fTexture = texture();
-#if defined(OS_MAC)
+#if BUILDFLAG(IS_MAC)
   info.fFormat = wgpu::TextureFormat::BGRA8Unorm;
 #else
   info.fFormat = wgpu::TextureFormat::RGBA8Unorm;

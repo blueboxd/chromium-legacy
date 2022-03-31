@@ -84,6 +84,7 @@
 <translation id="5164977714490026579">O valor deve ser maior ou igual a <ph name="MINIMUM" />.</translation>
 <translation id="5196716972587102051">2</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
+<translation id="5272594226096532950">Desmarcado. No grupo, opção <ph name="INDEX" /> de <ph name="COUNT" /></translation>
 <translation id="5307600278924710095">Insira uma parte seguida por "<ph name="ATSIGN" />". "<ph name="INVALIDADDRESS" />" está incompleto.</translation>
 <translation id="5334352251556557839">Não foi possível abrir a mídia.</translation>
 <translation id="537648784377940524">A data mínima (<ph name="MIN_DATE_OR_TIME" />) precisa ser anterior à data máxima (<ph name="MAX_DATE_OR_TIME" />).</translation>
@@ -118,10 +119,12 @@
 <translation id="6550675742724504774">Opções</translation>
 <translation id="6572309429103589720">Gramática inválida</translation>
 <translation id="658823671542763450">entrar no modo tela cheia</translation>
+<translation id="6606094904835912297">Cores do sistema</translation>
 <translation id="6643016212128521049">Limpar</translation>
 <translation id="668171684555832681">Outro...</translation>
 <translation id="6709093583001123835">O valor precisa ser <ph name="VALUE" />.</translation>
 <translation id="6709570249143506788">Baixa qualidade de reprodução</translation>
+<translation id="6719914554879143100">Marcado. No grupo, opção <ph name="INDEX" /> de <ph name="COUNT" /></translation>
 <translation id="6790428901817661496">Reproduzir</translation>
 <translation id="6820355525329141109">Não foi possível carregar o plug-in.</translation>
 <translation id="6831465880655513317">Caixa de cores com controle deslizante bidimensional para seleção de saturação e luminosidade</translation>
@@ -146,7 +149,7 @@
 <translation id="7789962463072032349">pausar</translation>
 <translation id="7852167693871241274">Controle deslizante de matiz</translation>
 <translation id="7888071071722539607">Inclua um "<ph name="ATSIGN" />" no endereço de e-mail. "<ph name="INVALIDADDRESS" />" está com um "<ph name="ATSIGN" />" faltando.</translation>
-<translation id="795667975304826397">Nenhum arquivo escolhido</translation>
+<translation id="795667975304826397">Nenhum arquivo selecionado</translation>
 <translation id="7962328325860248200">Item <ph name="ACCNAME" /> não selecionado</translation>
 <translation id="8117451130807776954">Esta semana</translation>
 <translation id="8131955114056917397">0.25</translation>

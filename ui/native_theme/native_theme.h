@@ -13,7 +13,6 @@
 #include "base/sequence_checker.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "cc/paint/paint_canvas.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/models/menu_separator_types.h"
@@ -22,9 +21,12 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/native_theme/caption_style.h"
-#include "ui/native_theme/native_theme_color_id.h"
 #include "ui/native_theme/native_theme_export.h"
 #include "ui/native_theme/native_theme_observer.h"
+
+namespace cc {
+class PaintCanvas;
+}
 
 namespace gfx {
 class Rect;
@@ -247,9 +249,10 @@ class NATIVE_THEME_EXPORT NativeTheme {
     int classic_state;  // Used on Windows when uxtheme is not available.
   };
 
-  enum ScrollbarOverlayColorTheme {
-    ScrollbarOverlayColorThemeDark,
-    ScrollbarOverlayColorThemeLight
+  enum class ScrollbarOverlayColorTheme {
+    kDefault = 0,
+    kLight = 1,
+    kDark = 2,
   };
 
   struct ScrollbarThumbExtraParams {
@@ -366,15 +369,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // when the part is resized.
   virtual gfx::Rect GetNinePatchAperture(Part part) const = 0;
 
-  // Colors for GetSystemColor().
-  enum ColorId {
-#define OP(enum_name) enum_name
-    NATIVE_THEME_COLOR_IDS,
-#undef OP
-
-    kColorId_NumColors,
-  };
-
   enum class SystemThemeColor {
     kNotSupported,
     kButtonFace,
@@ -394,16 +388,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
   ColorProviderManager::Key GetColorProviderKey(
       scoped_refptr<ColorProviderManager::InitializerSupplier> custom_theme)
       const;
-
-  // Returns a color from the system theme.
-  SkColor GetSystemColor(
-      ColorId color_id,
-      ColorScheme color_scheme = ColorScheme::kDefault) const;
-
-  // Returns an un-tinted or unprocessed color from the system theme before
-  // processing.
-  SkColor GetUnprocessedSystemColor(ColorId color_id,
-                                    ColorScheme color_scheme) const;
 
   // Returns a shared instance of the native theme that should be used for web
   // rendering. Do not use it in a normal application context (i.e. browser).
@@ -510,10 +494,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
                        bool is_custom_system_theme = false);
   virtual ~NativeTheme();
 
-  // Gets the color from the color provider if using a color provider is enable.
-  absl::optional<SkColor> GetColorProviderColor(ColorId color_id,
-                                                ColorScheme color_scheme) const;
-
   // Whether high contrast is forced via command-line flag.
   bool IsForcedHighContrast() const;
   // Whether dark mode is forced via command-line flag.
@@ -538,14 +518,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // or listeners with the webinstance in order to provide correct native
   // platform behaviors.
   virtual void ConfigureWebInstance() {}
-
-  // TODO(http://crbug.com/1057754): Remove this.
-  virtual bool AllowColorPipelineRedirection(ColorScheme color_scheme) const;
-
-  // Returns a color from the system theme, pre-Color Pipeline.
-  virtual SkColor GetSystemColorDeprecated(ColorId color_id,
-                                           ColorScheme color_scheme,
-                                           bool apply_processing) const;
 
   // Allows one native theme to observe changes in another. For example, the
   // web native theme for Windows observes the corresponding ui native theme in
@@ -577,10 +549,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
   ColorProviderManager::Key GetColorProviderKeyForColorScheme(
       scoped_refptr<ColorProviderManager::InitializerSupplier> custom_theme,
       ColorScheme color_scheme) const;
-
-  SkColor GetSystemColorCommon(ColorId color_id,
-                               ColorScheme color_scheme,
-                               bool apply_processing) const;
 
   // Observers to notify when the native theme changes.
   base::ObserverList<NativeThemeObserver>::Unchecked native_theme_observers_;

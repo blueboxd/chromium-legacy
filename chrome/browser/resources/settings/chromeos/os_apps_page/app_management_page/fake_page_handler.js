@@ -108,6 +108,7 @@ export class FakePageHandler {
       resizeLocked: false,
       hideResizeLocked: true,
       supportedLinks: [],
+      runOnOsLogin: null,
     };
 
     if (optConfig) {
@@ -191,6 +192,14 @@ export class FakePageHandler {
    */
   async getApps() {
     return {apps: this.apps_};
+  }
+
+  /**
+   * @param {!string} appId
+   * @return {!Promise<{app: appManagement.mojom.App}>}
+   */
+  async getApp(appId) {
+    assertNotReached();
   }
 
   /**
@@ -293,6 +302,14 @@ export class FakePageHandler {
    * @param {apps.mojom.WindowMode} windowMode
    */
   setWindowMode(appId, windowMode) {
+    assertNotReached();
+  }
+
+  /**
+   * @param {string} appId
+   * @param {apps.mojom.RunOnOsLoginMode} runOnOsLoginMode
+   */
+  setRunOnOsLoginMode(appId, runOnOsLoginMode) {
     assertNotReached();
   }
 

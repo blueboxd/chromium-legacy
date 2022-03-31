@@ -22,9 +22,10 @@ class Origin;
 
 namespace content {
 
-class AttributionPolicy;
-class StorableTrigger;
+class AttributionTrigger;
+class AttributionDataHostManager;
 class StorableSource;
+class StoredSource;
 class WebContents;
 
 struct SendResult;
@@ -55,13 +56,16 @@ class AttributionManager {
 
     virtual void OnReportsChanged() {}
 
+    virtual void OnSourceHandled(const StorableSource& source,
+                                 StorableSource::Result result) {}
+
     virtual void OnSourceDeactivated(
         const AttributionStorage::DeactivatedSource& source) {}
 
     virtual void OnReportSent(const AttributionReport& report,
                               const SendResult& info) {}
 
-    virtual void OnReportDropped(
+    virtual void OnTriggerHandled(
         const AttributionStorage::CreateReportResult& result) {}
   };
 
@@ -71,22 +75,25 @@ class AttributionManager {
 
   virtual void RemoveObserver(Observer* observer) = 0;
 
+  // Gets manager responsible for tracking pending data hosts targeting `this`.
+  virtual AttributionDataHostManager* GetDataHostManager() = 0;
+
   // Persists the given |source| to storage. Called when a navigation
   // originating from a source tag finishes.
   virtual void HandleSource(StorableSource source) = 0;
 
   // Process a newly registered trigger. Will create and log any new
   // reports to storage.
-  virtual void HandleTrigger(StorableTrigger trigger) = 0;
+  virtual void HandleTrigger(AttributionTrigger trigger) = 0;
 
   // Get all sources that are currently stored in this partition. Used for
   // populating WebUI.
   virtual void GetActiveSourcesForWebUI(
-      base::OnceCallback<void(std::vector<StorableSource>)> callback) = 0;
+      base::OnceCallback<void(std::vector<StoredSource>)> callback) = 0;
 
   // Get all pending reports that are currently stored in this partition. Used
-  // for populating WebUI.
-  virtual void GetPendingReportsForWebUI(
+  // for populating WebUI and simulator.
+  virtual void GetPendingReportsForInternalUse(
       base::OnceCallback<void(std::vector<AttributionReport>)> callback) = 0;
 
   // Sends the given reports immediately, and runs |done| once they have all
@@ -94,10 +101,6 @@ class AttributionManager {
   virtual void SendReportsForWebUI(
       const std::vector<AttributionReport::EventLevelData::Id>& ids,
       base::OnceClosure done) = 0;
-
-  // Returns the AttributionPolicy that is used to control API policies such
-  // as noise.
-  virtual const AttributionPolicy& GetAttributionPolicy() const = 0;
 
   // Deletes all data in storage for URLs matching |filter|, between
   // |delete_begin| and |delete_end| time.

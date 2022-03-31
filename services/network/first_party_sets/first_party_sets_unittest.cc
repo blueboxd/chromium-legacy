@@ -7,16 +7,16 @@
 #include <set>
 #include <string>
 
-#include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "net/base/features.h"
 #include "net/base/schemeful_site.h"
+#include "net/base/test_completion_callback.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/first_party_set_metadata.h"
 #include "net/cookies/same_party_context.h"
@@ -44,16 +44,20 @@ MATCHER_P(SerializesTo, want, "") {
   return testing::ExplainMatchResult(testing::Eq(want), got, result_listener);
 }
 
+FirstPartySets::FlattenedSets ParseSetsFromStream(const std::string& sets) {
+  std::istringstream stream(sets);
+  return FirstPartySetParser::ParseSetsFromStream(stream);
+}
+
 class FirstPartySetsTest : public ::testing::Test {
  public:
   explicit FirstPartySetsTest(bool enabled) : sets_(enabled) {}
 
-  void SetComponentSetsAndWait(base::StringPiece content) {
-    SetComponentSetsAndWait(sets_, content);
+  void SetComponentSets(base::StringPiece content) {
+    SetComponentSets(sets_, content);
   }
 
-  void SetComponentSetsAndWait(FirstPartySets& sets,
-                               base::StringPiece content) {
+  void SetComponentSets(FirstPartySets& sets, base::StringPiece content) const {
     base::ScopedTempDir temp_dir;
     CHECK(temp_dir.CreateUniqueTempDir());
     base::FilePath path =
@@ -62,37 +66,35 @@ class FirstPartySetsTest : public ::testing::Test {
 
     sets.ParseAndSet(
         base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ));
-    env_.RunUntilIdle();
   }
 
-  base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>> SetsAndWait()
-      const {
-    base::RunLoop run_loop;
-    base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>> sets;
-    sets_.Sets(base::BindLambdaForTesting(
-        [&](base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>
-                result) {
-          sets = result;
-          run_loop.Quit();
-        }));
-    run_loop.Run();
-    return sets;
+  FirstPartySets::SetsByOwner SetsAndWait() {
+    net::TestOptionalCompletionCallback<FirstPartySets::SetsByOwner> callback;
+    return callback.GetResult(sets_.Sets(callback.callback())).value();
   }
 
   net::FirstPartySetMetadata ComputeMetadataAndWait(
       const net::SchemefulSite& site,
       const net::SchemefulSite* top_frame_site,
-      const std::set<net::SchemefulSite>& party_context) const {
-    base::RunLoop run_loop;
-    net::FirstPartySetMetadata metadata;
-    sets_.ComputeMetadata(
-        site, top_frame_site, party_context,
-        base::BindLambdaForTesting([&](net::FirstPartySetMetadata result) {
-          metadata = std::move(result);
-          run_loop.Quit();
-        }));
-    run_loop.Run();
-    return metadata;
+      const std::set<net::SchemefulSite>& party_context) {
+    net::TestOptionalCompletionCallback<net::FirstPartySetMetadata> callback;
+    return callback
+        .GetResult(sets_.ComputeMetadata(site, top_frame_site, party_context,
+                                         callback.callback()))
+        .value();
+  }
+
+  FirstPartySets::OwnerResult FindOwnerAndWait(const net::SchemefulSite& site) {
+    net::TestOptionalCompletionCallback<FirstPartySets::OwnerResult> callback;
+    return callback.GetResult(sets_.FindOwner(site, callback.callback()))
+        .value();
+  }
+
+  FirstPartySets::OwnersResult FindOwnersAndWait(
+      const base::flat_set<net::SchemefulSite>& site) {
+    net::TestOptionalCompletionCallback<FirstPartySets::OwnersResult> callback;
+    return callback.GetResult(sets_.FindOwners(site, callback.callback()))
+        .value();
   }
 
   FirstPartySets& sets() { return sets_; }
@@ -110,30 +112,26 @@ class FirstPartySetsDisabledTest : public FirstPartySetsTest {
   FirstPartySetsDisabledTest() : FirstPartySetsTest(false) {}
 };
 
-TEST_F(FirstPartySetsDisabledTest, ParseAndSet_IgnoresValid) {
-  const std::string input =
-      R"([{
-        "owner": "https://example.test",
-        "members": ["https://aaaa.test"]
-        }])";
-  ASSERT_TRUE(base::JSONReader::Read(input));
-
-  SetComponentSetsAndWait(input);
-  EXPECT_THAT(SetsAndWait(), IsEmpty());
-}
-
-TEST_F(FirstPartySetsDisabledTest, ParseV2Format_IgnoresValid) {
+TEST_F(FirstPartySetsDisabledTest, Parse_IgnoresValid) {
   const std::string input =
       "{\"owner\": \"https://example.test\",\"members\": "
       "[\"https://aaaa.test\"]}";
 
-  SetComponentSetsAndWait(input);
+  SetComponentSets(input);
+
   EXPECT_THAT(SetsAndWait(), IsEmpty());
 }
 
 TEST_F(FirstPartySetsDisabledTest, SetsManuallySpecified_IgnoresValid) {
   sets().SetManuallySpecifiedSet("https://example.test,https://member.test");
   EXPECT_THAT(SetsAndWait(), IsEmpty());
+}
+
+TEST_F(FirstPartySetsDisabledTest, FindOwners) {
+  net::SchemefulSite kExample =
+      net::SchemefulSite(GURL("https://example.test"));
+
+  EXPECT_THAT(FindOwnersAndWait({kExample}), IsEmpty());
 }
 
 TEST_F(FirstPartySetsDisabledTest, ComputeMetadata_InfersSingletons) {
@@ -177,10 +175,15 @@ TEST_F(FirstPartySetsDisabledTest, ComputeMetadata_InfersSingletons) {
 
 TEST_F(FirstPartySetsDisabledTest, FindOwner) {
   sets().SetManuallySpecifiedSet("https://example.test,https://member.test");
+
   EXPECT_FALSE(
-      sets().FindOwner(net::SchemefulSite(GURL("https://example.test"))));
+      FindOwnerAndWait(net::SchemefulSite(GURL("https://example.test"))));
   EXPECT_FALSE(
-      sets().FindOwner(net::SchemefulSite(GURL("https://member.test"))));
+      FindOwnerAndWait(net::SchemefulSite(GURL("https://member.test"))));
+}
+
+TEST_F(FirstPartySetsDisabledTest, Sets_IsEmpty) {
+  EXPECT_THAT(SetsAndWait(), IsEmpty());
 }
 
 class FirstPartySetsEnabledTest : public FirstPartySetsTest {
@@ -189,484 +192,13 @@ class FirstPartySetsEnabledTest : public FirstPartySetsTest {
 };
 
 TEST_F(FirstPartySetsEnabledTest, Sets_IsEmpty) {
-  EXPECT_THAT(SetsAndWait(), IsEmpty());
-}
-
-TEST_F(FirstPartySetsEnabledTest, IgnoresInvalidFile) {
-  sets().ParseAndSet(base::File());
-  env().RunUntilIdle();
-  EXPECT_THAT(SetsAndWait(), IsEmpty());
-
-  const std::string input =
-      "{\"owner\": \"https://example.test\",\"members\": "
-      "[\"https://aaaa.test\",],}";
-
-  // Subsequent ParseAndSet calls should be ignored, because the instance has
-  // already received sets from component updater.
-  SetComponentSetsAndWait(input);
-  EXPECT_THAT(SetsAndWait(), IsEmpty());
-}
-
-TEST_F(FirstPartySetsEnabledTest, ParsesJSON) {
-  SetComponentSetsAndWait("[]");
-  EXPECT_THAT(SetsAndWait(), IsEmpty());
-}
-
-TEST_F(FirstPartySetsEnabledTest, AcceptsMinimal) {
-  const std::string input =
-      R"([{
-        "owner": "https://example.test",
-        "members": ["https://aaaa.test"]
-        }])";
-  ASSERT_TRUE(base::JSONReader::Read(input));
-
-  SetComponentSetsAndWait(input);
-
-  EXPECT_THAT(SetsAndWait(),
-              UnorderedElementsAre(Pair(
-                  SerializesTo("https://example.test"),
-                  UnorderedElementsAre(SerializesTo("https://example.test"),
-                                       SerializesTo("https://aaaa.test")))));
-}
-
-TEST_F(FirstPartySetsEnabledTest, V2_AcceptsMinimal) {
-  const std::string input =
-      "{\"owner\": \"https://example.test\",\"members\": "
-      "[\"https://aaaa.test\",],}";
-
-  SetComponentSetsAndWait(input);
-  EXPECT_THAT(SetsAndWait(),
-              UnorderedElementsAre(Pair(
-                  SerializesTo("https://example.test"),
-                  UnorderedElementsAre(SerializesTo("https://example.test"),
-                                       SerializesTo("https://aaaa.test")))));
-}
-
-TEST_F(FirstPartySetsEnabledTest, AcceptsMultipleSets) {
-  const std::string input = R"(
-  [
-    {
-      "owner": "https://example.test",
-      "members": ["https://member1.test"]
-    },
-    {
-      "owner": "https://foo.test",
-      "members": ["https://member2.test"]
-    }
-  ]
-  )";
-  ASSERT_TRUE(base::JSONReader::Read(input));
-  SetComponentSetsAndWait(input);
-
-  EXPECT_THAT(
-      SetsAndWait(),
-      UnorderedElementsAre(
-          Pair(SerializesTo("https://example.test"),
-               UnorderedElementsAre(SerializesTo("https://example.test"),
-                                    SerializesTo("https://member1.test"))),
-          Pair(SerializesTo("https://foo.test"),
-               UnorderedElementsAre(SerializesTo("https://foo.test"),
-                                    SerializesTo("https://member2.test")))));
-}
-
-TEST_F(FirstPartySetsEnabledTest, V2_AcceptsMultipleSets) {
-  const std::string input =
-      "{\"owner\": \"https://example.test\",\"members\": "
-      "[\"https://member1.test\"]}\n"
-      "{\"owner\": \"https://foo.test\",\"members\": "
-      "[\"https://member2.test\"]}";
-
-  SetComponentSetsAndWait(input);
-  EXPECT_THAT(
-      SetsAndWait(),
-      UnorderedElementsAre(
-          Pair(SerializesTo("https://example.test"),
-               UnorderedElementsAre(SerializesTo("https://example.test"),
-                                    SerializesTo("https://member1.test"))),
-          Pair(SerializesTo("https://foo.test"),
-               UnorderedElementsAre(SerializesTo("https://foo.test"),
-                                    SerializesTo("https://member2.test")))));
-}
-
-TEST_F(FirstPartySetsEnabledTest, ParseAndSet_Idempotent) {
-  std::string input = R"(
-  [
-    {
-      "owner": "https://example.test",
-      "members": ["https://member1.test"]
-    },
-    {
-      "owner": "https://foo.test",
-      "members": ["https://member2.test"]
-    }
-  ]
-  )";
-  ASSERT_TRUE(base::JSONReader::Read(input));
-  SetComponentSetsAndWait(input);
-
-  EXPECT_THAT(
-      SetsAndWait(),
-      UnorderedElementsAre(
-          Pair(SerializesTo("https://example.test"),
-               UnorderedElementsAre(SerializesTo("https://example.test"),
-                                    SerializesTo("https://member1.test"))),
-          Pair(SerializesTo("https://foo.test"),
-               UnorderedElementsAre(SerializesTo("https://foo.test"),
-                                    SerializesTo("https://member2.test")))));
-
-  input = R"(
-  [
-    {
-      "owner": "https://example2.test",
-      "members": ["https://member1.test"]
-    },
-    {
-      "owner": "https://foo2.test",
-      "members": ["https://member2.test"]
-    }
-  ]
-  )";
-  ASSERT_TRUE(base::JSONReader::Read(input));
-  SetComponentSetsAndWait(input);
-
-  // The second call to ParseAndSet should have had no effect.
-  EXPECT_THAT(
-      SetsAndWait(),
-      UnorderedElementsAre(
-          Pair(SerializesTo("https://example.test"),
-               UnorderedElementsAre(SerializesTo("https://example.test"),
-                                    SerializesTo("https://member1.test"))),
-          Pair(SerializesTo("https://foo.test"),
-               UnorderedElementsAre(SerializesTo("https://foo.test"),
-                                    SerializesTo("https://member2.test")))));
-}
-
-TEST_F(FirstPartySetsEnabledTest, OwnerIsOnlyMember) {
-  const std::string input = R"(
-  [
-    {
-      "owner": "https://example.test",
-      "members": ["https://example.test"]
-    },
-    {
-      "owner": "https://foo.test",
-      "members": ["https://member2.test"]
-    }
-  ]
-  )";
-  ASSERT_TRUE(base::JSONReader::Read(input));
-  SetComponentSetsAndWait(input);
-
-  EXPECT_THAT(SetsAndWait(), IsEmpty());
-}
-
-TEST_F(FirstPartySetsEnabledTest, OwnerIsMember) {
-  const std::string input = R"(
-  [
-    {
-      "owner": "https://example.test",
-      "members": ["https://example.test", "https://member1.test"]
-    },
-    {
-      "owner": "https://foo.test",
-      "members": ["https://member2.test"]
-    }
-  ]
-  )";
-  ASSERT_TRUE(base::JSONReader::Read(input));
-  SetComponentSetsAndWait(input);
-
-  EXPECT_THAT(SetsAndWait(), IsEmpty());
-}
-
-TEST_F(FirstPartySetsEnabledTest, RepeatedMember) {
-  const std::string input = R"(
-  [
-    {
-      "owner": "https://example.test",
-      "members": [
-        "https://member1.test",
-        "https://member2.test",
-        "https://member1.test"
-        ]
-    },
-    {
-      "owner": "https://foo.test",
-      "members": ["https://member3.test"]
-    }
-  ]
-  )";
-  ASSERT_TRUE(base::JSONReader::Read(input));
-  SetComponentSetsAndWait(input);
-
-  EXPECT_THAT(SetsAndWait(), IsEmpty());
-}
-
-TEST_F(FirstPartySetsEnabledTest, SetsManuallySpecified_Invalid_TooSmall) {
-  sets().SetManuallySpecifiedSet("https://example.test");
-  EXPECT_THAT(SetsAndWait(), IsEmpty());
-}
-
-TEST_F(FirstPartySetsEnabledTest, SetsManuallySpecified_Invalid_NotOrigins) {
-  sets().SetManuallySpecifiedSet("https://example.test,member1");
-  EXPECT_THAT(SetsAndWait(), IsEmpty());
-}
-
-TEST_F(FirstPartySetsEnabledTest, SetsManuallySpecified_Invalid_NotHTTPS) {
-  sets().SetManuallySpecifiedSet("https://example.test,http://member1.test");
-  EXPECT_THAT(SetsAndWait(), IsEmpty());
-}
-
-TEST_F(FirstPartySetsEnabledTest,
-       SetsManuallySpecified_Invalid_RegisteredDomain_Owner) {
-  sets().SetManuallySpecifiedSet(
-      "https://www.example.test..,https://www.member.test");
-  EXPECT_THAT(SetsAndWait(), IsEmpty());
-}
-
-TEST_F(FirstPartySetsEnabledTest,
-       SetsManuallySpecified_Invalid_RegisteredDomain_Member) {
-  sets().SetManuallySpecifiedSet(
-      "https://www.example.test,https://www.member.test..");
-  EXPECT_THAT(SetsAndWait(), IsEmpty());
-}
-
-TEST_F(FirstPartySetsEnabledTest, SetsManuallySpecified_Valid_EmptyValue) {
+  SetComponentSets("[]");
   sets().SetManuallySpecifiedSet("");
-
-  // Set non-empty existing sets to distinguish the failure case from the no-op
-  // case when processing the manually-specified sets.
-  const std::string existing_sets = R"(
-  [
-    {
-      "owner": "https://example.test",
-      "members": ["https://member.test"]
-    }
-  ]
-  )";
-  ASSERT_TRUE(base::JSONReader::Read(existing_sets));
-  SetComponentSetsAndWait(existing_sets);
-
-  EXPECT_THAT(SetsAndWait(),
-              UnorderedElementsAre(Pair(
-                  SerializesTo("https://example.test"),
-                  UnorderedElementsAre(SerializesTo("https://example.test"),
-                                       SerializesTo("https://member.test")))));
-}
-
-TEST_F(FirstPartySetsEnabledTest, SetsManuallySpecified_Valid_SingleMember) {
-  sets().SetManuallySpecifiedSet("https://example.test,https://member.test");
-  EXPECT_THAT(SetsAndWait(),
-              UnorderedElementsAre(Pair(
-                  SerializesTo("https://example.test"),
-                  UnorderedElementsAre(SerializesTo("https://example.test"),
-                                       SerializesTo("https://member.test")))));
-}
-
-TEST_F(FirstPartySetsEnabledTest,
-       SetsManuallySpecified_Valid_SingleMember_RegisteredDomain) {
-  sets().SetManuallySpecifiedSet(
-      "https://www.example.test,https://www.member.test");
-  EXPECT_THAT(SetsAndWait(),
-              UnorderedElementsAre(Pair(
-                  SerializesTo("https://example.test"),
-                  UnorderedElementsAre(SerializesTo("https://example.test"),
-                                       SerializesTo("https://member.test")))));
-}
-
-TEST_F(FirstPartySetsEnabledTest, SetsManuallySpecified_Valid_MultipleMembers) {
-  sets().SetManuallySpecifiedSet(
-      "https://example.test,https://member1.test,https://member2.test");
-  EXPECT_THAT(SetsAndWait(),
-              UnorderedElementsAre(Pair(
-                  SerializesTo("https://example.test"),
-                  UnorderedElementsAre(SerializesTo("https://example.test"),
-                                       SerializesTo("https://member1.test"),
-                                       SerializesTo("https://member2.test")))));
-}
-
-TEST_F(FirstPartySetsEnabledTest,
-       SetsManuallySpecified_Valid_OwnerIsOnlyMember) {
-  sets().SetManuallySpecifiedSet("https://example.test,https://example.test");
   EXPECT_THAT(SetsAndWait(), IsEmpty());
-}
-
-TEST_F(FirstPartySetsEnabledTest, SetsManuallySpecified_Valid_OwnerIsMember) {
-  sets().SetManuallySpecifiedSet(
-      "https://example.test,https://example.test,https://member1.test");
-  EXPECT_THAT(SetsAndWait(),
-              UnorderedElementsAre(Pair(
-                  SerializesTo("https://example.test"),
-                  UnorderedElementsAre(SerializesTo("https://example.test"),
-                                       SerializesTo("https://member1.test")))));
-}
-
-TEST_F(FirstPartySetsEnabledTest, SetsManuallySpecified_Valid_RepeatedMember) {
-  sets().SetManuallySpecifiedSet(
-      R"(https://example.test,
-       https://member1.test,
-       https://member2.test,
-       https://member1.test)");
-  EXPECT_THAT(SetsAndWait(),
-              UnorderedElementsAre(Pair(
-                  SerializesTo("https://example.test"),
-                  UnorderedElementsAre(SerializesTo("https://example.test"),
-                                       SerializesTo("https://member1.test"),
-                                       SerializesTo("https://member2.test")))));
-}
-
-TEST_F(FirstPartySetsEnabledTest,
-       SetsManuallySpecified_DeduplicatesOwnerOwner) {
-  const std::string input = R"(
-  [
-    {
-      "owner": "https://example.test",
-      "members": ["https://member2.test", "https://member3.test"]
-    },
-    {
-      "owner": "https://bar.test",
-      "members": ["https://member4.test"]
-    }
-  ]
-  )";
-  ASSERT_TRUE(base::JSONReader::Read(input));
-  SetComponentSetsAndWait(input);
-
-  sets().SetManuallySpecifiedSet(
-      "https://example.test,https://member1.test,https://member2.test");
-  EXPECT_THAT(
-      SetsAndWait(),
-      UnorderedElementsAre(
-          Pair(SerializesTo("https://example.test"),
-               UnorderedElementsAre(SerializesTo("https://example.test"),
-                                    SerializesTo("https://member1.test"),
-                                    SerializesTo("https://member2.test"))),
-          Pair(SerializesTo("https://bar.test"),
-               UnorderedElementsAre(SerializesTo("https://bar.test"),
-                                    SerializesTo("https://member4.test")))));
-}
-
-TEST_F(FirstPartySetsEnabledTest,
-       SetsManuallySpecified_DeduplicatesOwnerMember) {
-  const std::string input = R"(
-  [
-    {
-      "owner": "https://foo.test",
-      "members": ["https://member1.test", "https://example.test"]
-    },
-    {
-      "owner": "https://bar.test",
-      "members": ["https://member2.test"]
-    }
-  ]
-  )";
-  ASSERT_TRUE(base::JSONReader::Read(input));
-  SetComponentSetsAndWait(input);
-
-  sets().SetManuallySpecifiedSet(
-      "https://example.test,https://member1.test,https://member3.test");
-  EXPECT_THAT(
-      SetsAndWait(),
-      UnorderedElementsAre(
-          Pair(SerializesTo("https://example.test"),
-               UnorderedElementsAre(SerializesTo("https://example.test"),
-                                    SerializesTo("https://member1.test"),
-                                    SerializesTo("https://member3.test"))),
-          Pair(SerializesTo("https://bar.test"),
-               UnorderedElementsAre(SerializesTo("https://bar.test"),
-                                    SerializesTo("https://member2.test")))));
-}
-
-TEST_F(FirstPartySetsEnabledTest,
-       SetsManuallySpecified_DeduplicatesMemberOwner) {
-  const std::string input = R"(
-  [
-    {
-      "owner": "https://foo.test",
-      "members": ["https://member1.test", "https://member2.test"]
-    },
-    {
-      "owner": "https://member3.test",
-      "members": ["https://member4.test"]
-    }
-  ]
-  )";
-  ASSERT_TRUE(base::JSONReader::Read(input));
-  SetComponentSetsAndWait(input);
-
-  sets().SetManuallySpecifiedSet("https://example.test,https://member3.test");
-  EXPECT_THAT(
-      SetsAndWait(),
-      UnorderedElementsAre(
-          Pair(SerializesTo("https://example.test"),
-               UnorderedElementsAre(SerializesTo("https://example.test"),
-                                    SerializesTo("https://member3.test"))),
-          Pair(SerializesTo("https://foo.test"),
-               UnorderedElementsAre(SerializesTo("https://foo.test"),
-                                    SerializesTo("https://member1.test"),
-                                    SerializesTo("https://member2.test")))));
-}
-
-TEST_F(FirstPartySetsEnabledTest,
-       SetsManuallySpecified_DeduplicatesMemberMember) {
-  const std::string input = R"(
-  [
-    {
-      "owner": "https://foo.test",
-      "members": ["https://member2.test", "https://member3.test"]
-    },
-    {
-      "owner": "https://bar.test",
-      "members": ["https://member4.test"]
-    }
-  ]
-  )";
-  ASSERT_TRUE(base::JSONReader::Read(input));
-  SetComponentSetsAndWait(input);
-
-  sets().SetManuallySpecifiedSet(
-      "https://example.test,https://member1.test,https://member2.test");
-  EXPECT_THAT(
-      SetsAndWait(),
-      UnorderedElementsAre(
-          Pair(SerializesTo("https://example.test"),
-               UnorderedElementsAre(SerializesTo("https://example.test"),
-                                    SerializesTo("https://member1.test"),
-                                    SerializesTo("https://member2.test"))),
-          Pair(SerializesTo("https://foo.test"),
-               UnorderedElementsAre(SerializesTo("https://foo.test"),
-                                    SerializesTo("https://member3.test"))),
-          Pair(SerializesTo("https://bar.test"),
-               UnorderedElementsAre(SerializesTo("https://bar.test"),
-                                    SerializesTo("https://member4.test")))));
-}
-
-TEST_F(FirstPartySetsEnabledTest,
-       SetsManuallySpecified_PrunesInducedSingletons) {
-  const std::string input = R"(
-  [
-    {
-      "owner": "https://foo.test",
-      "members": ["https://member1.test"]
-    }
-  ]
-  )";
-  ASSERT_TRUE(base::JSONReader::Read(input));
-  SetComponentSetsAndWait(input);
-
-  sets().SetManuallySpecifiedSet("https://example.test,https://member1.test");
-  // If we just erased entries that overlapped with the manually-supplied set,
-  // https://foo.test would be left as a singleton set. But since we disallow
-  // singleton sets, we ensure that such cases are caught and removed.
-  EXPECT_THAT(SetsAndWait(),
-              UnorderedElementsAre(Pair(
-                  SerializesTo("https://example.test"),
-                  UnorderedElementsAre(SerializesTo("https://example.test"),
-                                       SerializesTo("https://member1.test")))));
 }
 
 TEST_F(FirstPartySetsEnabledTest, ComputeSetsDiff_SitesJoined) {
-  auto old_sets = base::flat_map<net::SchemefulSite, net::SchemefulSite>{
+  auto old_sets = FirstPartySets::FlattenedSets{
       {net::SchemefulSite(GURL("https://example.test")),
        net::SchemefulSite(GURL("https://example.test"))},
       {net::SchemefulSite(GURL("https://member1.test")),
@@ -674,29 +206,20 @@ TEST_F(FirstPartySetsEnabledTest, ComputeSetsDiff_SitesJoined) {
       {net::SchemefulSite(GURL("https://member3.test")),
        net::SchemefulSite(GURL("https://example.test"))}};
 
-  // Consistency check the reviewer-friendly JSON format matches the input.
-  ASSERT_THAT(FirstPartySetParser::ParseSetsFromComponentUpdater(R"(
-    [
-      {
-        "owner": "https://example.test",
-        "members": ["https://member1.test", "https://member3.test"]
-      }
-    ]
-  )"),
+  // Consistency check the reviewer-friendly format matches the input.
+  ASSERT_THAT(ParseSetsFromStream(
+                  R"({"owner": "https://example.test", "members": )"
+                  R"(["https://member1.test", "https://member3.test"]})"),
               old_sets);
 
-  SetComponentSetsAndWait(R"(
-    [
-      {
-        "owner": "https://example.test",
-        "members": ["https://member1.test", "https://member3.test"]
-      },
-      {
-        "owner": "https://foo.test",
-        "members": ["https://member2.test"]
-      }
-    ]
-  )");
+  SetComponentSets(
+      R"({"owner": "https://example.test", )"
+      R"("members": ["https://member1.test", "https://member3.test"]}
+      {"owner": "https://foo.test", "members": ["https://member2.test"]})");
+  // Set required input to be able to receive the merged sets from
+  // FirstPartySetsLoader.
+  sets().SetManuallySpecifiedSet("");
+  env().RunUntilIdle();
 
   // "https://foo.test" and "https://member2.test" joined FPSs. We don't clear
   // site data upon joining, so the computed diff should be empty set.
@@ -704,7 +227,7 @@ TEST_F(FirstPartySetsEnabledTest, ComputeSetsDiff_SitesJoined) {
 }
 
 TEST_F(FirstPartySetsEnabledTest, ComputeSetsDiff_SitesLeft) {
-  auto old_sets = base::flat_map<net::SchemefulSite, net::SchemefulSite>{
+  auto old_sets = FirstPartySets::FlattenedSets{
       {net::SchemefulSite(GURL("https://example.test")),
        net::SchemefulSite(GURL("https://example.test"))},
       {net::SchemefulSite(GURL("https://member1.test")),
@@ -716,29 +239,19 @@ TEST_F(FirstPartySetsEnabledTest, ComputeSetsDiff_SitesLeft) {
       {net::SchemefulSite(GURL("https://member2.test")),
        net::SchemefulSite(GURL("https://foo.test"))}};
 
-  // Consistency check the reviewer-friendly JSON format matches the input.
-  ASSERT_THAT(FirstPartySetParser::ParseSetsFromComponentUpdater(R"(
-    [
-      {
-        "owner": "https://example.test",
-        "members": ["https://member1.test", "https://member3.test"]
-      },
-      {
-        "owner": "https://foo.test",
-        "members": ["https://member2.test"]
-      },
-    ]
-  )"),
-              old_sets);
+  // Consistency check the reviewer-friendly format matches the input.
+  ASSERT_THAT(
+      ParseSetsFromStream(R"({"owner": "https://example.test", "members": )"
+                          R"(["https://member1.test", "https://member3.test"]}
+      { "owner": "https://foo.test", "members": ["https://member2.test"]})"),
+      old_sets);
 
-  SetComponentSetsAndWait(R"(
-    [
-      {
-        "owner": "https://example.test",
-        "members": ["https://member1.test"]
-      },
-    ]
-  )");
+  SetComponentSets(R"({"owner": "https://example.test", )"
+                   R"("members": ["https://member1.test"]})");
+  // Set required input to be able to receive the merged sets from
+  // FirstPartySetsLoader.
+  sets().SetManuallySpecifiedSet("");
+  env().RunUntilIdle();
   // Expected diff: "https://foo.test", "https://member2.test" and
   // "https://member3.test" left FPSs.
   EXPECT_THAT(sets().ComputeSetsDiff(old_sets),
@@ -748,7 +261,7 @@ TEST_F(FirstPartySetsEnabledTest, ComputeSetsDiff_SitesLeft) {
 }
 
 TEST_F(FirstPartySetsEnabledTest, ComputeSetsDiff_OwnerChanged) {
-  auto old_sets = base::flat_map<net::SchemefulSite, net::SchemefulSite>{
+  auto old_sets = FirstPartySets::FlattenedSets{
       {net::SchemefulSite(GURL("https://example.test")),
        net::SchemefulSite(GURL("https://example.test"))},
       {net::SchemefulSite(GURL("https://member1.test")),
@@ -760,40 +273,28 @@ TEST_F(FirstPartySetsEnabledTest, ComputeSetsDiff_OwnerChanged) {
       {net::SchemefulSite(GURL("https://member3.test")),
        net::SchemefulSite(GURL("https://foo.test"))}};
 
-  // Consistency check the reviewer-friendly JSON format matches the input.
-  ASSERT_THAT(FirstPartySetParser::ParseSetsFromComponentUpdater(R"(
-    [
-      {
-        "owner": "https://example.test",
-        "members": ["https://member1.test"]
-      },
-      {
-        "owner": "https://foo.test",
-        "members": ["https://member2.test", "https://member3.test"]
-      },
-    ]
-  )"),
+  // Consistency check the reviewer-friendly format matches the input.
+  ASSERT_THAT(ParseSetsFromStream(
+                  R"({"owner": "https://example.test", "members": )"
+                  R"(["https://member1.test"]}
+      {"owner": "https://foo.test", "members": )"
+                  R"(["https://member2.test", "https://member3.test"]})"),
               old_sets);
 
-  SetComponentSetsAndWait(R"(
-    [
-      {
-        "owner": "https://example.test",
-        "members": ["https://member1.test", "https://member3.test"]
-      },
-      {
-        "owner": "https://foo.test",
-        "members": ["https://member2.test"]
-      }
-    ]
-  )");
+  SetComponentSets(R"({"owner": "https://example.test", "members": )"
+                   R"(["https://member1.test", "https://member3.test"]}
+      {"owner": "https://foo.test", "members": ["https://member2.test"]})");
+  // Set required input to be able to receive the merged sets from
+  // FirstPartySetsLoader.
+  sets().SetManuallySpecifiedSet("");
+  env().RunUntilIdle();
   // Expected diff: "https://member3.test" changed owner.
   EXPECT_THAT(sets().ComputeSetsDiff(old_sets),
               UnorderedElementsAre(SerializesTo("https://member3.test")));
 }
 
 TEST_F(FirstPartySetsEnabledTest, ComputeSetsDiff_OwnerLeft) {
-  auto old_sets = base::flat_map<net::SchemefulSite, net::SchemefulSite>{
+  auto old_sets = FirstPartySets::FlattenedSets{
       {net::SchemefulSite(GURL("https://example.test")),
        net::SchemefulSite(GURL("https://example.test"))},
       {net::SchemefulSite(GURL("https://foo.test")),
@@ -801,25 +302,19 @@ TEST_F(FirstPartySetsEnabledTest, ComputeSetsDiff_OwnerLeft) {
       {net::SchemefulSite(GURL("https://bar.test")),
        net::SchemefulSite(GURL("https://example.test"))}};
 
-  // Consistency check the reviewer-friendly JSON format matches the input.
-  ASSERT_THAT(FirstPartySetParser::ParseSetsFromComponentUpdater(R"(
-    [
-      {
-        "owner": "https://example.test",
-        "members": ["https://foo.test", "https://bar.test"]
-      }
-    ]
-  )"),
-              old_sets);
+  // Consistency check the reviewer-friendly format matches the input.
+  ASSERT_THAT(
+      ParseSetsFromStream(R"({"owner": "https://example.test", "members": )"
+                          R"(["https://foo.test", "https://bar.test"]})"),
+      old_sets);
 
-  SetComponentSetsAndWait(R"(
-    [
-      {
-        "owner": "https://foo.test",
-        "members": ["https://bar.test"]
-      }
-    ]
+  SetComponentSets(R"(
+      {"owner": "https://foo.test", "members": ["https://bar.test"]}
   )");
+  // Set required input to be able to receive the merged sets from
+  // FirstPartySetsLoader.
+  sets().SetManuallySpecifiedSet("");
+  env().RunUntilIdle();
   // Expected diff: "https://example.test" left FPSs, "https://foo.test" and
   // "https://bar.test" changed owner.
   // It would be valid to only have example.test in the diff, but our logic
@@ -832,31 +327,24 @@ TEST_F(FirstPartySetsEnabledTest, ComputeSetsDiff_OwnerLeft) {
 }
 
 TEST_F(FirstPartySetsEnabledTest, ComputeSetsDiff_OwnerMemberRotate) {
-  auto old_sets = base::flat_map<net::SchemefulSite, net::SchemefulSite>{
+  auto old_sets = FirstPartySets::FlattenedSets{
       {net::SchemefulSite(GURL("https://example.test")),
        net::SchemefulSite(GURL("https://example.test"))},
       {net::SchemefulSite(GURL("https://foo.test")),
        net::SchemefulSite(GURL("https://example.test"))}};
 
-  // Consistency check the reviewer-friendly JSON format matches the input.
-  ASSERT_THAT(FirstPartySetParser::ParseSetsFromComponentUpdater(R"(
-    [
-      {
-        "owner": "https://example.test",
-        "members": ["https://foo.test"]
-      }
-    ]
-  )"),
-              old_sets);
+  // Consistency check the reviewer-friendly format matches the input.
+  ASSERT_THAT(
+      ParseSetsFromStream(R"({"owner": "https://example.test", "members": )"
+                          R"(["https://foo.test"]})"),
+      old_sets);
 
-  SetComponentSetsAndWait(R"(
-    [
-      {
-        "owner": "https://foo.test",
-        "members": ["https://example.test"]
-      }
-    ]
-  )");
+  SetComponentSets(
+      R"({"owner": "https://foo.test", "members": ["https://example.test"]})");
+  // Set required input to be able to receive the merged sets from
+  // FirstPartySetsLoader.
+  sets().SetManuallySpecifiedSet("");
+  env().RunUntilIdle();
   // Expected diff: "https://example.test" and "https://foo.test" changed owner.
   // It would be valid to not include example.test and foo.test in the result,
   // but our logic isn't sophisticated enough yet to know that.ß
@@ -867,33 +355,29 @@ TEST_F(FirstPartySetsEnabledTest, ComputeSetsDiff_OwnerMemberRotate) {
 
 TEST_F(FirstPartySetsEnabledTest, ComputeSetsDiff_EmptySets) {
   // Empty old_sets.
-  SetComponentSetsAndWait(R"(
-    [
-      {
-        "owner": "https://example.test",
-        "members": ["https://member1.test"]
-      },
-    ]
-  )");
+  SetComponentSets(R"({"owner": "https://example.test", )"
+                   R"("members": ["https://member1.test"]})");
+  // Set required input to be able to receive the merged sets from
+  // FirstPartySetsLoader.
+  sets().SetManuallySpecifiedSet("");
+  env().RunUntilIdle();
   EXPECT_THAT(sets().ComputeSetsDiff({}), IsEmpty());
 
   // Empty current sets.
-  auto old_sets = base::flat_map<net::SchemefulSite, net::SchemefulSite>{
+  auto old_sets = FirstPartySets::FlattenedSets{
       {net::SchemefulSite(GURL("https://example.test")),
        net::SchemefulSite(GURL("https://example.test"))},
       {net::SchemefulSite(GURL("https://member1.test")),
        net::SchemefulSite(GURL("https://example.test"))}};
-  // Consistency check the reviewer-friendly JSON format matches the input.
-  ASSERT_THAT(FirstPartySetParser::ParseSetsFromComponentUpdater(R"(
-    [
-      {
-        "owner": "https://example.test",
-        "members": ["https://member1.test"]
-      }
-    ]
-  )"),
+  // Consistency check the reviewer-friendly format matches the input.
+  ASSERT_THAT(ParseSetsFromStream(R"({"owner": "https://example.test", )"
+                                  R"("members": ["https://member1.test"]})"),
               old_sets);
-  EXPECT_THAT(FirstPartySets(true).ComputeSetsDiff(old_sets),
+  FirstPartySets first_party_sets(true);
+  first_party_sets.SetManuallySpecifiedSet("");
+  SetComponentSets(first_party_sets, "[]");
+  env().RunUntilIdle();
+  EXPECT_THAT(first_party_sets.ComputeSetsDiff(old_sets),
               UnorderedElementsAre(SerializesTo("https://example.test"),
                                    SerializesTo("https://member1.test")));
 }
@@ -915,27 +399,30 @@ TEST_F(FirstPartySetsEnabledTest, ClearSiteDataOnChangedSetsIfReady_NotReady) {
   {
     FirstPartySets sets(true);
     callback_calls = 0;
-    SetComponentSetsAndWait(sets, "[]");
+    SetComponentSets(sets, "[]");
     sets.SetPersistedSets("{}");
     sets.SetOnSiteDataCleared(callback);
+    env().RunUntilIdle();
     EXPECT_EQ(callback_calls, 0);
   }
   // persisted sets not ready.
   {
     FirstPartySets sets(true);
     callback_calls = 0;
-    SetComponentSetsAndWait(sets, "[]");
+    SetComponentSets(sets, "[]");
     sets.SetManuallySpecifiedSet("");
     sets.SetOnSiteDataCleared(callback);
+    env().RunUntilIdle();
     EXPECT_EQ(callback_calls, 0);
   }
   // callback not set.
   {
     FirstPartySets sets(true);
     callback_calls = 0;
-    SetComponentSetsAndWait(sets, "[]");
+    SetComponentSets(sets, "[]");
     sets.SetManuallySpecifiedSet("");
     sets.SetPersistedSets("{}");
+    env().RunUntilIdle();
     EXPECT_EQ(callback_calls, 0);
   }
 }
@@ -944,54 +431,36 @@ TEST_F(FirstPartySetsEnabledTest, ClearSiteDataOnChangedSetsIfReady_NotReady) {
 // inputs from Component Updater and command line flag.
 TEST_F(FirstPartySetsEnabledTest, ClearSiteDataOnChangedSetsIfReady_Ready) {
   int callback_calls = 0;
-  SetComponentSetsAndWait(R"([
-       {
-         "owner": "https://example.test",
-         "members": ["https://member1.test"]
-       }
-     ])");
+  SetComponentSets(R"({"owner": "https://example.test", "members": )"
+                   R"(["https://member1.test"]})");
   sets().SetManuallySpecifiedSet("https://example2.test,https://member2.test");
   sets().SetPersistedSets(
       R"({"https://example.test":"https://example.test",
             "https://member1.test":"https://example.test"})");
-  sets().SetOnSiteDataCleared(base::BindLambdaForTesting([&](const std::string&
-                                                                 got) {
-    EXPECT_EQ(
-        got,
-        R"({"https://member1.test":"https://example.test","https://member2.test":"https://example2.test"})");
-    callback_calls++;
-  }));
+  sets().SetOnSiteDataCleared(
+      base::BindLambdaForTesting([&](const std::string& got) {
+        EXPECT_EQ(got, R"({"https://member1.test":"https://example.test",)"
+                       R"("https://member2.test":"https://example2.test"})");
+        callback_calls++;
+      }));
+  env().RunUntilIdle();
   EXPECT_EQ(callback_calls, 1);
 }
 
 class PopulatedFirstPartySetsTest : public FirstPartySetsEnabledTest {
  public:
   PopulatedFirstPartySetsTest() {
-    const std::string input = R"(
-      [
-        {
-          "owner": "https://example.test",
-          "members": ["https://member1.test", "https://member3.test"]
-        },
-        {
-          "owner": "https://foo.test",
-          "members": ["https://member2.test"]
-        }
-      ]
-      )";
-    CHECK(base::JSONReader::Read(input));
-    SetComponentSetsAndWait(input);
+    const std::string input =
+        R"({"owner": "https://example.test", "members": )"
+        R"(["https://member1.test", "https://member3.test"]}
+        {"owner": "https://foo.test", "members": ["https://member2.test"]})";
+    SetComponentSets(input);
+    // Set required input to be able to receive the merged sets from
+    // FirstPartySetsLoader.
+    sets().SetManuallySpecifiedSet("");
 
-    CHECK(Value(
-        SetsAndWait(),
-        UnorderedElementsAre(
-            Pair(SerializesTo("https://example.test"),
-                 UnorderedElementsAre(SerializesTo("https://example.test"),
-                                      SerializesTo("https://member1.test"),
-                                      SerializesTo("https://member3.test"))),
-            Pair(SerializesTo("https://foo.test"),
-                 UnorderedElementsAre(SerializesTo("https://foo.test"),
-                                      SerializesTo("https://member2.test"))))));
+    // We don't wait for the sets to be loaded before running the tests, in
+    // order to let the tests provoke raciness if any exists.
   }
 };
 
@@ -1433,85 +902,86 @@ TEST_F(PopulatedFirstPartySetsTest, ComputeMetadata) {
   // Works as usual for sites that are in First-Party sets.
   EXPECT_EQ(ComputeMetadataAndWait(member, &member, {member}),
             net::FirstPartySetMetadata(
-                net::SamePartyContext(Type::kSameParty), &owner,
+                net::SamePartyContext(Type::kSameParty), &owner, &owner,
                 net::FirstPartySetsContextType::kHomogeneous));
   EXPECT_EQ(ComputeMetadataAndWait(owner, &member, {member}),
             net::FirstPartySetMetadata(
-                net::SamePartyContext(Type::kSameParty), &owner,
+                net::SamePartyContext(Type::kSameParty), &owner, &owner,
                 net::FirstPartySetsContextType::kHomogeneous));
   EXPECT_EQ(ComputeMetadataAndWait(member, &owner, {member}),
             net::FirstPartySetMetadata(
-                net::SamePartyContext(Type::kSameParty), &owner,
+                net::SamePartyContext(Type::kSameParty), &owner, &owner,
                 net::FirstPartySetsContextType::kHomogeneous));
   EXPECT_EQ(ComputeMetadataAndWait(member, &member, {owner}),
             net::FirstPartySetMetadata(
-                net::SamePartyContext(Type::kSameParty), &owner,
+                net::SamePartyContext(Type::kSameParty), &owner, &owner,
                 net::FirstPartySetsContextType::kHomogeneous));
   EXPECT_EQ(ComputeMetadataAndWait(member, &member, {member, owner}),
             net::FirstPartySetMetadata(
-                net::SamePartyContext(Type::kSameParty), &owner,
+                net::SamePartyContext(Type::kSameParty), &owner, &owner,
                 net::FirstPartySetsContextType::kHomogeneous));
 
   // Works if the site is provided with WSS scheme instead of HTTPS.
   EXPECT_EQ(ComputeMetadataAndWait(wss_member, &member, {member, owner}),
             net::FirstPartySetMetadata(
-                net::SamePartyContext(Type::kSameParty), &owner,
+                net::SamePartyContext(Type::kSameParty), &owner, &owner,
                 net::FirstPartySetsContextType::kHomogeneous));
 
   EXPECT_EQ(ComputeMetadataAndWait(nonmember, &member, {member}),
             net::FirstPartySetMetadata(
-                net::SamePartyContext(Type::kCrossParty), nullptr,
+                net::SamePartyContext(Type::kCrossParty), nullptr, &owner,
                 net::FirstPartySetsContextType::kTopResourceMismatch));
   EXPECT_EQ(ComputeMetadataAndWait(member, &nonmember, {member}),
             net::FirstPartySetMetadata(
-                net::SamePartyContext(Type::kCrossParty), &owner,
+                net::SamePartyContext(Type::kCrossParty), &owner, nullptr,
                 net::FirstPartySetsContextType::kTopResourceMismatch));
   EXPECT_EQ(ComputeMetadataAndWait(wss_nonmember, &wss_member, {member, owner}),
             net::FirstPartySetMetadata(
-                net::SamePartyContext(Type::kCrossParty), nullptr,
+                net::SamePartyContext(Type::kCrossParty), nullptr, &owner,
                 net::FirstPartySetsContextType::kTopResourceMismatch));
 
   // Top&resource differs from Ancestors.
-  EXPECT_EQ(
-      ComputeMetadataAndWait(member, &member, {nonmember}),
-      net::FirstPartySetMetadata(
-          net::SamePartyContext(Type::kCrossParty, Type::kCrossParty,
-                                Type::kSameParty),
-          &owner, net::FirstPartySetsContextType::kTopResourceMatchMixed));
+  EXPECT_EQ(ComputeMetadataAndWait(member, &member, {nonmember}),
+            net::FirstPartySetMetadata(
+                net::SamePartyContext(Type::kCrossParty, Type::kCrossParty,
+                                      Type::kSameParty),
+                &owner, &owner,
+                net::FirstPartySetsContextType::kTopResourceMatchMixed));
 
   // Metrics values infer singleton sets when appropriate.
-  EXPECT_EQ(ComputeMetadataAndWait(nonmember, &nonmember, {nonmember}),
-            net::FirstPartySetMetadata(
-                net::SamePartyContext(Type::kCrossParty, Type::kSameParty,
-                                      Type::kSameParty),
-                nullptr, net::FirstPartySetsContextType::kHomogeneous));
+  EXPECT_EQ(
+      ComputeMetadataAndWait(nonmember, &nonmember, {nonmember}),
+      net::FirstPartySetMetadata(
+          net::SamePartyContext(Type::kCrossParty, Type::kSameParty,
+                                Type::kSameParty),
+          nullptr, nullptr, net::FirstPartySetsContextType::kHomogeneous));
   EXPECT_EQ(ComputeMetadataAndWait(nonmember, &nonmember1, {nonmember}),
             net::FirstPartySetMetadata(
-                net::SamePartyContext(Type::kCrossParty), nullptr,
+                net::SamePartyContext(Type::kCrossParty), nullptr, nullptr,
                 net::FirstPartySetsContextType::kTopResourceMismatch));
   EXPECT_EQ(ComputeMetadataAndWait(nonmember1, &nonmember, {nonmember}),
             net::FirstPartySetMetadata(
-                net::SamePartyContext(Type::kCrossParty), nullptr,
+                net::SamePartyContext(Type::kCrossParty), nullptr, nullptr,
                 net::FirstPartySetsContextType::kTopResourceMismatch));
-  EXPECT_EQ(
-      ComputeMetadataAndWait(nonmember, &nonmember, {nonmember1}),
-      net::FirstPartySetMetadata(
-          net::SamePartyContext(Type::kCrossParty, Type::kCrossParty,
-                                Type::kSameParty),
-          nullptr, net::FirstPartySetsContextType::kTopResourceMatchMixed));
+  EXPECT_EQ(ComputeMetadataAndWait(nonmember, &nonmember, {nonmember1}),
+            net::FirstPartySetMetadata(
+                net::SamePartyContext(Type::kCrossParty, Type::kCrossParty,
+                                      Type::kSameParty),
+                nullptr, nullptr,
+                net::FirstPartySetsContextType::kTopResourceMatchMixed));
 
-  EXPECT_EQ(
-      ComputeMetadataAndWait(member, &member, {member, nonmember}),
-      net::FirstPartySetMetadata(
-          net::SamePartyContext(Type::kCrossParty, Type::kCrossParty,
-                                Type::kSameParty),
-          &owner, net::FirstPartySetsContextType::kTopResourceMatchMixed));
-  EXPECT_EQ(
-      ComputeMetadataAndWait(nonmember, &nonmember, {member, nonmember}),
-      net::FirstPartySetMetadata(
-          net::SamePartyContext(Type::kCrossParty, Type::kCrossParty,
-                                Type::kSameParty),
-          nullptr, net::FirstPartySetsContextType::kTopResourceMatchMixed));
+  EXPECT_EQ(ComputeMetadataAndWait(member, &member, {member, nonmember}),
+            net::FirstPartySetMetadata(
+                net::SamePartyContext(Type::kCrossParty, Type::kCrossParty,
+                                      Type::kSameParty),
+                &owner, &owner,
+                net::FirstPartySetsContextType::kTopResourceMatchMixed));
+  EXPECT_EQ(ComputeMetadataAndWait(nonmember, &nonmember, {member, nonmember}),
+            net::FirstPartySetMetadata(
+                net::SamePartyContext(Type::kCrossParty, Type::kCrossParty,
+                                      Type::kSameParty),
+                nullptr, nullptr,
+                net::FirstPartySetsContextType::kTopResourceMatchMixed));
 }
 
 TEST_F(PopulatedFirstPartySetsTest, FindOwner) {
@@ -1539,8 +1009,56 @@ TEST_F(PopulatedFirstPartySetsTest, FindOwner) {
 
   for (const auto& test_case : test_cases) {
     EXPECT_EQ(test_case.expected,
-              sets().FindOwner(net::SchemefulSite(GURL(test_case.url))));
+              FindOwnerAndWait(net::SchemefulSite(GURL(test_case.url))));
   }
+}
+
+TEST_F(PopulatedFirstPartySetsTest, FindOwners) {
+  net::SchemefulSite kExample =
+      net::SchemefulSite(GURL("https://example.test"));
+  net::SchemefulSite kFoo = net::SchemefulSite(GURL("https://foo.test"));
+  net::SchemefulSite kMember1 =
+      net::SchemefulSite(GURL("https://member1.test"));
+  net::SchemefulSite kMember2 =
+      net::SchemefulSite(GURL("https://member2.test"));
+  net::SchemefulSite kNonmember =
+      net::SchemefulSite(GURL("https://nonmember.test"));
+
+  EXPECT_THAT(FindOwnersAndWait({kExample}),
+              UnorderedElementsAre(Pair(SerializesTo("https://example.test"),
+                                        SerializesTo("https://example.test"))));
+  EXPECT_THAT(FindOwnersAndWait({kMember1}),
+              UnorderedElementsAre(Pair(SerializesTo("https://member1.test"),
+                                        SerializesTo("https://example.test"))));
+  EXPECT_THAT(FindOwnersAndWait({kNonmember}), IsEmpty());
+
+  EXPECT_THAT(FindOwnersAndWait({kExample, kNonmember}),
+              UnorderedElementsAre(Pair(SerializesTo("https://example.test"),
+                                        SerializesTo("https://example.test"))));
+  EXPECT_THAT(FindOwnersAndWait({kMember1, kNonmember}),
+              UnorderedElementsAre(Pair(SerializesTo("https://member1.test"),
+                                        SerializesTo("https://example.test"))));
+
+  EXPECT_THAT(FindOwnersAndWait({kExample, kFoo}),
+              UnorderedElementsAre(Pair(SerializesTo("https://example.test"),
+                                        SerializesTo("https://example.test")),
+                                   Pair(SerializesTo("https://foo.test"),
+                                        SerializesTo("https://foo.test"))));
+  EXPECT_THAT(FindOwnersAndWait({kMember1, kFoo}),
+              UnorderedElementsAre(Pair(SerializesTo("https://member1.test"),
+                                        SerializesTo("https://example.test")),
+                                   Pair(SerializesTo("https://foo.test"),
+                                        SerializesTo("https://foo.test"))));
+  EXPECT_THAT(FindOwnersAndWait({kExample, kMember2}),
+              UnorderedElementsAre(Pair(SerializesTo("https://example.test"),
+                                        SerializesTo("https://example.test")),
+                                   Pair(SerializesTo("https://member2.test"),
+                                        SerializesTo("https://foo.test"))));
+  EXPECT_THAT(FindOwnersAndWait({kMember1, kMember2}),
+              UnorderedElementsAre(Pair(SerializesTo("https://member1.test"),
+                                        SerializesTo("https://example.test")),
+                                   Pair(SerializesTo("https://member2.test"),
+                                        SerializesTo("https://foo.test"))));
 }
 
 TEST_F(PopulatedFirstPartySetsTest, Sets_NonEmpty) {
@@ -1557,6 +1075,10 @@ TEST_F(PopulatedFirstPartySetsTest, Sets_NonEmpty) {
 }
 
 TEST_F(PopulatedFirstPartySetsTest, ComputeContextType) {
+  // ComputeContextType assumes that the instance is fully initialized, so we
+  // wait for that before proceeding.
+  SetsAndWait();
+
   net::SchemefulSite example(GURL("https://example.test"));
   net::SchemefulSite member1(GURL("https://member1.test"));
   net::SchemefulSite foo(GURL("https://foo.test"));

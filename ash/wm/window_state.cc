@@ -38,7 +38,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/base/window_state_type.h"
-#include "components/app_restore/features.h"
 #include "components/app_restore/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/layout_manager.h"
@@ -211,9 +210,6 @@ void ReportAshPipAndroidPipUseTime(base::TimeDelta duration) {
 
 // Notifies the window restore controller to write to file.
 void SaveWindowForWindowRestore(WindowState* window_state) {
-  if (!full_restore::features::IsFullRestoreEnabled())
-    return;
-
   auto* controller = WindowRestoreController::Get();
   if (controller)
     controller->SaveWindow(window_state);
@@ -361,8 +357,14 @@ bool WindowState::CanActivate() const {
   return wm::CanActivateWindow(window_);
 }
 
-bool WindowState::CanSnap() const {
-  return !IsPip() && CanResize() && CanMaximize();
+bool WindowState::CanSnap() {
+  return CanSnapOnDisplay(GetDisplay());
+}
+
+bool WindowState::CanSnapOnDisplay(display::Display display) const {
+  const bool can_resizable_snap = !IsPip() && CanResize() && CanMaximize();
+  return can_resizable_snap ||
+         (!CanResize() && CanUnresizableSnapOnDisplay(display));
 }
 
 bool WindowState::HasRestoreBounds() const {
@@ -1153,6 +1155,38 @@ void WindowState::OnWindowBoundsChanged(aura::Window* window,
 
   if (reason != ui::PropertyChangeReason::FROM_ANIMATION && !is_dragged())
     SaveWindowForWindowRestore(this);
+}
+
+bool WindowState::CanUnresizableSnapOnDisplay(display::Display display) const {
+  DCHECK(!CanResize());
+
+  if (IsPip())
+    return false;
+
+  if (IsTabletModeEnabled())
+    return false;
+
+  const gfx::Size* preferred_size =
+      window_->GetProperty(kUnresizableSnappedSizeKey);
+  if (!preferred_size || preferred_size->IsZero())
+    return false;
+
+  const auto orientation = GetSnapDisplayOrientation(display);
+  const bool is_horizontal =
+      orientation == chromeos::OrientationType::kLandscapePrimary ||
+      orientation == chromeos::OrientationType::kLandscapeSecondary;
+
+  const gfx::Rect work_area = display.work_area();
+  if (is_horizontal && (preferred_size->width() == 0 ||
+                        work_area.width() < preferred_size->width())) {
+    return false;
+  }
+  if (!is_horizontal && (preferred_size->height() == 0 ||
+                         work_area.height() < preferred_size->height())) {
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace ash

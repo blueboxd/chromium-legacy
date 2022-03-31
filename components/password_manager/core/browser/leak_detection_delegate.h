@@ -43,7 +43,11 @@ class LeakDetectionDelegate : public LeakDetectionDelegateInterface {
   LeakDetectionCheck* leak_check() const { return leak_check_.get(); }
 #endif  // defined(UNIT_TEST)
 
-  void StartLeakCheck(const PasswordForm& form);
+  // Starts a leak check for `credentials`. Note that
+  // `submitted_form_was_likely_signup_form` is typically derived from a
+  // different PasswordForm instance!
+  void StartLeakCheck(const PasswordForm& credentials,
+                      bool submitted_form_was_likely_signup_form);
 
  private:
   // LeakDetectionDelegateInterface:
@@ -73,6 +77,9 @@ class LeakDetectionDelegate : public LeakDetectionDelegateInterface {
 
   // Current leak check-up being performed in the background.
   std::unique_ptr<LeakDetectionCheck> leak_check_;
+
+  // Whether the form that was submitted was (likely) a signup form.
+  bool is_likely_signup_form_ = false;
 
   // Timer measuring the time it takes from StartLeakCheck() until a call to
   // OnLeakDetectionDone() with is_leaked = true.

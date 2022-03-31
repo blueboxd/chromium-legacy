@@ -11,6 +11,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "chrome/updater/tag.h"
 #include "chrome/updater/updater_scope.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -101,6 +102,13 @@ base::FilePath GetExecutableRelativePath();
 // the tag.
 absl::optional<tagging::TagArgs> GetTagArgs();
 
+// Returns the arguments corresponding to `app_id` from the command line tag.
+absl::optional<tagging::AppArgs> GetAppArgs(const std::string& app_id);
+
+// Returns the "ap" corresponding to `app_id` from the command line tag, or an
+// empty string if no tag or "ap" is specified.
+std::string GetAPFromAppArgs(const std::string& app_id);
+
 // Returns true if the user running the updater also owns the `path`.
 bool PathOwnedByUser(const base::FilePath& path);
 
@@ -164,6 +172,14 @@ std::wstring GetTaskNamePrefix(UpdaterScope scope);
 // "{ProductName} Task {System/User} {UpdaterVersion}".
 // For instance: "ChromiumUpdater Task System 92.0.0.1".
 std::wstring GetTaskDisplayName(UpdaterScope scope);
+
+// Returns the value associated with the given switch when they are specified in
+// the legacy updater command line format. Example:
+//   program.exe /switch1 value1 /switch2 /switch3 value3
+// The equivalent Chromium format is:
+//   program.exe --switch1=value1 --switch2 --switch3=value3
+std::string GetSwitchValueInLegacyFormat(const std::wstring& command_line,
+                                         const std::wstring& switch_name);
 
 #endif  // BUILDFLAG(IS_WIN)
 

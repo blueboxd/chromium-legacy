@@ -4,7 +4,6 @@
 
 package org.chromium.chromecast.shell;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.PictureInPictureParams;
 import android.content.Context;
@@ -22,6 +21,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import org.chromium.base.Log;
@@ -76,16 +76,12 @@ public class CastWebContentsActivity extends Activity {
 
     // Tracks whether this Activity is between onCreate() and onDestroy().
     private final Controller<Unit> mCreatedState = new Controller<>();
-    // Tracks whether this Activity is between onResume() and onPause().
-    private final Controller<Unit> mResumedState = new Controller<>();
     // Tracks whether this Activity is between onStart() and onStop().
     private final Controller<Unit> mStartedState = new Controller<>();
     // Tracks the most recent Intent for the Activity.
     private final Controller<Intent> mGotIntentState = new Controller<>();
     // Set this to cause the Activity to finish.
     private final Controller<String> mIsFinishingState = new Controller<>();
-    // Set this to provide the Activity with a CastAudioManager.
-    private final Controller<CastAudioManager> mAudioManagerState = new Controller<>();
     // Set in unittests to skip some behavior.
     private final Controller<Unit> mIsTestingState = new Controller<>();
     // Set at creation. Handles destroying SurfaceHelper.
@@ -138,11 +134,6 @@ public class CastWebContentsActivity extends Activity {
                 .filter(CastWebContentsIntentUtils::shouldTurnOnScreen)
                 .subscribe(Observers.onEnter(x -> turnScreenOn()));
 
-        // Initialize the audio manager in onCreate() if tests haven't already.
-        mCreatedState.and(Observable.not(mAudioManagerState)).subscribe(Observers.onEnter(x -> {
-            mAudioManagerState.set(CastAudioManager.getAudioManager(this));
-        }));
-
         // Handle each new Intent.
         Controller<CastWebContentsSurfaceHelper.StartParams> startParamsState = new Controller<>();
         mGotIntentState.and(Observable.not(mIsFinishingState))
@@ -185,7 +176,7 @@ public class CastWebContentsActivity extends Activity {
         }));
     }
 
-    @TargetApi(Build.VERSION_CODES.S)
+    @RequiresApi(Build.VERSION_CODES.S)
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         if (DEBUG) Log.d(TAG, "onCreate");
@@ -215,20 +206,6 @@ public class CastWebContentsActivity extends Activity {
         if (DEBUG) Log.d(TAG, "onStart");
         mStartedState.set(Unit.unit());
         super.onStart();
-    }
-
-    @Override
-    protected void onPause() {
-        if (DEBUG) Log.d(TAG, "onPause");
-        super.onPause();
-        mResumedState.reset();
-    }
-
-    @Override
-    protected void onResume() {
-        if (DEBUG) Log.d(TAG, "onResume");
-        super.onResume();
-        mResumedState.set(Unit.unit());
     }
 
     @Override
@@ -273,7 +250,7 @@ public class CastWebContentsActivity extends Activity {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.O)
+    @RequiresApi(Build.VERSION_CODES.O)
     @Override
     public void onUserLeaveHint() {
         if (canUsePictureInPicture() && !canAutoEnterPictureInPicture()) {
@@ -317,10 +294,6 @@ public class CastWebContentsActivity extends Activity {
 
     public void testingModeForTesting() {
         mIsTestingState.set(Unit.unit());
-    }
-
-    public void setAudioManagerForTesting(CastAudioManager audioManager) {
-        mAudioManagerState.set(audioManager);
     }
 
     public void setSurfaceHelperForTesting(CastWebContentsSurfaceHelper surfaceHelper) {

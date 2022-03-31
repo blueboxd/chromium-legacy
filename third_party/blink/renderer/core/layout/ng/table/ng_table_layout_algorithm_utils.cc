@@ -191,14 +191,15 @@ NGTableTypes::Row ComputeMinimumRowBlockSize(
     // possible. The one exception is "is_hidden_for_paint". This is set to
     // true if a cell should be hidden within a collapsed column. If this is
     // the case, the size is almost certainly different causing a second layout.
-    return NGTableAlgorithmUtils::CreateTableCellConstraintSpace(
-        table_writing_direction, cell, cell_borders,
-        {cell_inline_size, kIndefiniteSize}, cell_percentage_inline_size,
-        /* alignment_baseline */ absl::nullopt, start_column,
-        /* is_initial_block_size_indefinite */ true,
-        is_table_block_size_specified,
-        /* is_hidden_for_paint */ false, has_collapsed_borders,
-        NGCacheSlot::kMeasure);
+    return NGTableAlgorithmUtils::CreateTableCellConstraintSpaceBuilder(
+               table_writing_direction, cell, cell_borders,
+               {cell_inline_size, kIndefiniteSize}, cell_percentage_inline_size,
+               /* alignment_baseline */ absl::nullopt, start_column,
+               /* is_initial_block_size_indefinite */ true,
+               is_table_block_size_specified,
+               /* is_hidden_for_paint */ false, has_collapsed_borders,
+               NGCacheSlot::kMeasure)
+        .ToConstraintSpace();
   };
 
   // TODO(layout-ng) Scrollbars should be frozen when computing row sizes.
@@ -222,8 +223,7 @@ NGTableTypes::Row ComputeMinimumRowBlockSize(
         table_writing_direction);
     const NGConstraintSpace cell_constraint_space = CreateCellConstraintSpace(
         cell, colspan_cell_tabulator->CurrentColumn(), cell_borders);
-    scoped_refptr<const NGLayoutResult> layout_result =
-        cell.Layout(cell_constraint_space);
+    const NGLayoutResult* layout_result = cell.Layout(cell_constraint_space);
     const NGBoxFragment fragment(
         table_writing_direction,
         To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment()));
@@ -450,7 +450,8 @@ void ComputeSectionInlineConstraints(
 }  // namespace
 
 // static
-NGConstraintSpace NGTableAlgorithmUtils::CreateTableCellConstraintSpace(
+NGConstraintSpaceBuilder
+NGTableAlgorithmUtils::CreateTableCellConstraintSpaceBuilder(
     const WritingDirectionMode table_writing_direction,
     const NGBlockNode cell,
     const NGBoxStrut& cell_borders,
@@ -500,7 +501,7 @@ NGConstraintSpace NGTableAlgorithmUtils::CreateTableCellConstraintSpace(
       !has_collapsed_borders && cell_style.EmptyCells() == EEmptyCells::kHide);
   builder.SetCacheSlot(cache_slot);
 
-  return builder.ToConstraintSpace();
+  return builder;
 }
 
 // Computes maximum possible number of non-mergeable columns.

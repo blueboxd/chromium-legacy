@@ -23,13 +23,25 @@ class MockFeaturePromoController : public FeaturePromoController {
                FeaturePromoSpecification::StringReplacements,
                BubbleCloseCallback),
               (override));
-  MOCK_METHOD(bool, BubbleIsShowing, (const base::Feature&), (const, override));
+  MOCK_METHOD(bool,
+              MaybeShowPromoForDemoPage,
+              (const base::Feature*,
+               FeaturePromoSpecification::StringReplacements,
+               BubbleCloseCallback),
+              (override));
+  MOCK_METHOD(bool,
+              IsPromoActive,
+              (const base::Feature&, bool),
+              (const, override));
   MOCK_METHOD(bool, CloseBubble, (const base::Feature&), (override));
   MOCK_METHOD(PromoHandle,
               CloseBubbleAndContinuePromo,
               (const base::Feature&),
               (override));
-  MOCK_METHOD(void, FinishContinuedPromo, (), (override));
+  MOCK_METHOD(void,
+              FinishContinuedPromo,
+              (const base::Feature* iph_feature),
+              (override));
 
   base::WeakPtr<FeaturePromoController> GetAsWeakPtr() override;
 

@@ -137,7 +137,7 @@ class TestDeviceStatusCollector : public policy::DeviceStatusCollector {
                             bool report_users,
                             bool report_crash_info,
                             bool report_app_info_and_activity)
-      : policy::DeviceStatusCollector(local_state, nullptr),
+      : policy::DeviceStatusCollector(local_state, nullptr, nullptr),
         report_activity_times_(report_activity_times),
         report_nics_(report_nics),
         report_hardware_data_(report_hardware_data),
@@ -556,7 +556,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
         managed_user.get(), std::move(store), std::move(data_manager),
         base::FilePath() /* component_policy_cache_path */,
         policy::UserCloudPolicyManagerAsh::PolicyEnforcement::kPolicyRequired,
-        base::Minutes(1) /* policy_refresh_timeout */,
+        &local_state_, base::Minutes(1) /* policy_refresh_timeout */,
         base::BindOnce(&ManagementUIHandlerTests::OnFatalError,
                        base::Unretained(this)),
         account_id, task_runner_);
@@ -1011,7 +1011,7 @@ TEST_F(ManagementUIHandlerTests, NoDeviceReportingInfo) {
   base::Value info =
       handler_.GetDeviceReportingInfo(nullptr, nullptr, nullptr, GetProfile());
 
-  EXPECT_EQ(info.GetList().size(), 0u);
+  EXPECT_EQ(info.GetListDeprecated().size(), 0u);
 }
 
 TEST_F(ManagementUIHandlerTests, AllEnabledDeviceReportingInfo) {
@@ -1032,7 +1032,7 @@ TEST_F(ManagementUIHandlerTests, AllEnabledDeviceReportingInfo) {
       {kManagementReportAndroidApplications, "android application"},
       {kManagementReportDlpEvents, "dlp events"}};
 
-  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetList(),
+  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetListDeprecated(),
                       expected_elements);
 }
 
@@ -1055,7 +1055,7 @@ TEST_F(ManagementUIHandlerTests,
       {kManagementReportExtensions, "extension"},
       {kManagementReportAndroidApplications, "android application"}};
 
-  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetList(),
+  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetListDeprecated(),
                       expected_elements);
 }
 
@@ -1066,7 +1066,7 @@ TEST_F(ManagementUIHandlerTests, OnlyReportDlpEvents) {
   const std::map<std::string, std::string> expected_elements = {
       {kManagementReportDlpEvents, "dlp events"}};
 
-  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetList(),
+  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetListDeprecated(),
                       expected_elements);
 }
 
@@ -1077,7 +1077,7 @@ TEST_F(ManagementUIHandlerTests, OnlyReportUsersDeviceReportingInfo) {
   const std::map<std::string, std::string> expected_elements = {
       {kManagementReportUsers, "supervised user"}};
 
-  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetList(),
+  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetListDeprecated(),
                       expected_elements);
 }
 
@@ -1086,7 +1086,7 @@ TEST_F(ManagementUIHandlerTests, AllDisabledDeviceReportingInfo) {
   const base::Value info = SetUpForReportingInfo();
   const std::map<std::string, std::string> expected_elements = {};
 
-  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetList(),
+  ASSERT_PRED_FORMAT2(ReportingElementsToBeEQ, info.GetListDeprecated(),
                       expected_elements);
 }
 
@@ -1164,7 +1164,7 @@ TEST_F(ManagementUIHandlerTests, HideProxyServerDisclosureForDirectProxy) {
 
 TEST_F(ManagementUIHandlerTests, ExtensionReportingInfoNoPolicySetNoMessage) {
   auto reporting_info = handler_.GetExtensionReportingInfo();
-  EXPECT_EQ(reporting_info.GetList().size(), 0u);
+  EXPECT_EQ(reporting_info.GetListDeprecated().size(), 0u);
 }
 
 TEST_F(ManagementUIHandlerTests, CloudReportingPolicy) {
@@ -1181,7 +1181,7 @@ TEST_F(ManagementUIHandlerTests, CloudReportingPolicy) {
       kManagementExtensionReportExtensionsPlugin};
 
   ASSERT_PRED_FORMAT2(MessagesToBeEQ,
-                      handler_.GetExtensionReportingInfo().GetList(),
+                      handler_.GetExtensionReportingInfo().GetListDeprecated(),
                       expected_messages);
 }
 
@@ -1237,7 +1237,7 @@ TEST_F(ManagementUIHandlerTests, ExtensionReportingInfoPoliciesMerge) {
       kManagementExtensionReportPerfCrash};
 
   ASSERT_PRED_FORMAT2(MessagesToBeEQ,
-                      handler_.GetExtensionReportingInfo().GetList(),
+                      handler_.GetExtensionReportingInfo().GetListDeprecated(),
                       expected_messages);
 }
 
@@ -1245,7 +1245,7 @@ TEST_F(ManagementUIHandlerTests, ManagedWebsitiesInfoNoPolicySet) {
   TestingProfile::Builder builder_no_domain;
   auto profile = builder_no_domain.Build();
   auto info = handler_.GetManagedWebsitesInfo(profile.get());
-  EXPECT_EQ(info.GetList().size(), 0u);
+  EXPECT_EQ(info.GetListDeprecated().size(), 0u);
 }
 
 TEST_F(ManagementUIHandlerTests, ManagedWebsitiesInfoWebsites) {
@@ -1258,8 +1258,9 @@ TEST_F(ManagementUIHandlerTests, ManagedWebsitiesInfoWebsites) {
   profile->GetPrefs()->Set(prefs::kManagedConfigurationPerOrigin,
                            managed_websites);
   auto info = handler_.GetManagedWebsitesInfo(profile.get());
-  EXPECT_EQ(info.GetList().size(), 1u);
-  EXPECT_EQ(info.GetList().begin()->GetString(), "https://example.com");
+  EXPECT_EQ(info.GetListDeprecated().size(), 1u);
+  EXPECT_EQ(info.GetListDeprecated().begin()->GetString(),
+            "https://example.com");
 }
 
 TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
@@ -1283,7 +1284,8 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
   auto info = handler_.GetThreatProtectionInfo(profile_no_domain.get());
   ASSERT_TRUE(info.is_dict());
   threat_protection_info = &base::Value::AsDictionaryValue(info);
-  EXPECT_TRUE(threat_protection_info->FindListKey("info")->GetList().empty());
+  EXPECT_TRUE(
+      threat_protection_info->FindListKey("info")->GetListDeprecated().empty());
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION),
       base::UTF8ToUTF16(*threat_protection_info->FindStringKey("description")));
@@ -1295,6 +1297,8 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
                           "[]", chrome_policies);
   SetConnectorPolicyValue(policy::key::kOnBulkDataEntryEnterpriseConnector,
                           "[]", chrome_policies);
+  SetConnectorPolicyValue(policy::key::kOnPrintEnterpriseConnector, "[]",
+                          chrome_policies);
   SetConnectorPolicyValue(policy::key::kOnSecurityEventEnterpriseConnector,
                           "[]", chrome_policies);
   profile_no_domain->GetPrefs()->SetInteger(
@@ -1303,7 +1307,8 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
   info = handler_.GetThreatProtectionInfo(profile_no_domain.get());
   ASSERT_TRUE(info.is_dict());
   threat_protection_info = &base::Value::AsDictionaryValue(info);
-  EXPECT_TRUE(threat_protection_info->FindListKey("info")->GetList().empty());
+  EXPECT_TRUE(
+      threat_protection_info->FindListKey("info")->GetListDeprecated().empty());
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION),
       base::UTF8ToUTF16(*threat_protection_info->FindStringKey("description")));
@@ -1320,6 +1325,9 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
   safe_browsing::SetAnalysisConnector(profile_no_domain->GetPrefs(),
                                       enterprise_connectors::BULK_DATA_ENTRY,
                                       "[{\"service_provider\":\"google\"}]");
+  safe_browsing::SetAnalysisConnector(profile_no_domain->GetPrefs(),
+                                      enterprise_connectors::PRINT,
+                                      "[{\"service_provider\":\"google\"}]");
   safe_browsing::SetOnSecurityEventReporting(profile_no_domain->GetPrefs(),
                                              true);
   profile_no_domain->GetPrefs()->SetInteger(
@@ -1331,7 +1339,8 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
   info = handler_.GetThreatProtectionInfo(profile_no_domain.get());
   ASSERT_TRUE(info.is_dict());
   threat_protection_info = &base::Value::AsDictionaryValue(info);
-  EXPECT_TRUE(threat_protection_info->FindListKey("info")->GetList().empty());
+  EXPECT_TRUE(
+      threat_protection_info->FindListKey("info")->GetListDeprecated().empty());
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION),
       base::UTF8ToUTF16(*threat_protection_info->FindStringKey("description")));
@@ -1344,7 +1353,9 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
   info = handler_.GetThreatProtectionInfo(profile_no_domain.get());
   ASSERT_TRUE(info.is_dict());
   threat_protection_info = &base::Value::AsDictionaryValue(info);
-  EXPECT_EQ(5u, threat_protection_info->FindListKey("info")->GetList().size());
+  EXPECT_EQ(
+      6u,
+      threat_protection_info->FindListKey("info")->GetListDeprecated().size());
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION),
       base::UTF8ToUTF16(*threat_protection_info->FindStringKey("description")));
@@ -1366,6 +1377,12 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
     base::Value value(base::Value::Type::DICTIONARY);
     value.SetStringKey("title", kManagementOnBulkDataEntryEvent);
     value.SetStringKey("permission", kManagementOnBulkDataEntryVisibleData);
+    expected_info.Append(std::move(value));
+  }
+  {
+    base::Value value(base::Value::Type::DICTIONARY);
+    value.SetStringKey("title", kManagementOnPrintEvent);
+    value.SetStringKey("permission", kManagementOnPrintVisibleData);
     expected_info.Append(std::move(value));
   }
   {

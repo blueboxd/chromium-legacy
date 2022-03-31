@@ -7,6 +7,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/accessibility_controller_enums.h"
 #include "ash/shell.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/accessibility/dictation_bubble_view.h"
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ui/base/ime/text_input_client.h"
@@ -19,6 +20,8 @@ DictationBubbleController::DictationBubbleController() {
       Shell::Get()->window_tree_host_manager()->input_method();
   if (!input_method_observer_.IsObservingSource(input_method))
     input_method_observer_.Observe(input_method);
+  if (!color_mode_observer_.IsObservingSource(AshColorProvider::Get()))
+    color_mode_observer_.Observe(AshColorProvider::Get());
 }
 
 DictationBubbleController::~DictationBubbleController() {
@@ -29,17 +32,11 @@ DictationBubbleController::~DictationBubbleController() {
 void DictationBubbleController::UpdateBubble(
     bool visible,
     DictationBubbleIconType icon,
-    const absl::optional<std::u16string>& text) {
-  if (visible) {
-    MaybeInitialize();
-    Update(icon, text);
-    widget_->Show();
-  } else {
-    Update(icon, text);
-    if (widget_) {
-      widget_->Hide();
-    }
-  }
+    const absl::optional<std::u16string>& text,
+    const absl::optional<std::vector<DictationBubbleHintType>>& hints) {
+  MaybeInitialize();
+  Update(icon, text, hints);
+  visible ? widget_->Show() : widget_->Hide();
 }
 
 void DictationBubbleController::OnCaretBoundsChanged(
@@ -58,6 +55,13 @@ void DictationBubbleController::OnCaretBoundsChanged(
   dictation_bubble_view_->SetAnchorRect(new_caret_bounds);
 }
 
+void DictationBubbleController::OnColorModeChanged(bool dark_mode_enabled) {
+  if (!dictation_bubble_view_)
+    return;
+
+  dictation_bubble_view_->OnColorModeChanged(dark_mode_enabled);
+}
+
 void DictationBubbleController::MaybeInitialize() {
   if (widget_)
     return;
@@ -71,16 +75,15 @@ void DictationBubbleController::MaybeInitialize() {
       CollisionDetectionUtils::RelativePriority::kDictationBubble);
 }
 
-// TODO(crbug.com/1252037): Fix issue where bubble is shown behind current
-// Chrome tab.
 void DictationBubbleController::Update(
     DictationBubbleIconType icon,
-    const absl::optional<std::u16string>& text) {
+    const absl::optional<std::u16string>& text,
+    const absl::optional<std::vector<DictationBubbleHintType>>& hints) {
   DCHECK(dictation_bubble_view_);
   DCHECK(widget_);
 
   // Update `dictation_bubble_view_`.
-  dictation_bubble_view_->Update(icon, text);
+  dictation_bubble_view_->Update(icon, text, hints);
 
   // Update the bounds to fit entirely within the screen.
   gfx::Rect new_bounds = widget_->GetWindowBoundsInScreen();

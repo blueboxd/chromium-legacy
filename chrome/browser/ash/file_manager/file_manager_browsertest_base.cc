@@ -709,6 +709,22 @@ struct GetHistogramCountMessage {
   int value = 0;
 };
 
+struct GetTotalHistogramSum {
+  static bool ConvertJSONValue(const base::DictionaryValue& value,
+                               GetTotalHistogramSum* message) {
+    base::JSONValueConverter<GetTotalHistogramSum> converter;
+    return converter.Convert(value, message);
+  }
+
+  static void RegisterJSONConverter(
+      base::JSONValueConverter<GetTotalHistogramSum>* converter) {
+    converter->RegisterStringField("histogramName",
+                                   &GetTotalHistogramSum::histogram_name);
+  }
+
+  std::string histogram_name;
+};
+
 struct GetUserActionCountMessage {
   static bool ConvertJSONValue(const base::DictionaryValue& value,
                                GetUserActionCountMessage* message) {
@@ -1777,10 +1793,16 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     disabled_features.push_back(chromeos::features::kFilesTrash);
   }
 
-  if (options.enable_banners_framework) {
-    enabled_features.push_back(chromeos::features::kFilesBannerFramework);
+  if (options.enable_dlp_files_restriction) {
+    enabled_features.push_back(features::kDataLeakPreventionFilesRestriction);
   } else {
-    disabled_features.push_back(chromeos::features::kFilesBannerFramework);
+    disabled_features.push_back(features::kDataLeakPreventionFilesRestriction);
+  }
+
+  if (options.enable_web_drive_office) {
+    enabled_features.push_back(chromeos::features::kFilesWebDriveOffice);
+  } else {
+    disabled_features.push_back(chromeos::features::kFilesWebDriveOffice);
   }
 
   if (command_line->HasSwitch(switches::kDevtoolsCodeCoverage) &&
@@ -2126,7 +2148,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     if (type)
       arg_value.SetStringKey("type", *type);
     std::string search;
-    if (arg_value.HasKey("currentDirectoryURL") || arg_value.HasKey("type")) {
+    if (arg_value.FindKey("currentDirectoryURL") || arg_value.FindKey("type")) {
       std::string json_args;
       base::JSONWriter::Write(arg_value, &json_args);
       search = base::StrCat(
@@ -2168,6 +2190,18 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
       }
       return;
     }
+  }
+
+  if (name == "getActiveTabURL") {
+    BrowserList* browser_list = BrowserList::GetInstance();
+    Browser* browser = browser_list->GetLastActive();
+    if (!browser) {
+      return;
+    }
+    content::WebContents* active_web_contents =
+        browser->tab_strip_model()->GetActiveWebContents();
+    *output = active_web_contents->GetVisibleURL().spec();
+    return;
   }
 
   if (name == "callSwaTestMessageListener") {
@@ -2871,6 +2905,18 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
                                 message.histogram_name, message.value)),
                             output);
 
+    return;
+  }
+
+  if (name == "getHistogramSum") {
+    GetTotalHistogramSum message;
+    ASSERT_TRUE(GetTotalHistogramSum::ConvertJSONValue(value, &message));
+    // GetTotalSum returns an int64_t which does not conform to JSON, convert to
+    // a string to ensure it can be JSON encoded.
+    base::JSONWriter::Write(
+        base::Value(base::NumberToString(
+            histograms_.GetTotalSum(message.histogram_name))),
+        output);
     return;
   }
 

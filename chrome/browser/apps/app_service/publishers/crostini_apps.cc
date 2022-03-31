@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_menu_constants.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_icon/dip_px_util.h"
@@ -98,7 +99,7 @@ void CrostiniApps::Initialize() {
 
   RegisterPublisher(AppType::kCrostini);
 
-  std::vector<std::unique_ptr<App>> apps;
+  std::vector<AppPtr> apps;
   for (const auto& pair :
        registry_->GetRegisteredApps(guest_os::GuestOsRegistryService::VmType::
                                         ApplicationList_VmType_TERMINA)) {
@@ -106,7 +107,8 @@ void CrostiniApps::Initialize() {
         pair.second;
     apps.push_back(CreateApp(registration, /*generate_new_icon_key=*/true));
   }
-  AppPublisher::Publish(std::move(apps));
+  AppPublisher::Publish(std::move(apps), AppType::kCrostini,
+                        /*should_notify_initialized=*/true);
 }
 
 void CrostiniApps::LoadIcon(const std::string& app_id,
@@ -305,8 +307,7 @@ void CrostiniApps::OnRegistryUpdated(
     mojom_app->readiness = apps::mojom::Readiness::kUninstalledByUser;
     PublisherBase::Publish(std::move(mojom_app), subscribers_);
 
-    std::unique_ptr<App> app =
-        std::make_unique<App>(AppType::kCrostini, app_id);
+    auto app = std::make_unique<App>(AppType::kCrostini, app_id);
     app->readiness = Readiness::kUninstalledByUser;
     AppPublisher::Publish(std::move(app));
   }
@@ -326,26 +327,38 @@ void CrostiniApps::OnCrostiniEnabledChanged() {
   auto show = crostini_enabled_ ? apps::mojom::OptionalBool::kTrue
                                 : apps::mojom::OptionalBool::kFalse;
 
-  // The Crostini Terminal app is a hard-coded special case. It is the entry
-  // point to installing other Crostini apps, and is always in search.
-  apps::mojom::AppPtr app = apps::mojom::App::New();
-  app->app_type = apps::mojom::AppType::kCrostini;
-  app->app_id = crostini::kCrostiniTerminalSystemAppId;
-  app->show_in_launcher = show;
-  app->show_in_shelf = show;
-  app->show_in_search = apps::mojom::OptionalBool::kTrue;
-  app->handles_intents = show;
-  PublisherBase::Publish(std::move(app), subscribers_);
+  if (!base::FeatureList::IsEnabled(chromeos::features::kTerminalSSH)) {
+    // If they don't have the terminal app for ssh, then we need to update the
+    // terminal's registration when Crostini is installed/uninstalled.
+    // It is the entry point to installing other Crostini apps, and is always in
+    // search, but should only show up elsewhere when installed.
+    apps::mojom::AppPtr mojom_app = apps::mojom::App::New();
+    mojom_app->app_type = apps::mojom::AppType::kCrostini;
+    mojom_app->app_id = crostini::kCrostiniTerminalSystemAppId;
+    mojom_app->show_in_launcher = show;
+    mojom_app->show_in_shelf = show;
+    mojom_app->show_in_search = apps::mojom::OptionalBool::kTrue;
+    mojom_app->handles_intents = show;
+    PublisherBase::Publish(std::move(mojom_app), subscribers_);
+
+    auto app = std::make_unique<App>(AppType::kCrostini,
+                                     crostini::kCrostiniTerminalSystemAppId);
+    app->show_in_launcher = crostini_enabled_;
+    app->show_in_shelf = crostini_enabled_;
+    app->show_in_search = true;
+    app->handles_intents = crostini_enabled_;
+    AppPublisher::Publish(std::move(app));
+  }
 }
 
-std::unique_ptr<App> CrostiniApps::CreateApp(
+AppPtr CrostiniApps::CreateApp(
     const guest_os::GuestOsRegistryService::Registration& registration,
     bool generate_new_icon_key) {
   DCHECK_EQ(
       registration.VmType(),
       guest_os::GuestOsRegistryService::VmType::ApplicationList_VmType_TERMINA);
 
-  std::unique_ptr<App> app = AppPublisher::MakeApp(
+  auto app = AppPublisher::MakeApp(
       AppType::kCrostini, registration.app_id(), Readiness::kReady,
       registration.Name(), InstallReason::kUser, InstallSource::kUnknown);
 
@@ -376,6 +389,24 @@ std::unique_ptr<App> CrostiniApps::CreateApp(
 
   app->last_launch_time = registration.LastLaunchTime();
   app->install_time = registration.InstallTime();
+
+  auto show = !registration.NoDisplay();
+  auto show_in_search = show;
+  if (registration.app_id() == crostini::kCrostiniTerminalSystemAppId) {
+    show = crostini_enabled_;
+    // The Crostini Terminal should appear in the app search, even when
+    // Crostini is not installed.
+    show_in_search = true;
+  }
+  app->show_in_launcher = show;
+  app->show_in_search = show_in_search;
+  app->show_in_shelf = show_in_search;
+  // TODO(crbug.com/955937): Enable once Crostini apps are managed inside App
+  // Management.
+  app->show_in_management = false;
+
+  app->allow_uninstall =
+      crostini::IsUninstallable(profile_, registration.app_id());
 
   // TODO(crbug.com/1253250): Add other fields for the App struct.
   return app;

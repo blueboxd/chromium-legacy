@@ -241,6 +241,14 @@ export class SettingsBluetoothPairingUiElement extends PolymerElement {
     }
   }
 
+  disconnectedCallback() {
+    super.disconnectedCallback();
+
+    if (this.bluetoothDiscoveryDelegateReceiver_) {
+      this.bluetoothDiscoveryDelegateReceiver_.$.close();
+    }
+  }
+
   /** @override */
   onPropertiesUpdated(properties) {
     const wasBluetoothEnabled = this.isBluetoothEnabled_;
@@ -262,6 +270,8 @@ export class SettingsBluetoothPairingUiElement extends PolymerElement {
   onDiscoveredDevicesListChanged(discoveredDevices) {
     this.discoveredDevices_ = discoveredDevices;
 
+    this.updateLastFailedPairingDeviceId_(discoveredDevices);
+
     // Check if this dialog needs to pair to a specific device.
     if (!this.pairingDeviceAddress) {
       return;
@@ -276,6 +286,19 @@ export class SettingsBluetoothPairingUiElement extends PolymerElement {
     // occurring, search for the device with address |this.pairingDeviceAddress|
     // and attempt to pair with it.
     this.attemptPairDeviceByAddress_();
+  }
+
+  /**
+   * @param {Array<!chromeos.bluetoothConfig.mojom.BluetoothDeviceProperties>}
+   *     devices
+   * @private
+   */
+  updateLastFailedPairingDeviceId_(devices) {
+    if (devices.some(device => device.id === this.lastFailedPairingDeviceId_)) {
+      return;
+    }
+
+    this.lastFailedPairingDeviceId_ = '';
   }
 
   /** @override */
@@ -355,14 +378,17 @@ export class SettingsBluetoothPairingUiElement extends PolymerElement {
       return;
     }
 
-    const device = this.discoveredDevices_.find(
-        d => d.address === this.pairingDeviceAddress);
-    if (!device) {
-      console.error('Attempted pairing with a device that was not found.');
-      return;
-    }
+    this.devicePairingHandler_.fetchDevice(this.pairingDeviceAddress)
+        .then(result => {
+          if (!result.device) {
+            console.warn(
+                'Attempted pairing with a device that was not found, address: ' +
+                this.pairingDeviceAddress);
+            return;
+          }
 
-    this.pairDevice_(device);
+          this.pairDevice_(result.device);
+        });
   }
 
   /**
@@ -414,10 +440,7 @@ export class SettingsBluetoothPairingUiElement extends PolymerElement {
     this.pairingDelegateReceiver_ = null;
 
     if (result === chromeos.bluetoothConfig.mojom.PairingResult.kSuccess) {
-      this.dispatchEvent(new CustomEvent('finished', {
-        bubbles: true,
-        composed: true,
-      }));
+      this.closeDialog_();
       return;
     }
 
@@ -433,10 +456,11 @@ export class SettingsBluetoothPairingUiElement extends PolymerElement {
 
     this.devicePendingPairing_ = null;
 
-    if (this.queuedDevicePendingPairing_) {
+    if (this.queuedDevicePendingPairing_ && this.devicePairingHandler_) {
       this.pairDevice_(this.queuedDevicePendingPairing_);
-      this.queuedDevicePendingPairing_ = null;
     }
+
+    this.queuedDevicePendingPairing_ = null;
 
     // Inform tests that handlePairDeviceResult_() has been called. This is
     // to ensure tests don't progress until the correct state has been
@@ -584,23 +608,22 @@ export class SettingsBluetoothPairingUiElement extends PolymerElement {
     this.devicePendingPairing_ = null;
     if (this.pairingDelegateReceiver_) {
       this.pairingDelegateReceiver_.$.close();
-    }
-
-    // Canceling from any page other than |DEVICE_SELECTION_PAGE| should
-    // return back to |DEVICE_SELECTION_PAGE|. This case is handled when
-    // pairDevice promise is returned in handlePairDeviceResult_().
-    // pairDevice promise is returned when close() is called above. If we are
-    // on |DEVICE_SELECTION_PAGE|, canceling closes the pairing dialog.
-    if (this.selectedPageId_ ===
-        BluetoothPairingSubpageId.DEVICE_SELECTION_PAGE) {
-      this.dispatchEvent(new CustomEvent('finished', {
-        bubbles: true,
-        composed: true,
-      }));
+      this.finishPendingCallbacksForTest_();
       return;
     }
 
-    this.finishPendingCallbacksForTest_();
+    // If there is no receiver, this means pairing was not initiated and we
+    // we are currently in DEVICE_SELECTION_PAGE or something went wrong and
+    // |pairingDelegateReceiver_| was not instantiated. (b/218368694)
+    this.closeDialog_();
+  }
+
+  /** @private */
+  closeDialog_() {
+    this.dispatchEvent(new CustomEvent('finished', {
+      bubbles: true,
+      composed: true,
+    }));
   }
 
   /** @private */

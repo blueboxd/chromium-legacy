@@ -37,6 +37,8 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/vector2d_f.h"
+#include "ui/ozone/public/overlay_manager_ozone.h"
+#include "ui/ozone/public/ozone_platform.h"
 
 namespace {
 DBG_FLAG_FBOOL("delegated.fd.usage", usage_every_frame)
@@ -86,7 +88,14 @@ OverlayProcessorDelegated::OverlayProcessorDelegated(
     gpu::SharedImageInterface* shared_image_interface)
     : OverlayProcessorOzone(std::move(overlay_candidates),
                             available_strategies,
-                            shared_image_interface) {}
+                            shared_image_interface) {
+  // TODO(msisov, petermcneeley): remove this once Wayland uses only delegated
+  // context. May be null in tests.
+  if (ui::OzonePlatform::GetInstance()->GetOverlayManager())
+    ui::OzonePlatform::GetInstance()
+        ->GetOverlayManager()
+        ->SetContextDelegated();
+}
 
 OverlayProcessorDelegated::~OverlayProcessorDelegated() = default;
 
@@ -95,7 +104,9 @@ bool OverlayProcessorDelegated::DisableSplittingQuads() const {
   return true;
 }
 
-constexpr size_t kTooManyQuads = 128;
+constexpr size_t kTooManyQuads = 64;
+
+DBG_FLAG_FBOOL("delegated.disable.delegation", disable_delegation)
 
 bool OverlayProcessorDelegated::AttemptWithStrategies(
     const skia::Matrix44& output_color_matrix,
@@ -113,12 +124,15 @@ bool OverlayProcessorDelegated::AttemptWithStrategies(
   constexpr bool is_delegated_context = true;
   delegated_status_ = DelegationStatus::kCompositedOther;
 
+  if (disable_delegation())
+    return false;
+
   if (quad_list->size() >= kTooManyQuads ||
       !render_pass_backdrop_filters.empty())
     return false;
 
   std::vector<QuadList::Iterator> candidate_quads;
-
+  int num_quads_skipped = 0;
   for (auto it = quad_list->begin(); it != quad_list->end(); ++it) {
     OverlayCandidate candidate;
     auto& transform = it->shared_quad_state->quad_to_target_transform;
@@ -134,42 +148,22 @@ bool OverlayProcessorDelegated::AttemptWithStrategies(
         GetPrimaryPlaneDisplayRect(primary_plane), &candidate,
         is_delegated_context);
     if (candidate_status == OverlayCandidate::CandidateStatus::kSuccess) {
-      // Setting the |uv_rect| will eventually result in setting the
-      // |crop_rect_| in wayland. If this results in an empty pixel scale the
-      // wayland connection will be terminated. See: wayland_surface.cc
-      // 'UpdateBufferDamageRegion'
-      auto viewport_src = gfx::ToEnclosedRect(gfx::ScaleRect(
-          candidate.uv_rect, candidate.resource_size_in_pixels.width(),
-          candidate.resource_size_in_pixels.height()));
-
       if (it->material == DrawQuad::Material::kSolidColor) {
         DBG_DRAW_RECT("delegated.overlay.color", candidate.display_rect);
-        candidates->push_back(candidate);
-        candidate_quads.push_back(it);
-        continue;
-      }
-
-      if (it->material == DrawQuad::Material::kAggregatedRenderPass) {
+      } else if (it->material == DrawQuad::Material::kAggregatedRenderPass) {
         DBG_DRAW_RECT("delegated.overlay.aggregated", candidate.display_rect);
-        candidates->push_back(candidate);
-        candidate_quads.push_back(it);
-        continue;
+      } else {
+        DBG_DRAW_RECT("delegated.overlay.candidate", candidate.display_rect);
       }
-
-      // Because of the device scale factor (2) we check against a rounded empty
-      // rect.
-      // TODO(https://crbug.com/1218678) : Move and generalize this fix in
-      // wayland host.
-      if (viewport_src.width() <= 2 || viewport_src.height() <= 2) {
-        DBG_DRAW_RECT("delegated.overlay.subpixelskip", candidate.display_rect);
-        continue;
-      }
-
-      DBG_DRAW_RECT("delegated.overlay.candidate", candidate.display_rect);
       candidates->push_back(candidate);
       candidate_quads.push_back(it);
     } else {
-      DBG_DRAW_RECT("delegated.overlay.failed", display_rect);
+      if (candidate_status == OverlayCandidate::CandidateStatus::kFailVisible) {
+        // This quad can be intentionally skipped.
+        num_quads_skipped++;
+      } else {
+        DBG_DRAW_RECT("delegated.overlay.failed", display_rect);
+      }
 
       if (candidate_status ==
           OverlayCandidate::CandidateStatus::kFailNotAxisAligned) {
@@ -181,7 +175,8 @@ bool OverlayProcessorDelegated::AttemptWithStrategies(
     }
   }
 
-  if (candidates->empty() || candidates->size() != quad_list->size()) {
+  if (candidates->empty() ||
+      (candidates->size() + num_quads_skipped) != quad_list->size()) {
     candidates->clear();
     return false;
   }
@@ -198,6 +193,7 @@ bool OverlayProcessorDelegated::AttemptWithStrategies(
     if (!each.overlay_handled) {
       candidates->clear();
       delegated_status_ = DelegationStatus::kCompositedCheckOverlayFail;
+      DBG_DRAW_RECT("delegated.handled.failed", each.display_rect);
       return false;
     }
   }

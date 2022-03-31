@@ -71,7 +71,7 @@ const char kActive[] = "active";
 void InitializeOverridesList(base::Value* list) {
   base::Value migrated(base::Value::Type::LIST);
   std::set<std::string> seen_entries;
-  for (auto& val : list->GetList()) {
+  for (auto& val : list->GetListDeprecated()) {
     base::Value new_dict(base::Value::Type::DICTIONARY);
     std::string entry_name;
     if (val.is_dict()) {
@@ -104,7 +104,7 @@ void InitializeOverridesList(base::Value* list) {
 // marks it as active.
 void AddOverridesToList(base::Value* list, const GURL& override_url) {
   const std::string& spec = override_url.spec();
-  for (auto& val : list->GetList()) {
+  for (auto& val : list->GetListDeprecated()) {
     std::string* entry = nullptr;
     if (val.is_dict()) {
       entry = val.FindStringKey(kEntry);
@@ -133,7 +133,7 @@ void AddOverridesToList(base::Value* list, const GURL& override_url) {
   dict.SetStringPath(kEntry, spec);
   dict.SetBoolPath(kActive, true);
   // Add the entry to the front of the list.
-  list->Insert(list->GetList().begin(), std::move(dict));
+  list->Insert(list->GetListDeprecated().begin(), std::move(dict));
 }
 
 // Validates that each entry in |list| contains a valid url and points to an
@@ -142,7 +142,7 @@ void ValidateOverridesList(const extensions::ExtensionSet* all_extensions,
                            base::Value* list) {
   base::Value migrated(base::Value::Type::LIST);
   std::set<std::string> seen_hosts;
-  for (auto& val : list->GetList()) {
+  for (auto& val : list->GetListDeprecated()) {
     std::string* entry = nullptr;
     if (val.is_dict()) {
       entry = val.FindStringKey(kEntry);
@@ -201,15 +201,16 @@ enum UpdateBehavior {
 bool UpdateOverridesList(base::Value* overrides_list,
                          const std::string& override_url,
                          UpdateBehavior behavior) {
-  auto iter = std::find_if(
-      overrides_list->GetList().begin(), overrides_list->GetList().end(),
-      [&override_url](const base::Value& value) {
-        if (!value.is_dict())
-          return false;
-        const std::string* entry = value.FindStringKey(kEntry);
-        return entry && *entry == override_url;
-      });
-  if (iter != overrides_list->GetList().end()) {
+  auto iter = std::find_if(overrides_list->GetListDeprecated().begin(),
+                           overrides_list->GetListDeprecated().end(),
+                           [&override_url](const base::Value& value) {
+                             if (!value.is_dict())
+                               return false;
+                             const std::string* entry =
+                                 value.FindStringKey(kEntry);
+                             return entry && *entry == override_url;
+                           });
+  if (iter != overrides_list->GetListDeprecated().end()) {
     switch (behavior) {
       case UPDATE_DEACTIVATE: {
         // See comment about CHECK(success) in ForEachOverrideList.
@@ -354,12 +355,14 @@ std::vector<GURL> GetOverridesForChromeURL(
   DCHECK(url.SchemeIs(content::kChromeUIScheme));
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  const base::DictionaryValue* overrides =
-      &base::Value::AsDictionaryValue(*profile->GetPrefs()->GetDictionary(
-          ExtensionWebUI::kExtensionURLOverrides));
+  const base::Value* overrides = profile->GetPrefs()->GetDictionary(
+      ExtensionWebUI::kExtensionURLOverrides);
 
-  const base::ListValue* url_list = nullptr;
-  if (!overrides || !overrides->GetList(url.host_piece(), &url_list))
+  if (!overrides)
+    return {};  // No overrides present for this host.
+
+  const base::Value* url_list = overrides->FindListPath(url.host_piece());
+  if (!url_list)
     return {};  // No overrides present for this host.
 
   extensions::ExtensionRegistry* registry =
@@ -371,7 +374,7 @@ std::vector<GURL> GetOverridesForChromeURL(
   std::vector<GURL> component_overrides;
 
   // Iterate over the URL list looking for suitable overrides.
-  for (const auto& value : url_list->GetList()) {
+  for (const auto& value : url_list->GetListDeprecated()) {
     GURL override_url;
     const Extension* extension = nullptr;
     if (!ValidateOverrideURL(&value, url, extensions, &override_url,
@@ -449,8 +452,8 @@ bool ExtensionWebUI::HandleChromeURLOverride(
 bool ExtensionWebUI::HandleChromeURLOverrideReverse(
     GURL* url, content::BrowserContext* browser_context) {
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  const base::DictionaryValue* overrides = &base::Value::AsDictionaryValue(
-      *profile->GetPrefs()->GetDictionary(kExtensionURLOverrides));
+  const base::Value* overrides =
+      profile->GetPrefs()->GetDictionary(kExtensionURLOverrides);
   if (!overrides)
     return false;
 
@@ -458,12 +461,11 @@ bool ExtensionWebUI::HandleChromeURLOverrideReverse(
   // internal URL
   // chrome-extension://eemcgdkfndhakfknompkggombfjjjeno/main.html#1 to
   // chrome://bookmarks/#1 for display in the omnibox.
-  for (base::DictionaryValue::Iterator dict_iter(*overrides);
-       !dict_iter.IsAtEnd(); dict_iter.Advance()) {
-    if (!dict_iter.value().is_list())
+  for (const auto dict_iter : overrides->DictItems()) {
+    if (!dict_iter.second.is_list())
       continue;
 
-    for (const auto& list_iter : dict_iter.value().GetList()) {
+    for (const auto& list_iter : dict_iter.second.GetListDeprecated()) {
       const std::string* override = nullptr;
       if (list_iter.is_dict())
         override = list_iter.FindStringKey(kEntry);
@@ -472,7 +474,7 @@ bool ExtensionWebUI::HandleChromeURLOverrideReverse(
       if (base::StartsWith(url->spec(), *override,
                            base::CompareCase::SENSITIVE)) {
         GURL original_url(content::kChromeUIScheme + std::string("://") +
-                          dict_iter.key() +
+                          dict_iter.first +
                           url->spec().substr(override->length()));
         *url = original_url;
         return true;

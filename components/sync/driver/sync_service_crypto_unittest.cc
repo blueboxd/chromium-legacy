@@ -20,8 +20,8 @@
 #include "components/os_crypt/os_crypt.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/sync_prefs.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/trusted_vault_client.h"
 #include "components/sync/engine/nigori/key_derivation_params.h"
 #include "components/sync/engine/nigori/nigori.h"
@@ -36,6 +36,7 @@ namespace {
 
 using testing::_;
 using testing::Eq;
+using testing::IsNull;
 using testing::Ne;
 using testing::NotNull;
 using testing::Return;
@@ -578,6 +579,101 @@ TEST_F(SyncServiceCryptoTest, ShouldIgnoreCorruptedBootstrapToken) {
   EXPECT_FALSE(crypto_.IsPassphraseRequired());
 }
 
+TEST_F(SyncServiceCryptoTest, ShouldDecryptWithNigoriKey) {
+  const std::string kTestPassphrase = "somepassphrase";
+
+  crypto_.SetSyncEngine(CoreAccountInfo(), &engine_);
+  ASSERT_FALSE(crypto_.IsPassphraseRequired());
+
+  // Mimic the engine determining that a passphrase is required.
+  EXPECT_CALL(delegate_, ReconfigureDataTypesDueToCrypto());
+  crypto_.OnPassphraseRequired(
+      KeyDerivationParams::CreateForPbkdf2(),
+      MakeEncryptedData(kTestPassphrase,
+                        KeyDerivationParams::CreateForPbkdf2()));
+  EXPECT_TRUE(crypto_.IsPassphraseRequired());
+  VerifyAndClearExpectations();
+
+  // Passing wrong decryption key should be ignored.
+  EXPECT_CALL(delegate_, ReconfigureDataTypesDueToCrypto()).Times(0);
+  EXPECT_CALL(engine_, SetExplicitPassphraseDecryptionKey).Times(0);
+  EXPECT_CALL(delegate_, SetEncryptionBootstrapToken(_)).Times(0);
+  crypto_.SetDecryptionNigoriKey(Nigori::CreateByDerivation(
+      KeyDerivationParams::CreateForPbkdf2(), "wrongpassphrase"));
+  EXPECT_TRUE(crypto_.IsPassphraseRequired());
+  VerifyAndClearExpectations();
+
+  // Passing correct decryption key should be accepted.
+  EXPECT_CALL(engine_, SetExplicitPassphraseDecryptionKey(NotNull()))
+      .WillOnce(
+          [&](std::unique_ptr<Nigori>) { crypto_.OnPassphraseAccepted(); });
+  // The current implementation issues two reconfigurations: one immediately
+  // after checking the passphrase in the UI thread and a second time later when
+  // the engine confirms with OnPassphraseAccepted().
+  EXPECT_CALL(delegate_, ReconfigureDataTypesDueToCrypto()).Times(2);
+  EXPECT_CALL(delegate_,
+              SetEncryptionBootstrapToken(BootstrapTokenDerivedFrom(
+                  kTestPassphrase, KeyDerivationParams::CreateForPbkdf2())));
+  crypto_.SetDecryptionNigoriKey(Nigori::CreateByDerivation(
+      KeyDerivationParams::CreateForPbkdf2(), kTestPassphrase));
+  EXPECT_FALSE(crypto_.IsPassphraseRequired());
+}
+
+TEST_F(SyncServiceCryptoTest,
+       ShouldIgnoreDecryptionWithNigoriKeyWhenPassphraseNotRequired) {
+  crypto_.SetSyncEngine(CoreAccountInfo(), &engine_);
+  ASSERT_FALSE(crypto_.IsPassphraseRequired());
+
+  EXPECT_CALL(delegate_, ReconfigureDataTypesDueToCrypto()).Times(0);
+  EXPECT_CALL(engine_, SetExplicitPassphraseDecryptionKey).Times(0);
+  EXPECT_CALL(delegate_, SetEncryptionBootstrapToken(_)).Times(0);
+  crypto_.SetDecryptionNigoriKey(Nigori::CreateByDerivation(
+      KeyDerivationParams::CreateForPbkdf2(), "unexpected_passphrase"));
+  EXPECT_FALSE(crypto_.IsPassphraseRequired());
+}
+
+TEST_F(SyncServiceCryptoTest, ShouldGetDecryptionKeyFromBootstrapToken) {
+  const std::string kTestPassphrase = "somepassphrase";
+
+  // Mimic passphrase being stored in bootstrap token.
+  ON_CALL(delegate_, GetEncryptionBootstrapToken)
+      .WillByDefault(Return(CreateBootstrapToken(
+          kTestPassphrase, KeyDerivationParams::CreateForPbkdf2())));
+
+  std::unique_ptr<Nigori> expected_nigori = Nigori::CreateByDerivation(
+      KeyDerivationParams::CreateForPbkdf2(), kTestPassphrase);
+  ASSERT_THAT(expected_nigori, NotNull());
+  std::string deprecated_user_key;
+  std::string expected_encryption_key;
+  std::string expected_mac_key;
+  expected_nigori->ExportKeys(&deprecated_user_key, &expected_encryption_key,
+                              &expected_mac_key);
+
+  // Verify that GetDecryptionNigoriKey() result equals to |expected_nigori|.
+  std::unique_ptr<Nigori> stored_nigori = crypto_.GetDecryptionNigoriKey();
+  ASSERT_THAT(stored_nigori, NotNull());
+  std::string stored_encryption_key;
+  std::string stored_mac_key;
+  stored_nigori->ExportKeys(&deprecated_user_key, &stored_encryption_key,
+                            &stored_mac_key);
+  EXPECT_THAT(stored_encryption_key, Eq(expected_encryption_key));
+  EXPECT_THAT(stored_mac_key, Eq(expected_mac_key));
+}
+
+TEST_F(SyncServiceCryptoTest,
+       ShouldGetNullDecryptionKeyFromEmptyBootstrapToken) {
+  // GetEncryptionBootstrapToken() returns empty string by default.
+  EXPECT_THAT(crypto_.GetDecryptionNigoriKey(), IsNull());
+}
+
+TEST_F(SyncServiceCryptoTest,
+       ShouldGetNullDecryptionKeyFromCorruptedBootstrapToken) {
+  // Mimic corrupted bootstrap token being stored.
+  ON_CALL(delegate_, GetEncryptionBootstrapToken)
+      .WillByDefault(Return("corrupted_token"));
+  EXPECT_THAT(crypto_.GetDecryptionNigoriKey(), IsNull());
+}
+
 TEST_F(SyncServiceCryptoTest,
        ShouldReadValidTrustedVaultKeysFromClientBeforeInitialization) {
   // Cache |kInitialTrustedVaultKeys| into |trusted_vault_client_| prior to
@@ -976,8 +1072,7 @@ TEST_F(
 
 TEST_F(SyncServiceCryptoTest, ShouldNotGetRecoverabilityIfFeatureDisabled) {
   base::test::ScopedFeatureList override_features;
-  override_features.InitAndDisableFeature(
-      switches::kSyncTrustedVaultPassphraseRecovery);
+  override_features.InitAndDisableFeature(kSyncTrustedVaultPassphraseRecovery);
 
   trusted_vault_client_.SetIsRecoverabilityDegraded(true);
   crypto_.OnPassphraseTypeChanged(PassphraseType::kTrustedVaultPassphrase,
@@ -996,8 +1091,7 @@ TEST_F(SyncServiceCryptoTest, ShouldNotGetRecoverabilityIfFeatureDisabled) {
 TEST_F(SyncServiceCryptoTest,
        ShouldNotGetRecoverabilityIfKeystorePassphraseUsed) {
   base::test::ScopedFeatureList override_features;
-  override_features.InitAndEnableFeature(
-      switches::kSyncTrustedVaultPassphraseRecovery);
+  override_features.InitAndEnableFeature(kSyncTrustedVaultPassphraseRecovery);
 
   trusted_vault_client_.SetIsRecoverabilityDegraded(true);
   crypto_.OnPassphraseTypeChanged(PassphraseType::kKeystorePassphrase,
@@ -1016,8 +1110,7 @@ TEST_F(SyncServiceCryptoTest,
 TEST_F(SyncServiceCryptoTest,
        ShouldNotReportDegradedRecoverabilityUponInitialization) {
   base::test::ScopedFeatureList override_features;
-  override_features.InitAndEnableFeature(
-      switches::kSyncTrustedVaultPassphraseRecovery);
+  override_features.InitAndEnableFeature(kSyncTrustedVaultPassphraseRecovery);
 
   base::HistogramTester histogram_tester;
   trusted_vault_client_.SetIsRecoverabilityDegraded(false);
@@ -1038,8 +1131,7 @@ TEST_F(SyncServiceCryptoTest,
 TEST_F(SyncServiceCryptoTest,
        ShouldReportDegradedRecoverabilityUponInitialization) {
   base::test::ScopedFeatureList override_features;
-  override_features.InitAndEnableFeature(
-      switches::kSyncTrustedVaultPassphraseRecovery);
+  override_features.InitAndEnableFeature(kSyncTrustedVaultPassphraseRecovery);
 
   base::HistogramTester histogram_tester;
   trusted_vault_client_.SetIsRecoverabilityDegraded(true);
@@ -1059,8 +1151,7 @@ TEST_F(SyncServiceCryptoTest,
 
 TEST_F(SyncServiceCryptoTest, ShouldReportDegradedRecoverabilityUponChange) {
   base::test::ScopedFeatureList override_features;
-  override_features.InitAndEnableFeature(
-      switches::kSyncTrustedVaultPassphraseRecovery);
+  override_features.InitAndEnableFeature(kSyncTrustedVaultPassphraseRecovery);
 
   base::HistogramTester histogram_tester;
   trusted_vault_client_.SetIsRecoverabilityDegraded(false);
@@ -1088,8 +1179,7 @@ TEST_F(SyncServiceCryptoTest, ShouldReportDegradedRecoverabilityUponChange) {
 TEST_F(SyncServiceCryptoTest,
        ShouldStopReportingDegradedRecoverabilityUponChange) {
   base::test::ScopedFeatureList override_features;
-  override_features.InitAndEnableFeature(
-      switches::kSyncTrustedVaultPassphraseRecovery);
+  override_features.InitAndEnableFeature(kSyncTrustedVaultPassphraseRecovery);
 
   base::HistogramTester histogram_tester;
   trusted_vault_client_.SetIsRecoverabilityDegraded(true);
@@ -1116,8 +1206,7 @@ TEST_F(SyncServiceCryptoTest,
 
 TEST_F(SyncServiceCryptoTest, ShouldReportDegradedRecoverabilityUponRetrieval) {
   base::test::ScopedFeatureList override_features;
-  override_features.InitAndEnableFeature(
-      switches::kSyncTrustedVaultPassphraseRecovery);
+  override_features.InitAndEnableFeature(kSyncTrustedVaultPassphraseRecovery);
 
   base::HistogramTester histogram_tester;
   trusted_vault_client_.SetIsRecoverabilityDegraded(true);
@@ -1160,8 +1249,7 @@ TEST_F(SyncServiceCryptoTest,
   const std::string kTestPassphrase = "somepassphrase";
 
   base::test::ScopedFeatureList override_features;
-  override_features.InitAndEnableFeature(
-      switches::kSyncTrustedVaultPassphraseRecovery);
+  override_features.InitAndEnableFeature(kSyncTrustedVaultPassphraseRecovery);
 
   // Mimic a browser startup in |kTrustedVaultPassphrase| with no additional
   // keys required and degraded recoverability state.

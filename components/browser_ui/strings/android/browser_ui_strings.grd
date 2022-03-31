@@ -171,9 +171,6 @@
     <messages fallback_to_english="true">
       <part file="site_settings.grdp" />
 
-      <message name="IDS_DELETED" desc='Text that announces to the user that something was deleted.'>
-        Deleted
-      </message>
       <message name="IDS_GOT_IT" desc="Button for the user to accept a disclosure/message">
         Got it
       </message>
@@ -583,6 +580,12 @@
       <message name="IDS_PAGE_INFO_URL_TRUNCATED" desc="Accessibility announcement when the URL in PageInfo switches from full to truncated display">
         URL truncated
       </message>
+      <message name="IDS_PAGE_INFO_AD_PERSONALIZATION_TITLE" desc="The title of the 'Ad personalization' section in Page Info.">
+          Ad personalization
+      </message>
+      <message name="IDS_PAGE_INFO_AD_MANAGE_INTERESTS" desc="The button label of the 'Manage interests' button in Page Info. The button opens a settings page to manage interests for the site.">
+          Manage interests
+      </message>
 
       <message name="IDS_COOKIES_TITLE" desc="Title for the Cookies settings screen [CHAR_LIMIT=32]">
           Cookies
@@ -832,6 +835,11 @@
       <!-- In-Product Help -->
       <message name="IDS_IPH_SNOOZE" desc="Snooze button text within In-Product Help tooltip.">
         Remind me
+      </message>
+
+      <!-- ChipView -->
+      <message name="IDS_CHIP_REMOVE_ICON_CONTENT_DESCRIPTION" desc="Accessibility string for X icon on a chip announcing that clicking on this icon will remove this input chip.">
+        Remove '<ph name="CHIP_LABEL">%1$s<ex>News</ex></ph>'
       </message>
     </messages>
   </release>

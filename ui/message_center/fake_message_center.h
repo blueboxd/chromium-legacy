@@ -27,7 +27,7 @@ class FakeMessageCenter : public MessageCenter {
 
   ~FakeMessageCenter() override;
 
-  // Overridden from FakeMessageCenter.
+  // Overridden from MessageCenter.
   void AddObserver(MessageCenterObserver* observer) override;
   void RemoveObserver(MessageCenterObserver* observer) override;
   void AddNotificationBlocker(NotificationBlocker* blocker) override;
@@ -37,8 +37,7 @@ class FakeMessageCenter : public MessageCenter {
   bool IsQuietMode() const override;
   bool IsSpokenFeedbackEnabled() const override;
   Notification* FindNotificationById(const std::string& id) override;
-  Notification* FindParentNotificationForOriginUrl(
-      const GURL& origin_url) override;
+  Notification* FindParentNotification(Notification* notification) override;
   Notification* FindPopupNotificationById(const std::string& id) override;
   Notification* FindVisibleNotificationById(const std::string& id) override;
   NotificationList::Notifications FindNotificationsByAppId(
@@ -46,6 +45,8 @@ class FakeMessageCenter : public MessageCenter {
   NotificationList::Notifications GetNotifications() override;
   const NotificationList::Notifications& GetVisibleNotifications() override;
   NotificationList::PopupNotifications GetPopupNotifications() override;
+  NotificationList::PopupNotifications GetPopupNotificationsWithoutBlocker(
+      const NotificationBlocker& blocker) const override;
   void AddNotification(std::unique_ptr<Notification> notification) override;
   void UpdateNotification(
       const std::string& old_id,
@@ -84,6 +85,7 @@ class FakeMessageCenter : public MessageCenter {
   void PausePopupTimers() override;
   const std::u16string& GetSystemNotificationAppName() const override;
   void SetSystemNotificationAppName(const std::u16string& name) override;
+  void OnMessageViewHovered(const std::string& notification_id) override;
 
  protected:
   void DisableTimersForTest() override;

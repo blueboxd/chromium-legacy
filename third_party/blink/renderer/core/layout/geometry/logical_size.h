@@ -11,10 +11,6 @@
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 
-namespace gfx {
-class SizeF;
-}
-
 namespace blink {
 
 struct LogicalOffset;
@@ -22,7 +18,7 @@ struct LogicalOffset;
 // LogicalSize is the size of rect (typically a fragment) in the logical
 // coordinate system.
 // For more information about physical and logical coordinate systems, see:
-// https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/renderer/core/layout/README.md#coordinate-spaces
+// https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/core/layout/README.md#coordinate-spaces
 struct CORE_EXPORT LogicalSize {
   constexpr LogicalSize() = default;
   constexpr LogicalSize(LayoutUnit inline_size, LayoutUnit block_size)
@@ -47,8 +43,6 @@ struct CORE_EXPORT LogicalSize {
   constexpr bool IsEmpty() const {
     return inline_size == LayoutUnit() || block_size == LayoutUnit();
   }
-
-  static LogicalSize AspectRatioFromSizeF(const gfx::SizeF&);
 };
 
 inline LogicalSize& operator-=(LogicalSize& a, const NGBoxStrut& b) {

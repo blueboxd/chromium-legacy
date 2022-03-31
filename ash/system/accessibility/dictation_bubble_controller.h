@@ -8,6 +8,8 @@
 #include <string>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/style/color_mode_observer.h"
+#include "ash/style/ash_color_provider.h"
 #include "base/scoped_observation.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ime/input_method.h"
@@ -24,11 +26,13 @@ class Widget;
 
 namespace ash {
 
+enum class DictationBubbleHintType;
 enum class DictationBubbleIconType;
 class DictationBubbleView;
 
 // Manages the Dictation bubble view.
-class ASH_EXPORT DictationBubbleController : public ui::InputMethodObserver {
+class ASH_EXPORT DictationBubbleController : public ui::InputMethodObserver,
+                                             public ColorModeObserver {
  public:
   DictationBubbleController();
   DictationBubbleController(const DictationBubbleController&) = delete;
@@ -37,9 +41,11 @@ class ASH_EXPORT DictationBubbleController : public ui::InputMethodObserver {
   ~DictationBubbleController() override;
 
   // Updates the bubble's visibility and text content.
-  void UpdateBubble(bool visible,
-                    DictationBubbleIconType icon,
-                    const absl::optional<std::u16string>& text);
+  void UpdateBubble(
+      bool visible,
+      DictationBubbleIconType icon,
+      const absl::optional<std::u16string>& text,
+      const absl::optional<std::vector<DictationBubbleHintType>>& hints);
 
   // ui::InputMethodObserver:
   void OnFocus() override {}
@@ -48,16 +54,22 @@ class ASH_EXPORT DictationBubbleController : public ui::InputMethodObserver {
   void OnTextInputStateChanged(const ui::TextInputClient* client) override {}
   void OnInputMethodDestroyed(const ui::InputMethod* input_method) override {}
 
+  // ColorModeObserver:
+  void OnColorModeChanged(bool dark_mode_enabled) override;
+  void OnColorModeThemed(bool is_themed) override {}
+
  private:
-  friend class AccessibilityPrivateApiTest;
   friend class DictationBubbleControllerTest;
+  friend class DictationBubbleTestHelper;
 
   // Performs initialization if necessary.
   void MaybeInitialize();
 
   // Updates the view and widget.
-  void Update(DictationBubbleIconType icon,
-              const absl::optional<std::u16string>& text);
+  void Update(
+      DictationBubbleIconType icon,
+      const absl::optional<std::u16string>& text,
+      const absl::optional<std::vector<DictationBubbleHintType>>& hints);
 
   // Owned by views hierarchy.
   DictationBubbleView* dictation_bubble_view_ = nullptr;
@@ -65,6 +77,8 @@ class ASH_EXPORT DictationBubbleController : public ui::InputMethodObserver {
 
   base::ScopedObservation<ui::InputMethod, ui::InputMethodObserver>
       input_method_observer_{this};
+  base::ScopedObservation<AshColorProvider, ColorModeObserver>
+      color_mode_observer_{this};
 };
 
 }  // namespace ash

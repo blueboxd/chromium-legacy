@@ -217,34 +217,34 @@ class COMPONENT_EXPORT(PRINT_BACKEND) PrintBackend
   // Allocates a print backend.
   static scoped_refptr<PrintBackend> CreateInstance(const std::string& locale);
 
-#if defined(USE_CUPS)
-  // TODO(crbug.com/1062136): Remove this static function when Cloud Print is
-  // supposed to stop working. Follow up after Jan 1, 2021.
-  // Similar to CreateInstance(), but ensures that the CUPS PPD backend is used
-  // instead of the CUPS IPP backend.
-  static scoped_refptr<PrintBackend> CreateInstanceForCloudPrint(
-      const base::DictionaryValue* print_backend_settings);
-#endif  // defined(USE_CUPS)
-
   // Test method to override the print backend for testing.  Caller should
   // retain ownership.
   static void SetPrintBackendForTesting(PrintBackend* print_backend);
 
  protected:
   friend class base::RefCountedThreadSafe<PrintBackend>;
-  explicit PrintBackend(const std::string& locale);
+
+#if BUILDFLAG(IS_WIN)
+  FRIEND_TEST_ALL_PREFIXES(PrintBackendTest,
+                           MANUAL_GetPrinterCapabilitiesForXpsDriver);
+#endif
+
+  PrintBackend();
   virtual ~PrintBackend();
 
   // Provide the actual backend for CreateInstance().
   static scoped_refptr<PrintBackend> CreateInstanceImpl(
       const base::DictionaryValue* print_backend_settings,
-      const std::string& locale,
-      bool for_cloud_print);
+      const std::string& locale);
 
-  const std::string& locale() const { return locale_; }
-
- private:
-  const std::string locale_;
+#if BUILDFLAG(IS_WIN)
+  // Gets the semantic capabilities and defaults for a specific printer.
+  // This method uses the XPS API to get the printer capabilities.
+  // TODO(crbug.com/1291257): This method is not fully implemented yet.
+  mojom::ResultCode GetPrinterCapabilitiesForXpsDriver(
+      const std::string& printer_name,
+      PrinterSemanticCapsAndDefaults* printer_info);
+#endif
 };
 
 }  // namespace printing

@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <cstddef>
+#include <functional>
 #include <type_traits>
 #include <utility>
 
@@ -32,6 +33,10 @@
 #if BUILDFLAG(IS_WIN)
 #include "base/win/windows_types.h"
 #endif
+
+// Marks a field as excluded from the raw_ptr usage enforcement clang plugin.
+// Example: RAW_PTR_EXCLUSION Foo* foo_;
+#define RAW_PTR_EXCLUSION __attribute__((annotate("raw_ptr_exclusion")))
 
 namespace cc {
 class Scheduler;
@@ -305,6 +310,83 @@ struct BackupRefPtrImpl {
 
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 
+// Implementation that allows us to detect BackupRefPtr problems in ASan builds.
+struct AsanBackupRefPtrImpl {
+  // Wraps a pointer.
+  template <typename T>
+  static RAW_PTR_FUNC_ATTRIBUTES T* WrapRawPtr(T* ptr) {
+    AsanCheckIfValidInstantiation(ptr);
+    return ptr;
+  }
+
+  // Notifies the allocator when a wrapped pointer is being removed or replaced.
+  template <typename T>
+  static RAW_PTR_FUNC_ATTRIBUTES void ReleaseWrappedPtr(T*) {}
+
+  // Unwraps the pointer, while asserting that memory hasn't been freed. The
+  // function is allowed to crash on nullptr.
+  template <typename T>
+  static RAW_PTR_FUNC_ATTRIBUTES T* SafelyUnwrapPtrForDereference(
+      T* wrapped_ptr) {
+    AsanCheckIfValidDereference(wrapped_ptr);
+    return wrapped_ptr;
+  }
+
+  // Unwraps the pointer, while asserting that memory hasn't been freed. The
+  // function must handle nullptr gracefully.
+  template <typename T>
+  static RAW_PTR_FUNC_ATTRIBUTES T* SafelyUnwrapPtrForExtraction(
+      T* wrapped_ptr) {
+    AsanCheckIfValidExtraction(wrapped_ptr);
+    return wrapped_ptr;
+  }
+
+  // Unwraps the pointer, without making an assertion on whether memory was
+  // freed or not.
+  template <typename T>
+  static RAW_PTR_FUNC_ATTRIBUTES T* UnsafelyUnwrapPtrForComparison(
+      T* wrapped_ptr) {
+    return wrapped_ptr;
+  }
+
+  // Upcasts the wrapped pointer.
+  template <typename To, typename From>
+  static RAW_PTR_FUNC_ATTRIBUTES constexpr To* Upcast(From* wrapped_ptr) {
+    static_assert(std::is_convertible<From*, To*>::value,
+                  "From must be convertible to To.");
+    // Note, this cast may change the address if upcasting to base that lies in
+    // the middle of the derived object.
+    return wrapped_ptr;
+  }
+
+  // Advance the wrapped pointer by |delta| bytes.
+  template <typename T>
+  static RAW_PTR_FUNC_ATTRIBUTES T* Advance(T* wrapped_ptr,
+                                            ptrdiff_t delta_elems) {
+    return wrapped_ptr + delta_elems;
+  }
+
+  // Returns a copy of a wrapped pointer, without making an assertion on whether
+  // memory was freed or not.
+  template <typename T>
+  static RAW_PTR_FUNC_ATTRIBUTES T* Duplicate(T* wrapped_ptr) {
+    return wrapped_ptr;
+  }
+
+  // This is for accounting only, used by unit tests.
+  static RAW_PTR_FUNC_ATTRIBUTES void IncrementSwapCountForTest() {}
+  static RAW_PTR_FUNC_ATTRIBUTES void
+  IncrementPointerToMemberOperatorCountForTest() {}
+
+ private:
+  static BASE_EXPORT NOINLINE void AsanCheckIfValidInstantiation(
+      void const volatile* ptr);
+  static BASE_EXPORT NOINLINE void AsanCheckIfValidDereference(
+      void const volatile* ptr);
+  static BASE_EXPORT NOINLINE void AsanCheckIfValidExtraction(
+      void const volatile* ptr);
+};
+
 }  // namespace internal
 
 namespace raw_ptr_traits {
@@ -403,13 +485,22 @@ struct IsSupportedType<T,
 // has limited impact on stability - dereferencing a dangling pointer remains
 // Undefined Behavior.  Note that the security protection is not yet enabled by
 // default.
+//
+// raw_ptr<T> is marked as [[gsl::Pointer]] which allows the compiler to catch
+// some bugs where the raw_ptr holds a dangling pointer to a temporary object.
+// However the [[gsl::Pointer]] analysis expects that such types do not have a
+// non-default move constructor/assignment. Thus, it's possible to get an error
+// where the pointer is not actually dangling, and have to work around the
+// compiler. We have not managed to construct such an example in Chromium yet.
 template <typename T,
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
           typename Impl = internal::BackupRefPtrImpl>
+#elif BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
+          typename Impl = internal::AsanBackupRefPtrImpl>
 #else
           typename Impl = internal::RawPtrNoOpImpl>
 #endif
-class TRIVIAL_ABI raw_ptr {
+class TRIVIAL_ABI GSL_POINTER raw_ptr {
  public:
   static_assert(raw_ptr_traits::IsSupportedType<T>::value,
                 "raw_ptr<T> doesn't work with this kind of pointee type T");
@@ -611,6 +702,21 @@ class TRIVIAL_ABI raw_ptr {
     return *this += -delta_elems;
   }
 
+  // Stop referencing the underlying pointer and free its memory. Compared to
+  // raw delete calls, this avoids the raw_ptr to be temporarily dangling
+  // during the free operation, which will lead to taking the slower path that
+  // involves quarantine.
+  RAW_PTR_FUNC_ATTRIBUTES void ClearAndDelete() noexcept {
+    T* ptr = wrapped_ptr_;
+    operator=(nullptr);
+    delete ptr;
+  }
+  RAW_PTR_FUNC_ATTRIBUTES void ClearAndDeleteArray() noexcept {
+    T* ptr = wrapped_ptr_;
+    operator=(nullptr);
+    delete[] ptr;
+  }
+
   // Comparison operators between raw_ptr and raw_ptr<U>/U*/std::nullptr_t.
   // Strictly speaking, it is not necessary to provide these: the compiler can
   // use the conversion operator implicitly to allow comparisons to fall back to
@@ -632,6 +738,18 @@ class TRIVIAL_ABI raw_ptr {
                                                  const raw_ptr<U, Impl>& rhs) {
     return !(lhs == rhs);
   }
+  template <typename U, typename V, typename I>
+  friend RAW_PTR_FUNC_ATTRIBUTES bool operator<(const raw_ptr<U, I>& lhs,
+                                                const raw_ptr<V, I>& rhs);
+  template <typename U, typename V, typename I>
+  friend RAW_PTR_FUNC_ATTRIBUTES bool operator>(const raw_ptr<U, I>& lhs,
+                                                const raw_ptr<V, I>& rhs);
+  template <typename U, typename V, typename I>
+  friend RAW_PTR_FUNC_ATTRIBUTES bool operator<=(const raw_ptr<U, I>& lhs,
+                                                 const raw_ptr<V, I>& rhs);
+  template <typename U, typename V, typename I>
+  friend RAW_PTR_FUNC_ATTRIBUTES bool operator>=(const raw_ptr<U, I>& lhs,
+                                                 const raw_ptr<V, I>& rhs);
 
   // Comparisons with U*. These operators also handle the case where the RHS is
   // T*.
@@ -650,6 +768,38 @@ class TRIVIAL_ABI raw_ptr {
   template <typename U>
   friend RAW_PTR_FUNC_ATTRIBUTES bool operator!=(U* lhs, const raw_ptr& rhs) {
     return rhs != lhs;  // Reverse order to call the operator above.
+  }
+  template <typename U>
+  friend RAW_PTR_FUNC_ATTRIBUTES bool operator<(const raw_ptr& lhs, U* rhs) {
+    return lhs.GetForComparison() < rhs;
+  }
+  template <typename U>
+  friend RAW_PTR_FUNC_ATTRIBUTES bool operator<=(const raw_ptr& lhs, U* rhs) {
+    return lhs.GetForComparison() <= rhs;
+  }
+  template <typename U>
+  friend RAW_PTR_FUNC_ATTRIBUTES bool operator>(const raw_ptr& lhs, U* rhs) {
+    return lhs.GetForComparison() > rhs;
+  }
+  template <typename U>
+  friend RAW_PTR_FUNC_ATTRIBUTES bool operator>=(const raw_ptr& lhs, U* rhs) {
+    return lhs.GetForComparison() >= rhs;
+  }
+  template <typename U>
+  friend RAW_PTR_FUNC_ATTRIBUTES bool operator<(U* lhs, const raw_ptr& rhs) {
+    return lhs < rhs.GetForComparison();
+  }
+  template <typename U>
+  friend RAW_PTR_FUNC_ATTRIBUTES bool operator<=(U* lhs, const raw_ptr& rhs) {
+    return lhs <= rhs.GetForComparison();
+  }
+  template <typename U>
+  friend RAW_PTR_FUNC_ATTRIBUTES bool operator>(U* lhs, const raw_ptr& rhs) {
+    return lhs > rhs.GetForComparison();
+  }
+  template <typename U>
+  friend RAW_PTR_FUNC_ATTRIBUTES bool operator>=(U* lhs, const raw_ptr& rhs) {
+    return lhs >= rhs.GetForComparison();
   }
 
   // Comparisons with `std::nullptr_t`.
@@ -708,8 +858,51 @@ RAW_PTR_FUNC_ATTRIBUTES bool operator==(const raw_ptr<U, I>& lhs,
   return lhs.GetForComparison() == rhs.GetForComparison();
 }
 
+template <typename U, typename V, typename I>
+RAW_PTR_FUNC_ATTRIBUTES bool operator<(const raw_ptr<U, I>& lhs,
+                                       const raw_ptr<V, I>& rhs) {
+  return lhs.GetForComparison() < rhs.GetForComparison();
+}
+
+template <typename U, typename V, typename I>
+RAW_PTR_FUNC_ATTRIBUTES bool operator>(const raw_ptr<U, I>& lhs,
+                                       const raw_ptr<V, I>& rhs) {
+  return lhs.GetForComparison() > rhs.GetForComparison();
+}
+
+template <typename U, typename V, typename I>
+RAW_PTR_FUNC_ATTRIBUTES bool operator<=(const raw_ptr<U, I>& lhs,
+                                        const raw_ptr<V, I>& rhs) {
+  return lhs.GetForComparison() <= rhs.GetForComparison();
+}
+
+template <typename U, typename V, typename I>
+RAW_PTR_FUNC_ATTRIBUTES bool operator>=(const raw_ptr<U, I>& lhs,
+                                        const raw_ptr<V, I>& rhs) {
+  return lhs.GetForComparison() >= rhs.GetForComparison();
+}
+
 }  // namespace base
 
 using base::raw_ptr;
+
+namespace std {
+
+// Override so set/map lookups do not create extra raw_ptr. This also allows
+// dangling pointers to be used for lookup.
+template <typename T, typename I>
+struct less<raw_ptr<T, I>> {
+  using is_transparent = void;
+
+  bool operator()(const raw_ptr<T, I>& lhs, const raw_ptr<T, I>& rhs) const {
+    return lhs < rhs;
+  }
+
+  bool operator()(T* lhs, const raw_ptr<T, I>& rhs) const { return lhs < rhs; }
+
+  bool operator()(const raw_ptr<T, I>& lhs, T* rhs) const { return lhs < rhs; }
+};
+
+}  // namespace std
 
 #endif  // BASE_MEMORY_RAW_PTR_H_

@@ -68,20 +68,20 @@ class OncMaskValues : public Mapper {
                           const base::Value& onc_object,
                           const std::string& mask) {
     OncMaskValues masker(mask);
-    bool unused_error;
-    return base::Value::FromUniquePtrValue(
-        masker.MapObject(signature, onc_object, &unused_error));
+    bool error = false;
+    base::Value result = masker.MapObject(signature, onc_object, &error);
+    DCHECK(!result.is_none());
+    return result;
   }
 
  protected:
   explicit OncMaskValues(const std::string& mask) : mask_(mask) {}
 
-  std::unique_ptr<base::Value> MapField(
-      const std::string& field_name,
-      const OncValueSignature& object_signature,
-      const base::Value& onc_value,
-      bool* found_unknown_field,
-      bool* error) override {
+  base::Value MapField(const std::string& field_name,
+                       const OncValueSignature& object_signature,
+                       const base::Value& onc_value,
+                       bool* found_unknown_field,
+                       bool* error) override {
     if (FieldIsCredential(object_signature, field_name)) {
       // If it's the password field and the substitution string is used, don't
       // mask it.
@@ -92,7 +92,7 @@ class OncMaskValues : public Mapper {
         return Mapper::MapField(field_name, object_signature, onc_value,
                                 found_unknown_field, error);
       }
-      return std::make_unique<base::Value>(mask_);
+      return base::Value(mask_);
     } else {
       return Mapper::MapField(field_name, object_signature, onc_value,
                               found_unknown_field, error);
@@ -107,7 +107,7 @@ class OncMaskValues : public Mapper {
 // the Certificates section of ONC, which is passed in as |certificates|.
 CertPEMsByGUIDMap GetServerAndCACertsByGUID(const base::Value& certificates) {
   CertPEMsByGUIDMap certs_by_guid;
-  for (const auto& cert : certificates.GetList()) {
+  for (const auto& cert : certificates.GetListDeprecated()) {
     DCHECK(cert.is_dict());
 
     const std::string* guid = cert.FindStringKey(::onc::certificate::kGUID);
@@ -140,13 +140,13 @@ CertPEMsByGUIDMap GetServerAndCACertsByGUID(const base::Value& certificates) {
 
 // Fills HexSSID fields in all entries in the |network_configs| list.
 void FillInHexSSIDFieldsInNetworks(base::Value* network_configs) {
-  for (auto& network : network_configs->GetList())
+  for (auto& network : network_configs->GetListDeprecated())
     FillInHexSSIDFieldsInOncObject(kNetworkConfigurationSignature, &network);
 }
 
 // Sets HiddenSSID fields in all entries in the |network_configs| list.
 void SetHiddenSSIDFieldsInNetworks(base::Value* network_configs) {
-  for (auto& network : network_configs->GetList())
+  for (auto& network : network_configs->GetListDeprecated())
     SetHiddenSSIDFieldInOncObject(kNetworkConfigurationSignature, &network);
 }
 
@@ -212,7 +212,7 @@ bool ResolveCertRefList(const CertPEMsByGUIDMap& certs_by_guid,
     return true;
 
   base::Value pem_list(base::Value::Type::LIST);
-  for (const auto& entry : guid_ref_list->GetList()) {
+  for (const auto& entry : guid_ref_list->GetListDeprecated()) {
     std::string pem_encoded;
     if (!GUIDRefToPEMEncoding(certs_by_guid, entry.GetString(), &pem_encoded))
       return false;
@@ -483,7 +483,7 @@ void ExpandStringsInOncObject(const OncValueSignature& signature,
 
 void ExpandStringsInNetworks(const VariableExpander& variable_expander,
                              base::Value* network_configs) {
-  for (auto& network : network_configs->GetList()) {
+  for (auto& network : network_configs->GetListDeprecated()) {
     DCHECK(network.is_dict());
     ExpandStringsInOncObject(kNetworkConfigurationSignature, variable_expander,
                              &network);
@@ -635,10 +635,8 @@ bool ParseAndValidateOncForImport(const std::string& onc_blob,
   validator.SetOncSource(onc_source);
 
   Validator::Result validation_result;
-  // TODO(crbug.com/1226202): Use base::Value once onc::Validator is converted.
-  std::unique_ptr<base::DictionaryValue> validated_toplevel_onc =
-      validator.ValidateAndRepairObject(&kToplevelConfigurationSignature,
-                                        toplevel_onc, &validation_result);
+  base::Value validated_toplevel_onc = validator.ValidateAndRepairObject(
+      &kToplevelConfigurationSignature, toplevel_onc, &validation_result);
 
   if (from_policy) {
     UMA_HISTOGRAM_BOOLEAN("Enterprise.ONC.PolicyValidation",
@@ -651,14 +649,14 @@ bool ParseAndValidateOncForImport(const std::string& onc_blob,
                    << GetSourceAsString(onc_source);
     success = false;
   } else if (validation_result == Validator::INVALID ||
-             !validated_toplevel_onc) {
+             validated_toplevel_onc.is_none()) {
     NET_LOG(ERROR) << "ONC is invalid and couldn't be repaired: "
                    << GetSourceAsString(onc_source);
     return false;
   }
 
   if (certificates) {
-    base::Value* validated_certs = validated_toplevel_onc->FindListKey(
+    base::Value* validated_certs = validated_toplevel_onc.FindListKey(
         ::onc::toplevel_config::kCertificates);
     if (validated_certs)
       *certificates = std::move(*validated_certs);
@@ -668,7 +666,7 @@ bool ParseAndValidateOncForImport(const std::string& onc_blob,
   // nullptr, because ResolveServerCertRefsInNetworks could affect the return
   // value of the function (which is supposed to aggregate validation issues in
   // all segments of the ONC blob).
-  base::Value* validated_networks_list = validated_toplevel_onc->FindListKey(
+  base::Value* validated_networks_list = validated_toplevel_onc.FindListKey(
       ::onc::toplevel_config::kNetworkConfigurations);
   if (validated_networks_list) {
     FillInHexSSIDFieldsInNetworks(validated_networks_list);
@@ -691,7 +689,7 @@ bool ParseAndValidateOncForImport(const std::string& onc_blob,
   }
 
   if (global_network_config) {
-    base::Value* validated_global_config = validated_toplevel_onc->FindDictKey(
+    base::Value* validated_global_config = validated_toplevel_onc.FindDictKey(
         ::onc::toplevel_config::kGlobalNetworkConfiguration);
     if (validated_global_config) {
       *global_network_config = std::move(*validated_global_config);
@@ -705,7 +703,7 @@ bool ResolveServerCertRefsInNetworks(const CertPEMsByGUIDMap& certs_by_guid,
                                      base::Value* network_configs) {
   bool success = true;
   base::Value::ListStorage filtered_configs;
-  for (base::Value& network : network_configs->GetList()) {
+  for (base::Value& network : network_configs->GetListDeprecated()) {
     DCHECK(network.is_dict());
     if (!ResolveServerCertRefsInNetwork(certs_by_guid, &network)) {
       std::string* guid = network.FindStringKey(::onc::network_config::kGUID);

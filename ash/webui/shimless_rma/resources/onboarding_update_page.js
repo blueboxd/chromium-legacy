@@ -57,6 +57,12 @@ export class OnboardingUpdatePageElement extends
 
   static get properties() {
     return {
+      /**
+       * Set by shimless_rma.js.
+       * @type {boolean}
+       */
+      allButtonsDisabled: Boolean,
+
       /** @protected */
       currentVersionText_: {
         type: String,
@@ -92,6 +98,7 @@ export class OnboardingUpdatePageElement extends
       updateInProgress_: {
         type: Boolean,
         value: false,
+        observer: 'onUpdateInProgressChange_',
       },
 
       /** @protected */
@@ -104,7 +111,23 @@ export class OnboardingUpdatePageElement extends
       updateVersion_: {
         type: String,
         value: '',
-      }
+      },
+
+      /** @protected */
+      verificationFailedMessage_: {
+        type: String,
+        value: '',
+      },
+
+      /**
+       * A string containing a list of the unqualified component identifiers
+       * separated by new lines.
+       * @protected
+       */
+      unqualifiedComponentsText_: {
+        type: String,
+        value: '',
+      },
     };
   }
 
@@ -181,18 +204,10 @@ export class OnboardingUpdatePageElement extends
   /** @protected */
   onUpdateButtonClicked_() {
     this.updateInProgress_ = true;
-    this.dispatchEvent(new CustomEvent(
-        'disable-next-button',
-        {bubbles: true, composed: true, detail: false},
-        ));
     this.shimlessRmaService_.updateOs().then((res) => {
       if (!res.updateStarted) {
         this.updateProgressMessage_ = this.i18n('osUpdateFailedToStartText');
         this.updateInProgress_ = false;
-        this.dispatchEvent(new CustomEvent(
-            'disable-next-button',
-            {bubbles: true, composed: true, detail: false},
-            ));
       }
     });
   }
@@ -230,10 +245,6 @@ export class OnboardingUpdatePageElement extends
         operation === OsUpdateOperation.kNeedPermissionToUpdate ||
         operation === OsUpdateOperation.kDisabled) {
       this.updateInProgress_ = false;
-      this.dispatchEvent(new CustomEvent(
-          'disable-next-button',
-          {bubbles: true, composed: true, detail: false},
-          ));
     }
     this.updateProgressMessage_ = this.i18n(
         'onboardingUpdateProgress', this.i18n(operationNameKeys[operation]),
@@ -248,6 +259,11 @@ export class OnboardingUpdatePageElement extends
    */
   onHardwareVerificationResult(isCompliant, errorMessage) {
     this.isCompliant_ = isCompliant;
+
+    if (!this.isCompliant_) {
+      this.unqualifiedComponentsText_ = errorMessage;
+      this.setVerificationFailedMessage_();
+    }
   }
 
   /** @protected */
@@ -269,6 +285,37 @@ export class OnboardingUpdatePageElement extends
     return this.updateAvailable_ ?
         this.i18n('osUpdateOutOfDateDescriptionText') :
         '';
+  }
+
+  /** @private */
+  setVerificationFailedMessage_() {
+    this.verificationFailedMessage_ = this.i18nAdvanced(
+        'osUpdateUnqualifiedComponentsTopText', {attrs: ['id']});
+
+    // The #unqualifiedComponentsLink identifier is sourced from the string
+    // attached to `osUpdateUnqualifiedComponentsTopText` in the related .grd
+    // file.
+    const linkElement =
+        this.shadowRoot.querySelector('#unqualifiedComponentsLink');
+    linkElement.setAttribute('href', '#');
+    linkElement.addEventListener(
+        'click',
+        () => this.shadowRoot.querySelector('#unqualifiedComponentsDialog')
+                  .showModal());
+  }
+
+  /** @private */
+  closeDialog_() {
+    this.shadowRoot.querySelector('#unqualifiedComponentsDialog').close();
+  }
+
+  /** @private */
+  onUpdateInProgressChange_() {
+    const shouldDisableAllButtons = this.updateInProgress_;
+    this.dispatchEvent(new CustomEvent(
+        'disable-all-buttons',
+        {bubbles: true, composed: true, detail: shouldDisableAllButtons},
+        ));
   }
 }
 

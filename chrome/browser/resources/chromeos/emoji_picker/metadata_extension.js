@@ -2,17 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-export const CATEGORY_DATA = [
+export const CATEGORY_METADATA = [
   {
     name: 'emoji',
     icon: 'emoji_picker:insert_emoticon',
     active: true,
   },
-  {
-    name: 'symbol',
-    icon: 'emoji_picker_v2:symbol_omega',
-    active: false,
-  },
+  // TODO(b/213141035): insert symbols metadata back.
   {
     name: 'emoticon',
     icon: 'emoji_picker_v2:emoticon_gssmiley',
@@ -20,10 +16,12 @@ export const CATEGORY_DATA = [
   },
 ];
 
+// TODO(b/216190190): Change groupId to number type.
 export const V2_SUBCATEGORY_TABS = [
   {
     name: 'Recently Used',
     icon: 'emoji_picker:schedule',
+    category: 'emoji',
     groupId: 'history',
     active: false,
     disabled: true,
@@ -102,6 +100,15 @@ export const V2_SUBCATEGORY_TABS = [
     disabled: false
   },
   {
+    name: 'Recently Used',
+    icon: 'emoji_picker:schedule',
+    category: 'emoticon',
+    groupId: 'emoticon-history',
+    active: false,
+    disabled: true,
+    pagination: 1
+  },
+  {
     name: 'Classic',
     category: 'emoticon',
     groupId: '9',
@@ -118,7 +125,7 @@ export const V2_SUBCATEGORY_TABS = [
     pagination: 1
   },
   {
-    name: 'Love',
+    name: 'Loving',
     category: 'emoticon',
     groupId: '11',
     active: false,
@@ -150,7 +157,7 @@ export const V2_SUBCATEGORY_TABS = [
     pagination: 2
   },
   {
-    name: 'Surprise',
+    name: 'Surprising',
     category: 'emoticon',
     groupId: '15',
     active: false,
@@ -166,7 +173,7 @@ export const V2_SUBCATEGORY_TABS = [
     pagination: 2
   },
   {
-    name: 'Shruggie',
+    name: 'Shrugging',
     category: 'emoticon',
     groupId: '17',
     active: false,
@@ -174,7 +181,7 @@ export const V2_SUBCATEGORY_TABS = [
     pagination: 2
   },
   {
-    name: 'Table flip',
+    name: 'Table flipping',
     category: 'emoticon',
     groupId: '18',
     active: false,
@@ -182,7 +189,7 @@ export const V2_SUBCATEGORY_TABS = [
     pagination: 3
   },
   {
-    name: 'Disapproval look',
+    name: 'Disapproving',
     category: 'emoticon',
     groupId: '19',
     active: false,
@@ -198,7 +205,7 @@ export const V2_SUBCATEGORY_TABS = [
     pagination: 3
   },
   {
-    name: 'Nervous',
+    name: 'Worrying',
     category: 'emoticon',
     groupId: '21',
     active: false,
@@ -206,16 +213,19 @@ export const V2_SUBCATEGORY_TABS = [
     pagination: 4
   },
   {
-    name: 'Pointers',
+    name: 'Pointing',
     category: 'emoticon',
     groupId: '22',
     active: false,
     disabled: false,
     pagination: 4
   },
+  {
+    name: 'Sparkling',
+    category: 'emoticon',
+    groupId: '23',
+    active: false,
+    disabled: false,
+    pagination: 4
+  },
 ];
-
-// TODO(b/211520561): remove this after the emoticon loading logic is finished.
-export const EMPTY_EMOTICON_DATA =
-    V2_SUBCATEGORY_TABS.filter((tab) => tab.category === 'emoticon')
-        .map(tab => ({group: tab.name, emoji: []}));

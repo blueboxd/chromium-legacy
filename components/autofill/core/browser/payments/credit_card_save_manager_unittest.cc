@@ -31,6 +31,7 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
+#include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/payments/test_credit_card_save_manager.h"
 #include "components/autofill/core/browser/payments/test_credit_card_save_strike_database.h"
 #include "components/autofill/core/browser/payments/test_payments_client.h"
@@ -73,9 +74,11 @@ namespace {
 using UkmCardUploadDecisionType = ukm::builders::Autofill_CardUploadDecision;
 using UkmDeveloperEngagementType = ukm::builders::Autofill_DeveloperEngagement;
 
+#if !BUILDFLAG(IS_IOS)
 // time_t representation of 9th Sep, 2001 01:46:40 GMT
-const base::Time kArbitraryTime = base::Time::FromTimeT(1000000000);
-const base::Time kMuchLaterTime = base::Time::FromTimeT(1234567890);
+constexpr base::Time kArbitraryTime = base::Time::FromTimeT(1000000000);
+constexpr base::Time kMuchLaterTime = base::Time::FromTimeT(1234567890);
+#endif
 
 // Used to configure form for |CreateTestCreditCardFormData|.
 struct CreditCardFormOptions {
@@ -127,12 +130,12 @@ class CreditCardSaveManagerTest : public testing::Test {
         std::make_unique<TestStrikeDatabase>();
     strike_database_ = test_strike_database.get();
     autofill_client_.set_test_strike_database(std::move(test_strike_database));
+    personal_data_.set_auto_accept_address_imports_for_testing(true);
     personal_data_.Init(/*profile_database=*/database_,
                         /*account_database=*/nullptr,
                         /*pref_service=*/autofill_client_.GetPrefs(),
                         /*local_state=*/autofill_client_.GetPrefs(),
                         /*identity_manager=*/nullptr,
-                        /*client_profile_validator=*/nullptr,
                         /*history_service=*/nullptr,
                         /*strike_database=*/nullptr,
                         /*image_fetcher=*/nullptr,
@@ -344,6 +347,7 @@ class CreditCardSaveManagerTest : public testing::Test {
   scoped_refptr<AutofillWebDataService> database_;
   MockPersonalDataManager personal_data_;
   syncer::TestSyncService sync_service_;
+  // TODO(crbug.com/1291003): Refactor to use the real CreditCardSaveManager.
   // Ends up getting owned (and destroyed) by TestFormDataImporter:
   raw_ptr<TestCreditCardSaveManager> credit_card_save_manager_;
   // Ends up getting owned (and destroyed) by TestAutofillClient:
@@ -4445,7 +4449,7 @@ TEST_F(CreditCardSaveManagerTest,
 }
 
 TEST_F(CreditCardSaveManagerTest,
-       UploadCreditCard_ShouldAddUploadCardBillableServiceNumberInRequest) {
+       UploadCreditCard_ShouldAddBillableServiceNumberInRequest) {
   // Create, fill and submit an address form in order to establish a recent
   // profile which can be selected for the upload request.
   FormData address_form;
@@ -4471,6 +4475,39 @@ TEST_F(CreditCardSaveManagerTest,
   FormSubmitted(credit_card_form);
   EXPECT_EQ(payments::kUploadCardBillableServiceNumber,
             payments_client_->billable_service_number_in_request());
+}
+
+TEST_F(CreditCardSaveManagerTest,
+       UploadCreditCard_ShouldAddBillingCustomerNumberInRequest) {
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, CreditCardFormOptions());
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = u"Flo Master";
+  credit_card_form.fields[1].value = u"4111111111111111";
+  credit_card_form.fields[2].value = ASCIIToUTF16(test::NextMonth());
+  credit_card_form.fields[3].value = ASCIIToUTF16(test::NextYear());
+  credit_card_form.fields[4].value = u"123";
+
+  // Confirm that the preflight request contained billing customer number in the
+  // request.
+  FormSubmitted(credit_card_form);
+  EXPECT_EQ(123456L, payments_client_->billing_customer_number_in_request());
 }
 
 TEST_F(CreditCardSaveManagerTest,
@@ -5187,6 +5224,59 @@ TEST_F(CreditCardSaveManagerTest, InvalidLegalMessageInOnDidGetUploadDetails) {
   ExpectCardUploadDecision(
       histogram_tester,
       AutofillMetrics::UPLOAD_NOT_OFFERED_INVALID_LEGAL_MESSAGE);
+}
+
+// Tests that the fields in the card are set correctly and virtual card
+// enrollment is offered when a card becomes eligible after upload.
+TEST_F(CreditCardSaveManagerTest, OnDidUploadCard_VirtualCardEnrollment) {
+  for (CreditCard::VirtualCardEnrollmentState enrollment_state :
+       {CreditCard::VirtualCardEnrollmentState::UNENROLLED,
+        CreditCard::VirtualCardEnrollmentState::UNENROLLED_AND_ELIGIBLE,
+        CreditCard::VirtualCardEnrollmentState::ENROLLED}) {
+    for (bool is_update_virtual_card_enrollment_enabled : {true, false}) {
+      base::test::ScopedFeatureList feature_list;
+      if (is_update_virtual_card_enrollment_enabled) {
+        feature_list.InitAndEnableFeature(
+            features::kAutofillEnableUpdateVirtualCardEnrollment);
+      } else {
+        feature_list.InitAndDisableFeature(
+            features::kAutofillEnableUpdateVirtualCardEnrollment);
+      }
+      payments::PaymentsClient::UploadCardResponseDetails
+          upload_card_response_details;
+      upload_card_response_details.card_art_url =
+          GURL("https://www.example.com/");
+      upload_card_response_details.instrument_id = 9223372036854775807;
+      upload_card_response_details.virtual_card_enrollment_state =
+          enrollment_state;
+
+      credit_card_save_manager_->set_upload_request_card(test::GetCreditCard());
+      credit_card_save_manager_->OnDidUploadCard(
+          AutofillClient::PaymentsRpcResult::kSuccess,
+          upload_card_response_details);
+
+      CreditCard uploaded_card =
+          credit_card_save_manager_->upload_request()->card;
+
+      // The condition inside of this if-statement is true if virtual card
+      // enrollment should be offered.
+      if (is_update_virtual_card_enrollment_enabled &&
+          enrollment_state ==
+              CreditCard::VirtualCardEnrollmentState::UNENROLLED_AND_ELIGIBLE) {
+        EXPECT_EQ(uploaded_card.card_art_url(),
+                  upload_card_response_details.card_art_url);
+        EXPECT_EQ(uploaded_card.instrument_id(),
+                  upload_card_response_details.instrument_id);
+        EXPECT_EQ(uploaded_card.virtual_card_enrollment_state(),
+                  upload_card_response_details.virtual_card_enrollment_state);
+      } else {
+        EXPECT_TRUE(uploaded_card.card_art_url().is_empty());
+        EXPECT_EQ(uploaded_card.instrument_id(), 0);
+        EXPECT_EQ(uploaded_card.virtual_card_enrollment_state(),
+                  CreditCard::VirtualCardEnrollmentState::UNSPECIFIED);
+      }
+    }
+  }
 }
 
 }  // namespace autofill

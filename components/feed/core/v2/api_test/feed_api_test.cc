@@ -417,6 +417,7 @@ void TestFeedNetwork::SendQueryRequest(
     const feedwire::Request& request,
     const AccountInfo& account_info,
     base::OnceCallback<void(QueryRequestResult)> callback) {
+  sent_request_types_.push_back(NetworkRequestType::kFeedQuery);
   last_account_info = account_info;
   ++send_query_call_count;
   // Emulate a successful response.
@@ -478,7 +479,9 @@ void TestFeedNetwork::SendDiscoverApiRequest(
     base::StringPiece method,
     std::string request_bytes,
     const AccountInfo& account_info,
+    absl::optional<RequestMetadata> request_metadata,
     base::OnceCallback<void(RawResponse)> callback) {
+  sent_request_types_.push_back(request_type);
   last_account_info = account_info;
   api_requests_sent_[request_type] = request_bytes;
   ++api_request_count_[request_type];
@@ -855,6 +858,10 @@ void FeedApiTest::RegisterFollowingFeedFollowCountFieldTrial(
   register_following_feed_follow_count_field_trial_calls_.push_back(
       follow_count);
 }
+void FeedApiTest::RegisterFeedUserSettingsFieldTrial(base::StringPiece group) {
+  register_feed_user_settings_field_trial_calls_.push_back(
+      static_cast<std::string>(group));
+}
 DisplayMetrics FeedApiTest::GetDisplayMetrics() {
   DisplayMetrics result;
   result.density = 200;
@@ -904,10 +911,23 @@ bool FeedApiTest::IsTaskQueueIdle() const {
 }
 
 void FeedApiTest::WaitForIdleTaskQueue() {
-  RunLoopUntil(base::BindLambdaForTesting([&]() {
-    return IsTaskQueueIdle() &&
-           !stream_->subscriptions().is_loading_model_for_testing();
-  }));
+  RunLoopUntil(
+      base::BindLambdaForTesting([&]() {
+        return IsTaskQueueIdle() &&
+               !stream_->subscriptions().is_loading_model_for_testing();
+      }),
+      base::BindLambdaForTesting([&]() -> std::string {
+        std::stringstream ss;
+        if (!IsTaskQueueIdle()) {
+          ss << "Task queue not idle. Queue state:\n"
+             << stream_->GetTaskQueueForTesting().GetStateForTesting() << '\n';
+        }
+        if (stream_->subscriptions().is_loading_model_for_testing()) {
+          ss << "Subscription model still loading\n";
+        }
+
+        return ss.str();
+      }));
 }
 
 void FeedApiTest::UnloadModel(const StreamType& stream_type) {

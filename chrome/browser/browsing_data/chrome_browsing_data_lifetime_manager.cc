@@ -43,6 +43,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#else
+#include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/ui/android/tab_model/tab_model.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #endif
 
 namespace {
@@ -155,7 +159,7 @@ class BrowsingDataRemoverObserver
 
 uint64_t GetOriginTypeMask(const base::Value& data_types) {
   uint64_t result = 0;
-  for (const auto& data_type : data_types.GetList()) {
+  for (const auto& data_type : data_types.GetListDeprecated()) {
     std::string data_type_str = data_type.GetString();
     if (data_type_str ==
         browsing_data::policy_data_types::kCookiesAndOtherSiteData) {
@@ -170,7 +174,7 @@ uint64_t GetOriginTypeMask(const base::Value& data_types) {
 
 uint64_t GetRemoveMask(const base::Value& data_types) {
   uint64_t result = 0;
-  for (const auto& data_type : data_types.GetList()) {
+  for (const auto& data_type : data_types.GetListDeprecated()) {
     std::string data_type_str = data_type.GetString();
     if (data_type_str == browsing_data::policy_data_types::kBrowsingHistory) {
       result |= chrome_browsing_data_remover::DATA_TYPE_HISTORY;
@@ -204,7 +208,7 @@ std::vector<ScheduledRemovalSettings> ConvertToScheduledRemovalSettings(
   std::vector<ScheduledRemovalSettings> scheduled_removals_settings;
   if (!browsing_data_settings)
     return scheduled_removals_settings;
-  for (const auto& setting : browsing_data_settings->GetList()) {
+  for (const auto& setting : browsing_data_settings->GetListDeprecated()) {
     const auto* data_types =
         setting.FindListKey(browsing_data::policy_fields::kDataTypes);
     const auto time_to_live_in_hours =
@@ -227,6 +231,14 @@ base::flat_set<GURL> GetOpenedUrls(Profile* profile) {
     }
     for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
       result.insert(browser->tab_strip_model()->GetWebContentsAt(i)->GetURL());
+    }
+  }
+#else
+  for (const TabModel* model : TabModelList::models()) {
+    for (int index = 0; index < model->GetTabCount(); ++index) {
+      TabAndroid* tab = model->GetTabAt(index);
+      if (tab)
+        result.insert(tab->GetURL());
     }
   }
 #endif
@@ -295,7 +307,7 @@ void ChromeBrowsingDataLifetimeManager::ClearBrowsingDataForOnExitPolicy(
     bool keep_browser_alive) {
   auto* data_types = profile_->GetPrefs()->GetList(
       browsing_data::prefs::kClearBrowsingDataOnExitList);
-  if (data_types && !data_types->GetList().empty() &&
+  if (data_types && !data_types->GetListDeprecated().empty() &&
       !SyncServiceFactory::IsSyncAllowed(profile_)) {
     profile_->GetPrefs()->SetBoolean(
         browsing_data::prefs::kClearBrowsingDataOnExitDeletionPending, true);

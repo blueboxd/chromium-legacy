@@ -28,7 +28,10 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/sct_reporting_service.h"
+#include "chrome/browser/ssl/sct_reporting_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
@@ -120,7 +123,7 @@ std::vector<std::string> TranslateStringArray(const base::Value* list) {
     return std::vector<std::string>();
 
   std::vector<std::string> strings;
-  for (const base::Value& value : list->GetList()) {
+  for (const base::Value& value : list->GetListDeprecated()) {
     DCHECK(value.is_string());
     strings.push_back(value.GetString());
   }
@@ -244,6 +247,8 @@ ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
                           base::Unretained(this)));
   cookie_settings_ = CookieSettingsFactory::GetForProfile(profile);
   cookie_settings_observation_.Observe(cookie_settings_.get());
+  privacy_sandbox_settings_observer_.Observe(
+      PrivacySandboxSettingsFactory::GetForProfile(profile));
 
   DisableQuicIfNotAllowed();
 
@@ -383,6 +388,17 @@ void ProfileNetworkContextService::OnThirdPartyCookieBlockingChanged(
             ->BlockThirdPartyCookies(block_third_party_cookies);
       },
       block_third_party_cookies));
+}
+
+void ProfileNetworkContextService::OnTrustTokenBlockingChanged(
+    bool block_trust_tokens) {
+  profile_->ForEachStoragePartition(base::BindRepeating(
+      [](bool block_trust_tokens,
+         content::StoragePartition* storage_partition) {
+        storage_partition->GetNetworkContext()->SetBlockTrustTokens(
+            block_trust_tokens);
+      },
+      block_trust_tokens));
 }
 
 std::string ProfileNetworkContextService::ComputeAcceptLanguage() const {
@@ -727,25 +743,10 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
         local_state->GetFilePath(prefs::kDiskCacheDir);
     if (!disk_cache_dir.empty())
       base_cache_path = disk_cache_dir.Append(base_cache_path.BaseName());
-    base::FilePath http_cache_path =
+    network_context_params->http_cache_path =
         base_cache_path.Append(chrome::kCacheDirname);
-    if (base::FeatureList::IsEnabled(features::kDisableHttpDiskCache)) {
-      // Clear any existing on-disk cache first since if the user tries to
-      // remove the cache it would only affect the in-memory cache while in the
-      // experiment.
-      base::ThreadPool::PostTask(
-          FROM_HERE,
-          {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-          base::BindOnce(base::GetDeletePathRecursivelyCallback(),
-                         http_cache_path));
-      network_context_params->http_cache_max_size =
-          features::kDisableHttpDiskCacheMemoryCacheSizeParam.Get();
-    } else {
-      network_context_params->http_cache_path = http_cache_path;
-      network_context_params->http_cache_max_size =
-          local_state->GetInteger(prefs::kDiskCacheSize);
-    }
+    network_context_params->http_cache_max_size =
+        local_state->GetInteger(prefs::kDiskCacheSize);
 
     network_context_params->file_paths =
         ::network::mojom::NetworkContextFilePaths::New();
@@ -787,7 +788,7 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   }
   const base::Value* hsts_policy_bypass_list =
       g_browser_process->local_state()->GetList(prefs::kHSTSPolicyBypassList);
-  for (const auto& value : hsts_policy_bypass_list->GetList()) {
+  for (const auto& value : hsts_policy_bypass_list->GetListDeprecated()) {
     const std::string* string_value = value.GetIfString();
     if (!string_value)
       continue;
@@ -799,11 +800,14 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   network_context_params->enable_certificate_reporting = true;
   network_context_params->enable_expect_ct_reporting = true;
 
-  // Initialize the network context to do SCT auditing only if the current
-  // profile is opted in to Safe Browsing Extended Reporting.
-  if (!profile_->IsOffTheRecord() &&
-      safe_browsing::IsExtendedReportingEnabled(*profile_->GetPrefs())) {
-    network_context_params->enable_sct_auditing = true;
+  SCTReportingService* sct_reporting_service =
+      SCTReportingServiceFactory::GetForBrowserContext(profile_);
+  if (sct_reporting_service) {
+    network_context_params->sct_auditing_mode =
+        sct_reporting_service->GetReportingMode();
+  } else {
+    network_context_params->sct_auditing_mode =
+        network::mojom::SCTAuditingMode::kDisabled;
   }
 
   network_context_params->ct_policy = GetCTPolicy();
@@ -930,6 +934,10 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
   // All consumers of the main NetworkContext must provide NetworkIsolationKeys
   // / IsolationInfos, so storage can be isolated on a per-site basis.
   network_context_params->require_network_isolation_key = true;
+
+  network_context_params->block_trust_tokens =
+      !PrivacySandboxSettingsFactory::GetForProfile(profile_)
+           ->IsTrustTokensAllowed();
 }
 
 base::FilePath ProfileNetworkContextService::GetPartitionPath(

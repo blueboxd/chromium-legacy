@@ -28,8 +28,8 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(USE_VAAPI)
+#include <drm_fourcc.h>
 #include "media/gpu/vaapi/vaapi_video_decoder.h"
-#include "third_party/libdrm/src/include/drm/drm_fourcc.h"
 #elif BUILDFLAG(USE_V4L2_CODEC)
 #include "media/gpu/v4l2/v4l2_video_decoder.h"
 #else
@@ -47,10 +47,11 @@ constexpr size_t kNumFramesForImageProcessor = limits::kMaxVideoFrames + 1;
 
 // Preferred output formats in order of preference.
 // TODO(mcasas): query the platform for its preferred formats and modifiers.
-constexpr Fourcc::Value kPreferredRenderableFourccs[] = {
-    Fourcc::NV12,
-    Fourcc::YV12,
-    Fourcc::P010,
+constexpr Fourcc kPreferredRenderableFourccs[] = {
+    Fourcc(Fourcc::NV12),
+    Fourcc(Fourcc::P010),
+    // Only used for Hana (MT8173). Remove when that device reaches EOL.
+    Fourcc(Fourcc::YV12),
 };
 
 // Picks the preferred compositor renderable format from |candidates|, if any.
@@ -61,15 +62,13 @@ constexpr Fourcc::Value kPreferredRenderableFourccs[] = {
 absl::optional<Fourcc> PickRenderableFourcc(
     const std::vector<Fourcc>& candidates,
     absl::optional<Fourcc> preferred_fourcc) {
-  if (preferred_fourcc && base::Contains(candidates, *preferred_fourcc)) {
-    for (const auto value : kPreferredRenderableFourccs) {
-      if (Fourcc(value) == *preferred_fourcc)
-        return preferred_fourcc;
-    }
+  if (preferred_fourcc && base::Contains(candidates, *preferred_fourcc) &&
+      base::Contains(kPreferredRenderableFourccs, *preferred_fourcc)) {
+    return preferred_fourcc;
   }
-  for (const auto value : kPreferredRenderableFourccs) {
-    if (base::Contains(candidates, Fourcc(value)))
-      return Fourcc(value);
+  for (const auto& value : kPreferredRenderableFourccs) {
+    if (base::Contains(candidates, value))
+      return value;
   }
   return absl::nullopt;
 }
@@ -635,9 +634,9 @@ VideoDecoderPipeline::PickDecoderOutputFormat(
   // don't need an image processor.
   absl::optional<PixelLayoutCandidate> viable_candidate;
   if (!output_size || *output_size == decoder_visible_rect.size()) {
-    for (const auto preferred_fourcc : kPreferredRenderableFourccs) {
+    for (const auto& preferred_fourcc : kPreferredRenderableFourccs) {
       for (const auto& candidate : candidates) {
-        if (candidate.fourcc == Fourcc(preferred_fourcc)) {
+        if (candidate.fourcc == preferred_fourcc) {
           viable_candidate = candidate;
           break;
         }
@@ -655,11 +654,12 @@ VideoDecoderPipeline::PickDecoderOutputFormat(
   main_frame_pool_->AsPlatformVideoFramePool()->SetCustomFrameAllocator(
       *allocator);
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  // Lacros should always use a PlatformVideoFramePool (because it doesn't need
-  // to handle ARC++/ARCVM requests) with no custom allocator (because buffers
-  // are allocated with minigbm).
+  // Lacros should always use a PlatformVideoFramePool outside of tests (because
+  // it doesn't need to handle ARC++/ARCVM requests) with no custom allocator
+  // (because buffers are allocated with minigbm).
   CHECK(!allocator.has_value());
-  CHECK(main_frame_pool_->AsPlatformVideoFramePool());
+  CHECK(main_frame_pool_->AsPlatformVideoFramePool() ||
+        main_frame_pool_->IsFakeVideoFramePool());
 #elif BUILDFLAG(IS_CHROMEOS_ASH)
   // Ash Chrome can use any type of frame pool (because it may get requests from
   // ARC++/ARCVM) but never a custom allocator.

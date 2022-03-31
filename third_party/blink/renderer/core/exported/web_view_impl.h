@@ -35,6 +35,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/observer_list.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -556,7 +557,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Shows a previously created WebView (via window.open()).
   void Show(const LocalFrameToken& opener_frame_token,
             NavigationPolicy policy,
-            const gfx::Rect& rect,
+            const gfx::Rect& requested_rect,
+            const gfx::Rect& adjusted_rect,
             bool opened_by_user_gesture);
 
   // Send the window rect to the browser and call `ack_callback` when the

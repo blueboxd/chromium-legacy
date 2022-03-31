@@ -70,6 +70,7 @@ void StreamFactory::CreateInputStream(
     uint32_t shared_memory_count,
     bool enable_agc,
     base::ReadOnlySharedMemoryRegion key_press_count_buffer,
+    media::mojom::AudioProcessingConfigPtr processing_config,
     CreateInputStreamCallback created_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT2("audio", "CreateInputStream", this,
@@ -87,9 +88,9 @@ void StreamFactory::CreateInputStream(
       UserInputMonitor::Create(std::move(key_press_count_buffer)),
       &stream_count_metric_reporter_,
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
-      output_device_mixer_manager_.get(),
+      output_device_mixer_manager_.get(), std::move(processing_config),
 #else
-      nullptr,
+      nullptr, nullptr,
 #endif
       device_id, params, shared_memory_count, enable_agc));
 }
@@ -174,7 +175,7 @@ void StreamFactory::BindMuter(
   if (it == muters_.end()) {
     auto muter_ptr = std::make_unique<LocalMuter>(&coordinator_, group_id);
     muter = muter_ptr.get();
-    muter->SetAllBindingsLostCallback(base::BindOnce(
+    muter->SetAllBindingsLostCallback(base::BindRepeating(
         &StreamFactory::DestroyMuter, base::Unretained(this), muter));
     muters_.emplace_back(std::move(muter_ptr));
   } else {
@@ -265,7 +266,12 @@ void StreamFactory::DestroyMuter(LocalMuter* muter) {
           std::find_if(weak_this->muters_.begin(), weak_this->muters_.end(),
                        base::MatchesUniquePtr(muter));
       DCHECK(it != weak_this->muters_.end());
-      weak_this->muters_.erase(it);
+
+      // The LocalMuter can still have receivers if a receiver was bound after
+      // DestroyMuter is called but before the do_destroy task is run.
+      if (!muter->HasReceivers()) {
+        weak_this->muters_.erase(it);
+      }
     }
   };
 

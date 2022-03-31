@@ -162,6 +162,8 @@ source_set("browser_sources") {
     "api/scripting/scripting_constants.h",
     "api/scripting/scripting_utils.cc",
     "api/scripting/scripting_utils.h",
+    "api/storage/settings_namespace.cc",
+    "api/storage/settings_namespace.h",
     "api/system_display/display_info_provider.cc",
     "api/system_display/display_info_provider.h",
     "api/system_display/system_display_api.cc",
@@ -382,10 +384,10 @@ source_set("browser_sources") {
     "guest_view/extension_options/extension_options_guest.h",
     "guest_view/extension_options/extension_options_guest_delegate.cc",
     "guest_view/extension_options/extension_options_guest_delegate.h",
+    "guest_view/extensions_guest_view.cc",
+    "guest_view/extensions_guest_view.h",
     "guest_view/extensions_guest_view_manager_delegate.cc",
     "guest_view/extensions_guest_view_manager_delegate.h",
-    "guest_view/extensions_guest_view_message_filter.cc",
-    "guest_view/extensions_guest_view_message_filter.h",
     "guest_view/guest_view_events.cc",
     "guest_view/guest_view_events.h",
     "guest_view/mime_handler_view/mime_handler_stream_manager.cc",
@@ -433,6 +435,8 @@ source_set("browser_sources") {
     "install_stage.h",
     "json_file_sanitizer.cc",
     "json_file_sanitizer.h",
+    "l10n_file_util.cc",
+    "l10n_file_util.h",
     "lazy_background_task_queue.cc",
     "lazy_background_task_queue.h",
     "lazy_background_task_queue_factory.cc",
@@ -622,6 +626,18 @@ source_set("browser_sources") {
 
   if (is_chromeos_ash) {
     deps += [ "//chromeos/login/login_state" ]
+  }
+
+  if (is_chromeos) {
+    sources += [
+      "api/clipboard/clipboard_api.cc",
+      "api/clipboard/clipboard_api.h",
+    ]
+    deps += [
+      "//chromeos/dbus/permission_broker",
+      "//components/prefs:prefs",
+      "//ui/base/clipboard",
+    ]
   }
 
   if (is_chromeos_lacros) {

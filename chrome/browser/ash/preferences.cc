@@ -322,7 +322,7 @@ void Preferences::RegisterProfilePrefs(
   // The following pref isn't synced since the user may desire a different value
   // depending on whether an external keyboard is attached to a particular
   // device.
-  registry->RegisterBooleanPref(::prefs::kLanguageSendFunctionKeys, false);
+  registry->RegisterBooleanPref(prefs::kSendFunctionKeys, false);
 
   // Don't sync the note-taking app; it may not be installed on other devices.
   registry->RegisterStringPref(::prefs::kNoteTakingAppId, std::string());
@@ -387,8 +387,6 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(
       ::prefs::kCaptivePortalAuthenticationIgnoresProxy, true);
-
-  registry->RegisterBooleanPref(::prefs::kForceMaximizeOnFirstRun, false);
 
   registry->RegisterBooleanPref(::prefs::kLanguageImeMenuActivated, false);
 
@@ -1055,8 +1053,8 @@ void Preferences::ApplyPreferences(ApplyReason reason,
   for (auto* remap_pref : kLanguageRemapPrefs) {
     if (pref_name == remap_pref || reason != REASON_ACTIVE_USER_CHANGED) {
       const int value = prefs_->GetInteger(remap_pref);
-      user_manager::known_user::SetIntegerPref(user_->GetAccountId(),
-                                               remap_pref, value);
+      user_manager::KnownUser known_user(g_browser_process->local_state());
+      known_user.SetIntegerPref(user_->GetAccountId(), remap_pref, value);
     }
   }
 
@@ -1158,12 +1156,12 @@ void Preferences::UpdateAutoRepeatRate() {
   input_method::InputMethodManager::Get()->GetImeKeyboard()->SetAutoRepeatRate(
       rate);
 
-  user_manager::known_user::SetIntegerPref(user_->GetAccountId(),
-                                           prefs::kXkbAutoRepeatDelay,
-                                           rate.initial_delay_in_ms);
-  user_manager::known_user::SetIntegerPref(user_->GetAccountId(),
-                                           prefs::kXkbAutoRepeatInterval,
-                                           rate.repeat_interval_in_ms);
+  user_manager::KnownUser known_user(g_browser_process->local_state());
+  known_user.SetIntegerPref(user_->GetAccountId(), prefs::kXkbAutoRepeatDelay,
+                            rate.initial_delay_in_ms);
+  known_user.SetIntegerPref(user_->GetAccountId(),
+                            prefs::kXkbAutoRepeatInterval,
+                            rate.repeat_interval_in_ms);
 }
 
 void Preferences::ActiveUserChanged(user_manager::User* active_user) {

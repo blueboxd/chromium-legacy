@@ -79,8 +79,8 @@ bool IsWebauthnRPIDListedInEnterprisePolicy(
   const PrefService* prefs = profile->GetPrefs();
   const base::Value* permit_attestation =
       prefs->GetList(prefs::kSecurityKeyPermitAttestation);
-  return std::any_of(permit_attestation->GetList().begin(),
-                     permit_attestation->GetList().end(),
+  return std::any_of(permit_attestation->GetListDeprecated().begin(),
+                     permit_attestation->GetListDeprecated().end(),
                      [&relying_party_id](const base::Value& v) {
                        return v.GetString() == relying_party_id;
                      });
@@ -106,6 +106,8 @@ const char kWebAuthnTouchIdMetadataSecretPrefName[] =
 // ---------------------------------------------------------------------
 
 ChromeWebAuthenticationDelegate::~ChromeWebAuthenticationDelegate() = default;
+
+#if !BUILDFLAG(IS_ANDROID)
 
 absl::optional<std::string>
 ChromeWebAuthenticationDelegate::MaybeGetRelyingPartyIdOverride(
@@ -174,6 +176,46 @@ void ChromeWebAuthenticationDelegate::OperationSucceeded(
 }
 #endif
 
+absl::optional<bool> ChromeWebAuthenticationDelegate::
+    IsUserVerifyingPlatformAuthenticatorAvailableOverride(
+        content::RenderFrameHost* render_frame_host) {
+  // If the testing API is active, its override takes precedence.
+  absl::optional<bool> testing_api_override =
+      content::WebAuthenticationDelegate::
+          IsUserVerifyingPlatformAuthenticatorAvailableOverride(
+              render_frame_host);
+  if (testing_api_override) {
+    return *testing_api_override;
+  }
+
+#if BUILDFLAG(IS_WIN)
+  // TODO(crbug.com/908622): Enable platform authenticators in Incognito on
+  // Windows once the API allows triggering an adequate warning dialog.
+  if (render_frame_host->GetBrowserContext()->IsOffTheRecord()) {
+    return false;
+  }
+#endif
+
+  // Chrome disables platform authenticators is Guest sessions. They may be
+  // available (behind an additional interstitial) in Incognito mode.
+  Profile* profile =
+      Profile::FromBrowserContext(render_frame_host->GetBrowserContext());
+  if (profile->IsGuestSession()) {
+    return false;
+  }
+
+  return absl::nullopt;
+}
+
+content::WebAuthenticationRequestProxy*
+ChromeWebAuthenticationDelegate::MaybeGetRequestProxy(
+    content::BrowserContext* browser_context) {
+  return extensions::WebAuthenticationProxyServiceFactory::GetForBrowserContext(
+      browser_context);
+}
+
+#endif  // !IS_ANDROID
+
 #if BUILDFLAG(IS_MAC)
 // static
 ChromeWebAuthenticationDelegate::TouchIdAuthenticatorConfig
@@ -215,44 +257,6 @@ ChromeWebAuthenticationDelegate::GetGenerateRequestIdCallback(
   return ash::WebAuthnRequestRegistrar::Get()->GetRegisterCallback(window);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-absl::optional<bool> ChromeWebAuthenticationDelegate::
-    IsUserVerifyingPlatformAuthenticatorAvailableOverride(
-        content::RenderFrameHost* render_frame_host) {
-  // If the testing API is active, its override takes precedence.
-  absl::optional<bool> testing_api_override =
-      content::WebAuthenticationDelegate::
-          IsUserVerifyingPlatformAuthenticatorAvailableOverride(
-              render_frame_host);
-  if (testing_api_override) {
-    return *testing_api_override;
-  }
-
-#if BUILDFLAG(IS_WIN)
-  // TODO(crbug.com/908622): Enable platform authenticators in Incognito on
-  // Windows once the API allows triggering an adequate warning dialog.
-  if (render_frame_host->GetBrowserContext()->IsOffTheRecord()) {
-    return false;
-  }
-#endif
-
-  // Chrome disables platform authenticators is Guest sessions. They may be
-  // available (behind an additional interstitial) in Incognito mode.
-  Profile* profile =
-      Profile::FromBrowserContext(render_frame_host->GetBrowserContext());
-  if (profile->IsGuestSession()) {
-    return false;
-  }
-
-  return absl::nullopt;
-}
-
-content::WebAuthenticationRequestProxy*
-ChromeWebAuthenticationDelegate::MaybeGetRequestProxy(
-    content::BrowserContext* browser_context) {
-  return extensions::WebAuthenticationProxyServiceFactory::GetForBrowserContext(
-      browser_context);
-}
 
 // ---------------------------------------------------------------------
 // ChromeAuthenticatorRequestDelegate
@@ -439,7 +443,8 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
   std::vector<AuthenticatorRequestDialogModel::PairedPhone>
       paired_phone_entries;
   base::RepeatingCallback<void(size_t)> contact_phone_callback;
-  if (!cable_extension_provided &&
+  if ((!cable_extension_provided ||
+       base::FeatureList::IsEnabled(device::kWebAuthCableExtensionAnywhere)) &&
       base::FeatureList::IsEnabled(device::kWebAuthCableSecondFactor)) {
     DCHECK(phone_names_.empty());
     DCHECK(phone_public_keys_.empty());
@@ -477,7 +482,8 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
   const bool have_paired_phones = !paired_phones.empty();
 
   const bool non_extension_cablev2_enabled =
-      !cable_extension_permitted &&
+      (!cable_extension_permitted ||
+       base::FeatureList::IsEnabled(device::kWebAuthCableExtensionAnywhere)) &&
       (have_paired_phones ||
        base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport));
 
@@ -740,6 +746,19 @@ bool ChromeAuthenticatorRequestDelegate::ShouldPermitCableExtension(
     return true;
   }
 
+  // TODO(crbug.com/1052397): Revisit the macro expression once build flag
+  // switch of lacros-chrome is complete. If updating this, also update
+  // kWebAuthCableServerLink.
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
+
+  // caBLEv1 is disabled on these platforms. It never launched on them because
+  // it causes problems in bluez. Rather than disabling caBLE completely, which
+  // is what was done prior to Jan 2022, this `return` just disables caBLEv1
+  // on these platforms.
+  return false;
+
+#else
+
   // Because the future of the caBLE extension might be that we transition
   // everything to QR-code or sync-based pairing, we don't want use of the
   // extension to spread without consideration. Therefore it's limited to
@@ -751,6 +770,8 @@ bool ChromeAuthenticatorRequestDelegate::ShouldPermitCableExtension(
   const GURL test_site("https://webauthndemo.appspot.com");
   DCHECK(test_site.is_valid());
   return origin.IsSameOriginWith(test_site);
+
+#endif
 }
 
 void ChromeAuthenticatorRequestDelegate::HandleCablePairingEvent(

@@ -128,7 +128,7 @@ class TabSearchPageHandlerTest : public BrowserWithTestWindowTest {
         content::WebContents::CreateParams(profile()));
     web_ui_.set_web_contents(web_contents_.get());
     profile2_ = profile_manager()->CreateTestingProfile(
-        "testing_profile2", nullptr, std::u16string(), 0, std::string(),
+        "testing_profile2", nullptr, std::u16string(), 0,
         GetTestingFactories());
     browser2_ = CreateTestBrowser(profile1(), false);
     browser3_ = CreateTestBrowser(
@@ -303,6 +303,8 @@ TEST_F(TabSearchPageHandlerTest, GetTabs) {
 }
 
 TEST_F(TabSearchPageHandlerTest, TabsAndGroups) {
+  ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
+
   TabRestoreServiceFactory::GetInstance()->SetTestingFactory(
       profile(),
       base::BindRepeating(&TabSearchPageHandlerTest::GetTabRestoreService));
@@ -399,6 +401,8 @@ TEST_F(TabSearchPageHandlerTest, MediaTabsTest) {
 }
 
 TEST_F(TabSearchPageHandlerTest, RecentlyClosedTabGroup) {
+  ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
+
   TabRestoreServiceFactory::GetInstance()->SetTestingFactory(
       profile(),
       base::BindRepeating(&TabSearchPageHandlerTest::GetTabRestoreService));
@@ -456,6 +460,8 @@ TEST_F(TabSearchPageHandlerTest, RecentlyClosedTabGroup) {
 }
 
 TEST_F(TabSearchPageHandlerTest, RecentlyClosedWindowWithGroupTabs) {
+  ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
+
   TabRestoreServiceFactory::GetInstance()->SetTestingFactory(
       profile(),
       base::BindRepeating(&TabSearchPageHandlerTest::GetTabRestoreService));
@@ -705,6 +711,8 @@ TEST_F(TabSearchPageHandlerTest, RecentlyClosedTabsHaveNoRepeatedURLEntry) {
 
 TEST_F(TabSearchPageHandlerTest,
        RecentlyClosedTabGroupsHaveNoRepeatedURLEntries) {
+  ASSERT_TRUE(browser()->tab_strip_model()->SupportsTabGroups());
+
   TabRestoreServiceFactory::GetInstance()->SetTestingFactory(
       profile(),
       base::BindRepeating(&TabSearchPageHandlerTest::GetTabRestoreService));

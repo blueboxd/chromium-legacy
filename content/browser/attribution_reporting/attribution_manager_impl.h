@@ -6,11 +6,11 @@
 #define CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_MANAGER_IMPL_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
@@ -18,21 +18,30 @@
 #include "base/observer_list.h"
 #include "base/threading/sequence_bound.h"
 #include "base/timer/wall_clock_timer.h"
+#include "content/browser/attribution_reporting/attribution_data_host_manager.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_storage.h"
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "storage/browser/quota/special_storage_policy.h"
-
-class GURL;
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace base {
 class FilePath;
 }  // namespace base
 
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace content {
 
+class AttributionCookieChecker;
+class AttributionNetworkSender;
+class AttributionStorageDelegate;
+class BrowserContext;
 class StoragePartitionImpl;
 
 struct SendResult;
@@ -62,34 +71,23 @@ class CONTENT_EXPORT AttributionManagerImpl
     : public AttributionManager,
       public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class DeleteEvent {
-    kStarted = 0,
-    kSucceeded = 1,
-    kFailed = 2,
-    kMaxValue = kFailed,
-  };
+  using IsReportAllowedCallback =
+      base::RepeatingCallback<bool(const AttributionReport&)>;
 
-  // This class is responsible for sending conversion reports to their
-  // configured endpoints over the network.
-  class NetworkSender {
-   public:
-    virtual ~NetworkSender() = default;
-
-    // Callback used to notify caller that the requested report has been sent.
-    using ReportSentCallback = base::OnceCallback<void(SendResult)>;
-
-    // Generates and sends a conversion report matching |report|. This should
-    // generate a secure POST request with no-credentials.
-    virtual void SendReport(GURL report_url,
-                            std::string report_body,
-                            ReportSentCallback sent_callback) = 0;
-  };
+  static IsReportAllowedCallback DefaultIsReportAllowedCallback(
+      BrowserContext*);
 
   // Configures underlying storage to be setup in memory, rather than on
   // disk. This speeds up initialization to avoid timeouts in test environments.
   static void RunInMemoryForTesting();
+
+  static std::unique_ptr<AttributionManagerImpl> CreateForTesting(
+      IsReportAllowedCallback is_report_allowed_callback,
+      const base::FilePath& user_data_directory,
+      scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
+      std::unique_ptr<AttributionStorageDelegate> storage_delegate,
+      std::unique_ptr<AttributionCookieChecker> cookie_checker,
+      std::unique_ptr<AttributionNetworkSender> network_sender);
 
   AttributionManagerImpl(
       StoragePartitionImpl* storage_partition,
@@ -105,35 +103,47 @@ class CONTENT_EXPORT AttributionManagerImpl
   // AttributionManager:
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
+  AttributionDataHostManager* GetDataHostManager() override;
   void HandleSource(StorableSource source) override;
-  void HandleTrigger(StorableTrigger trigger) override;
+  void HandleTrigger(AttributionTrigger trigger) override;
   void GetActiveSourcesForWebUI(
-      base::OnceCallback<void(std::vector<StorableSource>)> callback) override;
-  void GetPendingReportsForWebUI(
+      base::OnceCallback<void(std::vector<StoredSource>)> callback) override;
+  void GetPendingReportsForInternalUse(
       base::OnceCallback<void(std::vector<AttributionReport>)> callback)
       override;
   void SendReportsForWebUI(
       const std::vector<AttributionReport::EventLevelData::Id>& ids,
       base::OnceClosure done) override;
-  const AttributionPolicy& GetAttributionPolicy() const override;
   void ClearData(base::Time delete_begin,
                  base::Time delete_end,
                  base::RepeatingCallback<bool(const url::Origin&)> filter,
                  base::OnceClosure done) override;
 
+  using SourceOrTrigger = absl::variant<StorableSource, AttributionTrigger>;
+
+  void MaybeEnqueueEventForTesting(SourceOrTrigger event);
+
  private:
   friend class AttributionManagerImplTest;
 
   AttributionManagerImpl(
-      StoragePartitionImpl* storage_partition,
+      IsReportAllowedCallback is_report_allowed_callback,
       const base::FilePath& user_data_directory,
-      std::unique_ptr<AttributionPolicy> policy,
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
-      std::unique_ptr<NetworkSender> network_sender = nullptr);
+      std::unique_ptr<AttributionStorageDelegate> storage_delegate,
+      std::unique_ptr<AttributionCookieChecker> cookie_checker,
+      std::unique_ptr<AttributionNetworkSender> network_sender,
+      std::unique_ptr<AttributionDataHostManager> data_host_manager);
 
   // network::NetworkConnectionTracker::NetworkConnectionObserver:
   void OnConnectionChanged(
       network::mojom::ConnectionType connection_type) override;
+
+  void MaybeEnqueueEvent(SourceOrTrigger event);
+  void ProcessEvents();
+  void ProcessNextEvent(bool is_debug_cookie_set);
+  void StoreSource(StorableSource source);
+  void StoreTrigger(AttributionTrigger trigger);
 
   // Retrieves at most |limit| reports from storage whose |report_time| <=
   // |max_report_time|, and calls |handler_function| on them; use a negative
@@ -167,26 +177,33 @@ class CONTENT_EXPORT AttributionManagerImpl
   void NotifySourceDeactivated(
       const AttributionStorage::DeactivatedSource& source);
 
-  void HandleSourceInternal(StorableSource source);
-  void HandleTriggerInternal(StorableTrigger trigger);
-
   // Friend to expose the AttributionStorage for certain tests.
   friend std::vector<AttributionReport> GetAttributionsToReportForTesting(
       AttributionManagerImpl* manager,
       base::Time max_report_time);
 
-  raw_ptr<StoragePartitionImpl> storage_partition_;
+  // Internally holds a non-owning pointer to `BrowserContext`.
+  IsReportAllowedCallback is_report_allowed_callback_;
+
+  // Holds pending sources and triggers in the order they were received by the
+  // browser. For the time being, they must be processed in this order in order
+  // to ensure that behavioral requirements are met and to ensure that
+  // `AttributionManager::Observer`s are notified in the correct order, which
+  // the simulator currently depends on. We may be able to loosen this
+  // requirement in the future so that there are conceptually separate queues
+  // per <source origin, destination origin, reporting origin>.
+  base::circular_deque<SourceOrTrigger> pending_events_;
 
   base::SequenceBound<AttributionStorage> attribution_storage_;
 
-  // Policy used for controlling API configurations such as reporting and
-  // attribution models. Unique ptr so it can be overridden for testing.
-  std::unique_ptr<AttributionPolicy> attribution_policy_;
+  std::unique_ptr<AttributionDataHostManager> data_host_manager_;
 
   // Storage policy for the browser context |this| is in. May be nullptr.
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
 
-  std::unique_ptr<NetworkSender> network_sender_;
+  std::unique_ptr<AttributionCookieChecker> cookie_checker_;
+
+  std::unique_ptr<AttributionNetworkSender> network_sender_;
 
   base::WallClockTimer get_reports_to_send_timer_;
 

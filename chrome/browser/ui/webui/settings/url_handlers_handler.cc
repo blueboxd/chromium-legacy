@@ -208,12 +208,12 @@ void UrlHandlersHandler::OnJavascriptDisallowed() {
 }
 
 void UrlHandlersHandler::RegisterMessages() {
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "getUrlHandlers",
       base::BindRepeating(&UrlHandlersHandler::HandleGetUrlHandlers,
                           base::Unretained(this)));
 
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "resetUrlHandlerSavedChoice",
       base::BindRepeating(&UrlHandlersHandler::HandleResetUrlHandlerSavedChoice,
                           base::Unretained(this)));
@@ -233,9 +233,9 @@ void UrlHandlersHandler::UpdateModel() {
                     disabled_handlers_list);
 }
 
-void UrlHandlersHandler::HandleGetUrlHandlers(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetList().size());
-  const base::Value& callback_id = args->GetList()[0];
+void UrlHandlersHandler::HandleGetUrlHandlers(base::Value::ConstListView args) {
+  CHECK_EQ(1U, args.size());
+  const base::Value& callback_id = args[0];
   AllowJavascript();
 
   base::Value result(base::Value::Type::DICTIONARY);
@@ -245,14 +245,14 @@ void UrlHandlersHandler::HandleGetUrlHandlers(const base::ListValue* args) {
 }
 
 void UrlHandlersHandler::HandleResetUrlHandlerSavedChoice(
-    const base::ListValue* args) {
-  CHECK_EQ(4U, args->GetList().size());
-  const std::string& origin = args->GetList()[0].GetString();
-  bool has_origin_wildcard = args->GetList()[1].GetBool();
-  const std::string& path = args->GetList()[2].GetString();
+    base::Value::ConstListView args) {
+  CHECK_EQ(4U, args.size());
+  const std::string& origin = args[0].GetString();
+  bool has_origin_wildcard = args[1].GetBool();
+  const std::string& path = args[2].GetString();
   // If app_id is an empty string, reset saved choices for all applicable
   // entries regardless of app_id.
-  const std::string& app_id = args->GetList()[3].GetString();
+  const std::string& app_id = args[3].GetString();
   absl::optional<std::string> app_id_opt =
       app_id.empty() ? absl::nullopt : absl::make_optional(app_id);
 
@@ -294,7 +294,7 @@ base::Value UrlHandlersHandler::GetEnabledHandlersList() {
     const auto& origin_key = kv.first;
     auto origin = url::Origin::Create(GURL(kv.first));
 
-    for (const auto& handler : kv.second.GetList()) {
+    for (const auto& handler : kv.second.GetListDeprecated()) {
       // Only process handlers from current profile.
       if (!web_app::url_handler_prefs::IsHandlerForProfile(
               handler, profile_->GetPath())) {
@@ -318,7 +318,7 @@ base::Value UrlHandlersHandler::GetEnabledHandlersList() {
       // app_entries. Each "row" has the same app_id, etc, but different path
       // information. This create a list that is easy to process in WebUI.
       for (const auto& include_path_dict :
-           handler_view->include_paths.GetList()) {
+           handler_view->include_paths.GetListDeprecated()) {
         const std::string* path = include_path_dict.FindStringKey("path");
         absl::optional<int> choice = include_path_dict.FindIntKey("choice");
         if (!path || !choice)
@@ -374,7 +374,7 @@ base::Value UrlHandlersHandler::GetDisabledHandlersList() {
     const auto& origin_key = kv.first;
     url::Origin origin = url::Origin::Create(GURL(kv.first));
 
-    for (const auto& handler : kv.second.GetList()) {
+    for (const auto& handler : kv.second.GetListDeprecated()) {
       // Only process handlers from current profile.
       if (!web_app::url_handler_prefs::IsHandlerForProfile(
               handler, profile_->GetPath())) {
@@ -388,7 +388,7 @@ base::Value UrlHandlersHandler::GetDisabledHandlersList() {
         continue;
 
       for (const base::Value& include_path_dict :
-           handler_view->include_paths.GetList()) {
+           handler_view->include_paths.GetListDeprecated()) {
         if (!include_path_dict.is_dict())
           continue;
 

@@ -38,7 +38,6 @@
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/blame_context.h"
-#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/battery_savings.h"
 #include "third_party/blink/renderer/core/html/forms/external_date_time_chooser.h"
@@ -134,6 +133,8 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
 
   virtual void ChromeDestroyed() = 0;
 
+  virtual void SetWindowRect(const gfx::Rect&, LocalFrame&) = 0;
+
   // For non-composited WebViews that exist to contribute to a "parent" WebView
   // painting. This informs the client of the area that needs to be redrawn.
   virtual void InvalidateContainer() = 0;
@@ -147,20 +148,6 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   }
   virtual void ScheduleAnimation(const LocalFrameView*,
                                  base::TimeDelta delay) = 0;
-
-  // Adjusts |pending_rect| for the minimum window size and |frame|'s screen
-  // and returns the adjusted value.
-  // Cross-screen window placements are passed on without same-screen clamping
-  // if the |requesting_frame| (i.e. the opener or |frame| itself) has
-  // experimental window placement features enabled. The browser will check
-  // permissions before actually supporting cross-screen placement requests.
-  gfx::Rect CalculateWindowRectWithAdjustment(const gfx::Rect& pending_rect,
-                                              LocalFrame& frame,
-                                              LocalFrame& requesting_frame);
-
-  // Calls CalculateWindowRectWithAdjustment, then SetWindowRect.
-  void SetWindowRectWithAdjustment(const gfx::Rect& pending_rect,
-                                   LocalFrame& frame);
 
   // Tells the browser that another page has accessed the DOM of the initial
   // empty document of a main frame.
@@ -236,7 +223,8 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   // shown. Under some circumstances CreateWindow's implementation may return a
   // previously shown page. Calling this method should still work and the
   // browser will discard the unnecessary show request.
-  virtual void Show(const blink::LocalFrameToken& opener_frame_token,
+  virtual void Show(LocalFrame& frame,
+                    LocalFrame& opener_frame,
                     NavigationPolicy navigation_policy,
                     const gfx::Rect& initial_rect,
                     bool consumed_user_gesture) = 0;
@@ -263,7 +251,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
       LocalFrame& local_frame,
       WebGestureDevice device,
       const gfx::Vector2dF& delta,
-      ScrollGranularity granularity,
+      ui::ScrollGranularity granularity,
       CompositorElementId scrollable_area_element_id,
       WebInputEvent::Type injected_type) {}
 
@@ -319,11 +307,6 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   }
 
   virtual void SetCursorForPlugin(const ui::Cursor&, LocalFrame*) = 0;
-
-  // Returns a custom visible rect if a viewport override is active. Requires
-  // the |frame| being painted, but only supports being used for the main frame.
-  virtual void OverrideVisibleRectForMainFrame(LocalFrame& frame,
-                                               gfx::Rect* paint_rect) const {}
 
   // Returns the scale used to convert incoming input events while emulating
   // device metics.
@@ -560,7 +543,6 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   ChromeClient() = default;
 
   virtual void ShowMouseOverURL(const HitTestResult&) = 0;
-  virtual void SetWindowRect(const gfx::Rect&, LocalFrame&) = 0;
   virtual bool OpenBeforeUnloadConfirmPanelDelegate(LocalFrame*,
                                                     bool is_reload) = 0;
   virtual bool OpenJavaScriptAlertDelegate(LocalFrame*, const String&) = 0;

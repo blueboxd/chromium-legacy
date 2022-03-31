@@ -45,6 +45,7 @@ constexpr int64_t kBootUpTimestampSeconds = 23;
 constexpr int64_t kShutdownSeconds = 44003;
 constexpr int64_t kShutdownTimestampSeconds = 49;
 constexpr char kShutdownReason[] = "user-request";
+constexpr char kShutdownReasonNotApplicable[] = "N/A";
 
 cros_healthd::KeylockerInfoPtr CreateKeylockerInfo(bool configured) {
   return cros_healthd::KeylockerInfo::New(configured);
@@ -65,7 +66,15 @@ cros_healthd::TelemetryInfoPtr CreateCpuResult(
   return telemetry_info;
 }
 
-cros_healthd::TelemetryInfoPtr CreateBusResult(
+cros_healthd::TelemetryInfoPtr CreateUsbBusResult(
+    std::vector<cros_healthd::BusDevicePtr> usb_devices) {
+  auto telemetry_info = cros_healthd::TelemetryInfo::New();
+  telemetry_info->bus_result =
+      cros_healthd::BusResult::NewBusDevices(std::move(usb_devices));
+  return telemetry_info;
+}
+
+cros_healthd::TelemetryInfoPtr CreateThunderboltBusResult(
     cros_healthd::ThunderboltSecurityLevel security_level) {
   auto telemetry_info = cros_healthd::TelemetryInfo::New();
   std::vector<cros_healthd::BusDevicePtr> bus_devices;
@@ -142,12 +151,10 @@ cros_healthd::TelemetryInfoPtr CreateBootPerformanceResult(
 
 MetricData CollectData(cros_healthd::TelemetryInfoPtr telemetry_info,
                        cros_healthd::ProbeCategoryEnum probe_category,
-                       CrosHealthdMetricSampler::MetricType metric_type,
-                       MetricData metric_data) {
+                       CrosHealthdMetricSampler::MetricType metric_type) {
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()
       ->SetProbeTelemetryInfoResponseForTesting(telemetry_info);
   CrosHealthdMetricSampler sampler(probe_category, metric_type);
-  sampler.SetMetricData(metric_data);
   test::TestEvent<MetricData> metric_collect_event;
 
   sampler.Collect(metric_collect_event.cb());
@@ -193,6 +200,122 @@ class CrosHealthdMetricSamplerMemoryEncryptionTest
     : public CrosHealthdMetricSamplerTest,
       public testing::WithParamInterface<MemoryEncryptionTestCase> {};
 
+TEST_F(CrosHealthdMetricSamplerTest, TestUsbTelemetryMultipleEntries) {
+  // Max value for 8-bit unsigned integer
+  constexpr uint8_t kClassId = 255;
+  constexpr uint8_t kSubclassId = 1;
+  // Max value for 16-bit unsigned integer
+  constexpr uint16_t kVendorId = 65535;
+  constexpr uint16_t kProductId = 1;
+  constexpr char kVendorName[] = "VendorName";
+  constexpr char kProductName[] = "ProductName";
+
+  constexpr uint8_t kClassIdSecond = 1;
+  constexpr uint8_t kSubclassIdSecond = 255;
+  constexpr uint16_t kVendorIdSecond = 1;
+  constexpr uint16_t kProductIdSecond = 65535;
+  constexpr char kVendorNameSecond[] = "VendorNameSecond";
+  constexpr char kProductNameSecond[] = "ProductNameSecond";
+  constexpr int kExpectedUsbTelemetrySize = 2;
+  constexpr int kIndexOfFirstUsbTelemetry = 0;
+  constexpr int kIndexOfSecondUsbTelemetry = 1;
+
+  cros_healthd::BusDevicePtr usb_device_first = cros_healthd::BusDevice::New();
+  usb_device_first->vendor_name = kVendorName;
+  usb_device_first->product_name = kProductName;
+  usb_device_first->bus_info =
+      cros_healthd::BusInfo::NewUsbBusInfo(cros_healthd::UsbBusInfo::New(
+          kClassId, kSubclassId, /*protocol_id=*/0, kVendorId, kProductId,
+          /*interfaces = */
+          std::vector<cros_healthd::UsbBusInterfaceInfoPtr>()));
+
+  cros_healthd::BusDevicePtr usb_device_second = cros_healthd::BusDevice::New();
+  usb_device_second->vendor_name = kVendorNameSecond;
+  usb_device_second->product_name = kProductNameSecond;
+  usb_device_second->bus_info =
+      cros_healthd::BusInfo::NewUsbBusInfo(cros_healthd::UsbBusInfo::New(
+          kClassIdSecond, kSubclassIdSecond, /*protocol_id=*/0, kVendorIdSecond,
+          kProductIdSecond,
+          /*interfaces = */
+          std::vector<cros_healthd::UsbBusInterfaceInfoPtr>()));
+
+  std::vector<cros_healthd::BusDevicePtr> usb_devices;
+  usb_devices.push_back(std::move(usb_device_first));
+  usb_devices.push_back(std::move(usb_device_second));
+
+  MetricData result =
+      CollectData(CreateUsbBusResult(std::move(usb_devices)),
+                  cros_healthd::ProbeCategoryEnum::kBus,
+                  CrosHealthdMetricSampler::MetricType::kTelemetry);
+
+  ASSERT_TRUE(result.has_telemetry_data());
+  ASSERT_EQ(result.telemetry_data().usb_telemetry_size(),
+            kExpectedUsbTelemetrySize);
+
+  UsbTelemetry usb_telemetry_first =
+      result.telemetry_data().usb_telemetry(kIndexOfFirstUsbTelemetry);
+  UsbTelemetry usb_telemetry_second =
+      result.telemetry_data().usb_telemetry(kIndexOfSecondUsbTelemetry);
+
+  EXPECT_EQ(usb_telemetry_first.class_id(), kClassId);
+  EXPECT_EQ(usb_telemetry_first.subclass_id(), kSubclassId);
+  EXPECT_EQ(usb_telemetry_first.vid(), kVendorId);
+  EXPECT_EQ(usb_telemetry_first.pid(), kProductId);
+  EXPECT_EQ(usb_telemetry_first.name(), kProductName);
+  EXPECT_EQ(usb_telemetry_first.vendor(), kVendorName);
+
+  EXPECT_EQ(usb_telemetry_second.class_id(), kClassIdSecond);
+  EXPECT_EQ(usb_telemetry_second.subclass_id(), kSubclassIdSecond);
+  EXPECT_EQ(usb_telemetry_second.vid(), kVendorIdSecond);
+  EXPECT_EQ(usb_telemetry_second.pid(), kProductIdSecond);
+  EXPECT_EQ(usb_telemetry_second.name(), kProductNameSecond);
+  EXPECT_EQ(usb_telemetry_second.vendor(), kVendorNameSecond);
+}
+
+TEST_F(CrosHealthdMetricSamplerTest, TestUsbTelemetry) {
+  // Max value for 8-bit unsigned integer
+  constexpr uint8_t kClassId = 255;
+  constexpr uint8_t kSubclassId = 1;
+  // Max value for 16-bit unsigned integer
+  constexpr uint16_t kVendorId = 65535;
+  constexpr uint16_t kProductId = 1;
+  constexpr char kVendorName[] = "VendorName";
+  constexpr char kProductName[] = "ProductName";
+  constexpr int kExpectedUsbTelemetrySize = 1;
+  constexpr int kIndexOfUsbTelemetry = 0;
+
+  cros_healthd::BusDevicePtr usb_device = cros_healthd::BusDevice::New();
+  usb_device->vendor_name = kVendorName;
+  usb_device->product_name = kProductName;
+  usb_device->bus_info =
+      cros_healthd::BusInfo::NewUsbBusInfo(cros_healthd::UsbBusInfo::New(
+          kClassId, kSubclassId, /*protocol_id=*/0, kVendorId, kProductId,
+          /*interfaces = */
+          std::vector<cros_healthd::UsbBusInterfaceInfoPtr>()));
+
+  std::vector<cros_healthd::BusDevicePtr> usb_devices;
+  usb_devices.push_back(std::move(usb_device));
+
+  MetricData result =
+      CollectData(CreateUsbBusResult(std::move(usb_devices)),
+                  cros_healthd::ProbeCategoryEnum::kBus,
+                  CrosHealthdMetricSampler::MetricType::kTelemetry);
+
+  ASSERT_TRUE(result.has_telemetry_data());
+  ASSERT_EQ(result.telemetry_data().usb_telemetry_size(),
+            kExpectedUsbTelemetrySize);
+
+  UsbTelemetry usb_telemetry =
+      result.telemetry_data().usb_telemetry(kIndexOfUsbTelemetry);
+
+  EXPECT_EQ(usb_telemetry.class_id(), kClassId);
+  EXPECT_EQ(usb_telemetry.subclass_id(), kSubclassId);
+  EXPECT_EQ(usb_telemetry.vid(), kVendorId);
+  EXPECT_EQ(usb_telemetry.pid(), kProductId);
+  EXPECT_EQ(usb_telemetry.name(), kProductName);
+  EXPECT_EQ(usb_telemetry.vendor(), kVendorName);
+}
+
 TEST_P(CrosHealthdMetricSamplerMemoryEncryptionTest,
        TestMemoryEncryptionReporting) {
   const MemoryEncryptionTestCase& test_case = GetParam();
@@ -201,7 +324,7 @@ TEST_P(CrosHealthdMetricSamplerMemoryEncryptionTest,
           test_case.healthd_encryption_state, test_case.max_keys,
           test_case.key_length, test_case.healthd_encryption_algorithm)),
       cros_healthd::ProbeCategoryEnum::kMemory,
-      CrosHealthdMetricSampler::MetricType::kInfo, MetricData{});
+      CrosHealthdMetricSampler::MetricType::kInfo);
 
   ASSERT_TRUE(result.has_info_data());
   ASSERT_TRUE(result.info_data().has_memory_info());
@@ -218,9 +341,9 @@ TEST_P(CrosHealthdMetricSamplerMemoryEncryptionTest,
 TEST_P(CrosHealthdMetricSamplerTbtTest, TestTbtSecurityLevels) {
   const TbtTestCase& test_case = GetParam();
   MetricData result =
-      CollectData(CreateBusResult(test_case.healthd_security_level),
+      CollectData(CreateThunderboltBusResult(test_case.healthd_security_level),
                   cros_healthd::ProbeCategoryEnum::kBus,
-                  CrosHealthdMetricSampler::MetricType::kInfo, MetricData{});
+                  CrosHealthdMetricSampler::MetricType::kInfo);
   ASSERT_TRUE(result.has_info_data());
   ASSERT_TRUE(result.info_data().has_bus_device_info());
   ASSERT_TRUE(result.info_data().bus_device_info().has_thunderbolt_info());
@@ -229,34 +352,10 @@ TEST_P(CrosHealthdMetricSamplerTbtTest, TestTbtSecurityLevels) {
       test_case.reporting_security_level);
 }
 
-TEST_F(CrosHealthdMetricSamplerTest, SetMetricData) {
-  MetricData metric_data;
-  auto* const memory_encryption_info_out = metric_data.mutable_info_data()
-                                               ->mutable_memory_info()
-                                               ->mutable_tme_info();
-  memory_encryption_info_out->set_key_length(1);
-  // Pass a null memory result so that only encryption state is set.
-  MetricData result = CollectData(
-      CreateMemoryResult(nullptr), cros_healthd::ProbeCategoryEnum::kMemory,
-      CrosHealthdMetricSampler::MetricType::kInfo, metric_data);
-
-  ASSERT_TRUE(result.has_info_data());
-  ASSERT_TRUE(result.info_data().has_memory_info());
-  ASSERT_TRUE(result.info_data().memory_info().has_tme_info());
-
-  // Since only encryption state should be set by the sampler, we can verify
-  // that the keylength field set above propagated to the metric data.
-  const auto& tme_info = result.info_data().memory_info().tme_info();
-  EXPECT_EQ(tme_info.key_length(), 1);
-  EXPECT_EQ(tme_info.encryption_state(),
-            ::reporting::MEMORY_ENCRYPTION_STATE_DISABLED);
-}
-
 TEST_F(CrosHealthdMetricSamplerTest, TestKeylockerConfigured) {
-  MetricData result =
-      CollectData(CreateCpuResult(CreateKeylockerInfo(true)),
-                  cros_healthd::ProbeCategoryEnum::kCpu,
-                  CrosHealthdMetricSampler::MetricType::kInfo, MetricData{});
+  MetricData result = CollectData(CreateCpuResult(CreateKeylockerInfo(true)),
+                                  cros_healthd::ProbeCategoryEnum::kCpu,
+                                  CrosHealthdMetricSampler::MetricType::kInfo);
 
   ASSERT_TRUE(result.has_info_data());
   ASSERT_TRUE(result.info_data().has_cpu_info());
@@ -266,10 +365,9 @@ TEST_F(CrosHealthdMetricSamplerTest, TestKeylockerConfigured) {
 }
 
 TEST_F(CrosHealthdMetricSamplerTest, TestKeylockerUnconfigured) {
-  MetricData result =
-      CollectData(CreateCpuResult(CreateKeylockerInfo(false)),
-                  cros_healthd::ProbeCategoryEnum::kCpu,
-                  CrosHealthdMetricSampler::MetricType::kInfo, MetricData{});
+  MetricData result = CollectData(CreateCpuResult(CreateKeylockerInfo(false)),
+                                  cros_healthd::ProbeCategoryEnum::kCpu,
+                                  CrosHealthdMetricSampler::MetricType::kInfo);
 
   ASSERT_TRUE(result.has_info_data());
   ASSERT_TRUE(result.info_data().has_cpu_info());
@@ -279,9 +377,9 @@ TEST_F(CrosHealthdMetricSamplerTest, TestKeylockerUnconfigured) {
 }
 
 TEST_F(CrosHealthdMetricSamplerTest, TestKeylockerUnsupported) {
-  MetricData result = CollectData(
-      CreateCpuResult(nullptr), cros_healthd::ProbeCategoryEnum::kCpu,
-      CrosHealthdMetricSampler::MetricType::kInfo, MetricData{});
+  MetricData result = CollectData(CreateCpuResult(nullptr),
+                                  cros_healthd::ProbeCategoryEnum::kCpu,
+                                  CrosHealthdMetricSampler::MetricType::kInfo);
 
   ASSERT_TRUE(result.has_info_data());
   ASSERT_TRUE(result.info_data().has_cpu_info());
@@ -340,7 +438,7 @@ TEST_F(CrosHealthdMetricSamplerTest, TestAudioNormalTest) {
           /*input_gain=*/50, /*input_device_name=*/"airpods", /*underruns=*/2,
           /*severe_underruns=*/2)),
       cros_healthd::ProbeCategoryEnum::kAudio,
-      CrosHealthdMetricSampler::MetricType::kTelemetry, MetricData{});
+      CrosHealthdMetricSampler::MetricType::kTelemetry);
 
   ASSERT_TRUE(result.has_telemetry_data());
   ASSERT_TRUE(result.telemetry_data().has_audio_telemetry());
@@ -358,7 +456,7 @@ TEST_F(CrosHealthdMetricSamplerTest, TestAudioEmptyTest) {
           /*input_gain=*/0, /*input_device_name=*/"", /*underruns=*/0,
           /*severe_underruns=*/0)),
       cros_healthd::ProbeCategoryEnum::kAudio,
-      CrosHealthdMetricSampler::MetricType::kTelemetry, MetricData{});
+      CrosHealthdMetricSampler::MetricType::kTelemetry);
 
   ASSERT_TRUE(result.has_telemetry_data());
   ASSERT_TRUE(result.telemetry_data().has_audio_telemetry());
@@ -368,32 +466,60 @@ TEST_F(CrosHealthdMetricSamplerTest, TestAudioEmptyTest) {
 }
 
 TEST_F(CrosHealthdMetricSamplerTest, BootPerformanceCommonBehavior) {
-  MetricData result = CollectData(
-      CreateBootPerformanceResult(kBootUpSeconds, kBootUpTimestampSeconds,
-                                  kShutdownSeconds, kShutdownTimestampSeconds,
-                                  kShutdownReason),
-      cros_healthd::ProbeCategoryEnum::kBootPerformance,
-      CrosHealthdMetricSampler::MetricType::kTelemetry, MetricData{});
+  MetricData result =
+      CollectData(CreateBootPerformanceResult(
+                      kBootUpSeconds, kBootUpTimestampSeconds, kShutdownSeconds,
+                      kShutdownTimestampSeconds, kShutdownReason),
+                  cros_healthd::ProbeCategoryEnum::kBootPerformance,
+                  CrosHealthdMetricSampler::MetricType::kTelemetry);
 
   ASSERT_TRUE(result.has_telemetry_data());
   ASSERT_TRUE(result.telemetry_data().has_boot_performance_telemetry());
   ASSERT_THAT(
       result.telemetry_data().boot_performance_telemetry().boot_up_seconds(),
-      Eq(5054));
+      Eq(kBootUpSeconds));
   ASSERT_THAT(result.telemetry_data()
                   .boot_performance_telemetry()
                   .boot_up_timestamp_seconds(),
-              Eq(23));
+              Eq(kBootUpTimestampSeconds));
   ASSERT_THAT(
       result.telemetry_data().boot_performance_telemetry().shutdown_seconds(),
-      Eq(44003));
+      Eq(kShutdownSeconds));
   ASSERT_THAT(result.telemetry_data()
                   .boot_performance_telemetry()
                   .shutdown_timestamp_seconds(),
-              Eq(49));
+              Eq(kShutdownTimestampSeconds));
   EXPECT_EQ(
       result.telemetry_data().boot_performance_telemetry().shutdown_reason(),
-      "user-request");
+      kShutdownReason);
+}
+
+TEST_F(CrosHealthdMetricSamplerTest, BootPerformanceShutdownReasonNA) {
+  MetricData result =
+      CollectData(CreateBootPerformanceResult(
+                      kBootUpSeconds, kBootUpTimestampSeconds, kShutdownSeconds,
+                      kShutdownTimestampSeconds, kShutdownReasonNotApplicable),
+                  cros_healthd::ProbeCategoryEnum::kBootPerformance,
+                  CrosHealthdMetricSampler::MetricType::kTelemetry);
+
+  ASSERT_TRUE(result.has_telemetry_data());
+  ASSERT_TRUE(result.telemetry_data().has_boot_performance_telemetry());
+  ASSERT_THAT(
+      result.telemetry_data().boot_performance_telemetry().boot_up_seconds(),
+      Eq(kBootUpSeconds));
+  ASSERT_THAT(result.telemetry_data()
+                  .boot_performance_telemetry()
+                  .boot_up_timestamp_seconds(),
+              Eq(kBootUpTimestampSeconds));
+  EXPECT_FALSE(result.telemetry_data()
+                   .boot_performance_telemetry()
+                   .has_shutdown_seconds());
+  EXPECT_FALSE(result.telemetry_data()
+                   .boot_performance_telemetry()
+                   .has_shutdown_timestamp_seconds());
+  EXPECT_EQ(
+      result.telemetry_data().boot_performance_telemetry().shutdown_reason(),
+      kShutdownReasonNotApplicable);
 }
 
 INSTANTIATE_TEST_SUITE_P(

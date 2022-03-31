@@ -33,6 +33,7 @@
 #include "chrome/browser/devtools/devtools_file_watcher.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/devtools/url_constants.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -76,6 +77,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "google_apis/google_api_keys.h"
@@ -131,10 +133,12 @@ const size_t kMaxMessageChunkSize = IPC::Channel::kMaximumMessageSize / 4;
 base::DictionaryValue CreateFileSystemValue(
     DevToolsFileHelper::FileSystem file_system) {
   base::DictionaryValue file_system_value;
-  file_system_value.SetString("type", file_system.type);
-  file_system_value.SetString("fileSystemName", file_system.file_system_name);
-  file_system_value.SetString("rootURL", file_system.root_url);
-  file_system_value.SetString("fileSystemPath", file_system.file_system_path);
+  file_system_value.SetStringKey("type", file_system.type);
+  file_system_value.SetStringKey("fileSystemName",
+                                 file_system.file_system_name);
+  file_system_value.SetStringKey("rootURL", file_system.root_url);
+  file_system_value.SetStringKey("fileSystemPath",
+                                 file_system.file_system_path);
   return file_system_value;
 }
 
@@ -218,9 +222,9 @@ std::unique_ptr<base::DictionaryValue> BuildObjectForResponse(
     // In case of no headers, assume file:// URL and failed to load
     responseCode = 404;
   }
-  response->SetInteger("statusCode", responseCode);
-  response->SetInteger("netError", net_error);
-  response->SetString("netErrorName", net::ErrorToString(net_error));
+  response->SetIntKey("statusCode", responseCode);
+  response->SetIntKey("netError", net_error);
+  response->SetStringKey("netErrorName", net::ErrorToString(net_error));
 
   base::DictionaryValue headers;
   size_t iterator = 0;
@@ -229,7 +233,7 @@ std::unique_ptr<base::DictionaryValue> BuildObjectForResponse(
   // TODO(caseq): this probably needs to handle duplicate header names
   // correctly by folding them.
   while (rh && rh->EnumerateHeaderLines(&iterator, &name, &value))
-    headers.SetString(name, value);
+    headers.SetStringKey(name, value);
 
   response->SetKey("headers", std::move(headers));
   return response;
@@ -339,10 +343,6 @@ std::string SanitizeFrontendQueryParam(
   // Pass connection endpoints as is.
   if (key == "ws" || key == "service-backend")
     return SanitizeEndpoint(value);
-
-  // Only support undocked for old frontends.
-  if (key == "dockSide" && value == "undocked")
-    return value;
 
   if (key == "panel" &&
       (value == "elements" || value == "console" || value == "sources"))
@@ -710,7 +710,7 @@ void DevToolsUIBindings::HandleMessageFromDevToolsFrontend(
   int id = message.FindIntKey(kFrontendHostId).value_or(0);
   std::vector<base::Value> params_list;
   if (params)
-    params_list = std::move(*params).TakeList();
+    params_list = std::move(*params).TakeListDeprecated();
   embedder_message_dispatcher_->Dispatch(
       base::BindOnce(&DevToolsUIBindings::SendMessageAck,
                      weak_factory_.GetWeakPtr(), id),
@@ -829,8 +829,8 @@ void DevToolsUIBindings::LoadNetworkResource(DispatchCallback callback,
   GURL gurl(url);
   if (!gurl.is_valid()) {
     base::DictionaryValue response;
-    response.SetInteger("statusCode", 404);
-    response.SetBoolean("urlValid", false);
+    response.SetIntKey("statusCode", 404);
+    response.SetBoolKey("urlValid", false);
     std::move(callback).Run(&response);
     return;
   }
@@ -910,8 +910,8 @@ void DevToolsUIBindings::LoadNetworkResource(DispatchCallback callback,
               std::move(pending_remote)));
     } else {
       base::DictionaryValue response;
-      response.SetBoolean("schemeSupported", false);
-      response.SetInteger("statusCode", 403);
+      response.SetBoolKey("schemeSupported", false);
+      response.SetIntKey("statusCode", 403);
       std::move(callback).Run(&response);
       return;
     }
@@ -924,7 +924,7 @@ void DevToolsUIBindings::LoadNetworkResource(DispatchCallback callback,
       url_loader_factory = partition->GetURLLoaderFactoryForBrowserProcess();
     } else {
       base::DictionaryValue response;
-      response.SetInteger("statusCode", 409);
+      response.SetIntKey("statusCode", 409);
       std::move(callback).Run(&response);
       return;
     }
@@ -1013,7 +1013,8 @@ void DevToolsUIBindings::IndexPath(
   absl::optional<base::Value> parsed_excluded_folders =
       base::JSONReader::Read(excluded_folders_message);
   if (parsed_excluded_folders && parsed_excluded_folders->is_list()) {
-    for (const base::Value& folder_path : parsed_excluded_folders->GetList()) {
+    for (const base::Value& folder_path :
+         parsed_excluded_folders->GetListDeprecated()) {
       if (folder_path.is_string())
         excluded_folders.push_back(folder_path.GetString());
     }
@@ -1515,9 +1516,13 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
     return;
 
   base::ListValue results;
+  base::ListValue component_extension_origins;
   bool have_user_installed_devtools_extensions = false;
   for (const scoped_refptr<const extensions::Extension>& extension :
        registry->enabled_extensions()) {
+    if (extensions::Manifest::IsComponentLocation(extension->location())) {
+      component_extension_origins.Append(extension->origin().Serialize());
+    }
     if (extensions::chrome_manifest_urls::GetDevToolsPage(extension.get())
             .is_empty()) {
       continue;
@@ -1537,9 +1542,9 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
 
     std::unique_ptr<base::DictionaryValue> extension_info(
         new base::DictionaryValue());
-    extension_info->SetString("startPage", url.spec());
-    extension_info->SetString("name", extension->name());
-    extension_info->SetBoolean(
+    extension_info->SetStringKey("startPage", url.spec());
+    extension_info->SetStringKey("name", extension->name());
+    extension_info->SetBoolKey(
         "exposeExperimentalAPIs",
         extension->permissions_data()->HasAPIPermission(
             extensions::mojom::APIPermissionID::kExperimental));
@@ -1558,6 +1563,8 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
                               is_developer_mode);
   }
 
+  CallClientMethod("DevToolsAPI", "setOriginsForbiddenForExtensions",
+                   std::move(component_extension_origins));
   CallClientMethod("DevToolsAPI", "addExtensions", std::move(results));
 }
 
@@ -1571,7 +1578,7 @@ namespace {
 void ShowSurveyCallback(DevToolsUIBindings::DispatchCallback callback,
                         bool survey_shown) {
   base::DictionaryValue response;
-  response.SetBoolean("surveyShown", survey_shown);
+  response.SetBoolKey("surveyShown", survey_shown);
   std::move(callback).Run(&response);
 }
 
@@ -1599,7 +1606,7 @@ void DevToolsUIBindings::CanShowSurvey(DispatchCallback callback,
       HatsServiceFactory::GetForProfile(profile_->GetOriginalProfile(), true);
   bool can_show = hats_service ? hats_service->CanShowSurvey(trigger) : false;
   base::DictionaryValue response;
-  response.SetBoolean("canShowSurvey", can_show);
+  response.SetBoolKey("canShowSurvey", can_show);
   std::move(callback).Run(&response);
 }
 

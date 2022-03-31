@@ -106,6 +106,8 @@ extern const char kReportDeviceNetworkInterfaces[];
 COMPONENT_EXPORT(ASH_SETTINGS)
 extern const char kReportDeviceNetworkStatus[];
 COMPONENT_EXPORT(ASH_SETTINGS)
+extern const char kReportDevicePeripherals[];
+COMPONENT_EXPORT(ASH_SETTINGS)
 extern const char kReportDevicePowerStatus[];
 COMPONENT_EXPORT(ASH_SETTINGS)
 extern const char kReportDeviceStorageStatus[];
@@ -326,6 +328,9 @@ extern const char kDeviceRestrictedManagedGuestSessionEnabled[];
 
 COMPONENT_EXPORT(ASH_SETTINGS)
 extern const char kRevenEnableDeviceHWDataUsage[];
+
+COMPONENT_EXPORT(ASH_SETTINGS)
+extern const char kDeviceEncryptedReportingPipelineEnabled[];
 
 }  // namespace ash
 

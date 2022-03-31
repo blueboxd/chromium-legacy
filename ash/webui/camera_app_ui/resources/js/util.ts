@@ -29,19 +29,23 @@ export function newDrawingCanvas(
   return {canvas, ctx};
 }
 
+export function canvasToJpegBlob(canvas: HTMLCanvasElement): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob !== null) {
+        resolve(blob);
+      } else {
+        reject(new Error('Failed to convert canvas to jpeg blob.'));
+      }
+    }, 'image/jpeg');
+  });
+}
+
 export function bitmapToJpegBlob(bitmap: ImageBitmap): Promise<Blob> {
   const {canvas, ctx} =
       newDrawingCanvas({width: bitmap.width, height: bitmap.height});
   ctx.drawImage(bitmap, 0, 0);
-  return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) {
-        resolve(blob);
-      } else {
-        reject(new Error('Photo blob error.'));
-      }
-    }, 'image/jpeg');
-  });
+  return canvasToJpegBlob(canvas);
 }
 
 /**
@@ -82,23 +86,16 @@ export function getShortcutIdentifier(event: KeyboardEvent): string {
 }
 
 /**
- * Opens help.
- */
-export function openHelp(): void {
-  window.open(
-      'https://support.google.com/chromebook/?p=camera_usage_on_chromebook');
-}
-
-/**
  * Sets up i18n messages on DOM subtree by i18n attributes.
  * @param rootElement Root of DOM subtree to be set up with.
  */
 export function setupI18nElements(rootElement: Element|DocumentFragment): void {
-  const getElements = (attr) =>
-      dom.getAllFrom(rootElement, '[' + attr + ']', HTMLElement);
-  const getMessage = (element, attr) =>
-      loadTimeData.getI18nMessage(element.getAttribute(attr));
-  const setAriaLabel = (element, attr) =>
+  const getElements = (attr: string) =>
+      dom.getAllFrom(rootElement, `[${attr}]`, HTMLElement);
+  const getMessage = (element: HTMLElement, attr: string) =>
+      loadTimeData.getI18nMessage(
+          assertEnumVariant(I18nString, element.getAttribute(attr)));
+  const setAriaLabel = (element: HTMLElement, attr: string) =>
       element.setAttribute('aria-label', getMessage(element, attr));
 
   getElements('i18n-text')
@@ -156,7 +153,7 @@ export function bindElementAriaLabelWithState(
       onLabel: I18nString,
       offLabel: I18nString,
     }): void {
-  const update = (value) => {
+  const update = (value: boolean) => {
     const label = value ? onLabel : offLabel;
     element.setAttribute('i18n-label', label);
     element.setAttribute('aria-label', loadTimeData.getI18nMessage(label));
@@ -215,6 +212,7 @@ export async function createUntrustedJSModule<T>(scriptUrl: string):
   document.body.appendChild(iFrame);
   await untrustedPageReady.wait();
 
+  assert(iFrame.contentWindow !== null);
   // TODO(pihsun): actually get correct type from the function definition.
   const untrustedRemote =
       Comlink.wrap<{loadScript(url: string): Promise<void>}>(
@@ -296,8 +294,9 @@ export async function share(file: File): Promise<void> {
  * @return the value if it's an enum variant, null otherwise
  */
 export function checkEnumVariant<T extends string>(
-    enumType: {[key: string]: T}, value: string|null): T|null {
-  if (value === null || !Object.values<string>(enumType).includes(value)) {
+    enumType: {[key: string]: T}, value: string|null|undefined): T|null {
+  if (value === null || value === undefined ||
+      !Object.values<string>(enumType).includes(value)) {
     return null;
   }
   return value as T;
@@ -309,8 +308,8 @@ export function checkEnumVariant<T extends string>(
  * @return the value if it's an enum variant, throws assertion error otherwise.
  */
 export function assertEnumVariant<T extends string>(
-    enumType: {[key: string]: T}, value: string): T {
+    enumType: {[key: string]: T}, value: string|null|undefined): T {
   const ret = checkEnumVariant(enumType, value);
-  assert(ret !== null);
+  assert(ret !== null, `${value} is not a valid enum variant`);
   return ret;
 }

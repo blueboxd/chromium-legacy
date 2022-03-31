@@ -13,6 +13,20 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 
+namespace {
+
+crosapi::mojom::OpenUrlFrom ToMojom(ash::NewWindowDelegate::OpenUrlFrom from) {
+  switch (from) {
+    case ash::NewWindowDelegate::OpenUrlFrom::kUnspecified:
+    case ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction:
+      return crosapi::mojom::OpenUrlFrom::kUnspecified;
+    case ash::NewWindowDelegate::OpenUrlFrom::kArc:
+      return crosapi::mojom::OpenUrlFrom::kArc;
+  }
+}
+
+}  // namespace
+
 CrosapiNewWindowDelegate::WindowObserver::WindowObserver(
     CrosapiNewWindowDelegate* owner,
     NewWindowForDetachingTabCallback closure)
@@ -122,9 +136,8 @@ void CrosapiNewWindowDelegate::NewWindowForDetachingTab(
                                       std::move(closure));
 }
 
-void CrosapiNewWindowDelegate::OpenUrl(const GURL& url,
-                                       bool from_user_interaction) {
-  crosapi::BrowserManager::Get()->OpenUrl(url);
+void CrosapiNewWindowDelegate::OpenUrl(const GURL& url, OpenUrlFrom from) {
+  crosapi::BrowserManager::Get()->OpenUrl(url, ToMojom(from));
 }
 
 void CrosapiNewWindowDelegate::OpenCalculator() {

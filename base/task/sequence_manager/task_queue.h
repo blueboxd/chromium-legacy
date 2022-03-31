@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/common/checked_lock.h"
 #include "base/task/sequence_manager/lazy_now.h"
@@ -379,8 +378,8 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   }
 
   // Checks whether or not this TaskQueue has a TaskQueueImpl.
-  // TODO(kdillon): Remove this method when TaskQueueImpl inherits from
-  // TaskQueue and TaskQueue no longer owns an Impl.
+  // TODO(crbug.com/1143007): Remove this method when TaskQueueImpl inherits
+  // from TaskQueue and TaskQueue no longer owns an Impl.
   bool HasImpl() { return !!impl_; }
 
   using OnTaskStartedHandler =
@@ -423,8 +422,8 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   // not be a null callback. Must be called on the thread this task queue is
   // associated with, and the handle returned must be destroyed on the same
   // thread.
-  std::unique_ptr<OnTaskPostedCallbackHandle> AddOnTaskPostedHandler(
-      OnTaskPostedHandler handler) WARN_UNUSED_RESULT;
+  [[nodiscard]] std::unique_ptr<OnTaskPostedCallbackHandle>
+  AddOnTaskPostedHandler(OnTaskPostedHandler handler);
 
   // Set a callback to fill trace event arguments associated with the task
   // execution.

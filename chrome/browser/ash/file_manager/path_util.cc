@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/no_destructor.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -91,8 +92,6 @@ constexpr char kArcRemovableMediaContentUrlPrefix[] =
 constexpr char kArcMyFilesContentUrlPrefix[] =
     "content://org.chromium.arc.volumeprovider/"
     "0000000000000000000000000000CAFEF00D2019/";
-constexpr char kArcDriveContentUrlPrefix[] =
-    "content://org.chromium.arc.volumeprovider/MyDrive/";
 
 // Helper function for |ConvertToContentUrls|.
 void OnSingleContentUrlResolved(const base::RepeatingClosure& barrier_closure,
@@ -133,8 +132,7 @@ bool ShouldMountPrimaryUserDownloads(Profile* profile) {
 // Example: ExtractLegacyDrivePath("/special/drive-xxx/foo.txt") =>
 //   "drive/foo.txt"
 base::FilePath ExtractLegacyDrivePath(const base::FilePath& path) {
-  std::vector<base::FilePath::StringType> components;
-  path.GetComponents(&components);
+  std::vector<base::FilePath::StringType> components = path.GetComponents();
   if (components.size() < 3)
     return base::FilePath();
   if (components[0] != FILE_PATH_LITERAL("/"))
@@ -155,8 +153,8 @@ base::FilePath ExtractLegacyDrivePath(const base::FilePath& path) {
 // to be of the form <volume name>/..., which is relative to /media/removable.
 std::string ExtractVolumeNameFromRelativePathForRemovableMedia(
     const base::FilePath& relative_path) {
-  std::vector<base::FilePath::StringType> components;
-  relative_path.GetComponents(&components);
+  std::vector<base::FilePath::StringType> components =
+      relative_path.GetComponents();
   if (components.empty()) {
     LOG(WARNING) << "Failed to extract volume name from relative path: "
                  << relative_path;
@@ -332,7 +330,7 @@ std::string GetDownloadsMountPointName(Profile* profile) {
   return net::EscapeQueryParamValue(kFolderNameDownloads + id, false);
 }
 
-const std::string GetAndroidFilesMountPointName() {
+std::string GetAndroidFilesMountPointName() {
   return kAndroidFilesMountPointName;
 }
 
@@ -399,8 +397,7 @@ bool ConvertFileSystemURLToPathInsideVM(
     *inside = vm_mount.Append(kFolderNameMyFiles);
   } else if (!mount_point_name_drive.empty() && id == mount_point_name_drive) {
     // DriveFS has some more complicated mappings.
-    std::vector<base::FilePath::StringType> components;
-    path.GetComponents(&components);
+    std::vector<base::FilePath::StringType> components = path.GetComponents();
     *inside = vm_mount.Append(kCrostiniMapGoogleDrive);
     if (components.size() >= 2 && components[1] == kDriveFsDirRoot) {
       // root -> MyDrive.
@@ -561,8 +558,8 @@ bool ConvertPathInsideVMToFileSystemURL(
   } else if (base::FilePath(kCrostiniMapSmbFs)
                  .AppendRelativePath(path, &relative_path)) {
     // SMB.
-    std::vector<base::FilePath::StringType> components;
-    relative_path.GetComponents(&components);
+    std::vector<base::FilePath::StringType> components =
+        relative_path.GetComponents();
     if (components.size() < 1) {
       return false;
     }
@@ -579,8 +576,10 @@ bool ConvertPathInsideVMToFileSystemURL(
 }
 
 bool ConvertPathToArcUrl(const base::FilePath& path,
-                         GURL* arc_url_out,
-                         bool* requires_sharing_out) {
+                         GURL* const arc_url_out,
+                         bool* const requires_sharing_out) {
+  DCHECK(arc_url_out);
+  DCHECK(requires_sharing_out);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   *requires_sharing_out = false;
 
@@ -650,17 +649,18 @@ bool ConvertPathToArcUrl(const base::FilePath& path,
   if (integration_service &&
       integration_service->GetMountPointPath().AppendRelativePath(
           path, &relative_path)) {
+    // TODO(b/157297349) Remove this condition.
     if (arc::IsArcVmEnabled()) {
-      *requires_sharing_out = true;
       *arc_url_out =
-          GURL(kArcDriveContentUrlPrefix)
+          GURL("content://org.chromium.arc.volumeprovider/MyDrive/")
               .Resolve(net::EscapePath(relative_path.AsUTF8Unsafe()));
+      *requires_sharing_out = true;
       return true;
-    } else {
-      // TODO(b/157297349): For backward compatibility with ARC++ P, force
-      // external URL for DriveFS.
-      force_external = true;
     }
+
+    // TODO(b/157297349): For backward compatibility with ARC++ P, force
+    // external URL for DriveFS.
+    force_external = true;
   }
 
   // Force external URL for Crostini.
@@ -669,20 +669,40 @@ bool ConvertPathToArcUrl(const base::FilePath& path,
     force_external = true;
   }
 
-  // Force external URL for files under /media/archive.
+  // Convert path under /media/archive.
   if (base::FilePath(kArchiveMountPath)
           .AppendRelativePath(path, &relative_path)) {
+    // TODO(b/157297349) Remove this condition.
+    if (arc::IsArcVmEnabled()) {
+      *arc_url_out =
+          GURL("content://org.chromium.arc.volumeprovider/archive/")
+              .Resolve(net::EscapePath(relative_path.AsUTF8Unsafe()));
+      *requires_sharing_out = true;
+      return true;
+    }
+
     force_external = true;
   }
 
-  // Force external URL for smbfs.
-  ash::smb_client::SmbService* smb_service =
-      ash::smb_client::SmbServiceFactory::Get(primary_profile);
-  if (smb_service) {
-    ash::smb_client::SmbFsShare* share =
-        smb_service->GetSmbFsShareForPath(path);
-    if (share && share->mount_path().AppendRelativePath(path, &relative_path)) {
-      force_external = true;
+  // Convert path under /media/fuse/smb-...
+  if (ash::smb_client::SmbService* const service =
+          ash::smb_client::SmbServiceFactory::Get(primary_profile)) {
+    if (const ash::smb_client::SmbFsShare* const share =
+            service->GetSmbFsShareForPath(path)) {
+      if (share->mount_path().AppendRelativePath(path, &relative_path)) {
+        // TODO(b/157297349) Remove this condition.
+        if (arc::IsArcVmEnabled()) {
+          *arc_url_out =
+              GURL(base::StrCat(
+                       {"content://org.chromium.arc.volumeprovider/smb/",
+                        share->mount_id(), "/"}))
+                  .Resolve(net::EscapePath(relative_path.AsUTF8Unsafe()));
+          *requires_sharing_out = true;
+          return true;
+        }
+
+        force_external = true;
+      }
     }
   }
 

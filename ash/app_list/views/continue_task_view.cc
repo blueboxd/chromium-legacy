@@ -16,6 +16,7 @@
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/highlight_border.h"
 #include "ash/style/style_util.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
@@ -23,6 +24,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
@@ -67,7 +69,7 @@ int GetCornerRadius(bool tablet_mode) {
 
 ContinueTaskView::ContinueTaskView(AppListViewDelegate* view_delegate,
                                    bool tablet_mode)
-    : view_delegate_(view_delegate) {
+    : view_delegate_(view_delegate), is_tablet_mode_(tablet_mode) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetCallback(base::BindRepeating(&ContinueTaskView::OnButtonPressed,
                                   base::Unretained(this)));
@@ -86,15 +88,12 @@ ContinueTaskView::ContinueTaskView(AppListViewDelegate* view_delegate,
 
   views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
   SetHasInkDropActionOnClick(true);
+  SetShowInkDropWhenHotTracked(false);
 
   StyleUtil::ConfigureInkDropAttributes(
       this, StyleUtil::kBaseColor | StyleUtil::kInkDropOpacity);
-  if (tablet_mode) {
-    SetBackground(views::CreateRoundedRectBackground(
-        ColorProvider::Get()->GetBaseLayerColor(
-            ColorProvider::BaseLayerType::kTransparent80),
-        GetCornerRadius(/*tablet_mode=*/true)));
-  }
+
+  UpdateStyleForTabletMode();
 
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -135,6 +134,7 @@ void ContinueTaskView::OnThemeChanged() {
   views::View::OnThemeChanged();
   bubble_utils::ApplyStyle(title_, bubble_utils::LabelStyle::kBody);
   bubble_utils::ApplyStyle(subtitle_, bubble_utils::LabelStyle::kSubtitle);
+  UpdateStyleForTabletMode();
 }
 
 gfx::Size ContinueTaskView::GetMaximumSize() const {
@@ -219,7 +219,7 @@ void ContinueTaskView::ShowContextMenuForViewImpl(
   if (!result())
     return;
 
-  int run_types = views::MenuRunner::USE_TOUCHABLE_LAYOUT |
+  int run_types = views::MenuRunner::USE_ASH_SYS_UI_LAYOUT |
                   views::MenuRunner::CONTEXT_MENU |
                   views::MenuRunner::FIXED_ANCHOR;
 
@@ -253,13 +253,15 @@ ui::SimpleMenuModel* ContinueTaskView::BuildMenuModel() {
       ContinueTaskCommandId::kOpenResult,
       l10n_util::GetStringUTF16(
           IDS_ASH_LAUNCHER_CONTINUE_SECTION_CONTEXT_MENU_OPEN),
-      ui::ImageModel::FromVectorIcon(kLaunchIcon));
+      ui::ImageModel::FromVectorIcon(kLaunchIcon,
+                                     ui::kColorAshSystemUIMenuIcon));
 
   context_menu_model_->AddItemWithIcon(
       ContinueTaskCommandId::kRemoveResult,
       l10n_util::GetStringUTF16(
           IDS_ASH_LAUNCHER_CONTINUE_SECTION_CONTEXT_MENU_REMOVE),
-      ui::ImageModel::FromVectorIcon(kRemoveOutlineIcon));
+      ui::ImageModel::FromVectorIcon(kRemoveOutlineIcon,
+                                     ui::kColorAshSystemUIMenuIcon));
 
   return context_menu_model_.get();
 }
@@ -272,7 +274,7 @@ void ContinueTaskView::MenuClosed(ui::SimpleMenuModel* menu) {
 void ContinueTaskView::OpenResult(int event_flags) {
   DCHECK(result());
   view_delegate_->OpenSearchResult(
-      result()->id(), result()->result_type(), event_flags,
+      result()->id(), event_flags,
       AppListLaunchedFrom::kLaunchedFromContinueTask,
       AppListLaunchType::kSearchResult, index_in_container(),
       false /* launch_as_default */);
@@ -282,6 +284,8 @@ void ContinueTaskView::RemoveResult() {
   // TODO(crbug.com/1264530): The ML service may change the way Search Results
   // are removed.
   DCHECK(result());
+
+  LogMetricsOnResultRemoved();
   view_delegate_->InvokeSearchResultAction(result()->id(),
                                            SearchResultActionType::kRemove);
 }
@@ -294,6 +298,39 @@ void ContinueTaskView::CloseContextMenu() {
   if (!IsMenuShowing())
     return;
   context_menu_runner_->Cancel();
+}
+
+void ContinueTaskView::UpdateStyleForTabletMode() {
+  // Do nothing if the view is not in tablet mode.
+  if (!is_tablet_mode_)
+    return;
+
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
+  layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
+  layer()->SetBackdropFilterQuality(ColorProvider::kBackgroundBlurQuality);
+  layer()->SetRoundedCornerRadius(
+      gfx::RoundedCornersF(GetCornerRadius(/*tablet_mode=*/true)));
+
+  SetBackground(
+      views::CreateSolidBackground(ColorProvider::Get()->GetBaseLayerColor(
+          ColorProvider::BaseLayerType::kTransparent60)));
+  SetBorder(std::make_unique<HighlightBorder>(
+      GetCornerRadius(/*tablet_mode=*/true),
+      HighlightBorder::Type::kHighlightBorder2,
+      /*use_light_colors=*/false));
+}
+
+void ContinueTaskView::LogMetricsOnResultRemoved() {
+  if (result()->result_type() == AppListSearchResultType::kFileChip) {
+    base::UmaHistogramEnumeration("Apps.AppList.ContinueResultRemoved",
+                                  TaskResultType::kLocalFile,
+                                  TaskResultType::kMaxValue);
+  } else if (result()->result_type() == AppListSearchResultType::kFileChip) {
+    base::UmaHistogramEnumeration("Apps.AppList.ContinueResultRemoved",
+                                  TaskResultType::kDriveFile,
+                                  TaskResultType::kMaxValue);
+  }
 }
 
 BEGIN_METADATA(ContinueTaskView, views::View)

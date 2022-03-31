@@ -21,12 +21,11 @@
 #include "components/os_crypt/os_crypt.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
-#include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/base/features.h"
 #include "components/sync/trusted_vault/proto_string_bytes_conversion.h"
 #include "components/sync/trusted_vault/securebox.h"
 #include "components/sync/trusted_vault/trusted_vault_connection.h"
 #include "components/sync/trusted_vault/trusted_vault_server_constants.h"
-#include "components/sync/trusted_vault/trusted_vault_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -791,7 +790,7 @@ TEST_F(StandaloneTrustedVaultBackendTest,
   base::HistogramTester histogram_tester2;
   ResetBackend();
   EXPECT_CALL(*connection(), RegisterAuthenticationFactor(_, _, _, _, _, _, _));
-  clock()->Advance(switches::kTrustedVaultServiceThrottlingDuration.Get());
+  clock()->Advance(kTrustedVaultServiceThrottlingDuration.Get());
   backend()->ReadDataFromDisk();
   backend()->SetPrimaryAccount(account_info,
                                /*has_persistent_auth_error=*/false);
@@ -1011,7 +1010,7 @@ TEST_F(StandaloneTrustedVaultBackendTest,
   Mock::VerifyAndClearExpectations(connection());
 
   // Advance time to pass the throttling duration and trigger another attempt.
-  clock()->Advance(switches::kTrustedVaultServiceThrottlingDuration.Get());
+  clock()->Advance(kTrustedVaultServiceThrottlingDuration.Get());
 
   EXPECT_CALL(*connection(), DownloadNewKeys(_, _, _, _));
   backend()->FetchKeys(account_info, /*callback=*/base::DoNothing());

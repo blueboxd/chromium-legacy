@@ -19,7 +19,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authenticator_selection_criteria.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_cable_authentication_data.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_cable_registration_data.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_federated_credential_logout_request.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_federated_credential_logout_rps_request.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_parameters.h"
@@ -40,7 +40,6 @@ using blink::mojom::blink::AttestationConveyancePreference;
 using blink::mojom::blink::AuthenticatorAttachment;
 using blink::mojom::blink::AuthenticatorSelectionCriteria;
 using blink::mojom::blink::AuthenticatorSelectionCriteriaPtr;
-using blink::mojom::blink::AuthenticatorStatus;
 using blink::mojom::blink::AuthenticatorTransport;
 using blink::mojom::blink::CableAuthentication;
 using blink::mojom::blink::CableAuthenticationPtr;
@@ -51,8 +50,8 @@ using blink::mojom::blink::CredentialInfoPtr;
 using blink::mojom::blink::CredentialManagerError;
 using blink::mojom::blink::CredentialType;
 using blink::mojom::blink::LargeBlobSupport;
-using blink::mojom::blink::LogoutRequest;
-using blink::mojom::blink::LogoutRequestPtr;
+using blink::mojom::blink::LogoutRpsRequest;
+using blink::mojom::blink::LogoutRpsRequestPtr;
 using blink::mojom::blink::PublicKeyCredentialCreationOptionsPtr;
 using blink::mojom::blink::PublicKeyCredentialDescriptor;
 using blink::mojom::blink::PublicKeyCredentialDescriptorPtr;
@@ -123,69 +122,6 @@ TypeConverter<blink::Credential*, CredentialInfoPtr>::Convert(
   }
   NOTREACHED();
   return nullptr;
-}
-
-// static
-CredentialManagerError
-TypeConverter<CredentialManagerError, AuthenticatorStatus>::Convert(
-    const AuthenticatorStatus& status) {
-  switch (status) {
-    case blink::mojom::blink::AuthenticatorStatus::NOT_ALLOWED_ERROR:
-      return CredentialManagerError::NOT_ALLOWED;
-    case blink::mojom::blink::AuthenticatorStatus::ABORT_ERROR:
-      return CredentialManagerError::ABORT;
-    case blink::mojom::blink::AuthenticatorStatus::UNKNOWN_ERROR:
-      return CredentialManagerError::UNKNOWN;
-    case blink::mojom::blink::AuthenticatorStatus::PENDING_REQUEST:
-      return CredentialManagerError::PENDING_REQUEST_WEBAUTHN;
-    case blink::mojom::blink::AuthenticatorStatus::INVALID_DOMAIN:
-      return CredentialManagerError::INVALID_DOMAIN;
-    case blink::mojom::blink::AuthenticatorStatus::INVALID_ICON_URL:
-      return CredentialManagerError::INVALID_ICON_URL;
-    case blink::mojom::blink::AuthenticatorStatus::CREDENTIAL_EXCLUDED:
-      return CredentialManagerError::CREDENTIAL_EXCLUDED;
-    case blink::mojom::blink::AuthenticatorStatus::NOT_IMPLEMENTED:
-      return CredentialManagerError::NOT_IMPLEMENTED;
-    case blink::mojom::blink::AuthenticatorStatus::NOT_FOCUSED:
-      return CredentialManagerError::NOT_FOCUSED;
-    case blink::mojom::blink::AuthenticatorStatus::
-        RESIDENT_CREDENTIALS_UNSUPPORTED:
-      return CredentialManagerError::RESIDENT_CREDENTIALS_UNSUPPORTED;
-    case blink::mojom::blink::AuthenticatorStatus::ALGORITHM_UNSUPPORTED:
-      return CredentialManagerError::ANDROID_ALGORITHM_UNSUPPORTED;
-    case blink::mojom::blink::AuthenticatorStatus::EMPTY_ALLOW_CREDENTIALS:
-      return CredentialManagerError::ANDROID_EMPTY_ALLOW_CREDENTIALS;
-    case blink::mojom::blink::AuthenticatorStatus::ANDROID_NOT_SUPPORTED_ERROR:
-      return CredentialManagerError::ANDROID_NOT_SUPPORTED_ERROR;
-    case blink::mojom::blink::AuthenticatorStatus::
-        USER_VERIFICATION_UNSUPPORTED:
-      return CredentialManagerError::ANDROID_USER_VERIFICATION_UNSUPPORTED;
-    case blink::mojom::blink::AuthenticatorStatus::
-        PROTECTION_POLICY_INCONSISTENT:
-      return CredentialManagerError::PROTECTION_POLICY_INCONSISTENT;
-    case blink::mojom::blink::AuthenticatorStatus::OPAQUE_DOMAIN:
-      return CredentialManagerError::OPAQUE_DOMAIN;
-    case blink::mojom::blink::AuthenticatorStatus::INVALID_PROTOCOL:
-      return CredentialManagerError::INVALID_PROTOCOL;
-    case blink::mojom::blink::AuthenticatorStatus::BAD_RELYING_PARTY_ID:
-      return CredentialManagerError::BAD_RELYING_PARTY_ID;
-    case blink::mojom::blink::AuthenticatorStatus::
-        CANNOT_READ_AND_WRITE_LARGE_BLOB:
-      return CredentialManagerError::CANNOT_READ_AND_WRITE_LARGE_BLOB;
-    case blink::mojom::blink::AuthenticatorStatus::
-        INVALID_ALLOW_CREDENTIALS_FOR_LARGE_BLOB:
-      return CredentialManagerError::INVALID_ALLOW_CREDENTIALS_FOR_LARGE_BLOB;
-    case blink::mojom::blink::AuthenticatorStatus::
-        FAILED_TO_SAVE_CREDENTIAL_ID_FOR_PAYMENT_EXTENSION:
-      return CredentialManagerError::
-          FAILED_TO_SAVE_CREDENTIAL_ID_FOR_PAYMENT_EXTENSION;
-    case blink::mojom::blink::AuthenticatorStatus::SUCCESS:
-      NOTREACHED();
-      break;
-  }
-
-  NOTREACHED();
-  return CredentialManagerError::UNKNOWN;
 }
 
 // static helper method.
@@ -372,10 +308,10 @@ TypeConverter<AuthenticatorSelectionCriteriaPtr,
 }
 
 // static
-LogoutRequestPtr
-TypeConverter<LogoutRequestPtr, blink::FederatedCredentialLogoutRequest>::
-    Convert(const blink::FederatedCredentialLogoutRequest& request) {
-  auto mojo_request = LogoutRequest::New();
+LogoutRpsRequestPtr
+TypeConverter<LogoutRpsRequestPtr, blink::FederatedCredentialLogoutRpsRequest>::
+    Convert(const blink::FederatedCredentialLogoutRpsRequest& request) {
+  auto mojo_request = LogoutRpsRequest::New();
 
   mojo_request->url = blink::KURL(request.url());
   mojo_request->account_id = request.accountId();
@@ -583,8 +519,6 @@ TypeConverter<PublicKeyCredentialCreationOptionsPtr,
       mojo_options->enforce_protection_policy = true;
     }
     if (extensions->credProps()) {
-      DCHECK(blink::RuntimeEnabledFeatures::
-                 WebAuthenticationResidentKeyRequirementEnabled());
       mojo_options->cred_props = true;
     }
     if (extensions->hasLargeBlob()) {

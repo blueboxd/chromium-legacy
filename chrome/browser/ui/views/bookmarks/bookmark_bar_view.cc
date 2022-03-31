@@ -18,6 +18,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/user_metrics.h"
+#include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_group_theme.h"
@@ -550,7 +552,7 @@ class BookmarkBarView::ButtonSeparatorView : public views::Separator {
   void OnThemeChanged() override {
     views::Separator::OnThemeChanged();
     SetColor(GetThemeProvider()->GetColor(
-        ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR));
+        ThemeProperties::COLOR_BOOKMARK_SEPARATOR));
   }
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
@@ -588,8 +590,9 @@ BookmarkBarView::BookmarkBarView(Browser* browser, BrowserView* browser_view)
   if (browser_view)
     SetBackground(std::make_unique<TopContainerBackground>(browser_view));
 
-  views::SetCascadingThemeProviderColor(this, views::kCascadingBackgroundColor,
-                                        ThemeProperties::COLOR_TOOLBAR);
+  views::SetCascadingThemeProviderColor(
+      this, views::kCascadingBackgroundColor,
+      ThemeProperties::COLOR_BOOKMARK_BAR_BACKGROUND);
 }
 
 BookmarkBarView::~BookmarkBarView() {
@@ -1143,28 +1146,6 @@ void BookmarkBarView::OnDragExited() {
     SchedulePaint();
   }
   drop_info_.reset();
-}
-
-DragOperation BookmarkBarView::OnPerformDrop(const ui::DropTargetEvent& event) {
-  StopShowFolderDropMenuTimer();
-
-  if (bookmark_drop_menu_)
-    bookmark_drop_menu_->Cancel();
-
-  if (!drop_info_ || !drop_info_->valid ||
-      drop_info_->location.operation == DragOperation::kNone)
-    return DragOperation::kNone;
-
-  size_t index = -1;
-  const bookmarks::BookmarkNode* parent_node =
-      GetParentNodeAndIndexForDrop(index);
-  bool copy = drop_info_->location.operation == DragOperation::kCopy;
-  DragOperation output_drag_op = DragOperation::kNone;
-  bookmarks::BookmarkNodeData drop_data = drop_info_->data;
-  drop_info_.reset();
-  PerformDrop(std::move(drop_data), parent_node, index, copy, event,
-              output_drag_op);
-  return output_drag_op;
 }
 
 views::View::DropCallback BookmarkBarView::GetDropCallback(
@@ -1783,17 +1764,11 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
         insets.set_top(0);
         insets.set_bottom(0);
         button->SetBorder(views::CreateEmptyBorder(insets));
-      } else if (tp->HasCustomColor(ThemeProperties::COLOR_BOOKMARK_TEXT)) {
-        button->SetImageModel(
-            views::Button::STATE_NORMAL,
-            chrome::GetBookmarkFolderIcon(
-                chrome::BookmarkFolderIconType::kNormal,
-                color_utils::DeriveDefaultIconColor(text_color)));
       } else {
-        button->SetImageModel(
-            views::Button::STATE_NORMAL,
-            chrome::GetBookmarkFolderIcon(
-                chrome::BookmarkFolderIconType::kNormal, ui::kColorIcon));
+        button->SetImageModel(views::Button::STATE_NORMAL,
+                              chrome::GetBookmarkFolderIcon(
+                                  chrome::BookmarkFolderIconType::kNormal,
+                                  kColorBookmarkFolderIcon));
       }
     }
 
@@ -1808,7 +1783,7 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
     bool themify_icon = node->url().SchemeIs(content::kChromeUIScheme);
     gfx::ImageSkia favicon = model_->GetFavicon(node).AsImageSkia();
     if (favicon.isNull()) {
-      if (ui::TouchUiController::Get()->touch_ui() && GetThemeProvider()) {
+      if (ui::TouchUiController::Get()->touch_ui() && tp) {
         // This favicon currently does not match the default favicon icon used
         // elsewhere in the codebase.
         // See https://crbug/814447
@@ -1823,10 +1798,13 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
       themify_icon = true;
     }
 
-    if (themify_icon && tp &&
-        tp->HasCustomColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON)) {
-      favicon = gfx::ImageSkiaOperations::CreateColorMask(
-          favicon, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON));
+    if (themify_icon && tp) {
+      SkColor favicon_color =
+          tp->GetColor(ThemeProperties::COLOR_BOOKMARK_FAVICON);
+      if (favicon_color != SK_ColorTRANSPARENT) {
+        favicon =
+            gfx::ImageSkiaOperations::CreateColorMask(favicon, favicon_color);
+      }
     }
 
     button->SetImageModel(views::Button::STATE_NORMAL,
@@ -2162,32 +2140,20 @@ void BookmarkBarView::UpdateAppearanceForTheme() {
       theme_provider->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
   other_bookmarks_button_->SetEnabledTextColors(color);
   managed_bookmarks_button_->SetEnabledTextColors(color);
-  if (theme_provider->HasCustomColor(ThemeProperties::COLOR_BOOKMARK_TEXT)) {
-    SkColor folder_color = color_utils::DeriveDefaultIconColor(color);
-    other_bookmarks_button_->SetImageModel(
-        views::Button::STATE_NORMAL,
-        chrome::GetBookmarkFolderIcon(chrome::BookmarkFolderIconType::kNormal,
-                                      folder_color));
-    managed_bookmarks_button_->SetImageModel(
-        views::Button::STATE_NORMAL,
-        chrome::GetBookmarkFolderIcon(chrome::BookmarkFolderIconType::kManaged,
-                                      folder_color));
-  } else {
-    other_bookmarks_button_->SetImageModel(
-        views::Button::STATE_NORMAL,
-        chrome::GetBookmarkFolderIcon(chrome::BookmarkFolderIconType::kNormal,
-                                      ui::kColorIcon));
-    managed_bookmarks_button_->SetImageModel(
-        views::Button::STATE_NORMAL,
-        chrome::GetBookmarkFolderIcon(chrome::BookmarkFolderIconType::kManaged,
-                                      ui::kColorIcon));
-  }
+  other_bookmarks_button_->SetImageModel(
+      views::Button::STATE_NORMAL,
+      chrome::GetBookmarkFolderIcon(chrome::BookmarkFolderIconType::kNormal,
+                                    kColorBookmarkFolderIcon));
+  managed_bookmarks_button_->SetImageModel(
+      views::Button::STATE_NORMAL,
+      chrome::GetBookmarkFolderIcon(chrome::BookmarkFolderIconType::kManaged,
+                                    kColorBookmarkFolderIcon));
 
   if (apps_page_shortcut_->GetVisible())
     apps_page_shortcut_->SetEnabledTextColors(color);
 
   const SkColor overflow_color =
-      theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+      theme_provider->GetColor(ThemeProperties::COLOR_BOOKMARK_BUTTON_ICON);
   const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
   overflow_button_->SetImageModel(
       views::Button::STATE_NORMAL,

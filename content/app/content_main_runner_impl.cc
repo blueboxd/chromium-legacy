@@ -177,6 +177,10 @@
 #include "content/browser/android/browser_startup_controller.h"
 #endif
 
+#if BUILDFLAG(IS_FUCHSIA)
+#include "base/fuchsia/build_info.h"
+#endif
+
 namespace content {
 extern int GpuMain(MainFunctionParams);
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -313,7 +317,8 @@ void InitializeZygoteSandboxForBrowserProcess(
 
   if (parsed_command_line.HasSwitch(switches::kNoZygote)) {
     if (!parsed_command_line.HasSwitch(sandbox::policy::switches::kNoSandbox)) {
-      LOG(ERROR) << "--no-sandbox should be used together with --no--zygote";
+      LOG(ERROR) << "Zygote cannot be disabled if sandbox is enabled."
+                 << " Use --no-zygote together with --no-sandbox";
       exit(EXIT_FAILURE);
     }
     return;
@@ -658,6 +663,16 @@ RunOtherNamedProcessTypeMain(const std::string& process_type,
     {switches::kGpuProcess, GpuMain},
   };
 
+  // The hang watcher needs to be started once the feature list is available
+  // but before the IO thread is started.
+  base::ScopedClosureRunner unregister_thread_closure;
+  if (base::HangWatcher::IsEnabled()) {
+    base::HangWatcher::CreateHangWatcherInstance();
+    unregister_thread_closure = base::HangWatcher::RegisterThread(
+        base::HangWatcher::ThreadType::kMainThread);
+    base::HangWatcher::GetInstance()->Start();
+  }
+
   for (size_t i = 0; i < base::size(kMainFunctions); ++i) {
     if (process_type == kMainFunctions[i].name) {
       auto exit_code =
@@ -755,6 +770,15 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
   }
 #endif  // !BUILDFLAG(IS_ANDROID)
 
+#if BUILDFLAG(IS_FUCHSIA)
+  // Cache the BuildInfo for this process.
+  // This avoids requiring that all callers of certain base:: functions first
+  // ensure the cache is populated.
+  // Making the blocking call now also avoids the potential for blocking later
+  // in when it might be user-visible.
+  base::FetchAndCacheSystemBuildInfo();
+#endif
+
   int exit_code = 0;
   if (!GetContentClient())
     ContentClientCreator::Create(delegate_);
@@ -810,10 +834,10 @@ int ContentMainRunnerImpl::Initialize(ContentMainParams params) {
   TRACE_EVENT0("startup,benchmark,rail", "ContentMainRunnerImpl::Initialize");
 #endif  // !BUILDFLAG(IS_ANDROID)
 
-  // If we are on a platform where the default allocator is overridden (shim
-  // layer on windows, tcmalloc on Linux Desktop) smoke-tests that the
-  // overriding logic is working correctly. If not causes a hard crash, as its
-  // unexpected absence has security implications.
+  // If we are on a platform where the default allocator is overridden (e.g.
+  // with PartitionAlloc on most platforms) smoke-tests that the overriding
+  // logic is working correctly. If not causes a hard crash, as its unexpected
+  // absence has security implications.
   CHECK(base::allocator::IsAllocatorInitialized());
 
 #if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
@@ -1073,11 +1097,10 @@ int ContentMainRunnerImpl::RunBrowser(MainFunctionParams main_params,
     // The hang watcher needs to be started once the feature list is available
     // but before the IO thread is started.
     if (base::HangWatcher::IsEnabled()) {
-      hang_watcher_ = new base::HangWatcher();
+      base::HangWatcher::CreateHangWatcherInstance();
       unregister_thread_closure_ = base::HangWatcher::RegisterThread(
-          base::HangWatcher::ThreadType::kUIThread);
-      hang_watcher_->Start();
-      ANNOTATE_LEAKING_OBJECT_PTR(hang_watcher_);
+          base::HangWatcher::ThreadType::kMainThread);
+      base::HangWatcher::GetInstance()->Start();
     }
 
     if (has_thread_pool) {

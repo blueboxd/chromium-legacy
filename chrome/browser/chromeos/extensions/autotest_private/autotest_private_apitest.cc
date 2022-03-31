@@ -11,6 +11,7 @@
 #include "ash/components/arc/test/arc_util_test_support.h"
 #include "ash/components/arc/test/connection_holder_util.h"
 #include "ash/components/arc/test/fake_app_instance.h"
+#include "ash/components/arc/test/fake_arc_session.h"
 #include "ash/public/cpp/holding_space/holding_space_prefs.h"
 #include "ash/public/cpp/overview_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
@@ -119,6 +120,10 @@ IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, AutotestPrivateArcEnabled) {
   ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(browser()->profile());
   ASSERT_TRUE(prefs);
 
+  arc::ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
+      std::make_unique<arc::ArcSessionRunner>(
+          base::BindRepeating(arc::FakeArcSession::Create)));
+
   // Having ARC Terms accepted automatically bypasses TOS stage.
   // Set it before |arc::SetArcPlayStoreEnabledForProfile|
   browser()->profile()->GetPrefs()->SetBoolean(arc::prefs::kArcTermsAccepted,
@@ -133,15 +138,14 @@ IN_PROC_BROWSER_TEST_F(AutotestPrivateApiTest, AutotestPrivateArcEnabled) {
   prefs->app_connection_holder()->SetInstance(app_instance.get());
   arc::WaitForInstanceReady(prefs->app_connection_holder());
 
-  arc::mojom::AppInfo app;
-  app.name = "Fake App";
-  app.package_name = "fake.package";
-  app.activity = "fake.package.activity";
-  app_instance->SendRefreshAppList(std::vector<arc::mojom::AppInfo>(1, app));
+  std::vector<arc::mojom::AppInfoPtr> fake_apps;
+  fake_apps.emplace_back(arc::mojom::AppInfo::New("Fake App", "fake.package",
+                                                  "fake.package.activity"));
+  app_instance->SendRefreshAppList(fake_apps);
 
   std::vector<arc::mojom::ArcPackageInfoPtr> packages;
   packages.emplace_back(arc::mojom::ArcPackageInfo::New(
-      app.package_name, 10 /* package_version */,
+      fake_apps[0]->package_name, 10 /* package_version */,
       100 /* last_backup_android_id */,
       base::Time::Now()
           .ToDeltaSinceWindowsEpoch()
@@ -167,9 +171,9 @@ class AutotestPrivateHoldingSpaceApiTest
       public ::testing::WithParamInterface<bool /* mark_time_of_first_add */> {
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        AutotestPrivateHoldingSpaceApiTest,
-                        ::testing::Bool() /* mark_time_of_first_add */);
+INSTANTIATE_TEST_SUITE_P(All,
+                         AutotestPrivateHoldingSpaceApiTest,
+                         ::testing::Bool() /* mark_time_of_first_add */);
 
 IN_PROC_BROWSER_TEST_P(AutotestPrivateHoldingSpaceApiTest,
                        HoldingSpaceAPITest) {
@@ -185,7 +189,7 @@ IN_PROC_BROWSER_TEST_P(AutotestPrivateHoldingSpaceApiTest,
   const bool mark_time_of_first_add = GetParam();
 
   base::DictionaryValue options;
-  options.SetBoolean("markTimeOfFirstAdd", mark_time_of_first_add);
+  options.SetBoolKey("markTimeOfFirstAdd", mark_time_of_first_add);
   std::vector<base::Value> suite_args;
   suite_args.emplace_back(std::move(options));
 

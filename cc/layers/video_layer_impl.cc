@@ -33,7 +33,7 @@ std::unique_ptr<VideoLayerImpl> VideoLayerImpl::Create(
     LayerTreeImpl* tree_impl,
     int id,
     VideoFrameProvider* provider,
-    media::VideoTransformation video_transform) {
+    const media::VideoTransformation& video_transform) {
   DCHECK(tree_impl->task_runner_provider()->IsMainThreadBlocked() ||
          base::FeatureList::IsEnabled(features::kNonBlockingCommit));
   DCHECK(tree_impl->task_runner_provider()->IsImplThread());
@@ -50,7 +50,7 @@ VideoLayerImpl::VideoLayerImpl(
     LayerTreeImpl* tree_impl,
     int id,
     scoped_refptr<VideoFrameProviderClientImpl> provider_client_impl,
-    media::VideoTransformation video_transform)
+    const media::VideoTransformation& video_transform)
     : LayerImpl(tree_impl, id),
       provider_client_impl_(std::move(provider_client_impl)),
       video_transform_(video_transform) {
@@ -72,7 +72,7 @@ VideoLayerImpl::~VideoLayerImpl() {
 }
 
 std::unique_ptr<LayerImpl> VideoLayerImpl::CreateLayerImpl(
-    LayerTreeImpl* tree_impl) {
+    LayerTreeImpl* tree_impl) const {
   return base::WrapUnique(new VideoLayerImpl(
       tree_impl, id(), provider_client_impl_, video_transform_));
 }

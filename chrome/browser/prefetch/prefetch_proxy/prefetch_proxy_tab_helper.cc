@@ -20,6 +20,7 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
 #include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
+#include "chrome/browser/prefetch/prefetch_headers.h"
 #include "chrome/browser/prefetch/prefetch_prefs.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_features.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_network_context_client.h"
@@ -55,6 +56,7 @@
 #include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/url_util.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
@@ -72,6 +74,8 @@
 #include "url/origin.h"
 
 namespace {
+
+bool (*g_host_non_unique_filter)(base::StringPiece) = nullptr;
 
 absl::optional<base::TimeDelta> GetTotalPrefetchTime(
     network::mojom::URLResponseHead* head) {
@@ -180,12 +184,12 @@ bool ShouldConsiderDecoyRequestForStatus(PrefetchProxyPrefetchStatus status) {
       return true;
     case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleGoogleDomain:
     case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleSchemeIsNotHttps:
-    case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleHostIsIPAddress:
     case PrefetchProxyPrefetchStatus::
         kPrefetchNotEligibleNonDefaultStoragePartition:
     case PrefetchProxyPrefetchStatus::kPrefetchPositionIneligible:
     case PrefetchProxyPrefetchStatus::kPrefetchIneligibleRetryAfter:
     case PrefetchProxyPrefetchStatus::kPrefetchProxyNotAvailable:
+    case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleHostIsNonUnique:
       // These statuses don't relate to any user state, so don't send a decoy
       // request.
       return false;
@@ -281,6 +285,17 @@ static content::ServiceWorkerContext* g_service_worker_context_for_test =
 void PrefetchProxyTabHelper::SetServiceWorkerContextForTest(
     content::ServiceWorkerContext* context) {
   g_service_worker_context_for_test = context;
+}
+
+// static
+void PrefetchProxyTabHelper::SetHostNonUniqueFilterForTest(
+    bool (*filter)(base::StringPiece)) {
+  g_host_non_unique_filter = filter;
+}
+
+// static
+void PrefetchProxyTabHelper::ResetHostNonUniqueFilterForTest() {
+  g_host_non_unique_filter = nullptr;
 }
 
 PrefetchProxyTabHelper::PrefetchProxyTabHelper(
@@ -465,7 +480,6 @@ PrefetchProxyTabHelper::MaybeUpdatePrefetchStatusWithNSPContext(
     case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleUserHasCookies:
     case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleUserHasServiceWorker:
     case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleSchemeIsNotHttps:
-    case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleHostIsIPAddress:
     case PrefetchProxyPrefetchStatus::
         kPrefetchNotEligibleNonDefaultStoragePartition:
     case PrefetchProxyPrefetchStatus::kPrefetchNotFinishedInTime:
@@ -481,6 +495,7 @@ PrefetchProxyTabHelper::MaybeUpdatePrefetchStatusWithNSPContext(
     case PrefetchProxyPrefetchStatus::kPrefetchIsPrivacyDecoy:
     case PrefetchProxyPrefetchStatus::kPrefetchNotUsedCookiesChanged:
     case PrefetchProxyPrefetchStatus::kPrefetchFailedRedirectsDisabled:
+    case PrefetchProxyPrefetchStatus::kPrefetchNotEligibleHostIsNonUnique:
       return prefetch_container->GetPrefetchStatus();
     // These statuses we are going to update to, and this is the only place that
     // they are set so they are not expected to be passed in.
@@ -822,6 +837,11 @@ void PrefetchProxyTabHelper::StartSinglePrefetch() {
   request->load_flags = net::LOAD_DISABLE_CACHE | net::LOAD_PREFETCH;
   request->credentials_mode = network::mojom::CredentialsMode::kInclude;
   request->headers.SetHeader(content::kCorsExemptPurposeHeaderName, "prefetch");
+  request->headers.SetHeader(
+      prefetch::headers::kSecPurposeHeaderName,
+      prefetch_container->GetPrefetchType().IsProxyRequired()
+          ? prefetch::headers::kSecPurposePrefetchAnonymousClientIpHeaderValue
+          : prefetch::headers::kSecPurposePrefetchHeaderValue);
   // Remove the user agent header if it was set so that the network context's
   // default is used.
   request->headers.RemoveHeader("User-Agent");
@@ -1237,12 +1257,18 @@ void PrefetchProxyTabHelper::PrefetchSpeculationCandidates(
     return;
 
   // For IP-private prefetches, using the Google proxy needs to be restricted to
-  // first party sites until we understand the benefit and determine interest
-  // from other sites.
+  // first party sites unless users opted-in to extended preloading.
   std::vector<std::pair<GURL, PrefetchType>> filtered_prefetches = prefetches;
-  if (!PrefetchProxyAllowAllDomains() &&
+  const bool allow_all_domains =
+      PrefetchProxyAllowAllDomains() ||
+      (PrefetchProxyAllowAllDomainsForExtendedPreloading() &&
+       prefetch::GetPreloadPagesState(*profile_->GetPrefs()) ==
+           prefetch::PreloadPagesState::kExtendedPreloading);
+  if (!allow_all_domains &&
       !IsGoogleDomainUrl(source_document_url, google_util::ALLOW_SUBDOMAIN,
-                         google_util::ALLOW_NON_STANDARD_PORTS)) {
+                         google_util::ALLOW_NON_STANDARD_PORTS) &&
+      !IsYoutubeDomainUrl(source_document_url, google_util::ALLOW_SUBDOMAIN,
+                          google_util::ALLOW_NON_STANDARD_PORTS)) {
     // Filter out prefetches that require the Google proxy.
     auto new_end =
         std::remove_if(filtered_prefetches.begin(), filtered_prefetches.end(),
@@ -1384,10 +1410,16 @@ PrefetchProxyTabHelper::CheckEligibilityOfURLSansUserData(
         false, PrefetchProxyPrefetchStatus::kPrefetchNotEligibleGoogleDomain);
   }
 
-  if (url.HostIsIPAddress()) {
+  // While a registry-controlled domain could still resolve to a non-publicly
+  // routable IP, this allows hosts which are very unlikely to work via the
+  // proxy to be discarded immediately.
+  if (prefetch_type.IsProxyRequired() &&
+      (g_host_non_unique_filter
+           ? g_host_non_unique_filter(url.HostNoBracketsPiece())
+           : net::IsHostnameNonUnique(url.HostNoBrackets()))) {
     return std::make_pair(
         false,
-        PrefetchProxyPrefetchStatus::kPrefetchNotEligibleHostIsIPAddress);
+        PrefetchProxyPrefetchStatus::kPrefetchNotEligibleHostIsNonUnique);
   }
 
   if (!url.SchemeIs(url::kHttpsScheme)) {

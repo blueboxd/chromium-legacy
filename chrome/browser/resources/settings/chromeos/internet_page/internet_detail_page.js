@@ -32,6 +32,7 @@ import '../../prefs/prefs.js';
 import './cellular_roaming_toggle_button.js';
 import './internet_shared_css.js';
 import './network_proxy_section.js';
+import './settings_traffic_counters.js';
 import './tether_connection_dialog.js';
 
 import {getSimSlotCount, hasActiveCellularNetwork, isActiveSim, isConnectedToNonCellularNetwork} from '//resources/cr_components/chromeos/network/cellular_utils.m.js';
@@ -295,6 +296,15 @@ Polymer({
       }
     },
 
+    /** @private {boolean} */
+    isTrafficCountersHandlerEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.valueExists('trafficCountersHandlerEnabled') &&
+            loadTimeData.getBoolean('trafficCountersHandlerEnabled');
+      }
+    },
+
     /**
      * When true, all inputs that allow state to be changed (e.g., toggles,
      * inputs) are disabled.
@@ -313,6 +323,9 @@ Polymer({
 
     /** @private */
     proxyExpanded_: Boolean,
+
+    /** @private */
+    dataUsageExpanded_: Boolean,
 
     /**
      * Used by DeepLinkingBehavior to focus this page's deep links.
@@ -682,7 +695,9 @@ Polymer({
     }
 
     // Set the IPAddress property to the IPv4 Address.
-    const ipv4 = OncMojo.getIPConfigForType(this.managedProperties_, 'IPv4');
+    const ipv4 = OncMojo.getIPConfigForType(
+        this.managedProperties_,
+        chromeos.networkConfig.mojom.IPConfigType.kIPv4);
     this.ipAddress_ = (ipv4 && ipv4.ipAddress) || '';
 
     // Update the detail page title.
@@ -2127,7 +2142,7 @@ Polymer({
     for (let i = 0; i < fields.length; ++i) {
       const key = OncMojo.getManagedPropertyKey(fields[i]);
       const value = this.get(key, this.managedProperties_);
-      if (value !== undefined && value !== '') {
+      if (value !== undefined && value !== null && value !== '') {
         return true;
       }
     }
@@ -2241,6 +2256,22 @@ Polymer({
             'wifi.eap.identity', 'wifi.eap.anonymousIdentity',
             'wifi.frequency');
         break;
+      case chromeos.networkConfig.mojom.NetworkType.kVPN:
+        const vpnType = this.managedProperties_.typeProperties.vpn.type;
+        switch (vpnType) {
+          case chromeos.networkConfig.mojom.VpnType.kOpenVPN:
+            if (this.isManagedByPolicy_()) {
+              // TODO(b/215180522): Clean up the guard once this is launched.
+              if (this.isExtendedOpenVpnSettingsEnabled_) {
+                fields.push(
+                    'vpn.openVpn.auth', 'vpn.openVpn.cipher',
+                    'vpn.openVpn.compressionAlgorithm',
+                    'vpn.openVpn.tlsAuthContents', 'vpn.openVpn.keyDirection');
+              }
+            }
+            break;
+        }
+        break;
     }
     return fields;
   },
@@ -2270,6 +2301,19 @@ Polymer({
         'cellular.min');
 
     return fields;
+  },
+
+  /**
+   * @return {boolean} Whether data usage should be displayed.
+   * @private
+   */
+  showDataUsage_(managedProperties) {
+    if (!this.isTrafficCountersHandlerEnabled_) {
+      return false;
+    }
+    return managedProperties && this.guid !== '' &&
+        this.isCellular_(managedProperties) &&
+        this.isConnectedState_(managedProperties);
   },
 
   /**
@@ -2536,5 +2580,15 @@ Polymer({
     }
 
     return '';
+  },
+
+  /**
+   * @returns {boolean}
+   * @private
+   */
+  isManagedByPolicy_() {
+    const OncSource = chromeos.networkConfig.mojom.OncSource;
+    return this.managedProperties_.source === OncSource.kUserPolicy ||
+        this.managedProperties_.source === OncSource.kDevicePolicy;
   }
 });

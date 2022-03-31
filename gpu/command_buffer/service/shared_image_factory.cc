@@ -34,6 +34,10 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/trace_util.h"
 
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "gpu/command_buffer/service/shared_image_backing_factory_angle_vulkan.h"
+#endif
+
 #if BUILDFLAG(IS_LINUX) && defined(USE_OZONE) && BUILDFLAG(ENABLE_VULKAN)
 #include "ui/ozone/public/ozone_platform.h"
 #endif
@@ -41,7 +45,6 @@
 #if (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_WIN)) && \
     BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/command_buffer/service/external_vk_image_factory.h"
-#include "gpu/command_buffer/service/shared_image_backing_factory_angle_vulkan.h"
 #elif BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/command_buffer/service/external_vk_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_backing_factory_ahardwarebuffer.h"
@@ -160,13 +163,6 @@ SharedImageFactory::SharedImageFactory(
             shared_context_state_ ? shared_context_state_->progress_reporter()
                                   : nullptr);
     factories_.push_back(std::move(gl_texture_backing_factory));
-
-#if BUILDFLAG(IS_ANDROID)
-    auto egl_backing_factory = std::make_unique<SharedImageBackingFactoryEGL>(
-        gpu_preferences, workarounds, gpu_feature_info,
-        shared_image_manager->batch_access_manager());
-    factories_.push_back(std::move(egl_backing_factory));
-#endif
   }
 
 #if BUILDFLAG(IS_WIN)
@@ -196,60 +192,79 @@ SharedImageFactory::SharedImageFactory(
     factories_.push_back(std::move(gl_image_backing_factory));
   }
 
-  // TODO(ccameron): This block of code should be changed to a switch on
-  // |gr_context_type|.
-  if (gr_context_type_ == GrContextType::kVulkan) {
 #if BUILDFLAG(ENABLE_VULKAN)
-#if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_ASH) && \
-    !BUILDFLAG(IS_CHROMEOS_LACROS) && !BUILDFLAG(IS_CHROMECAST)
-    // Desktop Linux, not ChromeOS.
-    if (base::FeatureList::IsEnabled(features::kVulkanFromANGLE)) {
-      auto factory = std::make_unique<SharedImageBackingFactoryAngleVulkan>(
-          gpu_preferences, workarounds, gpu_feature_info, context_state);
-      factories_.push_back(std::move(factory));
-    } else if (ShouldUseExternalVulkanImageFactory()) {
-      auto external_vk_image_factory =
-          std::make_unique<ExternalVkImageFactory>(context_state);
-      factories_.push_back(std::move(external_vk_image_factory));
-    } else {
-      LOG(ERROR) << "ERROR: gr_context_type_ is GrContextType::kVulkan and "
-                    "interop_backing_factory_ is not set";
-    }
-#elif BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_WIN)
+  // If Chrome and ANGLE are sharing the same vulkan device queue, AngleVulkan
+  // backing will be used for interop.
+  if ((gr_context_type_ == GrContextType::kVulkan) &&
+      (base::FeatureList::IsEnabled(features::kVulkanFromANGLE))) {
+    auto factory = std::make_unique<SharedImageBackingFactoryAngleVulkan>(
+        gpu_preferences, workarounds, gpu_feature_info, context_state);
+    factories_.push_back(std::move(factory));
+  }
+#endif
+
+#if BUILDFLAG(IS_WIN)
+  if (gr_context_type_ == GrContextType::kVulkan) {
     auto external_vk_image_factory =
         std::make_unique<ExternalVkImageFactory>(context_state);
     factories_.push_back(std::move(external_vk_image_factory));
+  }
 #elif BUILDFLAG(IS_ANDROID)
+  if (use_gl) {
+    auto egl_backing_factory = std::make_unique<SharedImageBackingFactoryEGL>(
+        gpu_preferences, workarounds, gpu_feature_info,
+        shared_image_manager->batch_access_manager());
+    factories_.push_back(std::move(egl_backing_factory));
+  }
+  bool is_ahb_supported =
+      base::AndroidHardwareBufferCompat::IsSupportAvailable();
+  if (gr_context_type_ == GrContextType::kVulkan) {
     const auto& enabled_extensions = context_state->vk_context_provider()
                                          ->GetDeviceQueue()
                                          ->enabled_extensions();
-    if (gfx::HasExtension(
+    is_ahb_supported =
+        is_ahb_supported &&
+        gfx::HasExtension(
             enabled_extensions,
-            VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME)) {
-      auto ahb_factory = std::make_unique<SharedImageBackingFactoryAHB>(
-          workarounds, gpu_feature_info);
-      factories_.push_back(std::move(ahb_factory));
-    }
-    // For Android
+            VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME);
+  }
+  if (is_ahb_supported) {
+    auto ahb_factory = std::make_unique<SharedImageBackingFactoryAHB>(
+        workarounds, gpu_feature_info);
+    factories_.push_back(std::move(ahb_factory));
+  }
+  if (gr_context_type_ == GrContextType::kVulkan &&
+      !base::FeatureList::IsEnabled(features::kVulkanFromANGLE)) {
     auto external_vk_image_factory =
         std::make_unique<ExternalVkImageFactory>(context_state);
     factories_.push_back(std::move(external_vk_image_factory));
-#endif  // BUILDFLAG(IS_ANDROID)
-#else   // BUILDFLAG(ENABLE_VULKAN)
-    // Others (ChromeOS is handled below for compat with WebGPU)
-    LOG(ERROR) << "ERROR: gr_context_type_ is GrContextType::kVulkan and "
-                  "interop_backing_factory_ is not set";
-#endif  // BUILDFLAG(ENABLE_VULKAN)
-  } else {
-    // gr_context_type_ != GrContextType::kVulkan
-#if BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_VULKAN)
-    if (base::AndroidHardwareBufferCompat::IsSupportAvailable()) {
-      auto ahb_factory = std::make_unique<SharedImageBackingFactoryAHB>(
-          workarounds, gpu_feature_info);
-      factories_.push_back(std::move(ahb_factory));
-    }
-#endif
   }
+#elif defined(USE_OZONE)
+#if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_ASH) && \
+    !BUILDFLAG(IS_CHROMEOS_LACROS) && !BUILDFLAG(IS_CHROMECAST)
+  // Desktop Linux, not ChromeOS.
+  if (gr_context_type_ == GrContextType::kVulkan &&
+      ShouldUseExternalVulkanImageFactory()) {
+    auto external_vk_image_factory =
+        std::make_unique<ExternalVkImageFactory>(context_state);
+    factories_.push_back(std::move(external_vk_image_factory));
+  }
+#elif BUILDFLAG(IS_FUCHSIA)
+  if (gr_context_type_ == GrContextType::kVulkan) {
+    auto external_vk_image_factory =
+        std::make_unique<ExternalVkImageFactory>(context_state);
+    factories_.push_back(std::move(external_vk_image_factory));
+  }
+  vulkan_context_provider_ = context_state->vk_context_provider();
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
+  if (gpu_preferences.enable_webgpu ||
+      gr_context_type_ == GrContextType::kVulkan) {
+    auto ozone_factory =
+        std::make_unique<SharedImageBackingFactoryOzone>(context_state);
+    factories_.push_back(std::move(ozone_factory));
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(USE_OZONE)
 
   // TODO(hitawala): Temporary factory that will be replaced with Ozone and
   // other backings
@@ -262,19 +277,6 @@ SharedImageFactory::SharedImageFactory(
             /*for_shared_memory_gmbs=*/false);
     factories_.push_back(std::move(gl_image_backing_factory));
   }
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (gpu_preferences.enable_webgpu ||
-      gr_context_type_ == GrContextType::kVulkan) {
-    auto ozone_factory =
-        std::make_unique<SharedImageBackingFactoryOzone>(context_state);
-    factories_.push_back(std::move(ozone_factory));
-  }
-#endif  // IS_CHROMEOS_ASH
-
-#if BUILDFLAG(IS_FUCHSIA)
-  vulkan_context_provider_ = context_state->vk_context_provider();
-#endif  // BUILDFLAG(IS_FUCHSIA)
 }
 
 SharedImageFactory::~SharedImageFactory() {
@@ -554,6 +556,12 @@ void SharedImageFactory::RegisterSharedImageBackingFactoryForTesting(
 bool SharedImageFactory::IsSharedBetweenThreads(uint32_t usage) {
   // Ignore for mipmap usage.
   usage &= ~SHARED_IMAGE_USAGE_MIPMAP;
+
+  // Raw Draw backings will be write accessed on the GPU main thread, and
+  // be read accessed on the compositor thread.
+  if (usage & SHARED_IMAGE_USAGE_RAW_DRAW)
+    return true;
+
   // If |shared_image_manager_| is thread safe, it means the display is
   // running on a separate thread (which uses a separate GL context or
   // VkDeviceQueue).
@@ -678,5 +686,13 @@ std::unique_ptr<SharedImageRepresentationRaster>
 SharedImageRepresentationFactory::ProduceRaster(const Mailbox& mailbox) {
   return manager_->ProduceRaster(mailbox, tracker_.get());
 }
+
+#if BUILDFLAG(IS_ANDROID)
+std::unique_ptr<SharedImageRepresentationLegacyOverlay>
+SharedImageRepresentationFactory::ProduceLegacyOverlay(
+    const gpu::Mailbox& mailbox) {
+  return manager_->ProduceLegacyOverlay(mailbox, tracker_.get());
+}
+#endif
 
 }  // namespace gpu

@@ -18,7 +18,6 @@
 #include "components/send_tab_to_self/features.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/glue/sync_transport_data_prefs.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service_impl.h"
 #include "content/public/test/browser_test.h"
 
@@ -38,10 +37,7 @@ syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
       syncer::DEVICE_INFO, syncer::USER_CONSENTS, syncer::SECURITY_EVENTS,
       syncer::AUTOFILL_WALLET_DATA, syncer::SHARING_MESSAGE);
   allowed_types.PutAll(syncer::ControlTypes());
-  if (base::FeatureList::IsEnabled(
-          send_tab_to_self::kSendTabToSelfWhenSignedIn)) {
-    allowed_types.Put(syncer::SEND_TAB_TO_SELF);
-  }
+  allowed_types.Put(syncer::SEND_TAB_TO_SELF);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // OS sync types run in transport mode.
   if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
@@ -51,9 +47,7 @@ syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
                           syncer::OS_PRIORITY_PREFERENCES, syncer::WEB_APPS,
                           syncer::WORKSPACE_DESK});
   }
-  if (base::FeatureList::IsEnabled(switches::kSyncWifiConfigurations)) {
-    allowed_types.Put(syncer::WIFI_CONFIGURATIONS);
-  }
+  allowed_types.Put(syncer::WIFI_CONFIGURATIONS);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   return allowed_types;
 }

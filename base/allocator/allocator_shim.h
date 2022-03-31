@@ -44,14 +44,14 @@ namespace allocator {
 //   consists of a single AllocatorDispatch element, herein called
 //   the "default dispatch", which is statically defined at build time and
 //   ultimately routes the calls to the actual allocator defined by the build
-//   config (tcmalloc, glibc, ...).
+//   config (glibc, ...).
 //
 // It is possible to dynamically insert further AllocatorDispatch stages
 // to the front of the chain, for debugging / profiling purposes.
 //
 // All the functions must be thread safe. The shim does not enforce any
-// serialization. This is to route to thread-aware allocators (e.g, tcmalloc)
-// wihout introducing unnecessary perf hits.
+// serialization. This is to route to thread-aware allocators without
+// introducing unnecessary perf hits.
 
 struct AllocatorDispatch {
   using AllocFn = void*(const AllocatorDispatch* self,
@@ -177,6 +177,8 @@ using EnableBrp = base::StrongAlias<class EnableBrpTag, bool>;
 using SplitMainPartition = base::StrongAlias<class SplitMainPartitionTag, bool>;
 using UseDedicatedAlignedPartition =
     base::StrongAlias<class UseDedicatedAlignedPartitionTag, bool>;
+using AlternateBucketDistribution =
+    base::StrongAlias<class AlternateBucketDistributionTag, bool>;
 
 // If |thread_cache_on_non_quarantinable_partition| is specified, the
 // thread-cache will be enabled on the non-quarantinable partition. The
@@ -184,7 +186,8 @@ using UseDedicatedAlignedPartition =
 BASE_EXPORT void ConfigurePartitions(
     EnableBrp enable_brp,
     SplitMainPartition split_main_partition,
-    UseDedicatedAlignedPartition use_dedicated_aligned_partition);
+    UseDedicatedAlignedPartition use_dedicated_aligned_partition,
+    AlternateBucketDistribution use_alternate_bucket_distribution);
 
 #if defined(PA_ALLOW_PCSCAN)
 BASE_EXPORT void EnablePCScan(base::internal::PCScan::InitConfig);

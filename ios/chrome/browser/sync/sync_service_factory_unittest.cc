@@ -11,10 +11,10 @@
 #include "base/command_line.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "components/browser_sync/browser_sync_switches.h"
+#include "components/sync/base/command_line_switches.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/data_type_controller.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service_impl.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
@@ -92,7 +92,7 @@ class SyncServiceFactoryTest : public PlatformTest {
 
 // Verify that the disable sync flag disables creation of the sync service.
 TEST_F(SyncServiceFactoryTest, DisableSyncFlag) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSync);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(syncer::kDisableSync);
   EXPECT_FALSE(SyncServiceFactory::GetForBrowserState(chrome_browser_state()));
 }
 

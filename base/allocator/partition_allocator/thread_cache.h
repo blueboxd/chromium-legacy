@@ -29,11 +29,7 @@
 #include <algorithm>
 #endif
 
-namespace base {
-
-namespace internal {
-
-namespace tools {
+namespace partition_alloc::internal::tools {
 
 // This is used from ThreadCacheInspector, which runs in a different process. It
 // scans the process memory looking for the two needles, to locate the thread
@@ -57,11 +53,16 @@ constexpr uintptr_t kNeedle2 = 0x9615ee1c;
 // It is refererenced in the thread cache constructor to make sure it is not
 // removed by the compiler. It is also not const to make sure it ends up in
 // .data.
-extern uintptr_t kThreadCacheNeedleArray[3];
+constexpr size_t kThreadCacheNeedleArraySize = 4;
+extern uintptr_t kThreadCacheNeedleArray[kThreadCacheNeedleArraySize];
 
 class ThreadCacheInspector;
 
-}  // namespace tools
+}  // namespace partition_alloc::internal::tools
+
+namespace base {
+
+namespace internal {
 
 class ThreadCache;
 
@@ -146,7 +147,7 @@ class BASE_EXPORT ThreadCacheRegistry {
   static constexpr size_t kMinCachedMemoryForPurging = 500 * 1024;
 
  private:
-  friend class tools::ThreadCacheInspector;
+  friend class partition_alloc::internal::tools::ThreadCacheInspector;
   friend class NoDestructor<ThreadCacheRegistry>;
   // Not using base::Lock as the object's constructor must be constexpr.
   PartitionLock lock_;
@@ -314,7 +315,7 @@ class BASE_EXPORT ThreadCache {
       ThreadCacheLimits::kLargeSizeThreshold;
 
  private:
-  friend class tools::ThreadCacheInspector;
+  friend class partition_alloc::internal::tools::ThreadCacheInspector;
 
   struct Bucket {
     PartitionFreelistEntry* freelist_head = nullptr;
@@ -396,7 +397,7 @@ class BASE_EXPORT ThreadCache {
 
   friend class ThreadCacheRegistry;
   friend class PartitionAllocThreadCacheTest;
-  friend class tools::ThreadCacheInspector;
+  friend class partition_alloc::internal::tools::ThreadCacheInspector;
   FRIEND_TEST_ALL_PREFIXES(PartitionAllocThreadCacheTest, Simple);
   FRIEND_TEST_ALL_PREFIXES(PartitionAllocThreadCacheTest,
                            MultipleObjectsCachedPerBucket);
@@ -504,7 +505,7 @@ ALWAYS_INLINE uintptr_t ThreadCache::GetFromCache(size_t bucket_index,
 
 ALWAYS_INLINE void ThreadCache::PutInBucket(Bucket& bucket,
                                             uintptr_t slot_start) {
-#if defined(PA_HAS_FREELIST_HARDENING) && defined(ARCH_CPU_X86_64) && \
+#if defined(PA_HAS_FREELIST_SHADOW_ENTRY) && defined(ARCH_CPU_X86_64) && \
     defined(PA_HAS_64_BITS_POINTERS)
   // We see freelist corruption crashes happening in the wild.  These are likely
   // due to out-of-bounds accesses in the previous slot, or to a Use-After-Free
@@ -536,7 +537,17 @@ ALWAYS_INLINE void ThreadCache::PutInBucket(Bucket& bucket,
       "The computation below assumes that cache lines are 64 bytes long.");
   int distance_to_next_cacheline_in_16_bytes = 4 - ((address >> 4) & 3);
   int slot_size_remaining_in_16_bytes =
-      std::min(bucket.slot_size / 16, distance_to_next_cacheline_in_16_bytes);
+#if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
+      // When BRP is on in the "previous slot" mode, this slot may have a BRP
+      // ref-count of the next, potentially allocated slot. Make sure we don't
+      // overwrite it.
+      (bucket.slot_size - sizeof(PartitionRefCount)) / 16;
+#else
+      bucket.slot_size / 16;
+#endif  // BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
+
+  slot_size_remaining_in_16_bytes = std::min(
+      slot_size_remaining_in_16_bytes, distance_to_next_cacheline_in_16_bytes);
 
   static const uint32_t poison_16_bytes[4] = {0xdeadbeef, 0xdeadbeef,
                                               0xdeadbeef, 0xdeadbeef};
@@ -547,10 +558,10 @@ ALWAYS_INLINE void ThreadCache::PutInBucket(Bucket& bucket,
     memcpy(address_aligned, poison_16_bytes, sizeof(poison_16_bytes));
     address_aligned += 4;
   }
-#endif  // defined(PA_HAS_FREELIST_HARDENING) && defined(ARCH_CPU_X86_64) &&
+#endif  // defined(PA_HAS_FREELIST_SHADOW_ENTRY) && defined(ARCH_CPU_X86_64) &&
         // defined(PA_HAS_64_BITS_POINTERS)
 
-  auto* entry = PartitionFreelistEntry::InitForThreadCache(
+  auto* entry = PartitionFreelistEntry::EmplaceAndInitForThreadCache(
       slot_start, bucket.freelist_head);
   bucket.freelist_head = entry;
   bucket.count++;

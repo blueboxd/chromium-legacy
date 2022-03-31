@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_param_timeline.h"
 
 #include <algorithm>
+#include <limits>
 #include <memory>
 
 #include "base/memory/ptr_util.h"
@@ -541,7 +542,6 @@ void AudioParamTimeline::InsertEvent(std::unique_ptr<ParamEvent> event,
   DCHECK(std::isfinite(event->Duration()));
   DCHECK_GE(event->Duration(), 0);
 
-  unsigned i = 0;
   double insert_time = event->Time();
 
   if (!events_.size() &&
@@ -556,13 +556,39 @@ void AudioParamTimeline::InsertEvent(std::unique_ptr<ParamEvent> event,
     new_events_.insert(events_[0].get());
   }
 
-  for (i = 0; i < events_.size(); ++i) {
-    if (event->GetType() == ParamEvent::kSetValueCurve) {
-      // If this event is a SetValueCurve, make sure it doesn't overlap any
-      // existing event. It's ok if the SetValueCurve starts at the same time as
-      // the end of some other duration.
-      double end_time = event->Time() + event->Duration();
+  if (events_.IsEmpty()) {
+    events_.insert(0, std::move(event));
+    new_events_.insert(events_[0].get());
+    return;
+  }
+
+  // Most of the time, we must insert after the last event. If the time of the
+  // last event is greater than the insert_time, use binary search to find the
+  // insertion point.
+  wtf_size_t insertion_idx = events_.size();
+  DCHECK_GT(insertion_idx, wtf_size_t{0});
+  wtf_size_t ub = insertion_idx - 1;  // upper bound of events that can overlap.
+  if (events_.back()->Time() > insert_time) {
+    auto* it = std::upper_bound(
+        events_.begin(), events_.end(), insert_time,
+        [](const double value, const std::unique_ptr<ParamEvent>& entry) {
+          return value < entry->Time();
+        });
+    insertion_idx = static_cast<wtf_size_t>(std::distance(events_.begin(), it));
+    DCHECK_LT(insertion_idx, events_.size());
+    ub = insertion_idx;
+  }
+  DCHECK_LT(ub, static_cast<wtf_size_t>(std::numeric_limits<int>::max()));
+
+  if (event->GetType() == ParamEvent::kSetValueCurve) {
+    double end_time = event->Time() + event->Duration();
+    for (int i = ub; i >= 0; i--) {
       ParamEvent::Type test_type = events_[i]->GetType();
+      // Events of type |kSetValueCurveEnd| or |kCancelValues| never conflict.
+      if (test_type == ParamEvent::kSetValueCurveEnd ||
+          test_type == ParamEvent::kCancelValues) {
+        continue;
+      }
       if (test_type == ParamEvent::kSetValueCurve) {
         // A SetValueCurve overlapping an existing SetValueCurve requires
         // special care.
@@ -581,10 +607,9 @@ void AudioParamTimeline::InsertEvent(std::unique_ptr<ParamEvent> event,
                   EventToString(*events_[i]));
           return;
         }
-      } else if (test_type != ParamEvent::kSetValueCurveEnd &&
-                 test_type != ParamEvent::kCancelValues) {
-        // Events of type |kSetValueCurveEnd| or |kCancelValues| never
-        // conflict, so we handle only the other event types.
+      } else {
+        // Here we handle existing events of types other than
+        // |kSetValueCurveEnd|, |kCancelValues| and |kSetValueCurve|.
         // Throw an error if an existing event starts in the middle of this
         // SetValueCurve event.
         if (events_[i]->Time() > event->Time() &&
@@ -596,10 +621,28 @@ void AudioParamTimeline::InsertEvent(std::unique_ptr<ParamEvent> event,
           return;
         }
       }
-    } else {
-      // Otherwise, make sure this event doesn't overlap any existing
-      // SetValueCurve event.
-      if (events_[i]->GetType() == ParamEvent::kSetValueCurve) {
+      if (events_[i]->Time() < insert_time) {
+        // We found an existing event, E, of type other than |kSetValueCurveEnd|
+        // or |kCancelValues| that starts before the new event of type
+        // |kSetValueCurve| that we want to insert. No earlier existing event
+        // can overlap with the new event. An overlapping |kSetValueCurve| would
+        // have ovelapped with E too, so one of them would not be inserted.
+        // Other event types overlap with the new |kSetValueCurve| event only if
+        // they start in the middle of the new event, which is not the case.
+        break;
+      }
+    }
+  } else {
+    // Not a |SetValueCurve| new event. Make sure this new event doesn't overlap
+    // any existing |SetValueCurve| event.
+    for (int i = ub; i >= 0; i--) {
+      ParamEvent::Type test_type = events_[i]->GetType();
+      // Events of type |kSetValueCurveEnd| or |kCancelValues| never conflict.
+      if (test_type == ParamEvent::kSetValueCurveEnd ||
+          test_type == ParamEvent::kCancelValues) {
+        continue;
+      }
+      if (test_type == ParamEvent::kSetValueCurve) {
         double end_time = events_[i]->Time() + events_[i]->Duration();
         if (event->GetType() != ParamEvent::kSetValueCurveEnd &&
             event->Time() >= events_[i]->Time() && event->Time() < end_time) {
@@ -610,15 +653,18 @@ void AudioParamTimeline::InsertEvent(std::unique_ptr<ParamEvent> event,
           return;
         }
       }
-    }
-
-    if (events_[i]->Time() > insert_time) {
-      break;
+      if (events_[i]->Time() < insert_time) {
+        // We found an existing event, E, of type other than |kSetValueCurveEnd|
+        // or |kCancelValues| that starts before the new event that we want to
+        // insert. No earlier event of type |kSetValueCurve| can overlap with
+        // the new event, because it would have overlapped with E too.
+        break;
+      }
     }
   }
 
-  events_.insert(i, std::move(event));
-  new_events_.insert(events_[i].get());
+  events_.insert(insertion_idx, std::move(event));
+  new_events_.insert(events_[insertion_idx].get());
 }
 
 bool AudioParamTimeline::HasValues(size_t current_frame,
@@ -970,14 +1016,11 @@ float AudioParamTimeline::ValuesForFrameRangeImpl(
   }
 
   // Maintain a running time (frame) and index for writing the values buffer.
-  size_t current_frame = start_frame;
-  unsigned write_index = 0;
-
   // If first event is after startFrame then fill initial part of values buffer
   // with defaultValue until we reach the first event time.
-  std::tie(current_frame, write_index) =
+  auto [current_frame, write_index] =
       HandleFirstEvent(values, default_value, number_of_values, start_frame,
-                       end_frame, sample_rate, current_frame, write_index);
+                       end_frame, sample_rate, start_frame, 0);
 
   float value = default_value;
 
@@ -1000,23 +1043,19 @@ float AudioParamTimeline::ValuesForFrameRangeImpl(
     }
 
     // If there's no next event, set nextEventType to LastType to indicate that.
-    ParamEvent::Type next_event_type =
+    ProcessSetTargetFollowedByRamp(
+        i, event,
         next_event ? static_cast<ParamEvent::Type>(next_event->GetType())
-                   : ParamEvent::kLastType;
-
-    ProcessSetTargetFollowedByRamp(i, event, next_event_type, current_frame,
-                                   sample_rate, control_rate, value);
+                   : ParamEvent::kLastType,
+        current_frame, sample_rate, control_rate, value);
 
     float value1 = event->Value();
     double time1 = event->Time();
 
-    float value2 = next_event ? next_event->Value() : value1;
-    double time2 =
-        next_event ? next_event->Time() : end_frame / sample_rate + 1;
-
     // Check to see if an event was cancelled.
-    std::tie(value2, time2, next_event_type) =
-        HandleCancelValues(event, next_event, value2, time2);
+    auto [value2, time2, next_event_type] = HandleCancelValues(
+        event, next_event, next_event ? next_event->Value() : value1,
+        next_event ? next_event->Time() : end_frame / sample_rate + 1);
 
     DCHECK(!std::isnan(value1));
     DCHECK(!std::isnan(value2));
@@ -1848,8 +1887,10 @@ std::tuple<size_t, float, unsigned> AudioParamTimeline::ProcessSetValueCurve(
       // curveIndex0 by more than one.  This can happen when we reached
       // the end of the curve but still need values to fill out the
       // current rendering quantum.
-      _mm_storeu_si128((__m128i*)a_curve_index0, v_curve_index0);
-      _mm_storeu_si128((__m128i*)a_curve_index1, v_curve_index1);
+      _mm_storeu_si128(reinterpret_cast<__m128i*>(a_curve_index0),
+                       v_curve_index0);
+      _mm_storeu_si128(reinterpret_cast<__m128i*>(a_curve_index1),
+                       v_curve_index1);
       __m128 v_c0 = _mm_set_ps(
           curve_data[a_curve_index0[3]], curve_data[a_curve_index0[2]],
           curve_data[a_curve_index0[1]], curve_data[a_curve_index0[0]]);

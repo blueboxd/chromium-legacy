@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "ash/utility/transformer_util.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/system/sys_info.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -335,7 +336,11 @@ class PartialBoundsRootWindowTransformer : public RootWindowTransformer {
     transform_.Scale(scale, scale);
     transform_.Translate(-SkIntToScalar(display.bounds().x()),
                          -SkIntToScalar(display.bounds().y()));
-    gfx::Transform rotation = CreateRootWindowRotationTransform(display);
+    // Scaling using physical root bounds here, because rotation is applied
+    // before device_scale_factor is applied.
+    gfx::Transform rotation = CreateRotationTransform(
+        display::Display::ROTATE_0, display.panel_rotation(),
+        gfx::SizeF(root_bounds_.size()));
     CHECK((rotation * transform_).GetInverse(&invert_transform_));
   }
 
@@ -358,6 +363,8 @@ class PartialBoundsRootWindowTransformer : public RootWindowTransformer {
   }
 
  private:
+  ~PartialBoundsRootWindowTransformer() override = default;
+
   gfx::Transform transform_;
   gfx::Transform invert_transform_;
   gfx::Rect root_bounds_;
@@ -365,22 +372,26 @@ class PartialBoundsRootWindowTransformer : public RootWindowTransformer {
 
 }  // namespace
 
-RootWindowTransformer* CreateRootWindowTransformerForDisplay(
+std::unique_ptr<RootWindowTransformer> CreateRootWindowTransformerForDisplay(
     const display::Display& display) {
-  return new AshRootWindowTransformer(display);
+  return base::WrapUnique<RootWindowTransformer>(
+      new AshRootWindowTransformer(display));
 }
 
-RootWindowTransformer* CreateRootWindowTransformerForMirroredDisplay(
+std::unique_ptr<RootWindowTransformer>
+CreateRootWindowTransformerForMirroredDisplay(
     const display::ManagedDisplayInfo& source_display_info,
     const display::ManagedDisplayInfo& mirror_display_info) {
-  return new MirrorRootWindowTransformer(source_display_info,
-                                         mirror_display_info);
+  return base::WrapUnique<RootWindowTransformer>(
+      new MirrorRootWindowTransformer(source_display_info,
+                                      mirror_display_info));
 }
 
-RootWindowTransformer* CreateRootWindowTransformerForUnifiedDesktop(
-    const gfx::Rect& screen_bounds,
-    const display::Display& display) {
-  return new PartialBoundsRootWindowTransformer(screen_bounds, display);
+std::unique_ptr<RootWindowTransformer>
+CreateRootWindowTransformerForUnifiedDesktop(const gfx::Rect& screen_bounds,
+                                             const display::Display& display) {
+  return base::WrapUnique<RootWindowTransformer>(
+      new PartialBoundsRootWindowTransformer(screen_bounds, display));
 }
 
 }  // namespace ash

@@ -12,6 +12,7 @@
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "printing/backend/print_backend.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/mojom/print.mojom.h"
 #include "printing/print_settings.h"
@@ -61,8 +62,17 @@ void TestPrintingContext::AskUserForSettings(int max_pages,
 }
 
 mojom::ResultCode TestPrintingContext::UseDefaultSettings() {
-  NOTIMPLEMENTED();
-  return mojom::ResultCode::kFailed;
+  scoped_refptr<PrintBackend> print_backend =
+      PrintBackend::CreateInstance(/*locale=*/std::string());
+  std::string printer_name;
+  mojom::ResultCode result = print_backend->GetDefaultPrinterName(printer_name);
+  if (result != mojom::ResultCode::kSuccess)
+    return result;
+  auto found = device_settings_.find(printer_name);
+  if (found == device_settings_.end())
+    return mojom::ResultCode::kFailed;
+  settings_ = std::make_unique<PrintSettings>(*found->second);
+  return mojom::ResultCode::kSuccess;
 }
 
 gfx::Size TestPrintingContext::GetPdfPaperSizeDeviceUnits() {
@@ -148,6 +158,9 @@ mojom::ResultCode TestPrintingContext::PrintDocument(
 mojom::ResultCode TestPrintingContext::DocumentDone() {
   DCHECK(in_print_job_);
   DVLOG(1) << "Document done";
+
+  if (document_done_blocked_by_permissions_)
+    return mojom::ResultCode::kAccessDenied;
 
   ResetSettings();
   return mojom::ResultCode::kSuccess;

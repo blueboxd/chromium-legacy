@@ -15,7 +15,6 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/model/enterprise_domain_model.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/tray_constants.h"
@@ -23,6 +22,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -125,16 +125,10 @@ void CastDetailedView::UpdateReceiverListFromCachedData() {
   }
 
   if (CastConfigController::Get()->AccessCodeCastingEnabled()) {
-    EnterpriseDomainModel* enterprise_domain =
-        Shell::Get()->system_tray_model()->enterprise_domain();
-    const std::string& org_name = enterprise_domain->account_domain_manager();
-    DCHECK(!org_name.empty())
-        << "account_domain_manager should not be empty when user is managed!";
     add_access_code_device_ = AddScrollListItem(
-        // TODO(b/209720161): replace with plus button icon when UI is final.
-        SinkIconTypeToIcon(SinkIconType::kGeneric),
-        l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_CAST_ACCESS_CAST_ADD,
-                                   base::UTF8ToUTF16(org_name)));
+        vector_icons::kQrCodeIcon,
+        l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_CAST_ACCESS_CODE_CAST_CONNECT));
   }
 
   scroll_content()->SizeToPreferredSize();

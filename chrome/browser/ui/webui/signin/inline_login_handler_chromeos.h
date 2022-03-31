@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/containers/flat_set.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_helper_chromeos.h"
 #include "components/account_manager_core/account.h"
@@ -49,7 +50,17 @@ class InlineLoginHandlerChromeOS : public InlineLoginHandler {
   void GetAccountsInSession(const base::ListValue* args);
   void OnGetAccounts(const std::string& callback_id,
                      const std::vector<::account_manager::Account>& accounts);
+  void GetAccountsNotAvailableInArc(base::Value::ConstListView args);
+  void ContinueGetAccountsNotAvailableInArc(
+      const std::string& callback_id,
+      const std::vector<::account_manager::Account>& accounts);
+  void FinishGetAccountsNotAvailableInArc(
+      const std::string& callback_id,
+      const std::vector<::account_manager::Account>& accounts,
+      const base::flat_set<account_manager::Account>& arc_accounts);
+  void MakeAvailableInArcAndCloseDialog(base::Value::ConstListView args);
   void HandleSkipWelcomePage(const base::ListValue* args);
+  void OpenGuestWindowAndCloseDialog(base::Value::ConstListView args);
 
   base::RepeatingClosure close_dialog_closure_;
   base::WeakPtrFactory<InlineLoginHandlerChromeOS> weak_factory_{this};

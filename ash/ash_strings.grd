@@ -405,8 +405,8 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_CAST_CAST_DESKTOP" desc="The label used in the tray popup to tell the user we are casting the desktop.">
         Casting screen to <ph name="RECEIVER_NAME">$1<ex>Living Room</ex></ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_CAST_ACCESS_CAST_ADD" desc="Menu item label that, when clicked on, opens the access code casting dialog. MANAGER can be a domain or an email address.">
-        Cast to a <ph name="MANAGER">$1<ex>yourdomain.com</ex></ph> device
+      <message name="IDS_ASH_STATUS_TRAY_CAST_ACCESS_CODE_CAST_CONNECT" desc="Menu item label that, when clicked on, opens the access code casting dialog.">
+        Connect with a code
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DARK_THEME" desc="The label used as the header in the dark theme popup. [CHAR_LIMIT=19">
         Dark theme
@@ -1198,6 +1198,31 @@ This file contains the strings for ash.
       </message>
       <!-- End of experimental Switch Access feature block -->
 
+      <!-- Dictation UI hint strings -->
+      <message name="IDS_ASH_DICTATION_HINT_TRY_SAYING" desc="A label shown in the Dictation bubble UI telling users what they can say.">
+        Try saying:
+      </message>
+      <message name="IDS_ASH_DICTATION_HINT_TYPE" desc="A hint label in the Dictation bubble UI for typing a word or phrase.">
+        "Type [word / phrase]"
+      </message>
+      <message name="IDS_ASH_DICTATION_HINT_DELETE" desc="A hint label in the Dictation bubble UI for performing the delete command.">
+        "Delete"
+      </message>
+      <message name="IDS_ASH_DICTATION_HINT_SELECT_ALL" desc="A hint label in the Dictation bubble UI for performing the select all command.">
+        "Select all"
+      </message>
+      <message name="IDS_ASH_DICTATION_HINT_UNDO" desc="A hint label in the Dictation bubble UI for performing the undo command.">
+        "Undo"
+      </message>
+      <message name="IDS_ASH_DICTATION_HINT_HELP" desc="A hint label in the Dictation bubble UI for performing the help command.">
+        "Help"
+      </message>
+      <message name="IDS_ASH_DICTATION_HINT_UNSELECT" desc="A hint label in the Dictation bubble UI for performing the unselect command">
+        "Unselect"
+      </message>
+      <message name="IDS_ASH_DICTATION_HINT_COPY" desc="A hint label in the Dictation bubble UI for performing the copy command">
+        "Copy"
+      </message>
 
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD" desc="The label used in the accessibility menu of the system tray to toggle on/off the onscreen keyboard.">
         On-screen keyboard
@@ -1813,8 +1838,14 @@ This file contains the strings for ash.
       <message name="IDS_ASH_DESKS_TEMPLATES_DELETE_DIALOG_TITLE" desc="The text of the title of the desks templates delete dialog, which shows up when trying to delete a template.">
         Delete template?
       </message>
-      <message name="IDS_ASH_DESKS_TEMPLATES_UNSUPPORTED_APPS_DIALOG_DESCRIPTION" desc="The text of the description of the desks templates unsupported apps dialog, which shows up when trying to save a desk that contains an unsupported app (i.e. Crostini app).">
+      <message name="IDS_ASH_DESKS_TEMPLATES_UNSUPPORTED_LINUX_APPS_DIALOG_DESCRIPTION" desc="The text of the description of the desks templates unsupported apps dialog, which shows up when trying to save a desk that contains an unsupported app (i.e. Crostini app).">
         Linux apps aren’t currently supported. Other apps will be saved.
+      </message>
+      <message name="IDS_ASH_DESKS_TEMPLATES_UNSUPPORTED_LINUX_APPS_AND_INCOGNITO_DIALOG_DESCRIPTION" desc="The text of the description of the desks templates unsupported apps dialog, which shows up when trying to save a desk that contains an unsupported app (i.e. Crostini app).">
+        Linux apps and Incognito windows aren’t currently supported. Other apps will be saved.
+      </message>
+      <message name="IDS_ASH_DESKS_TEMPLATES_UNSUPPORTED_INCOGNITO_DIALOG_DESCRIPTION" desc="The text of the description of the desks templates unsupported apps dialog, which shows up when trying to save a desk that contains an unsupported app (i.e. Crostini app).">
+        Incognito windows aren’t currently supported. Other apps will be saved.
       </message>
       <message name="IDS_ASH_DESKS_TEMPLATES_REPLACE_DIALOG_DESCRIPTION" desc="The text of the description of the desks templates replace dialog, which shows up when trying to rename a template to the name of an existing template.">
         Template named <ph name="DESK_TEMPLATE_NAME">$1<ex>Bento</ex></ph> already exists
@@ -1824,6 +1855,18 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_DESKS_TEMPLATES_UNSUPPORTED_APPS_DIALOG_HEADER" desc="The text of the header (text above the icon list) of the desks templates unsupported apps dialog, which shows up when trying to save a desk that contains an unsupported app (i.e. Crostini app).">
         Unsupported apps
+      </message>
+      <message name="IDS_ASH_DESKS_TEMPLATES_UNSUPPORTED_LINUX_APPS_TOOLTIP" desc="The disabled Save Desk as Template button tooltip text when the desk contains all unsupported apps (i.e. Crostini app).">
+        Linux apps aren’t currently supported
+      </message>
+      <message name="IDS_ASH_DESKS_TEMPLATES_UNSUPPORTED_LINUX_APPS_AND_INCOGNITO_TOOLTIP" desc="The disabled Save Desk as Template button tooltip text when the desk contains all incognito and unsupported apps (i.e. Crostini app).">
+        Linux apps and Incognito windows aren’t currently supported
+      </message>
+      <message name="IDS_ASH_DESKS_TEMPLATES_UNSUPPORTED_INCOGNITO_TOOLTIP" desc="The disabled Save Desk as Template button tooltip text when the desk contains all incognito and unsupported apps (i.e. Crostini app).">
+        Incognito windows aren’t currently supported
+      </message>
+      <message name="IDS_ASH_DESKS_TEMPLATES_MAX_TEMPLATES_TOOLTIP" desc="The disabled Save Desk as Template button tooltip text when maximum number of templates has been reached.">
+        Only 6 templates allowed. Remove a template to save a new one.
       </message>
       <message name="IDS_ASH_DESKS_TEMPLATES_DESKS_BAR_BUTTON" desc="The text of the desks templates button in the overview desks bar.">
         Templates
@@ -1845,6 +1888,12 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_DESKS_TEMPLATES_UNAVAILABLE_APP_TOAST_MORE" desc="The text of the toast displayed when user tries to launch a template with more than two unavailable apps.">
         <ph name="UNAVAILABLE_APPS_ONE">$1<ex>unavailable app one</ex></ph>, <ph name="UNAVAILABLE_APPS_TWO">$2<ex>unavailable app two</ex></ph>, and <ph name="UNAVAILABLE_APPS_COUNT">$3<ex>unavailable app count</ex></ph> more aren't on this device.
+      </message>
+      <message name="IDS_ASH_DESKS_TEMPLATES_TEMPLATE_TOO_LARGE_TOAST" desc="The text of the toast displayed when user tries to save a template whose metadata would exceed the threshold for Chrome Sync. The template is not saved and this toast shows up instead.">
+        Couldn’t save template. Too many windows or tabs.
+      </message>
+      <message name="IDS_ASH_DESKS_TEMPLATES_MANAGEMENT_STATUS_DESCRIPTION" desc="The text of the description under template item if the desks templates is shared by the administrator.">
+        Shared by your administrator
       </message>
 
       <!-- Virtual Desks -->
@@ -2032,8 +2081,8 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_VPN" desc="The label used in the VPN detailed view header. [CHAR_LIMIT=18]">
         Private network
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_VPN_BUILT_IN_PROVIDER" desc="The name of the built-in VPN provider that supports OpenVPN and L2TP over IPsec.">
-        OpenVPN / L2TP
+      <message name="IDS_ASH_STATUS_TRAY_VPN_BUILT_IN_PROVIDER" desc="The name of the built-in VPN provider.">
+        Built-in VPN
       </message>
       <message name="IDS_ASH_STATUS_TRAY_VPN_DISCONNECT" desc="Message on button that disconnects from the current VPN.">
         Disconnect
@@ -2551,6 +2600,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_INHIBITED_CELLULAR_RESETTING_ESIM" desc="Tooltip message for disabled add cellular button, indicating cellular eSIM is being reset.">
         Your administrator is resetting your eSIM. Wait a few minutes.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_INHIBITED_CELLULAR_DISABLING_PROFILE" desc="Tooltip message for disabled add cellular button, indicating cellular network profile is being disabled.">
+       Disabling profile. Wait a few minutes.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR" desc="Message for the status area when initializing the cellular device.">
         Initializing...
@@ -3125,6 +3177,9 @@ This file contains the strings for ash.
       <message name="IDS_FAST_PAIR_DISCOVERY_NOTIFICATION_MESSAGE" desc="Notification message shown when there is a device discovered with Fast Pair.">
         Connect <ph name="NAME">$1<ex>Pixel Buds</ex></ph> to this Chromebook
       </message>
+      <message name="IDS_FAST_PAIR_DISCOVERY_NOTIFICATION_EMAIL_MESSAGE" desc="Notification message shown when there is a device discovered with Fast Pair that includes the user's email address.">
+        Your <ph name="NAME">$1<ex>Pixel Buds</ex></ph> will appear on devices linked with <ph name="EMAIL">$2<ex>alisha123@gmail.com</ex></ph>
+      </message>
       <message name="IDS_FAST_PAIR_CANCEL_BUTTON" desc="Message on button to tell users to cancel bluetooth device connection with Fast Pair.">
         Cancel
       </message>
@@ -3141,6 +3196,12 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_IN_SESSION_AUTH_ACCESSIBLE_TITLE" desc="Accessibility text read by chromevox to indicate which website / app we are authenticating for.">
         Verify your identity: <ph name="ORIGIN_NAME">$1<ex>example.com</ex></ph> would like to confirm it's you
+      </message>
+      <message name="IDS_ASH_IN_SESSION_AUTH_PASSWORD_PLACEHOLDER" desc="Text to display as placeholder in the password input field.">
+        Password
+      </message>
+      <message name="IDS_ASH_IN_SESSION_AUTH_PASSWORD_INCORRECT" desc="Text shown in the auth dialog to tell the user that incorrect password was entered">
+        Incorrect password
       </message>
       <message name="IDS_ASH_IN_SESSION_AUTH_PIN_PLACEHOLDER" desc="Text to display as placeholder in the PIN input field when PIN autosubmit is disabled.">
         PIN
@@ -3374,6 +3435,10 @@ This file contains the strings for ash.
       <message name="IDS_ASH_CALENDAR_BUBBLE_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the calendar bubble and the information in it.">
         Calendar, <ph name="current_month_year">$1<ex>August 2021</ex></ph>
       </message>
+      
+      <message name="IDS_ASH_CALENDAR_ENTRY_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the calendar entry button.">
+       <ph name="current_time">$1<ex>Aug 2021 11:25AM</ex></ph>, Press enter key to open Calendar view
+      </message>
 
       <message name="IDS_ASH_CALENDAR_TITLE" desc="The label used as the title of the unified system tray calendar view.">
         Calendar
@@ -3395,11 +3460,11 @@ This file contains the strings for ash.
         Today <ph name="today_date">$1<ex>August 31, 2021</ex></ph>
       </message>
 
-      <message name="IDS_ASH_CALENDA_INFO_BUTTON" desc="The text for the calendar info button.">
+      <message name="IDS_ASH_CALENDAR_INFO_BUTTON" desc="The text for the calendar info button.">
         Today
       </message>
 
-      <message name="IDS_ASH_CALENDA_TODAY_BUTTON_TOOLTIP" desc="The tooltip label for the calendar info button.">
+      <message name="IDS_ASH_CALENDAR_TODAY_BUTTON_TOOLTIP" desc="The tooltip label for the calendar info button.">
         Go back to today
       </message>
 
@@ -3427,6 +3492,10 @@ This file contains the strings for ash.
         <ph name="date">$1<ex>August 31, 2021</ex></ph>, <ph name="number">$2<ex>8</ex></ph> events
       </message>
 
+      <message name="IDS_ASH_CALENDAR_DATE_CELL_ON_FOCUS_ACCESSIBLE_DESCRIPTION" desc="The accessible label of a calendar date cell, which is on focused for the first time.">
+        <ph name="date_cell_tool_tip">$1<ex>August 31, 2021, 2 events</ex></ph>. Use arrow keys to navigate between dates.
+      </message>
+
       <message name="IDS_ASH_CALENDAR_SELECTED_DATE_CELL_ACCESSIBLE_DESCRIPTION" desc="The accessible label of the selected calendar date cell.">
         Calendar, week of <ph name="date">$1<ex>July 16th 2021,</ex></ph>, <ph name="selected_date">$2<ex>18</ex></ph> is currently selected.
       </message>
@@ -3441,6 +3510,18 @@ This file contains the strings for ash.
       <message name="IDS_ASH_CALENDAR_EVENT_ENTRY_TOOL_TIP" desc="The tool tip label of a calendar event entry.">
         <ph name="event_summary">$1<ex>Lunch break</ex></ph>, 
         <ph name="time_range">$2<ex> 1:00 - 1:30 PM</ex></ph>
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_NO_EVENT_BUTTON_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the calendar `Open in Google Calendar` button.">
+        There is no event on <ph name="current_month_day">$1<ex>August 20</ex></ph>. Hit enter to open Google calendar in the browser.
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_NO_EVENT_BUTTON_TOOL_TIP" desc="The tooltip of the calendar `Open in Google Calendar` button.">
+        Open this date in Google Calendar
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_NO_TITLE" desc="The default title for those no title meetings.">
+        (No title)
       </message>
 
       <message name="IDS_ASH_CALENDAR_MON" desc="The single character designator for Monday, which is used in the calendar weekday label.">
@@ -3471,6 +3552,10 @@ This file contains the strings for ash.
         S
       </message>
 
+      <message name="IDS_ASH_CALENDAR_NO_EVENTS" desc="Text that appears on the event list when there are no events.">
+        Open in Google calendar
+      </message>
+
       <!-- Power off menu  -->
       <message name="IDS_ASH_POWER_BUTTON_MENU_POWER_OFF_BUTTON" desc="Text shown on power off button in power button menu.">
         Shut down
@@ -3483,6 +3568,14 @@ This file contains the strings for ash.
       </message>
       <message name ="IDS_ASH_POWER_BUTTON_MENU_ACCESSIBLE" desc="The accessible name of the power button menu, may be spoken out loud.">
         Power
+      </message>
+
+      <!-- Shutdown confirmation dialog  -->
+      <message name ="IDS_ASH_SHUTDOWN_CONFIRM_BUTTON" desc="Confirm the shutdown action in the shutdown confirmation dialog.">
+        Shut down
+      </message>
+      <message name ="IDS_ASH_SHUTDOWN_CONFIRMATION_TITLE" desc="Title of the shutdown confirmation dialog after pressing the shutdown button on the shelf.">
+        Shut down device?
       </message>
 
       <!-- Detachable base notifications -->
@@ -4039,6 +4132,12 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_SCREEN_CAPTURE_AUDIO_INPUT_MICROPHONE" desc="The label of the menu option button for microphone audio input.">
         Microphone
       </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_CAMERA" desc="The label of the camera menu group header in capture mode settings.">
+        Camera
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_CAMERA_OFF" desc="The label of the menu option button for no camera device selected.">
+        Off
+      </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_SAVE_TO" desc="The label of the save to menu group header in capture mode settings.">
         Save to
       </message>
@@ -4298,12 +4397,12 @@ Here are some things you can try to get started.
         An error occurred
       </message>
 
-      <message name="IDS_ASH_PROJECTOR_FAILURE_MESSAGE_DRIVEFS" desc="The text of the notification when Projector recording fails due to DriveFS.">
-        Google Drive for desktop is unavailable
+      <message name="IDS_ASH_PROJECTOR_SAVE_FAILURE_TITLE" desc="The title of the notification when saving Projector recording fails.">
+        Can’t save recording
       </message>
 
-      <message name="IDS_ASH_PROJECTOR_FAILURE_MESSAGE_SAVE_SCREENCAST" desc="The text of the notification when Projector recording fails to save the screencast file.">
-        Failed to save screencast
+      <message name="IDS_ASH_PROJECTOR_SAVE_FAILURE_TEXT" desc="The text of the notification when saving Projector recording fails.">
+        Something went wrong. Try again.
       </message>
 
       <message name="IDS_ASH_PROJECTOR_FAILURE_MESSAGE_TRANSCRIPTION" desc="The test of the notification when Projector transcription fails.">
@@ -4360,7 +4459,7 @@ Here are some things you can try to get started.
 
       <!-- Smart Lock strings shown on the lock screen -->
       <message name="IDS_SMART_LOCK_LABEL_LOOKING_FOR_PHONE" desc="Label for the Smart Lock spinner icon on user's lock screen while Chromebook is looking for paired phone.">
-        To unlock your Chromebook, turn on your phone's Bluetooth
+        To unlock your Chromebook, make sure your phone's Bluetooth is on
       </message>
       <message name="IDS_SMART_LOCK_LABEL_PHONE_LOCKED" desc="Label for the Smart Lock icon on user's lock screen when a phone eligible to unlock the Chromebook is detected, but it's locked and thus not allowed to unlock the Chromebook.">
         To unlock your Chromebook, first unlock your phone
@@ -4396,18 +4495,18 @@ Here are some things you can try to get started.
         Enter password or PIN for more security
       </message>
       <message name="IDS_AUTH_FACTOR_LABEL_CLICK_TO_ENTER" desc="Label on user's lock screen when a user is successfully authenticated and may click on arrow icon to unlock/use the Chromebook.">
-        Tap or click to enter
+        Unlocked by your phone. Tap or click to enter.
       </message>
       <message name="IDS_AUTH_FACTOR_LABEL_UNLOCKED" desc="Label on user's lock screen when a Chromebook is successfully unlocked.">
         Unlocked
       </message>
       <message name="IDS_AUTH_FACTOR_LABEL_SIGNED_IN" desc="Label on user's login screen when a Chromebook is successfully logged in.">
-        Signed in
+        Signing in...
       </message>
 
       <!-- Launcher: Continue Section -->
-      <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_LABEL" desc="Label for the continue section of the launcher, which shows recent files and apps that the user can continue using.">
-        Continue
+      <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_LABEL" desc="Label for the continue section of the launcher, which shows recent files and apps that the user can continue using. [CHAR_LIMIT=70]">
+        Continue where you left off
       </message>
       <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_CONTEXT_MENU_OPEN" desc="Context menu option title to open a suggestion for a task in the launcher. Tasks display in the continue section located above the app list.">
         Open
@@ -4415,16 +4514,43 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_CONTEXT_MENU_REMOVE" desc="Context menu option title to remove a suggestion for a task in the launcher. Tasks display in the continue section located above the app list.">
         Remove Suggestion
       </message>
+      <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_PRIVACY_TEXT" desc="Text for the privacy notice of the continue section of the launcher in clamshell mode, which shows recent files and apps that the user can continue using.">
+        You’ll see recommendations so you can continue where you left off. You can right-click to remove recommendations.
+      </message>
+      <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_PRIVACY_TEXT_TABLET" desc="Text for the privacy notice of the continue section of the launcher in tablet mode, which shows recent files and apps that the user can continue using.">
+        You’ll see recommendations so you can continue where you left off.  You can touch &amp; hold to remove recommendations.
+      </message>
+      <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_PRIVACY_BUTTON" desc="Text for the privacy notice accepting button in the continue section of the launcher, which shows recent files and apps that the user can continue using.">
+        OK
+      </message>
 
       <!-- Launcher / App List -->
-      <message name="IDS_ASH_LAUNCHER_APPS_GRID_CONTEXT_MENU_REORDER_TITLE" desc="Title of the context menu in apps grid view in Productivity Launcher.">
-        Reorder by
+      <message name="IDS_ASH_LAUNCHER_APPS_GRID_CONTEXT_MENU_REORDER_TITLE" desc="Title of the context menu in apps grid view in Productivity Launcher that allows users to sort their apps in the laucher. The context menu will have provide options to sort by name or color.">
+        Sort by
       </message>
       <message name="IDS_ASH_LAUNCHER_APPS_GRID_CONTEXT_MENU_REORDER_BY_NAME" desc="Title of the context menu item in apps grid view in Productivity Launcher for reordering the apps by their names">
         Name
       </message>
       <message name="IDS_ASH_LAUNCHER_APPS_GRID_CONTEXT_MENU_REORDER_BY_COLOR" desc="Title of the context menu item in apps grid view in Productivity Launcher for reordering the apps by their icon colors">
         Color
+      </message>
+      <message name="IDS_ASH_LAUNCHER_UNDO_SORT_TOAST_FOR_NAME_SORT" desc="The text shown in a toast within the launcher UI that appears after the user sorts their apps alphabetically. The toast informs the user that the apps are sorted, and has an action button that allows the user to undo sort.">
+        Apps are sorted by name
+      </message>
+      <message name="IDS_ASH_LAUNCHER_UNDO_SORT_TOAST_FOR_COLOR_SORT" desc="The text shown in a toast within the launcher UI that appears after the user sorts their apps by their icon color. The toast informs the user that the apps are sorted, and has an action button that allows the user to undo sort.">
+        Apps are sorted by color
+      </message>
+      <message name="IDS_ASH_LAUNCHER_UNDO_SORT_TOAST_ACTION_BUTTON" desc="The label for the action button for a toast shown within the launcher UI that appears after the user sorts their apps, either aplhabetically or by icon color. The action button reverts the order of apps in the launcher to the one from before the user requested sort.">
+       Undo
+      </message>
+      <message name="IDS_ASH_LAUNCHER_APP_LIST_REORDER_NUDGE_TITLE" desc="Title of a nudge shown in the Chrome OS launcher UI above the list of apps that informs users that they can sort their apps by name or color.">
+        Sort your apps by name or color
+      </message>
+      <message name="IDS_ASH_LAUNCHER_APP_LIST_REORDER_NUDGE_CLAMSHELL_MODE_SUBTITLE" desc="Subtitle of a nudge shown in the Chrome OS launcher UI in clamshell mode. The nudge locates above the list of apps that informs users that they can sort their apps by name or color.">
+        Right-click anywhere to reorder your apps
+      </message>
+      <message name="IDS_ASH_LAUNCHER_APP_LIST_REORDER_NUDGE_TABLET_MODE_SUBTITLE" desc="Subtitle of a nudge shown in the Chrome OS launcher UI in tablet mode. The nudge locates above the list of apps that informs users that they can sort their apps by name or color.">
+        Touch &amp; hold anywhere to reorder your apps
       </message>
       <message name="IDS_SUGGESTED_APPS_INDICATOR" desc="Indicator text in the launcher on top of suggested apps.">
         SUGGESTED APPS
@@ -4514,11 +4640,50 @@ New install
       <message name="IDS_REMOVE_ZERO_STATE_SUGGESTION_TITLE" desc="Titlebar of removing zero state suggestion confirmation dialog">
         Delete this search from your history?
       </message>
-      <message name="IDS_REMOVE_ZERO_STATE_SUGGESTION_DETAILS" desc="Detailed explanation message for removing zero state suggestion">
-        You searched for this before. Deleting "<ph name="query">$1<ex>Previously Searched Query</ex></ph>" from your history will permanently remove it from your account across all your devices.
+      <message name="IDS_REMOVE_ZERO_STATE_SUGGESTION_DETAILS" desc="Detailed explanation message for removing removing an omnibox search result from launcher search results UI. This is a text in the dialog shown to the user when they try to remove a suggested omnibox search result from list of results shown in the launcher search - the omnibox search result may appear if the search query in launcher search matches a previous user search. The dialog asks the user to confirm the result removal.">
+        You searched for this query before. Deleting this search from your history will permanently remove it from your Google Account across all of your devices. 
       </message>
       <message name="IDS_REMOVE_SUGGESTION_BUTTON_LABEL" desc="Remove suggestion button label">
-        Remove
+        Delete
+      </message>
+      <message name="IDS_APP_LIST_KEYBOARD_SHORTCUT_OR" desc="Joiner text for several keyboard shortcuts that all do the same thing. Eg: 'Ctrl-A or Ctrl-B or Ctrl-C'">
+        Or
+      </message>
+      <message name="IDS_APP_LIST_CONTINUE_EDITED_JUST_NOW" desc="Text displayed under a file suggestion in the launcher, describing why it is being shown. 'Just now' should apply to any time within the last few minutes.">
+        Edited just now
+      </message>
+      <message name="IDS_APP_LIST_CONTINUE_EDITED_PAST_MONTH" desc="Text displayed under a file suggestion in the launcher, describing why it is being shown.">
+        Edited in the past month
+      </message>
+      <message name="IDS_APP_LIST_CONTINUE_EDITED_PAST_WEEK" desc="Text displayed under a file suggestion in the launcher, describing why it is being shown.">
+        Edited in the past week
+      </message>
+      <message name="IDS_APP_LIST_CONTINUE_EDITED_RECENTLY" desc="Text displayed under a file suggestion in the launcher, describing why it is being shown. 'Recently' should apply to any time between 'just now' and 'a week ago'.">
+        Edited recently
+      </message>
+      <message name="IDS_APP_LIST_CONTINUE_EDITED_TODAY" desc="Text displayed under a file suggestion in the launcher, describing why it is being shown.">
+        Edited today
+      </message>
+      <message name="IDS_APP_LIST_CONTINUE_EDITED_YESTERDAY" desc="Text displayed under a file suggestion in the launcher, describing why it is being shown.">
+        Edited yesterday
+      </message>
+      <message name="IDS_APP_LIST_CONTINUE_OPENED_JUST_NOW" desc="Text displayed under a file suggestion in the launcher, describing why it is being shown. 'Just now' should apply to any time within the last few minutes.">
+        Opened just now
+      </message>
+      <message name="IDS_APP_LIST_CONTINUE_OPENED_PAST_MONTH" desc="Text displayed under a file suggestion in the launcher, describing why it is being shown.">
+        Opened in the past month
+      </message>
+      <message name="IDS_APP_LIST_CONTINUE_OPENED_PAST_WEEK" desc="Text displayed under a file suggestion in the launcher, describing why it is being shown.">
+        Opened in the past week
+      </message>
+      <message name="IDS_APP_LIST_CONTINUE_OPENED_RECENTLY" desc="Text displayed under a file suggestion in the launcher, describing why it is being shown. 'Recently' should apply to any time between 'just now' and 'a week ago'.">
+        Opened recently
+      </message>
+      <message name="IDS_APP_LIST_CONTINUE_OPENED_TODAY" desc="Text displayed under a file suggestion in the launcher, describing why it is being shown.">
+        Opened today
+      </message>
+      <message name="IDS_APP_LIST_CONTINUE_OPENED_YESTERDAY" desc="Text displayed under a file suggestion in the launcher, describing why it is being shown.">
+        Opened yesterday
       </message>
       <message name="IDS_APP_LIST_START_ASSISTANT" desc="Tooltip for the button that starts Google Assistant from the search box in the app list.">
         Google Assistant
@@ -4600,6 +4765,73 @@ New install
       </message>
       <message name="IDS_ASH_FIRMWARE_UPDATE_NOTIFICATION_UPDATE_BUTTON_TEXT" desc="Notification button text, if the user clicks on the button it will redirect them to the Firmware Update app.">
         Update
+      </message>
+
+      <!-- USB-C cable notifications -->
+      <message name="IDS_ASH_USB_NOTIFICATION_LEARN_MORE" desc="Notification button text. If the user clicks on it, it will send them to a relevant webpage." translateable="false">
+        Learn More
+      </message>
+      <message name="IDS_ASH_USB_NOTIFICATION_CABLE_WARNING_DISPLAY_TITLE" desc="Notification title text for when a user connects a display to a Chromebook's USB-C port with a cable that cannot support driving display signals." translateable="false">
+        Cable may not support displays
+      </message>
+      <message name="IDS_ASH_USB_NOTIFICATION_CABLE_WARNING_DISPLAY_BODY" desc="Notification body text for when a user connects a display to a Chromebook's USB-C port with a cable that cannot support driving display signals." translateable="false">
+        Your USB-C cable may not connect to diplays properly
+      </message>
+      <message name="IDS_ASH_USB_NOTIFICATION_CABLE_WARNING_PERFORMANCE_TITLE" desc="Notification title text for when a user connects something to the USB-C port on their Chromebook and performance is in some way limited by the cable." translateable="false">
+        Cable may impact performance
+      </message>
+      <message name="IDS_ASH_USB_NOTIFICATION_CABLE_WARNING_NO_USB4_SUPPORT_BODY" desc="Notification body text for when a user connects a USB4 device to their Chromebook with a cable that does not support USB4." translateable="false">
+        Your USB-C cable does not support USB4. Device performance may be limited.
+      </message>
+      <message name="IDS_ASH_USB_NOTIFICATION_CABLE_WARNING_NO_TBT_SUPPORT_BODY" desc="Notification body text for when a user connects a Thunderbolt device to their Chromebook with a cable that does not support Thunderbolt." translateable="false">
+        Your USB-C cable does not support Thunderbolt. Device performance may be limited.
+      </message>
+      <message name="IDS_ASH_USB_NOTIFICATION_CABLE_WARNING_SPEED_LIMITED_BODY" desc="Notification body text for when a user connects a device to their Chromebook with a cable that has a lower maximum data rate than the device." translateable="false">
+        Your device supports a higher data rate than your cable. Device performance may be limited.
+      </message>
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_NOTIFIER" desc="A string explaining that the origin of the notification is the snooping protection feature.">
+        Viewing protection
+      </message>
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_TITLE" desc="Notification title explaining that a notification has been hidden.">
+        New notification hidden
+      </message>
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_MESSAGE_1" desc="Notification message explaining that a popup from one application has been blocked.">
+        <ph name="APP_TITLE">$1<ex>Google Chat</ex></ph> notification is hidden because viewing protection is on
+      </message>
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_MESSAGE_2" desc="Notification message explaining that a popup from two applications have been blocked.">
+        <ph name="APP_1_TITLE">$1<ex>Google Chat</ex></ph> and <ph name="APP_2_TITLE">$2<ex>Chrome</ex></ph> notifications are hidden because viewing protection is on
+      </message>
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_MESSAGE_3_PLUS" desc="Notification message explaining that a popup from three or more applications have been blocked.">
+        <ph name="APP_1_TITLE">$1<ex>Google Chat</ex></ph>, <ph name="APP_2_TITLE">$2<ex>Chrome</ex></ph> and other notifications are hidden because viewing protection is on
+      </message>
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_SHOW_BUTTON_TEXT" desc="Text in notification button to show previously-blocked notifications.">
+        Show
+      </message>
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_SETTINGS_BUTTON_TEXT" desc="Text in notification button to launch smart privacy settings.">
+        Privacy settings
+      </message>
+
+      <!-- USB-C cable notifications - version 2 -->
+      <message name="IDS_ASH_USB_NOTIFICATION_V2_LEARN_MORE" desc="Notification button text. If the user clicks on it, it will send them to a relevant webpage.">
+        Learn More
+      </message>
+      <message name="IDS_ASH_USB_NOTIFICATION_V2_CABLE_WARNING_DISPLAY_TITLE" desc="Notification title text for when a user connects a display to a Chromebook's USB-C port with a cable that cannot support driving display signals.">
+        Cable may not support displays
+      </message>
+      <message name="IDS_ASH_USB_NOTIFICATION_V2_CABLE_WARNING_DISPLAY_BODY" desc="Notification body text for when a user connects a display to a Chromebook's USB-C port with a cable that cannot support driving display signals.">
+        Your USB-C cable may not connect to diplays properly
+      </message>
+      <message name="IDS_ASH_USB_NOTIFICATION_V2_CABLE_WARNING_PERFORMANCE_TITLE" desc="Notification title text for when a user connects something to the USB-C port on their Chromebook and performance is in some way limited by the cable.">
+        Cable may impact performance
+      </message>
+      <message name="IDS_ASH_USB_NOTIFICATION_V2_CABLE_WARNING_NO_USB4_SUPPORT_BODY" desc="Notification body text for when a user connects a USB4 device to their Chromebook with a cable that does not support USB4.">
+        Your USB-C cable does not support USB4. Device performance may be limited.
+      </message>
+      <message name="IDS_ASH_USB_NOTIFICATION_V2_CABLE_WARNING_NO_TBT_SUPPORT_BODY" desc="Notification body text for when a user connects a Thunderbolt device to their Chromebook with a cable that does not support Thunderbolt.">
+        Your USB-C cable does not support Thunderbolt. Device performance may be limited.
+      </message>
+      <message name="IDS_ASH_USB_NOTIFICATION_V2_CABLE_WARNING_SPEED_LIMITED_BODY" desc="Notification body text for when a user connects a device to their Chromebook with a cable that has a lower maximum data rate than the device.">
+        Your device supports a higher data rate than your cable. Device performance may be limited.
       </message>
     </messages>
   </release>

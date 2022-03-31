@@ -190,7 +190,14 @@ EXPECTED_POLICY_CONSTANTS_HEADER = '''
 
 #include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/policy_map.h"
-#include "components/policy/proto/cloud_policy.pb.h"
+
+namespace enterprise_management {
+class BooleanPolicyProto;
+class CloudPolicySettings;
+class IntegerPolicyProto;
+class StringListPolicyProto;
+class StringPolicyProto;
+}
 
 namespace em = enterprise_management;
 
@@ -200,7 +207,7 @@ namespace internal {
 struct SchemaData;
 }
 %(windows_only_part)s
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 // Sets default profile policies values for enterprise users.
 void SetEnterpriseUsersProfileDefaults(PolicyMap* policy_map);
 // Sets default system-wide policies values for enterprise users.
@@ -392,7 +399,7 @@ bool CompareKeys(const internal::PropertyNode& node,
 
 }  // namespace
 %(windows_only_part)s
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS)
 void SetEnterpriseUsersProfileDefaults(PolicyMap* policy_map) {
 
 }

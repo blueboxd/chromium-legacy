@@ -21,6 +21,8 @@ const char kMimeTypeRTF[] = "text/rtf";
 const char kMimeTypePNG[] = "image/png";
 // Used for image drag & drop from LaCrOS.
 const char kMimeTypeOctetStream[] = "application/octet-stream";
+// Used for window dragging on some platforms.
+const char kMimeTypeWindowDrag[] = "chromium/x-window-drag";
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
 const char kMimeTypeLinuxUtf8String[] = "UTF8_STRING";
@@ -43,4 +45,7 @@ const char kMimeTypeWebkitSmartPaste[] = "chromium/x-webkit-paste";
 #if BUILDFLAG(IS_ANDROID)
 const char kMimeTypeImageURI[] = "image-uri";
 #endif  // BUILDFLAG(IS_ANDROID)
+
+const int kMaxRegisteredClipboardFormats = 100;
+
 }  // namespace ui

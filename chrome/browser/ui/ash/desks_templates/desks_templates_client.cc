@@ -22,10 +22,10 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/desk_sync_service_factory.h"
 #include "chrome/browser/ui/ash/desks_templates/desks_templates_app_launch_handler.h"
+#include "components/app_constants/constants.h"
 #include "components/desks_storage/core/desk_sync_service.h"
 #include "components/desks_storage/core/local_desk_data_manager.h"
 #include "components/sync/model/model_type_store.h"
-#include "extensions/common/constants.h"
 
 namespace {
 
@@ -184,7 +184,6 @@ void DesksTemplatesClient::LaunchDeskTemplate(
   MaybeCreateAppLaunchHandler();
   DCHECK(app_launch_handler_);
 
-  // TODO: Verify this method works in tests when reading from storage.
   if (launch_template_for_test_) {
     OnGetTemplateForDeskLaunch(
         std::move(callback),
@@ -212,8 +211,6 @@ void DesksTemplatesClient::LaunchAppsFromTemplate(
   DCHECK(app_launch_handler_);
   app_launch_handler_->set_delay(delay);
   app_launch_handler_->SetRestoreDataAndLaunch(restore_data->Clone());
-
-  RecordLaunchFromTemplateHistogram();
 }
 
 desks_storage::DeskModel* DesksTemplatesClient::GetDeskModel() {
@@ -286,7 +283,7 @@ void DesksTemplatesClient::RecordWindowAndTabCountHistogram(
   for (const auto& iter : launch_list) {
     // Since apps aren't guaranteed to have the url field set up correctly, this
     // is necessary to ensure things are not double-counted.
-    if (iter.first != extension_misc::kChromeAppId) {
+    if (iter.first != app_constants::kChromeAppId) {
       ++window_count;
       ++total_count;
       continue;
@@ -326,6 +323,8 @@ void DesksTemplatesClient::OnGetTemplateForDeskLaunch(
     std::move(callback).Run(std::string(kStorageError));
     return;
   }
+
+  RecordLaunchFromTemplateHistogram();
 
   // Launch the windows as specified in the template to a new desk.
   const auto template_name = entry->template_name();

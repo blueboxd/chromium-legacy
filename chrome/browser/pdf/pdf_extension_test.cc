@@ -3888,7 +3888,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, DISABLED_TabInAndOutOfPDFPlugin) {
   // Set focus on last toolbar element (zoom-out-button).
   ASSERT_TRUE(
       content::ExecuteScript(guest_contents,
-                             R"(viewer.shadowRoot.querySelector('#zoom-toolbar')
+                             R"(viewer.shadowRoot.querySelector('#zoomToolbar')
          .$['zoom-out-button']
          .$$('cr-icon-button')
          .focus();)"));
@@ -3900,7 +3900,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionTest, DISABLED_TabInAndOutOfPDFPlugin) {
       window.domAutomationController.send('plugin');
     });
 
-    const button = viewer.shadowRoot.querySelector('#zoom-toolbar')
+    const button = viewer.shadowRoot.querySelector('#zoomToolbar')
                    .$['zoom-out-button']
                    .$$('cr-icon-button');
     button.addEventListener('focus', () => {

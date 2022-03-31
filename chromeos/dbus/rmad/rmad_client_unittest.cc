@@ -367,46 +367,6 @@ class TestObserver : public RmadClient::Observer {
       rmad::UpdateRoFirmwareStatus::RMAD_UPDATE_RO_FIRMWARE_UNKNOWN;
 };
 
-TEST_F(RmadClientTest, CheckInRma_NotInRma) {
-  std::unique_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
-  dbus::MessageWriter(response.get()).AppendBool(false);
-
-  response_ = response.get();
-  EXPECT_CALL(*mock_proxy_.get(),
-              DoCallMethod(HasMember(rmad::kIsRmaRequiredMethod),
-                           dbus::ObjectProxy::TIMEOUT_USE_DEFAULT, _))
-      .WillOnce(Invoke(this, &RmadClientTest::OnCallDbusMethod));
-
-  base::RunLoop run_loop;
-  client_->CheckInRma(
-      base::BindLambdaForTesting([&](absl::optional<bool> response) {
-        EXPECT_TRUE(response.has_value());
-        EXPECT_FALSE(*response);
-        run_loop.Quit();
-      }));
-  run_loop.RunUntilIdle();
-}
-
-TEST_F(RmadClientTest, CheckInRma_InRma) {
-  std::unique_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
-  dbus::MessageWriter(response.get()).AppendBool(true);
-
-  response_ = response.get();
-  EXPECT_CALL(*mock_proxy_.get(),
-              DoCallMethod(HasMember(rmad::kIsRmaRequiredMethod),
-                           dbus::ObjectProxy::TIMEOUT_USE_DEFAULT, _))
-      .WillOnce(Invoke(this, &RmadClientTest::OnCallDbusMethod));
-
-  base::RunLoop run_loop;
-  client_->CheckInRma(
-      base::BindLambdaForTesting([&](absl::optional<bool> response) {
-        EXPECT_TRUE(response.has_value());
-        EXPECT_TRUE(*response);
-        run_loop.Quit();
-      }));
-  run_loop.RunUntilIdle();
-}
-
 TEST_F(RmadClientTest, GetCurrentState) {
   std::unique_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
   rmad::GetStateReply expected_proto;
@@ -658,9 +618,13 @@ TEST_F(RmadClientTest, AbortRma_EmptyResponse) {
 }
 
 TEST_F(RmadClientTest, GetLog) {
-  std::unique_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
   const std::string expected_log = "test rma log";
-  dbus::MessageWriter(response.get()).AppendString(expected_log);
+  std::unique_ptr<dbus::Response> response = dbus::Response::CreateEmpty();
+  rmad::GetLogReply expected_proto;
+  expected_proto.set_log(expected_log);
+  expected_proto.set_error(rmad::RMAD_ERROR_OK);
+  ASSERT_TRUE(dbus::MessageWriter(response.get())
+                  .AppendProtoAsArrayOfBytes(expected_proto));
 
   response_ = response.get();
   EXPECT_CALL(*mock_proxy_.get(),
@@ -669,10 +633,11 @@ TEST_F(RmadClientTest, GetLog) {
       .WillOnce(Invoke(this, &RmadClientTest::OnCallDbusMethod));
 
   base::RunLoop run_loop;
-  client_->GetLog(
-      base::BindLambdaForTesting([&](absl::optional<std::string> response) {
+  client_->GetLog(base::BindLambdaForTesting(
+      [&](absl::optional<rmad::GetLogReply> response) {
         EXPECT_TRUE(response.has_value());
-        EXPECT_EQ(response, expected_log);
+        EXPECT_EQ(response->log(), expected_log);
+        EXPECT_EQ(response->error(), rmad::RMAD_ERROR_OK);
         run_loop.Quit();
       }));
   run_loop.RunUntilIdle();
@@ -686,8 +651,8 @@ TEST_F(RmadClientTest, GetLog_NullResponse) {
       .WillOnce(Invoke(this, &RmadClientTest::OnCallDbusMethod));
 
   base::RunLoop run_loop;
-  client_->GetLog(
-      base::BindLambdaForTesting([&](absl::optional<std::string> response) {
+  client_->GetLog(base::BindLambdaForTesting(
+      [&](absl::optional<rmad::GetLogReply> response) {
         EXPECT_FALSE(response.has_value());
         run_loop.Quit();
       }));
@@ -704,8 +669,8 @@ TEST_F(RmadClientTest, GetLog_EmptyResponse) {
       .WillOnce(Invoke(this, &RmadClientTest::OnCallDbusMethod));
 
   base::RunLoop run_loop;
-  client_->GetLog(
-      base::BindLambdaForTesting([&](absl::optional<std::string> response) {
+  client_->GetLog(base::BindLambdaForTesting(
+      [&](absl::optional<rmad::GetLogReply> response) {
         EXPECT_FALSE(response.has_value());
         run_loop.Quit();
       }));

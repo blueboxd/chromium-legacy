@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/app_list/reorder/app_list_reorder_core.h"
 
+#include <stack>
+
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "base/numerics/safe_conversions.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 
@@ -20,7 +23,7 @@ struct SubsequenceStatus {
   int length = 0;
 
   // Used to reconstruct the subsequence.
-  absl::optional<int> prev_item;
+  absl::optional<size_t> prev_item;
 };
 
 // Returns true if `order` is increasing.
@@ -88,7 +91,7 @@ std::vector<int> SortAndGetLis(
   // element of `wrappers`.
   std::vector<SubsequenceStatus> status_array(wrappers->size());
 
-  for (int i = 0; i < status_array.size(); ++i) {
+  for (size_t i = 0; i < status_array.size(); ++i) {
     const syncer::StringOrdinal& item_ordinal = (*wrappers)[i].item_ordinal;
 
     // The element with the invalid ordinal should not be included in the LIS.
@@ -100,8 +103,8 @@ std::vector<int> SortAndGetLis(
     // form a new increasing subsequence, it is called "appendable".
     // `optimal_prev_index` is the index to the last element of the longest
     // appendable subsequence.
-    absl::optional<int> optimal_prev_index;
-    for (int prev_id_index = 0; prev_id_index < i; ++prev_id_index) {
+    absl::optional<size_t> optimal_prev_index;
+    for (size_t prev_id_index = 0; prev_id_index < i; ++prev_id_index) {
       const syncer::StringOrdinal& prev_item_ordinal =
           (*wrappers)[prev_id_index].item_ordinal;
 
@@ -169,7 +172,7 @@ void GenerateReorderParamsWithLis(
   // Handle the edge case that `lis` is empty, which means that all existing
   // ordinals are invalid and should be updated.
   if (lis.empty()) {
-    for (int index = 0; index < wrappers.size(); ++index) {
+    for (size_t index = 0; index < wrappers.size(); ++index) {
       const syncer::StringOrdinal updated_ordinal =
           (index == 0 ? syncer::StringOrdinal::CreateInitialOrdinal()
                       : reorder_params->back().ordinal.CreateAfter());
@@ -187,8 +190,11 @@ void GenerateReorderParamsWithLis(
   // The index of the next element waiting for handling in `lis`.
   int index_of_lis_front_element = 0;
 
-  while (index_of_item_to_update < wrappers.size()) {
-    if (index_of_lis_front_element >= lis.size()) {
+  const int wrappers_size = base::checked_cast<int>(wrappers.size());
+  const int lis_size = base::checked_cast<int>(lis.size());
+
+  while (index_of_item_to_update < wrappers_size) {
+    if (index_of_lis_front_element >= lis_size) {
       // All elements in `lis` have been visited.
 
       // The case that `lis` is empty has been handled before the loop.
@@ -284,84 +290,58 @@ void CalculateEntropyAndGetSortedSubsequence(
 }
 
 // Calculate neighbors' locations so that if the new item is inserted between
-// neighbors then `sorted_subsequence` after insertion still keeps `order`. Pass
-// the results through parameters. If the new item should be placed at the end,
-// either `prev` or `next` is empty. Note that `prev` and `next` are calculated
-// based on the local items (i.e. the app list items of the device where a new
-// item is added). Local items are contrast to global items which include all
-// items from all sync devices.
-template <typename T>
-void CalculateNeighbors(
-    ash::AppListSortOrder order,
-    const T& new_item_key_attribute,
-    const std::vector<reorder::SyncItemWrapper<T>>& sorted_subsequence,
-    syncer::StringOrdinal* prev,
-    syncer::StringOrdinal* next) {
+// neighbors then `sorted_subsequence` keeps the order defined by `compare`.
+// Passes the results through parameters. If the new item should be placed at
+// the start or end either `prev` or `next` is empty. Note that `prev` and
+// `next` are calculated based on the local items (i.e. the app list items of
+// the device where a new item is added). Local items are contrast to global
+// items which include all items from all sync devices.
+// `compare` is comparison function object which returns true if the first
+// argument is ordered before) the second.
+template <typename T, class Compare>
+void CalculateNeighbors(const T& item_wrapper,
+                        const std::vector<T>& sorted_subsequence,
+                        Compare compare,
+                        syncer::StringOrdinal* prev,
+                        syncer::StringOrdinal* next) {
   DCHECK(prev && !prev->IsValid());
   DCHECK(next && !next->IsValid());
 
-  // Find the first local item that is not a folder. Recall that
-  // `sorted_subsequence` guarantees:
-  // (1) Folder items are always placed in front of non-folder items.
-  // (2) The items of the same category follow `order`.
   DCHECK(!sorted_subsequence.empty());
-  auto first_non_folder_iter = std::find_if(
-      sorted_subsequence.cbegin(), sorted_subsequence.cend(),
-      [](const reorder::SyncItemWrapper<T>& item) { return !item.is_folder; });
 
-  // Handle the case that all items are folders. Note that the new item is
-  // assumed not to be a folder. TODO(https://crbug.com/1260875): handle the
-  // case that the new item is a folder.
-  if (first_non_folder_iter == sorted_subsequence.cend()) {
-    *prev = sorted_subsequence.back().item_ordinal;
+  // Find the item that should be placed right after the new item when the new
+  // item is added.
+  auto lower_bound =
+      std::lower_bound(sorted_subsequence.cbegin(), sorted_subsequence.cend(),
+                       item_wrapper, compare);
+
+  // Handle the case the `item` should be placed before all other items.
+  if (lower_bound == sorted_subsequence.cbegin()) {
+    *next = lower_bound->item_ordinal;
     return;
   }
 
-  const bool is_increasing = IsIncreasingOrder(order);
-
-  // Find the non-folder item that should be placed right after the new item
-  // when the new item is added.
-  auto lower_bound = std::lower_bound(
-      first_non_folder_iter, sorted_subsequence.cend(), new_item_key_attribute,
-      [&is_increasing](const reorder::SyncItemWrapper<T>& item,
-                       const std::u16string& val) {
-        return is_increasing ? item.key_attribute < val
-                             : item.key_attribute > val;
-      });
-
-  // Handle the case that `item` should be placed in front of all non-folder
-  // items.
-  if (lower_bound == first_non_folder_iter) {
-    *next = first_non_folder_iter->item_ordinal;
-    if (first_non_folder_iter != sorted_subsequence.cbegin()) {
-      // If there are folders, the new item should be placed between the last
-      // folder item and the first non-folder item
-      *prev = std::prev(first_non_folder_iter)->item_ordinal;
-    }
-    return;
-  }
-
-  // Handle the case that `item` should be placed behind all non-folder items.
+  // Handle the case that `item` should be placed after all other items..
   if (lower_bound == sorted_subsequence.cend()) {
     *prev = sorted_subsequence.back().item_ordinal;
     return;
   }
 
-  // The only scenario left is that the new item should be placed between two
-  // non-folder items.
+  // The `item` is placed between two other items.
   *prev = std::prev(lower_bound)->item_ordinal;
   *next = lower_bound->item_ordinal;
 }
 
 // Adjusts `prev` and `prev` in global scope so that the sorting order is kept
 // on all sync devices after placing `new_item` between adjusted neighbors.
-template <typename T>
-void AdjustNeighborsInGlobalScope(
-    ash::AppListSortOrder order,
-    const reorder::SyncItemWrapper<T>& new_item,
-    const std::vector<reorder::SyncItemWrapper<T>>& global_items,
-    syncer::StringOrdinal* prev,
-    syncer::StringOrdinal* next) {
+// `compare` is comparison function object which returns true if the first
+// argument is ordered before) the second.
+template <typename T, class Compare>
+void AdjustNeighborsInGlobalScope(const T& new_item,
+                                  const std::vector<T>& global_items,
+                                  Compare compare,
+                                  syncer::StringOrdinal* prev,
+                                  syncer::StringOrdinal* next) {
   // Before adjustment, `prev` and `next` are the new item's local neighbor
   // positions (see CalculateNeighbors() for more details). Recall that
   // different sync devices may have different sets of apps. This method checks
@@ -370,17 +350,6 @@ void AdjustNeighborsInGlobalScope(
   DCHECK(prev);
   DCHECK(next);
 
-  // The left neighbor in the global scope.
-  syncer::StringOrdinal global_prev;
-  if (prev->IsValid())
-    global_prev = *prev;
-
-  // The right neighbor in the global scope.
-  syncer::StringOrdinal global_next;
-  if (next->IsValid())
-    global_next = *next;
-
-  const bool is_increasing = IsIncreasingOrder(order);
   for (const auto& item : global_items) {
     const syncer::StringOrdinal& position = item.item_ordinal;
     if (!position.IsValid())
@@ -388,37 +357,21 @@ void AdjustNeighborsInGlobalScope(
 
     // Skip the loop iteration if `position` is not in the range of
     // (global_prev, global_next) because it cannot shrink the range.
-    if ((global_prev.IsValid() && !position.GreaterThan(global_prev)) ||
-        (global_next.IsValid() && !position.LessThan(global_next))) {
+    if ((prev->IsValid() && !position.GreaterThan(*prev)) ||
+        (next->IsValid() && !position.LessThan(*next))) {
       continue;
     }
 
-    // TODO(https://crbug.com/1261673): clean this code block when
-    // `SyncItemWrapper` comparison operators take item type into consideration.
-    const bool is_item_greater =
-        ((item.is_folder == new_item.is_folder &&
-          item.key_attribute > new_item.key_attribute) ||
-         (!item.is_folder && new_item.is_folder));
-    const bool is_equal = (item.is_folder == new_item.is_folder &&
-                           item.key_attribute == new_item.key_attribute);
-
-    if (is_equal || is_increasing == is_item_greater) {
+    if (compare(new_item, item)) {
       // Handle the case that the new item should be placed in front of `item`.
       // Note that if `item` is equal to `new_item`, `item` is always placed
       // after `new_item` to keep the consistency with `CalculateNeighbors()`.
-      global_next = position;
+      *next = position;
     } else {
       // Handle the case that the new item should be placed after `item`.
-      global_prev = position;
+      *prev = position;
     }
   }
-
-  // Store results.
-  if (global_prev.IsValid())
-    *prev = global_prev;
-
-  if (global_next.IsValid())
-    *next = global_next;
 }
 
 syncer::StringOrdinal CalculatePositionBetweenNeighbors(
@@ -444,28 +397,28 @@ syncer::StringOrdinal CalculatePositionBetweenNeighbors(
   return next.CreateBefore();
 }
 
-// Similar to `CalculateNewItemPosition()` but `order` is either
-// kNameAlphabetical or kNameReverseAlphabetical. Read the comment of
-// `CalculateNewItemPosition()` for parameters' meanings.
-bool CalculatePositionInNameOrder(
+// Implementation for `CalculateItemPositionInOrder()` parameterized by type
+// used to compare items. `compare` is comparison function object which returns
+// true if the first argument is ordered before) the second.
+template <typename T, class Compare>
+bool CalculatePositionForSyncItemWrapper(
     ash::AppListSortOrder order,
-    const ChromeAppListItem& new_item,
+    const reorder::SyncItemWrapper<T>& item_wrapper,
     const std::vector<const ChromeAppListItem*>& local_items,
     const AppListSyncableService::SyncItemMap* global_items,
+    Compare compare,
     syncer::StringOrdinal* target_position) {
-  DCHECK(order == ash::AppListSortOrder::kNameAlphabetical ||
-         order == ash::AppListSortOrder::kNameReverseAlphabetical);
-
-  std::vector<reorder::SyncItemWrapper<std::u16string>> local_item_wrappers =
-      reorder::GenerateWrappersFromAppListItems<std::u16string>(local_items);
+  std::vector<reorder::SyncItemWrapper<T>> local_item_wrappers =
+      reorder::GenerateWrappersFromAppListItems<T>(local_items,
+                                                   item_wrapper.id);
 
   if (local_item_wrappers.empty()) {
     *target_position = syncer::StringOrdinal::CreateInitialOrdinal();
     return true;
   }
 
-  std::vector<reorder::SyncItemWrapper<std::u16string>> sorted_subsequence;
   float entropy;
+  std::vector<reorder::SyncItemWrapper<T>> sorted_subsequence;
   CalculateEntropyAndGetSortedSubsequence(order, &local_item_wrappers, &entropy,
                                           &sorted_subsequence);
 
@@ -474,19 +427,38 @@ bool CalculatePositionInNameOrder(
     return false;
   }
 
-  // Use std::u16string for string comparison.
-  std::u16string item_name_utf16 = base::UTF8ToUTF16(new_item.name());
-
   syncer::StringOrdinal prev_neighbor;
   syncer::StringOrdinal next_neighbor;
-  CalculateNeighbors(order, item_name_utf16, sorted_subsequence, &prev_neighbor,
+  CalculateNeighbors(item_wrapper, sorted_subsequence, compare, &prev_neighbor,
                      &next_neighbor);
 
   if (global_items) {
     AdjustNeighborsInGlobalScope(
-        order, reorder::SyncItemWrapper<std::u16string>(new_item),
-        reorder::GenerateWrappersFromSyncItems<std::u16string>(*global_items),
-        &prev_neighbor, &next_neighbor);
+        item_wrapper, reorder::GenerateWrappersFromSyncItems<T>(*global_items),
+        compare, &prev_neighbor, &next_neighbor);
+  }
+
+  // Use the item's old position if the old value does not break the item order.
+  if (item_wrapper.item_ordinal.IsValid()) {
+    const syncer::StringOrdinal& old_ordinal = item_wrapper.item_ordinal;
+
+    // `old_ordinal` maintains the order with `prev_neighbor` if:
+    // (1) `prev_neighbor` is empty, or
+    // (2) `prev_neighbor` is not greater than `old_ordinal`.
+    const bool is_prev_neighbor_in_order =
+        (!prev_neighbor.IsValid() || !prev_neighbor.GreaterThan(old_ordinal));
+
+    // `old_ordinal` maintains the order with `next_neighbor` if:
+    // (1) `next_neighbor` is empty, or
+    // (2) `next_neighbor` is not less than `old_ordinal`.
+    const bool is_next_neighbor_in_order =
+        (!next_neighbor.IsValid() || !next_neighbor.LessThan(old_ordinal));
+
+    // Still use the old position if it maintains the order with both neighbors.
+    if (is_prev_neighbor_in_order && is_next_neighbor_in_order) {
+      *target_position = old_ordinal;
+      return true;
+    }
   }
 
   *target_position =
@@ -527,13 +499,13 @@ std::vector<reorder::ReorderParam> GenerateReorderParamsForAppListItems(
     case ash::AppListSortOrder::kNameReverseAlphabetical: {
       std::vector<reorder::SyncItemWrapper<std::u16string>> wrappers =
           reorder::GenerateWrappersFromAppListItems<std::u16string>(
-              app_list_items);
+              app_list_items, /*ignored_id=*/absl::nullopt);
       return GenerateReorderParamsImpl(order, &wrappers);
     }
     case ash::AppListSortOrder::kColor: {
       std::vector<reorder::SyncItemWrapper<ash::IconColor>> wrappers =
           reorder::GenerateWrappersFromAppListItems<ash::IconColor>(
-              app_list_items);
+              app_list_items, /*ignored_id=*/absl::nullopt);
       return GenerateReorderParamsImpl(order, &wrappers);
     }
     case ash::AppListSortOrder::kCustom:
@@ -542,29 +514,37 @@ std::vector<reorder::ReorderParam> GenerateReorderParamsForAppListItems(
   }
 }
 
-bool CalculateNewItemPosition(
+bool CalculateItemPositionInOrder(
     ash::AppListSortOrder order,
-    const ChromeAppListItem& new_item,
+    const ash::AppListItemMetadata& metadata,
     const std::vector<const ChromeAppListItem*>& local_items,
     const AppListSyncableService::SyncItemMap* global_items,
     syncer::StringOrdinal* target_position) {
-  // TODO(https://crbug.com/1260875): handle the case that `new_item` is a
-  // folder.
-  DCHECK(!new_item.is_folder());
-
   switch (order) {
     case ash::AppListSortOrder::kCustom:
-      // TODO(crbug.com/1270898): Color sort should handle placing a new item
-      // similar to the way that is done for name sorting.
-    case ash::AppListSortOrder::kColor:
       // Insert `item` at the front when the sort order is kCustom.
       DCHECK(global_items);
       *target_position = CalculateFrontPosition(*global_items);
       return true;
     case ash::AppListSortOrder::kNameAlphabetical:
-    case ash::AppListSortOrder::kNameReverseAlphabetical:
-      return CalculatePositionInNameOrder(order, new_item, local_items,
-                                          global_items, target_position);
+    case ash::AppListSortOrder::kNameReverseAlphabetical: {
+      UErrorCode error = U_ZERO_ERROR;
+      std::unique_ptr<icu::Collator> collator(
+          icu::Collator::createInstance(error));
+      if (U_FAILURE(error))
+        collator.reset();
+      StringWrapperComparator comparator(IsIncreasingOrder(order),
+                                         collator.get());
+      return CalculatePositionForSyncItemWrapper(
+          order, reorder::SyncItemWrapper<std::u16string>(metadata),
+          local_items, global_items, comparator, target_position);
+    }
+    case ash::AppListSortOrder::kColor: {
+      IconColorWrapperComparator comparator;
+      return CalculatePositionForSyncItemWrapper(
+          order, reorder::SyncItemWrapper<ash::IconColor>(metadata),
+          local_items, global_items, comparator, target_position);
+    }
   }
 }
 
@@ -603,7 +583,7 @@ float CalculateEntropyForTest(ash::AppListSortOrder order,
       std::vector<reorder::SyncItemWrapper<std::u16string>>
           local_item_wrappers =
               reorder::GenerateWrappersFromAppListItems<std::u16string>(
-                  model_updater->GetItems());
+                  model_updater->GetItems(), /*ignored_id=*/absl::nullopt);
       float entropy = 0.f;
       CalculateEntropyAndGetSortedSubsequence(
           order, &local_item_wrappers, &entropy,

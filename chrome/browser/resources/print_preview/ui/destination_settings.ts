@@ -25,15 +25,14 @@ import '../data/user_manager.js';
 import '../strings.m.js';
 
 import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {beforeNextRender, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {CloudPrintInterfaceImpl} from '../cloud_print_interface_impl.js';
-import {CloudOrigins, createDestinationKey, createRecentDestinationKey, Destination, DestinationOrigin, GooglePromotedDestinationId, makeRecentDestination, RecentDestination} from '../data/destination.js';
+import {createRecentDestinationKey, Destination, DestinationOrigin, GooglePromotedDestinationId, makeRecentDestination, RecentDestination} from '../data/destination.js';
 // <if expr="chromeos_ash or chromeos_lacros">
 import {SAVE_TO_DRIVE_CROS_DESTINATION_KEY} from '../data/destination.js';
 // </if>
@@ -232,8 +231,7 @@ export class PrintPreviewDestinationSettingsElement extends
     // but they should not be displayed in the dropdown until they have been
     // fetched by the DestinationStore, to ensure that they still exist.
     this.tracker_.add(
-        assert(this.destinationStore_),
-        DestinationStoreEventType.DESTINATIONS_INSERTED,
+        this.destinationStore_, DestinationStoreEventType.DESTINATIONS_INSERTED,
         this.updateDropdownDestinations_.bind(this));
 
     // <if expr="chromeos_ash or chromeos_lacros">
@@ -443,7 +441,7 @@ export class PrintPreviewDestinationSettingsElement extends
 
     // Determine if this destination is already in the recent destinations,
     // where in the array it is located, and whether or not it is visible.
-    const newDestination = makeRecentDestination(assert(this.destination));
+    const newDestination = makeRecentDestination(this.destination);
     const recentDestinations =
         this.getSettingValue('recentDestinations') as RecentDestination[];
     let indexFound = -1;
@@ -600,7 +598,8 @@ export class PrintPreviewDestinationSettingsElement extends
   }
 
   getDestinationStoreForTest(): DestinationStore {
-    return assert(this.destinationStore_!);
+    assert(this.destinationStore_);
+    return this.destinationStore_;
   }
 
   // <if expr="chromeos_ash or chromeos_lacros">

@@ -9,6 +9,7 @@
 #include <zircon/processargs.h>
 #include <zircon/syscalls/policy.h>
 
+#include <fuchsia/buildinfo/cpp/fidl.h>
 #include <fuchsia/camera3/cpp/fidl.h>
 #include <fuchsia/fonts/cpp/fidl.h>
 #include <fuchsia/intl/cpp/fidl.h>
@@ -66,6 +67,30 @@ struct SandboxConfig {
   uint32_t features;
 };
 
+// Services that are passed to all processes.
+// Prevent incorrect indentation due to the preprocessor lines within `({...})`:
+// clang-format off
+constexpr auto kMinimalServices = base::make_span((const char* const[]){
+    // TODO(crbug.com/1286960): Remove this and/or intl below if an alternative
+    // solution does not require access to the service in all processes.
+    fuchsia::buildinfo::Provider::Name_,
+
+// DebugData service is needed only for profiling.
+#if BUILDFLAG(CLANG_PROFILING)
+    "fuchsia.debugdata.DebugData",
+#endif
+
+    fuchsia::intl::PropertyProvider::Name_,
+    fuchsia::logger::LogSink::Name_,
+});
+// clang-format on
+
+// For processes that only get kMinimalServices and no other capabilities.
+constexpr SandboxConfig kMinimalConfig = {
+    base::span<const char* const>(),
+    0,
+};
+
 constexpr SandboxConfig kGpuConfig = {
     base::make_span((const char* const[]){
         // TODO(crbug.com/1224707): Use the fuchsia.scheduler API instead.
@@ -114,12 +139,6 @@ constexpr SandboxConfig kServiceWithJitConfig = {
     kAmbientMarkVmoAsExecutable,
 };
 
-// No-access-to-anything.
-constexpr SandboxConfig kEmptySandboxConfig = {
-    base::span<const char* const>(),
-    0,
-};
-
 const SandboxConfig* GetConfigForSandboxType(sandbox::mojom::Sandbox type) {
   switch (type) {
     case sandbox::mojom::Sandbox::kNoSandbox:
@@ -141,18 +160,9 @@ const SandboxConfig* GetConfigForSandboxType(sandbox::mojom::Sandbox type) {
     case sandbox::mojom::Sandbox::kService:
     case sandbox::mojom::Sandbox::kSpeechRecognition:
     case sandbox::mojom::Sandbox::kUtility:
-      return &kEmptySandboxConfig;
+      return &kMinimalConfig;
   }
 }
-
-// Services that are passed to all processes.
-constexpr auto kDefaultServices = base::make_span((const char* const[]) {
-// DebugData service is needed only for profiling.
-#if BUILDFLAG(CLANG_PROFILING)
-  "fuchsia.debugdata.DebugData",
-#endif
-      fuchsia::intl::PropertyProvider::Name_, fuchsia::logger::LogSink::Name_
-});
 
 }  // namespace
 
@@ -172,7 +182,7 @@ SandboxPolicyFuchsia::SandboxPolicyFuchsia(sandbox::mojom::Sandbox type) {
     service_directory_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     service_directory_ = std::make_unique<base::FilteredServiceDirectory>(
         base::ComponentContextForProcess()->svc().get());
-    for (const char* service_name : kDefaultServices) {
+    for (const char* service_name : kMinimalServices) {
       zx_status_t status = service_directory_->AddService(service_name);
       ZX_CHECK(status == ZX_OK, status)
           << "AddService(" << service_name << ") failed";

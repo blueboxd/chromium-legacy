@@ -11,11 +11,13 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker] interface AbortSignal : EventTarget
 [Worker]     static method abort
+[Worker]     static method timeout
 [Worker]     attribute @@toStringTag
 [Worker]     getter aborted
 [Worker]     getter onabort
 [Worker]     getter reason
 [Worker]     method constructor
+[Worker]     method throwIfAborted
 [Worker]     setter onabort
 [Worker] interface BackgroundFetchManager
 [Worker]     attribute @@toStringTag
@@ -719,6 +721,37 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker]     method decodingInfo
 [Worker]     method encodingInfo
+[Worker] interface MediaStreamTrack : EventTarget
+[Worker]     attribute @@toStringTag
+[Worker]     getter contentHint
+[Worker]     getter enabled
+[Worker]     getter id
+[Worker]     getter kind
+[Worker]     getter label
+[Worker]     getter muted
+[Worker]     getter oncapturehandlechange
+[Worker]     getter onended
+[Worker]     getter onmute
+[Worker]     getter onunmute
+[Worker]     getter readyState
+[Worker]     method applyConstraints
+[Worker]     method clone
+[Worker]     method constructor
+[Worker]     method getCapabilities
+[Worker]     method getCaptureHandle
+[Worker]     method getConstraints
+[Worker]     method getSettings
+[Worker]     method stop
+[Worker]     setter contentHint
+[Worker]     setter enabled
+[Worker]     setter oncapturehandlechange
+[Worker]     setter onended
+[Worker]     setter onmute
+[Worker]     setter onunmute
+[Worker] interface MediaStreamTrackGenerator : MediaStreamTrack
+[Worker]     attribute @@toStringTag
+[Worker]     getter writable
+[Worker]     method constructor
 [Worker] interface MessageChannel
 [Worker]     attribute @@toStringTag
 [Worker]     getter port1
@@ -1237,7 +1270,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method text
 [Worker] interface Scheduler
 [Worker]     attribute @@toStringTag
-[Worker]     getter currentTaskSignal
 [Worker]     method constructor
 [Worker]     method postTask
 [Worker] interface SecurityPolicyViolationEvent : Event
@@ -2843,7 +2875,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker] interface WorkerGlobalScope : EventTarget
 [Worker]     attribute @@toStringTag
-[Worker]     getter addressSpace
 [Worker]     getter caches
 [Worker]     getter crossOriginIsolated
 [Worker]     getter crypto

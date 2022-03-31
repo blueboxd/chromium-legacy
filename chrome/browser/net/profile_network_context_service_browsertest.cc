@@ -31,9 +31,11 @@
 #include "chrome/browser/net/profile_network_context_service_test_utils.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/policy_test_utils.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -41,10 +43,14 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/privacy_sandbox/privacy_sandbox_features.h"
+#include "components/privacy_sandbox/privacy_sandbox_settings.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
@@ -55,6 +61,7 @@
 #include "net/base/features.h"
 #include "net/base/load_flags.h"
 #include "net/disk_cache/cache_util.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -67,6 +74,9 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/test/trust_token_request_handler.h"
+#include "services/network/test/trust_token_test_server_handler_registration.h"
+#include "services/network/test/trust_token_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -141,8 +151,7 @@ IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceBrowsertest,
                                 &expected_cache_path);
   expected_cache_path = expected_cache_path.Append(chrome::kCacheDirname);
   base::ScopedAllowBlockingForTesting allow_blocking;
-  EXPECT_NE(base::FeatureList::IsEnabled(features::kDisableHttpDiskCache),
-            base::PathExists(expected_cache_path));
+  EXPECT_TRUE(base::PathExists(expected_cache_path));
 }
 
 IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceBrowsertest,
@@ -466,18 +475,12 @@ IN_PROC_BROWSER_TEST_F(AmbientAuthenticationTestWithPolicy, All) {
 // Test subclass that adds switches::kDiskCacheDir and switches::kDiskCacheSize
 // to the command line, to make sure they're respected.
 class ProfileNetworkContextServiceDiskCacheBrowsertest
-    : public ProfileNetworkContextServiceBrowsertest,
-      public testing::WithParamInterface<bool> {
+    : public ProfileNetworkContextServiceBrowsertest {
  public:
   const int64_t kCacheSize = 7;
 
   ProfileNetworkContextServiceDiskCacheBrowsertest() {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-    if (GetParam()) {
-      feature_list_.InitAndEnableFeature(features::kDisableHttpDiskCache);
-    } else {
-      feature_list_.InitAndDisableFeature(features::kDisableHttpDiskCache);
-    }
   }
 
   ~ProfileNetworkContextServiceDiskCacheBrowsertest() override {}
@@ -493,11 +496,10 @@ class ProfileNetworkContextServiceDiskCacheBrowsertest
 
  private:
   base::ScopedTempDir temp_dir_;
-  base::test::ScopedFeatureList feature_list_;
 };
 
 // Makes sure switches::kDiskCacheDir is hooked up correctly.
-IN_PROC_BROWSER_TEST_P(ProfileNetworkContextServiceDiskCacheBrowsertest,
+IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceDiskCacheBrowsertest,
                        DiskCacheLocation) {
   // Make sure command line switch is hooked up to the pref.
   ASSERT_EQ(TempPath(), g_browser_process->local_state()->GetFilePath(
@@ -524,12 +526,11 @@ IN_PROC_BROWSER_TEST_P(ProfileNetworkContextServiceDiskCacheBrowsertest,
           .Append(browser()->profile()->GetBaseName())
           .Append(chrome::kCacheDirname);
   base::ScopedAllowBlockingForTesting allow_blocking;
-  EXPECT_NE(base::FeatureList::IsEnabled(features::kDisableHttpDiskCache),
-            base::PathExists(expected_cache_path));
+  EXPECT_TRUE(base::PathExists(expected_cache_path));
 }
 
 // Makes sure switches::kDiskCacheSize is hooked up correctly.
-IN_PROC_BROWSER_TEST_P(ProfileNetworkContextServiceDiskCacheBrowsertest,
+IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceDiskCacheBrowsertest,
                        DiskCacheSize) {
   // Make sure command line switch is hooked up to the pref.
   ASSERT_EQ(kCacheSize, g_browser_process->local_state()->GetInteger(
@@ -547,16 +548,8 @@ IN_PROC_BROWSER_TEST_P(ProfileNetworkContextServiceDiskCacheBrowsertest,
   profile_network_context_service->ConfigureNetworkContextParams(
       /*in_memory=*/false, empty_relative_partition_path,
       &network_context_params, &cert_verifier_creation_params);
-  if (base::FeatureList::IsEnabled(features::kDisableHttpDiskCache)) {
-    EXPECT_EQ(0, network_context_params.http_cache_max_size);
-  } else {
-    EXPECT_EQ(kCacheSize, network_context_params.http_cache_max_size);
-  }
+  EXPECT_EQ(kCacheSize, network_context_params.http_cache_max_size);
 }
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         ProfileNetworkContextServiceDiskCacheBrowsertest,
-                         testing::Values(true, false));
 
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
 namespace {
@@ -733,3 +726,133 @@ INSTANTIATE_TEST_SUITE_P(
     /*disable_idle_sockets_close_on_memory_pressure=*/
     ::testing::Values(absl::nullopt, true, false));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+class ProfileNetworkContextTrustTokensBrowsertest
+    : public ProfileNetworkContextServiceBrowsertest {
+ public:
+  ProfileNetworkContextTrustTokensBrowsertest() {
+    auto& field_trial_param =
+        network::features::kTrustTokenOperationsRequiringOriginTrial;
+    feature_list_.InitWithFeaturesAndParameters(
+        // Enabled Features:
+        {{privacy_sandbox::kPrivacySandboxSettings3, {}},
+         {network::features::kTrustTokens,
+          {{field_trial_param.name,
+            field_trial_param.GetName(
+                network::features::TrustTokenOriginTrialSpec::
+                    kOriginTrialNotRequired)}}}},
+        // Disabled Features:
+        {});
+  }
+  ~ProfileNetworkContextTrustTokensBrowsertest() override = default;
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    https_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::test_server::EmbeddedTestServer::TYPE_HTTPS);
+    https_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+    https_server_->AddDefaultHandlers(
+        base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+    network::test::RegisterTrustTokenTestHandlers(https_server_.get(),
+                                                  &request_handler_);
+    ASSERT_TRUE(https_server_->Start());
+  }
+
+  void ProvideRequestHandlerKeyCommitmentsToNetworkService(
+      base::StringPiece host) {
+    base::flat_map<url::Origin, base::StringPiece> origins_and_commitments;
+    std::string key_commitments = request_handler_.GetKeyCommitmentRecord();
+
+    GURL::Replacements replacements;
+    replacements.SetHostStr(host);
+    origins_and_commitments.insert_or_assign(
+        url::Origin::Create(
+            https_server_->base_url().ReplaceComponents(replacements)),
+        key_commitments);
+
+    base::RunLoop run_loop;
+    content::GetNetworkService()->SetTrustTokenKeyCommitments(
+        network::WrapKeyCommitmentsForIssuers(
+            std::move(origins_and_commitments)),
+        run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  content::WebContents* GetActiveWebContents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+  void Flush() {
+    browser()
+        ->profile()
+        ->GetDefaultStoragePartition()
+        ->FlushNetworkInterfaceForTesting();
+  }
+
+ protected:
+  net::EmbeddedTestServer* https_test_server() { return https_server_.get(); }
+
+ private:
+  std::unique_ptr<net::EmbeddedTestServer> https_server_;
+  network::test::TrustTokenRequestHandler request_handler_;
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(ProfileNetworkContextTrustTokensBrowsertest,
+                       TrustTokenBlocked) {
+  base::test::ScopedFeatureList feature_list_;
+  ProvideRequestHandlerKeyCommitmentsToNetworkService("a.test");
+  auto* privacy_sandbox_settings =
+      PrivacySandboxSettingsFactory::GetForProfile(browser()->profile());
+  privacy_sandbox_settings->SetPrivacySandboxEnabled(true);
+  browser()->profile()->GetPrefs()->SetInteger(
+      prefs::kCookieControlsMode,
+      static_cast<int>(content_settings::CookieControlsMode::kOff));
+  Flush();
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_test_server()->GetURL("a.test", "/title1.html")));
+
+  std::string issuance_origin =
+      url::Origin::Create(https_test_server()->GetURL("a.test", "/"))
+          .Serialize();
+
+  std::string command = content::JsReplace(R"(
+  (async () => {
+    try {
+      await fetch("/issue", {trustToken: {type: 'token-request'}});
+      return await document.hasTrustToken($1);
+    } catch {
+      return false;
+    }
+  })();)",
+                                           issuance_origin);
+
+  EXPECT_EQ(true, EvalJs(GetActiveWebContents(), command));
+
+  privacy_sandbox_settings->SetPrivacySandboxEnabled(false);
+  Flush();
+
+  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_TRUE(content::WaitForLoadStop(GetActiveWebContents()));
+  EXPECT_EQ(false, EvalJs(GetActiveWebContents(), command));
+
+  privacy_sandbox_settings->SetPrivacySandboxEnabled(true);
+  browser()->profile()->GetPrefs()->SetInteger(
+      prefs::kCookieControlsMode,
+      static_cast<int>(content_settings::CookieControlsMode::kBlockThirdParty));
+  Flush();
+
+  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_TRUE(content::WaitForLoadStop(GetActiveWebContents()));
+  EXPECT_EQ(false, EvalJs(GetActiveWebContents(), command));
+
+  browser()->profile()->GetPrefs()->SetInteger(
+      prefs::kCookieControlsMode,
+      static_cast<int>(content_settings::CookieControlsMode::kOff));
+  Flush();
+
+  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
+  EXPECT_TRUE(content::WaitForLoadStop(GetActiveWebContents()));
+  EXPECT_EQ(true, EvalJs(GetActiveWebContents(), command));
+}

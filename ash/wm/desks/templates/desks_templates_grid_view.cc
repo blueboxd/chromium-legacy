@@ -13,6 +13,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/style/pill_button.h"
 #include "ash/wm/desks/templates/desks_templates_animations.h"
 #include "ash/wm/desks/templates/desks_templates_item_view.h"
@@ -21,6 +22,9 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_session.h"
+#include "base/i18n/string_compare.h"
+#include "third_party/icu/source/common/unicode/uloc.h"
+#include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -32,15 +36,27 @@ namespace ash {
 
 namespace {
 
-// Maximum number of columns for items when width >= height.
+// Items are laid out in landscape mode when the aspect ratio of the view is
+// above this number.
+constexpr float kAspectRatioLimit = 1.38f;
 constexpr int kLandscapeMaxColumns = 3;
-// Ditto for when width < height.
 constexpr int kPortraitMaxColumns = 2;
 
-// TODO(richui): Replace these temporary values once specs come out.
 constexpr int kGridPaddingDp = 25;
 
 constexpr int kFeedbackButtonSpacingDp = 40;
+
+// This is the maximum number of templates we will show in the grid. This
+// constant is used instead of the Desk model `GetMaxEntryCount()` because that
+// takes into consideration the number of `policy_entries_`, which can cause it
+// to exceed 6 items.
+// Note: Because we are only showing a maximum number of templates, there are
+// cases that not all existing templates will be displayed, such as when a user
+// has more than the maximum count. Since we also don't update the grid whenever
+// there is a change, deleting a template may result in existing templates not
+// being shown as well, if the user originally exceeded the max template count
+// when the grid was first shown.
+constexpr std::size_t kMaxTemplateCount = 6u;
 
 }  // namespace
 
@@ -112,64 +128,17 @@ DesksTemplatesGridView::CreateDesksTemplatesGridWidget(aura::Window* root) {
   return widget;
 }
 
-void DesksTemplatesGridView::UpdateGridUI(
+void DesksTemplatesGridView::PopulateGridUI(
     const std::vector<DeskTemplate*>& desk_templates,
     const gfx::Rect& grid_bounds) {
-  // Check if any of the template items or their name views have overview focus
-  // and notify the highlight controller. This should only be needed when a
-  // template item is deleted, but currently we call `UpdateGridUI` every time
-  // the model changes.
-  // TODO(richui): Remove this when `UpdateGridUI` is not rebuilt every time.
-  if (!grid_items_.empty()) {
-    auto* highlight_controller = Shell::Get()
-                                     ->overview_controller()
-                                     ->overview_session()
-                                     ->highlight_controller();
-    if (highlight_controller->IsFocusHighlightVisible()) {
-      // Notify the highlight controller if any of the about to be destroyed
-      // views have overview focus to prevent use-after-free.
-      for (DesksTemplatesItemView* template_view : grid_items_) {
-        if (template_view->IsViewHighlighted()) {
-          highlight_controller->OnViewDestroyingOrDisabling(template_view);
-          break;
-        }
-
-        if (template_view->name_view()->IsViewHighlighted()) {
-          highlight_controller->OnViewDestroyingOrDisabling(
-              template_view->name_view());
-          break;
-        }
-      }
-    }
-  }
-
-  RemoveAllChildViews();
-  grid_items_.clear();
-
-  if (desk_templates.empty())
+  if (desk_templates.empty()) {
+    RemoveAllChildViews();
+    grid_items_.clear();
     return;
-
-  DCHECK_LE(desk_templates.size(),
-            DesksTemplatesPresenter::Get()->GetMaxEntryCount());
-
-  std::vector<std::unique_ptr<DesksTemplatesItemView>> desk_template_views;
-
-  for (DeskTemplate* desk_template : desk_templates) {
-    desk_template_views.push_back(
-        std::make_unique<DesksTemplatesItemView>(desk_template));
   }
 
-  // Sort the `desk_template_views` into alphabetical order based on template
-  // name, note that accessible name == template name.
-  std::sort(desk_template_views.begin(), desk_template_views.end(),
-            [](const std::unique_ptr<DesksTemplatesItemView>& a,
-               const std::unique_ptr<DesksTemplatesItemView>& b) {
-              return a->GetAccessibleName() < b->GetAccessibleName();
-            });
-
-  // Add each of the templates to the grid.
-  for (auto& view : desk_template_views)
-    grid_items_.push_back(AddChildView(std::move(view)));
+  AddOrUpdateTemplates(std::vector<const DeskTemplate*>(desk_templates.begin(),
+                                                        desk_templates.end()));
 
   feedback_button_ = AddChildView(std::make_unique<PillButton>(
       base::BindRepeating(&DesksTemplatesGridView::OnFeedbackButtonPressed,
@@ -177,6 +146,9 @@ void DesksTemplatesGridView::UpdateGridUI(
       l10n_util::GetStringUTF16(
           IDS_ASH_PERSISTENT_DESKS_BAR_CONTEXT_MENU_FEEDBACK),
       PillButton::Type::kIcon, &kPersistentDesksBarFeedbackIcon));
+  feedback_button_->SetBackgroundColor(
+      AshColorProvider::Get()->GetBaseLayerColor(
+          AshColorProvider::BaseLayerType::kTransparent80));
 
   const gfx::Size previous_size = size();
 
@@ -188,6 +160,71 @@ void DesksTemplatesGridView::UpdateGridUI(
   // avoid double work in that case. See https://crbug.com/1275179.
   if (size() == previous_size)
     Layout();
+}
+
+void DesksTemplatesGridView::AddOrUpdateTemplates(
+    const std::vector<const DeskTemplate*>& entries) {
+  for (const DeskTemplate* entry : entries) {
+    auto iter = std::find_if(grid_items_.begin(), grid_items_.end(),
+                             [entry](DesksTemplatesItemView* grid_item) {
+                               return entry->uuid() == grid_item->uuid();
+                             });
+
+    if (iter != grid_items_.end()) {
+      (*iter)->UpdateTemplate(*entry);
+    } else if (grid_items_.size() < kMaxTemplateCount) {
+      grid_items_.push_back(
+          AddChildView(std::make_unique<DesksTemplatesItemView>(entry)));
+    }
+  }
+
+  // Sort the `grid_items_` into alphabetical order based on template name.
+  // Note that this doesn't update the order of the child views, but just sorts
+  // the vector. `Layout` is responsible for placing the views in the correct
+  // locations in the grid.
+  UErrorCode error_code = U_ZERO_ERROR;
+  std::unique_ptr<icu::Collator> collator(
+      icu::Collator::createInstance(error_code));  // Use current ICU locale.
+  DCHECK(U_SUCCESS(error_code));
+
+  std::sort(grid_items_.begin(), grid_items_.end(),
+            [&collator](const DesksTemplatesItemView* a,
+                        const DesksTemplatesItemView* b) {
+              return base::i18n::CompareString16WithCollator(
+                         *collator, a->name_view()->GetAccessibleName(),
+                         b->name_view()->GetAccessibleName()) < 0;
+            });
+
+  Layout();
+}
+
+void DesksTemplatesGridView::DeleteTemplates(
+    const std::vector<std::string>& uuids) {
+  OverviewHighlightController* highlight_controller =
+      Shell::Get()
+          ->overview_controller()
+          ->overview_session()
+          ->highlight_controller();
+  DCHECK(highlight_controller);
+
+  for (const std::string& uuid : uuids) {
+    auto iter =
+        std::find_if(grid_items_.begin(), grid_items_.end(),
+                     [uuid](DesksTemplatesItemView* grid_item) {
+                       return uuid == grid_item->uuid().AsLowercaseString();
+                     });
+
+    if (iter == grid_items_.end())
+      continue;
+
+    highlight_controller->OnViewDestroyingOrDisabling(*iter);
+    highlight_controller->OnViewDestroyingOrDisabling((*iter)->name_view());
+
+    RemoveChildViewT(*iter);
+    grid_items_.erase(iter);
+  }
+
+  Layout();
 }
 
 bool DesksTemplatesGridView::IsTemplateNameBeingModified() const {
@@ -207,8 +244,11 @@ void DesksTemplatesGridView::Layout() {
 
   const size_t count = grid_items_.size();
   const gfx::Size grid_item_size = grid_items_[0]->GetPreferredSize();
-  const size_t max_column_count =
-      width() >= height() ? kLandscapeMaxColumns : kPortraitMaxColumns;
+  const float aspect_ratio =
+      static_cast<float>(width()) / std::max(height(), 1);
+  const size_t max_column_count = aspect_ratio > kAspectRatioLimit
+                                      ? kLandscapeMaxColumns
+                                      : kPortraitMaxColumns;
   const size_t column_count = std::min(count, max_column_count);
   const size_t row_count =
       (count / max_column_count) + ((count % max_column_count) == 0 ? 0 : 1);

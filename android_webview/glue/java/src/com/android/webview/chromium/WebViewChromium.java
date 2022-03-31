@@ -5,7 +5,6 @@
 package com.android.webview.chromium;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -56,6 +55,7 @@ import android.webkit.WebViewRenderProcessClient;
 import android.widget.TextView;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.RequiresApi;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsStatics;
@@ -392,6 +392,8 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     // This is a workaround for https://crbug.com/622151.
     // In HTC's email app, InputConnection.setComposingText() will call WebView.evaluateJavaScript,
     // and thread assertion will occur. We turn off WebView thread assertion for this app.
+    // SuppressLint rationale: https://crrev.com/c/3439168/comments/d612ae09_b7bfca2b
+    @SuppressLint("SoonBlockedPrivateApi")
     private void disableThreadChecking() {
         try {
             Class<?> webViewClass = Class.forName("android.webkit.WebView");
@@ -966,7 +968,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     }
 
     @Override
-    @TargetApi(Build.VERSION_CODES.M)
+    @RequiresApi(Build.VERSION_CODES.M)
     public void insertVisualStateCallback(
             final long requestId, final VisualStateCallback callback) {
         recordWebViewApiCall(ApiCall.INSERT_VISUAL_STATE_CALLBACK);
@@ -1622,7 +1624,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     }
 
     @Override
-    @TargetApi(Build.VERSION_CODES.M)
+    @RequiresApi(Build.VERSION_CODES.M)
     public void postMessageToMainFrame(final WebMessage message, final Uri targetOrigin) {
         recordWebViewApiCall(ApiCall.POST_MESSAGE_TO_MAIN_FRAME);
         mSharedWebViewChromium.postMessageToMainFrame(message.getData(), targetOrigin.toString(),
@@ -1879,7 +1881,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         return mAwContents.getAccessibilityNodeProvider();
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
+    @RequiresApi(Build.VERSION_CODES.M)
     @Override
     public void onProvideVirtualStructure(final ViewStructure structure) {
         mFactory.startYourEngines(false);

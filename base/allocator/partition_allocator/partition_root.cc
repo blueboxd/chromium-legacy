@@ -20,9 +20,8 @@
 #include "base/allocator/partition_allocator/partition_page.h"
 #include "base/allocator/partition_allocator/reservation_offset_table.h"
 #include "base/allocator/partition_allocator/starscan/pcscan.h"
+#include "base/allocator/partition_allocator/tagging.h"
 #include "base/bits.h"
-#include "base/memory/nonscannable_memory.h"
-#include "base/memory/tagging.h"
 #include "build/build_config.h"
 
 #if BUILDFLAG(IS_WIN)
@@ -34,39 +33,145 @@
 #include <pthread.h>
 #endif
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-#include "base/allocator/allocator_shim_default_dispatch_to_partition_alloc.h"
-#endif
+#if BUILDFLAG(RECORD_ALLOC_INFO)
+namespace partition_alloc::internal {
+
+// Even if this is not hidden behind a BUILDFLAG, it should not use any memory
+// when recording is disabled, since it ends up in the .bss section.
+AllocInfo g_allocs = {};
+
+void RecordAllocOrFree(uintptr_t addr, size_t size) {
+  g_allocs.allocs[g_allocs.index.fetch_add(1, std::memory_order_relaxed) %
+                  kAllocInfoSize] = {addr, size};
+}
+
+}  // namespace partition_alloc::internal
+#endif  // BUILDFLAG(RECORD_ALLOC_INFO)
 
 namespace base {
+
+#if defined(PA_USE_PARTITION_ROOT_ENUMERATOR)
+
+namespace {
+
+internal::PartitionLock g_root_enumerator_lock;
+
+}
+
+template <bool thread_safe>
+internal::PartitionLock& PartitionRoot<thread_safe>::GetEnumeratorLock() {
+  return g_root_enumerator_lock;
+}
+
+namespace internal {
+
+class PartitionRootEnumerator {
+ public:
+  using EnumerateCallback = void (*)(ThreadSafePartitionRoot* root,
+                                     bool in_child);
+  enum EnumerateOrder {
+    kNormal,
+    kReverse,
+  };
+
+  static PartitionRootEnumerator& Instance() {
+    static PartitionRootEnumerator instance;
+    return instance;
+  }
+
+  void Enumerate(EnumerateCallback callback,
+                 bool in_child,
+                 EnumerateOrder order) NO_THREAD_SAFETY_ANALYSIS {
+    if (order == kNormal) {
+      ThreadSafePartitionRoot* root;
+      for (root = Head(partition_roots_); root != nullptr;
+           root = root->next_root)
+        callback(root, in_child);
+    } else {
+      PA_DCHECK(order == kReverse);
+      ThreadSafePartitionRoot* root;
+      for (root = Tail(partition_roots_); root != nullptr;
+           root = root->prev_root)
+        callback(root, in_child);
+    }
+  }
+
+  void Register(ThreadSafePartitionRoot* root) {
+    internal::PartitionAutoLock guard(
+        ThreadSafePartitionRoot::GetEnumeratorLock());
+    root->next_root = partition_roots_;
+    root->prev_root = nullptr;
+    if (partition_roots_)
+      partition_roots_->prev_root = root;
+    partition_roots_ = root;
+  }
+
+  void Unregister(ThreadSafePartitionRoot* root) {
+    internal::PartitionAutoLock guard(
+        ThreadSafePartitionRoot::GetEnumeratorLock());
+    ThreadSafePartitionRoot* prev = root->prev_root;
+    ThreadSafePartitionRoot* next = root->next_root;
+    if (prev) {
+      PA_DCHECK(prev->next_root == root);
+      prev->next_root = next;
+    } else {
+      PA_DCHECK(partition_roots_ == root);
+      partition_roots_ = next;
+    }
+    if (next) {
+      PA_DCHECK(next->prev_root == root);
+      next->prev_root = prev;
+    }
+    root->next_root = nullptr;
+    root->prev_root = nullptr;
+  }
+
+ private:
+  constexpr PartitionRootEnumerator() = default;
+
+  ThreadSafePartitionRoot* Head(ThreadSafePartitionRoot* roots) {
+    return roots;
+  }
+
+  ThreadSafePartitionRoot* Tail(ThreadSafePartitionRoot* roots)
+      NO_THREAD_SAFETY_ANALYSIS {
+    if (!roots)
+      return nullptr;
+    ThreadSafePartitionRoot* node = roots;
+    for (; node->next_root != nullptr; node = node->next_root)
+      ;
+    return node;
+  }
+
+  ThreadSafePartitionRoot* partition_roots_
+      GUARDED_BY(ThreadSafePartitionRoot::GetEnumeratorLock()) = nullptr;
+};
+
+}  // namespace internal
+
+#endif  // PA_USE_PARTITION_ROOT_ENUMERATOR
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
 namespace {
 
-#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#if defined(PA_HAS_ATFORK_HANDLER)
+
+void LockRoot(PartitionRoot<internal::ThreadSafe>* root,
+              bool) NO_THREAD_SAFETY_ANALYSIS {
+  PA_DCHECK(root);
+  root->lock_.Acquire();
+}
 
 // NO_THREAD_SAFETY_ANALYSIS: acquires the lock and doesn't release it, by
 // design.
 void BeforeForkInParent() NO_THREAD_SAFETY_ANALYSIS {
-  auto* regular_root = internal::PartitionAllocMalloc::Allocator();
-  regular_root->lock_.Acquire();
-
-  auto* original_root = internal::PartitionAllocMalloc::OriginalAllocator();
-  if (original_root)
-    original_root->lock_.Acquire();
-
-  auto* aligned_root = internal::PartitionAllocMalloc::AlignedAllocator();
-  if (aligned_root != regular_root)
-    aligned_root->lock_.Acquire();
-
-  if (auto* nonscannable_root =
-          internal::NonScannableAllocator::Instance().root())
-    nonscannable_root->lock_.Acquire();
-
-  if (auto* nonquarantinable_root =
-          internal::NonQuarantinableAllocator::Instance().root())
-    nonquarantinable_root->lock_.Acquire();
+  // ThreadSafePartitionRoot::GetLock() is private. So use
+  // g_root_enumerator_lock here.
+  g_root_enumerator_lock.Acquire();
+  internal::PartitionRootEnumerator::Instance().Enumerate(
+      LockRoot, false,
+      internal::PartitionRootEnumerator::EnumerateOrder::kNormal);
 
   internal::ThreadCacheRegistry::GetLock().Acquire();
 }
@@ -81,29 +186,21 @@ void UnlockOrReinit(T& lock, bool in_child) NO_THREAD_SAFETY_ANALYSIS {
     lock.Release();
 }
 
+void UnlockOrReinitRoot(PartitionRoot<internal::ThreadSafe>* root,
+                        bool in_child) NO_THREAD_SAFETY_ANALYSIS {
+  UnlockOrReinit(root->lock_, in_child);
+}
+
 void ReleaseLocks(bool in_child) NO_THREAD_SAFETY_ANALYSIS {
   // In reverse order, even though there are no lock ordering dependencies.
   UnlockOrReinit(internal::ThreadCacheRegistry::GetLock(), in_child);
+  internal::PartitionRootEnumerator::Instance().Enumerate(
+      UnlockOrReinitRoot, in_child,
+      internal::PartitionRootEnumerator::EnumerateOrder::kReverse);
 
-  if (auto* nonquarantinable_root =
-          internal::NonQuarantinableAllocator::Instance().root())
-    UnlockOrReinit(nonquarantinable_root->lock_, in_child);
-
-  if (auto* nonscannable_root =
-          internal::NonScannableAllocator::Instance().root())
-    UnlockOrReinit(nonscannable_root->lock_, in_child);
-
-  auto* regular_root = internal::PartitionAllocMalloc::Allocator();
-
-  auto* aligned_root = internal::PartitionAllocMalloc::AlignedAllocator();
-  if (aligned_root != regular_root)
-    UnlockOrReinit(aligned_root->lock_, in_child);
-
-  auto* original_root = internal::PartitionAllocMalloc::OriginalAllocator();
-  if (original_root)
-    UnlockOrReinit(original_root->lock_, in_child);
-
-  UnlockOrReinit(regular_root->lock_, in_child);
+  // ThreadSafePartitionRoot::GetLock() is private. So use
+  // g_root_enumerator_lock here.
+  UnlockOrReinit(g_root_enumerator_lock, in_child);
 }
 
 void AfterForkInParent() {
@@ -123,7 +220,7 @@ void AfterForkInChild() {
   internal::ThreadCacheRegistry::Instance()
       .ForcePurgeAllThreadAfterForkUnsafe();
 }
-#endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#endif  // defined(PA_HAS_ATFORK_HANDLER)
 
 std::atomic<bool> g_global_init_called;
 void PartitionAllocMallocInitOnce() {
@@ -238,22 +335,22 @@ static size_t PartitionPurgeSlotSpan(
   // slots are not in use.
   for (PartitionFreelistEntry* entry = slot_span->get_freelist_head(); entry;
        /**/) {
-    size_t slot_index =
-        (base::memory::UnmaskPtr(reinterpret_cast<uintptr_t>(entry)) -
-         slot_span_start) /
-        slot_size;
+    size_t slot_index = (::partition_alloc::internal::UnmaskPtr(
+                             reinterpret_cast<uintptr_t>(entry)) -
+                         slot_span_start) /
+                        slot_size;
     PA_DCHECK(slot_index < num_slots);
     slot_usage[slot_index] = 0;
-    entry = entry->GetNext(slot_size);
 #if !BUILDFLAG(IS_WIN)
-    // If we have a slot where the masked freelist entry is 0, we can actually
-    // discard that freelist entry because touching a discarded page is
-    // guaranteed to return original content or 0. (Note that this optimization
-    // won't fire on big-endian machines because the masking function is
+    // If we have a slot where the encoded next pointer is 0, we can actually
+    // discard that entry because touching a discarded page is guaranteed to
+    // return the original content or 0. (Note that this optimization won't be
+    // effective on big-endian machines because the masking function is
     // negation.)
-    if (!internal::PartitionFreelistEntry::Encode(entry))
+    if (entry->IsEncodedNextPtrZero())
       last_slot = slot_index;
 #endif
+    entry = entry->GetNext(slot_size);
   }
 
   // If the slot(s) at the end of the slot span are not in used, we can truncate
@@ -294,9 +391,8 @@ static size_t PartitionPurgeSlotSpan(
         if (slot_usage[slot_index])
           continue;
 
-        auto* entry = new (
-            reinterpret_cast<void*>(slot_span_start + (slot_size * slot_index)))
-            internal::PartitionFreelistEntry();
+        auto* entry = PartitionFreelistEntry::EmplaceAndInitNull(
+            slot_span_start + (slot_size * slot_index));
         if (!head) {
           head = entry;
           back = entry;
@@ -539,13 +635,13 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
              (SystemPageSize() == (size_t{1} << 14)));
 #endif
 
-    ::partition_alloc::ScopedGuard guard{lock_};
+    ::partition_alloc::internal::ScopedGuard guard{lock_};
     if (initialized)
       return;
 
     // Swaps out the active no-op tagging intrinsics with MTE-capable ones, if
     // running on the right hardware.
-    memory::InitializeMTESupportIfNeeded();
+    ::partition_alloc::internal::InitializeMTESupportIfNeeded();
 
 #if defined(PA_HAS_64_BITS_POINTERS)
     // Reserve address space for partition alloc.
@@ -647,6 +743,10 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
       internal::ThreadCache::Init(this);
 #endif  // !defined(PA_THREAD_CACHE_SUPPORTED)
 
+#if defined(PA_USE_PARTITION_ROOT_ENUMERATOR)
+    internal::PartitionRootEnumerator::Instance().Register(this);
+#endif
+
     initialized = true;
   }
 
@@ -662,12 +762,17 @@ PartitionRoot<thread_safe>::~PartitionRoot() {
   PA_CHECK(!with_thread_cache)
       << "Must not destroy a partition with a thread cache";
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+
+#if defined(PA_USE_PARTITION_ROOT_ENUMERATOR)
+  if (initialized)
+    internal::PartitionRootEnumerator::Instance().Unregister(this);
+#endif  // defined(PA_USE_PARTITION_ALLOC_ENUMERATOR)
 }
 
 template <bool thread_safe>
 void PartitionRoot<thread_safe>::EnableThreadCacheIfSupported() {
 #if defined(PA_THREAD_CACHE_SUPPORTED)
-  ::partition_alloc::ScopedGuard guard{lock_};
+  ::partition_alloc::internal::ScopedGuard guard{lock_};
   PA_CHECK(!with_thread_cache);
   // By the time we get there, there may be multiple threads created in the
   // process. Since `with_thread_cache` is accessed without a lock, it can
@@ -750,7 +855,7 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForDirectMap(
     // Shrink by decommitting unneeded pages and making them inaccessible.
     size_t decommit_size = current_slot_size - new_slot_size;
     DecommitSystemPagesForData(slot_start + new_slot_size, decommit_size,
-                               PageUpdatePermissions);
+                               PageAccessibilityDisposition::kRequireUpdate);
     // Since the decommited system pages are still reserved, we don't need to
     // change the entries for decommitted pages in the reservation offset table.
   } else if (new_slot_size <= available_reservation_size) {
@@ -759,7 +864,7 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForDirectMap(
     size_t recommit_slot_size_growth = new_slot_size - current_slot_size;
     RecommitSystemPagesForData(slot_start + current_slot_size,
                                recommit_slot_size_growth,
-                               PageUpdatePermissions);
+                               PageAccessibilityDisposition::kRequireUpdate);
     // The recommited system pages had been already reserved and all the
     // entries in the reservation offset table (for entire reservation_size
     // region) have been already initialized.
@@ -774,18 +879,18 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForDirectMap(
     return false;
   }
 
-  total_size_of_allocated_bytes -= slot_span->bucket->slot_size;
+  DecreaseTotalSizeOfAllocatedBytes(reinterpret_cast<uintptr_t>(slot_span),
+                                    slot_span->bucket->slot_size);
   slot_span->SetRawSize(raw_size);
   slot_span->bucket->slot_size = new_slot_size;
-  total_size_of_allocated_bytes += slot_span->bucket->slot_size;
-  max_size_of_allocated_bytes =
-      std::max(max_size_of_allocated_bytes, total_size_of_allocated_bytes);
+  IncreaseTotalSizeOfAllocatedBytes(reinterpret_cast<uintptr_t>(slot_span),
+                                    slot_span->bucket->slot_size, raw_size);
 
 #if DCHECK_IS_ON()
   // Write a new trailing cookie.
   if (allow_cookie) {
     auto* object =
-        reinterpret_cast<unsigned char*>(AdjustPointerForExtrasAdd(slot_start));
+        reinterpret_cast<unsigned char*>(SlotStartToObject(slot_start));
     internal::PartitionCookieWriteValue(object +
                                         slot_span->GetUsableSize(this));
   }
@@ -814,7 +919,7 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForNormalBuckets(
   // statistics (and cookie, if present).
   if (slot_span->CanStoreRawSize()) {
 #if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT) && DCHECK_IS_ON()
-    uintptr_t slot_start = AdjustPointerForExtrasSubtract(ptr);
+    uintptr_t slot_start = ObjectToSlotStart(ptr);
     internal::PartitionRefCount* old_ref_count;
     if (brp_enabled()) {
       old_ref_count = internal::PartitionRefCountPointer(slot_start);
@@ -880,12 +985,12 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
   }
   if (LIKELY(!overridden)) {
     // |ptr| may have been allocated in another root.
-    SlotSpan* slot_span = SlotSpan::FromSlotInnerPtr(ptr);
+    SlotSpan* slot_span = SlotSpan::FromObject(ptr);
     auto* old_root = PartitionRoot::FromSlotSpan(slot_span);
     bool success = false;
     bool tried_in_place_for_direct_map = false;
     {
-      ::partition_alloc::ScopedGuard guard{old_root->lock_};
+      ::partition_alloc::internal::ScopedGuard guard{old_root->lock_};
       // TODO(crbug.com/1257655): See if we can afford to make this a CHECK.
       PA_DCHECK(IsValidSlotSpan(slot_span));
       old_usable_size = slot_span->GetUsableSize(old_root);
@@ -931,7 +1036,7 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
 template <bool thread_safe>
 void PartitionRoot<thread_safe>::PurgeMemory(int flags) {
   {
-    ::partition_alloc::ScopedGuard guard{lock_};
+    ::partition_alloc::internal::ScopedGuard guard{lock_};
     // Avoid purging if there is PCScan task currently scheduled. Since pcscan
     // takes snapshot of all allocated pages, decommitting pages here (even
     // under the lock) is racy.
@@ -1008,7 +1113,7 @@ void PartitionRoot<thread_safe>::DumpStats(const char* partition_name,
   // Collect data with the lock held, cannot allocate or call third-party code
   // below.
   {
-    ::partition_alloc::ScopedGuard guard{lock_};
+    ::partition_alloc::internal::ScopedGuard guard{lock_};
     PA_DCHECK(total_size_of_allocated_bytes <= max_size_of_allocated_bytes);
 
     stats.total_mmapped_bytes =
@@ -1106,7 +1211,7 @@ void PartitionRoot<thread_safe>::DeleteForTesting(
 
 template <bool thread_safe>
 void PartitionRoot<thread_safe>::ResetBookkeepingForTesting() {
-  ::partition_alloc::ScopedGuard guard{lock_};
+  ::partition_alloc::internal::ScopedGuard guard{lock_};
   max_size_of_allocated_bytes = total_size_of_allocated_bytes;
   max_size_of_committed_pages.store(total_size_of_committed_pages);
 }

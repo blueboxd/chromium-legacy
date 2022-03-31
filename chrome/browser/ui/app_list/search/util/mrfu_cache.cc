@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
 
 namespace app_list {
@@ -166,6 +167,14 @@ MrfuCache::Items MrfuCache::GetAllNormalized() {
   return results;
 }
 
+void MrfuCache::Delete(const std::string& item) {
+  if (!proto_.initialized())
+    return;
+  proto_->set_total_score(proto_->total_score() - Get(item));
+  proto_->mutable_items()->erase(item);
+  proto_.QueueWrite();
+}
+
 void MrfuCache::ResetWithItems(const Items& items) {
   DCHECK(proto_.initialized());
   proto_->Clear();
@@ -198,7 +207,7 @@ void MrfuCache::Decay(Score* score) {
 }
 
 void MrfuCache::MaybeCleanup() {
-  if (proto_->items_size() < 2 * max_items_)
+  if (base::checked_cast<size_t>(proto_->items_size()) < 2u * max_items_)
     return;
 
   // Ensure all scores are up to date, and then keep all those over the

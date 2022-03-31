@@ -26,6 +26,7 @@ extern const base::Feature kIframeOneGoogleBar;
 extern const base::Feature kNtpRepeatableQueries;
 extern const base::Feature kOneGoogleBarModalOverlays;
 extern const base::Feature kRealboxMatchOmniboxTheme;
+extern const base::Feature kRealboxMatchSearchboxTheme;
 extern const base::Feature kRealboxUseGoogleGIcon;
 extern const base::Feature kNtpOneGoogleBar;
 extern const base::Feature kNtpLogo;
@@ -44,6 +45,8 @@ extern const base::Feature kNtpDummyModules;
 #endif
 extern const base::Feature kNtpPhotosModule;
 extern const base::Feature kNtpPhotosModuleSoftOptOut;
+extern const base::Feature kNtpPhotosModulePersonalizedOptInCard;
+extern const base::Feature kNtpPhotosModuleCustomizedOptInTitle;
 extern const base::Feature kNtpSafeBrowsingModule;
 extern const base::Feature kNtpModulesDragAndDrop;
 
@@ -85,11 +88,17 @@ extern const char kNtpDriveModuleCacheMaxAgeSParam[];
 extern const char kNtpDriveModuleExperimentGroupParam[];
 // Parameter determining the type of Photos data to render.
 extern const char kNtpPhotosModuleDataParam[];
+// Parameter determining the title for the opt-in card.
+extern const char kNtpPhotosModuleOptInTitleParam[];
 // Parameter determining the number of times a module is shown to a user
 // before cooldown starts.
 extern const char kNtpSafeBrowsingModuleCountMaxParam[];
 // Parameter determining the cooldown period (in days) for a target user.
 extern const char kNtpSafeBrowsingModuleCooldownPeriodDaysParam[];
+// Parameter determining the variation of the omnibox theme matching.
+extern const char kRealboxMatchOmniboxThemeVariantParam[];
+// Parameter determining the variations of searchbox theme matching.
+extern const char kRealboxMatchSearchboxThemeParam[];
 
 // Returns the timeout after which the load of a module should be aborted.
 base::TimeDelta GetModulesLoadTimeout();

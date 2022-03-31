@@ -49,6 +49,7 @@
 #include "chrome/browser/ui/views/frame/top_container_background.h"
 #include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_contextual_menu.h"
 #include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
+#include "chrome/browser/ui/views/location_bar/intent_chip_button.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container.h"
@@ -497,19 +498,27 @@ void ToolbarView::ShowIntentPickerBubble(
     std::vector<IntentPickerBubbleView::AppInfo> app_info,
     bool show_stay_in_chrome,
     bool show_remember_selection,
-    PageActionIconType icon_type,
+    IntentPickerBubbleView::BubbleType bubble_type,
     const absl::optional<url::Origin>& initiating_origin,
     IntentPickerResponse callback) {
-  PageActionIconView* const intent_picker_view =
-      GetPageActionIconView(icon_type);
-  if (!intent_picker_view)
+  views::Button* highlighted_button = nullptr;
+  if (bubble_type == IntentPickerBubbleView::BubbleType::kClickToCall) {
+    highlighted_button =
+        GetPageActionIconView(PageActionIconType::kClickToCall);
+  } else if (base::FeatureList::IsEnabled(features::kLinkCapturingUiUpdate)) {
+    highlighted_button = GetIntentChipButton();
+  } else {
+    highlighted_button =
+        GetPageActionIconView(PageActionIconType::kIntentPicker);
+  }
+
+  if (!highlighted_button)
     return;
 
   IntentPickerBubbleView::ShowBubble(
-      location_bar(), intent_picker_view, icon_type, GetWebContents(),
+      location_bar(), highlighted_button, bubble_type, GetWebContents(),
       std::move(app_info), show_stay_in_chrome, show_remember_selection,
       initiating_origin, std::move(callback));
-  intent_picker_view->Update();
 }
 
 void ToolbarView::ShowBookmarkBubble(
@@ -909,6 +918,10 @@ ToolbarButton* ToolbarView::GetBackButton() {
 
 ReloadButton* ToolbarView::GetReloadButton() {
   return reload_;
+}
+
+IntentChipButton* ToolbarView::GetIntentChipButton() {
+  return location_bar()->intent_chip();
 }
 
 BrowserRootView::DropIndex ToolbarView::GetDropIndex(

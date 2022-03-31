@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/callback.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace aura {
@@ -23,17 +24,17 @@ namespace gfx {
 class Rect;
 }  // namespace gfx
 
-namespace media {
-namespace mojom {
+namespace media::mojom {
 class AudioStreamFactory;
-}  // namespace mojom
-}  // namespace media
+}  // namespace media::mojom
 
-namespace recording {
-namespace mojom {
+namespace recording::mojom {
 class RecordingService;
-}  // namespace mojom
-}  // namespace recording
+}  // namespace recording::mojom
+
+namespace video_capture::mojom {
+class VideoSourceProvider;
+}  // namespace video_capture::mojom
 
 namespace ash {
 
@@ -48,6 +49,12 @@ class RecordingOverlayView;
 // check. Otherwise, capture mode will abort the operation.
 using OnCaptureModeDlpRestrictionChecked =
     base::OnceCallback<void(bool proceed)>;
+
+// Defines the type of the callback that will be invoked when the remaining free
+// space on Drive is retrieved. `free_remaining_bytes` will be set to -1 if
+// there is an error in computing the DriveFS quota.
+using OnGotDriveFsFreeSpace =
+    base::OnceCallback<void(int64_t free_remaining_bytes)>;
 
 // Defines the interface for the delegate of CaptureModeController, that can be
 // implemented by an ash client (e.g. Chrome). The CaptureModeController owns
@@ -148,6 +155,16 @@ class ASH_PUBLIC_EXPORT CaptureModeDelegate {
   // such as annotations.
   virtual std::unique_ptr<RecordingOverlayView> CreateRecordingOverlayView()
       const = 0;
+
+  // Connects the given `receiver` to the VideoSourceProvider implementation in
+  // the video capture service.
+  virtual void ConnectToVideoSourceProvider(
+      mojo::PendingReceiver<video_capture::mojom::VideoSourceProvider>
+          receiver) = 0;
+
+  // Gets the remaining free space on DriveFS and invokes `callback` with that
+  // value, or -1 if there's an error in computing the DriveFS quota.
+  virtual void GetDriveFsFreeSpaceBytes(OnGotDriveFsFreeSpace callback) = 0;
 };
 
 }  // namespace ash

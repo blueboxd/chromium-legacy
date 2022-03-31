@@ -1,4 +1,5 @@
 const STORE_URL = '/wpt_internal/fenced_frame/resources/key-value-store.py';
+const REMOTE_EXECUTOR_URL = '/wpt_internal/fenced_frame/resources/remote-context-executor.https.html';
 
 // This is a dictionary of stash keys to access a specific piece of the
 // server-side stash. In order to communicate between browsing contexts that
@@ -11,112 +12,10 @@ const STORE_URL = '/wpt_internal/fenced_frame/resources/key-value-store.py';
 // test that passes data, since multiple tests can run in parallel and would
 // otherwise interfere with each other's server state.
 const KEYS = {
-  // This key is only used to test that the server-side stash works properly.
-  "dummy"                                       : "00000000-0000-0000-0000-000000000000",
-
-  "window.top"                                  : "00000000-0000-0000-0000-000000000003",
-  "window.top ACK"                              : "00000000-0000-0000-0000-000000000004",
-
-  "window.parent"                               : "00000000-0000-0000-0000-000000000005",
-  "window.parent ACK"                           : "00000000-0000-0000-0000-000000000006",
-
-  "location.ancestorOrigins"                    : "00000000-0000-0000-0000-000000000007",
-  "location.ancestorOrigins ACK"                : "00000000-0000-0000-0000-000000000008",
-
-  "data: URL"                                   : "00000000-0000-0000-0000-000000000009",
-  "204 response"                                : "00000000-0000-0000-0000-00000000000A",
-
-  "keyboard.lock"                               : "00000000-0000-0000-0000-00000000000B",
-
-  "credentials.create"                          : "00000000-0000-0000-0000-00000000000C",
-  "credentials.create ACK"                      : "00000000-0000-0000-0000-00000000000D",
-
-  "keyboard.lock"                               : "00000000-0000-0000-0000-00000000000E",
-
-  "navigation_success"                          : "00000000-0000-0000-0000-00000000000F",
-  "ready_for_navigation"                        : "00000000-0000-0000-0000-000000000010",
-
-  "secFetchDest.value"                          : "00000000-0000-0000-0000-000000000011",
-
-  "fenced_navigation_complete"                  : "00000000-0000-0000-0000-000000000013",
-  "outer_page_ready_for_next_fenced_navigation" : "00000000-0000-0000-0000-000000000014",
-
-  "focus-changed"                               : "00000000-0000-0000-0000-000000000015",
-  "focus-ready"                                 : "00000000-0000-0000-0000-000000000016",
-
-  "navigate_ancestor"                           : "00000000-0000-0000-0000-000000000017",
-  "navigate_ancestor_from_nested"               : "00000000-0000-0000-0000-000000000018",
-
-  "window.frameElement"                         : "00000000-0000-0000-0000-000000000019",
-
-  "keyboard.getLayoutMap"                       : "00000000-0000-0000-0000-00000000001A",
-
-  "permission.notification"                     : "00000000-0000-0000-0000-00000000001B",
-
-  "serviceWorker.frameType"                     : "00000000-0000-0000-0000-00000000001C",
-  "serviceWorker.frameType ACK"                 : "00000000-0000-0000-0000-00000000001D",
-
-  "popup_noopener"                              : "00000000-0000-0000-0000-00000000001E",
-  "popup_openee"                                : "00000000-0000-0000-0000-00000000001F",
-
-  "permission.geolocation"                      : "00000000-0000-0000-0000-000000000020",
-
-  "presentation.receiver"                       : "00000000-0000-0000-0000-000000000021",
-
-  "background-sync"                             : "00000000-0000-0000-0000-000000000022",
-
-  "prerender READY"                             : "00000000-0000-0000-0000-000000000023",
-  "prerender LOADED"                            : "00000000-0000-0000-0000-000000000024",
-  "prerender ACTIVATED"                         : "00000000-0000-0000-0000-000000000025",
-
-  "pointer-lock"                                : "00000000-0000-0000-0000-000000000026",
-
-  "referrer.value"                              : "00000000-0000-0000-0000-000000000027",
-  "referrer.value ACK"                          : "00000000-0000-0000-0000-000000000028",
-
-  "bluetooth.requestDevice"                     : "00000000-0000-0000-0000-000000000029",
-
-  "usb.requestDevice"                           : "00000000-0000-0000-0000-00000000002A",
-
-  "navigator.share"                             : "00000000-0000-0000-0000-00000000002B",
-
-  "background-fetch"                            : "00000000-0000-0000-0000-00000000002C",
-
-  "window.outersize"                            : "00000000-0000-0000-0000-00000000002D",
-  "window.innersize"                            : "00000000-0000-0000-0000-00000000002E",
-
-  "fenced_history_length"                       : "00000000-0000-0000-0000-00000000002F",
-  "outer_page_ready_for_next_navigation"        : "00000000-0000-0000-0000-000000000030",
-
   "embed_coep_require_corp"                     : "00000000-0000-0000-0000-000000000031",
   "embed_no_coep"                               : "00000000-0000-0000-0000-000000000032",
-
-  "hid.getDevice"                               : "00000000-0000-0000-0000-000000000033",
-
-  "ndef.write"                                  : "00000000-0000-0000-0000-000000000034",
-  "ndef.scan"                                   : "00000000-0000-0000-0000-000000000035",
-
-  "history_navigation_performed"                : "00000000-0000-0000-0000-000000000036",
-  "outer_page_ready"                            : "00000000-0000-0000-0000-000000000037",
-
-  "resize_lock_inner_page_is_ready"             : "00000000-0000-0000-0000-000000000038",
-  "resize_lock_resize_is_done"                  : "00000000-0000-0000-0000-000000000039",
-  "resize_lock_report_inner_dimensions"         : "00000000-0000-0000-0000-00000000004A",
-
-  "csp"                                         : "00000000-0000-0000-0000-00000000004B",
-
-  "cookie_value"                                : "00000000-0000-0000-0000-00000000004C",
-
-  "csp-fenced-frame-src-blocked"                : "00000000-0000-0000-0000-00000000004D",
-  "csp-fenced-frame-src-allowed"                : "00000000-0000-0000-0000-00000000004E",
-  "csp-frame-src-blocked"                       : "00000000-0000-0000-0000-00000000004F",
-  "csp-frame-src-allowed"                       : "00000000-0000-0000-0000-000000000050",
-
-  "frame_navigation"                            : "00000000-0000-0000-0000-000000000051",
-  "frame_navigation ACK"                        : "00000000-0000-0000-0000-000000000052",
-
-  "maxframes_response"                          : "00000000-0000-0000-0000-000000000053",
-  // Add keys above this list, incrementing the key UUID in hexadecimal
+  // Don't use the KEYS system; use token() instead. For details, see
+  // third_party/blink/web_tests/wpt_internal/fenced_frame/README.md.
 }
 
 // Creates a URL that includes a list of stash key UUIDs that are being used
@@ -129,7 +28,7 @@ const KEYS = {
 function generateURL(href, keylist) {
   const ret_url = new URL(href, location.href);
   ret_url.searchParams.append("keylist", keylist.join(','));
-  return ret_url.toString().replace(/%2C/g,",");
+  return ret_url;
 }
 
 // Extracts a list of UUIDs from the from the current page's URL.
@@ -140,6 +39,98 @@ function parseKeylist() {
   const url = new URL(location.href);
   const keylist = url.searchParams.get("keylist");
   return keylist.split(',');
+}
+
+// Converts a same-origin URL to a cross-origin URL
+// @param {URL} url - The URL object whose origin is being converted
+// @param {boolean} [https=true] - Whether or not to use the HTTPS origin
+//
+// @returns {URL} The new cross-origin URL
+function getRemoteOriginURL(url, https=true) {
+  const same_origin = location.origin;
+  const cross_origin = https ? get_host_info().HTTPS_REMOTE_ORIGIN
+      : get_host_info().HTTP_REMOTE_ORIGIN;
+  return new URL(url.toString().replace(same_origin, cross_origin));
+}
+
+// Attaches a frame that waits for scripts to execute from RemoteContext.
+// Returns a proxy for the frame that first resolves to the frame HTML element,
+// then resolves to the RemoteContext if the property isn't found.
+// The proxy also has an extra attribute `execute`, which is an alias for the
+// remote context's `execute_script(fn, args=[])`.
+function attachFrameContext(element_name, html, headers) {
+
+  // Create the frame, passing the unique id for the parent/child channel.
+  const frame = document.createElement(element_name);
+  const uuid = token();
+
+  // Use the absolute path of the remote context executor source file, so that
+  // nested frames will work.
+  const url = new URL(REMOTE_EXECUTOR_URL, location.origin);
+  url.searchParams.append('uuid', uuid);
+
+  // Add the header to allow loading in a fenced frame.
+  headers.push(["Supports-Loading-Mode", "fenced-frame"]);
+
+  // Transform the headers into the expected format.
+  // https://web-platform-tests.org/writing-tests/server-pipes.html#headers
+  const formatted_headers = headers.map((header) => {
+    return `header(${header[0]}, ${header[1]})`;
+  });
+  url.searchParams.append('pipe', formatted_headers.join("|"));
+
+  frame.src = url;
+  document.body.append(frame);
+
+  // https://github.com/web-platform-tests/wpt/blob/master/common/dispatcher/README.md
+  const context = new RemoteContext(uuid);
+  if (html) {
+    context.execute_script(
+      (html_source) => {
+        document.body.insertAdjacentHTML('beforebegin', html_source);
+      },
+    [html]);
+  }
+
+  // We need a little bit of boilerplate in the handlers because Proxy doesn't
+  // work so nicely with HTML elements.
+  const handler = {
+    get: (target, key) => {
+      if (key == "execute") {
+        return context.execute_script;
+      }
+      if (key == "element") {
+        return frame;
+      }
+      if (key in target) {
+        return target[key];
+      }
+      return context[key];
+    },
+    set: (target, key, value) => {
+      target[key] = value;
+      return value;
+    }
+  };
+
+  const proxy = new Proxy(frame, handler);
+  return proxy;
+}
+
+// Attach a fenced frame that waits for scripts to execute.
+// Takes as input a(n optional) dictionary of configs:
+// - html: extra HTML source code to inject into the loaded frame
+// - headers: an array of header pairs [[key, value], ...]
+// Returns a proxy that acts like the frame HTML element, but with an extra
+// function `execute`. See `attachFrameContext` or the README for more details.
+function attachFencedFrameContext({html = "", headers=[]} = {}) {
+  return attachFrameContext('fencedframe', html, headers);
+}
+
+// Attach an iframe that waits for scripts to execute.
+// See `attachFencedFrameContext` for more details.
+function attachIFrameContext({html = "", headers=[]} = {}) {
+  return attachFrameContext('iframe', html, headers);
 }
 
 // Converts a key string into a key uuid using a cryptographic hash function.
@@ -170,6 +161,13 @@ function attachFencedFrame(url) {
   fenced_frame.src = url;
   document.body.append(fenced_frame);
   return fenced_frame;
+}
+
+function attachIFrame(url) {
+  const iframe = document.createElement('iframe');
+  iframe.src = url;
+  document.body.append(iframe);
+  return iframe;
 }
 
 // Reads the value specified by `key` from the key-value store on the server.

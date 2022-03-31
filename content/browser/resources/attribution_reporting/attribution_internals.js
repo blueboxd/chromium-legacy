@@ -426,6 +426,7 @@ class Source {
     this.expiryTime = new Date(mojo.expiryTime);
     this.sourceType = SourceTypeToText(mojo.sourceType);
     this.priority = mojo.priority;
+    this.debugKey = mojo.debugKey ? mojo.debugKey.value : '';
     this.dedupKeys = mojo.dedupKeys.join(', ');
     this.status = AttributabilityToText(mojo.attributability);
   }
@@ -445,6 +446,7 @@ class SourceTableModel extends TableModel {
       new DateColumn('Expiry Time', (e) => e.expiryTime),
       new ValueColumn('Source Type', (e) => e.sourceType),
       new ValueColumn('Priority', (e) => e.priority),
+      new ValueColumn('Debug Key', (e) => e.debugKey),
       new ValueColumn('Dedup Keys', (e) => e.dedupKeys, /*compare=*/ null),
       new ValueColumn('Status', (e) => e.status),
     ];
@@ -455,7 +457,7 @@ class SourceTableModel extends TableModel {
     this.sortIdx = 4;
 
     /** @type {!Array<!Source>} */
-    this.deactivatedSources = [];
+    this.unstoredSources = [];
 
     /** @type {!Array<!Source>} */
     this.storedSources = [];
@@ -463,7 +465,7 @@ class SourceTableModel extends TableModel {
 
   /** @override */
   getRows() {
-    return this.deactivatedSources.concat(this.storedSources);
+    return this.unstoredSources.concat(this.storedSources);
   }
 
   /** @param {!Array<!Source>} storedSources */
@@ -473,20 +475,20 @@ class SourceTableModel extends TableModel {
   }
 
   /** @param {!Source} source */
-  addDeactivatedSource(source) {
+  addUnstoredSource(source) {
     // Prevent the page from consuming ever more memory if the user leaves the
     // page open for a long time.
-    if (this.deactivatedSources.length >= 1000) {
-      this.deactivatedSources = [];
+    if (this.unstoredSources.length >= 1000) {
+      this.unstoredSources = [];
     }
 
-    this.deactivatedSources.push(source);
+    this.unstoredSources.push(source);
     this.notifyRowsChanged();
   }
 
   clear() {
     this.storedSources = [];
-    this.deactivatedSources = [];
+    this.unstoredSources = [];
     this.notifyRowsChanged();
   }
 }
@@ -521,14 +523,26 @@ class Report extends Selectable {
       case WebUIAttributionReport_Status.kPending:
         this.status = 'Pending';
         break;
-      case WebUIAttributionReport_Status.kDroppedDueToRateLimiting:
-        this.status = 'Dropped due to rate-limiting';
+      case WebUIAttributionReport_Status.kDroppedDueToExcessiveAttributions:
+        this.status = 'Dropped due to excessive attributions';
+        break;
+      case WebUIAttributionReport_Status.kDroppedDueToExcessiveReportingOrigins:
+        this.status = 'Dropped due to excessive reporting origins';
         break;
       case WebUIAttributionReport_Status.kDroppedDueToLowPriority:
         this.status = 'Dropped due to low priority';
         break;
       case WebUIAttributionReport_Status.kDroppedForNoise:
         this.status = 'Dropped for noise';
+        break;
+      case WebUIAttributionReport_Status.kDeduplicated:
+        this.status = 'Deduplicated';
+        break;
+      case WebUIAttributionReport_Status.kNoReportCapacityForDestinationSite:
+        this.status = 'No report capacity for destination site';
+        break;
+      case WebUIAttributionReport_Status.kInternalError:
+        this.status = 'Internal error';
         break;
       case WebUIAttributionReport_Status.kProhibitedByBrowserPolicy:
         this.status = 'Prohibited by browser policy';
@@ -673,6 +687,15 @@ function AttributabilityToText(attributability) {
       return 'Unattributable: replaced by newer source';
     case WebUIAttributionSource_Attributability.kReachedAttributionLimit:
       return 'Unattributable: reached attribution limit';
+    case WebUIAttributionSource_Attributability.kInternalError:
+      return 'Rejected: internal error';
+    case WebUIAttributionSource_Attributability.kInsufficientSourceCapacity:
+      return 'Rejected: insufficient source capacity';
+    case WebUIAttributionSource_Attributability
+        .kInsufficientUniqueDestinationCapacity:
+      return 'Rejected: insufficient unique destination capacity';
+    case WebUIAttributionSource_Attributability.kExcessiveReportingOrigins:
+      return 'Rejected: excessive reporting origins';
     default:
       return attributability.toString();
   }
@@ -771,8 +794,8 @@ class Observer {
   }
 
   /** @override */
-  onSourceDeactivated(mojo) {
-    sourceTableModel.addDeactivatedSource(new Source(mojo));
+  onSourceRejectedOrDeactivated(mojo) {
+    sourceTableModel.addUnstoredSource(new Source(mojo));
   }
 
   /** @override */

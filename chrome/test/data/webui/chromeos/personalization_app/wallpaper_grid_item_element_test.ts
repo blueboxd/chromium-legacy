@@ -46,6 +46,7 @@ export function WallpaperGridItemTest() {
 
     // Verify state.
     assertEquals(querySelector('img')?.getAttribute('auto-src'), imageSrc);
+    assertEquals(querySelector('img')?.hasAttribute('with-cookies'), true);
     assertEquals(querySelector('.text'), null);
     assertEquals(querySelector('.primary-text'), null);
     assertEquals(querySelector('.secondary-text'), null);
@@ -77,5 +78,28 @@ export function WallpaperGridItemTest() {
     assertNotEquals(querySelector('.text'), null);
     assertEquals(querySelector('.primary-text'), null);
     assertEquals(querySelector('.secondary-text')?.innerHTML, secondaryText);
+  });
+
+  test('displays selected', async () => {
+    // Initialize |wallpaperGridItemElement|.
+    wallpaperGridItemElement = initElement(WallpaperGridItem);
+    await waitAfterNextRender(wallpaperGridItemElement);
+
+    // Verify state.
+    assertEquals(querySelector('.item[aria-selected]'), null);
+    assertEquals(getComputedStyle(querySelector('iron-icon')!).display, 'none');
+
+    // Select |wallpaperGridItemElement| and verify state.
+    wallpaperGridItemElement.selected = true;
+    await waitAfterNextRender(wallpaperGridItemElement);
+    assertNotEquals(querySelector('.item[aria-selected]'), null);
+    assertNotEquals(
+        getComputedStyle(querySelector('iron-icon')!).display, 'none');
+
+    // Deselect |wallpaperGridItemElement| and verify state.
+    wallpaperGridItemElement.selected = false;
+    await waitAfterNextRender(wallpaperGridItemElement);
+    assertEquals(querySelector('.item[aria-selected]'), null);
+    assertEquals(getComputedStyle(querySelector('iron-icon')!).display, 'none');
   });
 }

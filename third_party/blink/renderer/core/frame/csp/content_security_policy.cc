@@ -247,7 +247,7 @@ void ContentSecurityPolicy::ReportUseCounters(
     // 2.  Asserts `base-uri 'none'` or `base-uri 'self'`.
     // 3.  Avoids URL-based matching, in favor of hashes and nonces.
     //
-    // https://chromium.googlesource.com/chromium/src/+/master/docs/security/web-mitigation-metrics.md
+    // https://chromium.googlesource.com/chromium/src/+/main/docs/security/web-mitigation-metrics.md
     // has more detail.
     if (CSPDirectiveListIsObjectRestrictionReasonable(*policy)) {
       Count(policy->header->type == ContentSecurityPolicyType::kEnforce
@@ -530,6 +530,7 @@ static absl::optional<CSPDirectiveName> GetDirectiveTypeFromRequestContextType(
     case mojom::blink::RequestContextType::VIDEO:
       return CSPDirectiveName::MediaSrc;
 
+    case mojom::blink::RequestContextType::ATTRIBUTION_SRC:
     case mojom::blink::RequestContextType::BEACON:
     case mojom::blink::RequestContextType::EVENT_SOURCE:
     case mojom::blink::RequestContextType::FETCH:
@@ -837,7 +838,8 @@ static String StripURLForUseInReport(const SecurityOrigin* security_origin,
       security_origin->CanRequest(url) ||
       (redirect_status == RedirectStatus::kNoRedirect &&
        effective_type != CSPDirectiveName::FrameSrc &&
-       effective_type != CSPDirectiveName::ObjectSrc);
+       effective_type != CSPDirectiveName::ObjectSrc &&
+       effective_type != CSPDirectiveName::FencedFrameSrc);
 
   if (!can_safely_expose_url)
     return SecurityOrigin::Create(url)->ToString();
@@ -1014,14 +1016,13 @@ void ContentSecurityPolicy::ReportViolation(
     absl::optional<base::UnguessableToken> issue_id) {
   DCHECK(violation_type == kURLViolation || blocked_url.IsEmpty());
 
-  // TODO(lukasza): Support sending reports from OOPIFs -
-  // https://crbug.com/611232 (or move CSP child-src and frame-src checks to the
-  // browser process - see https://crbug.com/376522).
+  // TODO(crbug.com/1279745): Remove/clarify what this block is about.
   if (!delegate_ && !context_frame) {
     DCHECK(effective_type == CSPDirectiveName::ChildSrc ||
            effective_type == CSPDirectiveName::FrameSrc ||
            effective_type == CSPDirectiveName::TrustedTypes ||
-           effective_type == CSPDirectiveName::RequireTrustedTypesFor);
+           effective_type == CSPDirectiveName::RequireTrustedTypesFor ||
+           effective_type == CSPDirectiveName::FencedFrameSrc);
     return;
   }
   DCHECK(
@@ -1258,6 +1259,8 @@ const char* ContentSecurityPolicy::GetDirectiveName(CSPDirectiveName type) {
       return "connect-src";
     case CSPDirectiveName::DefaultSrc:
       return "default-src";
+    case CSPDirectiveName::FencedFrameSrc:
+      return "fenced-frame-src";
     case CSPDirectiveName::FontSrc:
       return "font-src";
     case CSPDirectiveName::FormAction:
@@ -1327,6 +1330,8 @@ CSPDirectiveName ContentSecurityPolicy::GetDirectiveType(const String& name) {
     return CSPDirectiveName::ConnectSrc;
   if (name == "default-src")
     return CSPDirectiveName::DefaultSrc;
+  if (name == "fenced-frame-src")
+    return CSPDirectiveName::FencedFrameSrc;
   if (name == "font-src")
     return CSPDirectiveName::FontSrc;
   if (name == "form-action")

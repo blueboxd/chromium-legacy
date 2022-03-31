@@ -173,6 +173,53 @@ message SupportsScriptResponseProto {
   reserved 4, 5;
 }
 
+// A privacy sensitive way to look up Capabilities. Allows querying for
+// capabilities by hashing the requested domain urls and sending only some of
+// the leading bits, such that the recipient will be unable to reconstruct the
+// original URL.
+message GetCapabilitiesByHashPrefixRequestProto {
+  // Required. Number of bits in each hash prefix. Value must be in the range
+  // [15, 64].
+  optional uint32 hash_prefix_length = 1;
+  // Required. Hash prefixes for requested urls. The prefix will be taken as the
+  // first `hash_prefix_length` number of bits of this uint64. Other bits will
+  // be ignored. CityHash64 should be used to calculate the hashes. Encoding of
+  // the domain url prior to hashing should be UTF-8, it should include the
+  // http(s) header and exclude the last '/' character.
+  // Examples:
+  // - https://www.exampledomain.com
+  // - https://example.domain.com
+  // - https://domain.com
+  repeated uint64 hash_prefix = 2 [packed = true];
+  // The client context of the device for which you want to know script
+  // capabilities.
+  // NOTE: Currently, this will only contain the Chrome version number, locale
+  // and country for privacy reasons.
+  optional ClientContextProto client_context = 3;
+  // There is only a subset of parameters allowed to be sent from the client.
+  // INTENT parameter is required.
+  repeated ScriptParameterProto script_parameters = 4;
+}
+
+message GetCapabilitiesByHashPrefixResponseProto {
+  message MatchInfoProto {
+    // Domain url that matches one of the requested hash prefixes.
+    optional string url_match = 1;
+    // The list of script parameters for the client to use.
+    // Note: The list only contains additional or changed script parameters.
+    // This will specifically NOT include mandatory script parameters such as
+    // ENABLED or START_IMMEDIATELY, and will also not contain the INTENT.
+    // Clients are required to add those parameters themselves if needed to.
+    // They are omitted here to reduce the size of the response.
+    repeated ScriptParameterProto script_parameters_override = 2;
+  }
+  // Match information for the requested hash prefixes. No correlation should
+  // be assumed between the order of returned info and the order of requested
+  // prefixes. Clients are expected to match the returned urls to determine
+  // which responses they are interested in.
+  repeated MatchInfoProto match_info = 1;
+}
+
 // Overlay image to be drawn on top of full overlays.
 message OverlayImageProto {
   // TODO(b/170202574): Remove legacy |image_url|.
@@ -198,7 +245,7 @@ message OverlayImageProto {
   optional ClientDimensionProto text_size = 7;
 }
 
-// Next ID: 24
+// Next ID: 25
 message ClientSettingsProto {
   message IntegrationTestSettings {
     // Disables animations for the poodle and the progress bar.
@@ -376,6 +423,11 @@ message ClientSettingsProto {
   // |display_strings|, even if empty. The provided locale should be in BCP 47
   // format, e.g. "en-US".
   optional string display_strings_locale = 23;
+
+  // Extra time SelectorObserver has to finish. If it takes longer than
+  // max_wait_time + extra_timeout (this value) it assumes something went
+  // wrong and fails with a |TIMED_OUT| error.
+  optional int32 selector_observer_extra_timeout_ms = 24;
 
   reserved 8 to 11;
 }
@@ -587,7 +639,7 @@ message ActionsResponseProto {
   message UpdateScriptListProto { repeated SupportedScriptProto scripts = 1; }
   optional UpdateScriptListProto update_script_list = 5;
 
-  reserved 1, 6 to 10;
+  reserved 1, 6 to 10, 12;
 }
 
 // RPC request to fetch the available trigger scripts for a particular domain.
@@ -818,6 +870,12 @@ message ActionProto {
   // pass this back unchanged in the next request
   optional bytes server_payload = 4;
 
+  // The action to be executed.
+  //
+  // WARNING: proto messages in this oneof and all protos they depend on must
+  // meet the requirements listed on jspb_parse.h to be callable conveniently
+  // from RunJsFlow. In practice, this means don't add any new fields of type
+  // bytes, uint32, uint64, fixed32, fixed64, sfixed32 or sfixed64.
   oneof action_info {
     SelectOptionProto select_option = 7;
     NavigateProto navigate = 9;
@@ -879,6 +937,7 @@ message ActionProto {
     ResetPendingCredentialsProto reset_pending_credentials = 86;
     SaveSubmittedPasswordProto save_submitted_password = 87;
     UpdateClientSettingsProto update_client_settings = 89;
+    ExecuteJsProto execute_js = 93;
   }
 
   // Set to true to make the client remove any contextual information if the
@@ -887,7 +946,7 @@ message ActionProto {
   optional bool clean_contextual_ui = 33;
 
   reserved 5, 6, 8, 13 to 17, 20 to 23, 25 to 27, 30, 31, 34, 38, 46 to 48, 50,
-      51, 71, 88;
+      51, 71, 88, 90 to 92;
 }
 
 // Result of |CollectUserDataProto| to be sent to the server.
@@ -904,8 +963,13 @@ message CollectUserDataResultProto {
   // If set, this means that the user clicked on one of the terms and conditions
   // links.
   optional int32 terms_link = 5;
-  // The payload of the chosen login option.
-  optional bytes login_payload = 6;
+
+  oneof payload_or_tag {
+    // The payload of the chosen login option, from LoginOptionsProto.payload.
+    bytes login_payload = 6;
+    // The payload of the chosen login option, from LoginOptionsProto.tag.
+    string login_tag = 21;
+  }
   // The values obtained by the generic user interface.
   optional ModelProto model = 9;
   // The memory keys of all non-empty text inputs, corresponding to the memory
@@ -1234,6 +1298,9 @@ message WebControllerErrorInfoProto {
     // Blur an element that might have focus to remove its focus.
     BLUR_FIELD = 28;
 
+    // Execute JS on an element.
+    EXECUTE_JS = 29;
+
     reserved 5;
   }
 
@@ -1259,6 +1326,16 @@ message ElementFinderInfoProto {
 
   // If set, the document could not be resolved.
   optional bool get_document_failed = 5;
+
+  message PredictedElement {
+    // Whether the inference returned the expectation.
+    optional bool matches_css_element = 1;
+  }
+  message SemanticInferenceResult {
+    // If this is empty, the model inference did not find any results.
+    repeated PredictedElement predicted_elements = 1;
+  }
+  optional SemanticInferenceResult semantic_inference_result = 6;
 }
 
 // The pseudo type values come from
@@ -1493,6 +1570,17 @@ message SelectorProto {
     // Take the match at the given |index|.
     optional int32 index = 1;
   }
+
+  // If set, and the model inference is enabled on the client, will run model
+  // inference and compare if the found element has been inferred along
+  // the expectation.
+  message SemanticInformation {
+    // The objective we expect this Selector to have.
+    optional int32 objective = 1;
+    // The role we expect this Selector to have.
+    optional int32 semantic_role = 2;
+  }
+  optional SemanticInformation semantic_information = 11;
 
   reserved 1 to 8;
 }
@@ -1775,8 +1863,11 @@ message WaitForDomProto {
 
   // Result to include into ProcessedActionProto.
   message Result {
-    // Payload of all matching conditions, if one is set.
+    // Payload of all matching conditions, from ElementConditionProto.payload.
     repeated bytes matching_condition_payloads = 1;
+
+    // Payload of all matching conditions, from ElementConditionProto.tag.
+    repeated string matching_condition_tags = 2;
   }
 }
 
@@ -1800,7 +1891,14 @@ message ElementConditionProto {
 
   // A payload that identifies this condition. WaitForDom puts this payload
   // into the result. This is ignored outside of WaitForDom.
+  //
+  // Prefer using tag.
   optional bytes payload = 5;
+
+  // A tag that is echoed back to WaitForDom.Result if the condition matches.
+  //
+  // This is ignored outside of WaitForDom.
+  optional string tag = 8;
 
   // Optional. If set, the element of |match| will be stored under this
   // identifier on the client. If |require_unique_element| is not set to true,
@@ -1990,23 +2088,6 @@ message WaitForDocumentProto {
 //   log should contain additional information about the issue, if verbose
 //   logging is enabled (suggested level: 2 or 3).
 message ShowGenericUiProto {
-  message RequestAutofillCreditCards { optional string model_identifier = 1; }
-  message RequestAutofillProfiles { optional string model_identifier = 1; }
-  message RequestLoginOptions {
-    message PasswordManagerLogins {
-      optional string sublabel = 1;
-      optional bytes payload = 2;
-    }
-    message LoginOption {
-      oneof type {
-        LoginOptionProto custom_login_option = 1;
-        PasswordManagerLogins password_manager_logins = 2;
-      }
-    }
-
-    repeated LoginOption login_options = 1;
-    optional string model_identifier = 2;
-  }
   message RequestUserData {
     message AdditionalValue {
       // The client memory identifier (from |UserData|).
@@ -2032,19 +2113,6 @@ message ShowGenericUiProto {
   // subset of the input model identifiers!
   repeated string output_model_identifiers = 2;
 
-  // If specified, available autofill credit cards will be provided and
-  // auto-updated in the specified |model_identifier|.
-  optional RequestAutofillCreditCards request_credit_cards = 3;
-
-  // If specified, available autofill profiles will be provided and auto-updated
-  // in the specified |model_identifier|.
-  optional RequestAutofillProfiles request_profiles = 4;
-
-  // If specified, available login options (including those provided by password
-  // manager) will be provided and auto-updated in the specified
-  // |model_identifier|.
-  optional RequestLoginOptions request_login_options = 5;
-
   message PeriodicElementChecks {
     message ElementCheck {
       // The element condition to be checked during the action.
@@ -2067,7 +2135,7 @@ message ShowGenericUiProto {
   // |is_client_side_only| set to true.
   optional RequestUserData request_user_data = 9;
 
-  reserved 10;
+  reserved 3 to 5, 10;
 }
 
 // Show backend-specified user interface elements to the user until dismissed.
@@ -2125,7 +2193,12 @@ message PromptProto {
 
     // Server payload originally sent by the server. This should
     // be transmitted as-is by the client without interpreting.
+    //
+    // Prefer using tag.
     optional bytes server_payload = 5;
+
+    // Tag set by the server. It is put into PromptProto.Result.tag
+    optional string tag = 18;
 
     reserved 4, 6, 8, 12 to 14, 17;
   }
@@ -2175,6 +2248,9 @@ message PromptProto {
     // transmitted as-is by the client without interpreting.
     optional bytes server_payload = 5;
 
+    // Tag originally set in Choice.tag.
+    optional string choice_tag = 6;
+
     reserved 1;
   }
 }
@@ -2214,6 +2290,17 @@ message ContactDetailsProto {
   optional string contact_details_section_title = 9;
   // Defines how to evaluate validity of this contact.
   repeated RequiredDataPiece required_data_piece = 10;
+
+  // If true, the phone number will be asked in a separate section from the
+  // rest of the contact info. If true, |request_payer_phone| must be false.
+  // Only supported for backend-provided data.
+  optional bool separate_phone_number_section = 11;
+  // The title of the separate phone number section.
+  // Required if |separate_phone_number_section| is true, ignored if false.
+  optional string phone_number_section_title = 12;
+  // Defines how to evaluate the validity of the phone number in the separate
+  // section. Ignored if |separate_phone_number_section| is false.
+  repeated RequiredDataPiece phone_number_required_data_piece = 13;
 }
 
 message LoginDetailsProto {
@@ -2243,8 +2330,17 @@ message LoginDetailsProto {
     // description.
     optional string edit_button_content_description = 10;
 
-    // If the option was chosen, this payload will be returned to the server.
-    optional bytes payload = 1;
+    oneof payload_or_tag {
+      // The payload attached to this login option, to be echoed back to the
+      // caller when the option is chosen.
+      //
+      // Prefer using tag.
+      bytes payload = 1;
+
+      // The tag attached to this login option, to be echoed back to the
+      // caller when the option is chosen.
+      string tag = 21;
+    }
 
     // Whether the UI should automatically choose this login option if no
     // password manager login options are available.
@@ -2354,6 +2450,14 @@ message ProfileProto {
   reserved 1;
 }
 
+message PhoneNumberProto {
+  // The identifier of this phone number.
+  optional string identifier = 1;
+  // The canonical value of the phone number, including country and area code
+  // without any separators.
+  optional AutofillEntryProto value = 2;
+}
+
 message PaymentInstrumentProto {
   // The values for the card, where the key is one of autofill::ServerFieldType.
   map<int32, AutofillEntryProto> card_values = 2;
@@ -2374,7 +2478,7 @@ message PaymentInstrumentProto {
 
 // Asks to provide the data used by UseAddressAction and
 // UseCreditCardAction.
-// Next: 38
+// Next: 40
 message CollectUserDataProto {
   enum TermsAndConditionsState {
     // No choice has been made yet.
@@ -2488,6 +2592,13 @@ message CollectUserDataProto {
     // the client will use its own heuristics to select a default payment
     // instrument.
     optional string selected_payment_instrument_identifier = 7;
+
+    // Available phone numbers to select.
+    repeated PhoneNumberProto available_phone_numbers = 10;
+    // The identifier of the phone number to select. If not specified,
+    // the client will use its own heuristics to select a default payment
+    // instrument.
+    optional string selected_phone_number_identifier = 11;
 
     // The locale to be used when creating this data. This can have influence
     // on the potential processing by Autofill.

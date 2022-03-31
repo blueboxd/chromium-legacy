@@ -17,13 +17,12 @@ import './disable_safebrowsing_dialog.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SettingsRadioGroupElement} from '../controls/settings_radio_group.js';
 import {SettingsToggleButtonElement} from '../controls/settings_toggle_button.js';
 import {loadTimeData} from '../i18n_setup.js';
 import {MetricsBrowserProxy, MetricsBrowserProxyImpl, PrivacyElementInteractions, SafeBrowsingInteractions} from '../metrics_browser_proxy.js';
-
 // <if expr="chromeos_ash or chromeos_lacros">
 import {OpenWindowProxyImpl} from '../open_window_proxy.js';
 // </if>
@@ -34,6 +33,7 @@ import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '..
 
 import {SettingsCollapseRadioButtonElement} from './collapse_radio_button.js';
 import {PrivacyPageBrowserProxy, PrivacyPageBrowserProxyImpl} from './privacy_page_browser_proxy.js';
+import {getTemplate} from './security_page.html.js';
 
 /**
  * Enumeration of all safe browsing modes. Must be kept in sync with the enum
@@ -72,7 +72,7 @@ export class SettingsSecurityPageElement extends
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -135,6 +135,20 @@ export class SettingsSecurityPageElement extends
           return loadTimeData.getBoolean('enableSecurityKeysSubpage');
         }
       },
+
+      // <if expr="is_win">
+      enableSecurityKeysPhonesSubpage_: {
+        type: Boolean,
+        readOnly: true,
+        value() {
+          // The phones subpage is linked from the security keys subpage, if
+          // it exists. Thus the phones subpage is only linked from this page
+          // if the security keys subpage is disabled.
+          return !loadTimeData.getBoolean('enableSecurityKeysSubpage') &&
+              loadTimeData.getBoolean('enableSecurityKeysPhonesSubpage');
+        }
+      },
+      // </if>
 
       focusConfig: {
         type: Object,
@@ -277,6 +291,12 @@ export class SettingsSecurityPageElement extends
   private onSecurityKeysClick_() {
     Router.getInstance().navigateTo(routes.SECURITY_KEYS);
   }
+
+  // <if expr="is_win">
+  private onManagePhonesClick_() {
+    Router.getInstance().navigateTo(routes.SECURITY_KEYS_PHONES);
+  }
+  // </if>
 
   private onSafeBrowsingExtendedReportingChange_() {
     this.metricsBrowserProxy_.recordSettingsPageHistogram(

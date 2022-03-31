@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.eq;
 
 import android.app.ActionBar.LayoutParams;
 import android.app.Activity;
+import android.graphics.Rect;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -32,6 +33,7 @@ import org.mockito.junit.MockitoRule;
 import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowPhoneWindow;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -40,6 +42,7 @@ import org.chromium.ui.widget.UiWidgetFactory;
 /** Unit test for {@link ContextMenuDialog}. */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowPhoneWindow.class})
+@LooperMode(LooperMode.Mode.LEGACY)
 public class ContextMenuDialogUnitTest {
     @Rule
     public MockitoRule mockitoRule = MockitoJUnit.rule();
@@ -190,9 +193,9 @@ public class ContextMenuDialogUnitTest {
     }
 
     private ContextMenuDialog createContextMenuDialog(boolean isPopup, boolean shouldRemoveScrim) {
-        return new ContextMenuDialog(mActivity, 0, 0, 0, 0, ContextMenuDialog.NO_CUSTOM_MARGIN,
+        return new ContextMenuDialog(mActivity, 0, ContextMenuDialog.NO_CUSTOM_MARGIN,
                 ContextMenuDialog.NO_CUSTOM_MARGIN, mRootView, mMenuContentView, isPopup,
-                shouldRemoveScrim, 0, 0, mMockTouchEventDelegateView);
+                shouldRemoveScrim, 0, 0, mMockTouchEventDelegateView, new Rect(0, 0, 0, 0));
     }
 
     private void requestLayoutForRootView() {

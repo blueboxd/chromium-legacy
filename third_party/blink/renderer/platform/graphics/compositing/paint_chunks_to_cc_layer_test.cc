@@ -124,7 +124,7 @@ class PaintRecordMatcher
   do {                                                                       \
     const auto* concat = (op_buffer).GetOpAtForTesting<cc::ConcatOp>(index); \
     ASSERT_NE(nullptr, concat);                                              \
-    EXPECT_EQ(TransformationMatrix::ToSkM44(transform), concat->matrix);     \
+    EXPECT_EQ((transform).ToSkM44(), concat->matrix);                        \
   } while (false)
 
 #define EXPECT_TRANSLATE(x, y, op_buffer, index)               \
@@ -1324,7 +1324,7 @@ TEST_P(PaintChunksToCcLayerTest,
                                               chunks.Build());
 
   const gfx::Rect actual_bounds =
-      layer->capture_bounds()->bounds().find(kCropId.value())->second;
+      layer->capture_bounds().bounds().find(kCropId.value())->second;
   EXPECT_EQ((gfx::Rect{50, 60, 100, 200}), actual_bounds);
 }
 
@@ -1345,7 +1345,7 @@ TEST_P(PaintChunksToCcLayerTest,
                                               chunks.Build());
 
   const gfx::Rect actual_bounds =
-      layer->capture_bounds()->bounds().find(kCropId.value())->second;
+      layer->capture_bounds().bounds().find(kCropId.value())->second;
   EXPECT_EQ((gfx::Rect{40, 45, 100, 200}), actual_bounds);
 }
 
@@ -1356,7 +1356,7 @@ TEST_P(PaintChunksToCcLayerTest, UpdateLayerPropertiesRegionCaptureDataEmpty) {
                   gfx::Rect(10, 15, 20, 30));
   PaintChunksToCcLayer::UpdateLayerProperties(*layer, PropertyTreeState::Root(),
                                               chunks.Build());
-  EXPECT_FALSE(layer->capture_bounds());
+  EXPECT_TRUE(layer->capture_bounds().bounds().empty());
 }
 
 TEST_P(PaintChunksToCcLayerTest,
@@ -1376,8 +1376,46 @@ TEST_P(PaintChunksToCcLayerTest,
                                               chunks.Build());
 
   const gfx::Rect actual_bounds =
-      layer->capture_bounds()->bounds().find(kCropId.value())->second;
+      layer->capture_bounds().bounds().find(kCropId.value())->second;
   EXPECT_TRUE(actual_bounds.IsEmpty());
+}
+
+TEST_P(PaintChunksToCcLayerTest,
+       UpdateLayerPropertiesRegionCaptureDataMultipleChunks) {
+  auto layer = cc::Layer::Create();
+
+  TestChunks chunks;
+
+  // Add the first chunk with region capture bounds.
+  chunks.AddChunk(t0(), c0(), e0(), gfx::Rect(5, 10, 200, 300),
+                  gfx::Rect(10, 15, 20, 30));
+  const auto kCropId = RegionCaptureCropId(base::Token::CreateRandom());
+  const RegionCaptureData kMap{{kCropId, gfx::Rect{50, 60, 100, 200}}};
+  chunks.GetChunks()->back().region_capture_data =
+      std::make_unique<RegionCaptureData>(kMap);
+
+  // Add a second chunk with additional region capture bounds.
+  chunks.AddChunk(t0(), c0(), e0(), gfx::Rect(6, 12, 244, 366),
+                  gfx::Rect(20, 30, 40, 60));
+  const auto kSecondCropId = RegionCaptureCropId(base::Token::CreateRandom());
+  const auto kThirdCropId = RegionCaptureCropId(base::Token::CreateRandom());
+  const RegionCaptureData kSecondMap{
+      {kSecondCropId, gfx::Rect{51, 61, 101, 201}},
+      {kThirdCropId, gfx::Rect{52, 62, 102, 202}}};
+  chunks.GetChunks()->back().region_capture_data =
+      std::make_unique<RegionCaptureData>(kSecondMap);
+
+  PaintChunksToCcLayer::UpdateLayerProperties(*layer, PropertyTreeState::Root(),
+                                              chunks.Build());
+
+  EXPECT_EQ((gfx::Rect{50, 60, 100, 200}),
+            layer->capture_bounds().bounds().find(kCropId.value())->second);
+  EXPECT_EQ(
+      (gfx::Rect{51, 61, 101, 201}),
+      layer->capture_bounds().bounds().find(kSecondCropId.value())->second);
+  EXPECT_EQ(
+      (gfx::Rect{52, 62, 102, 202}),
+      layer->capture_bounds().bounds().find(kThirdCropId.value())->second);
 }
 
 }  // namespace

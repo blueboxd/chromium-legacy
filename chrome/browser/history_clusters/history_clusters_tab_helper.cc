@@ -269,7 +269,8 @@ void HistoryClustersTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   // Will detect:
   // 1) When the history clusters page was toggled to the basic history page.
-  // 2) A link was followed in the same web contents from the history clusters
+  // 2) The history clusters page was refreshed.
+  // 3) A link was followed in the same web contents from the history clusters
   //    page.
   // And will update this page's associated `HistoryClustersMetricsLogger`.
 
@@ -277,31 +278,72 @@ void HistoryClustersTabHelper::DidStartNavigation(
     return;
   }
 
-  // We only care if the previously committed navigation was on the
-  // HistoryClusters UI.
+  // When the user navigates back to the HistoryClusters UI after having
+  // navigated away from it to another history UI (e.g. the ChromeHistory or
+  // TabSync UIs), clear the final state that was set to `kSameDocNavigation`
+  // when they navigated away.
+  if (IsHistoryPage(navigation_handle->GetURL(),
+                    GURL(chrome::kChromeUIHistoryClustersURL))) {
+    auto* logger =
+        history_clusters::HistoryClustersMetricsLogger::GetOrCreateForPage(
+            navigation_handle->GetWebContents()->GetPrimaryPage());
+    DCHECK(!logger->get_final_state() ||
+           *logger->get_final_state() ==
+               history_clusters::HistoryClustersFinalState::kSameDocNavigation);
+    logger->clear_final_state();
+  }
+
+  // The remaining logic only pertains to if the previously committed navigation
+  // was the HistoryClusters UI.
   if (!IsHistoryPage(navigation_handle->GetWebContents()->GetLastCommittedURL(),
                      GURL(chrome::kChromeUIHistoryClustersURL))) {
     return;
   }
 
+  // Detect toggling to another history UI:
+  // 1) Previous committed navigation was the HistoryClusters UI.
+  // 2) This is a same doc navigation.
   if (navigation_handle->IsSameDocument()) {
+    auto* logger =
+        history_clusters::HistoryClustersMetricsLogger::GetOrCreateForPage(
+            navigation_handle->GetWebContents()->GetPrimaryPage());
+    // When the user navigates away from the HistoryClusters UI to the
+    // ChromeHistory UI, increment the toggles count.
     if (IsHistoryPage(navigation_handle->GetURL(),
                       GURL(chrome::kChromeUIHistoryURL))) {
-      history_clusters::HistoryClustersMetricsLogger::GetOrCreateForPage(
-          navigation_handle->GetWebContents()->GetPrimaryPage())
-          ->increment_toggles_to_basic_history();
+      logger->increment_toggles_to_basic_history();
     }
+    // When the user navigates from the HistoryClusters UI to another History UI
+    // (e.g. the ChromeHistory or TabSync UIs), set the final state to
+    // `kSameDocNavigation`.
+    logger->set_final_state(
+        history_clusters::HistoryClustersFinalState::kSameDocNavigation);
     return;
   }
 
+  // Detect refreshes:
+  // 1) Previous committed navigation was the history clusters UI.
+  // 2) The current navigation is the history clusters UI.
+  // 3) The transition type is `kRefreshTab`.
+  if (IsHistoryPage(navigation_handle->GetURL(),
+                    GURL(chrome::kChromeUIHistoryClustersURL)) &&
+      PageTransitionCoreTypeIs(navigation_handle->GetPageTransition(),
+                               ui::PAGE_TRANSITION_RELOAD)) {
+    auto* logger =
+        history_clusters::HistoryClustersMetricsLogger::GetOrCreateForPage(
+            navigation_handle->GetWebContents()->GetPrimaryPage());
+    logger->set_final_state(
+        history_clusters::HistoryClustersFinalState::kRefreshTab);
+  }
+
+  // Detect link navigations:
+  // 1) Previous committed navigation was the history clusters UI.
+  // 2) The current navigation is not the history clusters UI.
+  // 3) The transition type is `PAGE_TRANSITION_LINK`.
   if (!IsHistoryPage(navigation_handle->GetURL(),
                      GURL(chrome::kChromeUIHistoryClustersURL)) &&
       PageTransitionCoreTypeIs(navigation_handle->GetPageTransition(),
                                ui::PAGE_TRANSITION_LINK)) {
-    // If the previously committed navigation was on the history clusters page,
-    // the current navigation is not on the history clusters UI and the
-    // transition type is a link click, then we know the user clicked on a
-    // result on the clusters page.
     auto* logger =
         history_clusters::HistoryClustersMetricsLogger::GetOrCreateForPage(
             navigation_handle->GetWebContents()->GetPrimaryPage());

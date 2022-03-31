@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/web_applications/share_target_utils.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
-#include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -78,9 +78,7 @@ content::WebContents* WebAppLaunchProcess::Run() {
   display::ScopedDisplayForNewWindows scoped_display(params_.display_id);
 
   const apps::ShareTarget* share_target = MaybeGetShareTarget();
-  GURL launch_url;
-  bool is_file_handling = false;
-  std::tie(launch_url, is_file_handling) = GetLaunchUrl(share_target);
+  auto [launch_url, is_file_handling] = GetLaunchUrl(share_target);
 
 #if BUILDFLAG(IS_CHROMEOS)
   // TODO(crbug.com/1265381): URL Handlers allows web apps to be opened with
@@ -106,9 +104,7 @@ content::WebContents* WebAppLaunchProcess::Run() {
   if (web_contents)
     return web_contents;
 
-  Browser* browser = nullptr;
-  bool is_new_browser;
-  std::tie(browser, is_new_browser) = EnsureBrowser();
+  auto [browser, is_new_browser] = EnsureBrowser();
 
   NavigateResult navigate_result =
       MaybeNavigateBrowser(browser, is_new_browser, launch_url, share_target);
@@ -338,7 +334,7 @@ WebAppLaunchProcess::NavigateResult WebAppLaunchProcess::MaybeNavigateBrowser(
 
   content::WebContents* web_contents = tab_strip->GetActiveWebContents();
   tab_strip->ActivateTabAt(tab_index, {TabStripModel::GestureType::kOther});
-  WebAppTabHelper::FromWebContents(web_contents)->SetAppId(params_.app_id);
+  SetWebContentsActingAsApp(web_contents, params_.app_id);
   return {.web_contents = web_contents, .did_navigate = true};
 }
 

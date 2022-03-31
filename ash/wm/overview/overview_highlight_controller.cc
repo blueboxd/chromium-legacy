@@ -17,6 +17,7 @@
 #include "ash/wm/desks/templates/desks_templates_grid_view.h"
 #include "ash/wm/desks/templates/desks_templates_item_view.h"
 #include "ash/wm/desks/templates/desks_templates_name_view.h"
+#include "ash/wm/desks/templates/save_desk_template_button.h"
 #include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_highlightable_view.h"
@@ -202,6 +203,8 @@ OverviewHighlightController::GetTraversableViews() const {
   std::vector<OverviewHighlightableView*> traversable_views;
   traversable_views.reserve(32);  // Conservative default.
 
+  // Note that this order matches the order of the chromevox cycling in
+  // `OverviewSession::UpdateAccessibilityFocus`.
   for (auto& grid : overview_session_->grid_list()) {
     // If the grid is visible, we shouldn't try to add any overview items.
     if (grid->IsShowingDesksTemplatesGrid()) {
@@ -252,6 +255,9 @@ OverviewHighlightController::GetTraversableViews() const {
         }
       }
     }
+
+    if (grid->IsSaveDeskAsTemplateButtonVisible())
+      traversable_views.push_back(grid->GetSaveDeskAsTemplateButton());
   }
   return traversable_views;
 }

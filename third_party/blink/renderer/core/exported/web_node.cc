@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/dom/tag_collection.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
@@ -133,7 +134,7 @@ bool WebNode::IsCommentNode() const {
 }
 
 bool WebNode::IsFocusable() const {
-  auto* element = DynamicTo<Element>(private_.Get());
+  auto* element = ::blink::DynamicTo<Element>(private_.Get());
   if (!element)
     return false;
   if (!private_->GetDocument().HaveRenderBlockingResourcesLoaded())

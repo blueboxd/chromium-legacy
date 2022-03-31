@@ -19,11 +19,12 @@ import '../relaunch_confirmation_dialog.js';
 // </if>
 import '../settings_shared_css.js';
 
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SettingsToggleButtonElement} from '../controls/settings_toggle_button.js';
 import {RelaunchMixin, RestartType} from '../relaunch_mixin.js';
 
+import {getTemplate} from './system_page.html.js';
 import {SystemPageBrowserProxyImpl} from './system_page_browser_proxy.js';
 
 
@@ -42,7 +43,7 @@ export class SettingsSystemPageElement extends SettingsSystemPageElementBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {

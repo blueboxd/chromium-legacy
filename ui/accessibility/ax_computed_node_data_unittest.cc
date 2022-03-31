@@ -274,7 +274,7 @@ TEST_F(AXComputedNodeDataTest, GetOrComputeAttribute) {
   // "textContent" works.
   EXPECT_THAT(root_node_->GetComputedNodeData().GetOrComputeAttributeUTF8(
                   ax::mojom::StringAttribute::kValue),
-              StrEq("t_1\ns+t++2...0.  0s t\n2\r0\r\n1"));
+              StrEq("\nt_1\ns+t++2...0.  0s t\n2\r0\r\n1"));
   EXPECT_THAT(root_node_->GetComputedNodeData().GetOrComputeAttributeUTF8(
                   ax::mojom::StringAttribute::kHtmlTag),
               StrEq(""));
@@ -454,7 +454,7 @@ TEST_F(AXComputedNodeDataTest, GetOrComputeTextContent) {
 
   EXPECT_THAT(root_node_->GetComputedNodeData()
                   .GetOrComputeTextContentWithParagraphBreaksUTF8(),
-              StrEq("t_1\ns+t++2...0.  0s t\n2\r0\r\n1"));
+              StrEq("\nt_1\ns+t++2...0.  0s t\n2\r0\r\n1"));
   EXPECT_THAT(root_node_->GetComputedNodeData().GetOrComputeTextContentUTF8(),
               StrEq("t_1s+t++2...0.  0s t\n2\r0\r\n1"));
   EXPECT_EQ(

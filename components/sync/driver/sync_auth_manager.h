@@ -28,8 +28,6 @@ struct AccessTokenInfo;
 
 namespace syncer {
 
-extern const base::Feature kSyncRetryFirstCanceledTokenFetch;
-
 struct SyncCredentials;
 
 // SyncAuthManager tracks the account to be used for Sync and its authentication

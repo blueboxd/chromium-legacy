@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,11 +16,6 @@
 #include "components/sync_sessions/synced_tab_delegate.h"
 
 namespace sync_sessions {
-
-const base::Feature kDeferRecyclingOfSyncTabNodesIfUnsynced{
-    "DeferRecyclingOfSyncTabNodesIfUnsynced", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kSyncPopulateTabBrowserTypeInGetData{
-    "SyncPopulateTabBrowserTypeInGetData", base::FEATURE_ENABLED_BY_DEFAULT};
 
 namespace {
 
@@ -64,13 +60,11 @@ bool IsPresentable(SyncSessionsClient* sessions_client,
 bool IsValidSessionHeader(const sync_pb::SessionHeader& header) {
   std::set<int> session_window_ids;
   std::set<int> session_tab_ids;
-  for (int i = 0; i < header.window_size(); ++i) {
-    const sync_pb::SessionWindow& window = header.window(i);
+  for (const sync_pb::SessionWindow& window : header.window()) {
     if (!session_window_ids.insert(window.window_id()).second)
       return false;
 
-    for (int j = 0; j < window.tab_size(); ++j) {
-      const int tab_id = window.tab(j);
+    for (int tab_id : window.tab()) {
       if (!session_tab_ids.insert(tab_id).second)
         return false;
     }
@@ -228,9 +222,6 @@ const sessions::SessionTab* SyncedSessionTracker::LookupSessionTab(
 absl::optional<sync_pb::SessionWindow::BrowserType>
 SyncedSessionTracker::LookupWindowType(const std::string& session_tag,
                                        SessionID window_id) const {
-  if (!base::FeatureList::IsEnabled(kSyncPopulateTabBrowserTypeInGetData))
-    return absl::nullopt;
-
   const TrackedSession* session = LookupTrackedSession(session_tag);
   if (!session)
     return absl::nullopt;
@@ -383,9 +374,7 @@ void SyncedSessionTracker::CleanupSessionImpl(
 
       if ((time_since_last_modified < kMaxUnmappedButUnsyncedLocalTabAge) &&
           num_unmapped_and_unsynced < kMaxUnmappedButUnsyncedLocalTabCount &&
-          is_tab_node_unsynced_cb.Run(tab_node_id) &&
-          base::FeatureList::IsEnabled(
-              kDeferRecyclingOfSyncTabNodesIfUnsynced)) {
+          is_tab_node_unsynced_cb.Run(tab_node_id)) {
         // Our caller has decided that this tab node cannot be reused at this
         // point because there are pending changes to be committed that would
         // otherwise be lost). Hence, it stays unmapped but we do not free the

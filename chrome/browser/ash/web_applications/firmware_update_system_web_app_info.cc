@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "ash/constants/ash_features.h"
-#include "ash/grit/ash_firmware_update_app_resources.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/webui/firmware_update_ui/url_constants.h"
+#include "ash/webui/grit/ash_firmware_update_app_resources.h"
 #include "chrome/browser/ash/web_applications/system_web_app_install_utils.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -71,6 +71,14 @@ bool FirmwareUpdateSystemAppDelegate::ShouldAllowMaximize() const {
 }
 
 bool FirmwareUpdateSystemAppDelegate::ShouldAllowResize() const {
+  return false;
+}
+
+bool FirmwareUpdateSystemAppDelegate::ShouldShowInLauncher() const {
+  return false;
+}
+
+bool FirmwareUpdateSystemAppDelegate::ShouldShowInSearch() const {
   return false;
 }
 

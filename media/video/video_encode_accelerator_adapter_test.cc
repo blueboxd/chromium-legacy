@@ -20,6 +20,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "media/base/bitrate.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/video/fake_video_encode_accelerator.h"
@@ -456,6 +457,84 @@ TEST_P(VideoEncodeAcceleratorAdapterTest, RunWithAllPossibleInputConversions) {
 
   RunUntilIdle();
   EXPECT_EQ(outputs_count, frames_to_encode);
+}
+
+TEST_F(VideoEncodeAcceleratorAdapterTest, DroppedFrame) {
+  VideoEncoder::Options options;
+  options.frame_size = gfx::Size(640, 480);
+  auto pixel_format = PIXEL_FORMAT_I420;
+  std::vector<base::TimeDelta> output_timestamps;
+  VideoEncoder::OutputCB output_cb = base::BindLambdaForTesting(
+      [&](VideoEncoderOutput output,
+          absl::optional<VideoEncoder::CodecDescription>) {
+        output_timestamps.push_back(output.timestamp);
+      });
+
+  vea()->SetEncodingCallback(base::BindLambdaForTesting(
+      [&](BitstreamBuffer&, bool keyframe, scoped_refptr<VideoFrame> frame) {
+        size_t size = keyframe ? 1 : 0;  // Drop non-key frame
+        return BitstreamBufferMetadata(size, keyframe, frame->timestamp());
+      }));
+  adapter()->Initialize(profile_, options, std::move(output_cb),
+                        ValidatingStatusCB());
+
+  auto frame1 =
+      CreateGreenFrame(options.frame_size, pixel_format, base::Milliseconds(1));
+  auto frame2 =
+      CreateGreenFrame(options.frame_size, pixel_format, base::Milliseconds(2));
+  auto frame3 =
+      CreateGreenFrame(options.frame_size, pixel_format, base::Milliseconds(3));
+  adapter()->Encode(frame1, true, ValidatingStatusCB());
+  adapter()->Encode(frame2, false, ValidatingStatusCB());
+  adapter()->Encode(frame3, true, ValidatingStatusCB());
+  RunUntilIdle();
+  ASSERT_EQ(output_timestamps.size(), 2u);
+  EXPECT_EQ(output_timestamps[0], base::Milliseconds(1));
+  EXPECT_EQ(output_timestamps[1], base::Milliseconds(3));
+}
+
+TEST_F(VideoEncodeAcceleratorAdapterTest,
+       ChangeOptions_ChangeVariableBitrateSmokeTest) {
+  VideoEncoder::Options options;
+  options.frame_size = gfx::Size(640, 480);
+  options.bitrate = Bitrate::VariableBitrate(1111u, 2222u);
+  auto pixel_format = PIXEL_FORMAT_I420;
+  int output_count_before_change = 0;
+  int output_count_after_change = 0;
+  VideoEncoder::OutputCB first_output_cb = base::BindLambdaForTesting(
+      [&](VideoEncoderOutput, absl::optional<VideoEncoder::CodecDescription>) {
+        output_count_before_change++;
+      });
+  VideoEncoder::OutputCB second_output_cb = base::BindLambdaForTesting(
+      [&](VideoEncoderOutput, absl::optional<VideoEncoder::CodecDescription>) {
+        output_count_after_change++;
+      });
+
+  vea()->SetEncodingCallback(base::BindLambdaForTesting(
+      [&](BitstreamBuffer&, bool keyframe, scoped_refptr<VideoFrame> frame) {
+        EXPECT_EQ(keyframe, true);
+        EXPECT_EQ(frame->format(), pixel_format);
+        EXPECT_EQ(frame->coded_size(), options.frame_size);
+        return BitstreamBufferMetadata(1, keyframe, frame->timestamp());
+      }));
+  adapter()->Initialize(profile_, options, std::move(first_output_cb),
+                        ValidatingStatusCB());
+  // We must encode one frame before we can change options.
+  auto first_frame =
+      CreateGreenFrame(options.frame_size, pixel_format, base::Milliseconds(1));
+  adapter()->Encode(first_frame, true, ValidatingStatusCB());
+  RunUntilIdle();
+
+  options.bitrate = Bitrate::VariableBitrate(12345u, 23456u);
+  adapter()->ChangeOptions(options, std::move(second_output_cb),
+                           ValidatingStatusCB());
+  auto second_frame =
+      CreateGreenFrame(options.frame_size, pixel_format, base::Milliseconds(2));
+  adapter()->Encode(second_frame, true, ValidatingStatusCB());
+  RunUntilIdle();
+
+  EXPECT_EQ(output_count_before_change, 1);
+  EXPECT_EQ(output_count_after_change, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(VideoEncodeAcceleratorAdapterTest,

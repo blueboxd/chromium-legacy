@@ -43,11 +43,19 @@ constexpr char kDlpPolicyNotifierId[] = "policy.dlp";
 
 void OnNotificationClicked(const std::string id) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  ash::NewWindowDelegate::GetInstance()->OpenUrl(
-      GURL(kDlpLearnMoreUrl), /*from_user_interaction=*/true);
+  ash::NewWindowDelegate::GetPrimary()->OpenUrl(
+      GURL(kDlpLearnMoreUrl),
+      ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction);
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  // TODO(hidehiko): Instantiating BrowserServiceLacros here is an unexpected
+  // use case. Get rid of this by replacing with Navigate() API invocation
+  // directly.
   auto browser_service = std::make_unique<BrowserServiceLacros>();
-  browser_service->OpenUrl(GURL(kDlpLearnMoreUrl), base::DoNothing());
+  using OpenUrlParams = crosapi::mojom::OpenUrlParams;
+  auto params = OpenUrlParams::New();
+  params->disposition = OpenUrlParams::WindowOpenDisposition::kNewForegroundTab;
+  browser_service->OpenUrl(GURL(kDlpLearnMoreUrl), std::move(params),
+                           base::DoNothing());
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   NotificationDisplayService::GetForProfile(
@@ -107,10 +115,14 @@ void ShowDlpScreenShareDisabledNotification(const std::u16string& app_title) {
 }
 
 void HideDlpScreenSharePausedNotification(const std::string& share_id) {
-  NotificationDisplayService::GetForProfile(
-      ProfileManager::GetActiveUserProfile())
-      ->Close(NotificationHandler::Type::TRANSIENT,
-              GetScreenSharePausedNotificationId(share_id));
+  auto* notification_display_service =
+      NotificationDisplayService::GetForProfile(
+          ProfileManager::GetActiveUserProfile());
+  if (notification_display_service) {
+    notification_display_service->Close(
+        NotificationHandler::Type::TRANSIENT,
+        GetScreenSharePausedNotificationId(share_id));
+  }
 }
 
 void ShowDlpScreenSharePausedNotification(const std::string& share_id,
@@ -123,10 +135,14 @@ void ShowDlpScreenSharePausedNotification(const std::string& share_id,
 }
 
 void HideDlpScreenShareResumedNotification(const std::string& share_id) {
-  NotificationDisplayService::GetForProfile(
-      ProfileManager::GetActiveUserProfile())
-      ->Close(NotificationHandler::Type::TRANSIENT,
-              GetScreenShareResumedNotificationId(share_id));
+  auto* notification_display_service =
+      NotificationDisplayService::GetForProfile(
+          ProfileManager::GetActiveUserProfile());
+  if (notification_display_service) {
+    notification_display_service->Close(
+        NotificationHandler::Type::TRANSIENT,
+        GetScreenShareResumedNotificationId(share_id));
+  }
 }
 
 void ShowDlpScreenShareResumedNotification(const std::string& share_id,

@@ -14,13 +14,6 @@ namespace {
 
 constexpr char kCustomDataKeyForFeatureType[] = "feature_type";
 
-constexpr char kNotificationIdDefaultBroser[] = "feature_guide_default_browser";
-constexpr char kNotificationIdSignIn[] = "feature_guide_sign_in";
-constexpr char kNotificationIdIncognitoTab[] = "feature_guide_incognito_tab";
-constexpr char kNotificationIdVoiceSearch[] = "feature_guide_voice_search";
-constexpr char kNotificationIdNTPSuggestionCard[] =
-    "feature_guide_ntp_suggestion_card";
-
 }  // namespace
 
 void FeatureToCustomData(FeatureType feature,
@@ -39,41 +32,8 @@ FeatureType FeatureFromCustomData(
   return static_cast<FeatureType>(parsed_value);
 }
 
-std::string NotificationIdForFeature(FeatureType feature) {
-  switch (feature) {
-    case FeatureType::kDefaultBrowser:
-      return kNotificationIdDefaultBroser;
-    case FeatureType::kSignIn:
-      return kNotificationIdSignIn;
-    case FeatureType::kIncognitoTab:
-      return kNotificationIdIncognitoTab;
-    case FeatureType::kNTPSuggestionCard:
-      return kNotificationIdNTPSuggestionCard;
-    case FeatureType::kVoiceSearch:
-      return kNotificationIdVoiceSearch;
-    default:
-      NOTREACHED();
-      return std::string();
-  }
-}
-
-FeatureType NotificationIdToFeature(const std::string& notification_id) {
-  if (notification_id == kNotificationIdDefaultBroser) {
-    return FeatureType::kDefaultBrowser;
-  } else if (notification_id == kNotificationIdSignIn) {
-    return FeatureType::kSignIn;
-  } else if (notification_id == kNotificationIdIncognitoTab) {
-    return FeatureType::kIncognitoTab;
-  } else if (notification_id == kNotificationIdNTPSuggestionCard) {
-    return FeatureType::kNTPSuggestionCard;
-  } else if (notification_id == kNotificationIdVoiceSearch) {
-    return FeatureType::kVoiceSearch;
-  }
-  return FeatureType::kInvalid;
-}
-
 #if BUILDFLAG(IS_ANDROID)
-base::Feature GetNotificationIphFeatureForFeature(FeatureType& feature) {
+const base::Feature& GetNotificationIphFeatureForFeature(FeatureType& feature) {
   switch (feature) {
     case FeatureType::kIncognitoTab:
       return feature_engagement::
@@ -96,6 +56,37 @@ base::Feature GetNotificationIphFeatureForFeature(FeatureType& feature) {
           kIPHFeatureNotificationGuideIncognitoTabNotificationShownFeature;
   }
 }
+
+const base::Feature* GetUsedIphFeatureForFeature(FeatureType& feature) {
+  switch (feature) {
+    case FeatureType::kIncognitoTab:
+      return &feature_engagement::
+          kIPHFeatureNotificationGuideIncognitoTabUsedFeature;
+    case FeatureType::kVoiceSearch:
+      return &feature_engagement::
+          kIPHFeatureNotificationGuideVoiceSearchUsedFeature;
+    case FeatureType::kNTPSuggestionCard:
+    case FeatureType::kDefaultBrowser:
+    case FeatureType::kSignIn:
+      return nullptr;
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
 #endif
+
+bool ShouldTargetLowEngagedUsers(FeatureType feature) {
+  switch (feature) {
+    case FeatureType::kIncognitoTab:
+    case FeatureType::kVoiceSearch:
+    case FeatureType::kNTPSuggestionCard:
+      return true;
+    case FeatureType::kDefaultBrowser:
+    case FeatureType::kSignIn:
+    default:
+      return false;
+  }
+}
 
 }  // namespace feature_guide

@@ -7,6 +7,8 @@
 
 #include "media/gpu/v4l2/test/v4l2_ioctl_shim.h"
 
+#include <set>
+
 #include "base/files/memory_mapped_file.h"
 #include "media/filters/ivf_parser.h"
 #include "media/filters/vp9_parser.h"
@@ -41,8 +43,14 @@ class Vp9Decoder {
   // https://www.kernel.org/doc/html/v5.10/userspace-api/media/v4l/dev-stateless-decoder.html#initialization
   bool Initialize();
 
-  // Parses next frame from IVF stream and decodes the frame.
-  Vp9Decoder::Result DecodeNextFrame();
+  // Parses next frame from IVF stream and decodes the frame. This method will
+  // place the Y, U, and V values into the respective vectors and update the
+  // size with the display area size of the decoded frame.
+  Vp9Decoder::Result DecodeNextFrame(std::vector<char>& y_plane,
+                                     std::vector<char>& u_plane,
+                                     std::vector<char>& v_plane,
+                                     gfx::Size& size,
+                                     const int frame_number);
 
  private:
   Vp9Decoder(std::unique_ptr<IvfParser> ivf_parser,
@@ -65,9 +73,11 @@ class Vp9Decoder {
       const Vp9FrameHeader& frame_hdr,
       struct v4l2_ctrl_vp9_frame_decode_params* v4l2_frame_params);
 
-  // Refreshes |ref_frames_| slots with the current |buffer|.
-  void RefreshReferenceSlots(const uint8_t refresh_frame_flags,
-                             scoped_refptr<MmapedBuffer> buffer);
+  // Refreshes |ref_frames_| slots with the current |buffer| and returns
+  // |reusable_buffer_slots| to indicate which CAPTURE buffers can be reused
+  // for VIDIOC_QBUF ioctl call.
+  std::set<int> RefreshReferenceSlots(const uint8_t refresh_frame_flags,
+                                      scoped_refptr<MmapedBuffer> buffer);
 
   // Parser for the IVF stream to decode.
   const std::unique_ptr<IvfParser> ivf_parser_;

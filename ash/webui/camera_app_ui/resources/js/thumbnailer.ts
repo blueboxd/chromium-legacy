@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assertInstanceof} from './assert.js';
 import {
   EmptyThumbnailError,
   LoadError,
@@ -9,7 +10,7 @@ import {
   PlayError,
   PlayMalformedError,
 } from './type.js';
-import {newDrawingCanvas} from './util.js';
+import {canvasToJpegBlob, newDrawingCanvas} from './util.js';
 import {WaitableEvent} from './waitable_event.js';
 
 /**
@@ -32,9 +33,7 @@ async function elementToJpegBlob(
     throw new EmptyThumbnailError();
   }
 
-  return new Promise((resolve) => {
-    canvas.toBlob(resolve, 'image/jpeg');
-  });
+  return canvasToJpegBlob(canvas);
 }
 
 /**
@@ -56,13 +55,13 @@ async function loadVideoBlob(blob: Blob): Promise<HTMLVideoElement> {
     el.preload = 'auto';
     el.src = URL.createObjectURL(blob);
     if (!(await hasLoaded.wait())) {
-      throw new LoadError(el.error.message);
+      throw new LoadError(el.error?.message);
     }
 
     try {
       await el.play();
     } catch (e) {
-      throw new PlayError(e.message);
+      throw new PlayError(assertInstanceof(e, Error).message);
     }
 
     try {
@@ -71,7 +70,7 @@ async function loadVideoBlob(blob: Blob): Promise<HTMLVideoElement> {
       // forever.
       await gotFrame.timedWait(1000);
     } catch (e) {
-      throw new PlayMalformedError(e.message);
+      throw new PlayMalformedError(assertInstanceof(e, Error).message);
     } finally {
       el.pause();
     }

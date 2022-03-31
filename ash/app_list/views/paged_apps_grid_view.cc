@@ -30,6 +30,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/paint_recorder.h"
@@ -197,6 +198,9 @@ void PagedAppsGridView::OnTabletModeChanged(bool started) {
 
   // Prevent context menus from remaining open after a transition
   CancelContextMenusOnCurrentPage();
+
+  // Abort the running reorder animation when the tablet mode updates.
+  MaybeAbortReorderAnimation();
 }
 
 void PagedAppsGridView::HandleScrollFromParentView(const gfx::Vector2d& offset,
@@ -213,6 +217,14 @@ void PagedAppsGridView::UpdateOpacity(bool restore_opacity,
                                       float apps_opacity_change_start,
                                       float apps_opacity_change_end) {
   if (view_structure_.pages().empty())
+    return;
+
+  // Do not update opacity when reorder animation is running.
+  if (IsUnderReorderAnimation())
+    return;
+
+  // Return early if the opacity is locked.
+  if (lock_opacity_)
     return;
 
   // App list view state animations animate the apps grid view opacity rather
@@ -479,6 +491,11 @@ void PagedAppsGridView::Layout() {
   views::ViewModelUtils::SetViewBoundsToIdealBounds(pulsing_blocks_model());
 }
 
+void PagedAppsGridView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kClipsChildren, true);
+  AppsGridView::GetAccessibleNodeData(node_data);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AppsGridView:
 
@@ -662,11 +679,42 @@ void PagedAppsGridView::EnsureViewVisible(const GridIndex& index) {
 
 absl::optional<PagedAppsGridView::VisibleItemIndexRange>
 PagedAppsGridView::GetVisibleItemIndexRange() const {
-  // TODO(https://crbug.com/1287334): implement the reorder animation for tablet
-  // mode.
-  NOTIMPLEMENTED();
+  // Expect that there is no active page transitions. Otherwise, the return
+  // value can be obsolete.
+  DCHECK(!pagination_model_.has_transition());
 
-  return absl::nullopt;
+  const int selected_page = pagination_model_.selected_page();
+  if (selected_page < 0)
+    return absl::nullopt;
+
+  // Get the selected page's item count.
+  const int on_page_item_count = GetNumberOfItemsOnPage(selected_page);
+
+  // Return early if the selected page is empty.
+  if (!on_page_item_count)
+    return absl::nullopt;
+
+  // Calculate the index of the first view on the selected page.
+  int start_view_index = 0;
+  for (int page_index = 0; page_index < selected_page; ++page_index)
+    start_view_index += GetNumberOfItemsOnPage(page_index);
+
+  return VisibleItemIndexRange(start_view_index,
+                               start_view_index + on_page_item_count - 1);
+}
+
+base::ScopedClosureRunner PagedAppsGridView::LockAppsGridOpacity() {
+  lock_opacity_ = true;
+
+  base::OnceClosure reset_closure = base::BindOnce(
+      [](base::WeakPtr<PagedAppsGridView> weak_ptr) {
+        if (!weak_ptr)
+          return;
+
+        weak_ptr->lock_opacity_ = false;
+      },
+      weak_ptr_factory_.GetWeakPtr());
+  return base::ScopedClosureRunner(std::move(reset_closure));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1337,9 +1385,9 @@ int PagedAppsGridView::CalculateMaxRows(int available_height,
     // I.e. min n, with padding as close to max as possible where:
     // n* tile_height + (n - 1) * padding <= available_height
     // padding <= max_padding
-    final_row_count =
-        std::ceil((available_height + kMaxVerticalPaddingBetweenTiles) /
-                  (tile_height + kMaxVerticalPaddingBetweenTiles));
+    final_row_count = std::ceil(
+        static_cast<float>(available_height + kMaxVerticalPaddingBetweenTiles) /
+        (tile_height + kMaxVerticalPaddingBetweenTiles));
   }
   // Unit tests may create artificially small screens resulting in
   // `final_row_count` of 0. Return 1 row to avoid divide-by-zero in layout.

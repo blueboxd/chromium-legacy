@@ -9,6 +9,7 @@
 #define CHROME_BROWSER_BROWSER_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 
@@ -22,6 +23,7 @@ extern const base::Feature kClosedTabCache;
 extern const base::Feature kColorProviderRedirectionForThemeProvider;
 
 extern const base::Feature kDestroyProfileOnBrowserClose;
+extern const base::Feature kDestroySystemProfiles;
 
 extern const base::Feature kNukeProfileBeforeCreateMultiAsync;
 
@@ -51,8 +53,6 @@ extern const base::Feature kPrewarmSearchResultsPageFonts;
 extern const base::Feature kPwaUpdateDialogForNameAndIcon;
 
 extern const base::Feature kSandboxExternalProtocolBlocked;
-extern const base::Feature kTabCaptureBlueBorder;
-extern const base::Feature kTabCaptureBlueBorderForSelfCaptureRegionCaptureOT;
 extern const base::Feature kTriggerNetworkDataMigration;
 
 extern const base::Feature kWebUsbDeviceDetection;

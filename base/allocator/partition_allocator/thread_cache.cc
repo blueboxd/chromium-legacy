@@ -20,20 +20,24 @@
 #include "base/dcheck_is_on.h"
 #include "build/build_config.h"
 
-namespace base {
-
-namespace internal {
-
+namespace base::internal {
 namespace {
-
 ThreadCacheRegistry g_instance;
-
 }  // namespace
+}  // namespace base::internal
 
-namespace tools {
-uintptr_t kThreadCacheNeedleArray[3] = {
-    kNeedle1, reinterpret_cast<uintptr_t>(&g_instance), kNeedle2};
-}
+namespace partition_alloc::internal::tools {
+uintptr_t kThreadCacheNeedleArray[kThreadCacheNeedleArraySize] = {
+    kNeedle1, reinterpret_cast<uintptr_t>(&::base::internal::g_instance),
+#if BUILDFLAG(RECORD_ALLOC_INFO)
+    reinterpret_cast<uintptr_t>(&partition_alloc::internal::g_allocs),
+#else
+    0,
+#endif
+    kNeedle2};
+}  // namespace partition_alloc::internal::tools
+
+namespace base::internal {
 
 BASE_EXPORT PartitionTlsKey g_thread_cache_key;
 #if defined(PA_THREAD_CACHE_FAST_TLS)
@@ -398,7 +402,7 @@ void ThreadCache::SetLargestCachedSize(size_t size) {
   if (size > ThreadCache::kLargeSizeThreshold)
     size = ThreadCache::kLargeSizeThreshold;
   largest_active_bucket_index_ =
-      PartitionRoot<internal::ThreadSafe>::SizeToBucketIndex(size);
+      PartitionRoot<internal::ThreadSafe>::SizeToBucketIndex(size, false);
   PA_CHECK(largest_active_bucket_index_ < kBucketCount);
   ThreadCacheRegistry::Instance().SetLargestActiveBucketIndex(
       largest_active_bucket_index_);
@@ -409,7 +413,8 @@ ThreadCache* ThreadCache::Create(PartitionRoot<internal::ThreadSafe>* root) {
   PA_CHECK(root);
   // See comment in thread_cache.h, this is used to make sure
   // kThreadCacheNeedleArray is kept in the final binary.
-  PA_CHECK(tools::kThreadCacheNeedleArray[0] == tools::kNeedle1);
+  PA_CHECK(partition_alloc::internal::tools::kThreadCacheNeedleArray[0] ==
+           partition_alloc::internal::tools::kNeedle1);
 
   // Placement new and RawAlloc() are used, as otherwise when this partition is
   // the malloc() implementation, the memory allocated for the new thread cache
@@ -422,8 +427,8 @@ ThreadCache* ThreadCache::Create(PartitionRoot<internal::ThreadSafe>* root) {
   bool already_zeroed;
 
   auto* bucket =
-      root->buckets +
-      PartitionRoot<internal::ThreadSafe>::SizeToBucketIndex(raw_size);
+      root->buckets + PartitionRoot<internal::ThreadSafe>::SizeToBucketIndex(
+                          raw_size, root->with_denser_bucket_distribution);
   uintptr_t buffer =
       root->RawAlloc(bucket, PartitionAllocZeroFill, raw_size,
                      PartitionPageSize(), &usable_size, &already_zeroed);
@@ -482,8 +487,14 @@ ThreadCache::~ThreadCache() {
 // static
 void ThreadCache::Delete(void* tcache_ptr) {
   auto* tcache = static_cast<ThreadCache*>(tcache_ptr);
+
+  if (!IsValid(tcache))
+    return;
+
 #if defined(PA_THREAD_CACHE_FAST_TLS)
   g_thread_cache = nullptr;
+#else
+  PartitionTlsSet(g_thread_cache_key, nullptr);
 #endif
 
   auto* root = tcache->root_;
@@ -555,7 +566,7 @@ void ThreadCache::FillBucket(size_t bucket_index) {
 
   size_t allocated_slots = 0;
   // Same as calling RawAlloc() |count| times, but acquires the lock only once.
-  partition_alloc::ScopedGuard guard(root_->lock_);
+  ::partition_alloc::internal::ScopedGuard guard(root_->lock_);
   for (int i = 0; i < count; i++) {
     // Thread cache fill should not trigger expensive operations, to not grab
     // the lock for a long time needlessly, but also to not inflate memory
@@ -634,7 +645,7 @@ void ThreadCache::FreeAfter(PartitionFreelistEntry* head, size_t slot_size) {
   // Acquire the lock once. Deallocation from the same bucket are likely to be
   // hitting the same cache lines in the central allocator, and lock
   // acquisitions can be expensive.
-  partition_alloc::ScopedGuard guard(root_->lock_);
+  ::partition_alloc::internal::ScopedGuard guard(root_->lock_);
   while (head) {
     uintptr_t slot_start = reinterpret_cast<uintptr_t>(head);
     head = head->GetNextForThreadCache(slot_size);
@@ -726,6 +737,4 @@ void ThreadCache::PurgeInternal() {
     ClearBucket(bucket, 0);
 }
 
-}  // namespace internal
-
-}  // namespace base
+}  // namespace base::internal

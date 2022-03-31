@@ -2,14 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from __future__ import print_function
-
-from gpu_tests import gpu_integration_test
-
 import os
 import sys
 
 import six
+
+from gpu_tests import gpu_integration_test
 
 
 class InfoCollectionTestArgs():
@@ -48,6 +46,8 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
            ('_RunDirectCompositionTest', InfoCollectionTestArgs()))
     yield ('InfoCollection_dx12_vulkan', '_', ('_RunDX12VulkanTest',
                                                InfoCollectionTestArgs()))
+    yield ('InfoCollection_asan_info_surfaced', '_', ('_RunAsanInfoTest',
+                                                      InfoCollectionTestArgs()))
 
   @classmethod
   def SetUpProcess(cls):
@@ -86,7 +86,7 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
     # Gather the expected IDs passed on the command line
     if (not test_args.expected_vendor_id_str
         or not test_args.expected_device_id_strs):
-      self.fail("Missing --expected-[vendor|device]-id command line args")
+      self.fail('Missing --expected-[vendor|device]-id command line args')
 
     expected_vendor_id = int(test_args.expected_vendor_id_str, 16)
     expected_device_ids = [
@@ -139,6 +139,10 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
           self.fail(
               '%s mismatch, expected %s but got %s.' %
               (field, self._ValueToStr(expected), self._ValueToStr(detected)))
+
+  def _RunAsanInfoTest(self, _):
+    gpu_info = self.browser.GetSystemInfo().gpu
+    self.assertIn('is_asan', gpu_info.aux_attributes)
 
   @staticmethod
   def _ValueToStr(value):

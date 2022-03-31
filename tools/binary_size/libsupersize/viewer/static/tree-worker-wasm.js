@@ -8,14 +8,24 @@ importScripts('./auth-consts.js');
 importScripts('./shared.js');
 importScripts('./caspian_web.js');
 
-const LoadWasm = new Promise(function(resolve, reject) {
+/** @type {Promise} */
+const g_wasmPromise = new Promise(function(resolve, reject) {
   Module['onRuntimeInitialized'] = function() {
     console.log('Loaded WebAssembly runtime');
     resolve();
   }
 });
 
+/** @type {string} */
 const _PATH_SEP = '/';
+
+/**
+ * Limit SuperSize JSON size to 64 MiB; anything longer would be an anomaly.
+ * @constant {number}
+ */
+const JSON_MAX_BYTES_TO_READ = 2 ** 26;
+
+/** @type {Object<string, _FLAGS>} */
 const _NAMES_TO_FLAGS = Object.freeze({
   hot: _FLAGS.HOT,
   generated: _FLAGS.GENERATED_SOURCE,
@@ -23,67 +33,46 @@ const _NAMES_TO_FLAGS = Object.freeze({
   uncompressed: _FLAGS.UNCOMPRESSED,
 });
 
+/** @type {?Promise} */
+let g_loadTreePromise = null;
+
+/** @type {?Promise} */
+let g_buildTreePromise = null;
+
 
 /**
- * Wrapper around fetch for requesting the same resource multiple times.
+ * Wrapper around fetch to request the same resource multiple times.
  */
 class DataFetcher {
-  constructor(accessToken) {
-    /** @type {string | null} */
+  constructor(accessToken, url) {
+    /** @type {?string} */
     this._accessToken = accessToken;
-    /** @type {AbortController | null} */
-    this._controller = null;
-    /** @type {string | null} */
-    this._input = null;
-    /** @type {Uint8Array | null} */
-    this._cache = null;
+    /** @type {string} */
+    this._url = url;
   }
 
-  /**
-   * Sets the input that describes what will be fetched. Also clears the cache.
-   * @param {string | Request} input URL to the resource you want to fetch.
-   */
-  setInput(input) {
-    if (this._input && this._input.startsWith('blob:')) {
-      // Revoke the previous Blob url to prevent memory leaks
-      URL.revokeObjectURL(this._input);
-    }
-
-    this._cache = null;
-    this._input = input;
-  }
-
-  /**
-   * Starts a new request and aborts the previous one.
-   * @param {string | Request} url
-   */
-  async fetchUrl(url) {
-    if (this._accessToken && looksLikeGoogleCloudStorage(url)) {
-      return this._fetchFromGoogleCloudStorage(url);
-    } else {
-      return this._doFetch(url);
-    }
-  }
-
-  async _fetchFromGoogleCloudStorage(url) {
-    const {bucket, file} = parseGoogleCloudStorageUrl(url);
+  /** @return {Promise<Response, Error>} */
+  _fetchFromGoogleCloudStorage() {
+    const {bucket, file} = parseGoogleCloudStorageUrl(this._url);
     const params = `alt=media`;
     const api_url = `${STORAGE_API_ENDPOINT}/b/${bucket}/o/${file}?${params}`;
     const headers = new Headers();
     headers.append('Authorization', `Bearer ${this._accessToken}`);
-    return this._doFetch(api_url, headers);
+    return this._fetchDirectly(api_url, headers);
   }
 
-  async _doFetch(url, headers) {
-    if (this._controller) this._controller.abort();
-    this._controller = new AbortController();
+  /**
+   * @param {string} url
+   * @param {?Headers=} headers
+   * @return {Promise<Response, Error>}
+   */
+  async _fetchDirectly(url, headers = null) {
     if (!headers) {
       headers = new Headers();
     }
-    let response = await fetch(url, {
+    const response = await fetch(url, {
       headers,
       credentials: 'same-origin',
-      signal: this._controller.signal,
     });
     if (!response.ok) {
       throw new Error('Fetch failed.');
@@ -91,22 +80,24 @@ class DataFetcher {
     return response;
   }
 
-  /**
-   * Outputs a single UInt8Array encompassing the entire input .size file.
-   */
-  async loadSizeBuffer() {
-    if (!this._cache) {
-      const response = await this.fetchUrl(this._input);
-      this._cache = new Uint8Array(await response.arrayBuffer());
+  /** @return {Promise<Uint8Array>} */
+  async fetchSizeBuffer() {
+    let response;
+    if (this._accessToken && looksLikeGoogleCloudStorage(this._url)) {
+      response = await this._fetchFromGoogleCloudStorage();
+    } else {
+      response = await this._fetchDirectly(this._url);
     }
-    return this._cache;
+    return new Uint8Array(await response.arrayBuffer());
   }
 }
 
+/** @param {string} url */
 function looksLikeGoogleCloudStorage(url) {
   return url.startsWith('https://storage.googleapis.com/');
 }
 
+/** @param {string} url */
 function parseGoogleCloudStorageUrl(url) {
   const re = /^https:\/\/storage\.googleapis\.com\/(?<bkt>[^\/]+)\/(?<file>.+)/;
   const match = re.exec(url);
@@ -115,6 +106,7 @@ function parseGoogleCloudStorageUrl(url) {
   return {bucket, file};
 }
 
+/** @param {Uint8Array} buf */
 function mallocBuffer(buf) {
   var dataPtr = Module._malloc(buf.byteLength);
   var dataHeap = new Uint8Array(Module.HEAPU8.buffer, dataPtr, buf.byteLength);
@@ -122,182 +114,262 @@ function mallocBuffer(buf) {
   return dataHeap;
 }
 
-async function Open(name) {
-  return LoadWasm.then(() => {
-    _Open = Module.cwrap('Open', 'number', ['string']);
-    const stringPtr = _Open(name);
-    // Something has gone wrong if we get back a string longer than 67MB.
-    const ret = JSON.parse(Module.UTF8ToString(stringPtr, 2 ** 26));
-    return ret;
-  });
-}
+/** @param {number} percent */
+function sendProgressMessage(percent) {
+  // @ts-ignore
+  self.postMessage({percent, id: 0});
+};
 
-let g_fetcher = null;
-let g_beforeFetcher = null;
-let g_sizeFileLoaded = false;
-
-/** @type {SizeProperties} */
-let g_size_properties = null;
-
-async function loadSizeFile(isBefore, fetcher) {
-  const sizeBuffer = await fetcher.loadSizeBuffer();
+/**
+ * @param {boolean} isBefore
+ * @param {Uint8Array} sizeBuffer
+ */
+function wasmLoadSizeFile(isBefore, sizeBuffer) {
   const heapBuffer = mallocBuffer(sizeBuffer);
-  const LoadSizeFile = Module.cwrap(
+  const cwrapLoadSizeFile = Module.cwrap(
       isBefore ? 'LoadBeforeSizeFile' : 'LoadSizeFile', 'bool',
       ['number', 'number']);
   const start_time = Date.now();
-  LoadSizeFile(heapBuffer.byteOffset, sizeBuffer.byteLength);
+  cwrapLoadSizeFile(heapBuffer.byteOffset, sizeBuffer.byteLength);
   console.log(
       'Loaded size file in ' + (Date.now() - start_time) / 1000.0 + ' seconds');
   Module._free(heapBuffer.byteOffset);
 }
 
-async function loadSizeProperties() {
-  const QueryProperty = Module.cwrap('QueryProperty', 'number', ['string']);
+function wasmLoadSizeProperties() {
+  const cwrapQueryProperty =
+      Module.cwrap('QueryProperty', 'number', ['string']);
   const getProperty = (key) => {
-    const stringPtr = QueryProperty(key);
+    const stringPtr = cwrapQueryProperty(key);
     const r = Module.UTF8ToString(stringPtr, 2 ** 16);
     return r;
   };
-  g_size_properties = {
+  return {
     isMultiContainer: (getProperty('isMultiContainer') === 'true')
   };
 }
 
-async function buildTree(
-    groupBy, includeRegex, excludeRegex, includeSections, minSymbolSize,
-    flagToFilter, methodCountMode, onProgress) {
+/**
+ * @typedef {Object} BuildOptions
+ * @property {string} url
+ * @property {string} beforeUrl
+ * @property {boolean} methodCountMode
+ * @property {string} groupBy
+ * @property {string} includeRegex
+ * @property {string} excludeRegex
+ * @property {string} includeSections
+ * @property {number} minSymbolSize
+ * @property {number} flagToFilter
+ */
 
-  onProgress({percent: 0.1, id: 0});
-  /** @type {Metadata} */
-  return await LoadWasm.then(async () => {
-    if (!g_sizeFileLoaded) {
-      const load_promises = [];
-      load_promises.push(loadSizeFile(false, g_fetcher));
-      if (g_beforeFetcher !== null) {
-        load_promises.push(loadSizeFile(true, g_beforeFetcher));
-      }
-      try {
-        await Promise.all(load_promises).then(loadSizeProperties);
-      } catch (e) {
-        onProgress({percent: 1, id: 0});
-        throw e;
-      }
-      onProgress({percent: 0.4, id: 0});
-      g_sizeFileLoaded = true;
-    }
+/**
+ * Parse the options represented as a query string, into an object. Performs
+ * checks for valid values.
+ * @param {string} optionsStr Options encoded as query string.
+ * @return {BuildOptions}
+ */
+function parseOptions(optionsStr) {
+  const ret = /** @type {BuildOptions} */ ({});
+  const params = new URLSearchParams(optionsStr);
 
-    const BuildTree = Module.cwrap(
-        'BuildTree', 'bool',
-        ['bool', 'string', 'string', 'string', 'string', 'number', 'number']);
-    const start_time = Date.now();
-    const diffMode = BuildTree(
-        methodCountMode, groupBy, includeRegex, excludeRegex,
-        includeSections, minSymbolSize, flagToFilter);
-    console.log(
-        'Constructed tree in ' + (Date.now() - start_time) / 1000.0 +
-        ' seconds');
-    onProgress({percent: 0.8, id: 0});
+  ret.url = params.get('load_url');
+  ret.beforeUrl = params.get('before_url');
 
-    const root = await Open('');
-    return {
-      root,
-      percent: 1.0,
-      diffMode,
-      isMultiContainer: g_size_properties.isMultiContainer,
-    };
-  });
+  ret.methodCountMode = params.has('method_count');
+  ret.groupBy = params.get('group_by') || 'source_path';
+
+  ret.includeRegex = params.get('include');
+  ret.excludeRegex = params.get('exclude');
+
+  ret.includeSections = params.get('type');
+  if (ret.methodCountMode) {
+    ret.includeSections = _DEX_METHOD_SYMBOL_TYPE;
+  } else if (  ret.includeSections === null) {
+    // Exclude native symbols by default.
+    const includeSectionsSet = new Set(_SYMBOL_TYPE_SET);
+    includeSectionsSet.delete('b');
+    ret.includeSections = Array.from(includeSectionsSet.values()).join('');
+  }
+
+  ret.minSymbolSize = Number(params.get('min_size'));
+  if (Number.isNaN(  ret.minSymbolSize)) {
+    ret.minSymbolSize = 0;
+  }
+
+  ret.flagToFilter = _NAMES_TO_FLAGS[params.get('flag_filter')] || 0;
+
+  return ret;
 }
 
 /**
- * Parse the options represented as a query string, into an object.
- * Includes checks for valid values.
- * @param {string} options Query string
+ * @param {string} input
+ * @param {?string} accessToken
+ * @param {string} optionsStr
+ * @return {Promise<!LoadTreeResults, Error>}
  */
-function parseOptions(options) {
-  const params = new URLSearchParams(options);
+async function loadTreeWorkhorse(input, accessToken, optionsStr) {
+  const {
+    url,
+    beforeUrl,
+  } = parseOptions(optionsStr);
 
-  const groupBy = params.get('group_by') || 'source_path';
-  const methodCountMode = params.has('method_count');
-
-  const includeRegex = params.get('include');
-  const excludeRegex = params.get('exclude');
-
-  let includeSections = params.get('type');
-  if (methodCountMode) {
-    includeSections = _DEX_METHOD_SYMBOL_TYPE;
-  } else if (includeSections === null) {
-    // Exclude native symbols by default.
-    let includeSectionsSet = new Set(_SYMBOL_TYPE_SET);
-    includeSectionsSet.delete('b');
-    includeSections = Array.from(includeSectionsSet.values()).join('');
+  const isUpload = (input !== 'from-url://');
+  if (isUpload) {
+    console.info('Displaying uploaded data');
+  } else {
+    console.info('Displaying data from', url);
+  }
+  const loadFetcher = new DataFetcher(accessToken, isUpload ? input : url);
+  let beforeFetcher = null;
+  if (beforeUrl) {
+    beforeFetcher = new DataFetcher(accessToken, beforeUrl);
   }
 
-  const minSymbolSize = Number(params.get('min_size'));
-  if (Number.isNaN(minSymbolSize)) {
-    minSymbolSize = 0;
+  let isMultiContainer = null;
+  let beforeBlobUrl = null;
+  let loadBlobUrl = null;
+  let metadata = null;
+  try {
+    // It takes a few seconds to process large .size files, so download the main
+    // file first, and then overlap its processing with the subsequent download.
+    // Don't download both at the same time to ensure bandwidth is not split
+    // between them.
+    const mainSizeBuffer = await loadFetcher.fetchSizeBuffer();
+    sendProgressMessage(.4);
+    let beforeSizeBuffer = null;
+    const beforeSizeBufferPromise = beforeFetcher?.fetchSizeBuffer();
+    wasmLoadSizeFile(false, mainSizeBuffer);
+    sendProgressMessage(.6);
+    if (beforeSizeBufferPromise) {
+      beforeSizeBuffer = await beforeSizeBufferPromise;
+      sendProgressMessage(.7);
+      wasmLoadSizeFile(true, beforeSizeBuffer);
+    }
+    sendProgressMessage(.8);
+    const sizeProperties = wasmLoadSizeProperties();
+    isMultiContainer = sizeProperties.isMultiContainer;
+    if (!isUpload) {
+      loadBlobUrl = URL.createObjectURL(new Blob(
+          [mainSizeBuffer.buffer], {type: 'application/octet-stream'}));
+      if (beforeSizeBuffer) {
+        beforeBlobUrl = URL.createObjectURL(new Blob(
+            [beforeSizeBuffer.buffer], {type: 'application/octet-stream'}));
+      }
+    }
+    metadata = wasmLoadMetadata();
+  } catch (e) {
+    sendProgressMessage(1);
+    throw e;
   }
 
-  const flagToFilter = _NAMES_TO_FLAGS[params.get('flag_filter')] || 0;
-  const url = params.get('load_url');
-  const beforeUrl = params.get('before_url');
+  return {isMultiContainer, beforeBlobUrl, loadBlobUrl, metadata};
+}
 
-  return {
+/**
+ * @return {MetadataType}
+ */
+function wasmLoadMetadata() {
+  const cwrapGetMetaData = Module.cwrap('GetMetadata', 'number', ['']);
+  const stringPtr = cwrapGetMetaData();
+  return /** @type {MetadataType} */ (
+      JSON.parse(Module.UTF8ToString(stringPtr, JSON_MAX_BYTES_TO_READ)));
+}
+
+/**
+ * @param {string} optionsStr
+ * @return {Promise<boolean>}
+ */
+async function wasmBuildTree(optionsStr) {
+  const {
+    methodCountMode,
     groupBy,
     includeRegex,
     excludeRegex,
     includeSections,
     minSymbolSize,
     flagToFilter,
-    methodCountMode,
-    url,
-    beforeUrl,
-  };
+  } = parseOptions(optionsStr);
+
+  const cwrapBuildTree = Module.cwrap(
+      'BuildTree', 'bool',
+      ['bool', 'string', 'string', 'string', 'string', 'number', 'number']);
+  const start_time = Date.now();
+  const diffMode = cwrapBuildTree(
+      methodCountMode, groupBy, includeRegex, excludeRegex,
+      includeSections, minSymbolSize, flagToFilter);
+  console.log(
+      'Constructed tree in ' + (Date.now() - start_time) / 1000.0 + ' seconds');
+  return diffMode;
 }
 
+/**
+ * @param {string} name
+ * @return {Promise<TreeNode>}
+ */
+async function wasmOpen(name) {
+  const cwrapOpen = Module.cwrap('Open', 'number', ['string']);
+  const stringPtr = cwrapOpen(name);
+  return /** @type {TreeNode} */ (
+      JSON.parse(Module.UTF8ToString(stringPtr, JSON_MAX_BYTES_TO_READ)));
+}
+
+/**
+ * The functions in `action` are referenced to by TreeWorker as strings, and
+ * destructured object parameters are specified by keys. When remaining these,
+ * be sure to update these strings / keys.
+ */
 const actions = {
   /**
-   * @param {{input:string|null,accessToken:string|null,options:string}} param0
+   * @param {{input:string,accessToken:?string,optionsStr:string}} param0
+   * @return {Promise<BuildTreeResults, Error>}
    */
-  load({input, accessToken, options}) {
-    const {
-      groupBy,
-      includeRegex,
-      excludeRegex,
-      includeSections,
-      minSymbolSize,
-      flagToFilter,
-      methodCountMode,
-      url,
-      beforeUrl,
-    } = parseOptions(options);
-    if (!g_fetcher) {
-      g_fetcher = new DataFetcher(accessToken);
+  async loadAndBuildTree({input, accessToken, optionsStr}) {
+    if (g_loadTreePromise) {
+      // New loads should create new WebWorkers instead.
+      throw new Error('loadTree with input called multiple times.');
     }
-    if (input === 'from-url://' && url) {
-      // Display the data from the `load_url` query parameter
-      console.info('Displaying data from', url);
-      g_fetcher.setInput(url);
-    } else if (input != null) {
-      console.info('Displaying uploaded data');
-      g_fetcher.setInput(input);
-    }
-
-    if (beforeUrl) {
-      g_beforeFetcher = new DataFetcher(accessToken);
-      g_beforeFetcher.setInput(beforeUrl);
-    }
-
-    return buildTree(
-        groupBy, includeRegex, excludeRegex, includeSections, minSymbolSize,
-        flagToFilter, methodCountMode, progress => {
-          // @ts-ignore
-          self.postMessage(progress);
-        });
+    g_loadTreePromise = loadTreeWorkhorse(input, accessToken, optionsStr);
+    const loadResults = await g_loadTreePromise;
+    const ret = await actions.buildTree({optionsStr});
+    ret.loadResults = loadResults;
+    return ret;
   },
-  /** @param {string} path */
+
+  /**
+   * @param {{optionsStr:string}} param0
+   * @return {Promise<BuildTreeResults>}
+   */
+  async buildTree({optionsStr}) {
+    // Ensure iniitial load is complete.
+    await g_loadTreePromise;
+
+    // Wait for queued up calls to complete. There should not be too many
+    // since we debounce load calls.
+    // TODO(huangs): Replace this and runActionDebounced() with explicit logic
+    //     to cancel stale requests.
+    while (g_buildTreePromise) {
+      await g_buildTreePromise;
+    }
+    g_buildTreePromise = wasmBuildTree(optionsStr);
+
+    const diffMode = await g_buildTreePromise;
+    g_buildTreePromise = null;
+    sendProgressMessage(0.9);
+    const root = await wasmOpen('');
+    // TODO(crbug.com/1290946): Move diffMode to loadResults and do not store it
+    //     the viewer's query parameters.
+    return {
+      root,
+      diffMode,
+      loadResults: null,
+    };
+  },
+
+  /**
+   * @param {string} path
+   * @return {Promise<TreeNode>} */
   async open(path) {
-    return Open(path);
+    return wasmOpen(path);
   },
 };
 
@@ -315,7 +387,7 @@ async function runAction(id, action, data) {
     self.postMessage({id, result});
   } catch (err) {
     // @ts-ignore
-    self.postMessage({id, error: err.message});
+    self.postMessage({id: 0, error: err.message});
     throw err;
   }
 }
@@ -326,8 +398,9 @@ const runActionDebounced = debounce(runAction, 0);
  * @param {MessageEvent} event Event for when this worker receives a message.
  */
 self.onmessage = async event => {
+  await g_wasmPromise;
   const {id, action, data} = event.data;
-  if (action === 'load') {
+  if (action === 'buildTree') {
     // Loading large files will block the worker thread until complete or when
     // an await statement is reached. During this time, multiple load messages
     // can pile up due to filters being adjusted. We debounce the load call

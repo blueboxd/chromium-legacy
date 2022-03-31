@@ -29,6 +29,7 @@ group("polymer3_elements") {
     ":hw_data_collection_module",
     ":managed_terms_of_service_module",
     ":marketing_opt_in_module",
+    ":multidevice_setup_module",
     ":offline_ad_login_module",
     ":oobe_reset_module",
     ":os_install_module",
@@ -36,8 +37,10 @@ group("polymer3_elements") {
     ":parental_handoff_module",
     ":pin_setup_module",
     ":recommend_apps_module",
+    ":recommend_apps_old_module",
     ":saml_confirm_password_module",
     ":signin_fatal_error_module",
+    ":smart_privacy_protection_module",
     ":sync_consent_module",
     ":tpm_error_module",
     ":user_creation_module",
@@ -49,7 +52,14 @@ group("closure_compile") {
   deps = [ "../../components:closure_compile" ]
 }
 
-js_type_check("closure_compile_module") {
+group("closure_compile_module") {
+  deps = [
+    ":closure_compile_module_local",
+    ":closure_compile_module_multidevice_setup",
+  ]
+}
+
+js_type_check("closure_compile_module_local") {
   is_polymer3 = true
   closure_flags = default_closure_args
   deps = [
@@ -77,12 +87,24 @@ js_type_check("closure_compile_module") {
     ":parental_handoff.m",
     ":pin_setup.m",
     ":recommend_apps.m",
+    ":recommend_apps_old.m",
     ":saml_confirm_password.m",
     ":signin_fatal_error.m",
+    ":smart_privacy_protection.m",
     ":sync_consent.m",
     ":tpm_error.m",
     ":user_creation.m",
     ":wrong_hwid.m",
+  ]
+}
+
+# TODO(crbug.com/1229130) - Figure out why multidevice_setup is requiring its
+# own js_type_check in order not to conflict with chrome externs.
+js_type_check("closure_compile_module_multidevice_setup") {
+  is_polymer3 = true
+  closure_flags = default_closure_args
+  deps = [
+    ":multidevice_setup.m",
   ]
 }
 
@@ -344,6 +366,22 @@ js_library("marketing_opt_in.m") {
   extra_deps = [ ":marketing_opt_in_module" ]
 }
 
+js_library("multidevice_setup.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/multidevice_setup.m.js" ]
+  deps = [
+    "../../components/behaviors:login_screen_behavior.m",
+    "../../components/behaviors:multi_step_behavior.m",
+    "../../components/behaviors:oobe_i18n_behavior.m",
+    "../../components/buttons:oobe_next_button.m",
+    "../../components/buttons:oobe_text_button.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_components/chromeos/multidevice_setup:mojo_api.m",
+    "//ui/webui/resources/cr_components/chromeos/multidevice_setup:multidevice_setup.m",
+    "//ui/webui/resources/cr_components/chromeos/multidevice_setup:multidevice_setup_delegate.m",
+  ]
+  extra_deps = [ ":multidevice_setup_module" ]
+}
+
 js_library("offline_ad_login.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/offline_ad_login.m.js" ]
   deps = [
@@ -450,21 +488,35 @@ js_library("pin_setup.m") {
   extra_deps = [ ":pin_setup_module" ]
 }
 
+js_library("recommend_apps_old.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/recommend_apps_old.m.js" ]
+  deps = [
+    "../../components:oobe_types.m",
+    "../../components/behaviors:login_screen_behavior.m",
+    "../../components/behaviors:multi_step_behavior.m",
+    "../../components/behaviors:oobe_dialog_host_behavior.m",
+    "../../components/behaviors:oobe_i18n_behavior.m",
+    "../../components/buttons:oobe_text_button.m",
+    "../../components/dialogs:oobe_adaptive_dialog.m",
+    "../../components/dialogs:oobe_loading_dialog.m",
+  ]
+  externs_list = [ "$externs_path/webview_tag.js" ]
+  extra_deps = [ ":recommend_apps_old_module" ]
+}
+
 js_library("recommend_apps.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/recommend_apps.m.js" ]
   deps = [
-     "../../components:oobe_types.m",
-     "../../components/behaviors:login_screen_behavior.m",
-     "../../components/behaviors:multi_step_behavior.m",
-     "../../components/behaviors:oobe_dialog_host_behavior.m",
-     "../../components/behaviors:oobe_i18n_behavior.m",
-     "../../components/buttons:oobe_text_button.m",
-     "../../components/dialogs:oobe_adaptive_dialog.m",
-     "../../components/dialogs:oobe_loading_dialog.m",
+    "../../components:oobe_types.m",
+    "../../components/behaviors:login_screen_behavior.m",
+    "../../components/behaviors:multi_step_behavior.m",
+    "../../components/behaviors:oobe_dialog_host_behavior.m",
+    "../../components/behaviors:oobe_i18n_behavior.m",
+    "../../components/buttons:oobe_text_button.m",
+    "../../components/dialogs:oobe_adaptive_dialog.m",
+    "../../components/dialogs:oobe_loading_dialog.m",
   ]
-  externs_list = [
-    "$externs_path/webview_tag.js",
-  ]
+  externs_list = [ "$externs_path/webview_tag.js" ]
   extra_deps = [ ":recommend_apps_module" ]
 }
 
@@ -494,6 +546,19 @@ js_library("signin_fatal_error.m") {
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
   extra_deps = [ ":signin_fatal_error_module" ]
+}
+
+js_library("smart_privacy_protection.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/chromeos/login/screens/common/smart_privacy_protection.m.js" ]
+  deps = [
+    "../../components/behaviors:login_screen_behavior.m",
+    "../../components/behaviors:oobe_dialog_host_behavior.m",
+    "../../components/behaviors:oobe_i18n_behavior.m",
+    "../../components/buttons:oobe_text_button.m",
+    "../../components/dialogs:oobe_adaptive_dialog.m",
+    "//ui/webui/resources/js:load_time_data.m",
+  ]
+  extra_deps = [ ":smart_privacy_protection_module" ]
 }
 
 js_library("sync_consent.m") {
@@ -694,6 +759,14 @@ polymer_modulizer("marketing_opt_in") {
   namespace_rewrites = oobe_namespace_rewrites
 }
 
+polymer_modulizer("multidevice_setup") {
+  js_file = "multidevice_setup.js"
+  html_file = "multidevice_setup.html"
+  html_type = "dom-module"
+  auto_imports = oobe_auto_imports
+  namespace_rewrites = oobe_namespace_rewrites
+}
+
 polymer_modulizer("offline_ad_login") {
   js_file = "offline_ad_login.js"
   html_file = "offline_ad_login.html"
@@ -743,6 +816,14 @@ polymer_modulizer("pin_setup") {
   namespace_rewrites = oobe_namespace_rewrites
 }
 
+polymer_modulizer("recommend_apps_old") {
+  js_file = "recommend_apps_old.js"
+  html_file = "recommend_apps_old.html"
+  html_type = "dom-module"
+  auto_imports = oobe_auto_imports
+  namespace_rewrites = oobe_namespace_rewrites
+}
+
 polymer_modulizer("recommend_apps") {
   js_file = "recommend_apps.js"
   html_file = "recommend_apps.html"
@@ -770,6 +851,14 @@ polymer_modulizer("saml_confirm_password") {
 polymer_modulizer("signin_fatal_error") {
   js_file = "signin_fatal_error.js"
   html_file = "signin_fatal_error.html"
+  html_type = "dom-module"
+  auto_imports = oobe_auto_imports
+  namespace_rewrites = oobe_namespace_rewrites
+}
+
+polymer_modulizer("smart_privacy_protection") {
+  js_file = "smart_privacy_protection.js"
+  html_file = "smart_privacy_protection.html"
   html_type = "dom-module"
   auto_imports = oobe_auto_imports
   namespace_rewrites = oobe_namespace_rewrites

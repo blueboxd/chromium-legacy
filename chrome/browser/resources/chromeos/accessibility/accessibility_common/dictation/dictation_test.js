@@ -7,28 +7,7 @@ GEN_INCLUDE(['dictation_test_base.js']);
 /**
  * Dictation feature using accessibility common extension browser tests.
  */
-DictationE2ETest = class extends DictationE2ETestBase {
-  constructor() {
-    super();
-
-    this.commandStrings = {
-      DELETE_PREV_CHAR: 'delete',
-      NAV_PREV_CHAR: 'move to the previous character',
-      NAV_NEXT_CHAR: 'move to the next character',
-      NAV_PREV_LINE: 'move to the previous line',
-      NAV_NEXT_LINE: 'move to the next line',
-      COPY_SELECTED_TEXT: 'copy',
-      PASTE_TEXT: 'paste',
-      CUT_SELECTED_TEXT: 'cut',
-      UNDO_TEXT_EDIT: 'undo',
-      REDO_ACTION: 'redo',
-      SELECT_ALL_TEXT: 'select all',
-      UNSELECT_TEXT: 'unselect',
-      LIST_COMMANDS: 'help',
-      NEW_LINE: 'new line',
-    };
-  }
-};
+DictationE2ETest = class extends DictationE2ETestBase {};
 
 SYNC_TEST_F('DictationE2ETest', 'SanityCheck', async function() {
   await this.waitForDictationModule();
@@ -374,15 +353,12 @@ SYNC_TEST_F(
 
 SYNC_TEST_F(
     'DictationE2ETest', 'CommandsDoNotCommitThemselves', async function() {
-      await this.waitForDictationModule();
-      await this.setPref(Dictation.DICTATION_LOCALE_PREF, 'en-US');
-      await this.setCommandsEnabledForTest(true);
+      await this.waitForDictationWithCommands();
       await this.toggleDictationAndStartListening(8);
       for (const command of Object.values(this.commandStrings)) {
         this.mockSpeechRecognitionPrivate.fireMockOnResultEvent(command, false);
         // Nothing is added to composition text when commands UI is enabled.
         assertFalse(!!this.mockInputIme.getLastCompositionParameters());
-        // TODO(crbug.com/1252037): Check UI shows correct command info.
 
         if (command !== this.commandStrings.LIST_COMMANDS) {
           // LIST_COMMANDS opens a new tab and ends Dictation. Skip this.

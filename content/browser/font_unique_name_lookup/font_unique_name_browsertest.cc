@@ -175,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(FontUniqueNameBrowserTest,
   // next SendCommand call.
   base::Value node_list =
       result->FindKeyOfType("nodeIds", base::Value::Type::LIST)->Clone();
-  base::Value::ConstListView nodes_view = node_list.GetList();
+  base::Value::ConstListView nodes_view = node_list.GetListDeprecated();
   ASSERT_EQ(nodes_view.size(), num_added_nodes);
   ASSERT_EQ(nodes_view.size(), base::size(kExpectedFontFamilyNames));
   for (size_t i = 0; i < nodes_view.size(); ++i) {
@@ -189,7 +189,8 @@ IN_PROC_BROWSER_TEST_F(FontUniqueNameBrowserTest,
     const base::Value* font_list = font_info->FindKey("fonts");
     ASSERT_TRUE(font_list);
     ASSERT_TRUE(font_list->is_list());
-    base::span<const base::Value> font_info_list = font_list->GetList();
+    base::span<const base::Value> font_info_list =
+        font_list->GetListDeprecated();
     ASSERT_TRUE(font_info_list.size());
     const base::Value& first_font_info = font_info_list[0];
     ASSERT_TRUE(first_font_info.is_dict());

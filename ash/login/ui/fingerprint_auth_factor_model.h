@@ -14,9 +14,29 @@ class AuthIconView;
 
 // Implements the logic necessary to show Fingerprint as an auth factor on the
 // lock screen.
-class FingerprintAuthFactorModel : public AuthFactorModel {
+class ASH_EXPORT FingerprintAuthFactorModel : public AuthFactorModel {
  public:
-  FingerprintAuthFactorModel();
+  class Factory {
+   public:
+    Factory() = default;
+    Factory(const Factory&) = delete;
+    Factory& operator=(const Factory&) = delete;
+
+    static std::unique_ptr<FingerprintAuthFactorModel> Create(
+        FingerprintState state);
+
+    static void SetFactoryForTesting(Factory* factory);
+
+   protected:
+    virtual ~Factory() = default;
+    virtual std::unique_ptr<FingerprintAuthFactorModel> CreateInstance(
+        FingerprintState state) = 0;
+
+   private:
+    static Factory* factory_instance_;
+  };
+
+  explicit FingerprintAuthFactorModel(FingerprintState state);
   FingerprintAuthFactorModel(FingerprintAuthFactorModel&) = delete;
   FingerprintAuthFactorModel& operator=(FingerprintAuthFactorModel&) = delete;
   ~FingerprintAuthFactorModel() override;
@@ -40,9 +60,11 @@ class FingerprintAuthFactorModel : public AuthFactorModel {
   void DoHandleErrorTimeout() override;
   void UpdateIcon(AuthIconView* icon) override;
 
-  FingerprintState state_ = FingerprintState::AVAILABLE_DEFAULT;
+  FingerprintState state_;
   absl::optional<bool> auth_result_;
 
+  // TODO(b/216691052): Change the name of this to be more clear that this is
+  // an override on top of |state_|.
   bool available_ = true;
 };
 

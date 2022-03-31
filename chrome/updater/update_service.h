@@ -198,11 +198,9 @@ class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
   using RegisterAppCallback =
       base::OnceCallback<void(const RegistrationResponse&)>;
 
-  // Returns the version of the active updater. In the current implementation,
-  // this value corresponds to kUpdaterVersion. The version object is invalid
-  // if an error occurs.
-  virtual void GetVersion(
-      base::OnceCallback<void(const base::Version&)>) const = 0;
+  // Returns the version of the active updater. The version object is invalid
+  // if an error (including timeout) occurs.
+  virtual void GetVersion(base::OnceCallback<void(const base::Version&)>) = 0;
 
   // Registers given request to the updater.
   virtual void RegisterApp(const RegistrationRequest& request,
@@ -210,7 +208,7 @@ class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
 
   // Gets state of all registered apps.
   virtual void GetAppStates(
-      base::OnceCallback<void(const std::vector<AppState>&)>) const = 0;
+      base::OnceCallback<void(const std::vector<AppState>&)>) = 0;
 
   // Runs periodic tasks such as checking for uninstallation of registered
   // applications or doing background updates for registered applications.

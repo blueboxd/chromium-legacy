@@ -96,6 +96,8 @@ const test::UIPath kFooterLearnMorePopUp = {kConsolidatedConsentId,
 const test::UIPath kFooterLearnMorePopUpClose = {
     kConsolidatedConsentId, "footerLearnMorePopUp", "closeButton"};
 const test::UIPath kAcceptButton = {kConsolidatedConsentId, "acceptButton"};
+const test::UIPath kReadMoreButton = {kConsolidatedConsentId, "loadedDialog",
+                                      "readMoreButton"};
 
 // Google EUlA Dialog
 const test::UIPath kGoogleEulaDialog = {kConsolidatedConsentId,
@@ -216,7 +218,6 @@ class ConsolidatedConsentScreenTest : public OobeBaseTest {
   bool screen_exited_ = false;
   base::RepeatingClosure screen_exit_callback_;
   ConsolidatedConsentScreen::ScreenExitCallback original_callback_;
-
   base::test::ScopedFeatureList feature_list_;
   LoginManagerMixin login_manager_mixin_{&mixin_host_};
   FakeEulaMixin fake_eula_{&mixin_host_, embedded_test_server()};
@@ -273,8 +274,8 @@ IN_PROC_BROWSER_TEST_F(ConsolidatedConsentScreenTest, Accept) {
   test::OobeJS().CreateVisibilityWaiter(true, kLoadedDialog)->Wait();
 
   test::OobeJS().ClickOnPath(kCrosEulaOkButton);
-  test::OobeJS().CreateVisibilityWaiter(true, kAcceptButton)->Wait();
 
+  test::OobeJS().CreateVisibilityWaiter(true, kAcceptButton)->Wait();
   test::OobeJS().ClickOnPath(kAcceptButton);
   WaitForScreenExit();
   EXPECT_EQ(screen_result_.value(),
@@ -446,7 +447,7 @@ class ConsolidatedConsentScreenParametrizedTest
         RecordArcGoogleLocationServiceConsent(
             testing::_, consent_auditor::ArcGoogleLocationServiceConsentEq(
                             location_service_consent)));
-
+    test::OobeJS().CreateVisibilityWaiter(true, kAcceptButton)->Wait();
     test::OobeJS().ClickOnPath(kAcceptButton);
   }
 
@@ -608,5 +609,33 @@ IN_PROC_BROWSER_TEST_F(ConsolidatedConsentScreenManagedUserTest, Skip) {
   EXPECT_EQ(screen_result_.value(),
             ConsolidatedConsentScreen::Result::NOT_APPLICABLE);
 }
+
+// Show the screen in a low resolution to guarantee that the `Read More` button
+// is shown.
+class ConsolidatedConsentScreenReadMore
+    : public ConsolidatedConsentScreenArcEnabledTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Use low resolution screen to force "Read More" button to be shown
+    command_line->AppendSwitchASCII("ash-host-window-bounds", "900x600");
+    ConsolidatedConsentScreenArcEnabledTest::SetUpCommandLine(command_line);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(ConsolidatedConsentScreenReadMore, ClickAccept) {
+  LoginAsRegularUser();
+  OobeScreenWaiter(ConsolidatedConsentScreenView::kScreenId).Wait();
+  test::OobeJS().CreateVisibilityWaiter(true, kLoadedDialog)->Wait();
+  test::OobeJS()
+      .CreateWaiter(test::GetOobeElementPath(kReadMoreButton) + " != null")
+      ->Wait();
+  test::OobeJS().ClickOnPath(kReadMoreButton);
+  test::OobeJS().CreateVisibilityWaiter(true, kAcceptButton)->Wait();
+  test::OobeJS().ClickOnPath(kAcceptButton);
+}
+
+// TODO(crbug.com/1298249): Add browsertest to ensure that the metrics consent
+// is propagated to the correct preference (ie device/user) depending on the
+// type of user.
 
 }  // namespace ash

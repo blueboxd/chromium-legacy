@@ -194,9 +194,6 @@
 #   that a policy can reference, in bytes. This annotation is compulsory for
 #   policies of type 'external'. It is ignored for all other policy types.
 #
-#   The 'future' key has been deprecated, please use 'future_on' instead for
-#   unreleased policies.
-#
 # Schemas:
 #   All policies have a key 'schema' which describes the schema of the policy.
 #   This schema supports a subset of the JSON Schema standard
@@ -431,6 +428,7 @@
         'PasswordManagerEnabled',
         'PasswordManagerAllowShowPasswords',
         'PasswordLeakDetectionEnabled',
+        'PasswordDismissCompromisedAlertEnabled',
       ],
     },
     {
@@ -464,6 +462,7 @@
       'desc': '''Policies related to integrated HTTP authentication.''',
       'policies': [
         'AuthSchemes',
+        'AllHttpAuthSchemesAllowedForOrigins',
         'DisableAuthNegotiateCnameLookup',
         'EnableAuthNegotiatePort',
         'BasicAuthOverHttpEnabled',
@@ -561,6 +560,8 @@
         'DefaultKeygenSetting',
         'DefaultWebUsbGuardSetting',
         'DefaultSerialGuardSetting',
+        'DefaultWebHidGuardSetting',
+        'DefaultWindowPlacementSetting',
         'AutoSelectCertificateForUrls',
         'CookiesAllowedForUrls',
         'CookiesBlockedForUrls',
@@ -599,6 +600,13 @@
         'SerialBlockedForUrls',
         'SerialAllowAllPortsForUrls',
         'SerialAllowUsbDevicesForUrls',
+        'WebHidAskForUrls',
+        'WebHidBlockedForUrls',
+        'WebHidAllowAllDevicesForUrls',
+        'WebHidAllowDevicesForUrls',
+        'WebHidAllowDevicesWithHidUsagesForUrls',
+        'WindowPlacementAllowedForUrls',
+        'WindowPlacementBlockedForUrls',
       ],
     },
     {
@@ -864,6 +872,7 @@
         'ReportSafeBrowsingData',
         'CloudExtensionRequestEnabled',
         'CloudReportingEnabled',
+        'CloudReportingUploadFrequency',
       ],
     },
     {
@@ -963,6 +972,7 @@
         'ReportDeviceTimezoneInfo',
         'ReportDeviceMemoryInfo',
         'ReportDeviceBacklightInfo',
+        'ReportDevicePeripherals',
         'ReportDevicePowerStatus',
         'ReportDeviceSecurityStatus',
         'ReportDeviceStorageStatus',
@@ -1322,6 +1332,16 @@
       ]
     },
     {
+      'name': 'FirstPartySets',
+      'owners': ['kaklilu@chromium.com', 'chrome-first-party-sets@chromium.org'],
+      'type': 'group',
+      'caption': '''First-Party Sets Settings''',
+      'desc': '''Controls policies for the First-Party Sets feature.''',
+      'policies': [
+        'FirstPartySetsEnabled',
+      ]
+    },
+    {
       'name': 'HomepageLocation',
       'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
       'type': 'string',
@@ -1523,6 +1543,8 @@
       'caption': '''Enable search suggestions''',
       'tags': [],
       'desc': '''Setting the policy to True turns on search suggestions in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s address bar. Setting the policy to False turns off these search suggestions.
+
+      Suggestions based on bookmarks or history are unaffected by the policy.
 
       If you set the policy, users can't change it. If not set, search suggestions are on at first, but users can turn them off any time.''',
     },
@@ -3924,6 +3946,40 @@
       This behavior will not trigger if Safe Browsing is disabled (either by policy or by the user). In order to force Safe Browsing on, use the <ph name="SAFE_BROWSING_ENABLED_POLICY_NAME">SafeBrowsingEnabled</ph> policy or the <ph name="SAFE_BROWSING_PROTETION_LEVEL_POLICY_NAME">SafeBrowsingProtectionLevel</ph> policy.''',
     },
     {
+      'name': 'PasswordDismissCompromisedAlertEnabled',
+      'owners': ['file://components/password_manager/OWNERS', 'eliaskh@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': [
+        'chrome.*: 100-',
+        'chrome_os: 100-',
+      ],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable dismissing compromised password alerts',
+        },
+        {
+          'value': False,
+          'caption': 'Disable dismissing compromised password alerts',
+        },
+      ],
+      'default': True,
+      'example_value': True,
+      'id': 946,
+      'caption': '''Enable dismissing compromised password alerts for entered credentials''',
+      'tags': [],
+
+      'desc': '''Setting the policy to Enabled or leaving it unset gives the user the option to dismiss/restore compromised password alerts.
+
+      If you disable this setting, users will not be able to dismiss alerts about compromised passwords. If enabled, users will be able to dismiss alerts about compromised passwords.''',
+    },
+    {
       'name': 'AutoFillEnabled',
       'owners': ['file://components/autofill/OWNERS', 'sebsg@chromium.org'],
       'type': 'main',
@@ -5014,6 +5070,25 @@
       Note: Separate multiple values with commas.''',
     },
     {
+      'name': 'AllHttpAuthSchemesAllowedForOrigins',
+      'owners': ['file://components/policy/resources/OWNERS', 'ydago@chromium.org'],
+      'type': 'list',
+      'schema': { 'type': 'array', 'items': { 'type': 'string' } },
+      'supported_on': ['chrome.*:100-','android:100-','chrome_os:100-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': ['*.example.com'],
+      'id': 950,
+      'caption': '''List of origins allowing all HTTP authentication''',
+      'tags': [],
+      'desc': '''Setting the policy specifies for which origins to allow all the HTTP authentication schemes <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> supports regardless of the <ph name="AUTH_SCHEMES_POLICY_NAME">AuthSchemes</ph> policy.
+
+      Format the origin pattern according to this format (<ph name="URL_SCHEME_FORMAT_LINK">https://www.chromium.org/administrators/url-blocklist-filter-format</ph>). Up to 1,000 exceptions can be defined in <ph name="ALL_HTTP_AUTH_ALLOWED_FOR_ORIGINS_POLICY_NAME">AllHttpAuthSchemesAllowedForOrigins</ph>.
+      Wildcards are allowed for the whole origin or parts of the origin, either the scheme, host, port.''',
+    },
+    {
       'name': 'DisableAuthNegotiateCnameLookup',
       'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
       'type': 'main',
@@ -5966,6 +6041,12 @@
           'value': 4,
           'caption': '''Open a list of URLs''',
         },
+        {
+          'name': 'RestoreOnStartupIsLastSessionAndURLs',
+          'value': 6,
+          'caption': '''Open a list of URLs and restore the last session''',
+          'supported_on': ['chrome.*:98-', 'chrome_os:98-'],
+        },
       ],
       'supported_on': ['chrome.*:8-', 'chrome_os:11-'],
       'features': {
@@ -5981,7 +6062,9 @@
 
       If you set the policy, users can't change it in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. If not set, users can change it.
 
-      Setting this policy to <ph name="POLICY_ENUM_RESTOREONSTARTUP_RESTOREONSTARTUPISLASTSESSION">RestoreOnStartupIsLastSession</ph> turns off some settings that rely on sessions or that perform actions on exit, such as clearing browsing data on exit or session-only cookies.
+      Setting this policy to <ph name="POLICY_ENUM_RESTOREONSTARTUP_RESTOREONSTARTUPISLASTSESSION">RestoreOnStartupIsLastSession</ph> or <ph name="POLICY_ENUM_RESTOREONSTARTUP_RESTOREONSTARTUPISLASTSESSIONANDURLS">RestoreOnStartupIsLastSessionAndURLs</ph> turns off some settings that rely on sessions or that perform actions on exit, such as clearing browsing data on exit or session-only cookies.
+
+      If this policy is set to <ph name="POLICY_ENUM_RESTOREONSTARTUP_RESTOREONSTARTUPISLASTSESSIONANDURLS">RestoreOnStartupIsLastSessionAndURLs</ph>, browser will restore previous session and open a separate window to show URLs that are set from <ph name="RESTORE_ON_STARTUP_URLS_POLICY_NAME">RestoreOnStartupURLs</ph>. Note that users can choose to keep those URLs open and they will also be restored in the future session.
 
       On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
     },
@@ -7232,6 +7315,241 @@
       This policy only affects access to USB devices through the Web Serial API. To grant access to USB devices through the WebUSB API see the <ph name="WEB_USB_ALLOW_DEVICES_FOR_URLS_POLICY_NAME">WebUsbAllowDevicesForUrls</ph> policy.''',
     },
     {
+      'name': 'DefaultWebHidGuardSetting',
+      'owners': ['mattreynolds@chromium.org', 'file://third_party/blink/renderer/modules/hid/OWNERS'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 2, 3 ],
+      },
+      'items': [
+        {
+          'name': 'BlockWebHid',
+          'value': 2,
+          'caption': '''Do not allow any site to request access to HID devices via the WebHID API''',
+        },
+        {
+          'name': 'AskWebHid',
+          'value': 3,
+          'caption': '''Allow sites to ask the user to grant access to a HID device''',
+        },
+      ],
+      'supported_on': ['chrome_os:100-', 'chrome.*:100-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 2,
+      'default': None,
+      'id': 943,
+      'caption': '''Control use of the WebHID API''',
+      'tags': ['website-sharing'],
+      'desc': '''Setting the policy to 3 lets websites ask for access to HID devices. Setting the policy to 2 denies access to HID devices.
+
+      Leaving it unset lets websites ask for access, but users can change this setting.
+
+      This policy can be overridden for specific <ph name="URL_LABEL">url</ph> patterns using the <ph name="WEB_HID_ASK_FOR_URLS_POLICY_NAME">WebHidAskForUrls</ph> and <ph name="WEB_HID_BLOCKED_FOR_URLS_POLICY_NAME">WebHidBlockedForUrls</ph> policies.''',
+    },
+    {
+      'name': 'WebHidAskForUrls',
+      'owners': ['mattreynolds@chromium.org', 'file://third_party/blink/renderer/modules/hid/OWNERS'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome_os:100-', 'chrome.*:100-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://google.com', 'https://chromium.org'],
+      'id': 944,
+      'caption': '''Allow the WebHID API on these sites''',
+      'tags': ['website-sharing'],
+      'desc': '''Setting the policy lets you list the URL patterns that specify which sites can ask users to grant them access to a HID device.
+
+      Leaving the policy unset means <ph name="DEFAULT_WEB_HID_GUARD_SETTING_POLICY_NAME">DefaultWebHidGuardSetting</ph> applies for all sites, if it's set. If not, users' personal settings apply.
+
+      For URL patterns which do not match the policy, the following take precedence, in this order:
+
+        * <ph name="WEB_HID_BLOCKED_FOR_URLS_POLICY_NAME">WebHidBlockedForUrls</ph> (if there is a match),
+
+        * <ph name="DEFAULT_WEB_HID_GUARD_SETTING_POLICY_NAME">DefaultWebHidGuardSetting</ph> (if set), or
+
+        * Users' personal settings.
+
+      URL patterns must not conflict with <ph name="WEB_HID_BLOCKED_FOR_URLS_POLICY_NAME">WebHidBlockedForUrls</ph>. Neither policy takes precedence if a URL matches with both.
+
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. <ph name="WILDCARD_VALUE">*</ph> is not an accepted value for this policy.''',
+    },
+    {
+      'name': 'WebHidBlockedForUrls',
+      'owners': ['mattreynolds@chromium.org', 'file://third_party/blink/renderer/modules/hid/OWNERS'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome_os:100-', 'chrome.*:100-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://google.com', 'https://chromium.org'],
+      'id': 945,
+      'caption': '''Block the WebHID API on these sites''',
+      'tags': [],
+      'desc': '''Setting the policy lets you list the URL patterns that specify which sites can't ask users to grant them access to a HID device.
+
+      Leaving the policy unset means <ph name="DEFAULT_WEB_HID_GUARD_SETTING_POLICY_NAME">DefaultWebHidGuardSetting</ph> applies for all sites, if it's set. If not, users' personal settings apply.
+
+      For URL patterns which do not match the policy, the following take precedence, in this order:
+
+        * <ph name="WEB_HID_ASK_FOR_URLS_POLICY_NAME">WebHidAskForUrls</ph> (if there is a match),
+
+        * <ph name="DEFAULT_WEB_HID_GUARD_SETTING_POLICY_NAME">DefaultWebHidGuardSetting</ph> (if set), or
+
+        * Users' personal settings.
+
+      URL patterns can't conflict with <ph name="WEB_HID_ASK_FOR_URLS_POLICY_NAME">WebHidAskForUrls</ph>. Neither policy takes precedence if a URL matches with both.
+
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. <ph name="WILDCARD_VALUE">*</ph> is not an accepted value for this policy.''',
+    },
+    {
+      'name': 'WebHidAllowAllDevicesForUrls',
+      'owners': ['mattreynolds@chromium.org', 'file://third_party/blink/renderer/modules/hid/OWNERS'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome_os:100-', 'chrome.*:100-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': ['https://google.com', 'https://chromium.org'],
+      'id': 953,
+      'caption': '''Automatically grant permission to sites to connect to any HID device.''',
+      'tags': ['website-sharing'],
+      'desc': '''Setting the policy allows you to list sites which are automatically granted permission to access all available devices.
+
+      The URLs must be valid, otherwise the policy is ignored. Only the origin (scheme, host and port) of the URL is considered.
+
+      On Chrome OS, this policy only applies to affiliated users.
+
+      This policy overrides <ph name="DEFAULT_WEB_HID_GUARD_SETTING_POLICY_NAME">DefaultWebHidGuardSetting</ph>, <ph name="WEB_HID_ASK_FOR_URLS_POLICY_NAME">WebHidAskForUrls</ph>, <ph name="WEB_HID_BLOCKED_FOR_URLS_POLICY_NAME">WebHidBlockedForUrls</ph> and the user's preferences.''',
+    },
+    {
+      'name': 'WebHidAllowDevicesForUrls',
+      'owners': ['mattreynolds@chromium.org', 'file://third_party/blink/renderer/modules/hid/OWNERS'],
+      'type': 'dict',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'properties': {
+            'devices': {
+              'type': 'array',
+              'items': {
+                'type': 'object',
+                'properties': {
+                  'vendor_id': {
+                    'type': 'integer',
+                    'minimum': 0,
+                    'maximum': 65535
+                  },
+                  'product_id': {
+                    'type': 'integer',
+                    'minimum': 0,
+                    'maximum': 65535
+                  }
+                },
+                'required': ['vendor_id']
+              }
+            },
+            'urls': {
+              'type': 'array',
+              'items': { 'type': 'string' }
+            }
+          },
+          'required': ['devices', 'urls']
+        }
+      },
+      'supported_on': ['chrome_os:100-', 'chrome.*:100-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': [{
+        'devices': [{'vendor_id': 1234, 'product_id': 5678}],
+        'urls': ['https://google.com', 'https://chromium.org'],
+      }],
+      'id': 954,
+      'caption': '''Automatically grant permission to these sites to connect to HID devices with the given vendor and product IDs.''',
+      'tags': ['website-sharing'],
+      'desc': '''Setting the policy lets you list the URLs that specify which sites are automatically granted permission to access a HID device with the given vendor and product IDs. Each item in the list requires both <ph name="DEVICES_FIELD_NAME">devices</ph> and <ph name="URLS_FIELD_NAME">urls</ph> fields for the item to be valid, otherwise the item is ignored. Each item in the <ph name="DEVICES_FIELD_NAME">devices</ph> field must have a <ph name="VENDOR_ID_FIELD_NAME">vendor_id</ph> and may have a <ph name="PRODUCT_ID_FIELD_NAME">product_id</ph> field. Omitting the <ph name="PRODUCT_ID_FIELD_NAME">product_id</ph> field will create a policy matching any device with the specified vendor ID. An item which has a <ph name="PRODUCT_ID_FIELD_NAME">product_id</ph> field without a <ph name="VENDOR_ID_FIELD_NAME">vendor_id</ph> field is invalid and is ignored.
+
+      Leaving the policy unset means <ph name="DEFAULT_WEB_HID_GUARD_SETTING_POLICY_NAME">DefaultWebHidGuardSetting</ph> applies, if it's set. If not, the user's personal setting applies.
+
+      URLs in this policy shouldn't conflict with those configured through <ph name="WEB_HID_BLOCKED_FOR_URLS_POLICY_NAME">WebHidBlockedForUrls</ph>. If they do, this policy takes precedence over <ph name="WEB_HID_BLOCKED_FOR_URLS_POLICY_NAME">WebHidBlockedForUrls</ph>.''',
+    },
+    {
+      'name': 'WebHidAllowDevicesWithHidUsagesForUrls',
+      'owners': ['mattreynolds@chromium.org', 'file://third_party/blink/renderer/modules/hid/OWNERS'],
+      'type': 'dict',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'properties': {
+            'usages': {
+              'type': 'array',
+              'items': {
+                'type': 'object',
+                'properties': {
+                  'usage_page': {
+                    'type': 'integer',
+                    'minimum': 0,
+                    'maximum': 65535
+                  },
+                  'usage': {
+                    'type': 'integer',
+                    'minimum': 0,
+                    'maximum': 65535
+                  }
+                },
+                'required': ['usage_page']
+              }
+            },
+            'urls': {
+              'type': 'array',
+              'items': { 'type': 'string' }
+            }
+          },
+          'required': ['usages', 'urls']
+        }
+      },
+      'supported_on': ['chrome_os:100-', 'chrome.*:100-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': [{
+        'usages': [{'usage_page': 1234, 'usage': 5678}],
+        'urls': ['https://google.com', 'https://chromium.org'],
+      }],
+      'id': 955,
+      'caption': '''Automatically grant permission to these sites to connect to HID devices containing top-level collections with the given HID usage.''',
+      'tags': ['website-sharing'],
+      'desc': '''Setting the policy lets you list the URLs that specify which sites are automatically granted permission to access a HID device containing a top-level collection with the given HID usage. Each item in the list requires both <ph name="USAGES_FIELD_NAME">usages</ph> and <ph name="URLS_FIELD_NAME">urls</ph> fields for the policy to be valid. Each item in the <ph name="USAGES_FIELD_NAME">usages</ph> field must have a <ph name="USAGE_PAGE_FIELD_NAME">usage_page</ph> and may have a <ph name="USAGE_FIELD_NAME">usage</ph> field. Omitting the <ph name="USAGE_FIELD_NAME">usage</ph> field will create a policy matching any device containing a top-level collection with a usage from the specified usage page. An item which has a <ph name="USAGE_FIELD_NAME">usage</ph> field without a <ph name="USAGE_PAGE_FIELD_NAME">usage_page</ph> field is invalid and is ignored.
+
+      Leaving the policy unset means <ph name="DEFAULT_WEB_HID_GUARD_SETTING_POLICY_NAME">DefaultWebHidGuardSetting</ph> applies, if it's set. If not, the user's personal setting applies.
+
+      URLs in this policy shouldn't conflict with those configured through <ph name="WEB_HID_BLOCKED_FOR_URLS_POLICY_NAME">WebHidBlockedForUrls</ph>. If they do, this policy takes precedence over <ph name="WEB_HID_BLOCKED_FOR_URLS_POLICY_NAME">WebHidBlockedForUrls</ph>.''',
+    },
+    {
       'name': 'DefaultFileHandlingGuardSetting',
       'owners': ['estade@chromium.org', 'cmp@chromium.org'],
       'type': 'int-enum',
@@ -8025,14 +8343,16 @@
       'tags': ['system-security'],
       'desc': '''Controls whether websites are allowed to make requests to more-private network endpoints in an insecure manner.
 
-          This policy relates to the Private Network Access specification. See https://wicg.github.io/private-network-access/ for more details.
+          When this policy is set to true, all <ph name="PRIVATE_NETWORK_ACCESS">Private Network Access</ph> checks are disabled for all origins. This may allow attackers to perform <ph name="CSRF">CSRF</ph> attacks on private network servers.
+
+          When this policy is either not set or set to false, the default behavior for requests to more-private network endpoints will depend on the user's personal configuration for the <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME">BlockInsecurePrivateNetworkRequests</ph>, <ph name="PRIVATE_NETWORK_ACCESS_SEND_PREFLIGHTS_FEATURE_NAME">PrivateNetworkAccessSendPreflights</ph>, and <ph name="PRIVATE_NETWORK_ACCESS_RESPECT_PREFLIGHT_RESULTS_FEATURE_NAME">PrivateNetworkAccessRespectPreflightResults</ph> feature flags, which may be set by field trials or on the command line.
+
+          This policy relates to the <ph name="PRIVATE_NETWORK_ACCESS">Private Network Access</ph> specification. See https://wicg.github.io/private-network-access/ for more details.
 
           A network endpoint is more private than another if:
           1) Its IP address is localhost and the other is not.
           2) Its IP address is private and the other is public.
           In the future, depending on spec evolution, this policy might apply to all cross-origin requests directed at private IPs or localhost.
-
-          When this policy is either not set or set to false, the default behavior for requests to more-private network endpoints will depend on the user's personal configuration for the <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME">BlockInsecurePrivateNetworkRequests</ph>, <ph name="PRIVATE_NETWORK_ACCESS_SEND_PREFLIGHTS_FEATURE_NAME">PrivateNetworkAccessSendPreflights</ph>, and <ph name="PRIVATE_NETWORK_ACCESS_RESPECT_PREFLIGHT_RESULTS_FEATURE_NAME">PrivateNetworkAccessRespectPreflightResults</ph> feature flags, which may be set by field trials or on the command line.
 
           When this policy is set to true, websites are allowed to make requests to any network endpoint, subject to other cross-origin checks.''',
     },
@@ -8062,7 +8382,7 @@
       'id': 767,
       'caption': '''Allow the listed sites to make requests to more-private network endpoints in an insecure manner.''',
       'tags': ['system-security'],
-      'desc': '''List of URL patterns. Requests initiated from websites served by matching origins are not subject to Private Network Access checks.
+      'desc': '''List of URL patterns. Requests initiated from websites served by matching origins are not subject to <ph name="PRIVATE_NETWORK_ACCESS">Private Network Access</ph> checks.
 
           If unset, this policy behaves as if set to the empty list.
 
@@ -8776,6 +9096,47 @@
       In case signing in to a different account shouldn't be allowed via the Incognito mode, consider blocking that mode using the IncognitoModeAvailability policy.
 
       Note that users will be able to access Google services in an unauthenticated state by blocking their cookies.''',
+    },
+    {
+      'name': 'SecondaryGoogleAccountUsage',
+      'owners': ['rodmartin@google.com', 'sinhak@chromium.org', 'chromeos-commercial-identity@google.com'],
+      'type': 'string-enum',
+      'schema': {
+        'type': 'string',
+        'enum': [
+          'all',
+          'primary_account_signin',
+        ]
+      },
+      'future_on': ['chrome_os'],
+      'features': {
+        # The case where a user is already signed in as a secondary account and the policy is dynamically refreshed to not allow secondary sign-ins cannot be handled right now. Hence this is not dynamic.
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'name': 'All',
+          'value': 'all',
+          'caption': 'All usages of managed accounts are allowed',
+        },
+        {
+          'name': 'PrimaryAccountSignin',
+          'value': 'primary_account_signin',
+          'caption': 'Block addition of a managed account as Secondary Account on Chrome OS (in-session)',
+        },
+      ],
+      'default': 'all',
+      'example_value': 'primary_account_signin',
+      'id': 956,
+      'caption': '''Add restrictions on a managed account's usage as a secondary account on Chrome OS''',
+      'tags': [],
+      'desc': '''If this policy is set to <ph name="POLICY_VALUE_ALL">'all'</ph> or not set, all usages of managed accounts are allowed. This may result in a managed account being a secondary account, which would only receive policies when the account is signed-in as a primary account in a browser Profile.
+      Policies set to the account won't be enforced in the following scenarios:
+        -  Being a secondary account at the OS level (Account Settings)
+        -  Being a secondary account in a browser Profile
+
+      If this policy is set to <ph name="POLICY_VALUE_PRIMARY_ACCOUNT_SIGNIN">'primary_account_signin'</ph> on an account, this account will be allowed to sign in as a primary account only. It won't be allowed to sign in as a secondary account.''',
     },
     {
       'name': 'ForceLogoutUnauthenticatedUserEnabled',
@@ -10206,11 +10567,7 @@
       When this setting is disabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will perform verification of server certificates using the legacy certificate verifier provided by the platform.
       When this setting is not set, the built-in or the legacy certificate verifier may be used.
 
-      This policy is planned to be removed in <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 81, when support for the legacy certificate verifier on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> is planned to be removed.
-
-      This policy is planned to be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> for Linux version 83, when support for the legacy certificate verifier on Linux is planned to be removed.
-
-      This policy is planned to be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> for Mac OS X version 92, when support for the legacy certificate verifier on Mac OS X is planned to be removed.
+      This policy is planned to be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> for <ph name="MAC_OS_NAME">macOS</ph> version 104, when support for the legacy certificate verifier on <ph name="MAC_OS_NAME">macOS</ph> is planned to be removed.
       ''',
     },
     {
@@ -10590,7 +10947,7 @@
       'owners': ['cros-reporting-team@google.com', 'lbaraz@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:29-95'],
+      'supported_on': ['chrome_os:29-'],
       'supported_chrome_os_management': ['google_cloud'],
       'deprecated': True,
       'device_only': True,
@@ -10705,7 +11062,7 @@
       'owners': ['cros-reporting-team@google.com', 'lbaraz@chromium.org', 'antrim@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:42-95'],
+      'supported_on': ['chrome_os:42-'],
       'deprecated': True,
       'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
@@ -10859,6 +11216,37 @@
       'desc': '''Setting the policy to Enabled has enrolled devices report hardware statistics and identifiers related to power.
 
       Setting the policy to Disabled or leaving it unset means enrolled devices don't report power statistics.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
+    },
+    {
+      'name': 'ReportDevicePeripherals',
+      'owners': ['cros-reporting-team@google.com', 'lbaraz@chromium.org', 'tylergarrett@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:101-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'default': False,
+      'items': [
+        {
+          'value': True,
+          'caption': 'Report information about peripherals that are plugged into the device',
+        },
+        {
+          'value': False,
+          'caption': 'Do not report information about peripherals that are plugged into the device',
+        },
+      ],
+      'example_value': False,
+      'id': 952,
+      'caption': '''Report peripheral details''',
+      'tags': ['admin-sharing'],
+      'desc': '''Setting the policy to True has enrolled devices report information related to peripherals that are plugged into the device.
+
+      Setting the policy to False or leaving it unset means enrolled devices don't report peripherals information.''',
       'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
@@ -14575,7 +14963,7 @@
     },
     {
       'name': 'DeviceLoginScreenDefaultSpokenFeedbackEnabled',
-      'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
+      'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:29-'],
@@ -15556,9 +15944,10 @@
     {
       'name': 'DataCompressionProxyEnabled',
       'owners': ['bolian@chromium.org', 'pmarko@chromium.org'],
+      'deprecated': True,
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['android:31-'],
+      'supported_on': ['android:31-99'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -15762,7 +16151,7 @@
       'owners': ['mlerman@chromium.org', 'zmin@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:38-'],
+      'supported_on': ['chrome.*:38-', 'chrome_os:100-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -15771,9 +16160,11 @@
       'id': 275,
       'caption': '''Enable guest mode in browser''',
       'tags': [],
-      'desc': '''If this policy is set to true or not configured, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will enable guest logins. Guest logins are <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profiles where all windows are in incognito mode.
+      'desc': '''If this policy is set to true or not configured, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and <ph name="LACROS_NAME">Lacros</ph> will enable guest logins. Guest logins are <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> profiles where all windows are in incognito mode.
 
-      If this policy is set to false, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not allow guest profiles to be started.''',
+      If this policy is set to false, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and <ph name="LACROS_NAME">Lacros</ph> will not allow guest profiles to be started.
+
+      Note: If this policy is not configured or set to true, but <ph name="LACROS_SECONDARY_PROFILES_ALLOWED_POLICY_NAME">LacrosSecondaryProfilesAllowed</ph> is set to false, <ph name="LACROS_NAME">Lacros</ph> will not allow guest profiles to be started.''',
     },
     {
       'name': 'BrowserGuestModeEnforced',
@@ -15798,7 +16189,7 @@
       'owners': ['mlerman@chromium.org', 'zmin@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:39-'],
+      'supported_on': ['chrome.*:39-', 'chrome_os:100-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -15807,9 +16198,11 @@
       'id': 276,
       'caption': '''Enable add person in user manager''',
       'tags': [],
-      'desc': '''If this policy is set to true or not configured, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will allow Add Person from the user manager.
+      'desc': '''If this policy is set to true or not configured, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and <ph name="LACROS_NAME">Lacros</ph> will allow to add a new person from the user manager.
 
-      If this policy is set to false, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not allow creation of new profiles from the user manager.''',
+      If this policy is set to false, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and <ph name="LACROS_NAME">Lacros</ph> will not allow adding a new person from the user manager.
+
+      Note: If this policy is not configured or set to true, but <ph name="LACROS_SECONDARY_PROFILES_ALLOWED_POLICY_NAME">LacrosSecondaryProfilesAllowed</ph> is set to false, <ph name="LACROS_NAME">Lacros</ph> will not allow adding a new person from the user manager.''',
     },
     {
       'name': 'ForceBrowserSignin',
@@ -22003,6 +22396,32 @@
       '''
     },
     {
+      'id': 962,
+      'name': 'CloudReportingUploadFrequency',
+      'owners':  ['zmin@chromium.org', 'file://components/enterprise/browser/reporting/OWNERS'],
+      'type': 'int',
+      'schema': { 'type': 'integer', 'minimum': 3 , 'maximum': 168},
+      'future_on': ['chrome.*', 'chrome_os', 'android', 'ios'],
+      'tags': ['admin-sharing', 'google-sharing'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+        'cloud_only': True,
+      },
+      'caption': '''Frequency of cloud reporting in hours''',
+      'example_value': 12,
+      'default': 24,
+      # TODO(crbug.com/1298258): Add CloudProfileReportingEnabled policy name to the desc once it's launched.
+      'desc': '''
+      Controls the frequency of Chrome status report uploads.
+
+      This includes reports that are enabled by <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME">CloudReportingEnabled</ph>.
+
+      When the policy is not set, reports are uploaded every 24 hours.
+      When the policy is set, the number of hours between two successive report uploads is defined by this policy.
+      '''
+    },
+    {
       'name': 'EnterpriseHardwarePlatformAPIEnabled',
       'owners': ['guidou@chromium.org'],
       'type': 'main',
@@ -24702,12 +25121,29 @@
               'type': 'array',
               'items': { 'type': 'string' },
             },
+            'enabled_opt_in_events': {
+              'type': 'array',
+              'items': {
+                'type': 'object',
+                'properties': {
+                  'name': { 'type': 'string' },
+                  'url_patterns': {
+                    'type': 'array',
+                    'items': { 'type': 'string' },
+                  },
+                },
+              },
+            },
           },
         },
       },
       'example_value': [{
         'service_provider': 'Google',
         'enabled_event_names': ['passwordChangedEvent', 'sensitiveDataEvent'],
+        'enabled_opt_in_events': [
+          { 'name': 'loginEvent', 'url_patterns': ['*'] },
+          { 'name': 'passwordBreachEvent', 'url_patterns': ['example.com', 'other.example.com'] },
+        ],
       }],
       'features': {
         'dynamic_refresh': True,
@@ -24848,12 +25284,13 @@
       'owners': ['kdillon@chromium.org, panicker@chromium.org', 'kdillon@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:78-', 'chrome_os:78-', 'android:78-'],
+      'deprecated': True,
+      'supported_on': ['chrome.*:78-99', 'chrome_os:78-99', 'android:78-99'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': True,
       },
-      'default_for_enterprise_users': True,
+      'default_for_enterprise_users': False,
       'example_value': False,
       'id': 604,
       'caption': '''Allows a page to perform synchronous XHR requests during page dismissal.''',
@@ -24864,7 +25301,7 @@
 
       When the policy is set to disabled or not set, pages are not allowed to send synchronous XHR requests during page dismissal.
 
-      This policy will be removed in Chrome 93.
+      This policy was removed in Chrome 99.
 
       See https://www.chromestatus.com/feature/4664843055398912 .''',
     },
@@ -27038,7 +27475,8 @@ If you disable this policy, web page scrolling to specific text fragments via UR
                     'enum': [
                       'BLOCK',
                       'ALLOW',
-                      'REPORT'
+                      'REPORT',
+                      'WARN'
                     ]
                   }
                 }
@@ -27056,7 +27494,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'example_value': [
         {
           'name': 'Support agent work flows',
-          'description': 'Allow copy and paste for work purposes but block screenshots, screen share and printing',
+          'description': 'Allow copy and paste for work purposes, block printing, enforce privacy screen, report screen sharing, and warn on screenshots and video capture',
           'sources': {
             'urls': [
               'salesforce.com',
@@ -27082,7 +27520,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
             },
             {
               'class': 'SCREENSHOT',
-              'level': 'BLOCK'
+              'level': 'WARN'
             },
             {
               'class': 'PRINTING',
@@ -27143,10 +27581,11 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       - Control the privacy screen when any of the sources is visible.
       - Control screen sharing of any of the sources.
 
-      The restriction level can be set to BLOCK, ALLOW, REPORT.
+      The restriction level can be set to BLOCK, ALLOW, REPORT, WARN.
       - If the restriction level is set to BLOCK, the action won't be allowed. If <ph name="DATA_LEAK_PREVENTION_REPORTING_ENABLED">DataLeakPreventionReportingEnabled</ph> is set to True, the blocked action will be reported to the admin.
       - If the resriction level is set to ALLOW, the action will be allowed.
       - If the resriction level is set to REPORT and <ph name="DATA_LEAK_PREVENTION_REPORTING_ENABLED">DataLeakPreventionReportingEnabled</ph> is set to True, the action will be reported to the admin.
+      - If the resriction level is set to WARN, a user will be warned and may choose to proceed with or cancel the action. If <ph name="DATA_LEAK_PREVENTION_REPORTING_ENABLED">DataLeakPreventionReportingEnabled</ph> is set to True, showing the warning will be reported to the admin; proceeding with the action will also be reported.
 
       Notes:
       - PRIVACY_SCREEN restriction doesn't block the ability to turn on privacy screen, but enforces it when the restriction class is set to BLOCK.
@@ -27380,11 +27819,11 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'tags': [],
       'desc': '''This setting allows users to create and use secondary profiles, and use guest mode in the <ph name="LACROS_NAME">Lacros</ph> browser.
 
-      Similar to both BrowserAddPersonEnabled and BrowserGuestModeEnabled, if this policy is set to false or unset, the user cannot create or use secondary profiles, and use guest mode. Previously created secondary profiles, if any, will be unavailable.
+      Similar to both <ph name="BROWSER_ADD_PERSON_ENABLED_POLICY_NAME">BrowserAddPersonEnabled</ph> and <ph name="BROWSER_GUEST_MODE_ENABLED_POLICY_NAME">BrowserGuestModeEnabled</ph>, if this policy is set to false or unset, the user cannot create or use secondary profiles, and use guest mode. Previously created secondary profiles, if any, will be unavailable.
 
       If this policy is set to true, the user can create and use secondary profiles, and use guest mode.
 
-      Note, that if this policy is set to true but BrowserAddPersonEnabled is set to false, the user cannot create secondary profiles. The same for BrowserGuestModeEnabled and guest mode.''',
+      Note: If this policy is set to true but <ph name="BROWSER_ADD_PERSON_ENABLED_POLICY_NAME">BrowserAddPersonEnabled</ph> is set to false, the user cannot create secondary profiles. The same for <ph name="BROWSER_GUEST_MODE_ENABLED_POLICY_NAME">BrowserGuestModeEnabled</ph> and guest mode.''',
     },
     {
       'name': 'LacrosAvailability',
@@ -29045,7 +29484,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
       'owners': ['file://ash/quick_pair/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:100-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -29313,7 +29752,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
         'dynamic_refresh': True,
       },
       'id': 933,
-      'supported_on': ['chrome.*:101-', 'chrome_os:101-'],
+      'supported_on': ['chrome.*:100-', 'chrome_os:100-'],
       'tags': [],
       'caption': '''Allows origin-keyed agent clustering by default.''',
       'desc': '''This policy allows origin-keyed agent clustering by default.
@@ -29326,12 +29765,15 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
       be set.
 
       The default behaviour - when no Origin-Agent-Cluster: header has been set
-      - changes in M101 from site-keyed to origin-keyed. If this policy
+      - changes in M106 from site-keyed to origin-keyed. If this policy
       is enabled or not set, the browser will follow this new default from that
       version on. If this policy is disabled this change is reversed and
       documents without Origin-Agent-Cluster: headers will be assigned to
       site-keyed agent clusters. As a consequence, the document.domain accessor
       remains settable by default. This matches the legacy behaviour.
+
+      See https://developer.chrome.com/blog/immutable-document-domain/
+      for additional details.
       '''
     },
     {
@@ -29436,6 +29878,83 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
        If the policy is disabled or not set, user storage encryption for <ph name="DM_CRYPT">dm-crypt</ph> user homes will default to using <ph name="AES_NI_NAME">AESNI</ph>.''',
     },
     {
+      'name': 'DefaultWindowPlacementSetting',
+      'owners': ['msw@chromium.org'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 2, 3 ],
+      },
+      'items': [
+        {
+          'name': 'BlockWindowPlacement',
+          'value': 2,
+          'caption': '''Denies the Window Placement permission on all sites by default''',
+        },
+        {
+          'name': 'AskWindowPlacement',
+          'value': 3,
+          'caption': '''Ask every time a site wants obtain the Window Placement permission''',
+        },
+
+      ],
+      'supported_on': ['chrome.*:100-', 'chrome_os:100-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'id': 951,
+      'caption': '''Default Window Placement permission setting''',
+      'tags': [],
+      'default': None,
+      'example_value': 2,
+      'desc': '''Setting the policy to <ph name="BLOCK_WINDOW_PLACEMENT_POLICY_NAME">BlockWindowPlacement</ph> (value 2) automatically denies the window placement permission to sites by default. This will limit the ability of sites to see information about the device's screens and use that information to open and place windows or request fullscreen on specific screens.
+
+      Setting the policy to <ph name="ASK_WINDOW_PLACEMENT_POLICY_NAME">AskWindowPlacement</ph> (value 3) will prompt the user when the window placement permission is requested by default. If users allow the permission, it will extend the ability of sites to see information about the device's screens and use that information to open and place windows or request fullscreen on specific screens.
+
+      Leaving the policy unset means the <ph name="ASK_WINDOW_PLACEMENT_POLICY_NAME">AskWindowPlacement</ph> policy applies, but users can change this setting.''',
+    },
+    {
+      'name': 'WindowPlacementAllowedForUrls',
+      'owners': ['msw@chromium.org'],
+      'type': 'list',
+      'schema': { 'type': 'array', 'items': { 'type': 'string' } },
+      'supported_on': ['chrome.*:100-', 'chrome_os:100-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'id': 960,
+      'caption': '''Allow Window Placement permission on these sites''',
+      'tags': [],
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'desc': '''Allows you to set a list of site url patterns that specify sites which will automatically grant the window placement permission. This will extend the ability of sites to see information about the device's screens and use that information to open and place windows or request fullscreen on specific screens.
+
+      For detailed information on valid site url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. Wildcards, <ph name="WILDCARD_VALUE">*</ph>, are allowed. This policy only matches based on origin, so any path in the URL pattern is ignored.
+
+      If this policy is not set for a site then the policy from <ph name="DEFAULT_WINDOW_PLACEMENT_SETTING_POLICY_NAME">DefaultWindowPlacementSetting</ph> applies to the site, if set, otherwise the permission will follow the browser's defaults and allow users to choose this permission per site.''',
+    },
+    {
+      'name': 'WindowPlacementBlockedForUrls',
+      'owners': ['msw@chromium.org'],
+      'type': 'list',
+      'schema': { 'type': 'array', 'items': { 'type': 'string' } },
+      'supported_on': ['chrome.*:100-', 'chrome_os:100-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'id': 961,
+      'caption': '''Block Window Placement permission on these sites''',
+      'tags': [],
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'desc': '''Allows you to set a list of site url patterns that specify sites which will automatically deny the window placement permission. This will limit the ability of sites to see information about the device's screens and use that information to open and place windows or request fullscreen on specific screens.
+
+      For detailed information on valid site url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns. Wildcards, <ph name="WILDCARD_VALUE">*</ph>, are allowed. This policy only matches based on origin, so any path in the URL pattern is ignored.
+
+      If this policy is not set for a site then the policy from <ph name="DEFAULT_WINDOW_PLACEMENT_SETTING_POLICY_NAME">DefaultWindowPlacementSetting</ph> applies to the site, if set, otherwise the permission will follow the browser's defaults and allow users to choose this permission per site.''',
+    },
+    {
       'name': 'DeviceRunAutomaticCleanupOnLogin',
       'owners': ['vsavu@google.com'],
       'type': 'main',
@@ -29465,6 +29984,184 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
       Cleanup will only run when strictly necessary, but will still impact the login time.
       Setting the policy to false (the default) ensures the login time is not affected.''',
     },
+    {
+      'name': 'ExemptDomainFileTypePairsFromFileTypeDownloadWarnings',
+      'owners': ['flowerhorne@google.com'],
+      'type': 'dict',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'id': 'DomainFiletypePair',
+          'properties': {
+            'file_extension': { 'type': 'string' },
+            'domains': {
+              'type': 'array',
+              'items': { 'type': 'string'}
+            },
+          }
+        }
+      },
+      'example_value': [
+        { "file_extension": "jnlp", "domains": ["https://example.com", "example2.com"] },
+        { "file_extension": "swf", "domains": ["*"] }
+      ],
+      'supported_on': ['chrome.*:100-', 'chrome_os:100-'],
+      'features': {
+        'can_be_recommended': False,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'id': 947,
+      'caption': '''Disable download file type extension-based warnings for specified file types on domains''',
+      'tags': ['system-security'],
+      'desc': '''You can enable this policy to create a dictionary of file type extensions with a corresponding list of domains that will be exempted from file type extension-based download warnings. This lets enterprise administrators block file type extension-based download warnings for files that are associated with a listed domain. For example, if  the "jnlp" extension is associated with "website1.com", users would not see a warning when downloading "jnlp" files from "website1.com", but see a download warning when downloading "jnlp" files from "website2.com".
+
+      Files with file type extensions specified for domains identified by this policy will still be subject to non-file type extension-based security warnings such as mixed-content download warnings and Safe Browsing warnings.
+
+      If you disable this policy or don't configure it, file types that trigger extension-based download warnings will show warnings to the user.
+
+      If you enable this policy:
+
+      * The URL pattern should be formatted according to https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.
+      * The file type extension entered must be in lower-cased ASCII. The leading separator should not be included when listing the file type extension, so list "jnlp" should be used instead of ".jnlp".
+
+      Example:
+
+      The following example value would prevent file type extension-based download warnings on swf, exe, and jnlp extensions for *.example.com domains. It will show the user a file type extension-based download warning on any other domain for exe and jnlp files, but not for swf files.
+
+      [
+        { "file_extension": "jnlp", "domains": ["example.com"] },
+        { "file_extension": "exe", "domains": ["example.com"] },
+        { "file_extension": "swf", "domains": ["*"] }
+      ]
+
+      Note that while the preceding example shows the suppression of file type extension-based download warnings for "swf" files for all domains, applying suppression of such warnings for all domains for any dangerous file type extension is not recommended due to security concerns. It is shown in the example merely to demonstrate the ability to do so.
+
+      If this policy is enabled alongside <ph name="DOWNLOAD_RESTRICTIONS_POLICY_NAME">DownloadRestrictions</ph> and DownloadRestrictions is set to block dangerous file types, download blocks determined by DownloadRestrictions take precedence. For example, if this policy is set to enable "exe" extension downloads from "website1.com", and DownloadRestrictions is set to block malicious downloads and dangerous file types, then "exe" extension downloads will still be blocked in all domains. If DownloadRestrictions is not set to block dangerous file types, then file types specified in this policy will be exempted from file-type extension-based download warnings in the specified domains. Read more about DownloadRestrictions (https://chromeenterprise.google/policies/?policy=DownloadRestrictions).''',
+    },
+    {
+      'name': 'FirstPartySetsEnabled',
+      'owners': ['kaklilu@chromium.com', 'chrome-first-party-sets@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'features' : {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable First-Party Sets for all affected users'
+        },
+        {
+          'value': False,
+          'caption': 'Disable First-Party Sets for all affected users'
+        }
+      ],
+      'default': True,
+      'future_on': ['chrome.*', 'chrome_os', 'android', 'webview_android'],
+      'example_value': False,
+      'tags': [],
+      'id': 948,
+      'caption': '''Enable First-Party Sets.''',
+      'desc': '''This policy is provided as a way to opt-out of the First-Party Sets feature.
+
+                  When this policy is unset or set to Enabled, the First-Party Sets feature is enabled.
+
+                  When this policy is set to Disabled, the First-Party Sets feature is disabled.
+
+                  The state of the First-Party Sets feature determines whether Chrome retrieves the list of First-Party Sets.
+                  It also controls whether Chrome supports First-Party Sets related features (e.g. the SameParty cookie attribute).''',
+    },
+    {
+      'name': 'DeviceEncryptedReportingPipelineEnabled',
+      'owners': ['cros-reporting-team@google.com', 'albertojuarez@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:100-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable the Encrypted Reporting Pipeline',
+        },
+        {
+          'value': False,
+          'caption': 'Disable the Encrypted Reporting Pipeline',
+        },
+      ],
+      'example_value': True,
+      'default': True,
+      'id': 957,
+      'caption': '''Enable the Encrypted Reporting Pipeline''',
+      'tags': ['admin-sharing'],
+      'desc': '''Setting the policy to True or leaving it unset allows for events, telemetry and info to be
+      reported to the Encrypted Reporting Pipeline. Setting the policy to False disables the Encrypted Reporting Pipeline.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
+    },
+    {
+      'name': 'EnableDirectSockets',
+      'owners': ['file://content/browser/direct_sockets/OWNERS', 'greengrape@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable Direct Sockets API.',
+        },
+        {
+          'value': False,
+          'caption': 'Disable Direct Sockets API.',
+        }
+      ],
+      'future_on': ['chrome_os'],
+      'default': True,
+      'example_value': False,
+      'default_for_enterprise_users': False,
+      'tags': [],
+      'id': 958,
+      'caption': '''Enable Direct Sockets API.''',
+      'desc': '''Setting the policy to Enabled lets users use the Direct Sockets API (provided that all other necessary conditions are fulfilled).
+      Setting the policy to Disabled means users will not be able to access the API.
+      If this policy is left not set, the default is not allowed for enterprise-managed users and allowed for non-managed users.'''
+    },
+    {
+      'name': 'FloatingWorkspaceEnabled',
+      'owners': ['ligeng@chromium.org', 'yzd@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:100-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': '''Enable floating workspace and launch remote browser windows upon login''',
+        },
+        {
+          'value': False,
+          'caption': '''Disable floating workspace and do not launch remote browser windows upon login''',
+        },
+      ],
+      'default': False,
+      'example_value': True,
+      'id': 959,
+      'caption': '''Enable Floating Workspace Service''',
+      'tags': [],
+      'desc': '''Setting the policy to Enabled will launch browser windows from current user's last used device automatically upon login.
+      Setting the policy to Disabled or leaving it unset will let full restore settings determine what to be launched upon login.''',
+    }
   ],
   'messages': {
     # Messages that are not associated to any policies.
@@ -29653,6 +30350,10 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'doc_legacy_single_line_label': {
       'desc': '''A label for the legacy single-line textbox for a policy also has a more user-friendly multi-line textbox. See http://crbug/829328''',
       'text': '''<ph name="POLICY_NAME">$6<ex>Wallpaper Image</ex></ph> (The single-line field is deprecated and will be removed in the future. Please start using the multi-line textbox below.)''',
+    },
+    'doc_policy_documentation': {
+      'desc': '''Link title for the policy documentation''',
+      'text': '''Documentation for policy'''
     },
     'doc_policy_restriction': {
       'desc': '''Caption text of the field 'restrictions' in the summary chart of a policy in the generated documentation''',
@@ -29895,6 +30596,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'ReportDeviceMemoryInfo': 'device_reporting.report_memory_info',
     'ReportDeviceBacklightInfo': 'device_reporting.report_backlight_info',
     'ReportDeviceStorageStatus': 'device_reporting.report_storage_status',
+    'ReportDevicePeripherals': 'device_reporting.report_peripherals',
     'ReportDevicePowerStatus': 'device_reporting.report_power_status',
     'DeviceOpenNetworkConfiguration': 'open_network_configuration.open_network_configuration',
     'DeviceBootOnAcEnabled': 'device_boot_on_ac.enabled',
@@ -29933,6 +30635,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceLoginScreenWebUILazyLoading': 'login_web_ui_lazy_loading.enabled',
     'DeviceKeylockerForStorageEncryptionEnabled': 'keylocker_for_storage_encryption_enabled.enabled',
     'DeviceRunAutomaticCleanupOnLogin': 'device_run_automatic_cleanup_on_login.value',
+    'DeviceEncryptedReportingPipelineEnabled': 'device_reporting.encrypted_reporting_pipeline_enabled',
   },
   'policy_atomic_group_definitions': [
     {
@@ -30251,6 +30954,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'CloudExtensionRequestEnabled',
         'CloudReportingEnabled',
         'CloudProfileReportingEnabled',
+        'CloudReportingUploadFrequency',
       ],
     },
     {
@@ -30329,6 +31033,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'ReportDeviceTimezoneInfo',
         'ReportDeviceMemoryInfo',
         'ReportDeviceBacklightInfo',
+        'ReportDevicePeripherals',
         'ReportDevicePowerStatus',
         'ReportDeviceSecurityStatus',
         'ReportDeviceStorageStatus',
@@ -30439,10 +31144,20 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'SameOriginTabCaptureAllowedByOrigins',
       ],
     },
+    {
+      'id': 42,
+      'name': 'WindowPlacementSettings',
+      'caption': '''Window Placement settings''',
+      'policies': [
+        'DefaultWindowPlacementSetting',
+        'WindowPlacementAllowedForUrls',
+        'WindowPlacementBlockedForUrls',
+      ],
+    },
   ],
   'placeholders': [],
-  'deleted_policy_ids': [114, 115, 204, 205, 206, 341, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872, 943, 944, 945, 946, 947, 948],
+  'deleted_policy_ids': [114, 115, 204, 205, 206, 341, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 949,
-  'highest_atomic_group_id_currently_used': 41
+  'highest_id_currently_used': 962,
+  'highest_atomic_group_id_currently_used': 42
 }

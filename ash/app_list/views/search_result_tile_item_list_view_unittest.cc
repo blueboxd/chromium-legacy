@@ -96,7 +96,7 @@ class SearchResultTileItemListViewTest
       result->set_result_id("InstalledApp " + base::NumberToString(i));
       result->set_display_type(SearchResultDisplayType::kTile);
       result->set_result_type(AppListSearchResultType::kInstalledApp);
-      result->set_title(u"InstalledApp " + base::NumberToString16(i));
+      result->SetTitle(u"InstalledApp " + base::NumberToString16(i));
       results->Add(std::move(result));
     }
 
@@ -107,7 +107,7 @@ class SearchResultTileItemListViewTest
       result->set_result_id("PlayStoreApp " + base::NumberToString(i));
       result->set_display_type(SearchResultDisplayType::kTile);
       result->set_result_type(AppListSearchResultType::kPlayStoreApp);
-      result->set_title(u"PlayStoreApp " + base::NumberToString16(i));
+      result->SetTitle(u"PlayStoreApp " + base::NumberToString16(i));
       result->SetRating(1 + i);
       result->SetFormattedPrice(u"Price " + base::NumberToString16(i));
       results->Add(std::move(result));
@@ -123,7 +123,7 @@ class SearchResultTileItemListViewTest
         result->set_result_type(
             AppListSearchResultType::kPlayStoreReinstallApp);
         result->set_display_index(SearchResultDisplayIndex::kSixthIndex);
-        result->set_title(u"RecommendedApp " + base::NumberToString16(i));
+        result->SetTitle(u"RecommendedApp " + base::NumberToString16(i));
         result->SetRating(1 + i);
         results->Add(std::move(result));
       }
@@ -144,7 +144,7 @@ class SearchResultTileItemListViewTest
       result->set_result_id("InstalledApp " + base::NumberToString(i));
       result->set_display_type(SearchResultDisplayType::kTile);
       result->set_result_type(AppListSearchResultType::kInstalledApp);
-      result->set_title(u"InstalledApp " + base::NumberToString16(i));
+      result->SetTitle(u"InstalledApp " + base::NumberToString16(i));
       results->Add(std::move(result));
     }
 
@@ -155,7 +155,7 @@ class SearchResultTileItemListViewTest
       result->set_result_id("PlayStoreApp " + base::NumberToString(i));
       result->set_display_type(SearchResultDisplayType::kTile);
       result->set_result_type(AppListSearchResultType::kPlayStoreApp);
-      result->set_title(u"PlayStoreApp " + base::NumberToString16(i));
+      result->SetTitle(u"PlayStoreApp " + base::NumberToString16(i));
       result->SetRating(1 + i);
       result->SetFormattedPrice(u"Price " + base::NumberToString16(i));
       results->Add(std::move(result));
@@ -178,7 +178,7 @@ class SearchResultTileItemListViewTest
         result->set_result_type(
             AppListSearchResultType::kPlayStoreReinstallApp);
         result->set_display_index(display_indexes[i]);
-        result->set_title(u"RecommendedApp " + base::NumberToString16(i));
+        result->SetTitle(u"RecommendedApp " + base::NumberToString16(i));
         result->SetRating(1 + i);
         results->AddAt(display_indexes[i], std::move(result));
       }
@@ -257,8 +257,7 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
         l10n_util::GetStringFUTF8(
             IDS_APP_ACCESSIBILITY_ARC_APP_ANNOUNCEMENT,
             base::UTF8ToUTF16("PlayStoreApp " + base::NumberToString(i))) +
-            ", Star rating " + base::NumberToString(i + 1) + ".0, Price " +
-            base::NumberToString(i),
+            ", Star rating " + base::NumberToString(i + 1) + ".0",
         node_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
   }
 

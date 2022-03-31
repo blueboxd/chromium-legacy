@@ -7,12 +7,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/share/share_metrics.h"
-#include "chrome/browser/sharesheet/sharesheet_metrics.h"
-#include "chrome/browser/sharesheet/sharesheet_service.h"
-#include "chrome/browser/sharesheet/sharesheet_service_factory.h"
 #include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/sharing_hub/sharing_hub_model.h"
 #include "chrome/browser/sharing_hub/sharing_hub_service.h"
@@ -24,12 +22,17 @@
 #include "chrome/browser/ui/qrcode_generator/qrcode_generator_bubble_controller.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_bubble_controller.h"
 #include "chrome/browser/ui/sharing_hub/sharing_hub_bubble_view.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/button.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/sharesheet/sharesheet_metrics.h"
+#include "chrome/browser/sharesheet/sharesheet_service.h"
+#include "chrome/browser/sharesheet/sharesheet_service_factory.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace sharing_hub {
 
@@ -76,8 +79,7 @@ SharingHubBubbleController::~SharingHubBubbleController() {
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (base::FeatureList::IsEnabled(features::kChromeOSSharingHub) &&
-      bubble_showing_) {
+  if (bubble_showing_) {
     bubble_showing_ = false;
     // Close any remnant Sharesheet dialog.
     if (web_contents_containing_window_) {
@@ -122,8 +124,9 @@ void SharingHubBubbleController::ShowBubble() {
 #else
   sharing_hub_bubble_view_ =
       browser->window()->ShowSharingHubBubble(web_contents(), this, true);
-  share::LogShareSourceDesktop(share::ShareSourceDesktop::kOmniboxSharingHub);
 #endif
+
+  share::LogShareSourceDesktop(share::ShareSourceDesktop::kOmniboxSharingHub);
 }
 
 SharingHubBubbleView* SharingHubBubbleController::sharing_hub_bubble_view()
@@ -140,13 +143,7 @@ Profile* SharingHubBubbleController::GetProfile() const {
 }
 
 bool SharingHubBubbleController::ShouldOfferOmniboxIcon() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (GetProfile()->IsIncognitoProfile() || GetProfile()->IsGuestSession())
-    return false;
-  return base::FeatureList::IsEnabled(features::kChromeOSSharingHub);
-#else
   return SharingHubOmniboxEnabled(GetWebContents().GetBrowserContext());
-#endif
 }
 
 std::vector<SharingHubAction>
@@ -238,10 +235,6 @@ SharingHubBubbleController::GetSharesheetService() {
 
 void SharingHubBubbleController::ShowSharesheet(
     views::Button* highlighted_button) {
-  if (!base::FeatureList::IsEnabled(features::kChromeOSSharingHub)) {
-    return;
-  }
-
   DCHECK(highlighted_button);
   highlighted_button_tracker_.SetView(highlighted_button);
 
@@ -254,7 +247,7 @@ void SharingHubBubbleController::ShowSharesheet(
       base::UTF16ToUTF8(GetWebContents().GetTitle()));
   sharesheet_service->ShowBubble(
       &GetWebContents(), std::move(intent),
-      sharesheet::SharesheetMetrics::LaunchSource::kOmniboxShare,
+      sharesheet::LaunchSource::kOmniboxShare,
       base::BindOnce(&SharingHubBubbleController::OnShareDelivered,
                      weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&SharingHubBubbleController::OnSharesheetClosed,

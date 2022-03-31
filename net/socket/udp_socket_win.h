@@ -175,11 +175,7 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
   // Returns a net error code.
   int Open(AddressFamily address_family);
 
-  // Binds this socket to |network|. All data traffic on the socket will be sent
-  // and received via |network|. Must be called before Connect(). This call will
-  // fail if |network| has disconnected. Communication using this socket will
-  // fail if |network| disconnects.
-  // Returns a net error code.
+  // Not implemented. Returns ERR_NOT_IMPLEMENTED.
   int BindToNetwork(NetworkChangeNotifier::NetworkHandle network);
 
   // Connects the socket to connect with a certain |address|.
@@ -260,8 +256,8 @@ class NET_EXPORT UDPSocketWin : public base::win::ObjectWatcher::Delegate {
 
   // Requests that packets sent by this socket not be fragment, either locally
   // by the host, or by routers (via the DF bit in the IPv4 packet header).
-  // May not be supported by all platforms. Returns a return a network error
-  // code if there was a problem, but the socket will still be usable. Can not
+  // May not be supported by all platforms. Returns a network error code if
+  // there was a problem, but the socket will still be usable. Can not
   // return ERR_IO_PENDING.
   int SetDoNotFragment();
 

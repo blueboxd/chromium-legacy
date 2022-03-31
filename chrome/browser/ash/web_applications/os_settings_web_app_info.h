@@ -24,6 +24,8 @@ class OSSettingsSystemAppDelegate : public web_app::SystemWebAppDelegate {
   bool ShouldCaptureNavigations() const override;
   gfx::Size GetMinimumWindowSize() const override;
   std::vector<web_app::AppId> GetAppIdsToUninstallAndReplace() const override;
+  bool PreferManifestBackgroundColor() const override;
+  bool ShouldAnimateThemeChanges() const override;
 };
 
 // Return a WebAppInstallInfo used to install the app.

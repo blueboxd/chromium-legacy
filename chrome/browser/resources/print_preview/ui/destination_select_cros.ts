@@ -7,6 +7,7 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/js/util.m.js';
 import 'chrome://resources/polymer/v3_0/iron-iconset-svg/iron-iconset-svg.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import 'chrome://resources/polymer/v3_0/iron-media-query/iron-media-query.js';
 import './destination_dropdown_cros.js';
 import './destination_select_css.js';
 import './icons.js';
@@ -14,7 +15,6 @@ import './print_preview_shared_css.js';
 import './throbber_css.js';
 import '../strings.m.js';
 
-import {assert} from 'chrome://resources/js/assert.m.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -83,7 +83,8 @@ export class PrintPreviewDestinationSelectCrosElement extends
       destinationIcon_: {
         type: String,
         computed: 'computeDestinationIcon_(' +
-            'selectedValue, destination, destination.printerStatusReason)',
+            'selectedValue, destination, destination.printerStatusReason,' +
+            'isDarkModeActive_)',
       },
 
       isCurrentDestinationCrosLocal_: {
@@ -91,6 +92,9 @@ export class PrintPreviewDestinationSelectCrosElement extends
         computed: 'computeIsCurrentDestinationCrosLocal_(destination)',
         reflectToAttribute: true,
       },
+
+      // Holds status of iron-media-query (prefers-color-scheme: dark).
+      isDarkModeActive_: Boolean,
     };
   }
 
@@ -103,6 +107,7 @@ export class PrintPreviewDestinationSelectCrosElement extends
   private statusText_: string;
   private destinationIcon_: string;
   private isCurrentDestinationCrosLocal_: boolean;
+  private isDarkModeActive_: boolean;
 
   focus() {
     this.shadowRoot!.querySelector(
@@ -131,7 +136,7 @@ export class PrintPreviewDestinationSelectCrosElement extends
       if (this.isCurrentDestinationCrosLocal_) {
         return getPrinterStatusIcon(
             this.destination.printerStatusReason,
-            this.destination.isEnterprisePrinter);
+            this.destination.isEnterprisePrinter, this.isDarkModeActive_);
       }
 
       return this.destination.icon;

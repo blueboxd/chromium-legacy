@@ -12,11 +12,12 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/menu_item_constants.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
@@ -47,7 +48,10 @@
 #include "ui/base/base_window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/color/color_provider_manager.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/native_theme/native_theme.h"
+#include "ui/views/image_model_utils.h"
 
 namespace crostini {
 
@@ -91,42 +95,6 @@ base::flat_map<std::string, std::string> ExtrasFromShortcutId(
   return extras;
 }
 
-GURL GenerateVshInCroshUrl(Profile* profile,
-                           const ContainerId& container_id,
-                           const std::string& cwd,
-                           const std::vector<std::string>& terminal_args) {
-  std::string vsh_crosh = base::StrCat({chrome::kChromeUIUntrustedTerminalURL,
-                                        "html/terminal.html?command=vmshell"});
-  std::string vm_name_param = net::EscapeQueryParamValue(
-      base::StringPrintf("--vm_name=%s", container_id.vm_name.c_str()),
-      /*use_plus=*/true);
-  std::string container_name_param = net::EscapeQueryParamValue(
-      base::StringPrintf("--target_container=%s",
-                         container_id.container_name.c_str()),
-      /*use_plus=*/true);
-  std::string owner_id_param = net::EscapeQueryParamValue(
-      base::StringPrintf("--owner_id=%s",
-                         CryptohomeIdForProfile(profile).c_str()),
-      /*use_plus=*/true);
-
-  std::vector<std::string> pieces = {vsh_crosh, vm_name_param,
-                                     container_name_param, owner_id_param};
-  if (!cwd.empty()) {
-    pieces.push_back(net::EscapeQueryParamValue(
-        base::StringPrintf("--cwd=%s", cwd.c_str()), /*use_plus=*/true));
-  }
-  if (!terminal_args.empty()) {
-    // Separates the command args from the args we are passing into the
-    // terminal to be executed.
-    pieces.push_back("--");
-    for (auto arg : terminal_args) {
-      pieces.push_back(net::EscapeQueryParamValue(arg, /*use_plus=*/true));
-    }
-  }
-
-  return GURL(base::JoinString(pieces, "&args[]="));
-}
-
 void LaunchTerminalImpl(Profile* profile,
                         const GURL& url,
                         const apps::AppLaunchParams& params) {
@@ -150,46 +118,61 @@ void LaunchTerminalImpl(Profile* profile,
   LOG(WARNING) << "Profile becomes invalid. Abort launching terminal.";
 }
 
-// Loads |resource_ids| and appends the gfx::ImageSkia results to |images|.
-// Invokes |callback| with |images| when complete.
-void LoadIconsFromResources(
-    std::vector<int> resource_ids,
-    std::vector<gfx::ImageSkia> images,
-    base::OnceCallback<void(std::vector<gfx::ImageSkia>)> callback) {
-  if (images.size() >= resource_ids.size()) {
-    return std::move(callback).Run(std::move(images));
-  }
-  auto resource_id = resource_ids[images.size()];
-  apps::LoadIconFromResource(
-      apps::IconType::kStandard, apps::kAppShortcutIconSizeDip, resource_id,
-      /*placeholder=*/false, apps::IconEffects::kNone,
-      base::BindOnce(
-          [](std::vector<int> resource_ids, std::vector<gfx::ImageSkia> images,
-             base::OnceCallback<void(std::vector<gfx::ImageSkia>)> callback,
-             apps::IconValuePtr icon) {
-            images.emplace_back(std::move(icon->uncompressed));
-            LoadIconsFromResources(std::move(resource_ids), std::move(images),
-                                   std::move(callback));
-          },
-          std::move(resource_ids), std::move(images), std::move(callback)));
+}  // namespace
+
+const std::string& GetTerminalDefaultUrl() {
+  static const base::NoDestructor<std::string> url(base::StrCat(
+      {chrome::kChromeUIUntrustedTerminalURL, "html/terminal.html"}));
+  return *url;
 }
 
-}  // namespace
+GURL GenerateTerminalURL(Profile* profile,
+                         const ContainerId& container_id,
+                         const std::string& cwd,
+                         const std::vector<std::string>& terminal_args) {
+  auto escape = [](std::string param) {
+    return net::EscapeQueryParamValue(param, /*use_plus=*/true);
+  };
+  std::string start = base::StrCat({chrome::kChromeUIUntrustedTerminalURL,
+                                    "html/terminal.html?command=vmshell"});
+  std::string vm_name_param =
+      escape(base::StringPrintf("--vm_name=%s", container_id.vm_name.c_str()));
+  std::string container_name_param = escape(base::StringPrintf(
+      "--target_container=%s", container_id.container_name.c_str()));
+  std::string owner_id_param = escape(base::StringPrintf(
+      "--owner_id=%s", CryptohomeIdForProfile(profile).c_str()));
+
+  std::vector<std::string> pieces = {start, vm_name_param, container_name_param,
+                                     owner_id_param};
+  if (!cwd.empty()) {
+    pieces.push_back(escape(base::StringPrintf("--cwd=%s", cwd.c_str())));
+  }
+  if (!terminal_args.empty()) {
+    // Separates the command args from the args we are passing into the
+    // terminal to be executed.
+    pieces.push_back("--");
+    for (auto arg : terminal_args) {
+      pieces.push_back(escape(arg));
+    }
+  }
+
+  return GURL(base::JoinString(pieces, "&args[]="));
+}
 
 void LaunchTerminal(Profile* profile,
                     int64_t display_id,
                     const ContainerId& container_id,
                     const std::string& cwd,
                     const std::vector<std::string>& terminal_args) {
-  GURL vsh_in_crosh_url =
-      GenerateVshInCroshUrl(profile, container_id, cwd, terminal_args);
-  LaunchTerminalWithUrl(profile, display_id, vsh_in_crosh_url);
+  GURL url = GenerateTerminalURL(profile, container_id, cwd, terminal_args);
+  LaunchTerminalWithUrl(profile, display_id, url);
 }
 
 void LaunchTerminalForSSH(Profile* profile, int64_t display_id) {
   LaunchTerminalWithUrl(
       profile, display_id,
-      GURL("chrome-untrusted://terminal/html/terminal_ssh.html"));
+      GURL(base::StrCat(
+          {chrome::kChromeUIUntrustedTerminalURL, "html/terminal_ssh.html"})));
 }
 
 void LaunchTerminalWithUrl(Profile* profile,
@@ -429,33 +412,23 @@ void AddTerminalMenuShortcuts(
     apps::mojom::MenuItemsPtr menu_items,
     apps::mojom::Publisher::GetMenuModelCallback callback,
     std::vector<gfx::ImageSkia> images) {
-  constexpr bool kIconIndexSSH = 0;
-  constexpr bool kIconIndexTerminal = 1;
-  if (images.empty()) {
-    std::vector<int> resource_ids = {IDR_LOGO_CROSTINI_TERMINAL_SSH,
-                                     IDR_CROSTINI_MASCOT};
-    return LoadIconsFromResources(
-        std::move(resource_ids), std::vector<gfx::ImageSkia>(),
-        base::BindOnce(
-            [](Profile* profile, int next_command_id,
-               apps::mojom::MenuItemsPtr menu_items,
-               apps::mojom::Publisher::GetMenuModelCallback callback,
-               std::vector<gfx::ImageSkia> images) {
-              AddTerminalMenuShortcuts(profile, next_command_id,
-                                       std::move(menu_items),
-                                       std::move(callback), std::move(images));
-            },
-            profile, next_command_id, std::move(menu_items),
-            std::move(callback)));
-  }
-
-  DCHECK_EQ(2, images.size());
+  ui::ColorProvider* color_provider =
+      ui::ColorProviderManager::Get().GetColorProviderFor(
+          ui::NativeTheme::GetInstanceForWeb()->GetColorProviderKey(nullptr));
+  auto icon = [color_provider](const gfx::VectorIcon& icon) {
+    return views::GetImageSkiaFromImageModel(
+        ui::ImageModel::FromVectorIcon(icon, ui::kColorMenuIcon,
+                                       apps::kAppShortcutIconSizeDip),
+        color_provider);
+  };
+  gfx::ImageSkia terminal_ssh_icon = icon(kTerminalSshIcon);
+  gfx::ImageSkia crostini_mascot_icon = icon(kCrostiniMascotIcon);
   if (base::FeatureList::IsEnabled(chromeos::features::kTerminalSSH)) {
     apps::AddSeparator(ui::DOUBLE_SEPARATOR, &menu_items);
     apps::AddShortcutCommandItem(
         next_command_id++, ShortcutIdForSSH(),
         l10n_util::GetStringUTF8(IDS_CROSTINI_TERMINAL_CONNECT_TO_SSH),
-        images[kIconIndexSSH], &menu_items);
+        terminal_ssh_icon, &menu_items);
   }
 
   if (!CrostiniFeatures::Get()->IsEnabled(profile)) {
@@ -465,16 +438,16 @@ void AddTerminalMenuShortcuts(
   if (crostini::CrostiniFeatures::Get()->IsMultiContainerAllowed(profile)) {
     const base::Value* container_list =
         profile->GetPrefs()->GetList(crostini::prefs::kCrostiniContainers);
-    if (container_list && container_list->GetList().size() > 1) {
+    if (container_list && container_list->GetListDeprecated().size() > 1) {
       // Shortcuts for each container.
-      for (const auto& dict : container_list->GetList()) {
+      for (const auto& dict : container_list->GetListDeprecated()) {
         crostini::ContainerId id(dict);
         if (!id.vm_name.empty() && !id.container_name.empty()) {
           std::string shortcut_id = ShortcutIdFromContainerId(id);
           std::string label =
               base::StrCat({id.vm_name, ":", id.container_name});
           apps::AddShortcutCommandItem(next_command_id++, shortcut_id, label,
-                                       images[kIconIndexTerminal], &menu_items);
+                                       crostini_mascot_icon, &menu_items);
         }
       }
       return std::move(callback).Run(std::move(menu_items));
@@ -488,7 +461,7 @@ void AddTerminalMenuShortcuts(
     apps::AddShortcutCommandItem(
         next_command_id++, shortcut_id,
         l10n_util::GetStringUTF8(IDS_CROSTINI_TERMINAL_CONNECT_TO_LINUX),
-        images[kIconIndexTerminal], &menu_items);
+        crostini_mascot_icon, &menu_items);
   }
   std::move(callback).Run(std::move(menu_items));
 }

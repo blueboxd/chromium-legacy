@@ -157,7 +157,7 @@ const char kFlashDeprecationLearnMoreURL[] =
 const char kGoogleAccountActivityControlsURL[] =
     "https://myaccount.google.com/activitycontrols/search";
 
-const char kGoogleAccountActivityControlsURLInPrivacyReview[] =
+const char kGoogleAccountActivityControlsURLInPrivacyGuide[] =
     "https://myaccount.google.com/activitycontrols/"
     "search&utm_source=chrome&utm_medium=privacy-guide";
 
@@ -321,6 +321,9 @@ const char kAccountManagerLearnMoreURL[] =
 
 const char kAccountRecoveryURL[] =
     "https://accounts.google.com/signin/recovery";
+
+const char kAddNewUserURL[] =
+    "https://www.google.com/chromebook/howto/add-another-account";
 
 const char kAndroidAppsLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=playapps";

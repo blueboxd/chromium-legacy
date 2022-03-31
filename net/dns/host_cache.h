@@ -34,9 +34,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/base/network_isolation_key.h"
-#include "net/dns/dns_util.h"
 #include "net/dns/host_resolver_results.h"
-#include "net/dns/public/dns_protocol.h"
 #include "net/dns/public/dns_query_type.h"
 #include "net/dns/public/host_resolver_source.h"
 #include "net/log/net_log_capture_mode.h"
@@ -192,8 +190,8 @@ class NET_EXPORT HostCache {
     const absl::optional<AddressList>& legacy_addresses() const {
       return legacy_addresses_;
     }
-    void set_legacy_addresses(const absl::optional<AddressList>& addresses) {
-      legacy_addresses_ = addresses;
+    void set_legacy_addresses(absl::optional<AddressList> addresses) {
+      legacy_addresses_ = std::move(addresses);
     }
     const absl::optional<std::vector<std::string>>& text_records() const {
       return text_records_;

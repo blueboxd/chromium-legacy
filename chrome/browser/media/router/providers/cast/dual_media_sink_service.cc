@@ -19,24 +19,14 @@
 
 namespace media_router {
 
-DualMediaSinkService* DualMediaSinkService::instance_for_test_ = nullptr;
-
 // static
 DualMediaSinkService* DualMediaSinkService::GetInstance() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (instance_for_test_)
-    return instance_for_test_;
-
   static DualMediaSinkService* instance = new DualMediaSinkService();
   return instance;
 }
 
 // static
-void DualMediaSinkService::SetInstanceForTest(
-    DualMediaSinkService* instance_for_test) {
-  instance_for_test_ = instance_for_test;
-}
-
 DialMediaSinkServiceImpl* DualMediaSinkService::GetDialMediaSinkServiceImpl() {
   return dial_media_sink_service_->impl();
 }
@@ -68,6 +58,7 @@ void DualMediaSinkService::OnUserGesture() {
     dial_media_sink_service_->OnUserGesture();
 }
 
+#if BUILDFLAG(IS_WIN)
 void DualMediaSinkService::StartMdnsDiscovery() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -81,6 +72,7 @@ bool DualMediaSinkService::MdnsDiscoveryStarted() {
              ? cast_media_sink_service_->MdnsDiscoveryStarted()
              : false;
 }
+#endif
 
 DualMediaSinkService::DualMediaSinkService() {
   if (DialMediaRouteProviderEnabled()) {
@@ -124,6 +116,9 @@ void DualMediaSinkService::OnSinksDiscovered(
 }
 
 void DualMediaSinkService::BindLogger(LoggerImpl* logger_impl) {
+  // TODO(crbug.com/1293535): Simplify how logger instances are made available
+  // to their clients.
+
   if (logger_is_bound_)
     return;
   logger_is_bound_ = true;
@@ -131,12 +126,13 @@ void DualMediaSinkService::BindLogger(LoggerImpl* logger_impl) {
 
   if (dial_media_sink_service_) {
     mojo::PendingRemote<mojom::Logger> dial_pending_remote;
-    logger_impl->Bind(dial_pending_remote.InitWithNewPipeAndPassReceiver());
+    logger_impl->BindReceiver(
+        dial_pending_remote.InitWithNewPipeAndPassReceiver());
     dial_media_sink_service_->BindLogger(std::move(dial_pending_remote));
   }
 
   mojo::PendingRemote<mojom::Logger> cast_discovery_pending_remote;
-  logger_impl->Bind(
+  logger_impl->BindReceiver(
       cast_discovery_pending_remote.InitWithNewPipeAndPassReceiver());
   cast_app_discovery_service_->task_runner()->PostTask(
       FROM_HERE,

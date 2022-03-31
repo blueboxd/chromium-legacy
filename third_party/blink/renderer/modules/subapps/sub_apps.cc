@@ -17,22 +17,35 @@
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
+using mojom::blink::SubAppsServiceListResultPtr;
+using mojom::blink::SubAppsServiceResult;
+
 namespace {
 
 // We get called back from the SubAppsService mojo service (inside the browser
 // process), pass on the result to the calling context.
-void OnAddSubApp(ScriptPromiseResolver* resolver,
-                 mojom::blink::SubAppsServiceResult result) {
-  if (result == mojom::blink::SubAppsServiceResult::kSuccess) {
+void OnAddSubApp(ScriptPromiseResolver* resolver, SubAppsServiceResult result) {
+  if (result == SubAppsServiceResult::kSuccess) {
     resolver->Resolve();
   } else {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kOperationError, "Unable to add given sub-app."));
+  }
+}
+
+void OnListSubApp(ScriptPromiseResolver* resolver,
+                  SubAppsServiceListResultPtr result) {
+  if (result->code == SubAppsServiceResult::kSuccess) {
+    resolver->Resolve(result->sub_app_ids);
+  } else {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kOperationError, "Unable to list sub-apps."));
   }
 }
 
@@ -64,6 +77,9 @@ mojo::Remote<mojom::blink::SubAppsService>& SubApps::GetService() {
         ->GetExecutionContext()
         ->GetBrowserInterfaceBroker()
         .GetInterface(service_.BindNewPipeAndPassReceiver());
+    // In case the other endpoint gets disconnected, we want to reset our end of
+    // the pipe as well so that we don't remain connected to a half-open pipe.
+    service_.reset_on_disconnect();
   }
   return service_;
 }
@@ -71,28 +87,25 @@ mojo::Remote<mojom::blink::SubAppsService>& SubApps::GetService() {
 ScriptPromise SubApps::add(ScriptState* script_state,
                            const String& install_url,
                            ExceptionState& exception_state) {
-  Navigator* const navigator = GetSupplementable();
   // [SecureContext] from the IDL ensures this.
   DCHECK(ExecutionContext::From(script_state)->IsSecureContext());
 
-  if (!navigator->DomWindow()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "The object is no longer associated to a document.");
+  if (!CheckPreconditionsMaybeThrow(exception_state)) {
     return ScriptPromise();
   }
 
-  if (!navigator->DomWindow()->GetFrame()->IsMainFrame()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "API is only supported in top-level browsing contexts.");
-    return ScriptPromise();
-  }
+  Navigator* const navigator = GetSupplementable();
+  const SecurityOrigin* frame_origin = navigator->DomWindow()
+                                           ->GetFrame()
+                                           ->GetSecurityContext()
+                                           ->GetSecurityOrigin();
+  KURL completed_url = navigator->DomWindow()->CompleteURL(install_url);
+  scoped_refptr<const SecurityOrigin> completed_url_origin =
+      SecurityOrigin::Create(completed_url);
 
-  KURL completed_url = KURL(navigator->DomWindow()->Url(), install_url);
-  if (!url::IsSameOriginWith(navigator->DomWindow()->Url(), completed_url)) {
+  if (!frame_origin->IsSameOriginWith(completed_url_origin.get())) {
     exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
+        DOMExceptionCode::kURLMismatchError,
         "API argument must be a relative path or a fully qualified URL matching"
         " the origin of the caller.");
     return ScriptPromise();
@@ -103,6 +116,38 @@ ScriptPromise SubApps::add(ScriptState* script_state,
                     WTF::Bind(&OnAddSubApp, WrapPersistent(resolver)));
 
   return resolver->Promise();
+}
+
+ScriptPromise SubApps::list(ScriptState* script_state,
+                            ExceptionState& exception_state) {
+  if (!CheckPreconditionsMaybeThrow(exception_state)) {
+    return ScriptPromise();
+  }
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  GetService()->List(WTF::Bind(&OnListSubApp, WrapPersistent(resolver)));
+
+  return resolver->Promise();
+}
+
+bool SubApps::CheckPreconditionsMaybeThrow(ExceptionState& exception_state) {
+  Navigator* const navigator = GetSupplementable();
+
+  if (!navigator->DomWindow()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotFoundError,
+        "The object is no longer associated to a document.");
+    return false;
+  }
+
+  if (!navigator->DomWindow()->GetFrame()->IsMainFrame()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "API is only supported in top-level browsing contexts.");
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace blink

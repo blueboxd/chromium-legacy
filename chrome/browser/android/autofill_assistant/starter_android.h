@@ -115,13 +115,17 @@ class StarterAndroid : public StarterPlatformDelegate,
 
  private:
   friend class content::WebContentsUserData<StarterAndroid>;
-  explicit StarterAndroid(content::WebContents* web_contents);
+  StarterAndroid(content::WebContents* web_contents,
+                 std::unique_ptr<Dependencies> dependencies);
 
   void CreateJavaDependenciesIfNecessary();
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
   std::unique_ptr<Starter> starter_;
-  std::unique_ptr<Dependencies> dependencies_;
+  // Contains AssistantStaticDependencies which do not change.
+  const std::unique_ptr<const Dependencies> dependencies_;
+  // Can change based on activity attachment.
+  base::android::ScopedJavaGlobalRef<jobject> java_dependencies_;
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
   base::android::ScopedJavaGlobalRef<jobject> java_onboarding_helper_;

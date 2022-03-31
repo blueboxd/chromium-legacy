@@ -78,6 +78,8 @@ class TestingPrefServiceBase : public SuperPrefService {
   // Set initialization status of pref stores.
   void SetInitializationCompleted();
 
+  scoped_refptr<TestingPrefStore> user_prefs_store() { return user_prefs_; }
+
  protected:
   TestingPrefServiceBase(TestingPrefStore* managed_prefs,
                          TestingPrefStore* supervised_user_prefs,
@@ -294,10 +296,9 @@ void TestingPrefServiceBase<SuperPrefService, ConstructionPrefRegistry>::
   managed_prefs_->SetInitializationCompleted();
   supervised_user_prefs_->SetInitializationCompleted();
   extension_prefs_->SetInitializationCompleted();
-  standalone_browser_prefs_->SetInitializationCompleted();
   recommended_prefs_->SetInitializationCompleted();
-  // |user_prefs_| is initialized in PrefService constructor so no need to
-  // set initialization status again.
+  // |user_prefs_| and |standalone_browser_prefs_| are initialized in
+  // PrefService constructor so no need to set initialization status again.
 }
 
 #endif  // COMPONENTS_PREFS_TESTING_PREF_SERVICE_H_

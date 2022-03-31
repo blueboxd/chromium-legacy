@@ -76,7 +76,8 @@ float TestLayer::invert() const {
 
 TestHostClient::TestHostClient(ThreadInstance thread_instance)
     : host_(AnimationHost::CreateForTesting(thread_instance)),
-      mutators_need_commit_(false) {
+      mutators_need_commit_(false),
+      property_trees_(*this) {
   host_->SetMutatorHostClient(this);
 }
 
@@ -90,6 +91,14 @@ void TestHostClient::ClearMutatedProperties() {
   for (auto& kv : layers_in_active_tree_)
     kv.second->ClearMutatedProperties();
 }
+
+bool TestHostClient::IsOwnerThread() const {
+  return true;
+}
+bool TestHostClient::InProtectedSequence() const {
+  return false;
+}
+void TestHostClient::WaitForProtectedSequenceCompletion() const {}
 
 bool TestHostClient::IsElementInPropertyTrees(ElementId element_id,
                                               ElementListType list_type) const {
@@ -178,7 +187,8 @@ void TestHostClient::MaximumScaleChanged(ElementId element_id,
 void TestHostClient::SetScrollOffsetForAnimation(
     const gfx::PointF& scroll_offset,
     ElementId element_id) {
-  property_trees_.scroll_tree.SetScrollOffset(element_id, scroll_offset);
+  property_trees_.scroll_tree_mutable().SetScrollOffset(element_id,
+                                                        scroll_offset);
 }
 
 void TestHostClient::RegisterElementId(ElementId element_id,
@@ -507,7 +517,7 @@ void AnimationTimelinesTest::TickAnimationsTransferEvents(
 
 KeyframeEffect* AnimationTimelinesTest::GetKeyframeEffectForElementId(
     ElementId element_id) {
-  const scoped_refptr<ElementAnimations> element_animations =
+  const scoped_refptr<const ElementAnimations> element_animations =
       host_->GetElementAnimationsForElementId(element_id);
   return element_animations
              ? element_animations->FirstKeyframeEffectForTesting()
@@ -516,7 +526,7 @@ KeyframeEffect* AnimationTimelinesTest::GetKeyframeEffectForElementId(
 
 KeyframeEffect* AnimationTimelinesTest::GetImplKeyframeEffectForLayerId(
     ElementId element_id) {
-  const scoped_refptr<ElementAnimations> element_animations =
+  const scoped_refptr<const ElementAnimations> element_animations =
       host_impl_->GetElementAnimationsForElementId(element_id);
   return element_animations
              ? element_animations->FirstKeyframeEffectForTesting()

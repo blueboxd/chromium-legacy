@@ -55,8 +55,8 @@
 #include "ui/accessibility/ax_mode.h"
 #include "ui/gfx/geometry/quad_f.h"
 
-namespace skia {
-class Matrix44;
+namespace gfx {
+class Transform;
 }
 
 namespace ui {
@@ -604,9 +604,9 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   virtual int HeadingLevel() const { return 0; }
   // Value should be 1-based. 0 means not supported.
   virtual unsigned HierarchicalLevel() const { return 0; }
-  // Return the content of an image or canvas as an image data url in
-  // PNG format. If |maxSize| is not empty and if the image is larger than
-  // those dimensions, the image will be resized proportionally first to fit.
+  // Return the snapshot of an element as an image data url in PNG format.
+  // If |maxSize| is not empty and if the image is larger than those dimensions,
+  // the image will be resized proportionally first to fit.
   virtual String ImageDataUrl(const gfx::Size& max_size) const {
     return g_null_atom;
   }
@@ -848,7 +848,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // set |clips_children| to true.
   virtual void GetRelativeBounds(AXObject** out_container,
                                  gfx::RectF& out_bounds_in_container,
-                                 skia::Matrix44& out_container_transform,
+                                 gfx::Transform& out_container_transform,
                                  bool* clips_children = nullptr) const;
 
   gfx::RectF LocalBoundingBoxRectForAccessibility();
@@ -1061,6 +1061,10 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // an attached parent_ is already cached, and that it is possible to compute
   // the parent. It calls ComputeParentImpl() for the actual work.
   AXObject* ComputeParent() const;
+
+  // Same as ComputeParent, but does not assert if there is no parent to compute
+  // (i.e. because the parent does not belong to the tree anymore).
+  AXObject* ComputeParentOrNull() const;
 
   // Can this node be used to compute the natural parent of an object?
   // These are objects that can have some children, but the children are

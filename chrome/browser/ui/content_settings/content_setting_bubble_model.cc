@@ -178,7 +178,15 @@ int GetIdForContentType(const ContentSettingsTypeIdEntry* entries,
   return 0;
 }
 
-void SetAllowRunningInsecureContent(content::RenderFrameHost* frame) {
+void SetAllowRunningInsecureContent(
+    MixedContentSettingsTabHelper* mixed_content_settings,
+    content::RenderFrameHost* frame) {
+  // Set Insecure Content flag only if running insecure content is allowed
+  if (mixed_content_settings &&
+      !mixed_content_settings->IsRunningInsecureContentAllowed(*frame)) {
+    return;
+  }
+
   mojo::AssociatedRemote<content_settings::mojom::ContentSettingsAgent> agent;
   frame->GetRemoteAssociatedInterfaces()->GetInterface(&agent);
   agent->SetAllowRunningInsecureContent();
@@ -380,8 +388,18 @@ void ContentSettingMixedScriptBubbleModel::OnCustomLinkClicked() {
   }
 
   // Update renderer side settings to allow active mixed content.
-  GetPage().GetMainDocument().ForEachRenderFrameHost(
-      base::BindRepeating(&::SetAllowRunningInsecureContent));
+  GetPage().GetMainDocument().ForEachRenderFrameHost(base::BindRepeating(
+      [](MixedContentSettingsTabHelper* mixed_content_settings,
+         content::RenderFrameHost* frame) {
+        // Stop the child frame enumeration if we have reached a fenced frame.
+        // This is correct since fence frames should ignore InsecureContent
+        // setting.
+        if (frame->IsFencedFrameRoot())
+          return content::RenderFrameHost::FrameIterationAction::kSkipChildren;
+        SetAllowRunningInsecureContent(mixed_content_settings, frame);
+        return content::RenderFrameHost::FrameIterationAction::kContinue;
+      },
+      mixed_content_settings));
 }
 
 // Don't set any manage text since none is displayed.
@@ -1622,7 +1640,7 @@ void ContentSettingQuietRequestBubbleModel::OnManageButtonClicked() {
       permissions::PermissionRequestManager::FromWebContents(web_contents());
   CHECK_GT(manager->Requests().size(), 0u);
   DCHECK_EQ(manager->Requests().size(), 1u);
-  manager->set_managed_clicked();
+  manager->set_manage_clicked();
   if (is_UMA_for_test) {
     // `delegate()->ShowContentSettingsPage` opens a new tab. It is not needed
     // for UMA tests.

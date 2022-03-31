@@ -16,8 +16,8 @@ import androidx.appcompat.app.AlertDialog;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.AssistantBrowserControlsFactory;
 import org.chromium.chrome.browser.autofill_assistant.AssistantInfoPageUtil;
-import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.ui.util.AccessibilityUtil;
@@ -36,6 +36,8 @@ public class BottomSheetOnboardingWithPopupCoordinator extends BottomSheetOnboar
     private static final String SPLIT_ONBOARDING_SHOW_DIALOG_KEY = "split_onboarding_show_dialog";
     private static final String SPLIT_ONBOARDING_ACCEPT_DIALOG_KEY = "split_onboarding_accept";
     private static final String SPLIT_ONBOARDING_CLOSE_DIALOG_KEY = "split_onboarding_decline";
+    private static final String SPLIT_ONBOARDING_TITLE_KEY = "split_onboarding_title";
+    private static final String SPLIT_ONBOARDING_SUBTITLE_KEY = "split_onboarding_text";
     // We have a bit more space in the dialog, so we add line spacing to make it easier to read the
     // terms.
     private static final float TERMS_LINE_SPACING_MULTIPLIER = 1.25f;
@@ -44,9 +46,10 @@ public class BottomSheetOnboardingWithPopupCoordinator extends BottomSheetOnboar
 
     BottomSheetOnboardingWithPopupCoordinator(AssistantInfoPageUtil infoPageUtil,
             String experimentIds, Map<String, String> parameters, Context context,
-            BottomSheetController controller, BrowserControlsStateProvider browserControls,
-            View rootView, ScrimCoordinator scrim, AccessibilityUtil accessibilityUtil) {
-        super(infoPageUtil, experimentIds, parameters, context, controller, browserControls,
+            BottomSheetController controller,
+            AssistantBrowserControlsFactory browserControlsFactory, View rootView,
+            ScrimCoordinator scrim, AccessibilityUtil accessibilityUtil) {
+        super(infoPageUtil, experimentIds, parameters, context, controller, browserControlsFactory,
                 rootView, scrim, accessibilityUtil);
     }
 
@@ -95,9 +98,18 @@ public class BottomSheetOnboardingWithPopupCoordinator extends BottomSheetOnboar
             ButtonCompat bottomSheetNoButton = mView.findViewById(R.id.button_init_not_ok);
             bottomSheetNoButton.setText(mStringMap.get(SPLIT_ONBOARDING_CLOSE_BOTTOMSHEET_KEY));
         }
-
-        updateTitleView(mView.findViewById(R.id.onboarding_try_assistant));
-        updateSubtitleView(mView.findViewById(R.id.onboarding_subtitle));
+        TextView titleView = mView.findViewById(R.id.onboarding_try_assistant);
+        if (mStringMap.containsKey(SPLIT_ONBOARDING_TITLE_KEY)) {
+            titleView.setText(mStringMap.get(SPLIT_ONBOARDING_TITLE_KEY));
+        } else {
+            updateTitleView(titleView);
+        }
+        TextView subtitleView = mView.findViewById(R.id.onboarding_subtitle);
+        if (mStringMap.containsKey(SPLIT_ONBOARDING_SUBTITLE_KEY)) {
+            subtitleView.setText(mStringMap.get(SPLIT_ONBOARDING_SUBTITLE_KEY));
+        } else {
+            updateSubtitleView(subtitleView);
+        }
     }
 
     private void showDialog(Callback<Integer> callback) {

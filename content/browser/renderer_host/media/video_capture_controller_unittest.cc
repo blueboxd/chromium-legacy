@@ -99,6 +99,8 @@ class MockVideoCaptureControllerEventHandler
   MOCK_METHOD2(DoBufferReady,
                void(ControllerIDAndSize buffer,
                     std::vector<ControllerIDAndSize> scaled_buffers));
+  MOCK_METHOD1(OnFrameWithEmptyRegionCapture,
+               void(const VideoCaptureControllerID&));
   MOCK_METHOD1(DoEnded, void(const VideoCaptureControllerID&));
   MOCK_METHOD2(DoError,
                void(const VideoCaptureControllerID&, media::VideoCaptureError));
@@ -678,7 +680,7 @@ TEST_P(VideoCaptureControllerTest, CaptureWithScaledFrames) {
   }
   gfx::GpuMemoryBufferHandle frame_handle;
   frame_handle.type = gfx::GpuMemoryBufferType::IO_SURFACE_BUFFER;
-  frame_handle.id.id = -1;
+  frame_handle.id = gfx::GpuMemoryBufferHandle::kInvalidId;
   frame_handle.io_surface.reset(
       gfx::CreateIOSurface(kFrameSize, gfx::BufferFormat::BGRA_8888));
   media::CapturedExternalVideoBuffer external_buffer(
@@ -686,7 +688,7 @@ TEST_P(VideoCaptureControllerTest, CaptureWithScaledFrames) {
 
   gfx::GpuMemoryBufferHandle scaled_frame_handle;
   scaled_frame_handle.type = gfx::GpuMemoryBufferType::IO_SURFACE_BUFFER;
-  scaled_frame_handle.id.id = -1;
+  scaled_frame_handle.id = gfx::GpuMemoryBufferHandle::kInvalidId;
   scaled_frame_handle.io_surface.reset(
       gfx::CreateIOSurface(kScaledFrameSize, gfx::BufferFormat::BGRA_8888));
   std::vector<media::CapturedExternalVideoBuffer> scaled_external_buffers;

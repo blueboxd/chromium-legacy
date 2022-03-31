@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/frame/find_in_page.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
@@ -3572,6 +3573,34 @@ TEST_F(DisplayLockContextTest, ReattachPropagationBlockedByDisplayLock) {
   EXPECT_TRUE(parent->ChildNeedsReattachLayoutTree());
 
   EXPECT_TRUE(GetDocument().GetStyleEngine().NeedsLayoutTreeRebuild());
+}
+
+TEST_F(DisplayLockContextTest, NoUpdatesInDisplayNone) {
+  GetDocument().documentElement()->setInnerHTML(R"HTML(
+    <div id=displaynone style="display:none">
+      <div id=displaylocked style="content-visibility:hidden">
+        <div id=child>hello</div>
+      </div>
+    </div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* displaylocked = GetDocument().getElementById("displaylocked");
+  auto* child = GetDocument().getElementById("child");
+
+  EXPECT_FALSE(displaylocked->GetComputedStyle());
+  EXPECT_FALSE(displaylocked->GetLayoutObject());
+  EXPECT_FALSE(child->GetComputedStyle());
+  EXPECT_FALSE(child->GetLayoutObject());
+
+  // EnsureComputedStyle shouldn't lock elements in a display:none subtree, and
+  // certainly shouldn't run layout.
+  displaylocked->EnsureComputedStyle();
+  child->EnsureComputedStyle();
+  EXPECT_FALSE(displaylocked->GetDisplayLockContext());
+  EXPECT_FALSE(displaylocked->GetLayoutObject());
+  EXPECT_FALSE(child->GetLayoutObject());
 }
 
 }  // namespace blink

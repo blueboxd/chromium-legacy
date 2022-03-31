@@ -13,7 +13,6 @@
 #include "base/syslog_logging.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -41,7 +40,6 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/themes/theme_syncable_service.h"
 #include "chrome/browser/ui/read_later/reading_list_model_factory.h"
-#include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_data_service_factory.h"
@@ -73,13 +71,12 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/report_unrecoverable_error.h"
-#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/sync_util.h"
 #include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
-#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/syncable_service_based_model_type_controller.h"
 #include "components/sync/model/forwarding_model_type_controller_delegate.h"
 #include "components/sync/model/model_type_store.h"
@@ -133,7 +130,6 @@
 #include "chrome/browser/ash/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/ash/sync/app_settings_model_type_controller.h"
 #include "chrome/browser/ash/sync/apps_model_type_controller.h"
-#include "chrome/browser/ash/sync/os_sync_model_type_controller.h"
 #include "chrome/browser/ash/sync/os_syncable_service_model_type_controller.h"
 #include "chrome/browser/sync/desk_sync_service_factory.h"
 #include "chrome/browser/sync/wifi_configuration_sync_service_factory.h"
@@ -177,7 +173,8 @@ base::RepeatingClosure GetDumpStackClosure() {
 
 }  // namespace
 
-ChromeSyncClient::ChromeSyncClient(Profile* profile) : profile_(profile) {
+ChromeSyncClient::ChromeSyncClient(Profile* profile)
+    : profile_(profile), extensions_activity_monitor_(profile) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   profile_web_data_service_ =
@@ -276,11 +273,6 @@ syncer::ModelTypeStoreService* ChromeSyncClient::GetModelTypeStoreService() {
 
 syncer::DeviceInfoSyncService* ChromeSyncClient::GetDeviceInfoSyncService() {
   return DeviceInfoSyncServiceFactory::GetForProfile(profile_);
-}
-
-bookmarks::BookmarkModel* ChromeSyncClient::GetBookmarkModel() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return BookmarkModelFactory::GetForBrowserContext(profile_);
 }
 
 favicon::FaviconService* ChromeSyncClient::GetFaviconService() {
@@ -449,70 +441,30 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
             syncer::OS_PRIORITY_PREFERENCES, model_type_store_factory,
             GetSyncableServiceForType(syncer::OS_PRIORITY_PREFERENCES),
             dump_stack, profile_->GetPrefs(), sync_service));
-    // Use the same delegate in full-sync and transport-only modes.
     syncer::ModelTypeControllerDelegate* printers_delegate =
         GetControllerDelegateForModelType(syncer::PRINTERS).get();
-    controllers.push_back(std::make_unique<OsSyncModelTypeController>(
-        syncer::PRINTERS,
-        /*delegate_for_full_sync_mode=*/
-        std::make_unique<ForwardingModelTypeControllerDelegate>(
-            printers_delegate),
-        /*delegate_for_transport_mode=*/
-        std::make_unique<ForwardingModelTypeControllerDelegate>(
-            printers_delegate),
-        profile_->GetPrefs(), sync_service));
-    if (base::FeatureList::IsEnabled(switches::kSyncWifiConfigurations) &&
-        WifiConfigurationSyncServiceFactory::ShouldRunInProfile(profile_)) {
-      // Use the same delegate in full-sync and transport-only modes.
-      syncer::ModelTypeControllerDelegate* wifi_configurations_delegate =
-          GetControllerDelegateForModelType(syncer::WIFI_CONFIGURATIONS).get();
-      controllers.push_back(std::make_unique<OsSyncModelTypeController>(
-          syncer::WIFI_CONFIGURATIONS,
-          /*delegate_for_full_sync_mode=*/
-          std::make_unique<ForwardingModelTypeControllerDelegate>(
-              wifi_configurations_delegate),
-          /*delegate_for_transport_mode=*/
-          std::make_unique<ForwardingModelTypeControllerDelegate>(
-              wifi_configurations_delegate),
-          profile_->GetPrefs(), sync_service));
-    }
-      // Use the same delegate in full-sync and transport-only modes.
-      syncer::ModelTypeControllerDelegate* workspace_desk_delegate =
-          GetControllerDelegateForModelType(syncer::WORKSPACE_DESK).get();
-      controllers.push_back(std::make_unique<OsSyncModelTypeController>(
-          syncer::WORKSPACE_DESK,
-          /*delegate_for_full_sync_mode=*/
-          std::make_unique<ForwardingModelTypeControllerDelegate>(
-              workspace_desk_delegate),
-          /*delegate_for_transport_mode=*/
-          std::make_unique<ForwardingModelTypeControllerDelegate>(
-              workspace_desk_delegate),
-          profile_->GetPrefs(), sync_service));
-  } else {
-    // SyncSettingsCategorization is disabled.
-    if (base::FeatureList::IsEnabled(switches::kSyncWifiConfigurations) &&
-        WifiConfigurationSyncServiceFactory::ShouldRunInProfile(profile_)) {
-      syncer::ModelTypeControllerDelegate* wifi_configurations_delegate =
-          GetControllerDelegateForModelType(syncer::WIFI_CONFIGURATIONS).get();
-      controllers.push_back(std::make_unique<syncer::ModelTypeController>(
-          syncer::WIFI_CONFIGURATIONS,
-          std::make_unique<ForwardingModelTypeControllerDelegate>(
-              wifi_configurations_delegate)));
-    }
-    syncer::ModelTypeControllerDelegate* workspace_desk_delegate =
-        GetControllerDelegateForModelType(syncer::WORKSPACE_DESK).get();
     controllers.push_back(std::make_unique<syncer::ModelTypeController>(
-        syncer::WORKSPACE_DESK,
+        syncer::PRINTERS,
         std::make_unique<ForwardingModelTypeControllerDelegate>(
-            workspace_desk_delegate)));
+            printers_delegate)));
   }
+  if (WifiConfigurationSyncServiceFactory::ShouldRunInProfile(profile_)) {
+    syncer::ModelTypeControllerDelegate* wifi_configurations_delegate =
+        GetControllerDelegateForModelType(syncer::WIFI_CONFIGURATIONS).get();
+    controllers.push_back(std::make_unique<syncer::ModelTypeController>(
+        syncer::WIFI_CONFIGURATIONS,
+        std::make_unique<ForwardingModelTypeControllerDelegate>(
+            wifi_configurations_delegate)));
+  }
+  syncer::ModelTypeControllerDelegate* workspace_desk_delegate =
+      GetControllerDelegateForModelType(syncer::WORKSPACE_DESK).get();
+  controllers.push_back(std::make_unique<syncer::ModelTypeController>(
+      syncer::WORKSPACE_DESK,
+      std::make_unique<ForwardingModelTypeControllerDelegate>(
+          workspace_desk_delegate)));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   return controllers;
-}
-
-BookmarkUndoService* ChromeSyncClient::GetBookmarkUndoService() {
-  return BookmarkUndoServiceFactory::GetForProfile(profile_);
 }
 
 syncer::TrustedVaultClient* ChromeSyncClient::GetTrustedVaultClient() {
@@ -683,7 +635,7 @@ ChromeSyncClient::CreateAppsModelTypeController(
     return AppsModelTypeController::Create(
         GetModelTypeStoreService()->GetStoreFactory(),
         GetSyncableServiceForType(syncer::APPS), GetDumpStackClosure(),
-        sync_service, profile_);
+        profile_);
   }
   // Fall through.
 #endif

@@ -51,6 +51,9 @@ char kLSanDefaultSuppressions[] =
     // Leak in glibc's gconv caused by fopen(..., "r,ccs=UNICODE")
     "leak:__gconv_lookup_cache\n"
 
+    // Leak in libnssutil. crbug.com/1290634
+    "leak:libnssutil3\n"
+
     // ================ Leaks in Chromium code ================
     // PLEASE DO NOT ADD SUPPRESSIONS FOR NEW LEAKS.
     // Instead, commits that introduce memory leaks should be reverted.
@@ -81,6 +84,16 @@ char kLSanDefaultSuppressions[] =
     "leak:ash::LockStateController::StartPostLockAnimation\n"
     // Suppress leak in SurfaceDrawContext. crbug.com/1265033
     "leak:skgpu::v1::SurfaceDrawContext::drawGlyphRunList\n"
+    // Suppress leak in BluetoothServerSocket. crbug.com/1278970
+    "leak:location::nearby::chrome::BluetoothServerSocket::"
+    "BluetoothServerSocket\n"
+    // Suppress leak in NearbyConnectionBrokerImpl. crbug.com/1279578
+    "leak:ash::secure_channel::NearbyConnectionBrokerImpl\n"
+    // Suppress leak in NearbyEndpointFinderImpl. crbug.com/1288577
+    "leak:ash::secure_channel::NearbyEndpointFinderImpl::~"
+    "NearbyEndpointFinderImpl\n"
+    // Suppress leak in DelayedCallbackGroup test. crbug.com/1279563
+    "leak:DelayedCallbackGroup_TimeoutAndRun_Test\n"
 #endif
 
     // PLEASE READ ABOVE BEFORE ADDING NEW SUPPRESSIONS.

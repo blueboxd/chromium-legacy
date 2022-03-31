@@ -124,8 +124,7 @@ NSImage* NewTagImage(const ui::ColorProvider* color_provider) {
                             xRadius:views::NewBadge::kNewBadgeCornerRadius
                             yRadius:views::NewBadge::kNewBadgeCornerRadius];
       NSColor* badge_color = skia::SkColorToSRGBNSColor(
-          ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-              ui::NativeTheme::kColorId_ProminentButtonColor));
+          color_provider->GetColor(ui::kColorButtonBackgroundProminent));
       [badge_color set];
       [rounded_badge_rect fill];
 

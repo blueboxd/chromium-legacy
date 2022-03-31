@@ -36,6 +36,7 @@ extern const base::Feature kIPHDesktopTabGroupsNewGroupFeature;
 extern const base::Feature kIPHFocusHelpBubbleScreenReaderPromoFeature;
 extern const base::Feature kIPHGMCCastStartStopFeature;
 extern const base::Feature kIPHLiveCaptionFeature;
+extern const base::Feature kIPHTabAudioMutingFeature;
 extern const base::Feature kIPHPasswordsAccountStorageFeature;
 extern const base::Feature kIPHReadingListDiscoveryFeature;
 extern const base::Feature kIPHReadingListEntryPointFeature;
@@ -105,6 +106,8 @@ extern const base::Feature
     kIPHFeatureNotificationGuideNTPSuggestionCardHelpBubbleFeature;
 extern const base::Feature
     kIPHFeatureNotificationGuideVoiceSearchHelpBubbleFeature;
+extern const base::Feature kIPHFeatureNotificationGuideIncognitoTabUsedFeature;
+extern const base::Feature kIPHFeatureNotificationGuideVoiceSearchUsedFeature;
 extern const base::Feature kIPHFeedCardMenuFeature;
 extern const base::Feature kIPHGenericAlwaysTriggerHelpUiFeature;
 extern const base::Feature kIPHHomePageButtonFeature;
@@ -117,6 +120,7 @@ extern const base::Feature kIPHKeyboardAccessoryBarSwipingFeature;
 extern const base::Feature kIPHKeyboardAccessoryPasswordFillingFeature;
 extern const base::Feature kIPHKeyboardAccessoryPaymentFillingFeature;
 extern const base::Feature kIPHKeyboardAccessoryPaymentOfferFeature;
+extern const base::Feature kIPHLowUserEngagementDetectorFeature;
 extern const base::Feature kIPHMicToolbarFeature;
 extern const base::Feature kIPHNewTabPageHomeButtonFeature;
 extern const base::Feature kIPHPageInfoFeature;
@@ -167,6 +171,7 @@ extern const base::Feature kIPHBadgedReadingListFeature;
 extern const base::Feature kIPHReadingListMessagesFeature;
 extern const base::Feature kIPHBadgedTranslateManualTriggerFeature;
 extern const base::Feature kIPHDiscoverFeedHeaderFeature;
+extern const base::Feature kIPHDefaultSiteViewFeature;
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \

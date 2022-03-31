@@ -22,8 +22,9 @@ namespace autofill_assistant {
 // and dependencies to the starter.
 class DependenciesChrome : public Dependencies {
  public:
-  DependenciesChrome(JNIEnv* env,
-                     const base::android::JavaParamRef<jobject>& java_object);
+  DependenciesChrome(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jstatic_dependencies);
 
   std::unique_ptr<AssistantFieldTrialUtil> CreateFieldTrialUtil()
       const override;
@@ -33,8 +34,12 @@ class DependenciesChrome : public Dependencies {
   std::string GetChromeSignedInEmailAddress(
       content::WebContents* web_contents) const override;
 
-  AnnotateDomModelService* GetAnnotateDomModelService(
+  // The AnnotateDomModelService is a KeyedService. There is only one per
+  // BrowserContext.
+  AnnotateDomModelService* GetOrCreateAnnotateDomModelService(
       content::BrowserContext* browser_context) const override;
+
+  bool IsCustomTab(const content::WebContents& web_contents) const override;
 };
 
 }  // namespace autofill_assistant

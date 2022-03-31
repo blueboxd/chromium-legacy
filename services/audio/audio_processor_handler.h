@@ -1,16 +1,14 @@
-// Copyright (c) 2021 The Chromium Authors. All rights reserved.
+// Copyright (c) 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef SERVICES_AUDIO_AUDIO_PROCESSOR_HANDLER_H_
 #define SERVICES_AUDIO_AUDIO_PROCESSOR_HANDLER_H_
 
-#include <string>
-
-#include "base/callback.h"
-#include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/strings/string_piece.h"
+#include "media/base/audio_processing.h"
+#include "media/mojo/mojom/audio_processing.mojom.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/audio/reference_output.h"
 
 namespace media {
@@ -18,37 +16,33 @@ class AudioBus;
 }  // namespace media
 
 namespace audio {
-class DeviceOutputListener;
 
-class AudioProcessorHandler final : public ReferenceOutput::Listener {
+// Encapsulates audio processing effects in the audio process.
+// TODO(https://crbug.com/1215061): Create and manage a media::AudioProcessor.
+// TODO(https://crbug.com/1284652): Add methods to AudioProcessorControls and
+//                                  implement them.
+// This class is currently a no-op implementation of ReferenceOutput::Listener.
+class AudioProcessorHandler final
+    : public ReferenceOutput::Listener,
+      public media::mojom::AudioProcessorControls {
  public:
-  using LogCallback = base::RepeatingCallback<void(base::StringPiece)>;
-
-  AudioProcessorHandler(DeviceOutputListener* device_output_listener,
-                        LogCallback log_callback);
+  explicit AudioProcessorHandler(
+      const media::AudioProcessingSettings& settings,
+      mojo::PendingReceiver<media::mojom::AudioProcessorControls>
+          controls_receiver);
   AudioProcessorHandler(const AudioProcessorHandler&) = delete;
   AudioProcessorHandler& operator=(const AudioProcessorHandler&) = delete;
   ~AudioProcessorHandler() final;
 
-  void SetOutputDeviceForAec(const std::string& output_device_id);
-  void Start();
-  void Stop();
-
  private:
-  class UmaLogger;
-  // Listener
+  // ReferenceOutput::Listener implementation.
   void OnPlayoutData(const media::AudioBus& audio_bus,
                      int sample_rate,
                      base::TimeDelta delay) final;
 
-  void StartListening();
-
   SEQUENCE_CHECKER(owning_sequence_);
-  bool active_ = false;
-  std::string output_device_id_;
-  raw_ptr<DeviceOutputListener> const device_output_listener_;
-  const LogCallback log_callback_;
-  std::unique_ptr<UmaLogger> uma_logger_;
+
+  mojo::Receiver<media::mojom::AudioProcessorControls> receiver_;
 };
 
 }  // namespace audio

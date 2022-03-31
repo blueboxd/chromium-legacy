@@ -34,11 +34,14 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.feature_guide.notifications.FeatureNotificationUtils;
+import org.chromium.chrome.browser.feature_guide.notifications.FeatureType;
 import org.chromium.chrome.browser.feed.componentinterfaces.SurfaceCoordinator;
 import org.chromium.chrome.browser.feed.sections.SectionHeaderListProperties;
 import org.chromium.chrome.browser.feed.sections.SectionHeaderView;
 import org.chromium.chrome.browser.feed.sections.SectionHeaderViewBinder;
 import org.chromium.chrome.browser.feed.settings.FeedAutoplaySettingsFragment;
+import org.chromium.chrome.browser.feed.sort_ui.FeedOptionsCoordinator;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.NewTabPageLaunchOrigin;
@@ -83,6 +86,7 @@ public class FeedSurfaceCoordinator
                    BackToTopBubbleScrollListener.ResultHandler, SurfaceCoordinator,
                    FeedAutoplaySettingsDelegate, FeedReliabilityLoggingSignals {
     private static final String TAG = "FeedSurfaceCoordinator";
+    private static final long DELAY_FEED_HEADER_IPH_MS = 5;
 
     protected final Activity mActivity;
     private final SnackbarManager mSnackbarManager;
@@ -314,9 +318,13 @@ public class FeedSurfaceCoordinator
         mSectionHeaderModel.get(SectionHeaderListProperties.SECTION_HEADERS_KEY)
                 .addObserver(mSectionHeaderListModelChangeProcessor);
 
+        FeedOptionsCoordinator optionsCoordinator = new FeedOptionsCoordinator(mActivity);
+        mSectionHeaderModel.set(SectionHeaderListProperties.EXPANDING_DRAWER_VIEW_KEY,
+                optionsCoordinator.getView());
+
         // Mediator should be created before any Stream changes.
         mMediator = new FeedSurfaceMediator(this, mActivity, snapScrollHelper, mSectionHeaderModel,
-                getTabIdFromLaunchOrigin(launchOrigin), actionDelegate);
+                getTabIdFromLaunchOrigin(launchOrigin), actionDelegate, optionsCoordinator);
 
         FeedSurfaceTracker.getInstance().trackSurface(this);
 
@@ -329,6 +337,13 @@ public class FeedSurfaceCoordinator
             mScrollableContainerDelegate.removeScrollListener(mDependencyProvider);
             mScrollableContainerDelegate = null;
         }
+    }
+
+    private void showDiscoverIph() {
+        mHandler.postDelayed(() -> {
+            UserEducationHelper helper = new UserEducationHelper(mActivity, mHandler);
+            mSectionHeaderView.showHeaderIph(helper);
+        }, DELAY_FEED_HEADER_IPH_MS);
     }
 
     @Override
@@ -464,6 +479,8 @@ public class FeedSurfaceCoordinator
             observer.surfaceOpened();
         }
         mMediator.onSurfaceOpened();
+        FeatureNotificationUtils.registerIPHCallback(
+                FeatureType.NTP_SUGGESTION_CARD, this::showDiscoverIph);
     }
 
     /** Hides the feed. */
@@ -472,6 +489,7 @@ public class FeedSurfaceCoordinator
         if (!FeedSurfaceTracker.getInstance().isStartupCalled()) return;
         mIsActive = false;
         mMediator.onSurfaceClosed();
+        FeatureNotificationUtils.unregisterIPHCallback(FeatureType.NTP_SUGGESTION_CARD);
     }
 
     /** Returns a string usable for restoring the UI to current state. */
@@ -622,12 +640,12 @@ public class FeedSurfaceCoordinator
     /**
      * Creates a flavor {@Link FeedStream} without any other side-effects.
      *
-     * @param isInterestFeed True for interest feed, false for web feed.
+     * @param kind Kind of stream being created.
      * @return The FeedStream created.
      */
-    FeedStream createFeedStream(boolean isInterestFeed) {
+    FeedStream createFeedStream(@StreamKind int kind) {
         return new FeedStream(mActivity, mSnackbarManager, mBottomSheetController,
-                mIsPlaceholderShownInitially, mWindowAndroid, mShareSupplier, isInterestFeed, this,
+                mIsPlaceholderShownInitially, mWindowAndroid, mShareSupplier, kind, this,
                 mActionDelegate, mHelpAndFeedbackLauncher);
     }
 
@@ -637,8 +655,7 @@ public class FeedSurfaceCoordinator
         for (View header : headerViews) {
             // Feed header view in multi does not need padding added.
             int lateralPaddingsPx = getLateralPaddingsPx();
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_FEED)
-                    && header == mSectionHeaderView) {
+            if (header == mSectionHeaderView) {
                 lateralPaddingsPx = 0;
             }
 

@@ -31,10 +31,13 @@ constexpr int kLargeIconSize = 24;
 int GetCloseButtonSize(CloseButton::Type type) {
   switch (type) {
     case CloseButton::Type::kSmall:
+    case CloseButton::Type::kSmallFloating:
       return kSmallButtonSize;
     case CloseButton::Type::kMedium:
+    case CloseButton::Type::kMediumFloating:
       return kMediumButtonSize;
     case CloseButton::Type::kLarge:
+    case CloseButton::Type::kLargeFloating:
       return kLargeButtonSize;
   }
 }
@@ -42,10 +45,13 @@ int GetCloseButtonSize(CloseButton::Type type) {
 int GetIconSize(CloseButton::Type type) {
   switch (type) {
     case CloseButton::Type::kSmall:
+    case CloseButton::Type::kSmallFloating:
       return kSmallIconSize;
     case CloseButton::Type::kMedium:
+    case CloseButton::Type::kMediumFloating:
       return kMediumIconSize;
     case CloseButton::Type::kLarge:
+    case CloseButton::Type::kLargeFloating:
       return kLargeIconSize;
   }
 }
@@ -61,6 +67,12 @@ SkColor GetCloseButtonBackgroundColor(bool use_light_colors) {
       AshColorProvider::BaseLayerType::kTransparent80);
 }
 
+bool IsFloatingCloseButton(CloseButton::Type type) {
+  return type == CloseButton::Type::kSmallFloating ||
+         type == CloseButton::Type::kMediumFloating ||
+         type == CloseButton::Type::kLargeFloating;
+}
+
 }  // namespace
 
 CloseButton::CloseButton(PressedCallback callback,
@@ -68,6 +80,10 @@ CloseButton::CloseButton(PressedCallback callback,
                          bool use_light_colors)
     : ImageButton(std::move(callback)),
       type_(type),
+      icon_((type == CloseButton::Type::kSmall ||
+             type == CloseButton::Type::kSmallFloating)
+                ? &kSmallCloseButtonIcon
+                : &kMediumOrLargeCloseButtonIcon),
       use_light_colors_(use_light_colors) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
@@ -84,9 +100,11 @@ CloseButton::CloseButton(PressedCallback callback,
 
   // Add a rounded rect background. The rounding will be half the button size so
   // it is a circle.
-  SetBackground(views::CreateRoundedRectBackground(
-      GetCloseButtonBackgroundColor(use_light_colors_),
-      GetCloseButtonSize(type_) / 2));
+  if (!IsFloatingCloseButton(type_)) {
+    SetBackground(views::CreateRoundedRectBackground(
+        GetCloseButtonBackgroundColor(use_light_colors_),
+        GetCloseButtonSize(type_) / 2));
+  }
 
   SetFocusPainter(nullptr);
   SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
@@ -102,29 +120,47 @@ bool CloseButton::DoesIntersectScreenRect(const gfx::Rect& screen_rect) const {
   return DoesIntersectRect(this, gfx::Rect(origin, screen_rect.size()));
 }
 
+void CloseButton::ResetListener() {
+  SetCallback(views::Button::PressedCallback());
+}
+
+void CloseButton::SetVectorIcon(const gfx::VectorIcon& icon) {
+  icon_ = &icon;
+  UpdateVectorIcon();
+}
+
+void CloseButton::SetBackgroundColor(const SkColor background_color) {
+  if (background_color_ == background_color)
+    return;
+
+  background_color_ = background_color;
+  DCHECK(background());
+  background()->SetNativeControlColor(background_color_.value());
+}
+
+void CloseButton::SetIconColor(const SkColor icon_color) {
+  if (icon_color_ == icon_color)
+    return;
+
+  icon_color_ = icon_color;
+  UpdateVectorIcon();
+}
+
 void CloseButton::OnThemeChanged() {
   views::ImageButton::OnThemeChanged();
-  background()->SetNativeControlColor(
-      GetCloseButtonBackgroundColor(use_light_colors_));
-  auto* color_provider = AshColorProvider::Get();
-  SkColor enabled_icon_color = color_provider->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kButtonIconColor);
-  if (use_light_colors_) {
-    ScopedLightModeAsDefault scoped_light_mode_as_default;
-    enabled_icon_color = color_provider->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kButtonIconColor);
+  if (background()) {
+    background()->SetNativeControlColor(background_color_.value_or(
+        GetCloseButtonBackgroundColor(use_light_colors_)));
   }
-  SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(type_ == CloseButton::Type::kSmall
-                                     ? kSmallCloseButtonIcon
-                                     : kMediumOrLargeCloseButtonIcon,
-                                 GetIconSize(type_), enabled_icon_color));
+
+  UpdateVectorIcon();
 
   // TODO(minch): Add background blur as per spec. Background blur is quite
   // heavy, and we may have many close buttons showing at a time. They'll be
   // added separately so its easier to monitor performance.
 
-  StyleUtil::ConfigureInkDropAttributes(this, StyleUtil::kBaseColor);
+  StyleUtil::ConfigureInkDropAttributes(
+      this, StyleUtil::kBaseColor | StyleUtil::kInkDropOpacity);
 }
 
 gfx::Size CloseButton::CalculatePreferredSize() const {
@@ -142,6 +178,24 @@ bool CloseButton::DoesIntersectRect(const views::View* target,
   if (!views::UsePointBasedTargeting(rect))
     button_bounds.Inset(gfx::Insets(-button_size / 2, -button_size / 2));
   return button_bounds.Intersects(rect);
+}
+
+void CloseButton::UpdateVectorIcon() {
+  DCHECK(icon_);
+
+  auto* color_provider = AshColorProvider::Get();
+  SkColor enabled_icon_color =
+      icon_color_.value_or(color_provider->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kButtonIconColor));
+  if (use_light_colors_) {
+    ScopedLightModeAsDefault scoped_light_mode_as_default;
+    enabled_icon_color =
+        icon_color_.value_or(color_provider->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kButtonIconColor));
+  }
+  SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(*icon_, GetIconSize(type_), enabled_icon_color));
 }
 
 BEGIN_METADATA(CloseButton, views::ImageButton)

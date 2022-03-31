@@ -24,9 +24,9 @@
 #include "build/build_config.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
-#include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
+#include "chrome/browser/web_applications/os_integration/web_app_file_handler_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/browser/web_applications/web_app_file_handler_manager.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "components/services/app_service/public/cpp/icon_info.h"
@@ -489,6 +489,15 @@ void UpdateWebAppInfoFromManifest(const blink::mojom::Manifest& manifest,
   }
 
   web_app_info->translations = manifest.translations;
+
+  web_app_info->permissions_policy.clear();
+  for (const auto& decl : manifest.permissions_policy) {
+    PermissionsPolicyDeclaration copy;
+    copy.feature = decl->feature;
+    for (const auto& origin : decl->allowlist)
+      copy.allowlist.push_back(origin);
+    web_app_info->permissions_policy.push_back(std::move(copy));
+  }
 }
 
 std::vector<GURL> GetValidIconUrlsToDownload(

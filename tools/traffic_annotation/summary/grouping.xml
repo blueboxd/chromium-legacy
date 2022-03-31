@@ -42,6 +42,7 @@ hidden="true" so that these annotations don't show up in the document.
       <traffic_annotation unique_id="rlz"/>
       <traffic_annotation unique_id="webapk_create"/>
       <traffic_annotation unique_id="webapk_update"/>
+      <traffic_annotation unique_id="webview_proxy_config"/>
     </sender>
     <sender name="Feed Library">
       <traffic_annotation unique_id="interest_feedv2_send"/>
@@ -65,6 +66,8 @@ hidden="true" so that these annotations don't show up in the document.
       <traffic_annotation unique_id="customization_wallpaper_downloader"/>
       <traffic_annotation unique_id="edu_account_login_profile_image_fetcher"/>
       <traffic_annotation unique_id="fast_pair_footprints_request"/>
+      <traffic_annotation unique_id="fast_pair_image_decoder"/>
+      <traffic_annotation unique_id="fast_pair_device_metadata_fetcher"/>
       <traffic_annotation unique_id="fwupd_firmware_update"/>
       <traffic_annotation unique_id="gaia_reauth_token_fetcher"/>
       <traffic_annotation unique_id="ime_url_downloader"/>
@@ -89,6 +92,7 @@ hidden="true" so that these annotations don't show up in the document.
       <traffic_annotation unique_id="wallpaper_fetcher"/>
       <traffic_annotation unique_id="wallpaper_google_photos_albums"/>
       <traffic_annotation unique_id="wallpaper_google_photos_count"/>
+      <traffic_annotation unique_id="wallpaper_google_photos_photos"/>
     </sender>
     <!-- ChromeOS-specific features -->
     <sender name="ChromeOS Recovery">
@@ -221,6 +225,7 @@ hidden="true" so that these annotations don't show up in the document.
       <traffic_annotation unique_id="box_access_token_fetcher"/>
       <traffic_annotation unique_id="web_app_origin_association_download"/>
       <traffic_annotation unique_id="digital_asset_links"/>
+      <traffic_annotation unique_id="device_trust_key_rotation"/>
     </sender>
   </group>
   <group name="Admin Features">
@@ -287,9 +292,6 @@ hidden="true" so that these annotations don't show up in the document.
   <group name="Cookieless Ads">
     <sender name="Conversion Measurements">
       <traffic_annotation unique_id="conversion_measurement_report"/>
-    </sender>
-    <sender name="Federated Learning of Cohorts (FLoC)">
-      <traffic_annotation unique_id="floc_event_logger"/>
     </sender>
     <sender name="Aggregation Service">
       <traffic_annotation unique_id="aggregation_service_helper_keys"/>

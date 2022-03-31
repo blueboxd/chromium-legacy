@@ -25,6 +25,7 @@ class AppListBubbleSearchPage;
 class AppListFolderItem;
 class AppListFolderView;
 class AppListViewDelegate;
+class AssistantButtonFocusSkipper;
 class FolderBackgroundView;
 class SearchBoxView;
 class SearchResultPageDialogController;
@@ -52,11 +53,14 @@ class ASH_EXPORT AppListBubbleView : public views::View,
   // Updates continue tasks and recent apps.
   void UpdateSuggestions();
 
-  // Starts the bubble show animation.
-  void StartShowAnimation();
+  // Starts the bubble show animation. Pass `is_side_shelf` true for left or
+  // right aligned shelf.
+  void StartShowAnimation(bool is_side_shelf);
 
-  // Starts the bubble hide animation.
-  void StartHideAnimation(base::OnceClosure on_hide_animation_ended);
+  // Starts the bubble hide animation. Pass `is_side_shelf` true for left or
+  // right aligned shelf. `on_hide_animation_ended` is called on end or abort.
+  void StartHideAnimation(bool is_side_shelf,
+                          base::OnceClosure on_hide_animation_ended);
 
   // Aborts all layer animations started by StartShowAnimation() or
   // StartHideAnimation(). This invokes their cleanup callbacks.
@@ -168,6 +172,9 @@ class ASH_EXPORT AppListBubbleView : public views::View,
 
   // Called after the hide animation ends or aborts.
   base::OnceClosure on_hide_animation_ended_;
+
+  // See class comment in .cc file.
+  std::unique_ptr<AssistantButtonFocusSkipper> assistant_button_focus_skipper_;
 
   base::WeakPtrFactory<AppListBubbleView> weak_factory_{this};
 };

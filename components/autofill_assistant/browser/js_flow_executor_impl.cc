@@ -3,12 +3,21 @@
 // found in the LICENSE file.
 
 #include "components/autofill_assistant/browser/js_flow_executor_impl.h"
+#include "base/base64.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/strings/strcat.h"
+#include "components/autofill_assistant/browser/parse_jspb.h"
 #include "components/autofill_assistant/browser/web/web_controller_util.h"
 
+namespace autofill_assistant {
 namespace {
+
+// Messages must have a JSPB message ID starting with this prefix to be
+// parseable in JSPB wire format.
+//
+// Such a message ID is used to distinguish arrays from JSPB messages.
+constexpr char kMessageIdPrefix[] = "aa.msg";
 
 // Initializes a |globalFlowState| variable on first run, and renews the
 // promises that will let JS flows request native actions.
@@ -31,9 +40,29 @@ constexpr char kFulfillActionPromise[] = R"(
 
 constexpr char kMainFrame[] = "";
 
+absl::optional<std::string> ConvertActionToBytes(const base::Value* action,
+                                                 std::string* error_message) {
+  if (action == nullptr) {
+    *error_message = "Null value";
+    return absl::nullopt;
+  }
+  if (action->is_string()) {
+    std::string bytes;
+    // A base64-encoded string containing a serialized proto.
+    if (base::Base64Decode(action->GetString(), &bytes)) {
+      *error_message = "Invalid Base64-encoded string";
+      return bytes;
+    }
+    return absl::nullopt;
+  }
+  if (action->is_list()) {
+    // A JSON array containing a proto message in the JSPB wire format.
+    return ParseJspb(kMessageIdPrefix, *action, error_message);
+  }
+  *error_message = "Unexpected value type";
+  return absl::nullopt;
+}
 }  // namespace
-
-namespace autofill_assistant {
 
 JsFlowExecutorImpl::JsFlowExecutorImpl(content::WebContents* web_contents,
                                        Delegate* delegate)
@@ -115,10 +144,11 @@ void JsFlowExecutorImpl::InternalStart() {
   // original js source.
   js_flow_ = std::make_unique<std::string>(base::StrCat({
       R"((async function() {
-        function runNativeAction(native_action) {
+        function runNativeAction(native_action_id, native_action) {
           return new Promise(
               (fulfill, reject) => {
-                   globalFlowState.runNativeAction([native_action, fulfill])
+                   globalFlowState.runNativeAction(
+                       [{id: native_action_id, action: native_action}, fulfill])
               }
           )
         }
@@ -185,18 +215,9 @@ void JsFlowExecutorImpl::OnNativeActionRequestActionRetrieved(
 
   auto* remote_object = result->GetResult();
   if (!remote_object->HasValue()) {
-    ClientStatus status(UNEXPECTED_JS_ERROR);
-    auto* details = status.mutable_details()->mutable_unexpected_error_info();
-    details->set_source_file(__FILE__);
-    details->set_source_line_number(__LINE__);
-
-    std::string stringified_result;
-    base::JSONWriter::Write(*remote_object->Serialize(), &stringified_result);
-    details->set_devtools_error_message(
-        base::StrCat({"runNativeAction expected single JSON-compatible "
-                      "argument, but was called with ",
-                      stringified_result}));
-    RunCallback(status, nullptr);
+    // This shouldn't be possible, as the argument is built by
+    // JsFlowExecutorImpl::InternalStart()
+    RunCallback(UnexpectedErrorStatus(__FILE__, __LINE__), nullptr);
     return;
   }
 
@@ -228,18 +249,34 @@ void JsFlowExecutorImpl::OnNativeActionRequestFulfillPromiseRetrieved(
   if (!fulfill_promise_object->HasObjectId()) {
     // This should never happen, since the fulfill promise is programmatically
     // provided.
-    ClientStatus status(OTHER_ACTION_STATUS);
-    auto* details = status.mutable_details()->mutable_unexpected_error_info();
-    details->set_source_file(__FILE__);
-    details->set_source_line_number(__LINE__);
-    details->set_devtools_error_message(
-        "Native action requested, but no fulfill promise provided");
-    RunCallback(status, nullptr);
+    RunCallback(UnexpectedErrorStatus(__FILE__, __LINE__), nullptr);
     return;
   }
 
+  absl::optional<int> id;
+  base::Value* action = nullptr;
+  if (action_request->is_dict()) {
+    id = action_request->FindIntKey("id");
+    action = action_request->FindKey("action");
+  }
+  if (!id) {
+    DVLOG(1) << "id passed to runNativeAction(id, action) is not a number in "
+             << action_request->DebugString();
+    RunCallback(ClientStatus(INVALID_ACTION), nullptr);
+    return;
+  }
+  std::string error_message;
+  absl::optional<std::string> action_bytes =
+      ConvertActionToBytes(action, &error_message);
+  if (!action_bytes) {
+    DVLOG(1) << "action passed to runNativeAction(id, action) cannot "
+             << "be parsed: " << error_message << " in "
+             << action_request->DebugString();
+    RunCallback(ClientStatus(INVALID_ACTION), nullptr);
+    return;
+  }
   delegate_->RunNativeAction(
-      std::move(action_request),
+      *id, *action_bytes,
       base::BindOnce(&JsFlowExecutorImpl::OnNativeActionFinished,
                      weak_ptr_factory_.GetWeakPtr(),
                      fulfill_promise_object->GetObjectId()));

@@ -19,7 +19,7 @@ const base::Feature kAutofillAcrossIframes{"AutofillAcrossIframes",
 // When enabled, a save prompt will be shown to user upon form submission before
 // storing any detected address profile.
 const base::Feature kAutofillAddressProfileSavePrompt{
-    "AutofillAddressProfileSavePrompt", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillAddressProfileSavePrompt", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // This parameter controls if save profile prompts are automatically blocked for
 // a given domain after N (default is 3) subsequent declines.
@@ -83,6 +83,20 @@ const base::Feature kAutofillAllowDuplicateFormSubmissions{
 // embedded test server. Generally avoid using.
 const base::Feature kAutofillAllowNonHttpActivation{
     "AutofillAllowNonHttpActivation", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, whenever a form without a country field is parsed, the profile's
+// country code is complemented with the predicted country code, used to
+// determine the address requirements.
+// TODO(crbug.com/1297032): Cleanup when launched.
+const base::Feature kAutofillComplementCountryCodeOnImport{
+    "AutofillComplementCountryCodeOnImport", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, the variation country code is used as the phone number's region,
+// instead of defaulting to app locale.
+// TODO(crbug.com/1295721): Cleanup when launched.
+const base::Feature kAutofillConsiderVariationCountryCodeForPhoneNumbers{
+    "AutofillConsiderVariationCountryCodeForPhoneNumbers",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, three address profiles are created for testing.
 const base::Feature kAutofillCreateDataForTest{
@@ -164,13 +178,6 @@ const base::Feature kAutofillEnableLabelPrecedenceForTurkishAddresses{
     "AutofillEnableLabelPrecedenceForTurkishAddresses",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled and user is signed in, a footer indicating user's e-mail address
-// and profile picture will appear at the bottom of corresponding password
-// InfoBars.
-const base::Feature kAutofillEnablePasswordInfoBarAccountIndicationFooter{
-    "AutofillEnablePasswordInfoBarAccountIndicationFooter",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables the parsing of a sequence of fields that follows the pattern of Name,
 // Surname.
 // TODO(crbug.com/1277480): Remove once launched.
@@ -226,6 +233,17 @@ const base::Feature kAutofillTypeSpecificPopupWidth{
 // counter, effectively reducing the threshold for some forms.
 const base::Feature kAutofillFixFillableFieldTypes{
     "AutofillFixFillableFieldTypes", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Lookups for field classifications are gated on either Autofill for addresses
+// or payments being enabled. As a consequence, if both are disabled, the
+// password manager does not get server-side field classifications anymore
+// and its performance is reduced. When this feature is enabled, Autofill parse
+// forms and perform server lookups even if only the password manager is
+// enabled.
+// TODO(crbug.com/1293341): Remove once launched.
+const base::Feature kAutofillFixServerQueriesIfPasswordManagerIsEnabled{
+    "AutofillFixServerQueriesIfPasswordManagerIsEnabled",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // The autocomplete attribute may prevent Autofill import, crbug/1213301. This
 // feature addresses the issue. For now, the fix only concerns fields with the
@@ -335,18 +353,10 @@ const base::Feature kAutofillProbableFormSubmissionInBrowser{
     "AutofillProbableFormSubmissionInBrowser",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAutofillProfileClientValidation{
-    "AutofillProfileClientValidation", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // TODO(crbug.com/1101280): Remove once feature is tested.
 const base::Feature kAutofillProfileImportFromUnfocusableFields{
     "AutofillProfileImportFromUnfocusableFields",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether Autofill uses server-side validation to ensure that fields
-// with invalid data are not suggested.
-const base::Feature kAutofillProfileServerValidation{
-    "AutofillProfileServerValidation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether or not overall prediction are retrieved from the cache.
 const base::Feature kAutofillRetrieveOverallPredictionsFromCache{

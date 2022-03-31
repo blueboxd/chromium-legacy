@@ -36,7 +36,7 @@
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/document_transition/document_transition.h"
+#include "third_party/blink/renderer/core/document_transition/document_transition_request.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/frame/frame_view.h"
 #include "third_party/blink/renderer/core/frame/layout_subtree_root_list.h"
@@ -49,7 +49,6 @@
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 #include "third_party/blink/renderer/platform/graphics/subtree_paint_property_update_reason.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -79,6 +78,9 @@ namespace blink {
 class AXObjectCache;
 class ChromeClient;
 class CompositorAnimationTimeline;
+class DeferredShapingDisallowScope;
+class DeferredShapingMinimumTopScope;
+class DeferredShapingViewportScope;
 class DarkModeFilter;
 class DocumentLifecycle;
 class FragmentAnchor;
@@ -98,6 +100,7 @@ class MobileFriendlinessChecker;
 class Page;
 class PaintArtifactCompositor;
 class PaintController;
+class PaintControllerCycleScope;
 class PaintLayer;
 class PaintLayerScrollableArea;
 class PaintTimingDetector;
@@ -206,6 +209,8 @@ class CORE_EXPORT LocalFrameView final
   void SetNeedsUpdateGeometries() { needs_update_geometries_ = true; }
   void UpdateGeometry() override;
 
+  bool LoadAllLazyLoadedIframes();
+
   void UpdateStyleAndLayout();
 
   // Marks this frame, and ancestor frames, as needing one intersection
@@ -286,6 +291,7 @@ class CORE_EXPORT LocalFrameView final
   void ViewportSizeChanged(bool width_changed, bool height_changed);
   void MarkViewportConstrainedObjectsForLayout(bool width_changed,
                                                bool height_changed);
+  void DynamicViewportUnitsChanged();
 
   AtomicString MediaType() const;
   void SetMediaType(const AtomicString&);
@@ -441,10 +447,10 @@ class CORE_EXPORT LocalFrameView final
   }
 
   using ScrollableAreaSet = HeapHashSet<Member<PaintLayerScrollableArea>>;
-  void AddScrollableArea(PaintLayerScrollableArea*);
-  void RemoveScrollableArea(PaintLayerScrollableArea*);
-  const ScrollableAreaSet* ScrollableAreas() const {
-    return scrollable_areas_.Get();
+  void AddScrollAnchoringScrollableArea(PaintLayerScrollableArea*);
+  void RemoveScrollAnchoringScrollableArea(PaintLayerScrollableArea*);
+  const ScrollableAreaSet* ScrollAnchoringScrollableAreas() const {
+    return scroll_anchoring_scrollable_areas_.Get();
   }
 
   void AddAnimatingScrollableArea(PaintLayerScrollableArea*);
@@ -467,6 +473,27 @@ class CORE_EXPORT LocalFrameView final
   // passed around the LocalFrameView layout methods can be true while this
   // returns false.
   bool IsSubtreeLayout() const { return !layout_subtree_root_list_.IsEmpty(); }
+
+  // The bottom position of the nearest scrollable ancestor.
+  // This returns kIndefiniteSize if the viewport bottom is not registered.
+  LayoutUnit CurrentViewportBottom() const { return current_viewport_bottom_; }
+  void SetCurrentViewportBottom(base::PassKey<DeferredShapingViewportScope>,
+                                LayoutUnit value) {
+    current_viewport_bottom_ = value;
+  }
+  // The "minimum top" position of the box which is being laid out.
+  LayoutUnit CurrentMinimumTop() const { return current_minimum_top_; }
+  void SetCurrentMinimumTop(base::PassKey<DeferredShapingMinimumTopScope>,
+                            LayoutUnit value) {
+    current_minimum_top_ = value;
+  }
+  // A flag indicating whether the current layout container supports
+  // deferred shaping.
+  bool AllowDeferredShaping() const { return allow_deferred_shaping_; }
+  void SetAllowDeferredShaping(base::PassKey<DeferredShapingDisallowScope>,
+                               bool value) {
+    allow_deferred_shaping_ = value;
+  }
 
   // The window that hosts the LocalFrameView. The LocalFrameView will
   // communicate scrolls and repaints to the host window in the window's
@@ -620,6 +647,12 @@ class CORE_EXPORT LocalFrameView final
   // May include the size of browser controls. See implementation for further
   // documentation.
   gfx::SizeF ViewportSizeForViewportUnits() const;
+  // https://drafts.csswg.org/css-values-4/#small-viewport-size
+  gfx::SizeF SmallViewportSizeForViewportUnits() const;
+  // https://drafts.csswg.org/css-values-4/#large-viewport-size
+  gfx::SizeF LargeViewportSizeForViewportUnits() const;
+  // https://drafts.csswg.org/css-values-4/#dynamic-viewport-size
+  gfx::SizeF DynamicViewportSizeForViewportUnits() const;
 
   // Initial containing block size for evaluating viewport-dependent media
   // queries.
@@ -869,7 +902,7 @@ class CORE_EXPORT LocalFrameView final
   void PerformLayout();
   void PerformPostLayoutTasks(bool view_size_changed);
 
-  bool PaintTree(PaintBenchmarkMode, PaintController::CycleScope&);
+  bool PaintTree(PaintBenchmarkMode, PaintControllerCycleScope&);
   void PushPaintArtifactToCompositor(bool repainted);
   void CreatePaintTimelineEvents();
 
@@ -983,7 +1016,7 @@ class CORE_EXPORT LocalFrameView final
   void VerifySharedElementsForDocumentTransition();
   // Append document transition requests from this view into the given vector.
   void AppendDocumentTransitionRequests(
-      WTF::Vector<std::unique_ptr<DocumentTransition::Request>>&);
+      WTF::Vector<std::unique_ptr<DocumentTransitionRequest>>&);
 
   bool AnyFrameIsPrintingOrPaintingPreview();
 
@@ -995,6 +1028,10 @@ class CORE_EXPORT LocalFrameView final
   EmbeddedObjectSet part_update_set_;
 
   Member<LocalFrame> frame_;
+
+  LayoutUnit current_viewport_bottom_ = kIndefiniteSize;
+  LayoutUnit current_minimum_top_;
+  bool allow_deferred_shaping_ = false;
 
   bool can_have_scrollbars_;
 
@@ -1026,8 +1063,11 @@ class CORE_EXPORT LocalFrameView final
 
   Member<FragmentAnchor> fragment_anchor_;
 
-  Member<ScrollableAreaSet> scrollable_areas_;
+  // Scrollable areas which overflow in the block flow direction.
+  // Needed for calculating scroll anchoring.
+  Member<ScrollableAreaSet> scroll_anchoring_scrollable_areas_;
   Member<ScrollableAreaSet> animating_scrollable_areas_;
+  // Scrollable areas which are user-scrollable, whether they overflow or not.
   Member<ScrollableAreaSet> user_scrollable_areas_;
   Member<ObjectSet> viewport_constrained_objects_;
   // Number of entries in viewport_constrained_objects_ that are sticky.

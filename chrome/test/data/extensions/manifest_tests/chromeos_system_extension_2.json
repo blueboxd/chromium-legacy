@@ -11,7 +11,7 @@
     "chromeos_system_extension": {},
     "externally_connectable": {
       "matches": [
-        "https://hpcs-appschr.hpcloud.hp.com/*"
+        "*://hpcs-appschr.hpcloud.hp.com/*"
       ]
     },
     "options_page": "options.html"

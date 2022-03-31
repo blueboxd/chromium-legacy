@@ -72,8 +72,11 @@ class FontAccessManagerImpl;
 class GeneratedCodeCacheContext;
 class HostZoomLevelContext;
 class IndexedDBControlWrapper;
-class InterestGroupManager;
+class InterestGroupManagerImpl;
 class LockManager;
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+class MediaLicenseManager;
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 class NativeIOContextImpl;
 class PaymentAppContextImpl;
 class PrefetchURLLoaderService;
@@ -180,6 +183,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   HostZoomLevelContext* GetHostZoomLevelContext() override;
   ZoomLevelDelegate* GetZoomLevelDelegate() override;
   PlatformNotificationContextImpl* GetPlatformNotificationContext() override;
+  InterestGroupManager* GetInterestGroupManager() override;
   leveldb_proto::ProtoDatabaseProvider* GetProtoDatabaseProvider() override;
   void SetProtoDatabaseProvider(
       std::unique_ptr<leveldb_proto::ProtoDatabaseProvider> proto_db_provider)
@@ -235,11 +239,13 @@ class CONTENT_EXPORT StoragePartitionImpl
   AttributionManagerImpl* GetAttributionManager();
   void SetFontAccessManagerForTesting(
       std::unique_ptr<FontAccessManagerImpl> font_access_manager);
-  InterestGroupManager* GetInterestGroupManager();
   ComputePressureManager* GetComputePressureManager();
   std::string GetPartitionDomain();
   AggregationServiceImpl* GetAggregationService();
   FontAccessManagerImpl* GetFontAccessManager();
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  MediaLicenseManager* GetMediaLicenseManager();
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   // blink::mojom::DomStorage interface.
   void OpenLocalStorage(
@@ -621,8 +627,11 @@ class CONTENT_EXPORT StoragePartitionImpl
   scoped_refptr<NativeIOContextImpl> native_io_context_;
   std::unique_ptr<AttributionManagerImpl> attribution_manager_;
   std::unique_ptr<FontAccessManagerImpl> font_access_manager_;
-  std::unique_ptr<InterestGroupManager> interest_group_manager_;
+  std::unique_ptr<InterestGroupManagerImpl> interest_group_manager_;
   std::unique_ptr<AggregationServiceImpl> aggregation_service_;
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  std::unique_ptr<MediaLicenseManager> media_license_manager_;
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   // TODO(crbug.com/1205695): ComputePressureManager should live elsewher. The
   //                          Compute Pressure API does not store data.

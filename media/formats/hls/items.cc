@@ -32,6 +32,12 @@ absl::optional<TagItem> GetTagItem(SourceString line) {
       {"M3U", TagKind::kM3u},
       {"-X-VERSION:", TagKind::kXVersion},
       {"INF:", TagKind::kInf},
+      {"-X-INDEPENDENT-SEGMENTS", TagKind::kXIndependentSegments},
+      {"-X-END-LIST", TagKind::kXEndList},
+      {"-X-I-FRAMES-ONLY", TagKind::kXIFramesOnly},
+      {"-X-DISCONTINUITY", TagKind::kXDiscontinuity},
+      {"-X-GAP", TagKind::kXGap},
+      {"-X-DEFINE:", TagKind::kXDefine},
   };
 
   for (const auto& tag : kTagKindPrefixes) {

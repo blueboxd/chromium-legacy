@@ -5,7 +5,6 @@
 package org.chromium.android_webview;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ComponentCallbacks2;
 import android.content.Context;
@@ -46,6 +45,7 @@ import android.webkit.JavascriptInterface;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.android_webview.common.AwFeatures;
@@ -640,6 +640,11 @@ public class AwContents implements SmartClipProvider {
         @Override
         public boolean getSafeBrowsingEnabled() {
             return mSettings.getSafeBrowsingEnabled();
+        }
+
+        @Override
+        public int getRequestedWithHeaderMode() {
+            return mSettings.getRequestedWithHeaderMode();
         }
     }
 
@@ -1637,6 +1642,11 @@ public class AwContents implements SmartClipProvider {
         if (mAutofillProvider != null) {
             mAutofillProvider.destroy();
             mAutofillProvider = null;
+        }
+
+        if (mAwDarkMode != null) {
+            mAwDarkMode.destroy();
+            mAwDarkMode = null;
         }
 
         // Remove pending messages
@@ -3031,7 +3041,7 @@ public class AwContents implements SmartClipProvider {
         return WebContentsAccessibility.fromWebContents(mWebContents);
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
+    @RequiresApi(Build.VERSION_CODES.M)
     public void onProvideVirtualStructure(ViewStructure structure) {
         if (TRACE) Log.i(TAG, "%s onProvideVirtualStructure", this);
         if (isDestroyed(WARN)) return;
@@ -3234,8 +3244,6 @@ public class AwContents implements SmartClipProvider {
     }
 
     private void setWindowVisibilityInternal(boolean visible) {
-        mInvalidateRootViewOnNextDraw |= Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP
-                && visible && !mIsWindowVisible;
         mIsWindowVisible = visible;
         if (!isDestroyed(NO_WARN)) {
             AwContentsJni.get().setWindowVisibility(

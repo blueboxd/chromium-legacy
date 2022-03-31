@@ -36,7 +36,6 @@
 #include "ios/chrome/app/app_metrics_app_state_agent.h"
 #import "ios/chrome/app/application_delegate/metrics_mediator.h"
 #import "ios/chrome/app/blocking_scene_commands.h"
-#import "ios/chrome/app/content_suggestions_scheduler_app_state_agent.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
 #import "ios/chrome/app/enterprise_app_agent.h"
 #import "ios/chrome/app/first_run_app_state_agent.h"
@@ -639,11 +638,11 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     case InitStageSafeMode:
       [self addPostSafeModeAgents];
       break;
-    case InitStageEnterprise:
-      break;
     case InitStageBrowserObjectsForBackgroundHandlers:
       [self startUpBrowserBackgroundInitialization];
       [appState queueTransitionToNextInitStage];
+      break;
+    case InitStageEnterprise:
       break;
     case InitStageBrowserObjectsForUI:
       // When adding a new initialization flow, consider setting
@@ -666,7 +665,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)addPostSafeModeAgents {
-  [self.appState addAgent:[[ContentSuggestionsSchedulerAppAgent alloc] init]];
   [self.appState addAgent:[[EnterpriseAppAgent alloc] init]];
   [self.appState addAgent:[[IncognitoUsageAppStateAgent alloc] init]];
   [self.appState addAgent:[[FirstRunAppAgent alloc] init]];
@@ -690,7 +688,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // Create the window accessibility agent only when multiple windows are
   // possible.
   if (base::ios::IsMultipleScenesSupported()) {
-    [appState addAgent:[[WindowAccessibityChangeNotifierAppAgent alloc] init]];
+    [appState addAgent:[[WindowAccessibilityChangeNotifierAppAgent alloc] init]];
   }
 }
 
@@ -1258,13 +1256,12 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     } else if (willShowActivityIndicator) {
       // Show activity overlay so users know that clear browsing data is in
       // progress.
-      // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
-      // clean up.
       if (sceneInterface.mainInterface.browser) {
         didShowActivityIndicator = YES;
-        id<BrowserCommands> handler = static_cast<id<BrowserCommands>>(
-            sceneInterface.mainInterface.browser->GetCommandDispatcher());
-        [handler showActivityOverlay:YES];
+        id<BrowserCoordinatorCommands> handler = HandlerForProtocol(
+            sceneInterface.mainInterface.browser->GetCommandDispatcher(),
+            BrowserCoordinatorCommands);
+        [handler showActivityOverlay];
       }
     }
   }
@@ -1284,12 +1281,11 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
         sceneInterface.mainInterface.userInteractionEnabled = NO;
         sceneInterface.incognitoInterface.userInteractionEnabled = NO;
 
-        // TODO(crbug.com/1045047): Use HandlerForProtocol after commands
-        // protocol clean up.
         if (didShowActivityIndicator && sceneInterface.mainInterface.browser) {
-          id<BrowserCommands> handler = static_cast<id<BrowserCommands>>(
-              sceneInterface.mainInterface.browser->GetCommandDispatcher());
-          [handler showActivityOverlay:NO];
+          id<BrowserCoordinatorCommands> handler = HandlerForProtocol(
+              sceneInterface.mainInterface.browser->GetCommandDispatcher(),
+              BrowserCoordinatorCommands);
+          [handler hideActivityOverlay];
         }
       }
       sceneInterface.mainInterface.userInteractionEnabled = YES;

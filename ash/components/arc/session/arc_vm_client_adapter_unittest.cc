@@ -26,6 +26,7 @@
 #include "ash/components/arc/test/connection_holder_util.h"
 #include "ash/components/arc/test/fake_app_host.h"
 #include "ash/components/arc/test/fake_app_instance.h"
+#include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -48,7 +49,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/time/time.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/fake_debug_daemon_client.h"
@@ -297,7 +297,7 @@ class FakeDemoModeDelegate : public ArcClientAdapter::DemoModeDelegate {
   FakeDemoModeDelegate(const FakeDemoModeDelegate&) = delete;
   FakeDemoModeDelegate& operator=(const FakeDemoModeDelegate&) = delete;
 
-  void EnsureOfflineResourcesLoaded(base::OnceClosure callback) override {
+  void EnsureResourcesLoaded(base::OnceClosure callback) override {
     std::move(callback).Run();
   }
 
@@ -1312,7 +1312,7 @@ TEST_F(ArcVmClientAdapterTest, StartUpgradeArc_DemoMode) {
         : apps_path_(apps_path) {}
     ~TestDemoDelegate() override = default;
 
-    void EnsureOfflineResourcesLoaded(base::OnceClosure callback) override {
+    void EnsureResourcesLoaded(base::OnceClosure callback) override {
       std::move(callback).Run();
     }
 

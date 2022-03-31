@@ -794,6 +794,10 @@ mojom("cookies_mojom") {
           cpp = "::net::CookieOptions::SameSiteCookieContext::ContextMetadata::ContextDowngradeType"
         },
         {
+          mojom = "network.mojom.ContextRedirectTypeBug1221316"
+          cpp = "::net::CookieOptions::SameSiteCookieContext::ContextMetadata::ContextRedirectTypeBug1221316"
+        },
+        {
           mojom = "network.mojom.CookieSameSiteContextMetadata"
           cpp = "::net::CookieOptions::SameSiteCookieContext::ContextMetadata"
         },
@@ -975,8 +979,8 @@ mojom("mojom") {
           cpp = "::net::DnsConfigOverrides"
         },
         {
-          mojom = "network.mojom.DnsOverHttpsServer"
-          cpp = "::net::DnsOverHttpsServerConfig"
+          mojom = "network.mojom.DnsOverHttpsConfig"
+          cpp = "::net::DnsOverHttpsConfig"
         },
         {
           mojom = "network.mojom.DnsQueryType"

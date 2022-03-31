@@ -271,7 +271,6 @@ void CloudPolicyClient::Register(const RegistrationParameters& parameters,
 void CloudPolicyClient::RegisterWithCertificate(
     const RegistrationParameters& parameters,
     const std::string& client_id,
-    DMAuth auth,
     const std::string& pem_certificate_chain,
     const std::string& sub_organization,
     SigningService* signing_service) {
@@ -298,7 +297,7 @@ void CloudPolicyClient::RegisterWithCertificate(
   signing_service->SignData(
       data.SerializeAsString(),
       base::BindOnce(&CloudPolicyClient::OnRegisterWithCertificateRequestSigned,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(auth)));
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CloudPolicyClient::RegisterWithToken(
@@ -329,7 +328,6 @@ void CloudPolicyClient::RegisterWithToken(
 }
 
 void CloudPolicyClient::OnRegisterWithCertificateRequestSigned(
-    DMAuth auth,
     bool success,
     em::SignedData signed_data) {
   if (!success) {
@@ -341,7 +339,7 @@ void CloudPolicyClient::OnRegisterWithCertificateRequestSigned(
   std::unique_ptr<RegistrationJobConfiguration> config = std::make_unique<
       RegistrationJobConfiguration>(
       DeviceManagementService::JobConfiguration::TYPE_CERT_BASED_REGISTRATION,
-      this, std::move(auth),
+      this, DMAuth::NoAuth(),
       /*oauth_token=*/absl::nullopt,
       base::BindOnce(&CloudPolicyClient::OnRegisterCompleted,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -672,7 +670,7 @@ void CloudPolicyClient::UploadChromeProfileReport(
 void CloudPolicyClient::UploadSecurityEventReport(
     content::BrowserContext* context,
     bool include_device_info,
-    base::Value report,
+    base::Value::Dict report,
     StatusCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
@@ -683,8 +681,8 @@ void CloudPolicyClient::UploadSecurityEventReport(
 }
 
 void CloudPolicyClient::UploadEncryptedReport(
-    base::Value merging_payload,
-    absl::optional<base::Value> context,
+    base::Value::Dict merging_payload,
+    absl::optional<base::Value::Dict> context,
     ResponseCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!is_registered()) {
@@ -699,12 +697,12 @@ void CloudPolicyClient::UploadEncryptedReport(
           base::BindOnce(&CloudPolicyClient::OnEncryptedReportUploadCompleted,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   if (context.has_value()) {
-    config->UpdateContext(context.value());
+    config->UpdateContext(std::move(context.value()));
   }
   request_jobs_.push_back(service_->CreateJob(std::move(config)));
 }
 
-void CloudPolicyClient::UploadAppInstallReport(base::Value report,
+void CloudPolicyClient::UploadAppInstallReport(base::Value::Dict report,
                                                StatusCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
@@ -726,7 +724,7 @@ void CloudPolicyClient::CancelAppInstallReportUpload() {
   }
 }
 
-void CloudPolicyClient::UploadExtensionInstallReport(base::Value report,
+void CloudPolicyClient::UploadExtensionInstallReport(base::Value::Dict report,
                                                      StatusCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
@@ -777,7 +775,7 @@ void CloudPolicyClient::FetchRemoteCommands(
 }
 
 DeviceManagementService::Job* CloudPolicyClient::CreateNewRealtimeReportingJob(
-    base::Value report,
+    base::Value::Dict report,
     const std::string& server_url,
     bool include_device_info,
     bool add_connector_url_params,
@@ -1440,9 +1438,7 @@ void CloudPolicyClient::OnRemoteCommandsFetched(
     DeviceManagementStatus status,
     int net_error,
     const em::DeviceManagementResponse& response) {
-  DeviceManagementStatus decoded_status;
-  std::vector<em::SignedData> commands;
-  std::tie(decoded_status, commands) = DecodeRemoteCommands(status, response);
+  auto [decoded_status, commands] = DecodeRemoteCommands(status, response);
 
   std::move(callback).Run(decoded_status, commands);
   RemoveJob(job);

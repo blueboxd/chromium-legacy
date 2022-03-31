@@ -21,13 +21,14 @@ namespace content {
 // See https://fetch.spec.whatwg.org/#forbidden-header-name
 const char kSecFedCmCsrfHeader[] = "Sec-FedCM-CSRF";
 
-IdentityRequestAccount::IdentityRequestAccount(const std::string& account_id,
-                                               const std::string& email,
-                                               const std::string& name,
-                                               const std::string& given_name,
-                                               const GURL& picture,
-                                               LoginState login_state)
-    : account_id{account_id},
+IdentityRequestAccount::IdentityRequestAccount(
+    const std::string& id,
+    const std::string& email,
+    const std::string& name,
+    const std::string& given_name,
+    const GURL& picture,
+    absl::optional<LoginState> login_state)
+    : id{id},
       email{email},
       name{name},
       given_name{given_name},

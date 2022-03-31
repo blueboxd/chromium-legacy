@@ -336,18 +336,13 @@ viz_component("service") {
 
   if (use_ozone) {
     sources += [
+      "display/overlay_processor_delegated.cc",
+      "display/overlay_processor_delegated.h",
       "display/overlay_processor_ozone.cc",
       "display/overlay_processor_ozone.h",
       "display_embedder/software_output_device_ozone.cc",
       "display_embedder/software_output_device_ozone.h",
     ]
-
-    if (is_chromeos_lacros) {
-      sources += [
-        "display/overlay_processor_delegated.cc",
-        "display/overlay_processor_delegated.h",
-      ]
-    }
 
     public_deps += [ "//ui/ozone" ]
   }
@@ -492,8 +487,6 @@ viz_source_set("gpu_service_dependencies") {
       sources += [
         "display_embedder/skia_output_device_vulkan_secondary_cb.cc",
         "display_embedder/skia_output_device_vulkan_secondary_cb.h",
-        "display_embedder/skia_output_device_vulkan_secondary_cb_offscreen.cc",
-        "display_embedder/skia_output_device_vulkan_secondary_cb_offscreen.h",
       ]
     }
 
@@ -521,12 +514,12 @@ viz_source_set("gpu_service_dependencies") {
       "display_embedder/skia_output_device_dawn.h",
     ]
 
-    public_deps += [ "//third_party/dawn/src/dawn:dawn_headers" ]
+    public_deps += [ "//third_party/dawn/include/dawn:headers" ]
 
     deps += [
-      "//third_party/dawn/src/dawn:dawn_proc",
-      "//third_party/dawn/src/dawn:dawncpp",
-      "//third_party/dawn/src/dawn_native",
+      "//third_party/dawn/src/dawn:cpp",
+      "//third_party/dawn/src/dawn:proc",
+      "//third_party/dawn/src/dawn/native",
     ]
   }
 

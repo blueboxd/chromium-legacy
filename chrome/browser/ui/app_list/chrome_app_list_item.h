@@ -67,9 +67,11 @@ class ChromeAppListItem {
   const gfx::ImageSkia& icon() const { return metadata_->icon; }
   const ash::IconColor& icon_color() const { return metadata_->icon_color; }
   bool is_page_break() const { return metadata_->is_page_break; }
+  bool is_new_install() const { return metadata_->is_new_install; }
 
   void SetMetadata(std::unique_ptr<ash::AppListItemMetadata> metadata);
   std::unique_ptr<ash::AppListItemMetadata> CloneMetadata() const;
+  const ash::AppListItemMetadata& metadata() const { return *metadata_; }
 
   // Loads the app icon and call SetIcon to update ash when finished.
   virtual void LoadIcon();
@@ -77,7 +79,7 @@ class ChromeAppListItem {
   // The following methods set Chrome side data here, and call model updater
   // interfaces that talk to ash directly.
   void IncrementIconVersion();
-  void SetIcon(const gfx::ImageSkia& icon);
+  void SetIcon(const gfx::ImageSkia& icon, bool is_place_holder_icon);
   void SetAppStatus(ash::AppStatus app_status);
   void SetFolderId(const std::string& folder_id);
   void SetIsPageBreak(bool is_page_break);

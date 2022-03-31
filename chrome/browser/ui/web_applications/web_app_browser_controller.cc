@@ -27,6 +27,7 @@
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
@@ -85,7 +86,7 @@ WebAppBrowserController::WebAppBrowserController(
     : AppBrowserController(browser, std::move(app_id), has_tab_strip),
       provider_(provider),
       system_app_(system_app) {
-  registrar_observation_.Observe(&provider_.registrar());
+  install_manager_observation_.Observe(&provider.install_manager());
   PerformDigitalAssetLinkVerification(browser);
 }
 
@@ -180,8 +181,8 @@ void WebAppBrowserController::OnWebAppUninstalled(
     chrome::CloseWindow(browser());
 }
 
-void WebAppBrowserController::OnAppRegistrarDestroyed() {
-  registrar_observation_.Reset();
+void WebAppBrowserController::OnWebAppInstallManagerDestroyed() {
+  install_manager_observation_.Reset();
 }
 
 void WebAppBrowserController::SetReadIconCallbackForTesting(
@@ -240,18 +241,13 @@ absl::optional<SkColor> WebAppBrowserController::GetThemeColor() const {
 }
 
 absl::optional<SkColor> WebAppBrowserController::GetBackgroundColor() const {
-  if (auto color = AppBrowserController::GetBackgroundColor())
-    return color;
-
-  if (ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors()) {
-    absl::optional<SkColor> dark_mode_color =
-        registrar().GetAppDarkModeBackgroundColor(app_id());
-    if (dark_mode_color) {
-      return dark_mode_color;
-    }
-  }
-
-  return registrar().GetAppBackgroundColor(app_id());
+  auto web_contents_color = AppBrowserController::GetBackgroundColor();
+  auto manifest_color = GetResolvedManifestBackgroundColor();
+  auto [preferred_color, fallback_color] =
+      (system_app() && system_app()->PreferManifestBackgroundColor())
+          ? std::tie(manifest_color, web_contents_color)
+          : std::tie(web_contents_color, manifest_color);
+  return preferred_color ? preferred_color : fallback_color;
 }
 
 GURL WebAppBrowserController::GetAppStartUrl() const {
@@ -344,6 +340,12 @@ bool WebAppBrowserController::IsInstalled() const {
 void WebAppBrowserController::OnTabInserted(content::WebContents* contents) {
   AppBrowserController::OnTabInserted(contents);
   SetAppPrefsForWebContents(contents);
+
+  // If a `WebContents` is inserted into an app browser (e.g. after
+  // installation), it is "appy". Note that if and when it's moved back into a
+  // tabbed browser window (e.g. via "Open in Chrome" menu item), it is still
+  // considered "appy".
+  WebAppTabHelper::FromWebContents(contents)->set_acting_as_app(true);
 }
 
 void WebAppBrowserController::OnTabRemoved(content::WebContents* contents) {
@@ -353,6 +355,10 @@ void WebAppBrowserController::OnTabRemoved(content::WebContents* contents) {
 
 const WebAppRegistrar& WebAppBrowserController::registrar() const {
   return provider_.registrar();
+}
+
+const WebAppInstallManager& WebAppBrowserController::install_manager() const {
+  return provider_.install_manager();
 }
 
 void WebAppBrowserController::LoadAppIcon(bool allow_placeholder_icon) const {
@@ -434,4 +440,15 @@ void WebAppBrowserController::PerformDigitalAssetLinkVerification(
                      base::Unretained(this)));
 #endif
 }
+
+absl::optional<SkColor>
+WebAppBrowserController::GetResolvedManifestBackgroundColor() const {
+  if (ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors()) {
+    auto dark_mode_color = registrar().GetAppDarkModeBackgroundColor(app_id());
+    if (dark_mode_color)
+      return dark_mode_color;
+  }
+  return registrar().GetAppBackgroundColor(app_id());
+}
+
 }  // namespace web_app

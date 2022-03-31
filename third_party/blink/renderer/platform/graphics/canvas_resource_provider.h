@@ -126,7 +126,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   static std::unique_ptr<CanvasResourceProvider> CreateWebGPUImageProvider(
       const SkImageInfo& info,
-      bool is_origin_top_left);
+      bool is_origin_top_left,
+      uint32_t shared_image_usage_flags = 0);
 
   static std::unique_ptr<CanvasResourceProvider> CreatePassThroughProvider(
       const SkImageInfo& info,
@@ -270,7 +271,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
     return recorder_ ? recorder_->TotalOpCount() : 0;
   }
   size_t TotalOpBytesUsed() const {
-    return recorder_ ? recorder_->BytesUsed() : 0;
+    return recorder_ ? recorder_->OpBytesUsed() : 0;
   }
   size_t TotalPinnedImageBytes() const { return total_pinned_image_bytes_; }
 
@@ -288,7 +289,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
   gpu::gles2::GLES2Interface* ContextGL() const;
   gpu::raster::RasterInterface* RasterInterface() const;
   GrDirectContext* GetGrContext() const;
-  base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper() {
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper()
+      const {
     return context_provider_wrapper_;
   }
   GrSurfaceOrigin GetGrSurfaceOrigin() const {
@@ -409,7 +411,7 @@ ALWAYS_INLINE void CanvasResourceProvider::FlushIfRecordingLimitExceeded() {
   // vector mode.
   if (IsPrinting() && clear_frame_)
     return;
-  if (recorder_ && ((recorder_->BytesUsed() > kMaxRecordedOpBytes) ||
+  if (recorder_ && ((TotalOpBytesUsed() > kMaxRecordedOpBytes) ||
                     total_pinned_image_bytes_ > max_pinned_image_bytes_)) {
     FlushCanvas();
   }

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.share.link_to_text;
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.Callback;
 import org.chromium.base.task.PostTask;
 import org.chromium.blink.mojom.TextFragmentReceiver;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -15,7 +14,6 @@ import org.chromium.chrome.browser.share.ChromeShareExtras;
 import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
 import org.chromium.chrome.browser.share.share_sheet.ShareSheetLinkToggleCoordinator.LinkToggleState;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
-import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.components.browser_ui.share.ShareParams;
@@ -114,14 +112,14 @@ public class LinkToTextCoordinator extends EmptyTabObserver {
         mShareLinkParams = selector.isEmpty()
                 ? null
                 : new ShareParams
-                          .Builder(mTab.getWindowAndroid(), /*title=*/"",
+                          .Builder(mTab.getWindowAndroid(), mTab.getTitle(),
                                   LinkToTextHelper.getUrlToShare(mShareUrl, selector))
                           .setText(mSelectedText, SHARE_TEXT_TEMPLATE)
                           .setPreviewText(getPreviewText(), SHARE_TEXT_TEMPLATE)
                           .setLinkToTextSuccessful(true)
                           .build();
         mShareTextParams =
-                new ShareParams.Builder(mTab.getWindowAndroid(), /*title=*/"", /*url=*/"")
+                new ShareParams.Builder(mTab.getWindowAndroid(), mTab.getTitle(), /*url=*/"")
                         .setText(mSelectedText)
                         .setLinkToTextSuccessful(!selector.isEmpty())
                         .build();
@@ -150,14 +148,14 @@ public class LinkToTextCoordinator extends EmptyTabObserver {
 
         if (mTab.getWebContents().getMainFrame() != mTab.getWebContents().getFocusedFrame()) {
             if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SHARED_HIGHLIGHTING_AMP)
-                    || !isAmpUrl(mShareUrl)) {
+                    || !LinkToTextBridge.supportsLinkGenerationInIframe(new GURL(mShareUrl))) {
                 completeRequestWithFailure(LinkGenerationError.I_FRAME);
                 return;
             }
         }
 
         PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT, () -> timeout(), getTimeout());
-        requestSelectorForCanonicalUrl();
+        requestSelector();
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
@@ -179,6 +177,22 @@ public class LinkToTextCoordinator extends EmptyTabObserver {
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     void onReshareSelectorsRemoteRequestCompleted(String selectors) {
+        if (mRemoteRequestStatus == RemoteRequestStatus.CANCELLED) return;
+        if (selectors.isEmpty()) {
+            completeReshareWithFailure(LinkToTextReshareStatus.EMPTY_SELECTOR);
+            return;
+        }
+
+        LinkToTextHelper.requestCanonicalUrl(mTab, (canonicalUrl) -> {
+            if (!canonicalUrl.isEmpty()) {
+                mShareUrl = canonicalUrl;
+            }
+            reshareRequestCompleted(selectors);
+        });
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    void reshareRequestCompleted(String selectors) {
         if (mRemoteRequestStatus == RemoteRequestStatus.CANCELLED) return;
 
         mRemoteRequestStatus = RemoteRequestStatus.COMPLETED;
@@ -225,7 +239,14 @@ public class LinkToTextCoordinator extends EmptyTabObserver {
 
         if (success) {
             assert error == LinkGenerationError.NONE;
-            completeRemoteRequestWithSuccess(selector);
+
+            // Request canonical url when we have a successful generation.
+            LinkToTextHelper.requestCanonicalUrl(mTab, (canonicalUrl) -> {
+                if (!canonicalUrl.isEmpty()) {
+                    mShareUrl = canonicalUrl;
+                }
+                completeRemoteRequestWithSuccess(selector);
+            });
         } else {
             assert error != LinkGenerationError.NONE;
             completeRequestWithFailure(error.intValue());
@@ -252,46 +273,6 @@ public class LinkToTextCoordinator extends EmptyTabObserver {
 
         mRemoteRequestStatus = RemoteRequestStatus.REQUESTED;
         LinkToTextHelper.requestSelector(mProducer, this::onRemoteRequestCompleted);
-    }
-
-    public boolean isAmpUrl(String url) {
-        if (url.startsWith("www.", 8)) {
-            if (url.length() - 12 < LENGTH_AMP_DOMAIN) return false;
-            return AMP_VIEWER_DOMAINS.contains(url.substring(12, 12 + LENGTH_AMP_DOMAIN));
-        } else if (url.startsWith("m.", 8)) {
-            if (url.length() - 10 < LENGTH_AMP_DOMAIN) return false;
-            return AMP_VIEWER_DOMAINS.contains(url.substring(10, 10 + LENGTH_AMP_DOMAIN));
-        } else if (url.startsWith("mobile.", 8)) {
-            if (url.length() - 15 < LENGTH_AMP_DOMAIN) return false;
-            return AMP_VIEWER_DOMAINS.contains(url.substring(15, 15 + LENGTH_AMP_DOMAIN));
-        }
-        return false;
-    }
-
-    private void requestSelectorForCanonicalUrl() {
-        if (shouldRequestCanonicalUrl()) {
-            mTab.getWebContents().getMainFrame().getCanonicalUrlForSharing(new Callback<GURL>() {
-                @Override
-                public void onResult(GURL result) {
-                    if (!result.isEmpty()) {
-                        mShareUrl = result.getSpec();
-                    }
-                    requestSelector();
-                }
-            });
-        } else {
-            requestSelector();
-        }
-    }
-
-    private boolean shouldRequestCanonicalUrl() {
-        if (mTab.getWebContents() == null) return false;
-        if (mTab.getWebContents().getMainFrame() == null) return false;
-        if (mTab.getUrl().isEmpty()) return false;
-        if (mTab.isShowingErrorPage() || SadTab.isShowing(mTab)) {
-            return false;
-        }
-        return true;
     }
 
     private void setTextFragmentReceiver() {
@@ -344,7 +325,7 @@ public class LinkToTextCoordinator extends EmptyTabObserver {
     }
 
     private void completeRequestWithFailure(@LinkGenerationError int error) {
-        LinkToTextBridge.logFailureMetrics(error);
+        LinkToTextBridge.logFailureMetrics(mTab.getWebContents(), error);
 
         switch (error) {
             case LinkGenerationError.TAB_HIDDEN:
@@ -363,7 +344,7 @@ public class LinkToTextCoordinator extends EmptyTabObserver {
         if (mChromeShareExtras.isReshareHighlightedText()) {
             LinkToTextBridge.logLinkToTextReshareStatus(LinkToTextReshareStatus.SUCCESS);
         } else {
-            LinkToTextBridge.logSuccessMetrics();
+            LinkToTextBridge.logSuccessMetrics(mTab.getWebContents());
         }
         onSelectorReady(selector);
         cleanup();

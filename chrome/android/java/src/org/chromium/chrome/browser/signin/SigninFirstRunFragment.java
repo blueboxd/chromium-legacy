@@ -104,9 +104,9 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mSigninFirstRunCoordinator.destroy();
+    public void onDestroyView() {
+        super.onDestroyView();
+        setSigninFirstRunCoordinator(null);
     }
 
     @Override
@@ -162,6 +162,12 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
 
     /** Implements {@link SigninFirstRunCoordinator.Delegate}. */
     @Override
+    public void advanceToNextPage() {
+        getPageDelegate().advanceToNextPage();
+    }
+
+    /** Implements {@link SigninFirstRunCoordinator.Delegate}. */
+    @Override
     public void recordFreProgressHistogram(@MobileFreProgress int state) {
         getPageDelegate().recordFreProgressHistogram(state);
     }
@@ -196,7 +202,22 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
         }
     }
 
+    /**
+     * Destroys the old coordinator if needed and sets {@link #mSigninFirstRunCoordinator}.
+     * @param coordinator the new coordinator instance (may be null).
+     */
+    private void setSigninFirstRunCoordinator(@Nullable SigninFirstRunCoordinator coordinator) {
+        if (mSigninFirstRunCoordinator != null) {
+            mSigninFirstRunCoordinator.destroy();
+        }
+        mSigninFirstRunCoordinator = coordinator;
+    }
+
     private void notifyCoordinatorWhenNativeAndPolicyAreLoaded() {
+        // This may happen when the native initialized supplier in FirstRunActivity calls back after
+        // the fragment has been detached from the activity. See https://crbug.com/1294998.
+        if (getPageDelegate() == null) return;
+
         if (mSigninFirstRunCoordinator != null && mNativeInitialized
                 && getPageDelegate().getPolicyLoadListener().get() != null) {
             mSigninFirstRunCoordinator.onNativeAndPolicyLoaded(
@@ -214,8 +235,8 @@ public class SigninFirstRunFragment extends Fragment implements FirstRunFragment
                         ? R.layout.signin_first_run_landscape_view
                         : R.layout.signin_first_run_portrait_view,
                 null, false);
-        mSigninFirstRunCoordinator = new SigninFirstRunCoordinator(requireContext(), view,
-                mModalDialogManager, this, PrivacyPreferencesManagerImpl.getInstance());
+        setSigninFirstRunCoordinator(new SigninFirstRunCoordinator(requireContext(), view,
+                mModalDialogManager, this, PrivacyPreferencesManagerImpl.getInstance()));
         notifyCoordinatorWhenNativeAndPolicyAreLoaded();
         return view;
     }

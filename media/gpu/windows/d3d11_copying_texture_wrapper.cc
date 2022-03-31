@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "gpu/command_buffer/service/mailbox_manager.h"
-#include "media/base/status_codes.h"
 #include "media/gpu/windows/d3d11_com_defs.h"
 #include "ui/gl/hdr_metadata_helper_win.h"
 
@@ -86,8 +85,7 @@ D3D11Status CopyingTexture2DWrapper::ProcessTexture(
     // treat it as gamma 2.2 since HLG is designed to look okay that way.
     auto adjusted_color_space = input_color_space;
     if (!video_processor_->supports_tone_mapping() &&
-        input_color_space.GetTransferID() ==
-            gfx::ColorSpace::TransferID::ARIB_STD_B67 &&
+        input_color_space.GetTransferID() == gfx::ColorSpace::TransferID::HLG &&
         !copy_color_space.IsHDR()) {
       adjusted_color_space = gfx::ColorSpace(
           input_color_space.GetPrimaryID(),

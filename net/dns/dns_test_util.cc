@@ -15,6 +15,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/sys_byteorder.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -22,6 +23,7 @@
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/dns/address_sorter.h"
 #include "net/dns/dns_hosts.h"
@@ -73,9 +75,10 @@ DnsResponse CreateMalformedResponse(std::string hostname, uint16_t type) {
 class MockAddressSorter : public AddressSorter {
  public:
   ~MockAddressSorter() override = default;
-  void Sort(const AddressList& list, CallbackType callback) const override {
+  void Sort(const std::vector<IPEndPoint>& endpoints,
+            CallbackType callback) const override {
     // Do nothing.
-    std::move(callback).Run(true, list);
+    std::move(callback).Run(true, endpoints);
   }
 };
 
@@ -635,7 +638,7 @@ MockDnsClient::~MockDnsClient() = default;
 
 bool MockDnsClient::CanUseSecureDnsTransactions() const {
   const DnsConfig* config = GetEffectiveConfig();
-  return config && config->IsValid() && !config->dns_over_https_servers.empty();
+  return config && config->IsValid() && !config->doh_config.servers().empty();
 }
 
 bool MockDnsClient::CanUseInsecureDnsTransactions() const {
@@ -781,18 +784,6 @@ scoped_refptr<DnsSession> MockDnsClient::BuildSession() {
   return base::MakeRefCounted<DnsSession>(
       effective_config_.value(), std::move(socket_allocator),
       null_random_callback, nullptr /* net_log */);
-}
-
-std::vector<DnsOverHttpsServerConfig> ParseDohTemplates(
-    std::vector<std::string> server_templates) {
-  std::vector<DnsOverHttpsServerConfig> out;
-  out.reserve(server_templates.size());
-  base::ranges::transform(server_templates, std::back_inserter(out),
-                          [](std::string& server_template) {
-                            return *DnsOverHttpsServerConfig::FromString(
-                                std::move(server_template));
-                          });
-  return out;
 }
 
 }  // namespace net

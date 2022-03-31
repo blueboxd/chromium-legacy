@@ -448,22 +448,6 @@ base::FilePath ContainerChromeOSBaseDirectory() {
   return base::FilePath("/mnt/chromeos");
 }
 
-void AddNewLxdContainerToPrefs(Profile* profile,
-                               const ContainerId& container_id) {
-  auto* pref_service = profile->GetPrefs();
-
-  base::Value new_container(base::Value::Type::DICTIONARY);
-  new_container.SetKey(prefs::kVmKey, base::Value(container_id.vm_name));
-  new_container.SetKey(prefs::kContainerKey,
-                       base::Value(container_id.container_name));
-  new_container.SetIntKey(prefs::kContainerOsVersionKey,
-                          static_cast<int>(ContainerOsVersion::kUnknown));
-  new_container.SetStringKey(prefs::kContainerOsPrettyNameKey, "");
-
-  ListPrefUpdate updater(pref_service, crostini::prefs::kCrostiniContainers);
-  updater->Append(std::move(new_container));
-}
-
 namespace {
 
 bool MatchContainerDict(const base::Value& dict,
@@ -476,13 +460,34 @@ bool MatchContainerDict(const base::Value& dict,
 
 }  // namespace
 
+void AddNewLxdContainerToPrefs(Profile* profile,
+                               const ContainerId& container_id) {
+  ListPrefUpdate updater(profile->GetPrefs(),
+                         crostini::prefs::kCrostiniContainers);
+  auto it = std::find_if(
+      updater->GetListDeprecated().begin(), updater->GetListDeprecated().end(),
+      [&](const auto& dict) { return MatchContainerDict(dict, container_id); });
+  if (it != updater->GetListDeprecated().end()) {
+    return;
+  }
+
+  base::Value new_container(base::Value::Type::DICTIONARY);
+  new_container.SetKey(prefs::kVmKey, base::Value(container_id.vm_name));
+  new_container.SetKey(prefs::kContainerKey,
+                       base::Value(container_id.container_name));
+  new_container.SetIntKey(prefs::kContainerOsVersionKey,
+                          static_cast<int>(ContainerOsVersion::kUnknown));
+  new_container.SetStringKey(prefs::kContainerOsPrettyNameKey, "");
+  updater->Append(std::move(new_container));
+}
+
 void RemoveLxdContainerFromPrefs(Profile* profile,
                                  const ContainerId& container_id) {
   auto* pref_service = profile->GetPrefs();
   ListPrefUpdate updater(pref_service, crostini::prefs::kCrostiniContainers);
   updater->EraseListIter(
-      std::find_if(updater->GetList().begin(), updater->GetList().end(),
-                   [&](const auto& dict) {
+      std::find_if(updater->GetListDeprecated().begin(),
+                   updater->GetListDeprecated().end(), [&](const auto& dict) {
                      return MatchContainerDict(dict, container_id);
                    }));
 
@@ -502,7 +507,7 @@ const base::Value* GetContainerPrefValue(Profile* profile,
   if (!containers) {
     return nullptr;
   }
-  for (const auto& dict : containers->GetList()) {
+  for (const auto& dict : containers->GetListDeprecated()) {
     if (MatchContainerDict(dict, container_id))
       return dict.FindKey(key);
   }
@@ -516,9 +521,9 @@ void UpdateContainerPref(Profile* profile,
   ListPrefUpdate updater(profile->GetPrefs(),
                          crostini::prefs::kCrostiniContainers);
   auto it = std::find_if(
-      updater->GetList().begin(), updater->GetList().end(),
+      updater->GetListDeprecated().begin(), updater->GetListDeprecated().end(),
       [&](const auto& dict) { return MatchContainerDict(dict, container_id); });
-  if (it != updater->GetList().end()) {
+  if (it != updater->GetListDeprecated().end()) {
     it->SetKey(key, std::move(value));
   }
 }

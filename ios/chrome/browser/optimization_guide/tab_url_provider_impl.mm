@@ -34,24 +34,20 @@ const std::vector<GURL> TabUrlProviderImpl::GetUrlsOfActiveTabs(
 
   // Get all URLs from regular tabs.
   std::map<base::Time, GURL> urls;
-  for (const auto* browser : browser_list_->AllRegularBrowsers()) {
+  for (Browser* browser : browser_list_->AllRegularBrowsers()) {
     WebStateList* web_state_list = browser->GetWebStateList();
     DCHECK(web_state_list);
     for (int i = 0; i < web_state_list->count(); ++i) {
       web::WebState* web_state = web_state_list->GetWebStateAt(i);
       DCHECK(web_state);
 
-      // Fallback to use last commit navigation timestamp since iOS web state
-      // doesn't provide last active timestamp.
-      // TODO(crbug.com/1238043): Use WebState::GetLastActiveTime() as
-      // timestamp.
-      base::Time timestamp = web_state->GetLastCommittedTimestamp();
-      if (timestamp.is_null() ||
-          clock_->Now() - timestamp > duration_since_last_shown) {
+      const base::Time last_active_time = web_state->GetLastActiveTime();
+      if (last_active_time.is_null() ||
+          clock_->Now() - last_active_time > duration_since_last_shown) {
         continue;
       }
 
-      urls.emplace(timestamp, web_state->GetLastCommittedURL());
+      urls.emplace(last_active_time, web_state->GetLastCommittedURL());
     }
   }
 

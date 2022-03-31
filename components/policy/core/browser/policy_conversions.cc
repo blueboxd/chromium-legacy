@@ -134,7 +134,7 @@ Value DictionaryPolicyConversions::ToValue() {
 Value DictionaryPolicyConversions::GetDeviceLocalAccountPolicies() {
   Value policies = client()->GetDeviceLocalAccountPolicies();
   Value device_values(Value::Type::DICTIONARY);
-  for (auto&& policy : policies.GetList()) {
+  for (auto&& policy : policies.GetListDeprecated()) {
     device_values.SetKey(policy.FindKey("id")->GetString(),
                          std::move(*policy.FindKey("policies")));
   }
@@ -146,7 +146,7 @@ Value DictionaryPolicyConversions::GetExtensionPolicies(
     PolicyDomain policy_domain) {
   Value policies = client()->GetExtensionPolicies(policy_domain);
   Value extension_values(Value::Type::DICTIONARY);
-  for (auto&& policy : policies.GetList()) {
+  for (auto&& policy : policies.GetListDeprecated()) {
     extension_values.SetKey(policy.FindKey("id")->GetString(),
                             std::move(*policy.FindKey("policies")));
   }
@@ -161,6 +161,12 @@ ArrayPolicyConversions::ArrayPolicyConversions(
     std::unique_ptr<PolicyConversionsClient> client)
     : PolicyConversions(std::move(client)) {}
 ArrayPolicyConversions::~ArrayPolicyConversions() = default;
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+void ArrayPolicyConversions::WithAdditionalChromePolicies(Value&& policies) {
+  additional_chrome_policies_ = std::move(policies);
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 Value ArrayPolicyConversions::ToValue() {
   Value all_policies(Value::Type::LIST);
@@ -180,8 +186,9 @@ Value ArrayPolicyConversions::ToValue() {
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    for (auto& policy :
-         client()->GetExtensionPolicies(POLICY_DOMAIN_EXTENSIONS).TakeList()) {
+    for (auto& policy : client()
+                            ->GetExtensionPolicies(POLICY_DOMAIN_EXTENSIONS)
+                            .TakeListDeprecated()) {
       all_policies.Append(std::move(policy));
     }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
@@ -191,14 +198,14 @@ Value ArrayPolicyConversions::ToValue() {
   for (auto& policy :
        client()
            ->GetExtensionPolicies(POLICY_DOMAIN_SIGNIN_EXTENSIONS)
-           .TakeList()) {
+           .TakeListDeprecated()) {
     all_policies.Append(std::move(policy));
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS) && BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   for (auto& device_policy :
-       client()->GetDeviceLocalAccountPolicies().TakeList())
+       client()->GetDeviceLocalAccountPolicies().TakeListDeprecated())
     all_policies.Append(std::move(device_policy));
 
   Value identity_fields = client()->GetIdentityFields();
@@ -223,7 +230,12 @@ Value ArrayPolicyConversions::GetChromePolicies() {
   Value chrome_policies_data(Value::Type::DICTIONARY);
   chrome_policies_data.SetKey("id", Value("chrome"));
   chrome_policies_data.SetKey("name", Value("Chrome Policies"));
-  chrome_policies_data.SetKey("policies", client()->GetChromePolicies());
+  Value chrome_policies = client()->GetChromePolicies();
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (additional_chrome_policies_ != base::Value())
+    chrome_policies.MergeDictionary(&additional_chrome_policies_);
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+  chrome_policies_data.SetKey("policies", std::move(chrome_policies));
   return chrome_policies_data;
 }
 

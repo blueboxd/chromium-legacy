@@ -475,6 +475,13 @@ void ExtensionPrefs::MakePathsRelative() {
 
 const base::DictionaryValue* ExtensionPrefs::GetExtensionPref(
     const std::string& extension_id) const {
+  // TODO(https://1297144): Should callers of this method proactively filter out
+  // extension IDs? Previously, this function would (potentially surprisingly)
+  // return `extensions` below if supplied with an empty `extension_id` due to
+  // the legacy behavior of `base::Value::FindDictPath()`.
+  if (extension_id.empty()) {
+    return nullptr;
+  }
   const base::Value* extensions =
       prefs_->GetDictionary(pref_names::kExtensions);
   if (!extensions)
@@ -1736,7 +1743,6 @@ base::Time ExtensionPrefs::GetInstallTime(
     const std::string& extension_id) const {
   const base::DictionaryValue* extension = GetExtensionPref(extension_id);
   if (!extension) {
-    NOTREACHED();
     return base::Time();
   }
   std::string install_time_str;
@@ -2097,7 +2103,7 @@ ExtensionPrefs::GetDNREnabledStaticRulesets(
     return absl::nullopt;
 
   DCHECK(ids_value);
-  for (const base::Value& id_value : ids_value->GetList()) {
+  for (const base::Value& id_value : ids_value->GetListDeprecated()) {
     if (!id_value.is_int())
       return absl::nullopt;
 
@@ -2230,8 +2236,6 @@ ExtensionPrefs::ExtensionPrefs(
   MigrateYoutubeOffBookmarkApps();
 
   MigrateDeprecatedDisableReasons();
-
-  MigrateOldBlocklistPrefs();
 }
 
 AppSorting* ExtensionPrefs::app_sorting() const {
@@ -2297,7 +2301,7 @@ bool ExtensionPrefs::GetUserExtensionPrefIntoContainer(
 
   std::insert_iterator<ExtensionIdContainer> insert_iterator(
       *id_container_out, id_container_out->end());
-  for (const auto& entry : user_pref_value->GetList()) {
+  for (const auto& entry : user_pref_value->GetListDeprecated()) {
     if (!entry.is_string()) {
       NOTREACHED();
       continue;
@@ -2661,7 +2665,7 @@ void ExtensionPrefs::MigrateToNewExternalUninstallPref() {
   ListPrefUpdate update(prefs_, kExternalUninstalls);
   base::Value* current_ids = update.Get();
   for (const auto& id : uninstalled_ids) {
-    base::Value::ListView list = current_ids->GetList();
+    base::Value::ListView list = current_ids->GetListDeprecated();
     auto existing_entry =
         std::find_if(list.begin(), list.end(), [&id](const base::Value& value) {
           return value.is_string() && value.GetString() == id;
@@ -2673,67 +2677,11 @@ void ExtensionPrefs::MigrateToNewExternalUninstallPref() {
   }
 }
 
-void ExtensionPrefs::MigrateOldBlocklistPrefs() {
-  static constexpr char kLegacyBlocklistPref[] = "blacklist";
-  static constexpr char kLegacyBlocklistAcknowledgedPref[] = "ack_blacklist";
-  std::unique_ptr<ExtensionsInfo> extensions_info(GetInstalledExtensionsInfo());
-
-  for (const auto& info : *extensions_info) {
-    const ExtensionId& extension_id = info->extension_id;
-    bool was_blocklisted = false;
-    bool was_blocklist_acknowledged = false;
-    bool legacy_pref_cleared = false;
-
-    if (ReadPrefAsBoolean(extension_id, kLegacyBlocklistPref,
-                          &was_blocklisted)) {
-      // Migrate the old value.
-      if (was_blocklisted) {
-        // Keep the blocklist acknowledged pref unchanged as it will be updated
-        // below.
-        blocklist_prefs::SetSafeBrowsingExtensionBlocklistState(
-            extension_id, BitMapBlocklistState::BLOCKLISTED_MALWARE, this);
-      }
-      // Clear the legacy pref.
-      UpdateExtensionPref(extension_id, kLegacyBlocklistPref, nullptr);
-      legacy_pref_cleared = true;
-    }
-
-    if (ReadPrefAsBoolean(extension_id, kLegacyBlocklistAcknowledgedPref,
-                          &was_blocklist_acknowledged)) {
-      // Migrate the old value.
-      if (was_blocklist_acknowledged) {
-        blocklist_prefs::AddAcknowledgedBlocklistState(
-            extension_id, BitMapBlocklistState::BLOCKLISTED_MALWARE, this);
-      }
-      // Clear the legacy pref.
-      UpdateExtensionPref(extension_id, kLegacyBlocklistAcknowledgedPref,
-                          nullptr);
-      legacy_pref_cleared = true;
-    }
-
-    if (HasDisableReason(
-            extension_id,
-            disable_reason::DEPRECATED_DISABLE_REMOTELY_FOR_MALWARE)) {
-      // Migrate the old value.
-      blocklist_prefs::AddOmahaBlocklistState(
-          extension_id, BitMapBlocklistState::BLOCKLISTED_MALWARE, this);
-      // Clear the legacy pref.
-      RemoveDisableReason(
-          extension_id,
-          disable_reason::DEPRECATED_DISABLE_REMOTELY_FOR_MALWARE);
-      legacy_pref_cleared = true;
-    }
-
-    if (legacy_pref_cleared)
-      DeleteExtensionPrefsIfPrefEmpty(extension_id);
-  }
-}
-
 bool ExtensionPrefs::ShouldInstallObsoleteComponentExtension(
     const std::string& extension_id) {
   ListPrefUpdate update(prefs_, pref_names::kDeletedComponentExtensions);
   base::Value* current_ids = update.Get();
-  base::Value::ListView list = current_ids->GetList();
+  base::Value::ListView list = current_ids->GetListDeprecated();
   auto existing_entry = std::find_if(
       list.begin(), list.end(), [&extension_id](const base::Value& value) {
         return value.is_string() && value.GetString() == extension_id;
@@ -2746,7 +2694,7 @@ void ExtensionPrefs::MarkObsoleteComponentExtensionAsRemoved(
     const ManifestLocation location) {
   ListPrefUpdate update(prefs_, pref_names::kDeletedComponentExtensions);
   base::Value* current_ids = update.Get();
-  base::Value::ListView list = current_ids->GetList();
+  base::Value::ListView list = current_ids->GetListDeprecated();
   auto existing_entry = std::find_if(
       list.begin(), list.end(), [&extension_id](const base::Value& value) {
         return value.is_string() && value.GetString() == extension_id;

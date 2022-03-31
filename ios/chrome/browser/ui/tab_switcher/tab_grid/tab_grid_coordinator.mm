@@ -328,6 +328,11 @@
     // Don't do any animation in the tab grid. All that animation will be
     // controlled by the pan handler/-animateViewReveal:.
     [self.baseViewController contentWillAppearAnimated:NO];
+
+    // Record when the tab switcher is presented.
+    self.tabGridEnterTime = base::TimeTicks::Now();
+    base::RecordAction(base::UserMetricsAction("MobileTabGridEntered"));
+    [self.priceCardMediator logMetrics:TAB_SWITCHER];
     return;
   }
 
@@ -371,9 +376,9 @@
       self.baseViewController.childViewControllerForStatusBarStyle = nil;
     });
   }
-  self.tabGridEnterTime = base::TimeTicks::Now();
 
   // Record when the tab switcher is presented.
+  self.tabGridEnterTime = base::TimeTicks::Now();
   base::RecordAction(base::UserMetricsAction("MobileTabGridEntered"));
   [self.priceCardMediator logMetrics:TAB_SWITCHER];
 }
@@ -445,7 +450,7 @@
   if (self.firstPresentation)
     animated = NO;
 
-  // Extened |completion| to signal the tab switcher delegate
+  // Extend |completion| to signal the tab switcher delegate
   // that the animated "tab switcher dismissal" (that is, presenting something
   // on top of the tab switcher) transition has completed.
   // Finally, the launch mask view should be removed.
@@ -937,13 +942,14 @@
 
 #pragma mark - RecentTabsPresentationDelegate
 
-- (void)showHistoryFromRecentTabs {
+- (void)showHistoryFromRecentTabsFilteredBySearchTerms:(NSString*)searchTerms {
   // A history coordinator from main_controller won't work properly from the
   // tab grid. Using a local coordinator works better and we need to set
   // |loadStrategy| to YES to ALWAYS_NEW_FOREGROUND_TAB.
   self.historyCoordinator = [[HistoryCoordinator alloc]
       initWithBaseViewController:self.baseViewController
                          browser:self.regularBrowser];
+  self.historyCoordinator.searchTerms = searchTerms;
   self.historyCoordinator.loadStrategy =
       UrlLoadStrategy::ALWAYS_NEW_FOREGROUND_TAB;
   self.historyCoordinator.presentationDelegate = self;
@@ -955,6 +961,11 @@
       shouldActivateBrowser:self.regularBrowser
              dismissTabGrid:YES
                focusOmnibox:NO];
+}
+
+- (void)showRegularTabGridFromRecentTabs {
+  [self.baseViewController setCurrentPageAndPageControl:TabGridPageRegularTabs
+                                               animated:YES];
 }
 
 #pragma mark - HistoryPresentationDelegate

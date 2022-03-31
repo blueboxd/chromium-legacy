@@ -13,6 +13,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
+#include "content/public/common/alternative_error_page_override_info.mojom.h"
 
 class GURL;
 class Profile;
@@ -28,6 +29,18 @@ class BrowserContext;
 namespace web_app {
 
 class WebAppProvider;
+
+namespace default_offline {
+// |alternative_error_page_params| dictionary key values in the
+// |AlternativeErrorPageOverrideInfo| mojom struct.
+const char kMessage[] = "web_app_default_offline_message";
+const char kAppShortName[] = "app_short_name";
+const char kThemeColor[] = "theme_color";
+const char kBackgroundColor[] = "customized_background_color";
+const char kIconUrl[] = "icon_url";
+const char kDarkModeBackgroundColor[] = "dark_mode_background_color";
+const char kDarkModeThemeColor[] = "dark_mode_theme_color";
+}  // namespace default_offline
 
 // These functions return true if the WebApp System or its subset is allowed
 // for a given profile.
@@ -46,6 +59,12 @@ content::BrowserContext* GetBrowserContextForWebApps(
     content::BrowserContext* context);
 content::BrowserContext* GetBrowserContextForWebAppMetrics(
     content::BrowserContext* context);
+
+// Gets information from web app's manifest, including theme color, background
+// color and app short name, and returns this inside a struct.
+content::mojom::AlternativeErrorPageOverrideInfoPtr GetAppManifestInfo(
+    const GURL& url,
+    content::BrowserContext* browser_context);
 
 // Returns a root directory for all Web Apps themed data.
 //
@@ -137,6 +156,12 @@ bool HasAnySpecifiedSourcesAndNoOtherSources(WebAppSources sources,
 // Check if all types of |sources| are uninstallable by the user.
 bool CanUserUninstallWebApp(WebAppSources sources);
 
+// Extracts app_id from chrome://app-settings/<app-id> URL path.
+AppId GetAppIdFromAppSettingsUrl(const GURL& url);
+
+// Check if |url|'s path is an installed web app.
+bool HasAppSettingsPage(Profile* profile, const GURL& url);
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // The kLacrosPrimary and kWebAppsCrosapi features are each independently
 // sufficient to enable the web apps Crosapi (used for Lacros web app
@@ -152,6 +177,19 @@ void EnableSystemWebAppsInLacrosForTesting();
 // Allow user web apps on profiles other than the main profile.
 void SkipMainProfileCheckForTesting();
 #endif
+
+constexpr char kAppSettingsPageEntryPointsHistogramName[] =
+    "WebApp.AppSettingsPage.EntryPoints";
+
+// These are used in histograms, do not remove/renumber entries. If you're
+// adding to this enum with the intention that it will be logged, update the
+// AppSettingsPageEntryPoint enum listing in
+// tools/metrics/histograms/enums.xml.
+enum class AppSettingsPageEntryPoint {
+  kPageInfoView = 0,
+  kChromeAppsPage = 1,
+  kMaxValue = kChromeAppsPage,
+};
 
 }  // namespace web_app
 

@@ -98,6 +98,7 @@ component("base") {
     "interaction/element_identifier.h",
     "interaction/element_tracker.cc",
     "interaction/element_tracker.h",
+    "interaction/framework_specific_implementation.h",
     "interaction/interaction_sequence.cc",
     "interaction/interaction_sequence.h",
     "l10n/formatter.cc",
@@ -360,6 +361,8 @@ component("base") {
         "linux/linux_desktop.h",
         "linux/linux_ui_delegate.cc",
         "linux/linux_ui_delegate.h",
+        "linux/linux_ui_delegate_stub.cc",
+        "linux/linux_ui_delegate_stub.h",
       ]
     }
 
@@ -880,6 +883,7 @@ test("ui_base_unittests") {
     "ime/utf_offset_unittest.cc",
     "interaction/element_identifier_unittest.cc",
     "interaction/element_tracker_unittest.cc",
+    "interaction/framework_specific_implementation_unittest.cc",
     "interaction/interaction_sequence_unittest.cc",
     "l10n/l10n_util_unittest.cc",
     "l10n/time_format_unittest.cc",
@@ -914,6 +918,7 @@ test("ui_base_unittests") {
   ]
   if (is_mac) {
     sources += [
+      "cocoa/defaults_utils_unittest.mm",
       "cocoa/nsmenuitem_additions_unittest.mm",
       "interaction/element_tracker_mac_unittest.mm",
       "l10n/l10n_util_mac_unittest.mm",
@@ -931,7 +936,7 @@ test("ui_base_unittests") {
   }
 
   data = []
-  data_deps = []
+  data_deps = [ "//testing/buildbot/filters:ui_base_unittests_filters" ]
   deps = [
     ":ui_base_test_resources_grit",
     ":ui_base_unittests_bundle_data",
@@ -1249,7 +1254,7 @@ fuzzer_test("file_info_fuzzer") {
 # "en-US" in the list as the |ResourceBundle::GetLocaleFilePath| implementations
 # in ui/base/resource/resource_bundle_{mac,ios}.mm return a valid path for
 # "en-US" (as they internally rewrite it as "en" instead).
-locales_for_platform_list = locales
+locales_for_platform_list = platform_pak_locales
 if (is_apple) {
   locales_for_platform_list += [ "en" ]
 }

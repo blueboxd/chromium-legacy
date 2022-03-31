@@ -10,12 +10,8 @@
 
 #include <array>
 
-namespace {
-
-constexpr int kPrivateKeyByteSize = 16;
-constexpr int kPublicKeyByteSize = 64;
-
-}  // namespace
+inline constexpr int kPrivateKeyByteSize = 16;
+inline constexpr int kPublicKeyByteSize = 64;
 
 namespace ash {
 namespace quick_pair {

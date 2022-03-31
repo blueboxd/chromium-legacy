@@ -156,6 +156,7 @@ class TaskEnvironment::TestTaskTracker
                internal::TaskSource* sequence,
                const TaskTraits& traits) override;
   void BeginCompleteShutdown(base::WaitableEvent& shutdown_event) override;
+  void AssertFlushForTestingAllowed() override;
 
   // Synchronizes accesses to members below.
   mutable Lock lock_;
@@ -223,24 +224,6 @@ class TaskEnvironment::MockTimeDomain : public sequence_manager::TimeDomain {
   }
 
   // sequence_manager::TimeDomain:
-
-  base::TimeTicks GetNextDelayedTaskTime(
-      sequence_manager::WakeUp next_wake_up,
-      sequence_manager::LazyNow* lazy_now) const override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-    // Check if we have a task that should be running now. Reading |now_ticks_|
-    // from the main thread doesn't require the lock.
-    if (next_wake_up.time <= TS_UNCHECKED_READ(now_ticks_))
-      return base::TimeTicks();
-
-    // The next task is a future delayed task. Since we're using mock time, we
-    // don't want an actual OS level delayed wake up scheduled, so pretend we
-    // have no more work. This will result in appearing idle, TaskEnvironment
-    // will decide what to do based on that (return to caller or fast-forward
-    // time).
-    return base::TimeTicks::Max();
-  }
 
   // This method is called when the underlying message pump has run out of
   // non-delayed work. Advances time to the next task unless
@@ -696,7 +679,7 @@ void TaskEnvironment::FastForwardBy(TimeDelta delta) {
     // FastForwardToNextTaskOrCap isn't affected by canceled tasks.
     sequence_manager_->ReclaimMemory();
   } while (mock_time_domain_->FastForwardToNextTaskOrCap(
-               sequence_manager_->GetNextWakeUp(), fast_forward_until) !=
+               sequence_manager_->GetNextDelayedWakeUp(), fast_forward_until) !=
            MockTimeDomain::NextTaskSource::kNone);
 
   if (task_tracker_ && !could_run_tasks)
@@ -749,7 +732,7 @@ TimeDelta TaskEnvironment::NextMainThreadPendingTaskDelay() const {
   if (!sequence_manager_->IsIdleForTesting())
     return TimeDelta();
   absl::optional<sequence_manager::WakeUp> wake_up =
-      sequence_manager_->GetNextWakeUp();
+      sequence_manager_->GetNextDelayedWakeUp();
   return wake_up ? wake_up->time - lazy_now.Now() : TimeDelta::Max();
 }
 
@@ -787,7 +770,18 @@ TaskEnvironment::ParallelExecutionFence::ParallelExecutionFence(
   CHECK(!g_task_tracker || g_task_tracker->OnControllerThread())
       << error_message;
   if (g_task_tracker) {
-    previously_allowed_to_run_ = g_task_tracker->TasksAllowedToRun();
+    // Do not attempt to install a fence post shutdown, the only remaining tasks
+    // at that point are CONTINUE_ON_SHUTDOWN and attempting to wait for them
+    // causes more issues (test timeouts) than the fence solves (data races on
+    // global state). CONTINUE_ON_SHUTDOWN tasks should generally not be
+    // touching global state and while not all users of ParallelExecutionFence
+    // (FeatureList) guard against access from CONTINUE_ON_SHUTDOWN tasks, any
+    // such tasks abusing this would be flagged by TSAN and have to be fixed
+    // manually. Note: this is only relevant in browser tests as unit tests
+    // already go through a full join in TaskEnvironment::DestroyThreadPool().
+    previously_allowed_to_run_ = g_task_tracker->TasksAllowedToRun() &&
+                                 !g_task_tracker->IsShutdownComplete();
+
     // DisallowRunTasks typically yields back if it fails to reach quiescence
     // within 1ms. This is typically done to let the main thread run tasks that
     // could potentially be blocking main thread tasks. In this case however,
@@ -802,8 +796,13 @@ TaskEnvironment::ParallelExecutionFence::ParallelExecutionFence(
                    << debug::StackTrace();
     }
   } else if (ThreadPoolInstance::Get()) {
-    LOG(WARNING) << "ParallelExecutionFence is ineffective when "
-                    "ThreadPoolInstance is not managed by a TaskEnvironment.";
+    LOG(WARNING)
+        << "ParallelExecutionFence is ineffective when ThreadPoolInstance is "
+           "not managed by a TaskEnvironment.\n"
+           "Test fixtures should use a TaskEnvironment member or statically "
+           "invoke TaskEnvironment::CreateThreadPool() + "
+           "ThreadPoolInstance::Get()->StartWithDefaultParams() when the "
+           "former is not possible.";
   }
 }
 
@@ -834,11 +833,25 @@ bool TaskEnvironment::TestTaskTracker::TasksAllowedToRun() const {
 }
 
 bool TaskEnvironment::TestTaskTracker::DisallowRunTasks(TimeDelta timeout) {
+  // Disallowing task running should only be done from the main thread to avoid
+  // racing with shutdown.
+  DCHECK(OnControllerThread());
+
   AutoLock auto_lock(lock_);
 
   // Can't disallow run task if there are tasks running.
+  for (TimeTicks now = subtle::TimeTicksNowIgnoringOverride(),
+                 end = now + timeout;
+       !running_tasks_.empty() && now < end;
+       now = subtle::TimeTicksNowIgnoringOverride()) {
+    task_completed_cv_.TimedWait(end - now);
+  }
+  // Timed out waiting for running tasks, yield to caller.
   if (!running_tasks_.empty()) {
-    task_completed_cv_.TimedWait(timeout);
+    // This condition should never be sought after shutdown and this call
+    // shouldn't be racing shutdown either per the above `OnControllerThread()`
+    // contract.
+    DCHECK(!IsShutdownComplete());
     return false;
   }
 
@@ -920,6 +933,15 @@ void TaskEnvironment::TestTaskTracker::BeginCompleteShutdown(
                 << kTimeout.InSeconds() << " seconds.\n"
                 << failure_tasks;
   base::Process::TerminateCurrentProcessImmediately(-1);
+}
+
+void TaskEnvironment::TestTaskTracker::AssertFlushForTestingAllowed() {
+  AutoLock auto_lock(lock_);
+  ASSERT_TRUE(can_run_tasks_)
+      << "FlushForTesting() requires ThreadPool tasks to be allowed to run or "
+         "it will hang. Note: DisallowRunTasks happens implicitly on-and-off "
+         "during TaskEnvironment::RunUntilIdle and main thread tasks running "
+         "under it should thus never FlushForTesting().";
 }
 
 }  // namespace test

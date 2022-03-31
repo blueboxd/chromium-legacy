@@ -63,7 +63,7 @@ void ComponentsHandler::OnJavascriptDisallowed() {
 void ComponentsHandler::HandleRequestComponentsData(
     const base::ListValue* args) {
   AllowJavascript();
-  const base::Value& callback_id = args->GetList()[0];
+  const base::Value& callback_id = args->GetListDeprecated()[0];
 
   base::DictionaryValue result;
   result.SetKey("components",
@@ -75,7 +75,7 @@ void ComponentsHandler::HandleRequestComponentsData(
 #else
   const bool showSystemFlagsLink = true;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-  result.SetBoolean("showOsLink", showSystemFlagsLink);
+  result.SetBoolKey("showOsLink", showSystemFlagsLink);
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
   ResolveJavascriptCallback(callback_id, result);
@@ -86,30 +86,30 @@ void ComponentsHandler::HandleRequestComponentsData(
 // state e.g. If component state is currently updating then we need to disable
 // button. (https://code.google.com/p/chromium/issues/detail?id=272540)
 void ComponentsHandler::HandleCheckUpdate(const base::ListValue* args) {
-  if (args->GetList().size() != 1) {
+  if (args->GetListDeprecated().size() != 1) {
     NOTREACHED();
     return;
   }
 
-  if (!args->GetList()[0].is_string()) {
+  if (!args->GetListDeprecated()[0].is_string()) {
     NOTREACHED();
     return;
   }
-  const std::string& component_id = args->GetList()[0].GetString();
+  const std::string& component_id = args->GetListDeprecated()[0].GetString();
 
   OnDemandUpdate(component_id);
 }
 
 void ComponentsHandler::OnEvent(Events event, const std::string& id) {
   base::DictionaryValue parameters;
-  parameters.SetString("event", ComponentEventToString(event));
+  parameters.SetStringKey("event", ComponentEventToString(event));
   if (!id.empty()) {
     if (event == Events::COMPONENT_UPDATED) {
       update_client::CrxUpdateItem item;
       if (component_updater_->GetComponentDetails(id, &item) && item.component)
-        parameters.SetString("version", item.component->version.GetString());
+        parameters.SetStringKey("version", item.component->version.GetString());
     }
-    parameters.SetString("id", id);
+    parameters.SetStringKey("id", id);
   }
   FireWebUIListener("component-event", parameters);
 }
@@ -180,7 +180,8 @@ void ComponentsHandler::HandleCrosUrlComponentsRedirect(
 #else
   // Note: This will only be called by the UI when Lacros is available.
   DCHECK(crosapi::BrowserManager::Get());
-  crosapi::BrowserManager::Get()->OpenUrl(GURL(chrome::kChromeUIComponentsUrl));
+  crosapi::BrowserManager::Get()->SwitchToTab(
+      GURL(chrome::kChromeUIComponentsUrl));
 #endif
 }
 #endif  // BUILDFLAG(IS_CHROMEOS)
@@ -201,12 +202,13 @@ std::unique_ptr<base::ListValue> ComponentsHandler::LoadComponents() {
     update_client::CrxUpdateItem item;
     if (component_updater_->GetComponentDetails(component_ids[j], &item)) {
       auto component_entry = std::make_unique<base::DictionaryValue>();
-      component_entry->SetString("id", component_ids[j]);
-      component_entry->SetString("status", ServiceStatusToString(item.state));
+      component_entry->SetStringKey("id", component_ids[j]);
+      component_entry->SetStringKey("status",
+                                    ServiceStatusToString(item.state));
       if (item.component) {
-        component_entry->SetString("name", item.component->name);
-        component_entry->SetString("version",
-                                   item.component->version.GetString());
+        component_entry->SetStringKey("name", item.component->name);
+        component_entry->SetStringKey("version",
+                                      item.component->version.GetString());
       }
       component_list->Append(std::move(component_entry));
     }

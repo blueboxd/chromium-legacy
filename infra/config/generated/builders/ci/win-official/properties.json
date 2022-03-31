@@ -1,13 +1,4 @@
 {
-  "$build/chromium_tests": {
-    "project_trigger_overrides": {
-<<<<<<< HEAD
-      "chromium": "chromium-m98"
-=======
-      "chromium": "chromium-m99"
->>>>>>> 99.0.4844.51
-    }
-  },
   "$build/goma": {
     "enable_ats": true,
     "rpc_extra_params": "?prod",
@@ -24,6 +15,6 @@
   "builder_group": "chromium",
   "recipe": "chromium",
   "sheriff_rotations": [
-    "chrome_browser_release"
+    "chromium"
   ]
 }

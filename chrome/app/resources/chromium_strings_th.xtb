@@ -201,6 +201,7 @@
 <translation id="6734291798041940871">มีการติดตั้ง Chromium สำหรับผู้ใช้ทุกคนบนคอมพิวเตอร์ของคุณแล้ว</translation>
 <translation id="673636774878526923">หากต้องการเข้าถึงข้อมูล Chromium ในอุปกรณ์ทั้งหมด ให้ลงชื่อเข้าใช้แล้วเปิดการซิงค์</translation>
 <translation id="6774082503108938489">ผู้ปกครองได้ปิด "สิทธิ์สำหรับเว็บไซต์ แอป และส่วนขยาย" ใน Chromium ไม่อนุญาตให้เปิดใช้<ph name="EXTENSION_TYPE_PARAMETER" />นี้</translation>
+<translation id="6808964260981102146">สิทธิ์ที่คุณให้กับเว็บไซต์และแอปต่างๆ อาจมีผลกับบัญชีนี้ หากไม่ต้องการให้เว็บไซต์หรือแอปเข้าถึงข้อมูลบัญชี ให้ใช้<ph name="LINK_BEGIN" />โหมดผู้มาเยือน<ph name="LINK_END" />ในเบราว์เซอร์ Chromium คุณยังจัดการบัญชี Google ใน<ph name="LINK_2_BEGIN" />การตั้งค่า<ph name="LINK_2_END" />ได้ด้วย</translation>
 <translation id="6847869444787758381">Chromium จะแจ้งให้ทราบหากมีคนล่วงรู้รหัสผ่านของคุณ</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (คัดลอกไปยัง Chromium)</translation>
@@ -223,6 +224,7 @@
 Chromium ไม่สามารถกู้คืนการตั้งค่าของคุณได้</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">หน้าต่างใหม่</translation>
+<translation id="7342713658732509484">สิทธิ์ที่คุณให้กับเว็บไซต์และแอปต่างๆ อาจมีผลกับบัญชีนี้ หากไม่ต้องการให้เว็บไซต์หรือแอปเข้าถึงข้อมูลบัญชี ให้ใช้โหมดผู้มาเยือนในเบราว์เซอร์ Chromium นอกจากนี้คุณยังจัดการบัญชี Google ได้ใน<ph name="LINK_2_BEGIN" />การตั้งค่า<ph name="LINK_2_END" />ได้ด้วย</translation>
 <translation id="734373864078049451">เว็บของคุณ บุ๊กมาร์ก และข้อมูลอื่นๆ ใน Chromium พร้อมใช้แล้วที่นี่</translation>
 <translation id="7349591376906416160">ผู้ดูแลระบบได้กำหนดค่าให้ Chromium เปิด <ph name="ALTERNATIVE_BROWSER_NAME" /> เพื่อเข้าถึง <ph name="TARGET_URL_HOSTNAME" /></translation>
 <translation id="7398989605938454041">โปรไฟล์ Chromium ช่วยให้คุณแยกข้อมูลต่างๆ ใน Chromium ได้ ซึ่งทำให้แยกการทำงานออกจากความบันเทิงได้ง่ายขึ้น</translation>

@@ -4,7 +4,9 @@
 
 #include "third_party/blink/renderer/core/document_transition/document_transition_style_tracker.h"
 
+#include "components/viz/common/shared_element_resource_id.h"
 #include "third_party/blink/public/resources/grit/blink_resources.h"
+#include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
@@ -13,9 +15,13 @@
 #include "third_party/blink/renderer/core/document_transition/document_transition_utils.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_entry.h"
+#include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
 
 namespace blink {
 namespace {
@@ -73,18 +79,19 @@ class DocumentTransitionStyleTracker::ContainerPseudoElement
       return false;
     }
 
+    viz::SharedElementResourceId snapshot_id;
     if (document_transition_tag() == RootTag()) {
-      // TODO(khushalsagar) : Implement live root snapshots. See
-      // crbug.com/1265700.
-      return false;
+      snapshot_id = pseudo_id == kPseudoIdTransitionOldContent
+                        ? style_tracker_->old_root_snapshot_id_
+                        : style_tracker_->new_root_snapshot_id_;
+    } else {
+      auto& element_data =
+          style_tracker_->element_data_map_.find(document_transition_tag())
+              ->value;
+      snapshot_id = pseudo_id == kPseudoIdTransitionOldContent
+                        ? element_data->old_snapshot_id
+                        : element_data->new_snapshot_id;
     }
-
-    auto& element_data =
-        style_tracker_->element_data_map_.find(document_transition_tag())
-            ->value;
-    auto snapshot_id = pseudo_id == kPseudoIdTransitionOldContent
-                           ? element_data->old_snapshot_id
-                           : element_data->new_snapshot_id;
     return snapshot_id.IsValid();
   }
 
@@ -110,7 +117,7 @@ void DocumentTransitionStyleTracker::Prepare(
   // paint order of these elements. This is why root needs to be first in the
   // list.
   pseudo_document_transition_tags_[0] = RootTag();
-
+  old_root_snapshot_id_ = viz::SharedElementResourceId::Generate();
   element_data_map_.ReserveCapacityForSize(old_elements.size());
   for (wtf_size_t i = 0; i < old_elements.size(); ++i) {
     auto document_transition_tag = IdFromIndex(i);
@@ -151,6 +158,7 @@ void DocumentTransitionStyleTracker::Start(
   DCHECK_EQ(element_data_map_.size(), new_elements.size());
 
   state_ = State::kStarted;
+  new_root_snapshot_id_ = viz::SharedElementResourceId::Generate();
   for (wtf_size_t i = 0; i < new_elements.size(); ++i) {
     auto document_transition_tag = IdFromIndex(i);
 
@@ -158,7 +166,9 @@ void DocumentTransitionStyleTracker::Start(
     element_data->target_element = new_elements[i];
     if (new_elements[i])
       element_data->new_snapshot_id = viz::SharedElementResourceId::Generate();
+    element_data->effect_node = nullptr;
   }
+  root_effect_node_ = nullptr;
 
   // We need a style invalidation to generate new content pseudo elements for
   // new elements in the DOM.
@@ -171,7 +181,6 @@ void DocumentTransitionStyleTracker::StartFinished() {
 }
 
 void DocumentTransitionStyleTracker::Abort() {
-  DCHECK_NE(state_, State::kStarted);
   EndTransition();
 }
 
@@ -203,6 +212,11 @@ viz::SharedElementResourceId DocumentTransitionStyleTracker::GetLiveSnapshotId(
   return viz::SharedElementResourceId();
 }
 
+viz::SharedElementResourceId
+DocumentTransitionStyleTracker::GetLiveRootSnapshotId() const {
+  return HasLiveNewContent() ? new_root_snapshot_id_ : old_root_snapshot_id_;
+}
+
 PseudoElement* DocumentTransitionStyleTracker::CreatePseudoElement(
     Element* parent,
     PseudoId pseudo_id,
@@ -211,7 +225,7 @@ PseudoElement* DocumentTransitionStyleTracker::CreatePseudoElement(
   DCHECK(pseudo_id == kPseudoIdTransition || document_transition_tag);
 
   const auto& element_data =
-      document_transition_tag
+      (document_transition_tag && document_transition_tag != RootTag())
           ? element_data_map_.find(document_transition_tag)->value
           : nullptr;
 
@@ -223,23 +237,43 @@ PseudoElement* DocumentTransitionStyleTracker::CreatePseudoElement(
       return MakeGarbageCollected<ContainerPseudoElement>(
           parent, pseudo_id, document_transition_tag, this);
     case kPseudoIdTransitionOldContent: {
+      LayoutSize size;
+      viz::SharedElementResourceId snapshot_id;
+      if (document_transition_tag == RootTag()) {
+        // Always use the the current layout view's size.
+        // TODO(vmpstr): We might want to consider caching the size when we
+        // capture it, in case the layout view sizes change.
+        size = LayoutSize(
+            document_->GetLayoutView()->GetLayoutSize(kIncludeScrollbars));
+        snapshot_id = old_root_snapshot_id_;
+      } else {
+        // If live data is tracking new elements then use the cached size for
+        // the pseudo element displaying snapshot of old element.
+        size = HasLiveNewContent() ? element_data->border_box_size
+                                   : element_data->cached_border_box_size;
+        snapshot_id = element_data->old_snapshot_id;
+      }
       auto* pseudo_element =
           MakeGarbageCollected<DocumentTransitionContentElement>(
-              parent, pseudo_id, document_transition_tag,
-              element_data->old_snapshot_id);
-      // If live data is tracking new elements then use the cached size for the
-      // pseudo element displaying snapshot of old element.
-      pseudo_element->SetIntrinsicSize(
-          HasLiveNewContent() ? element_data->cached_border_box_size
-                              : element_data->border_box_size);
+              parent, pseudo_id, document_transition_tag, snapshot_id);
+      pseudo_element->SetIntrinsicSize(size);
       return pseudo_element;
     }
     case kPseudoIdTransitionNewContent: {
+      LayoutSize size;
+      viz::SharedElementResourceId snapshot_id;
+      if (document_transition_tag == RootTag()) {
+        size = LayoutSize(
+            document_->GetLayoutView()->GetLayoutSize(kIncludeScrollbars));
+        snapshot_id = new_root_snapshot_id_;
+      } else {
+        size = element_data->border_box_size;
+        snapshot_id = element_data->new_snapshot_id;
+      }
       auto* pseudo_element =
           MakeGarbageCollected<DocumentTransitionContentElement>(
-              parent, pseudo_id, document_transition_tag,
-              element_data->new_snapshot_id);
-      pseudo_element->SetIntrinsicSize(element_data->border_box_size);
+              parent, pseudo_id, document_transition_tag, snapshot_id);
+      pseudo_element->SetIntrinsicSize(size);
       return pseudo_element;
     }
     default:
@@ -315,6 +349,82 @@ void DocumentTransitionStyleTracker::RunPostLayoutSteps() {
     InvalidateStyle();
 }
 
+bool DocumentTransitionStyleTracker::HasActiveAnimations() const {
+  bool has_animations = false;
+  auto accumulate_pseudo = [&has_animations](PseudoElement* pseudo_element) {
+    if (has_animations)
+      return;
+
+    auto* animations = pseudo_element->GetElementAnimations();
+    if (!animations)
+      return;
+
+    for (auto& animation_pair : animations->Animations()) {
+      if (auto* effect = animation_pair.key->effect())
+        has_animations = has_animations || effect->IsCurrent();
+    }
+  };
+  DocumentTransitionUtils::ForEachTransitionPseudo(*document_,
+                                                   accumulate_pseudo);
+  return has_animations;
+}
+
+PaintPropertyChangeType DocumentTransitionStyleTracker::UpdateEffect(
+    Element* element,
+    EffectPaintPropertyNode::State state,
+    const EffectPaintPropertyNodeOrAlias& current_effect) {
+  for (auto& entry : element_data_map_) {
+    auto& element_data = entry.value;
+    if (element_data->target_element != element)
+      continue;
+
+    if (!element_data->effect_node) {
+      element_data->effect_node =
+          EffectPaintPropertyNode::Create(current_effect, std::move(state));
+#if DCHECK_IS_ON()
+      element_data->effect_node->SetDebugName("SharedElementTransition");
+#endif
+      return PaintPropertyChangeType::kNodeAddedOrRemoved;
+    }
+    return element_data->effect_node->Update(current_effect, std::move(state),
+                                             {});
+  }
+  NOTREACHED();
+  return PaintPropertyChangeType::kUnchanged;
+}
+
+PaintPropertyChangeType DocumentTransitionStyleTracker::UpdateRootEffect(
+    EffectPaintPropertyNode::State state,
+    const EffectPaintPropertyNodeOrAlias& current_effect) {
+  if (!root_effect_node_) {
+    root_effect_node_ =
+        EffectPaintPropertyNode::Create(current_effect, std::move(state));
+#if DCHECK_IS_ON()
+    root_effect_node_->SetDebugName("SharedElementTransition");
+#endif
+    return PaintPropertyChangeType::kNodeAddedOrRemoved;
+  }
+  return root_effect_node_->Update(current_effect, std::move(state), {});
+}
+
+EffectPaintPropertyNode* DocumentTransitionStyleTracker::GetEffect(
+    Element* element) const {
+  for (auto& entry : element_data_map_) {
+    auto& element_data = entry.value;
+    if (element_data->target_element != element)
+      continue;
+    DCHECK(element_data->effect_node);
+    return element_data->effect_node.get();
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
+EffectPaintPropertyNode* DocumentTransitionStyleTracker::GetRootEffect() const {
+  DCHECK(root_effect_node_);
+  return root_effect_node_.get();
+}
+
 void DocumentTransitionStyleTracker::InvalidateStyle() {
   ua_style_sheet_.reset();
   document_->GetStyleEngine().InvalidateUADocumentTransitionStyle();
@@ -331,6 +441,21 @@ void DocumentTransitionStyleTracker::InvalidateStyle() {
   };
   DocumentTransitionUtils::ForEachTransitionPseudo(*document_,
                                                    invalidate_style);
+
+  // Invalidate layout view compositing properties.
+  if (auto* layout_view = document_->GetLayoutView()) {
+    layout_view->SetNeedsPaintPropertyUpdate();
+    if (layout_view->HasSelfPaintingLayer())
+      layout_view->Layer()->SetNeedsCompositingInputsUpdate();
+  }
+  for (auto& entry : element_data_map_) {
+    if (!entry.value->target_element)
+      continue;
+    auto* object = entry.value->target_element->GetLayoutObject();
+    if (!object)
+      continue;
+    object->SetNeedsPaintPropertyUpdate();
+  }
 }
 
 const String& DocumentTransitionStyleTracker::UAStyleSheet() {

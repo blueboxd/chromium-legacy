@@ -41,7 +41,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.ControlCharacterTruncation" enum="Boolean"
-    expires_after="2022-05-31">
+    expires_after="2022-07-31">
   <owner>bingler@chromium.org</owner>
   <owner>miketaylr@chromium.org</owner>
   <summary>
@@ -92,44 +92,13 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Cookie.Count2" units="units" expires_after="2022-06-12">
+<histogram name="Cookie.Count2" units="units" expires_after="2022-08-14">
   <owner>bingler@chromium.org</owner>
   <owner>morlovich@chromium.org</owner>
   <summary>
     Number of cookies in the store (recorded every 10 minutes of active browsing
     time), with a wider range than Cookie.Count.
   </summary>
-</histogram>
-
-<histogram
-    name="Cookie.CrossSiteRedirectDowngradeChangesInclusion.{AccessType}"
-    enum="CookieSameSite" expires_after="2022-07-15">
-  <obsolete>
-    Removed Jan 2022: This was recording the wrong data due to non-sparse
-    histograms not supporting negative enums. See
-    Cookie.CrossSiteRedirectDowngradeChangesInclusion2 which uses a new,
-    correct, enum.
-  </obsolete>
-  <owner>bingler@chromium.org</owner>
-  <owner>miketaylr@chromium.org</owner>
-  <summary>
-    The SameSite attribute of a cookie whose inclusion is changed by considering
-    redirects as part of the same-site context calculation. I.e., this is logged
-    for cookies which are included if not considering redirects when calculating
-    the same-site context, but are excluded (solely due to the SameSite
-    attribute) if cross-site redirects can cause a request to be considered
-    cross-site. This is only recorded for cookies accessed over HTTP, since
-    redirects are not relevant for JS cookie accesses. This is logged for each
-    cookie (whose inclusion is changed) when it is {AccessType}, regardless of
-    whether the cookie was ultimately included.
-
-    (This obsolete version was unintentionally bucketing the &quot;No SameSite
-    attribute is specified.&quot; entries into &quot;SameSite=None&quot;.)
-  </summary>
-  <token key="AccessType">
-    <variant name="Read" summary="read for a request"/>
-    <variant name="Write" summary="set by a response"/>
-  </token>
 </histogram>
 
 <histogram
@@ -152,6 +121,39 @@ chromium-metrics-reviews@google.com.
     <variant name="Read" summary="read for a request"/>
     <variant name="Write" summary="set by a response"/>
   </token>
+</histogram>
+
+<histogram name="Cookie.CrossSiteRedirectType.{AccessType}"
+    enum="ContextRedirectTypeBug1221316" expires_after="2022-07-15">
+  <owner>bingler@chromium.org</owner>
+  <owner>miketaylr@chromium.org</owner>
+  <summary>
+    The type of redirects a cookie experienced before ultimately being accessed.
+    This metric is triggered whenever a cookie is attempted to be accessed by an
+    HTTP request or response. It does not matter if the access succeeds, only
+    that one was attempted.
+
+    The metrics exists primarily to act as a denominator for
+    Cookie.CrossSiteRedirectDowngradeChangesInclusion2.{AccessType}.
+  </summary>
+  <token key="AccessType">
+    <variant name="Read" summary="read for a request"/>
+    <variant name="Write" summary="set by a response"/>
+  </token>
+</histogram>
+
+<histogram name="Cookie.DomainHasNonASCII" enum="Boolean"
+    expires_after="2023-01-01">
+  <owner>johannhof@chromium.org</owner>
+  <owner>bingler@chromium.org</owner>
+  <summary>
+    Whether a site tried to set a cookie with a Domain attribute that has at
+    least one non-ASCII character in it.
+
+    This metric is recorded everytime a cookie is created from a string (i.e.
+    when it is set via Set-Cookie or document.cookie write), regardless of
+    whether or not the cookie is ultimately stored.
+  </summary>
 </histogram>
 
 <histogram name="Cookie.DomainSet" enum="Boolean" expires_after="2022-06-19">
@@ -205,7 +207,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.ExpirationDuration400DaysGT" units="days"
-    expires_after="M101">
+    expires_after="M104">
   <owner>arichiv@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <summary>
@@ -215,7 +217,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.ExpirationDuration400DaysLTE" units="days"
-    expires_after="2022-07-11">
+    expires_after="M104">
   <owner>arichiv@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <summary>
@@ -248,6 +250,9 @@ chromium-metrics-reviews@google.com.
 
     This metric is sampled every time the component is loaded; i.e., on Chrome
     startup, or if the Network Service gets reconfigured after a crash.
+
+    This metric stopped being recorded in Chrome M100, when support for the V1
+    component format was removed.
   </summary>
 </histogram>
 
@@ -265,6 +270,40 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Cookie.FirstPartySets.DelayedQueriesCount" units="queries"
+    expires_after="M110">
+  <owner>cfredric@chromium.org</owner>
+  <owner>kaustubhag@chromium.org</owner>
+  <summary>
+    The number of queries that were delayed (i.e. answered asynchronously
+    instead of synchronously).
+
+    Recorded only when some queries may be answered asynchronously, i.e. only
+    when the First-Party Sets feature is enabled. (When the feature is disabled,
+    all queries are answered synchronously.)
+  </summary>
+</histogram>
+
+<histogram name="Cookie.FirstPartySets.EnqueueingDelay.{QueryType}"
+    units="microseconds" expires_after="M110">
+  <owner>cfredric@chromium.org</owner>
+  <owner>kaustubhag@chromium.org</owner>
+  <summary>
+    The amount of time an asynchronous {QueryType} query was delayed before it
+    was answered.
+
+    Recorded once for each query that is answered asynchronously, when the
+    callback is invoked. Recorded for all clients, even those with
+    low-resolution clocks.
+  </summary>
+  <token key="QueryType">
+    <variant name="ComputeMetadata"/>
+    <variant name="FindOwner"/>
+    <variant name="FindOwners"/>
+    <variant name="Sets"/>
+  </token>
+</histogram>
+
 <histogram name="Cookie.FirstPartySets.FindOwner.Latency" units="microseconds"
     expires_after="M105">
   <owner>cfredric@chromium.org</owner>
@@ -277,6 +316,24 @@ chromium-metrics-reviews@google.com.
     when computing a partition key involving First-Party Sets; multiple times
     when computing a SamePartyContext.) Only sampled for users with
     high-resolution clocks.
+  </summary>
+</histogram>
+
+<histogram name="Cookie.FirstPartySets.MostDelayedQueryDelta"
+    units="microseconds" expires_after="M110">
+  <owner>cfredric@chromium.org</owner>
+  <owner>kaustubhag@chromium.org</owner>
+  <summary>
+    The length of time between when the first asynchronous query was received,
+    and when asynchronous queries started to be answered.
+
+    Recorded only when some queries may be answered asynchronously, i.e. only
+    when the First-Party Sets feature is enabled. (When the feature is disabled,
+    all queries are answered synchronously.) Recorded for all clients, even
+    those with low-resolution clocks.
+
+    If the feature was enabled (so some queries could have been async) but the
+    instance was initialized before any queries were made, 0 is recorded.
   </summary>
 </histogram>
 
@@ -396,19 +453,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Recorded when a problem is recorded when loading the persistent cookie
     store.
-  </summary>
-</histogram>
-
-<histogram name="Cookie.MigratedEncryptionKeySuccess" enum="BooleanSuccess"
-    expires_after="M92">
-  <owner>wfh@chromium.org</owner>
-  <owner>pwnall@chromium.org</owner>
-  <summary>
-    Whether the migration of encryption key for the sqlite persistent cookie
-    store on Windows was successful or not. This happened when moving from
-    cookie database v13 to cookie database v14. This is recorded once during
-    migration, in first startup of a browser version with v14 database code. See
-    also Cookie.TimeDatabaseMigrationToV14.
   </summary>
 </histogram>
 
@@ -630,7 +674,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.SameParty.BlockedByThirdPartyCookieBlockingSetting"
-    enum="BooleanBlocked" expires_after="2022-06-10">
+    enum="BooleanBlocked" expires_after="2022-08-14">
   <owner>cfredric@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <summary>
@@ -665,7 +709,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.SamePartyCookieSameSiteAttributeValue"
-    enum="CookieSameSiteString" expires_after="2022-06-05">
+    enum="CookieSameSiteString" expires_after="2022-08-07">
   <owner>cfredric@chromium.org</owner>
   <owner>kaustubhag@chromium.org</owner>
   <summary>
@@ -676,7 +720,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.SamePartyReadIncluded.InclusionUnderSameSite"
-    enum="BooleanIncluded" expires_after="2022-06-05">
+    enum="BooleanIncluded" expires_after="2022-08-07">
   <owner>cfredric@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <summary>
@@ -687,7 +731,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.SamePartyReadIncluded.IsHTTP" enum="BooleanHTTPVsJS"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>cfredric@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <summary>
@@ -697,7 +741,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.SamePartyReadIncluded.PartyContextSize"
-    units="registrable domains" expires_after="2022-06-05">
+    units="registrable domains" expires_after="2022-08-07">
   <owner>cfredric@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <summary>
@@ -724,7 +768,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.SamePartySetIncluded.IsHTTP" enum="BooleanHTTPVsJS"
-    expires_after="2022-06-12">
+    expires_after="2022-08-14">
   <owner>cfredric@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <summary>
@@ -734,7 +778,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.SamePartySetIncluded.PartyContextSize"
-    units="registrable domains" expires_after="2022-06-05">
+    units="registrable domains" expires_after="2022-08-07">
   <owner>cfredric@chromium.org</owner>
   <owner>bingler@chromium.org</owner>
   <summary>
@@ -832,6 +876,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Cookie.TimeDatabaseMigrationToV17" units="ms"
+    expires_after="2022-06-01">
+  <owner>dylancutler@chromium.org</owner>
+  <owner>kaustubhag@chromium.org</owner>
+  <summary>
+    The amount of time (ms) to migrate a v16 cookie database to v17. Migration
+    occurs upon first startup of a browser version with v16 database code.
+  </summary>
+</histogram>
+
 <histogram name="Cookie.TimeDatabaseMigrationToV9" units="ms"
     expires_after="2018-08-30">
   <owner>erikchen@chromium.org</owner>
@@ -874,7 +928,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.TruncatingCharacterInCookieString"
-    enum="TruncatingCharacterInCookieStringType" expires_after="2022-06-05">
+    enum="TruncatingCharacterInCookieStringType" expires_after="2022-08-07">
   <owner>bingler@chromium.org</owner>
   <owner>awillia@chromium.org</owner>
   <summary>

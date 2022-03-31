@@ -342,7 +342,7 @@ const gfx::ImageSkia& GetDefaultImage(int index) {
       kDefaultImageInfo[index].resource_id);
 }
 
-const int GetDefaultImageResourceId(int index) {
+int GetDefaultImageResourceId(int index) {
   return kDefaultImageInfo[index].resource_id;
 }
 
@@ -384,7 +384,7 @@ std::unique_ptr<base::ListValue> GetCurrentImageSetAsListValue() {
   return image_urls;
 }
 
-absl::optional<DefaultImageSourceInfo> GetDefaultImageSourceInfo(int index) {
+absl::optional<DefaultImageSourceInfo> GetDefaultImageSourceInfo(size_t index) {
   if (index >= base::size(kDefaultImageSourceInfo))
     return absl::nullopt;
 

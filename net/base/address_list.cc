@@ -9,13 +9,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "net/base/sys_addrinfo.h"
-#include "net/log/net_log_capture_mode.h"
 
 namespace net {
 
@@ -40,6 +37,9 @@ AddressList::AddressList(const IPEndPoint& endpoint,
     : dns_aliases_(std::move(aliases)) {
   push_back(endpoint);
 }
+
+AddressList::AddressList(std::vector<IPEndPoint> endpoints)
+    : endpoints_(std::move(endpoints)) {}
 
 // static
 AddressList AddressList::CreateFromIPAddress(const IPAddress& address,

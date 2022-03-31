@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/ambient/common/ambient_settings.h"
 #include "ash/public/cpp/default_user_image.h"
 #include "ash/public/cpp/personalization_app/user_display_info.h"
 #include "ash/public/cpp/wallpaper/wallpaper_types.h"
@@ -28,6 +29,7 @@ namespace mojo {
 using MojomWallpaperLayout = ash::personalization_app::mojom::WallpaperLayout;
 using MojomWallpaperType = ash::personalization_app::mojom::WallpaperType;
 using MojomOnlineImageType = ash::personalization_app::mojom::OnlineImageType;
+using MojomTopicSource = ash::personalization_app::mojom::TopicSource;
 
 MojomWallpaperLayout
 EnumTraits<MojomWallpaperLayout, ash::WallpaperLayout>::ToMojom(
@@ -87,6 +89,8 @@ MojomWallpaperType EnumTraits<MojomWallpaperType, ash::WallpaperType>::ToMojom(
       return MojomWallpaperType::kDevice;
     case ash::WallpaperType::kOneShot:
       return MojomWallpaperType::kOneShot;
+    case ash::WallpaperType::kGooglePhotos:
+      return MojomWallpaperType::kGooglePhotos;
     case ash::WallpaperType::kCount:
       NOTREACHED();
       return MojomWallpaperType::kDefault;
@@ -120,6 +124,9 @@ bool EnumTraits<MojomWallpaperType, ash::WallpaperType>::FromMojom(
       return true;
     case MojomWallpaperType::kOneShot:
       *output = ash::WallpaperType::kOneShot;
+      return true;
+    case MojomWallpaperType::kGooglePhotos:
+      *output = ash::WallpaperType::kGooglePhotos;
       return true;
   }
   NOTREACHED();
@@ -289,6 +296,32 @@ bool StructTraits<ash::personalization_app::mojom::DefaultUserImageDataView,
   out->index = data.index();
 
   return data.ReadTitle(&out->title) && data.ReadUrl(&out->url);
+}
+
+MojomTopicSource
+EnumTraits<MojomTopicSource, ash::AmbientModeTopicSource>::ToMojom(
+    ash::AmbientModeTopicSource input) {
+  switch (input) {
+    case ash::AmbientModeTopicSource::kGooglePhotos:
+      return MojomTopicSource::kGooglePhotos;
+    case ash::AmbientModeTopicSource::kArtGallery:
+      return MojomTopicSource::kArtGallery;
+  }
+}
+
+bool EnumTraits<MojomTopicSource, ash::AmbientModeTopicSource>::FromMojom(
+    MojomTopicSource input,
+    ash::AmbientModeTopicSource* output) {
+  switch (input) {
+    case MojomTopicSource::kGooglePhotos:
+      *output = ash::AmbientModeTopicSource::kGooglePhotos;
+      return true;
+    case MojomTopicSource::kArtGallery:
+      *output = ash::AmbientModeTopicSource::kArtGallery;
+      return true;
+  }
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace mojo

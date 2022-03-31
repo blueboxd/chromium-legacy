@@ -1,14 +1,14 @@
 <style include="cr-shared-style shimless-rma-shared">
 </style>
 
-<base-page orientation="column">
-  <div slot="header">
+<base-page>
+  <div slot="left-pane">
     <h1>[[i18n('runCalibrationTitleText')]]</h1>
-    <div id="calibration">
+    <div id="calibration" class="instructions">
       <span>[[calibrationStatusMessage_]]</span>
     </div>
   </div>
-  <div slot="body">
+  <div slot="right-pane">
     <paper-spinner-lite active hidden$="[[calibrationComplete_]]"
         class="large-spinner">
     </paper-spinner-lite>

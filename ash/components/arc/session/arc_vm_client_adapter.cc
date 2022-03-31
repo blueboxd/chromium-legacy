@@ -25,6 +25,7 @@
 #include "ash/components/arc/session/arc_session.h"
 #include "ash/components/arc/session/connection_holder.h"
 #include "ash/components/arc/session/file_system_status.h"
+#include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -54,7 +55,6 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "chromeos/components/sensors/buildflags.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -213,6 +213,9 @@ std::vector<std::string> GenerateKernelCmdline(
       break;
   }
 
+  const int guest_zram_size = kGuestZramSize.Get();
+  VLOG(1) << "Setting ARCVM guest's zram size to " << guest_zram_size;
+
   std::vector<std::string> result = {
       // Note: Do not change the value "bertha". This string is checked in
       // platform2/metrics/process_meter.cc to detect ARCVM's crosvm processes,
@@ -240,7 +243,7 @@ std::vector<std::string> GenerateKernelCmdline(
                          BUILDFLAG(USE_IIOSERVICE)),
       base::StringPrintf("androidboot.enable_notifications_refresh=%d",
                          start_params.enable_notifications_refresh),
-      base::StringPrintf("androidboot.zram_size=%d", kGuestZramSize.Get()),
+      base::StringPrintf("androidboot.zram_size=%d", guest_zram_size),
   };
 
   const ArcVmUreadaheadMode mode =
@@ -450,6 +453,7 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
 
       if (vm_ram_mib > kVmRamMinMib) {
         request.set_memory_mib(vm_ram_mib);
+        VLOG(1) << "VmMemorySize is enabled. memory_mib=" << vm_ram_mib;
       } else {
         VLOG(1) << "VmMemorySize is enabled, but computed size is "
                 << "min(" << ram_mib << " + " << shift_mib << "," << max_mib
@@ -459,18 +463,25 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
     } else {
       VLOG(1) << "VmMemorySize is enabled, but GetSystemMemoryInfo failed.";
     }
+  } else {
+    VLOG(1) << "VmMemorySize is disabled.";
   }
 
   // Specify balloon policy.
   if (base::FeatureList::IsEnabled(kVmBalloonPolicy)) {
     vm_tools::concierge::BalloonPolicyOptions* balloon_policy =
         request.mutable_balloon_policy();
-    balloon_policy->set_moderate_target_cache(
-        static_cast<int64_t>(kVmBalloonPolicyModerateKiB.Get()) * 1024);
-    balloon_policy->set_critical_target_cache(
-        static_cast<int64_t>(kVmBalloonPolicyCriticalKiB.Get()) * 1024);
-    balloon_policy->set_reclaim_target_cache(
-        static_cast<int64_t>(kVmBalloonPolicyReclaimKiB.Get()) * 1024);
+    const int64_t moderate_kib = kVmBalloonPolicyModerateKiB.Get();
+    const int64_t critical_kib = kVmBalloonPolicyCriticalKiB.Get();
+    const int64_t reclaim_kib = kVmBalloonPolicyReclaimKiB.Get();
+    balloon_policy->set_moderate_target_cache(moderate_kib * 1024);
+    balloon_policy->set_critical_target_cache(critical_kib * 1024);
+    balloon_policy->set_reclaim_target_cache(reclaim_kib * 1024);
+    VLOG(1) << "Use LimitCacheBalloonPolicy. ModerateKiB=" << moderate_kib
+            << ", CriticalKiB=" << critical_kib
+            << ", ReclaimKiB=" << reclaim_kib;
+  } else {
+    VLOG(1) << "Use BalanceAvailableBalloonPolicy";
   }
 
   return request;
@@ -930,7 +941,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
                          FileSystemStatus file_system_status) {
     VLOG(2) << "Retrieving demo session apps path";
     DCHECK(demo_mode_delegate_);
-    demo_mode_delegate_->EnsureOfflineResourcesLoaded(base::BindOnce(
+    demo_mode_delegate_->EnsureResourcesLoaded(base::BindOnce(
         &ArcVmClientAdapter::OnDemoResourcesLoaded, weak_factory_.GetWeakPtr(),
         std::move(callback), std::move(file_system_status)));
   }

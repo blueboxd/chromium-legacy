@@ -22,6 +22,7 @@
 #include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_partition_key_collection.h"
 #include "net/cookies/cookie_store.h"
+#include "net/cookies/first_party_set_metadata.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
 #include "url/gurl.h"
@@ -67,6 +68,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   // `isolation_info` must be fully populated, its `frame_origin` field should
   // not be used for cookie access decisions, but should be the same as `origin`
   // if the `role` is mojom::RestrictedCookieManagerRole::SCRIPT.
+  //
+  // `first_party_set_metadata` should have been previously computed by
+  // `ComputeFirstPartySetMetadata` using the same `origin`, `cookie_store` and
+  // `isolation_info` as were passed in here.
   RestrictedCookieManager(
       mojom::RestrictedCookieManagerRole role,
       net::CookieStore* cookie_store,
@@ -74,7 +79,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
       const url::Origin& origin,
       const net::IsolationInfo& isolation_info,
       mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer,
-      bool first_party_sets_enabled);
+      bool first_party_sets_enabled,
+      net::FirstPartySetMetadata first_party_set_metadata);
 
   RestrictedCookieManager(const RestrictedCookieManager&) = delete;
   RestrictedCookieManager& operator=(const RestrictedCookieManager&) = delete;
@@ -84,6 +90,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   void OverrideOriginForTesting(const url::Origin& new_origin) {
     origin_ = new_origin;
   }
+
+  // This spins the event loop, since the cookie partition key may be computed
+  // asynchronously.
   void OverrideIsolationInfoForTesting(
       const net::IsolationInfo& new_isolation_info);
 
@@ -123,6 +132,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
                          const url::Origin& top_frame_origin,
                          CookiesEnabledForCallback callback) override;
 
+  // Computes the First-Party Set metadata corresponding to the given `origin`,
+  // `cookie_store`, and `isolation_info`.
+  //
+  // May invoke `callback` either synchronously or asynchronously.
+  static void ComputeFirstPartySetMetadata(
+      const url::Origin& origin,
+      const net::CookieStore* cookie_store,
+      const net::IsolationInfo& isolation_info,
+      base::OnceCallback<void(net::FirstPartySetMetadata)> callback);
+
  private:
   // The state associated with a CookieChangeListener.
   class Listener;
@@ -140,35 +159,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
       GetAllForUrlCallback callback,
       const net::CookieAccessResultList& cookie_list,
       const net::CookieAccessResultList& excluded_cookies);
-
-  // Called after getting First-Party Set data when setting a cookie.
-  void OnGotFirstPartySetMetadataForSet(
-      const GURL& url,
-      const net::SiteForCookies& site_for_cookies,
-      std::unique_ptr<net::CanonicalCookie> sanitized_cookie,
-      const GURL& origin_url,
-      SetCanonicalCookieCallback callback,
-      net::FirstPartySetMetadata first_party_set_metadata) const;
-
-  // Called after getting First-Party Set data when getting all cookies for a
-  // URL.
-  void OnGotFirstPartySetMetadataForGetAllForUrl(
-      const GURL& url,
-      const net::SiteForCookies& site_for_cookies,
-      const url::Origin& top_frame_origin,
-      mojom::CookieManagerGetOptionsPtr options,
-      GetAllForUrlCallback callback,
-      net::FirstPartySetMetadata first_party_set_metadata) const;
-
-  // Called after getting First-Party Set data when adding a cookie change
-  // listener.
-  void OnGotFirstPartySetMetadataForAddChangeListener(
-      const GURL& url,
-      const net::SiteForCookies& site_for_cookies,
-      const url::Origin& top_frame_origin,
-      mojo::PendingRemote<mojom::CookieChangeListener> mojo_listener,
-      AddChangeListenerCallback callback,
-      net::FirstPartySetMetadata first_party_set_metadata);
 
   // Reports the result of setting the cookie to |network_context_client_|, and
   // invokes the user callback.
@@ -216,6 +206,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
       CookieAccesses* cookie_accesses,
       const net::CookieWithAccessResult& cookie_item);
 
+  // Called while overriding the cookie_partition_key during testing.
+  void OnGotFirstPartySetMetadataForTesting(
+      base::OnceClosure done_closure,
+      net::FirstPartySetMetadata first_party_set_metadata);
+
   const mojom::RestrictedCookieManagerRole role_;
   const raw_ptr<net::CookieStore> cookie_store_;
   const CookieSettings& cookie_settings_;
@@ -232,6 +227,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   base::LinkedList<Listener> listeners_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  // The First-Party Set metadata for the context this RestrictedCookieManager
+  // is associated with.
+  net::FirstPartySetMetadata first_party_set_metadata_;
 
   // Cookie partition key that the instance of RestrictedCookieManager will have
   // access to. Must be set only in the constructor or in *ForTesting methods.

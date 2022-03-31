@@ -5,12 +5,10 @@
 #ifndef ASH_WEBUI_DIAGNOSTICS_UI_BACKEND_INPUT_DATA_PROVIDER_KEYBOARD_H_
 #define ASH_WEBUI_DIAGNOSTICS_UI_BACKEND_INPUT_DATA_PROVIDER_KEYBOARD_H_
 
+#include <vector>
+
 #include "ash/webui/diagnostics_ui/mojom/input_data_provider.mojom.h"
-#include "base/memory/weak_ptr.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
-#include "ui/events/ozone/evdev/event_device_info.h"
-#include "ui/events/ozone/layout/xkb/xkb_evdev_codes.h"
-#include "ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h"
 
 namespace ash {
 namespace diagnostics {
@@ -21,33 +19,46 @@ class InputDeviceInformation;
 // keyboard-specific logic.
 class InputDataProviderKeyboard {
  public:
+  // Holder for any data that needs to be persisted per keyboard, that
+  // does not need to be exposed in the mojo::KeyboardInfo.
+  class AuxData {
+   public:
+    AuxData();
+    AuxData(const AuxData&) = delete;
+    AuxData& operator=(const AuxData&) = delete;
+    ~AuxData();
+
+    // Map of scancodes that map to particular indexes within the top_row_keys
+    // for that evdev. May contain AT and HID-style scancodes.
+    base::flat_map<uint32_t, uint32_t> top_row_key_scancode_indexes;
+  };
+
   InputDataProviderKeyboard();
   InputDataProviderKeyboard(const InputDataProviderKeyboard&) = delete;
   InputDataProviderKeyboard& operator=(const InputDataProviderKeyboard&) =
       delete;
   ~InputDataProviderKeyboard();
 
-  void GetKeyboardVisualLayout(
-      mojom::KeyboardInfoPtr keyboard,
-      mojom::InputDataProvider::GetKeyboardVisualLayoutCallback callback);
-
   mojom::KeyboardInfoPtr ConstructKeyboard(
-      const InputDeviceInformation* device_info);
+      const InputDeviceInformation* device_info,
+      AuxData* out_aux_data);
+
+  mojom::KeyEventPtr ConstructInputKeyEvent(
+      const mojom::KeyboardInfoPtr& keyboard,
+      const AuxData* aux_data,
+      uint32_t key_code,
+      uint32_t scan_code,
+      bool down);
 
  private:
-  void ProcessXkbLayout(
-      mojom::InputDataProvider::GetKeyboardVisualLayoutCallback callback);
-  mojom::KeyGlyphSetPtr LookupGlyphSet(uint32_t evdev_code);
-
   void ProcessKeyboardTopRowLayout(
       const InputDeviceInformation* device_info,
-      ui::EventRewriterChromeOS::KeyboardTopRowLayout* out_top_row_layout,
-      std::vector<mojom::TopRowKey>* out_top_row_keys);
-
-  ui::XkbEvdevCodes xkb_evdev_codes_;
-  ui::XkbKeyboardLayoutEngine xkb_layout_engine_;
-
-  base::WeakPtrFactory<InputDataProviderKeyboard> weak_factory_{this};
+      ui::EventRewriterChromeOS::KeyboardTopRowLayout top_row_layout,
+      const base::flat_map<uint32_t,
+                           ui::EventRewriterChromeOS::MutableKeyState>&
+          scan_code_map,
+      std::vector<mojom::TopRowKey>* out_top_row_keys,
+      AuxData* out_aux_data);
 };
 
 }  // namespace diagnostics

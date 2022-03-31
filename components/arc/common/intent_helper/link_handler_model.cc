@@ -12,6 +12,7 @@
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/chromeos_buildflags.h"
+#include "components/arc/common/intent_helper/arc_intent_helper_package.h"
 #include "components/google/core/common/google_util.h"
 #include "url/url_util.h"
 
@@ -25,9 +26,6 @@ namespace arc {
 namespace {
 
 constexpr int kMaxValueLen = 2048;
-
-// Not owned. Must outlive all LinkHandlerModel instances.
-LinkHandlerModelDelegate* g_link_handler_model_delegate = nullptr;
 
 bool GetQueryValue(const GURL& url,
                    const std::string& key_to_find,
@@ -60,8 +58,10 @@ bool GetQueryValue(const GURL& url,
 // static
 std::unique_ptr<LinkHandlerModel> LinkHandlerModel::Create(
     content::BrowserContext* context,
-    const GURL& link_url) {
-  auto impl = base::WrapUnique(new LinkHandlerModel());
+    const GURL& link_url,
+    std::unique_ptr<ArcIntentHelperMojoDelegate> mojo_delegate) {
+  CHECK(mojo_delegate);
+  auto impl = base::WrapUnique(new LinkHandlerModel(std::move(mojo_delegate)));
   if (!impl->Init(context, link_url))
     return nullptr;
   return impl;
@@ -77,13 +77,8 @@ void LinkHandlerModel::OpenLinkWithHandler(uint32_t handler_id) {
   if (handler_id >= handlers_.size())
     return;
 
-  if (!g_link_handler_model_delegate) {
-    LOG(DFATAL) << "LinkHandlerModelDelegate is not set.";
-    return;
-  }
-
-  if (!g_link_handler_model_delegate->HandleUrl(
-          url_.spec(), handlers_[handler_id].package_name)) {
+  if (!mojo_delegate_->HandleUrl(url_.spec(),
+                                 handlers_[handler_id].package_name)) {
     return;
   }
 
@@ -94,18 +89,9 @@ void LinkHandlerModel::OpenLinkWithHandler(uint32_t handler_id) {
 #endif
 }
 
-// static
-void LinkHandlerModel::SetDelegate(LinkHandlerModelDelegate* delegate) {
-  // SetDelegate should be called only when overwriting nullptr or unsetting to
-  // nullptr except for testing.
-  if (g_link_handler_model_delegate && delegate) {
-    LOG(ERROR) << "g_link_handler_model_delegate is modified. "
-               << "This should not happen except for testing.";
-  }
-  g_link_handler_model_delegate = delegate;
-}
-
-LinkHandlerModel::LinkHandlerModel() = default;
+LinkHandlerModel::LinkHandlerModel(
+    std::unique_ptr<ArcIntentHelperMojoDelegate> mojo_delegate)
+    : mojo_delegate_(std::move(mojo_delegate)) {}
 
 bool LinkHandlerModel::Init(content::BrowserContext* context, const GURL& url) {
   DCHECK(context);
@@ -117,48 +103,42 @@ bool LinkHandlerModel::Init(content::BrowserContext* context, const GURL& url) {
   // even on the slowest Chromebook we support.
   url_ = RewriteUrlFromQueryIfAvailable(url);
 
-  if (!g_link_handler_model_delegate) {
-    // g_link_handler_model_delegate should be already set on the product.
-    // It is not set for some tests such as browser_tests since crosapi is
-    // disabled.
-    LOG(ERROR) << "LinkHandlerModelDelegate is not set. "
-               << "This should not happen except for testing.";
-    return false;
-  }
-
-  return g_link_handler_model_delegate->RequestUrlHandlerList(
+  return mojo_delegate_->RequestUrlHandlerList(
       url_.spec(), base::BindOnce(&LinkHandlerModel::OnUrlHandlerList,
                                   weak_ptr_factory_.GetWeakPtr()));
 }
 
 void LinkHandlerModel::OnUrlHandlerList(
-    std::vector<LinkHandlerModelDelegate::IntentHandlerInfo> handlers) {
+    std::vector<ArcIntentHelperMojoDelegate::IntentHandlerInfo> handlers) {
   for (auto& handler : handlers) {
-    if (handler.package_name == "org.chromium.arc.intent_helper")
+    if (handler.package_name == kArcIntentHelperPackageName)
       continue;
     handlers_.push_back(std::move(handler));
   }
 
   bool icon_info_notified = false;
-  if (!g_link_handler_model_delegate) {
-    // g_link_handler_model_delegate should be already set on the product.
+  if (!ArcIconCacheDelegate::GetInstance()) {
+    // ArcIconCacheDelegate instance should be already set on the product.
     // It is not set for some tests such as browser_tests since crosapi is
-    // disabled.
-    LOG(ERROR) << "LinkHandlerModelDelegate is not set. "
+    // disabled. In this case, ignore the step to get icons and immediately
+    // notify observers with no result.
+    LOG(ERROR) << "ArcIconCacheDelegate is not set. "
                << "This should not happen except for testing.";
+    NotifyObserver(nullptr);
+    return;
   }
 
-  std::vector<LinkHandlerModelDelegate::ActivityName> activities;
+  std::vector<ArcIconCacheDelegate::ActivityName> activities;
   for (size_t i = 0; i < handlers_.size(); ++i) {
     activities.emplace_back(handlers_[i].package_name,
                             handlers_[i].activity_name);
   }
-  const LinkHandlerModelDelegate::GetResult result =
-      g_link_handler_model_delegate->GetActivityIcons(
+  const ArcIconCacheDelegate::GetResult result =
+      ArcIconCacheDelegate::GetInstance()->GetActivityIcons(
           activities, base::BindOnce(&LinkHandlerModel::NotifyObserver,
                                      weak_ptr_factory_.GetWeakPtr()));
   icon_info_notified =
-      LinkHandlerModelDelegate::ActivityIconLoader::HasIconsReadyCallbackRun(
+      ArcIconCacheDelegate::ActivityIconLoader::HasIconsReadyCallbackRun(
           result);
 
   if (!icon_info_notified) {
@@ -170,7 +150,7 @@ void LinkHandlerModel::OnUrlHandlerList(
 }
 
 void LinkHandlerModel::NotifyObserver(
-    std::unique_ptr<LinkHandlerModelDelegate::ActivityToIconsMap> icons) {
+    std::unique_ptr<ArcIconCacheDelegate::ActivityToIconsMap> icons) {
   if (icons) {
     icons_.insert(icons->begin(), icons->end());
     icons.reset();
@@ -179,7 +159,7 @@ void LinkHandlerModel::NotifyObserver(
   std::vector<LinkHandlerInfo> handlers;
   for (size_t i = 0; i < handlers_.size(); ++i) {
     gfx::Image icon;
-    const LinkHandlerModelDelegate::ActivityName activity(
+    const ArcIconCacheDelegate::ActivityName activity(
         handlers_[i].package_name, handlers_[i].activity_name);
     const auto it = icons_.find(activity);
     if (it != icons_.end())

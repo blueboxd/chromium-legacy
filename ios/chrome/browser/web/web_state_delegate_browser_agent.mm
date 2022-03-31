@@ -11,10 +11,9 @@
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/chrome/browser/overlays/public/overlay_response.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/http_auth_overlay.h"
-#import "ios/chrome/browser/ui/dialogs/nsurl_protection_space_util.h"
-
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_configuration_provider.h"
+#import "ios/chrome/browser/ui/dialogs/nsurl_protection_space_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
@@ -188,8 +187,7 @@ web::WebState* WebStateDelegateBrowserAgent::CreateNewWebState(
 void WebStateDelegateBrowserAgent::CloseWebState(web::WebState* source) {
   security_interstitials::IOSBlockingPageTabHelper* helper =
       security_interstitials::IOSBlockingPageTabHelper::FromWebState(source);
-  DCHECK(source->HasOpener() ||
-         !source->GetNavigationManager()->GetItemCount() ||
+  DCHECK(source->HasOpener() || !source->GetNavigationItemCount() ||
          helper->GetCurrentBlockingPage() != nullptr);
   int index = web_state_list_->GetIndexOfWebState(source);
   if (index != WebStateList::kInvalidIndex)

@@ -22,7 +22,6 @@
 #include "components/sync/protocol/device_info_specifics.pb.h"
 #include "components/sync_device_info/device_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "ui/views/controls/styled_label.h"
 #include "url/origin.h"
 
 class SharingDialog;
@@ -111,9 +110,10 @@ class SharingUiController {
       chrome_browser_sharing::SharingMessage sharing_message,
       absl::optional<SharingMessageSender::ResponseCallback> callback);
 
- private:
   // Updates the omnibox icon if available.
   void UpdateIcon();
+
+ private:
   // Closes the current dialog if there is one.
   void CloseDialog();
   // Shows a new SharingDialog and closes the old one.

@@ -12,7 +12,6 @@
 #include "chrome/browser/cart/cart_db_content.pb.h"
 #include "chrome/browser/cart/cart_discount_metric_collector.h"
 #include "chrome/browser/cart/cart_features.h"
-#include "chrome/browser/commerce/commerce_feature_list.h"
 #include "chrome/browser/commerce/coupons/coupon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
@@ -23,6 +22,7 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
+#include "components/commerce/core/commerce_feature_list.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -286,7 +286,7 @@ void CartService::ShouldShowDiscountConsent(
     base::OnceCallback<void(bool)> callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (cart_features::IsFakeDataEnabled()) {
-    content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+    content::GetUIThreadTaskRunner({base::TaskPriority::USER_BLOCKING})
         ->PostTask(FROM_HERE, base::BindOnce(
                                   [](base::OnceCallback<void(bool)> callback) {
                                     std::move(callback).Run(true);
@@ -986,7 +986,8 @@ void CartService::OnCartFeaturesChanged(const std::string& pref_name) {
 
 bool CartService::IsCartAndDiscountEnabled() {
   auto* list = profile_->GetPrefs()->GetList(prefs::kNtpDisabledModules);
-  if (list && base::Contains(list->GetList(), base::Value(kCartPrefsKey))) {
+  if (list &&
+      base::Contains(list->GetListDeprecated(), base::Value(kCartPrefsKey))) {
     return false;
   }
   return profile_->GetPrefs()->GetBoolean(prefs::kCartDiscountEnabled) &&

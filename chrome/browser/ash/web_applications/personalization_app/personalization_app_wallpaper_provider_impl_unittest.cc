@@ -5,6 +5,9 @@
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_wallpaper_provider_impl.h"
 
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/wallpaper/online_wallpaper_params.h"
@@ -15,7 +18,9 @@
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom-forward.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "base/callback_helpers.h"
+#include "base/json/json_reader.h"
 #include "base/test/bind.h"
+#include "base/values.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/scoped_test_user_manager.h"
 #include "chrome/browser/ash/policy/external_data/handlers/device_wallpaper_image_external_data_handler.h"
@@ -42,6 +47,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -50,6 +56,44 @@ namespace {
 
 constexpr char kFakeTestEmail[] = "fakeemail@personalization";
 constexpr char kTestGaiaId[] = "1234567890";
+constexpr char kGooglePhotosAlbumsFullResponse[] =
+    "{"
+    "   \"collection\": [ {"
+    "      \"collectionId\": {"
+    "         \"mediaKey\": \"albumId\""
+    "      },"
+    "      \"coverItemId\": {"
+    "         \"mediaKey\": \"coverPhotoId\""
+    "      },"
+    "      \"name\": \"title\","
+    "      \"numPhotos\": \"1\""
+    "   } ],"
+    "   \"item\": [ {"
+    "      \"itemId\": {"
+    "         \"mediaKey\": \"coverPhotoId\""
+    "      },"
+    "      \"photo\": {"
+    "         \"servingUrl\": \"https://www.google.com/\""
+    "      }"
+    "   } ],"
+    "   \"resumeToken\": \"token\""
+    "}";
+constexpr char kGooglePhotosPhotosFullResponse[] =
+    "{"
+    "   \"item\": [ {"
+    "      \"itemId\": {"
+    "         \"mediaKey\": \"photoId\""
+    "      },"
+    "      \"filename\": \"photoName.png\","
+    "      \"creationTimestamp\": \"2021-12-31T07:07:07.000Z\","
+    "      \"photo\": {"
+    "         \"servingUrl\": \"https://www.google.com/\""
+    "      }"
+    "   } ],"
+    "   \"resumeToken\": \"token\""
+    "}";
+constexpr char kGooglePhotosResumeTokenOnlyResponse[] =
+    "{\"resumeToken\": \"token\"}";
 
 TestingPrefServiceSimple* RegisterPrefs(TestingPrefServiceSimple* local_state) {
   ash::device_settings_cache::RegisterPrefs(local_state->registry());
@@ -78,6 +122,28 @@ gfx::ImageSkia CreateSolidImageSkia(int width, int height, SkColor color) {
   bitmap.allocN32Pixels(width, height);
   bitmap.eraseColor(color);
   return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+}
+
+// Returns a reference to the album in a hypothetical Google Photos albums query
+// response. A test calling this function will fail if the response does not
+// contain exactly one album.
+base::Value& GetAlbumFromGooglePhotosAlbumsResponse(
+    absl::optional<base::Value>& response) {
+  EXPECT_TRUE(response.has_value());
+  auto* album_list = response->FindListPath("collection");
+  EXPECT_TRUE(album_list && album_list->GetListDeprecated().size() == 1);
+  return album_list->GetListDeprecated().front();
+}
+
+// Returns a reference to the photo in a hypothetical Google Photos photos query
+// response. A test calling this function will fail if the response does not
+// contain exactly one photo.
+base::Value& GetPhotoFromGooglePhotosPhotosResponse(
+    absl::optional<base::Value>& response) {
+  EXPECT_TRUE(response.has_value());
+  auto* photo_list = response->FindListPath("item");
+  EXPECT_TRUE(photo_list && photo_list->GetListDeprecated().size() == 1);
+  return photo_list->GetListDeprecated().front();
 }
 
 class TestWallpaperObserver
@@ -112,11 +178,21 @@ class TestWallpaperObserver
 
 }  // namespace
 
-class PersonalizationAppWallpaperProviderImplTest : public testing::Test {
+class PersonalizationAppWallpaperProviderImplTest
+    : public testing::Test,
+      public testing::WithParamInterface<bool /* google_photos_enabled */> {
  public:
   PersonalizationAppWallpaperProviderImplTest()
       : scoped_user_manager_(std::make_unique<ash::FakeChromeUserManager>()),
-        profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+        profile_manager_(TestingBrowserProcess::GetGlobal()) {
+    std::vector<base::Feature> features = {ash::features::kWallpaperWebUI};
+    if (GooglePhotosEnabled())
+      features.push_back(ash::features::kWallpaperGooglePhotosIntegration);
+    // Note: `scoped_feature_list_` should be initialized before `SetUp()`
+    // (see crbug.com/846380).
+    scoped_feature_list_.InitWithFeatures(features, /*disabled_features=*/{});
+  }
+
   PersonalizationAppWallpaperProviderImplTest(
       const PersonalizationAppWallpaperProviderImplTest&) = delete;
   PersonalizationAppWallpaperProviderImplTest& operator=(
@@ -126,7 +202,6 @@ class PersonalizationAppWallpaperProviderImplTest : public testing::Test {
  protected:
   // testing::Test:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(ash::features::kWallpaperWebUI);
     wallpaper_controller_client_ =
         std::make_unique<WallpaperControllerClientImpl>();
     wallpaper_controller_client_->InitForTesting(&test_wallpaper_controller_);
@@ -154,6 +229,10 @@ class PersonalizationAppWallpaperProviderImplTest : public testing::Test {
     wallpaper_provider_->image_asset_id_map_.insert({asset_id, image_info});
   }
 
+  // Returns true if the test should run with the Google Photos Wallpaper
+  // integration enabled, false otherwise.
+  bool GooglePhotosEnabled() const { return GetParam(); }
+
   TestWallpaperController* test_wallpaper_controller() {
     return &test_wallpaper_controller_;
   }
@@ -180,6 +259,9 @@ class PersonalizationAppWallpaperProviderImplTest : public testing::Test {
   }
 
  private:
+  // Note: `scoped_feature_list_` should be destroyed after `task_environment_`
+  // (see crbug.com/846380).
+  base::test::ScopedFeatureList scoped_feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   TestingPrefServiceSimple pref_service_;
   // Required for |ScopedTestCrosSettings|.
@@ -202,10 +284,13 @@ class PersonalizationAppWallpaperProviderImplTest : public testing::Test {
       wallpaper_provider_remote_;
   TestWallpaperObserver test_wallpaper_observer_;
   std::unique_ptr<PersonalizationAppWallpaperProviderImpl> wallpaper_provider_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-TEST_F(PersonalizationAppWallpaperProviderImplTest, SelectWallpaper) {
+INSTANTIATE_TEST_SUITE_P(All,
+                         PersonalizationAppWallpaperProviderImplTest,
+                         /*google_photos_enabled=*/::testing::Values(false));
+
+TEST_P(PersonalizationAppWallpaperProviderImplTest, SelectWallpaper) {
   test_wallpaper_controller()->ClearCounts();
 
   const uint64_t asset_id = 1;
@@ -238,7 +323,7 @@ TEST_F(PersonalizationAppWallpaperProviderImplTest, SelectWallpaper) {
             test_wallpaper_controller()->wallpaper_info().value());
 }
 
-TEST_F(PersonalizationAppWallpaperProviderImplTest, PreviewWallpaper) {
+TEST_P(PersonalizationAppWallpaperProviderImplTest, PreviewWallpaper) {
   test_wallpaper_controller()->ClearCounts();
 
   const uint64_t asset_id = 1;
@@ -271,7 +356,7 @@ TEST_F(PersonalizationAppWallpaperProviderImplTest, PreviewWallpaper) {
             test_wallpaper_controller()->wallpaper_info().value());
 }
 
-TEST_F(PersonalizationAppWallpaperProviderImplTest,
+TEST_P(PersonalizationAppWallpaperProviderImplTest,
        ObserveWallpaperFiresWhenBound) {
   // This will create the data url referenced below in expectation.
   test_wallpaper_controller()->ShowWallpaperImage(
@@ -318,27 +403,12 @@ TEST_F(PersonalizationAppWallpaperProviderImplTest,
 }
 
 class PersonalizationAppWallpaperProviderImplGooglePhotosTest
-    : public PersonalizationAppWallpaperProviderImplTest,
-      public testing::WithParamInterface<bool /* google_photos_enabled */> {
- public:
-  // Returns true if the test should run with the Google Photos Wallpaper
-  // integration enabled, false otherwise.
-  bool GooglePhotosEnabled() const { return GetParam(); }
-
+    : public PersonalizationAppWallpaperProviderImplTest {
  protected:
   // The number of times to start each idempotent API query.
   static constexpr size_t kNumFetches = 2;
-
-  // PersonalizationAppWallpaperProviderImplTest:
-  void SetUp() override {
-    PersonalizationAppWallpaperProviderImplTest::SetUp();
-    scoped_feature_list_.InitWithFeatureState(
-        ash::features::kWallpaperGooglePhotosIntegration,
-        GooglePhotosEnabled());
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  // Resume token value used across several tests.
+  const std::string kResumeToken = "token";
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -349,19 +419,21 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_P(PersonalizationAppWallpaperProviderImplGooglePhotosTest, FetchAlbums) {
   // Mock a fetcher for the albums query.
   auto* const google_photos_albums_fetcher = static_cast<
-      wallpaper_handlers::MockGooglePhotosAlbumsFetcher*>(
+      ::testing::NiceMock<wallpaper_handlers::MockGooglePhotosAlbumsFetcher>*>(
       delegate()->SetGooglePhotosAlbumsFetcherForTest(
-          std::make_unique<wallpaper_handlers::MockGooglePhotosAlbumsFetcher>(
-              profile())));
+          std::make_unique<::testing::NiceMock<
+              wallpaper_handlers::MockGooglePhotosAlbumsFetcher>>(profile())));
 
   // Simulate the client making multiple requests for the same information to
   // test that all callbacks for that query are called.
-  EXPECT_CALL(*google_photos_albums_fetcher, AddRequestAndStartIfNecessary)
+  EXPECT_CALL(*google_photos_albums_fetcher,
+              AddRequestAndStartIfNecessary(absl::make_optional(kResumeToken),
+                                            ::testing::_))
       .Times(GooglePhotosEnabled() ? kNumFetches : 0);
 
   for (size_t i = 0; i < kNumFetches; ++i) {
     wallpaper_provider_remote()->get()->FetchGooglePhotosAlbums(
-        /*resume_token=*/absl::nullopt,
+        kResumeToken,
         base::BindLambdaForTesting(
             [this](ash::personalization_app::mojom::
                        FetchGooglePhotosAlbumsResponsePtr response) {
@@ -374,10 +446,10 @@ TEST_P(PersonalizationAppWallpaperProviderImplGooglePhotosTest, FetchAlbums) {
 TEST_P(PersonalizationAppWallpaperProviderImplGooglePhotosTest, FetchCount) {
   // Mock a fetcher for the photos count query.
   auto* const google_photos_count_fetcher = static_cast<
-      wallpaper_handlers::MockGooglePhotosCountFetcher*>(
+      ::testing::NiceMock<wallpaper_handlers::MockGooglePhotosCountFetcher>*>(
       delegate()->SetGooglePhotosCountFetcherForTest(
-          std::make_unique<wallpaper_handlers::MockGooglePhotosCountFetcher>(
-              profile())));
+          std::make_unique<::testing::NiceMock<
+              wallpaper_handlers::MockGooglePhotosCountFetcher>>(profile())));
 
   // Simulate the client making multiple requests for the same information to
   // test that all callbacks for that query are called.
@@ -391,4 +463,302 @@ TEST_P(PersonalizationAppWallpaperProviderImplGooglePhotosTest, FetchCount) {
         }));
   }
   wallpaper_provider_remote()->FlushForTesting();
+}
+
+TEST_P(PersonalizationAppWallpaperProviderImplGooglePhotosTest, FetchPhotos) {
+  // Mock a fetcher for the photos query.
+  auto* const google_photos_photos_fetcher = static_cast<
+      ::testing::NiceMock<wallpaper_handlers::MockGooglePhotosPhotosFetcher>*>(
+      delegate()->SetGooglePhotosPhotosFetcherForTest(
+          std::make_unique<::testing::NiceMock<
+              wallpaper_handlers::MockGooglePhotosPhotosFetcher>>(profile())));
+
+  // Simulate the client making multiple requests for the same information to
+  // test that all callbacks for that query are called.
+  const std::string item_id = "itemId";
+  const std::string album_id = "albumId";
+  EXPECT_CALL(*google_photos_photos_fetcher,
+              AddRequestAndStartIfNecessary(
+                  absl::make_optional(item_id), absl::make_optional(album_id),
+                  absl::make_optional(kResumeToken), ::testing::_))
+      .Times(GooglePhotosEnabled() ? kNumFetches : 0);
+
+  for (size_t i = 0; i < kNumFetches; ++i) {
+    wallpaper_provider_remote()->get()->FetchGooglePhotosPhotos(
+        item_id, album_id, kResumeToken,
+        base::BindLambdaForTesting(
+            [this](ash::personalization_app::mojom::
+                       FetchGooglePhotosPhotosResponsePtr response) {
+              EXPECT_EQ(response->photos.has_value(), GooglePhotosEnabled());
+            }));
+  }
+  wallpaper_provider_remote()->FlushForTesting();
+}
+
+TEST_P(PersonalizationAppWallpaperProviderImplGooglePhotosTest,
+       ParseAlbumsAbsentAlbum) {
+  using ash::personalization_app::mojom::FetchGooglePhotosAlbumsResponse;
+  using ash::personalization_app::mojom::GooglePhotosAlbumPtr;
+
+  // Mock a fetcher to parse constructed responses.
+  auto* const google_photos_albums_fetcher = static_cast<
+      ::testing::NiceMock<wallpaper_handlers::MockGooglePhotosAlbumsFetcher>*>(
+      delegate()->SetGooglePhotosAlbumsFetcherForTest(
+          std::make_unique<::testing::NiceMock<
+              wallpaper_handlers::MockGooglePhotosAlbumsFetcher>>(profile())));
+
+  // Parse an absent response (simulating a fetching error).
+  EXPECT_EQ(FetchGooglePhotosAlbumsResponse::New(),
+            google_photos_albums_fetcher->ParseResponse(absl::nullopt));
+
+  // Parse a response with no resume token or albums.
+  EXPECT_EQ(FetchGooglePhotosAlbumsResponse::New(),
+            google_photos_albums_fetcher->ParseResponse(
+                base::Value(base::Value::Type::DICTIONARY)));
+
+  // Parse a response with a resume token and no albums.
+  EXPECT_EQ(FetchGooglePhotosAlbumsResponse::New(absl::nullopt, kResumeToken),
+            google_photos_albums_fetcher->ParseResponse(
+                base::JSONReader::Read(kGooglePhotosResumeTokenOnlyResponse)));
+}
+
+TEST_P(PersonalizationAppWallpaperProviderImplGooglePhotosTest,
+       ParseAlbumsInvalidAlbum) {
+  using ash::personalization_app::mojom::FetchGooglePhotosAlbumsResponse;
+  using ash::personalization_app::mojom::GooglePhotosAlbumPtr;
+
+  // Mock a fetcher to parse constructed responses.
+  auto* const google_photos_albums_fetcher = static_cast<
+      ::testing::NiceMock<wallpaper_handlers::MockGooglePhotosAlbumsFetcher>*>(
+      delegate()->SetGooglePhotosAlbumsFetcherForTest(
+          std::make_unique<::testing::NiceMock<
+              wallpaper_handlers::MockGooglePhotosAlbumsFetcher>>(profile())));
+
+  // Parse one-album responses where one of the album's fields is missing.
+  for (const auto* const path :
+       {"collectionId.mediaKey", "name", "numPhotos", "coverItemId.mediaKey"}) {
+    auto response = base::JSONReader::Read(kGooglePhotosAlbumsFullResponse);
+    auto& album = GetAlbumFromGooglePhotosAlbumsResponse(response);
+    album.RemovePath(path);
+    EXPECT_EQ(FetchGooglePhotosAlbumsResponse::New(
+                  std::vector<GooglePhotosAlbumPtr>(), kResumeToken),
+              google_photos_albums_fetcher->ParseResponse(std::move(response)));
+  }
+
+  // Parse one-album responses where one of the album's fields has an invalid
+  // value.
+  std::vector<std::pair<std::string, std::string>> invalid_field_test_cases = {
+      {"numPhotos", ""},
+      {"numPhotos", "NaN"},
+      {"numPhotos", "-1"},
+      {"numPhotos", "0"},
+      {"coverItemId.mediaKey", "bogusCoverPhotoId"}};
+  EXPECT_CALL(*google_photos_albums_fetcher, ParseResponse).Times(5);
+  for (const auto& kv : invalid_field_test_cases) {
+    auto response = base::JSONReader::Read(kGooglePhotosAlbumsFullResponse);
+    auto& album = GetAlbumFromGooglePhotosAlbumsResponse(response);
+    album.SetStringPath(kv.first, kv.second);
+    EXPECT_EQ(FetchGooglePhotosAlbumsResponse::New(
+                  std::vector<GooglePhotosAlbumPtr>(), kResumeToken),
+              google_photos_albums_fetcher->ParseResponse(std::move(response)));
+  }
+}
+
+TEST_P(PersonalizationAppWallpaperProviderImplGooglePhotosTest,
+       ParseAlbumsValidAlbum) {
+  using ash::personalization_app::mojom::FetchGooglePhotosAlbumsResponse;
+  using ash::personalization_app::mojom::GooglePhotosAlbum;
+  using ash::personalization_app::mojom::GooglePhotosAlbumPtr;
+
+  // Mock a fetcher to parse constructed responses.
+  auto* const google_photos_albums_fetcher = static_cast<
+      ::testing::NiceMock<wallpaper_handlers::MockGooglePhotosAlbumsFetcher>*>(
+      delegate()->SetGooglePhotosAlbumsFetcherForTest(
+          std::make_unique<::testing::NiceMock<
+              wallpaper_handlers::MockGooglePhotosAlbumsFetcher>>(profile())));
+
+  // Parse a response with a valid album and a resume token.
+  auto valid_albums_vector = std::vector<GooglePhotosAlbumPtr>();
+  valid_albums_vector.push_back(GooglePhotosAlbum::New(
+      "albumId", "title", 1, GURL("https://www.google.com/")));
+  EXPECT_EQ(FetchGooglePhotosAlbumsResponse::New(
+                mojo::Clone(valid_albums_vector), kResumeToken),
+            google_photos_albums_fetcher->ParseResponse(
+                base::JSONReader::Read(kGooglePhotosAlbumsFullResponse)));
+
+  // Parse a response with a valid album and no resume token.
+  auto response = base::JSONReader::Read(kGooglePhotosAlbumsFullResponse);
+  EXPECT_TRUE(response.has_value());
+  response->RemovePath("resumeToken");
+  EXPECT_EQ(FetchGooglePhotosAlbumsResponse::New(std::move(valid_albums_vector),
+                                                 absl::nullopt),
+            google_photos_albums_fetcher->ParseResponse(std::move(response)));
+}
+
+TEST_P(PersonalizationAppWallpaperProviderImplGooglePhotosTest, ParseCount) {
+  // Mock a fetcher to parse constructed responses.
+  auto* const google_photos_count_fetcher = static_cast<
+      ::testing::NiceMock<wallpaper_handlers::MockGooglePhotosCountFetcher>*>(
+      delegate()->SetGooglePhotosCountFetcherForTest(
+          std::make_unique<::testing::NiceMock<
+              wallpaper_handlers::MockGooglePhotosCountFetcher>>(profile())));
+
+  // Parse an absent response (simulating a fetching error).
+  EXPECT_EQ(-1, google_photos_count_fetcher->ParseResponse(absl::nullopt));
+
+  // Parse a response without a photo count.
+  base::Value response(base::Value::Type::DICTIONARY);
+  EXPECT_EQ(-1, google_photos_count_fetcher->ParseResponse(
+                    absl::make_optional(response.Clone())));
+
+  // Parse a response with an empty photo count.
+  response.SetStringPath("user.numPhotos", "");
+  EXPECT_EQ(-1, google_photos_count_fetcher->ParseResponse(
+                    absl::make_optional(response.Clone())));
+
+  // Parse a response with a non-integer photo count.
+  response.SetStringPath("user.numPhotos", "NaN");
+  EXPECT_EQ(-1, google_photos_count_fetcher->ParseResponse(
+                    absl::make_optional(response.Clone())));
+
+  // Parse a response with a negative photo count.
+  response.SetStringPath("user.numPhotos", "-2");
+  EXPECT_EQ(-1, google_photos_count_fetcher->ParseResponse(
+                    absl::make_optional(response.Clone())));
+
+  // Parse a valid response.
+  response.SetStringPath("user.numPhotos", "1");
+  EXPECT_EQ(1, google_photos_count_fetcher->ParseResponse(
+                   absl::make_optional(std::move(response))));
+}
+
+TEST_P(PersonalizationAppWallpaperProviderImplGooglePhotosTest,
+       ParsePhotosAbsentPhoto) {
+  using ash::personalization_app::mojom::FetchGooglePhotosPhotosResponse;
+  using ash::personalization_app::mojom::GooglePhotosPhotoPtr;
+
+  // Mock a fetcher to parse constructed responses.
+  auto* const google_photos_photos_fetcher = static_cast<
+      ::testing::NiceMock<wallpaper_handlers::MockGooglePhotosPhotosFetcher>*>(
+      delegate()->SetGooglePhotosPhotosFetcherForTest(
+          std::make_unique<::testing::NiceMock<
+              wallpaper_handlers::MockGooglePhotosPhotosFetcher>>(profile())));
+
+  // Parse an absent response (simulating a fetching error).
+  EXPECT_EQ(FetchGooglePhotosPhotosResponse::New(),
+            google_photos_photos_fetcher->ParseResponse(absl::nullopt));
+
+  // Parse a response with no resume token or photos.
+  EXPECT_EQ(FetchGooglePhotosPhotosResponse::New(),
+            google_photos_photos_fetcher->ParseResponse(
+                base::Value(base::Value::Type::DICTIONARY)));
+
+  // Parse a response with a resume token and no photos.
+  EXPECT_EQ(FetchGooglePhotosPhotosResponse::New(absl::nullopt, kResumeToken),
+            google_photos_photos_fetcher->ParseResponse(
+                base::JSONReader::Read(kGooglePhotosResumeTokenOnlyResponse)));
+}
+
+TEST_P(PersonalizationAppWallpaperProviderImplGooglePhotosTest,
+       ParsePhotosInvalidPhoto) {
+  using ash::personalization_app::mojom::FetchGooglePhotosPhotosResponse;
+  using ash::personalization_app::mojom::GooglePhotosPhotoPtr;
+
+  // Mock a fetcher to parse constructed responses.
+  auto* const google_photos_photos_fetcher = static_cast<
+      ::testing::NiceMock<wallpaper_handlers::MockGooglePhotosPhotosFetcher>*>(
+      delegate()->SetGooglePhotosPhotosFetcherForTest(
+          std::make_unique<::testing::NiceMock<
+              wallpaper_handlers::MockGooglePhotosPhotosFetcher>>(profile())));
+
+  // Parse one-photo responses where one of the photo's fields is missing.
+  for (const auto* const path : {"itemId.mediaKey", "filename",
+                                 "creationTimestamp", "photo.servingUrl"}) {
+    auto response = base::JSONReader::Read(kGooglePhotosPhotosFullResponse);
+    auto& photo = GetPhotoFromGooglePhotosPhotosResponse(response);
+    photo.RemovePath(path);
+    EXPECT_EQ(FetchGooglePhotosPhotosResponse::New(
+                  std::vector<GooglePhotosPhotoPtr>(), kResumeToken),
+              google_photos_photos_fetcher->ParseResponse(std::move(response)));
+  }
+
+  // Parse one-photo responses where one of the photo's fields has an invalid
+  // value.
+  std::vector<std::pair<std::string, std::string>> invalid_field_test_cases = {
+      {"creationTimestamp", ""},
+      {"creationTimestamp", "Bad timestamp"},
+      {"creationTimestamp", "2021T07:07:07.000Z"},
+      {"creationTimestamp", "31T07:07:07.000Z"},
+      {"creationTimestamp", "12T07:07:07.000Z"},
+      {"creationTimestamp", "12-31T07:07:07.000Z"},
+      {"creationTimestamp", "2021-31T07:07:07.000Z"},
+      {"creationTimestamp", "2021-12T07:07:07.000Z"},
+      {"creationTimestamp", "-2021-12-31T07:07:07.000Z"}};
+  EXPECT_CALL(*google_photos_photos_fetcher, ParseResponse).Times(9);
+  for (const auto& kv : invalid_field_test_cases) {
+    auto response = base::JSONReader::Read(kGooglePhotosPhotosFullResponse);
+    auto& photo = GetPhotoFromGooglePhotosPhotosResponse(response);
+    photo.SetStringPath(kv.first, kv.second);
+    EXPECT_EQ(FetchGooglePhotosPhotosResponse::New(
+                  std::vector<GooglePhotosPhotoPtr>(), kResumeToken),
+              google_photos_photos_fetcher->ParseResponse(std::move(response)));
+  }
+}
+
+TEST_P(PersonalizationAppWallpaperProviderImplGooglePhotosTest,
+       ParsePhotosValidPhoto) {
+  using ash::personalization_app::mojom::FetchGooglePhotosPhotosResponse;
+  using ash::personalization_app::mojom::GooglePhotosPhoto;
+  using ash::personalization_app::mojom::GooglePhotosPhotoPtr;
+
+  // Mock a fetcher to parse constructed responses.
+  auto* const google_photos_photos_fetcher = static_cast<
+      ::testing::NiceMock<wallpaper_handlers::MockGooglePhotosPhotosFetcher>*>(
+      delegate()->SetGooglePhotosPhotosFetcherForTest(
+          std::make_unique<::testing::NiceMock<
+              wallpaper_handlers::MockGooglePhotosPhotosFetcher>>(profile())));
+
+  // Ensure that photo timestamps resolve to the same date on all testing
+  // platforms.
+  icu::TimeZone::adoptDefault(icu::TimeZone::createTimeZone("UTC"));
+
+  // Parse a response with a valid photo and a resume token.
+  auto valid_photos_vector = std::vector<GooglePhotosPhotoPtr>();
+  valid_photos_vector.push_back(GooglePhotosPhoto::New(
+      "photoId", "photoName", u"Friday, December 31, 2021",
+      GURL("https://www.google.com/")));
+  EXPECT_EQ(FetchGooglePhotosPhotosResponse::New(
+                mojo::Clone(valid_photos_vector), kResumeToken),
+            google_photos_photos_fetcher->ParseResponse(
+                base::JSONReader::Read(kGooglePhotosPhotosFullResponse)));
+
+  // Parse a response with a valid photo and no resume token.
+  auto response = base::JSONReader::Read(kGooglePhotosPhotosFullResponse);
+  EXPECT_TRUE(response.has_value());
+  response->RemovePath("resumeToken");
+  EXPECT_EQ(FetchGooglePhotosPhotosResponse::New(std::move(valid_photos_vector),
+                                                 absl::nullopt),
+            google_photos_photos_fetcher->ParseResponse(std::move(response)));
+}
+
+TEST_P(PersonalizationAppWallpaperProviderImplGooglePhotosTest,
+       SelectGooglePhotosPhoto) {
+  test_wallpaper_controller()->ClearCounts();
+  const std::string photo_id = "OmnisVirLupus";
+  bool feature_enabled = GooglePhotosEnabled();
+
+  wallpaper_provider_remote()->get()->SelectGooglePhotosPhoto(
+      photo_id, base::BindLambdaForTesting([&feature_enabled](bool success) {
+        EXPECT_EQ(success, feature_enabled);
+      }));
+  wallpaper_provider_remote()->FlushForTesting();
+
+  EXPECT_EQ(1,
+            test_wallpaper_controller()->set_google_photos_wallpaper_count());
+  EXPECT_EQ(feature_enabled,
+            ash::WallpaperInfo(
+                {AccountId::FromUserEmailGaiaId(kFakeTestEmail, kTestGaiaId),
+                 photo_id}) ==
+                test_wallpaper_controller()->wallpaper_info().value_or(
+                    ash::WallpaperInfo()));
 }

@@ -850,20 +850,16 @@ xmlUTF8Strsize(const xmlChar *utf, int len) {
     while ( len-- > 0) {
         if ( !*ptr )
             break;
-        if ( (ch = *ptr++) & 0x80) {
-            // Workaround for an optimization bug in VS 2015 Update 2, remove
-            // once the fix is released. crbug.com/599427
-            // https://connect.microsoft.com/VisualStudio/feedback/details/2582138
-            xmlChar ch2 = ch;
-            while ((ch2<<=1) & 0x80 ) {
+        if ( (ch = *ptr++) & 0x80)
+            while ((ch<<=1) & 0x80 ) {
+		if (*ptr == 0) break;
                 ptr++;
-                if (*ptr == 0) break;
-            }
-        }
+	    }
     }
     ret = ptr - utf;
     return (ret > INT_MAX ? 0 : ret);
 }
+
 
 /**
  * xmlUTF8Strndup:

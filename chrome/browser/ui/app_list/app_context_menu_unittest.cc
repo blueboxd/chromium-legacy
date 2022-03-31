@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/app_constants/constants.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -265,7 +266,7 @@ class AppContextMenuTest : public AppListTestBase {
                         extensions::LaunchType launch_type) {
     scoped_refptr<extensions::Extension> store = MakeApp(app_id, platform_app);
     service_->AddExtension(store.get());
-    extensions::ExtensionRegistry::Get(profile())->AddEnabled(store);
+    service_->EnableExtension(app_id);
     app_service_test_.SetUp(profile());
     app_service_test_.FlushMojoCalls();
 
@@ -300,13 +301,13 @@ class AppContextMenuTest : public AppListTestBase {
   scoped_refptr<extensions::Extension> MakeChromeApp() {
     std::string err;
     base::DictionaryValue value;
-    value.SetString("name", "Chrome App");
-    value.SetString("version", "0.0");
-    value.SetString("app.launch.web_url", "http://google.com");
+    value.SetStringKey("name", "Chrome App");
+    value.SetStringKey("version", "0.0");
+    value.SetStringPath("app.launch.web_url", "http://google.com");
     scoped_refptr<extensions::Extension> app = extensions::Extension::Create(
         base::FilePath(), extensions::mojom::ManifestLocation::kInternal, value,
         extensions::Extension::WAS_INSTALLED_BY_DEFAULT,
-        extension_misc::kChromeAppId, &err);
+        app_constants::kChromeAppId, &err);
     EXPECT_EQ(err, "");
     return app;
   }
@@ -319,7 +320,7 @@ class AppContextMenuTest : public AppListTestBase {
 
     controller_ = std::make_unique<FakeAppListControllerDelegate>();
     AppServiceContextMenu menu(menu_delegate(), profile(),
-                               extension_misc::kChromeAppId, controller(),
+                               app_constants::kChromeAppId, controller(),
                                /*add_sort_options=*/false);
     std::unique_ptr<ui::MenuModel> menu_model = GetMenuModel(&menu);
     ASSERT_NE(nullptr, menu_model);
@@ -384,8 +385,8 @@ TEST_F(AppContextMenuTest, ArcMenu) {
   ArcAppTest arc_test;
   arc_test.SetUp(profile());
 
-  const arc::mojom::AppInfo& app_info = arc_test.fake_apps()[1];
-  const std::string app_id = ArcAppTest::GetAppId(app_info);
+  const auto& app_info = arc_test.fake_apps()[1];
+  const std::string app_id = ArcAppTest::GetAppId(*app_info);
   controller()->SetAppPinnable(app_id, AppListControllerDelegate::PIN_EDITABLE);
 
   arc_test.app_instance()->SendRefreshAppList(arc_test.fake_apps());
@@ -417,10 +418,10 @@ TEST_F(AppContextMenuTest, ArcMenu) {
   const std::vector<std::unique_ptr<arc::FakeAppInstance::Request>>&
       launch_requests = arc_test.app_instance()->launch_requests();
   ASSERT_EQ(1u, launch_requests.size());
-  EXPECT_TRUE(launch_requests[0]->IsForApp(app_info));
+  EXPECT_TRUE(launch_requests[0]->IsForApp(*app_info));
 
   controller()->SetAppOpen(app_id, true);
-  arc_test.app_instance()->SendTaskCreated(1, app_info, std::string());
+  arc_test.app_instance()->SendTaskCreated(1, *app_info, std::string());
 
   // It is not expected that menu model is unchanged on GetContextMenuModel.
   // ARC app menu requires model to be recalculated.
@@ -483,7 +484,7 @@ TEST_F(AppContextMenuTest, ArcMenu) {
 
   // Uninstall all apps.
   arc_test.app_instance()->SendRefreshAppList(
-      std::vector<arc::mojom::AppInfo>());
+      std::vector<arc::mojom::AppInfoPtr>());
   app_service_test().FlushMojoCalls();
   controller()->SetAppOpen(app_id, false);
 
@@ -566,8 +567,8 @@ TEST_F(AppContextMenuTest, ArcMenuStickyItem) {
 
   {
     // Verify menu of store
-    const arc::mojom::AppInfo& store_info = arc_test.fake_apps()[0];
-    const std::string store_id = ArcAppTest::GetAppId(store_info);
+    const auto& store_info = arc_test.fake_apps()[0];
+    const std::string store_id = ArcAppTest::GetAppId(*store_info);
     controller()->SetAppPinnable(store_id,
                                  AppListControllerDelegate::PIN_EDITABLE);
     std::unique_ptr<AppServiceAppItem> item =
@@ -603,13 +604,12 @@ TEST_F(AppContextMenuTest, ArcMenuSuspendedItem) {
   ArcAppTest arc_test;
   arc_test.SetUp(profile());
 
-  arc::mojom::AppInfo app = arc_test.fake_apps()[0];
-  app.suspended = true;
-
-  arc_test.app_instance()->SendRefreshAppList({app});
+  std::vector<arc::mojom::AppInfoPtr> apps;
+  apps.emplace_back(arc_test.fake_apps()[0]->Clone())->suspended = true;
+  arc_test.app_instance()->SendRefreshAppList(apps);
   app_service_test().FlushMojoCalls();
 
-  const std::string app_id = ArcAppTest::GetAppId(app);
+  const std::string app_id = ArcAppTest::GetAppId(*apps[0]);
   controller()->SetAppPinnable(app_id, AppListControllerDelegate::PIN_EDITABLE);
   std::unique_ptr<AppServiceAppItem> item = GetAppListItem(profile(), app_id);
   std::unique_ptr<ui::MenuModel> menu = GetContextMenuModel(item.get());
@@ -712,7 +712,7 @@ TEST_F(AppContextMenuLacrosTest, LacrosApp) {
 
   // Create the context menu.
   AppServiceContextMenu menu(menu_delegate(), profile(),
-                             extension_misc::kLacrosAppId, controller(),
+                             app_constants::kLacrosAppId, controller(),
                              /*add_sort_options=*/false);
   std::unique_ptr<ui::MenuModel> menu_model = GetMenuModel(&menu);
   ASSERT_NE(menu_model, nullptr);

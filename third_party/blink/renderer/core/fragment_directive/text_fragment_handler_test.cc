@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 
 #include "base/feature_list.h"
+#include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/shared_highlighting/core/common/shared_highlighting_features.h"
@@ -20,6 +21,7 @@
 #include "third_party/blink/renderer/core/css/font_face_set_document.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -68,7 +70,8 @@ class TextFragmentHandlerTest : public SimTest {
 
   String SelectThenRequestSelector(const Position& start, const Position& end) {
     SetSelection(start, end);
-    GetTextFragmentHandler().StartPreemptiveGenerationIfNeeded();
+    TextFragmentHandler::OpenedContextMenuOverSelection(
+        GetDocument().GetFrame());
     return RequestSelector();
   }
 
@@ -144,6 +147,8 @@ class TextFragmentHandlerTest : public SimTest {
   }
 
   TextFragmentHandler& GetTextFragmentHandler() {
+    if (!GetDocument().GetFrame()->GetTextFragmentHandler())
+      GetDocument().GetFrame()->CreateTextFragmentHandler();
     return *GetDocument().GetFrame()->GetTextFragmentHandler();
   }
 
@@ -580,7 +585,7 @@ TEST_F(TextFragmentHandlerTest, CheckPreemptiveGeneration) {
   ASSERT_EQ("First", PlainText(EphemeralRange(selected_start, selected_end)));
 
   SetSelection(selected_start, selected_end);
-  GetTextFragmentHandler().StartPreemptiveGenerationIfNeeded();
+  TextFragmentHandler::OpenedContextMenuOverSelection(GetDocument().GetFrame());
 
   base::RunLoop().RunUntilIdle();
 
@@ -603,7 +608,7 @@ TEST_F(TextFragmentHandlerTest, CheckNoPreemptiveGenerationBlocklist) {
   ASSERT_EQ("First", PlainText(EphemeralRange(selected_start, selected_end)));
 
   SetSelection(selected_start, selected_end);
-  GetTextFragmentHandler().StartPreemptiveGenerationIfNeeded();
+  TextFragmentHandler::OpenedContextMenuOverSelection(GetDocument().GetFrame());
 
   base::RunLoop().RunUntilIdle();
 
@@ -629,7 +634,7 @@ TEST_F(TextFragmentHandlerTest, CheckNoPreemptiveGenerationEditable) {
             PlainText(EphemeralRange(selected_start, selected_end)));
 
   SetSelection(selected_start, selected_end);
-  GetTextFragmentHandler().StartPreemptiveGenerationIfNeeded();
+  TextFragmentHandler::OpenedContextMenuOverSelection(GetDocument().GetFrame());
 
   base::RunLoop().RunUntilIdle();
 
@@ -657,14 +662,11 @@ TEST_F(TextFragmentHandlerTest, SecondGenerationCrash) {
   auto callback =
       WTF::Bind([](const TextFragmentSelector& selector,
                    shared_highlighting::LinkGenerationError error) {});
-  GetDocument()
-      .GetFrame()
-      ->GetTextFragmentHandler()
-      ->GetTextFragmentSelectorGenerator()
+  MakeGarbageCollected<TextFragmentSelectorGenerator>(GetDocument().GetFrame())
       ->SetCallbackForTesting(std::move(callback));
 
   // This shouldn't crash.
-  GetTextFragmentHandler().StartPreemptiveGenerationIfNeeded();
+  TextFragmentHandler::OpenedContextMenuOverSelection(GetDocument().GetFrame());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -754,7 +756,7 @@ TEST_F(TextFragmentHandlerTest,
   EXPECT_FALSE(HasTextFragmentHandler(child_frame));
 
   child_frame->CreateTextFragmentHandler();
-  GetTextFragmentHandler().StartPreemptiveGenerationIfNeeded();
+  TextFragmentHandler::OpenedContextMenuOverSelection(GetDocument().GetFrame());
 
   mojo::Remote<mojom::blink::TextFragmentReceiver> remote;
   child_frame->BindTextFragmentReceiver(remote.BindNewPipeAndPassReceiver());
@@ -803,7 +805,7 @@ TEST_F(TextFragmentHandlerTest,
   Compositor().BeginFrame();
 
   EXPECT_EQ(2u, GetDocument().Markers().Markers().size());
-  EXPECT_TRUE(HasTextFragmentHandler(GetDocument().GetFrame()));
+  EXPECT_FALSE(HasTextFragmentHandler(GetDocument().GetFrame()));
 
   mojo::Remote<mojom::blink::TextFragmentReceiver> remote;
   EXPECT_FALSE(remote.is_bound());
@@ -841,10 +843,10 @@ TEST_F(TextFragmentHandlerTest,
   SetSelection(selected_start, selected_end);
 
   mojo::Remote<mojom::blink::TextFragmentReceiver> remote;
-  EXPECT_TRUE(HasTextFragmentHandler(GetDocument().GetFrame()));
+  EXPECT_FALSE(HasTextFragmentHandler(GetDocument().GetFrame()));
   EXPECT_FALSE(remote.is_bound());
 
-  GetTextFragmentHandler().StartPreemptiveGenerationIfNeeded();
+  TextFragmentHandler::OpenedContextMenuOverSelection(GetDocument().GetFrame());
   GetDocument().GetFrame()->BindTextFragmentReceiver(
       remote.BindNewPipeAndPassReceiver());
 
@@ -1131,7 +1133,7 @@ TEST_F(TextFragmentHandlerTest, IfGeneratorResetShouldRecordCorrectError) {
   ASSERT_EQ(" ", PlainText(EphemeralRange(selected_start, selected_end)));
 
   SetSelection(selected_start, selected_end);
-  GetTextFragmentHandler().StartPreemptiveGenerationIfNeeded();
+  TextFragmentHandler::OpenedContextMenuOverSelection(GetDocument().GetFrame());
 
   // Reset |TextFragmentSelectorGenerator|.
   GetTextFragmentHandler().DidDetachDocumentOrFrame();

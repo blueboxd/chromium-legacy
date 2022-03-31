@@ -16,15 +16,18 @@
 namespace blink {
 namespace features {
 
+BLINK_COMMON_EXPORT extern const base::Feature kAutomaticLazyFrameLoadingToAds;
 BLINK_COMMON_EXPORT extern const base::Feature
     kAutomaticLazyFrameLoadingToEmbeds;
 BLINK_COMMON_EXPORT extern const base::Feature kBackForwardCacheDedicatedWorker;
 BLINK_COMMON_EXPORT extern const base::Feature
     kBlockingDownloadsInAdFrameWithoutUserActivation;
-BLINK_COMMON_EXPORT extern const base::Feature kCOEPForSharedWorker;
 BLINK_COMMON_EXPORT extern const base::Feature kCOLRV1Fonts;
 BLINK_COMMON_EXPORT extern const base::Feature kCSSContainerQueries;
 BLINK_COMMON_EXPORT extern const base::Feature kConversionMeasurement;
+BLINK_COMMON_EXPORT extern const base::Feature kExcludeLowEntropyImagesFromLCP;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<double>
+    kMinimumEntropyForLCP;
 BLINK_COMMON_EXPORT extern const base::Feature kGMSCoreEmoji;
 BLINK_COMMON_EXPORT extern const base::Feature
     kHandwritingRecognitionWebPlatformApiFinch;
@@ -47,6 +50,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kJSONModules;
 BLINK_COMMON_EXPORT extern const base::Feature kForceSynchronousHTMLParsing;
 BLINK_COMMON_EXPORT extern const base::Feature kEditingNG;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
+BLINK_COMMON_EXPORT extern const base::Feature kLayoutNGBlockInInline;
 BLINK_COMMON_EXPORT extern const base::Feature kMixedContentAutoupgrade;
 BLINK_COMMON_EXPORT extern const base::Feature kNavigationPredictor;
 BLINK_COMMON_EXPORT extern const base::Feature kPlzDedicatedWorker;
@@ -59,6 +63,7 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature
     kPrefersColorSchemeClientHintHeader;
 BLINK_COMMON_EXPORT extern const base::Feature kViewportHeightClientHintHeader;
+BLINK_COMMON_EXPORT extern const base::Feature kFullUserAgent;
 
 enum class FencedFramesImplementationType {
   kShadowDOM,
@@ -69,8 +74,48 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<
     kFencedFramesImplementationTypeParam;
 
 BLINK_COMMON_EXPORT extern const base::Feature kSharedStorageAPI;
+// Maximum number of URLs allowed to be included in the input parameter for
+// runURLSelectionOperation().
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kSharedStorageURLSelectionOperationInputURLSizeLimit;
+// Maximum length of Shared Storage script key and script value.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kMaxSharedStorageStringLength;
+// Maximum number of database entries at a time that any single origin is
+// permitted.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kMaxSharedStorageEntriesPerOrigin;
+// Maximum database page size in bytes. Must be a power of two between
+// 512 and 65536, inclusive.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kMaxSharedStoragePageSize;
+// Maximum database in-memory cache size, in pages.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kMaxSharedStorageCacheSize;
+// Maximum number of tries to initialize the database.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kMaxSharedStorageInitTries;
+// Maximum number of consecutive database errors allowed before the database is
+// razed. Consecutive errors are tallied, and if the next database operation
+// returns successfully, the consecutive error count is reset back to zero. If
+// the consecutive error count exceeds the threshold, then the database is
+// destroyed and recreated.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kMaxSharedStorageConsecutiveOperationErrorsAllowed;
+// The length of the initial interval from service startup after which
+// SharedStorageManager first checks for any stale origins, purging any that it
+// finds.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kSharedStorageStaleOriginPurgeInitialInterval;
+// The length of the second and subsequent intervals from service startup after
+// which SharedStorageManager checks for any stale origins, purging any that it
+// finds.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kSharedStorageStaleOriginPurgeRecurringInterval;
+// The length of time that an origin must be inactive for it to be deemed stale
+// and hence necessary to auto-purge.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kSharedStorageOriginStalenessThreshold;
 
 // Prerender2:
 // Enables the Prerender2 feature: https://crbug.com/1126305
@@ -329,8 +374,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableDarkMode;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableHandleLinks;
 
-BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableIsolatedStorage;
-
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableLaunchHandler;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableLinkCapturing;
@@ -358,10 +401,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature
     kSendCnameAliasesToSubresourceFilterFromRenderer;
 
-BLINK_COMMON_EXPORT extern const base::Feature kInterestCohortAPIOriginTrial;
-
-BLINK_COMMON_EXPORT extern const base::Feature kInterestCohortFeaturePolicy;
-
 BLINK_COMMON_EXPORT extern const base::Feature kDisableDocumentDomainByDefault;
 
 BLINK_COMMON_EXPORT extern const base::Feature kScopeMemoryCachePerContext;
@@ -369,7 +408,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kScopeMemoryCachePerContext;
 BLINK_COMMON_EXPORT extern const base::Feature kEnablePenetratingImageSelection;
 
 BLINK_COMMON_EXPORT extern const base::Feature kDocumentTransition;
-BLINK_COMMON_EXPORT extern const base::Feature kDocumentTransitionRenderer;
 
 // Used to configure a per-origin allowlist of performance.mark events that are
 // permitted to be included in slow reports traces. See crbug.com/1181774.
@@ -396,7 +434,7 @@ BLINK_COMMON_EXPORT extern const base::Feature
 
 // Main controls for ad serving API features.
 //
-// Backend storage + kill switch for Interest Group API  origin trials.
+// Backend storage + kill switch for Interest Group API origin trials.
 BLINK_COMMON_EXPORT extern const base::Feature kInterestGroupStorage;
 //
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
@@ -411,10 +449,13 @@ BLINK_COMMON_EXPORT extern const base::Feature kAdInterestGroupAPI;
 BLINK_COMMON_EXPORT extern const base::Feature kParakeet;
 // FLEDGE ad serving runtime flag/JS API.
 BLINK_COMMON_EXPORT extern const base::Feature kFledge;
-// Changes default Permissions Policy for features join-ad-interest-group and
-// run-ad-auction to a more restricted EnableForSelf.
+// Runtime flag that changes default Permissions Policy for features
+// join-ad-interest-group and run-ad-auction to a more restricted EnableForSelf.
 BLINK_COMMON_EXPORT extern const base::Feature
     kAdInterestGroupAPIRestrictedPolicyByDefault;
+// Debug reporting runtime flag/JS API.
+BLINK_COMMON_EXPORT extern const base::Feature
+    kBiddingAndScoringDebugReportingAPI;
 // Enables URN URLs like those produced by FLEDGE auctions to be displayed by
 // iframes (instead of requiring fenced frames). This is only intended to be
 // enabled as part of the FLEDGE origin trial.
@@ -509,19 +550,6 @@ extern const base::FeatureParam<double> kCostReductionOfMultiplexedRequests;
 BLINK_COMMON_EXPORT extern const base::Feature
     kForceMajorVersionInMinorPositionInUserAgent;
 
-// If enabled, the minor version number returned by Chrome will be forced to
-// 100.  This feature is only applicable for M96-M99 and will be removed after
-// M99.  The purpose of this feature is to allow testing of mitigation
-// strategies for conveying the major version number in the minor version string
-// if we decide to freeze the major version at 99.
-BLINK_COMMON_EXPORT extern const base::Feature kForceMinorVersion100InUserAgent;
-
-// If enabled, the major version number returned by Chrome will be forced to
-// 100.  This feature is only applicable for M96-M99 and will be removed after
-// M99.  The purpose of this feature is to allow users to test and proactively
-// fix any issues as we approach a 3-digit major version number.
-BLINK_COMMON_EXPORT extern const base::Feature kForceMajorVersion100InUserAgent;
-
 BLINK_COMMON_EXPORT extern const base::Feature kClientHintsDeviceMemory;
 BLINK_COMMON_EXPORT extern const base::Feature kClientHintsDPR;
 BLINK_COMMON_EXPORT extern const base::Feature kClientHintsResourceWidth;
@@ -582,7 +610,7 @@ BLINK_COMMON_EXPORT extern const base::Feature
 
 BLINK_COMMON_EXPORT extern const base::Feature kClientHintThirdPartyDelegation;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
 BLINK_COMMON_EXPORT extern const base::Feature kPrefetchAndroidFonts;
 #endif
 
@@ -591,7 +619,34 @@ BLINK_COMMON_EXPORT extern const base::Feature
 
 BLINK_COMMON_EXPORT extern const base::Feature kCompositedCaret;
 
+// Allows pages that support App Install Banners to stay eligible for the
+// back/forward cache.
+BLINK_COMMON_EXPORT extern const base::Feature kBackForwardCacheAppBanner;
+
 BLINK_COMMON_EXPORT extern const base::Feature kDefaultStyleSheetsEarlyInit;
+
+BLINK_COMMON_EXPORT extern const base::Feature kSystemColorChooser;
+
+// Disables forced frame updates for web tests. Used by web test runner only.
+BLINK_COMMON_EXPORT extern const base::Feature kNoForcedFrameUpdatesForWebTests;
+
+BLINK_COMMON_EXPORT extern const base::Feature kElementSuperRareData;
+
+BLINK_COMMON_EXPORT extern const base::Feature kClientHintsPartitionedCookies;
+
+BLINK_COMMON_EXPORT extern const base::Feature kScaleTileMemoryLimit;
+BLINK_COMMON_EXPORT
+extern const base::FeatureParam<double> kScaleTileMemoryLimitFactor;
+
+// If enabled, the client hints cache will be loaded on browser restarts.
+BLINK_COMMON_EXPORT extern const base::Feature kDurableClientHintsCache;
+
+// If enabled, allows web pages to use the experimental EditContext API to
+// better control text input. See crbug.com/999184.
+BLINK_COMMON_EXPORT extern const base::Feature kEditContext;
+
+// Enables the WindowPlacement RuntimeEnabledFeature.
+BLINK_COMMON_EXPORT extern const base::Feature kWindowPlacement;
 
 }  // namespace features
 }  // namespace blink

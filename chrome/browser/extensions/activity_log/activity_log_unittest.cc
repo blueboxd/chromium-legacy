@@ -90,6 +90,7 @@ class InterceptingRendererStartupHelper : public RendererStartupHelper,
     std::move(callback).Run();
   }
   void CancelSuspendExtension(const std::string& extension_id) override {}
+  void SetDeveloperMode(bool current_developer_mode) override {}
   void SetSessionInfo(version_info::Channel channel,
                       mojom::FeatureSessionType session,
                       bool is_lock_screen_context) override {}
@@ -116,13 +117,13 @@ class InterceptingRendererStartupHelper : public RendererStartupHelper,
   void UpdateTabSpecificPermissions(const std::string& extension_id,
                                     URLPatternSet new_hosts,
                                     int tab_id,
-                                    bool update_origin_whitelist) override {}
+                                    bool update_origin_allowlist) override {}
   void UpdateUserScripts(base::ReadOnlySharedMemoryRegion shared_memory,
                          mojom::HostIDPtr host_id) override {}
   void ClearTabSpecificPermissions(
       const std::vector<std::string>& extension_ids,
       int tab_id,
-      bool update_origin_whitelist) override {}
+      bool update_origin_allowlist) override {}
   void WatchPages(const std::vector<std::string>& css_selectors) override {}
 
   mojo::AssociatedReceiverSet<mojom::Renderer> receivers_;
@@ -367,8 +368,8 @@ TEST_F(ActivityLogTest, ArgUrlExtraction) {
   action->set_page_url(GURL("http://www.google.com/"));
   action->mutable_args()->Append("POST");
   action->mutable_args()->Append("http://api.google.com/");
-  action->mutable_other()->SetInteger(activity_log_constants::kActionDomVerb,
-                                      DomActionType::METHOD);
+  action->mutable_other()->SetIntKey(activity_log_constants::kActionDomVerb,
+                                     DomActionType::METHOD);
   activity_log->LogAction(action);
 
   // Submit a DOM API call with a relative URL in the argument, which should be
@@ -378,8 +379,8 @@ TEST_F(ActivityLogTest, ArgUrlExtraction) {
   action->set_page_url(GURL("http://www.google.com/"));
   action->mutable_args()->Append("POST");
   action->mutable_args()->Append("/api/");
-  action->mutable_other()->SetInteger(activity_log_constants::kActionDomVerb,
-                                      DomActionType::METHOD);
+  action->mutable_other()->SetIntKey(activity_log_constants::kActionDomVerb,
+                                     DomActionType::METHOD);
   activity_log->LogAction(action);
 
   // Submit a DOM API call with a relative URL but no base page URL against
@@ -388,8 +389,8 @@ TEST_F(ActivityLogTest, ArgUrlExtraction) {
                       Action::ACTION_DOM_ACCESS, "XMLHttpRequest.open");
   action->mutable_args()->Append("POST");
   action->mutable_args()->Append("/api/");
-  action->mutable_other()->SetInteger(activity_log_constants::kActionDomVerb,
-                                      DomActionType::METHOD);
+  action->mutable_other()->SetIntKey(activity_log_constants::kActionDomVerb,
+                                     DomActionType::METHOD);
   activity_log->LogAction(action);
 
   // Submit an API call with an embedded URL.
@@ -449,8 +450,8 @@ TEST_F(ActivityLogTest, ArgUrlApiCalls) {
     action = new Action(kExtensionId, now - base::Seconds(i),
                         Action::ACTION_DOM_ACCESS, kUrlApiCalls[i]);
     action->mutable_args()->Append("http://www.google.co.uk");
-    action->mutable_other()->SetInteger(activity_log_constants::kActionDomVerb,
-                                        DomActionType::SETTER);
+    action->mutable_other()->SetIntKey(activity_log_constants::kActionDomVerb,
+                                       DomActionType::SETTER);
     activity_log->LogAction(action);
   }
 

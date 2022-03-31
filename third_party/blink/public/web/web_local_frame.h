@@ -53,6 +53,10 @@
 #include "ui/gfx/range/range.h"
 #include "v8/include/v8-forward.h"
 
+namespace cc {
+class PaintCanvas;
+}  // namespace cc
+
 namespace gfx {
 class Point;
 class PointF;
@@ -98,7 +102,7 @@ struct WebPrintParams;
 struct WebPrintPresetOptions;
 struct WebScriptSource;
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
 struct WebFontFamilyNames;
 #endif
 
@@ -833,7 +837,7 @@ class WebLocalFrame : public WebFrame {
 
   // Fonts --------------------------------------------------------------------
 
-#if defined(OS_WIN)
+#if BUILDFLAG(IS_WIN)
   // Returns the font family names currently used.
   virtual WebFontFamilyNames GetWebFontFamilyNames() const = 0;
 #endif

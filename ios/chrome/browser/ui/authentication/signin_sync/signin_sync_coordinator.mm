@@ -24,8 +24,8 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
+#import "ios/chrome/browser/ui/authentication/enterprise/enterprise_prompt/enterprise_prompt_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
-#import "ios/chrome/browser/ui/authentication/enterprise/user_policy_signout/user_policy_signout_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
@@ -48,11 +48,11 @@
 #error "This file requires ARC support."
 #endif
 
-@interface SigninSyncCoordinator () <IdentityChooserCoordinatorDelegate,
+@interface SigninSyncCoordinator () <EnterprisePromptCoordinatorDelegate,
+                                     IdentityChooserCoordinatorDelegate,
                                      PolicyWatcherBrowserAgentObserving,
                                      SigninSyncMediatorDelegate,
-                                     SigninSyncViewControllerDelegate,
-                                     UserPolicySignoutCoordinatorDelegate> {
+                                     SigninSyncViewControllerDelegate> {
   // Observer for the sign-out policy changes.
   std::unique_ptr<PolicyWatcherBrowserAgentObserverBridge>
       _policyWatcherObserverBridge;
@@ -74,10 +74,9 @@
 @property(nonatomic, assign) first_run::SignInAttemptStatus attemptStatus;
 // Whether there was existing accounts when the screen was presented.
 @property(nonatomic, assign) BOOL hadIdentitiesAtStartup;
-// The coordinator that manages the prompt for when the user is signed out due
-// to policy.
+// The coordinator that manages enterprise prompts.
 @property(nonatomic, strong)
-    UserPolicySignoutCoordinator* policySignoutPromptCoordinator;
+    EnterprisePromptCoordinator* enterprisePromptCoordinator;
 // Account manager service to retrieve Chrome identities.
 @property(nonatomic, assign) ChromeAccountManagerService* accountManagerService;
 // YES if this coordinator is currently used in First Run. When set to NO, it
@@ -137,8 +136,26 @@
   self.signinIdentityOnStart =
       authenticationService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
 
-  if (!signin::IsSigninAllowedByPolicy() ||
-      IsSyncDisabledByPolicy(browserState)) {
+  switch (authenticationService->GetServiceStatus()) {
+    case AuthenticationService::ServiceStatus::SigninForcedByPolicy:
+    case AuthenticationService::ServiceStatus::SigninAllowed:
+      break;
+    case AuthenticationService::ServiceStatus::SigninDisabledByUser:
+      // This case is rare. This can happen if sign-in is disabled by user,
+      // and FRE is forced by the flag for test reason.
+      self.attemptStatus = first_run::SignInAttemptStatus::NOT_ATTEMPTED;
+      [self finishPresentingAndSkipRemainingScreens:NO];
+      return;
+    case AuthenticationService::ServiceStatus::SigninDisabledByPolicy:
+      self.attemptStatus = first_run::SignInAttemptStatus::SKIPPED_BY_POLICY;
+      [self finishPresentingAndSkipRemainingScreens:NO];
+      return;
+    case AuthenticationService::ServiceStatus::SigninDisabledByInternal:
+      self.attemptStatus = first_run::SignInAttemptStatus::NOT_SUPPORTED;
+      [self finishPresentingAndSkipRemainingScreens:NO];
+      return;
+  }
+  if (IsSyncDisabledByPolicy(browserState)) {
     // Skip the screen if sync is disabled by policy.
     self.attemptStatus = first_run::SignInAttemptStatus::SKIPPED_BY_POLICY;
     [self finishPresentingAndSkipRemainingScreens:NO];
@@ -234,8 +251,8 @@
                }];
   self.advancedSettingsSigninCoordinator = nil;
 
-  [self.policySignoutPromptCoordinator stop];
-  self.policySignoutPromptCoordinator = nil;
+  [self.enterprisePromptCoordinator stop];
+  self.enterprisePromptCoordinator = nil;
 }
 
 #pragma mark - SigninSyncViewControllerDelegate
@@ -260,7 +277,6 @@
   AuthenticationFlow* authenticationFlow =
       [[AuthenticationFlow alloc] initWithBrowser:self.browser
                                          identity:self.mediator.selectedIdentity
-                                  shouldClearData:SHOULD_CLEAR_DATA_USER_CHOICE
                                  postSignInAction:POST_SIGNIN_ACTION_NONE
                          presentingViewController:self.viewController];
   authenticationFlow.dispatcher = HandlerForProtocol(
@@ -329,14 +345,10 @@
   }
 }
 
-#pragma mark - UserPolicySignoutCoordinatorDelegate
+#pragma mark - EnterprisePromptCoordinatorDelegate
 
-- (void)hidePolicySignoutPromptForLearnMore:(BOOL)learnMore {
+- (void)hideEnterprisePrompForLearnMore:(BOOL)learnMore {
   [self dismissSignedOutModalAndSkipScreens:learnMore];
-}
-
-- (void)userPolicySignoutDidDismiss {
-  [self dismissSignedOutModalAndSkipScreens:NO];
 }
 
 #pragma mark - SigninSyncMediatorDelegate
@@ -368,19 +380,20 @@
 
 // Dismisses the Signed Out modal if it is still present and |skipScreens|.
 - (void)dismissSignedOutModalAndSkipScreens:(BOOL)skipScreens {
-  [self.policySignoutPromptCoordinator stop];
-  self.policySignoutPromptCoordinator = nil;
+  [self.enterprisePromptCoordinator stop];
+  self.enterprisePromptCoordinator = nil;
   [self finishPresentingAndSkipRemainingScreens:skipScreens];
 }
 
 // Shows the modal letting the user know that they have been signed out.
 - (void)showSignedOutModal {
   self.attemptStatus = first_run::SignInAttemptStatus::SKIPPED_BY_POLICY;
-  self.policySignoutPromptCoordinator = [[UserPolicySignoutCoordinator alloc]
+  self.enterprisePromptCoordinator = [[EnterprisePromptCoordinator alloc]
       initWithBaseViewController:self.viewController
-                         browser:self.browser];
-  self.policySignoutPromptCoordinator.delegate = self;
-  [self.policySignoutPromptCoordinator start];
+                         browser:self.browser
+                      promptType:EnterprisePromptTypeForceSignOut];
+  self.enterprisePromptCoordinator.delegate = self;
+  [self.enterprisePromptCoordinator start];
 }
 
 // Completes the presentation of the screen, recording the metrics and notifying
@@ -462,7 +475,6 @@
   AuthenticationFlow* authenticationFlow =
       [[AuthenticationFlow alloc] initWithBrowser:self.browser
                                          identity:self.mediator.selectedIdentity
-                                  shouldClearData:SHOULD_CLEAR_DATA_USER_CHOICE
                                  postSignInAction:POST_SIGNIN_ACTION_COMMIT_SYNC
                          presentingViewController:self.viewController];
   authenticationFlow.dispatcher = HandlerForProtocol(

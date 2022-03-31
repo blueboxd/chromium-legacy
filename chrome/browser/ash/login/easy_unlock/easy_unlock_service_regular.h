@@ -18,7 +18,7 @@
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 // TODO(https://crbug.com/1164001): move to forward declaration
-#include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
+#include "ash/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "components/prefs/pref_change_registrar.h"
 
 namespace base {
@@ -38,7 +38,6 @@ class EasyUnlockNotificationController;
 // profiles.
 class EasyUnlockServiceRegular
     : public EasyUnlockService,
-      public proximity_auth::ScreenlockBridge::Observer,
       public device_sync::DeviceSyncClient::Observer,
       public multidevice_setup::MultiDeviceSetupClient::Observer {
  public:
@@ -112,7 +111,7 @@ class EasyUnlockServiceRegular
       const std::set<std::string>& public_keys_before_sync,
       const std::set<std::string>& public_keys_after_sync);
 
-  // proximity_auth::ScreenlockBridge::Observer implementation:
+  // EasyUnlockService:
   void OnScreenDidLock(proximity_auth::ScreenlockBridge::LockHandler::ScreenType
                            screen_type) override;
   void OnScreenDidUnlock(

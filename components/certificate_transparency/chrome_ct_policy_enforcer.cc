@@ -114,7 +114,7 @@ OperatorHistoryEntry::OperatorHistoryEntry(const OperatorHistoryEntry& other) =
 
 ChromeCTPolicyEnforcer::ChromeCTPolicyEnforcer(
     base::Time log_list_date,
-    std::vector<std::pair<std::string, base::TimeDelta>> disqualified_logs,
+    std::vector<std::pair<std::string, base::Time>> disqualified_logs,
     std::vector<std::string> operated_by_google_logs,
     std::map<std::string, OperatorHistoryEntry> log_operator_history)
     : disqualified_logs_(std::move(disqualified_logs)),
@@ -152,7 +152,7 @@ CTPolicyCompliance ChromeCTPolicyEnforcer::CheckCompliance(
 
 void ChromeCTPolicyEnforcer::UpdateCTLogList(
     base::Time update_time,
-    std::vector<std::pair<std::string, base::TimeDelta>> disqualified_logs,
+    std::vector<std::pair<std::string, base::Time>> disqualified_logs,
     std::vector<std::string> operated_by_google_logs,
     std::map<std::string, OperatorHistoryEntry> log_operator_history) {
   log_list_date_ = update_time;
@@ -172,7 +172,7 @@ bool ChromeCTPolicyEnforcer::IsLogDisqualified(
   if (p == std::end(disqualified_logs_) || p->first != log_id) {
     return false;
   }
-  *disqualification_date = base::Time::UnixEpoch() + p->second;
+  *disqualification_date = p->second;
   if (base::Time::Now() < *disqualification_date) {
     return false;
   }
@@ -220,7 +220,7 @@ CTPolicyCompliance ChromeCTPolicyEnforcer::CheckCTPolicyCompliance(
     issuance_date = std::min(sct->timestamp, issuance_date);
   }
 
-  // Certificates issued after this date (February 1, 2022, OO:OO:OO GMT)
+  // Certificates issued after this date (April 15, 2022, OO:OO:OO GMT)
   // will be subject to the new CT policy, which:
   // -Removes the One Google log requirement.
   // -Introduces a log operator diversity (at least 2 SCTs that come from
@@ -230,7 +230,7 @@ CTPolicyCompliance ChromeCTPolicyEnforcer::CheckCTPolicyCompliance(
   // Increases the SCT requirements for certificates with a lifetime between
   // 180 days and 15 months, from 2 to 3.
   const base::Time kPolicyUpdateDate =
-      base::Time::UnixEpoch() + base::Seconds(1643673600);
+      base::Time::UnixEpoch() + base::Seconds(1649980800);
   bool use_2022_policy =
       base::FeatureList::IsEnabled(
           features::kCertificateTransparency2022PolicyAllCerts) ||
@@ -421,7 +421,7 @@ std::string ChromeCTPolicyEnforcer::GetOperatorForLog(
   DCHECK(log_operator_history_.find(log_id) != log_operator_history_.end());
   OperatorHistoryEntry log_history = log_operator_history_.at(log_id);
   for (auto operator_entry : log_history.previous_operators_) {
-    if (timestamp - base::Time::UnixEpoch() < operator_entry.second)
+    if (timestamp < operator_entry.second)
       return operator_entry.first;
   }
   // Either the log has only ever had one operator, or the timestamp is after

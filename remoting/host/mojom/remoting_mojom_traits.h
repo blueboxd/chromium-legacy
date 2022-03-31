@@ -8,14 +8,23 @@
 #include <stddef.h>
 #include <string>
 
+#include "base/numerics/safe_conversions.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/base/byte_string_mojom_traits.h"
 #include "mojo/public/cpp/bindings/array_traits_protobuf.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
+#include "remoting/host/base/desktop_environment_options.h"
+#include "remoting/host/base/screen_resolution.h"
 #include "remoting/host/mojom/desktop_session.mojom-shared.h"
+#include "remoting/host/mojom/remoting_host.mojom-shared.h"
+#include "remoting/host/mojom/webrtc_types.mojom-shared.h"
 #include "remoting/host/mojom/wrapped_primitives.mojom-shared.h"
 #include "remoting/proto/event.pb.h"
+#include "remoting/protocol/transport.h"
+#include "services/network/public/cpp/ip_endpoint_mojom_traits.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 
 namespace mojo {
@@ -52,6 +61,131 @@ class mojo::StructTraits<remoting::mojom::Int32DataView, int32_t> {
     *out_value = data_view.value();
     return true;
   }
+};
+
+template <>
+class mojo::StructTraits<remoting::mojom::UInt32DataView, uint32_t> {
+ public:
+  static uint32_t value(uint32_t value) { return value; }
+
+  static bool Read(remoting::mojom::UInt32DataView data_view,
+                   uint32_t* out_value) {
+    *out_value = data_view.value();
+    return true;
+  }
+};
+
+template <>
+class mojo::StructTraits<remoting::mojom::DesktopCaptureOptionsDataView,
+                         ::webrtc::DesktopCaptureOptions> {
+ public:
+  static bool use_update_notifications(
+      const ::webrtc::DesktopCaptureOptions& options) {
+    return options.use_update_notifications();
+  }
+
+  static bool detect_updated_region(
+      const ::webrtc::DesktopCaptureOptions& options) {
+    return options.detect_updated_region();
+  }
+
+#if BUILDFLAG(IS_WIN)
+  static bool allow_directx_capturer(
+      const ::webrtc::DesktopCaptureOptions& options) {
+    return options.allow_directx_capturer();
+  }
+#endif  // BUILDFLAG(IS_WIN)
+
+  static bool Read(remoting::mojom::DesktopCaptureOptionsDataView data_view,
+                   ::webrtc::DesktopCaptureOptions* out_options);
+};
+
+template <>
+class mojo::StructTraits<remoting::mojom::DesktopEnvironmentOptionsDataView,
+                         ::remoting::DesktopEnvironmentOptions> {
+ public:
+  static bool enable_curtaining(
+      const ::remoting::DesktopEnvironmentOptions& options) {
+    return options.enable_curtaining();
+  }
+
+  static bool enable_user_interface(
+      const ::remoting::DesktopEnvironmentOptions& options) {
+    return options.enable_user_interface();
+  }
+
+  static bool enable_notifications(
+      const ::remoting::DesktopEnvironmentOptions& options) {
+    return options.enable_notifications();
+  }
+
+  static bool terminate_upon_input(
+      const ::remoting::DesktopEnvironmentOptions& options) {
+    return options.terminate_upon_input();
+  }
+
+  static bool enable_file_transfer(
+      const ::remoting::DesktopEnvironmentOptions& options) {
+    return options.enable_file_transfer();
+  }
+
+  static bool enable_remote_open_url(
+      const ::remoting::DesktopEnvironmentOptions& options) {
+    return options.enable_remote_open_url();
+  }
+
+  static bool enable_remote_webauthn(
+      const ::remoting::DesktopEnvironmentOptions& options) {
+    return options.enable_remote_webauthn();
+  }
+
+  static absl::optional<uint32_t> clipboard_size(
+      const ::remoting::DesktopEnvironmentOptions& options) {
+    if (!options.clipboard_size().has_value()) {
+      return absl::nullopt;
+    }
+
+    size_t clipboard_size = options.clipboard_size().value();
+    return base::IsValueInRangeForNumericType<int>(clipboard_size)
+               ? clipboard_size
+               : INT_MAX;
+  }
+
+  static const webrtc::DesktopCaptureOptions& desktop_capture_options(
+      const ::remoting::DesktopEnvironmentOptions& options) {
+    return *options.desktop_capture_options();
+  }
+
+  static bool Read(remoting::mojom::DesktopEnvironmentOptionsDataView data_view,
+                   ::remoting::DesktopEnvironmentOptions* out_options);
+};
+
+template <>
+class mojo::StructTraits<remoting::mojom::DesktopSizeDataView,
+                         ::webrtc::DesktopSize> {
+ public:
+  static int32_t width(const ::webrtc::DesktopSize& size) {
+    return size.width();
+  }
+
+  static int32_t height(const ::webrtc::DesktopSize& size) {
+    return size.height();
+  }
+
+  static bool Read(remoting::mojom::DesktopSizeDataView data_view,
+                   ::webrtc::DesktopSize* out_size);
+};
+
+template <>
+class mojo::StructTraits<remoting::mojom::DesktopVectorDataView,
+                         ::webrtc::DesktopVector> {
+ public:
+  static int32_t x(const ::webrtc::DesktopVector& vector) { return vector.x(); }
+
+  static int32_t y(const ::webrtc::DesktopVector& vector) { return vector.y(); }
+
+  static bool Read(remoting::mojom::DesktopVectorDataView data_view,
+                   ::webrtc::DesktopVector* out_vector);
 };
 
 template <>
@@ -252,6 +386,24 @@ class mojo::StructTraits<remoting::mojom::MouseEventDataView,
 };
 
 template <>
+class mojo::StructTraits<remoting::mojom::ScreenResolutionDataView,
+                         ::remoting::ScreenResolution> {
+ public:
+  static const ::webrtc::DesktopSize& dimensions(
+      const ::remoting::ScreenResolution& resolution) {
+    return resolution.dimensions();
+  }
+
+  static const ::webrtc::DesktopVector& dpi(
+      const ::remoting::ScreenResolution& resolution) {
+    return resolution.dpi();
+  }
+
+  static bool Read(remoting::mojom::ScreenResolutionDataView data_view,
+                   ::remoting::ScreenResolution* out_resolution);
+};
+
+template <>
 class mojo::StructTraits<remoting::mojom::TextEventDataView,
                          ::remoting::protocol::TextEvent> {
  public:
@@ -357,6 +509,187 @@ class mojo::StructTraits<remoting::mojom::TouchEventDataView,
 
   static bool Read(remoting::mojom::TouchEventDataView data_view,
                    ::remoting::protocol::TouchEvent* out_event);
+};
+
+template <>
+struct EnumTraits<remoting::mojom::TransportRouteType,
+                  ::remoting::protocol::TransportRoute::RouteType> {
+  static remoting::mojom::TransportRouteType ToMojom(
+      ::remoting::protocol::TransportRoute::RouteType input) {
+    switch (input) {
+      case ::remoting::protocol::TransportRoute::RouteType::DIRECT:
+        return remoting::mojom::TransportRouteType::kDirect;
+      case ::remoting::protocol::TransportRoute::RouteType::STUN:
+        return remoting::mojom::TransportRouteType::kStun;
+      case ::remoting::protocol::TransportRoute::RouteType::RELAY:
+        return remoting::mojom::TransportRouteType::kRelay;
+    }
+
+    NOTREACHED();
+    return remoting::mojom::TransportRouteType::kUndefined;
+  }
+
+  static bool FromMojom(remoting::mojom::TransportRouteType input,
+                        ::remoting::protocol::TransportRoute::RouteType* out) {
+    switch (input) {
+      case remoting::mojom::TransportRouteType::kUndefined:
+        // kUndefined does not map to a value in TransportRoute::RouteType so
+        // it should be treated the same as any other unknown value.
+        break;
+      case remoting::mojom::TransportRouteType::kDirect:
+        *out = ::remoting::protocol::TransportRoute::RouteType::DIRECT;
+        return true;
+      case remoting::mojom::TransportRouteType::kStun:
+        *out = ::remoting::protocol::TransportRoute::RouteType::STUN;
+        return true;
+      case remoting::mojom::TransportRouteType::kRelay:
+        *out = ::remoting::protocol::TransportRoute::RouteType::RELAY;
+        return true;
+    }
+
+    NOTREACHED();
+    return false;
+  }
+};
+
+template <>
+class mojo::StructTraits<remoting::mojom::TransportRouteDataView,
+                         ::remoting::protocol::TransportRoute> {
+ public:
+  static ::remoting::protocol::TransportRoute::RouteType type(
+      const ::remoting::protocol::TransportRoute& transport_route) {
+    return transport_route.type;
+  }
+
+  static const ::net::IPEndPoint& remote_address(
+      const ::remoting::protocol::TransportRoute& transport_route) {
+    return transport_route.remote_address;
+  }
+
+  static const ::net::IPEndPoint& local_address(
+      const ::remoting::protocol::TransportRoute& transport_route) {
+    return transport_route.local_address;
+  }
+
+  static bool Read(remoting::mojom::TransportRouteDataView data_view,
+                   ::remoting::protocol::TransportRoute* out_transport_route);
+};
+
+template <>
+struct EnumTraits<remoting::mojom::ProtocolErrorCode,
+                  ::remoting::protocol::ErrorCode> {
+  static remoting::mojom::ProtocolErrorCode ToMojom(
+      ::remoting::protocol::ErrorCode input) {
+    switch (input) {
+      case ::remoting::protocol::ErrorCode::OK:
+        return remoting::mojom::ProtocolErrorCode::kOk;
+      case ::remoting::protocol::ErrorCode::PEER_IS_OFFLINE:
+        return remoting::mojom::ProtocolErrorCode::kPeerIsOffline;
+      case ::remoting::protocol::ErrorCode::SESSION_REJECTED:
+        return remoting::mojom::ProtocolErrorCode::kSessionRejected;
+      case ::remoting::protocol::ErrorCode::INCOMPATIBLE_PROTOCOL:
+        return remoting::mojom::ProtocolErrorCode::kIncompatibleProtocol;
+      case ::remoting::protocol::ErrorCode::AUTHENTICATION_FAILED:
+        return remoting::mojom::ProtocolErrorCode::kAuthenticationFailed;
+      case ::remoting::protocol::ErrorCode::INVALID_ACCOUNT:
+        return remoting::mojom::ProtocolErrorCode::kInvalidAccount;
+      case ::remoting::protocol::ErrorCode::CHANNEL_CONNECTION_ERROR:
+        return remoting::mojom::ProtocolErrorCode::kChannelConnectionError;
+      case ::remoting::protocol::ErrorCode::SIGNALING_ERROR:
+        return remoting::mojom::ProtocolErrorCode::kSignalingError;
+      case ::remoting::protocol::ErrorCode::SIGNALING_TIMEOUT:
+        return remoting::mojom::ProtocolErrorCode::kSignalingTimeout;
+      case ::remoting::protocol::ErrorCode::HOST_OVERLOAD:
+        return remoting::mojom::ProtocolErrorCode::kHostOverload;
+      case ::remoting::protocol::ErrorCode::MAX_SESSION_LENGTH:
+        return remoting::mojom::ProtocolErrorCode::kMaxSessionLength;
+      case ::remoting::protocol::ErrorCode::HOST_CONFIGURATION_ERROR:
+        return remoting::mojom::ProtocolErrorCode::kHostConfigurationError;
+      case ::remoting::protocol::ErrorCode::UNKNOWN_ERROR:
+        return remoting::mojom::ProtocolErrorCode::kUnknownError;
+      case ::remoting::protocol::ErrorCode::ELEVATION_ERROR:
+        return remoting::mojom::ProtocolErrorCode::kElevationError;
+      case ::remoting::protocol::ErrorCode::HOST_CERTIFICATE_ERROR:
+        return remoting::mojom::ProtocolErrorCode::kHostCertificateError;
+      case ::remoting::protocol::ErrorCode::HOST_REGISTRATION_ERROR:
+        return remoting::mojom::ProtocolErrorCode::kHostRegistrationError;
+      case ::remoting::protocol::ErrorCode::EXISTING_ADMIN_SESSION:
+        return remoting::mojom::ProtocolErrorCode::kExistingAdminSession;
+      case ::remoting::protocol::ErrorCode::AUTHZ_POLICY_CHECK_FAILED:
+        return remoting::mojom::ProtocolErrorCode::kAuthzPolicyCheckFailed;
+      case ::remoting::protocol::ErrorCode::DISALLOWED_BY_POLICY:
+        return remoting::mojom::ProtocolErrorCode::kDisallowedByPolicy;
+    }
+
+    NOTREACHED();
+    return remoting::mojom::ProtocolErrorCode::kUnknownError;
+  }
+
+  static bool FromMojom(remoting::mojom::ProtocolErrorCode input,
+                        ::remoting::protocol::ErrorCode* out) {
+    switch (input) {
+      case remoting::mojom::ProtocolErrorCode::kOk:
+        *out = ::remoting::protocol::ErrorCode::OK;
+        return true;
+      case remoting::mojom::ProtocolErrorCode::kPeerIsOffline:
+        *out = ::remoting::protocol::ErrorCode::PEER_IS_OFFLINE;
+        return true;
+      case remoting::mojom::ProtocolErrorCode::kSessionRejected:
+        *out = ::remoting::protocol::ErrorCode::SESSION_REJECTED;
+        return true;
+      case remoting::mojom::ProtocolErrorCode::kIncompatibleProtocol:
+        *out = ::remoting::protocol::ErrorCode::INCOMPATIBLE_PROTOCOL;
+        return true;
+      case remoting::mojom::ProtocolErrorCode::kAuthenticationFailed:
+        *out = ::remoting::protocol::ErrorCode::AUTHENTICATION_FAILED;
+        return true;
+      case remoting::mojom::ProtocolErrorCode::kInvalidAccount:
+        *out = ::remoting::protocol::ErrorCode::INVALID_ACCOUNT;
+        return true;
+      case remoting::mojom::ProtocolErrorCode::kChannelConnectionError:
+        *out = ::remoting::protocol::ErrorCode::CHANNEL_CONNECTION_ERROR;
+        return true;
+      case remoting::mojom::ProtocolErrorCode::kSignalingError:
+        *out = ::remoting::protocol::ErrorCode::SIGNALING_ERROR;
+        return true;
+      case remoting::mojom::ProtocolErrorCode::kSignalingTimeout:
+        *out = ::remoting::protocol::ErrorCode::SIGNALING_TIMEOUT;
+        return true;
+      case remoting::mojom::ProtocolErrorCode::kHostOverload:
+        *out = ::remoting::protocol::ErrorCode::HOST_OVERLOAD;
+        return true;
+      case remoting::mojom::ProtocolErrorCode::kMaxSessionLength:
+        *out = ::remoting::protocol::ErrorCode::MAX_SESSION_LENGTH;
+        return true;
+      case remoting::mojom::ProtocolErrorCode::kHostConfigurationError:
+        *out = ::remoting::protocol::ErrorCode::HOST_CONFIGURATION_ERROR;
+        return true;
+      case remoting::mojom::ProtocolErrorCode::kUnknownError:
+        *out = ::remoting::protocol::ErrorCode::UNKNOWN_ERROR;
+        return true;
+      case remoting::mojom::ProtocolErrorCode::kElevationError:
+        *out = ::remoting::protocol::ErrorCode::ELEVATION_ERROR;
+        return true;
+      case remoting::mojom::ProtocolErrorCode::kHostCertificateError:
+        *out = ::remoting::protocol::ErrorCode::HOST_CERTIFICATE_ERROR;
+        return true;
+      case remoting::mojom::ProtocolErrorCode::kHostRegistrationError:
+        *out = ::remoting::protocol::ErrorCode::HOST_REGISTRATION_ERROR;
+        return true;
+      case remoting::mojom::ProtocolErrorCode::kExistingAdminSession:
+        *out = ::remoting::protocol::ErrorCode::EXISTING_ADMIN_SESSION;
+        return true;
+      case remoting::mojom::ProtocolErrorCode::kAuthzPolicyCheckFailed:
+        *out = ::remoting::protocol::ErrorCode::AUTHZ_POLICY_CHECK_FAILED;
+        return true;
+      case remoting::mojom::ProtocolErrorCode::kDisallowedByPolicy:
+        *out = ::remoting::protocol::ErrorCode::DISALLOWED_BY_POLICY;
+        return true;
+    }
+
+    NOTREACHED();
+    return false;
+  }
 };
 
 }  // namespace mojo

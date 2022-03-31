@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/web_applications/os_integration_manager.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -72,6 +72,10 @@ AppId WebAppControllerBrowserTest::InstallPWA(const GURL& start_url) {
 AppId WebAppControllerBrowserTest::InstallWebApp(
     std::unique_ptr<WebAppInstallInfo> web_app_info) {
   return web_app::test::InstallWebApp(profile(), std::move(web_app_info));
+}
+
+void WebAppControllerBrowserTest::UninstallWebApp(const AppId& app_id) {
+  web_app::test::UninstallWebApp(profile(), app_id);
 }
 
 Browser* WebAppControllerBrowserTest::LaunchWebAppBrowser(const AppId& app_id) {
@@ -165,7 +169,7 @@ content::WebContents* WebAppControllerBrowserTest::OpenApplication(
   content::WebContents* contents =
       apps::AppServiceProxyFactory::GetForProfile(profile())
           ->BrowserAppLauncher()
-          ->LaunchAppWithParams(std::move(params));
+          ->LaunchAppWithParamsForTesting(std::move(params));
   url_observer.Wait();
   return contents;
 }

@@ -29,6 +29,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
@@ -49,8 +50,10 @@
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 #include "services/network/network_service.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
+#include "services/network/public/cpp/simple_url_loader_throttle.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -2395,7 +2398,7 @@ TEST_P(SimpleURLLoaderTest, CloseClientPipeBeforeBodyStarts) {
 // possible valid orders relative to read events (Which always occur in the same
 // order).
 // TODO(crbug.com/1286251): Flakes on ios simulator.
-#if defined(OS_IOS)
+#if BUILDFLAG(IS_IOS)
 #define MAYBE_CloseClientPipeOrder DISABLED_CloseClientPipeOrder
 #else
 #define MAYBE_CloseClientPipeOrder CloseClientPipeOrder
@@ -3763,6 +3766,167 @@ TEST_P(SimpleURLLoaderTest, DeleteInDownloadProgressCallback2) {
   test_helper->simple_url_loader()->SetOnDownloadProgressCallback(callback);
   test_helper->StartSimpleLoader(url_loader_factory_.get());
   run_loop.Run();
+}
+
+namespace {
+
+class FakeSimpleURLLoaderThrottleDelegate
+    : public SimpleURLLoaderThrottle::Delegate {
+ public:
+  FakeSimpleURLLoaderThrottleDelegate() = default;
+  ~FakeSimpleURLLoaderThrottleDelegate() override = default;
+
+  bool ShouldThrottle() override { return true; }
+};
+
+}  // namespace
+
+TEST_P(SimpleURLLoaderTest, BatchingSuccess) {
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      std::make_unique<network::ResourceRequest>();
+  resource_request->url = test_server_.GetURL("/echoheader?foo");
+  resource_request->headers.SetHeader("foo", kExpectedResponse);
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelper(std::move(resource_request));
+
+  test_helper->simple_url_loader()->SetAllowBatching();
+  SimpleURLLoaderThrottle* throttle =
+      test_helper->simple_url_loader()->GetThrottleForTesting();
+  throttle->SetDelegateForTesting(
+      std::make_unique<FakeSimpleURLLoaderThrottleDelegate>());
+
+  test_helper->StartSimpleLoader(url_loader_factory_.get());
+
+  throttle->OnReadyToStart();
+  test_helper->Wait();
+
+  EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper->GetResponseCode());
+  if (GetParam() != SimpleLoaderTestHelper::DownloadType::HEADERS_ONLY) {
+    EXPECT_TRUE(test_helper->simple_url_loader()->CompletionStatus());
+    EXPECT_EQ(kExpectedResponse, *test_helper->response_body());
+  }
+}
+
+TEST_P(SimpleURLLoaderTest, BatchingURLLoaderDisconnected) {
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      std::make_unique<network::ResourceRequest>();
+  resource_request->url = test_server_.GetURL("/echoheader?foo");
+  resource_request->headers.SetHeader("foo", kExpectedResponse);
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelper(std::move(resource_request));
+
+  test_helper->simple_url_loader()->SetAllowBatching();
+  SimpleURLLoaderThrottle* throttle =
+      test_helper->simple_url_loader()->GetThrottleForTesting();
+  throttle->SetDelegateForTesting(
+      std::make_unique<FakeSimpleURLLoaderThrottleDelegate>());
+
+  test_helper->StartSimpleLoader(url_loader_factory_.get());
+
+  // Destroy the NetworkContext to disconnect the URLLoaderFactory.
+  network_context_.reset();
+  base::RunLoop().RunUntilIdle();
+
+  throttle->OnReadyToStart();
+  test_helper->Wait();
+
+  EXPECT_EQ(net::ERR_FAILED, test_helper->simple_url_loader()->NetError());
+  EXPECT_FALSE(test_helper->simple_url_loader()->CompletionStatus());
+  EXPECT_FALSE(test_helper->simple_url_loader()->ResponseInfo());
+}
+
+TEST_P(SimpleURLLoaderTest, BatchingTimeout) {
+  constexpr base::TimeDelta kTimeout = base::Microseconds(1);
+
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      std::make_unique<network::ResourceRequest>();
+  resource_request->url = test_server_.GetURL("/echoheader?foo");
+  resource_request->headers.SetHeader("foo", kExpectedResponse);
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelper(std::move(resource_request));
+
+  test_helper->simple_url_loader()->SetAllowBatching();
+  SimpleURLLoaderThrottle* throttle =
+      test_helper->simple_url_loader()->GetThrottleForTesting();
+  throttle->SetDelegateForTesting(
+      std::make_unique<FakeSimpleURLLoaderThrottleDelegate>());
+  throttle->SetTimeoutForTesting(kTimeout);
+
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+
+  EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
+  EXPECT_EQ(200, test_helper->GetResponseCode());
+  if (GetParam() != SimpleLoaderTestHelper::DownloadType::HEADERS_ONLY) {
+    EXPECT_TRUE(test_helper->simple_url_loader()->CompletionStatus());
+    EXPECT_EQ(kExpectedResponse, *test_helper->response_body());
+  }
+}
+
+TEST(SimpleURLLoaderThrottleTest, BatchingDisabled_FeatureDisabled) {
+  SimpleURLLoaderThrottle::ResetConfigForTesting();
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      TRAFFIC_ANNOTATION_FOR_TESTS;
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kBatchSimpleURLLoader);
+
+  ASSERT_FALSE(SimpleURLLoaderThrottle::IsBatchingEnabled(traffic_annotation));
+}
+
+TEST(SimpleURLLoaderThrottleTest,
+     BatchingDisabled_TrafficAnnotationIsNotSpecified) {
+  SimpleURLLoaderThrottle::ResetConfigForTesting();
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      TRAFFIC_ANNOTATION_FOR_TESTS;
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kBatchSimpleURLLoader);
+
+  ASSERT_FALSE(SimpleURLLoaderThrottle::IsBatchingEnabled(traffic_annotation));
+}
+
+TEST(SimpleURLLoaderThrottleTest, BatchingEnabled_OneTrafficAnnotation) {
+  SimpleURLLoaderThrottle::ResetConfigForTesting();
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      TRAFFIC_ANNOTATION_FOR_TESTS;
+
+  std::string traffic_annotation_hashes =
+      base::StringPrintf("%d", traffic_annotation.unique_id_hash_code);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kBatchSimpleURLLoader,
+      {{kBatchSimpleURLLoaderEnabledTrafficAnnotationHashesParam,
+        traffic_annotation_hashes}});
+
+  ASSERT_TRUE(SimpleURLLoaderThrottle::IsBatchingEnabled(traffic_annotation));
+}
+
+TEST(SimpleURLLoaderThrottleTest, BatchingEnabled_TwoTrafficAnnotations) {
+  SimpleURLLoaderThrottle::ResetConfigForTesting();
+  net::NetworkTrafficAnnotationTag traffic_annotation1 =
+      TRAFFIC_ANNOTATION_FOR_TESTS;
+  net::NetworkTrafficAnnotationTag traffic_annotation2 =
+      net::DefineNetworkTrafficAnnotation(
+          "test2", "Second traffic annotation for tests");
+  net::NetworkTrafficAnnotationTag traffic_annotation3 =
+      net::DefineNetworkTrafficAnnotation("test3",
+                                          "Third traffic annotation for tests");
+
+  std::string traffic_annotation_hashes =
+      base::StringPrintf("%d,%d", traffic_annotation1.unique_id_hash_code,
+                         traffic_annotation2.unique_id_hash_code);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kBatchSimpleURLLoader,
+      {{kBatchSimpleURLLoaderEnabledTrafficAnnotationHashesParam,
+        traffic_annotation_hashes}});
+
+  ASSERT_TRUE(SimpleURLLoaderThrottle::IsBatchingEnabled(traffic_annotation1));
+  ASSERT_TRUE(SimpleURLLoaderThrottle::IsBatchingEnabled(traffic_annotation2));
+  ASSERT_FALSE(SimpleURLLoaderThrottle::IsBatchingEnabled(traffic_annotation3));
 }
 
 }  // namespace

@@ -513,15 +513,15 @@ void UserManagerBase::UpdateUserAccountData(
   UpdateUserAccountLocale(account_id, account_data.locale());
 }
 
-void UserManagerBase::ParseUserList(const base::ListValue& users_list,
-                                    const std::set<AccountId>& existing_users,
-                                    std::vector<AccountId>* users_vector,
-                                    std::set<AccountId>* users_set) {
+void UserManagerBase::ParseUserList(
+    const base::Value::ConstListView& users_list,
+    const std::set<AccountId>& existing_users,
+    std::vector<AccountId>* users_vector,
+    std::set<AccountId>* users_set) {
   users_vector->clear();
   users_set->clear();
-  base::Value::ConstListView users_list_view = users_list.GetList();
-  for (size_t i = 0; i < users_list_view.size(); ++i) {
-    const std::string* email = users_list_view[i].GetIfString();
+  for (size_t i = 0; i < users_list.size(); ++i) {
+    const std::string* email = users_list[i].GetIfString();
     if (!email || email->empty()) {
       LOG(ERROR) << "Corrupt entry in user list at index " << i << ".";
       continue;
@@ -820,7 +820,7 @@ void UserManagerBase::EnsureUsersLoaded() {
   // Load regular users and supervised users.
   std::vector<AccountId> regular_users;
   std::set<AccountId> regular_users_set;
-  ParseUserList(base::Value::AsListValue(*prefs_regular_users),
+  ParseUserList(prefs_regular_users->GetListDeprecated(),
                 device_local_accounts_set, &regular_users, &regular_users_set);
   for (std::vector<AccountId>::const_iterator it = regular_users.begin();
        it != regular_users.end(); ++it) {
@@ -836,7 +836,8 @@ void UserManagerBase::EnsureUsersLoaded() {
         User::CreateRegularUser(*it, GetStoredUserType(prefs_user_types, *it));
     user->set_oauth_token_status(LoadUserOAuthStatus(*it));
     user->set_force_online_signin(LoadForceOnlineSignin(*it));
-    user->set_using_saml(known_user::IsUsingSAML(*it));
+    KnownUser known_user(GetLocalState());
+    user->set_using_saml(known_user.IsUsingSAML(*it));
     users_.push_back(user);
   }
 
@@ -881,7 +882,7 @@ const User* UserManagerBase::FindUserInList(const AccountId& account_id) const {
 
 bool UserManagerBase::UserExistsInList(const AccountId& account_id) const {
   const base::Value* user_list = GetLocalState()->GetList(kRegularUsersPref);
-  for (const base::Value& i : user_list->GetList()) {
+  for (const base::Value& i : user_list->GetListDeprecated()) {
     const std::string* email = i.GetIfString();
     if (email && (account_id.GetUserEmail() == *email))
       return true;
@@ -906,7 +907,7 @@ void UserManagerBase::GuestUserLoggedIn() {
 void UserManagerBase::AddUserRecord(User* user) {
   // Add the user to the front of the user list.
   ListPrefUpdate prefs_users_update(GetLocalState(), kRegularUsersPref);
-  prefs_users_update->Insert(prefs_users_update->GetList().begin(),
+  prefs_users_update->Insert(prefs_users_update->GetListDeprecated().begin(),
                              base::Value(user->GetAccountId().GetUserEmail()));
   users_.insert(users_.begin(), user);
 }
@@ -916,9 +917,14 @@ void UserManagerBase::RegularUserLoggedIn(const AccountId& account_id,
   // Remove the user from the user list.
   active_user_ =
       RemoveRegularOrSupervisedUserFromList(account_id, false /* notify */);
+  KnownUser known_user(GetLocalState());
 
-  if (active_user_ && active_user_->GetType() != user_type)
+  if (active_user_ && active_user_->GetType() != user_type) {
     active_user_->UpdateType(user_type);
+    // Clear information about profile policy requirements to enforce setting it
+    // again for the new account type.
+    known_user.ClearProfileRequiresPolicy(account_id);
+  }
 
   // If the user was not found on the user list, create a new user.
   SetIsCurrentUserNew(!active_user_);
@@ -934,8 +940,7 @@ void UserManagerBase::RegularUserLoggedIn(const AccountId& account_id,
   }
 
   AddUserRecord(active_user_);
-  KnownUser(GetLocalState())
-      .SetIsEphemeralUser(active_user_->GetAccountId(), false);
+  known_user.SetIsEphemeralUser(active_user_->GetAccountId(), false);
 
   // Make sure that new data is persisted to Local State.
   GetLocalState()->CommitPendingWrite();

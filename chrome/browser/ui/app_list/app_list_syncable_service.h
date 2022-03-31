@@ -240,6 +240,9 @@ class AppListSyncableService : public syncer::SyncableService,
   // reorder::AppListReorderDelegate:
   void SetAppListPreferredOrder(ash::AppListSortOrder order) override;
   syncer::StringOrdinal CalculateGlobalFrontPosition() const override;
+  bool CalculateItemPositionInPermanentSortOrder(
+      const ash::AppListItemMetadata& metadata,
+      syncer::StringOrdinal* target_position) const override;
   ash::AppListSortOrder GetPermanentSortingOrder() const override;
 
  private:

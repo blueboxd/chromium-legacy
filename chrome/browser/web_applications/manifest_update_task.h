@@ -22,6 +22,7 @@
 
 namespace webapps {
 struct InstallableData;
+enum class InstallResultCode;
 }
 
 namespace web_app {
@@ -35,7 +36,6 @@ class OsIntegrationManager;
 
 enum class AppIdentityUpdate;
 enum class IconsDownloadedResult;
-enum class InstallResultCode;
 
 struct IconDiff;
 
@@ -227,9 +227,9 @@ class ManifestUpdateTask final
   void UpdateAfterWindowsClose();
   void OnAllAppWindowsClosed();
   void OnExistingIconsRead(IconBitmaps icon_bitmaps);
-  void OnInstallationComplete(
-      const AppId& app_id,
-      InstallResultCode code);
+  void OnInstallationComplete(const AppId& app_id,
+                              webapps::InstallResultCode code,
+                              OsHooksErrors os_hooks_errors);
   void DestroySelf(ManifestUpdateResult result);
 
   const WebAppRegistrar& registrar_;

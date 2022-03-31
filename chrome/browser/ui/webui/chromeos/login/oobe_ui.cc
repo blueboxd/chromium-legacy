@@ -86,6 +86,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_fatal_error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/smart_privacy_protection_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/ssh_configured_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
@@ -143,7 +144,6 @@ const char* kKnownDisplayTypes[] = {
     OobeUI::kLoginDisplay, OobeUI::kOobeDisplay};
 
 // Sorted
-constexpr char kArcAssistantLogoPath[] = "assistant_logo.png";
 constexpr char kArcOverlayCSSPath[] = "overlay.css";
 constexpr char kArcPlaystoreCSSPath[] = "playstore.css";
 constexpr char kArcPlaystoreJSPath[] = "playstore.js";
@@ -161,6 +161,9 @@ constexpr char kKeyboardUtilsForInjectionPath[] =
 constexpr char kLoginJSPath[] = "login.js";
 constexpr char kOobeJSPath[] = "oobe.js";
 constexpr char kProductLogoPath[] = "product-logo.png";
+// TODO(crbug.com/1261902): Remove.
+constexpr char kRecommendAppOldListViewJSPath[] =
+    "recommend_app_old_list_view.js";
 constexpr char kRecommendAppListViewJSPath[] = "recommend_app_list_view.js";
 constexpr char kTestAPIJSPath[] = "test_api.js";
 constexpr char kTestAPIJsMPath[] = "test_api/test_api.m.js";
@@ -183,7 +186,6 @@ constexpr char kArcAppDownloadingVideoPath[] = "res/arc_app_dowsnloading.mp4";
 // Adds various product logo resources.
 void AddProductLogoResources(content::WebUIDataSource* source) {
   // Required for Assistant OOBE.
-  source->AddResourcePath(kArcAssistantLogoPath, IDR_ASSISTANT_LOGO_PNG);
   source->AddResourcePath(kArcSupervisionIconPath, IDR_SUPERVISION_ICON_PNG);
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -214,8 +216,15 @@ void AddArcScreensResources(content::WebUIDataSource* source) {
   source->AddResourcePath(kArcPlaystoreLogoPath,
                           IDR_ARC_SUPPORT_PLAYSTORE_LOGO);
 
-  source->AddResourcePath(kRecommendAppListViewJSPath,
-                          IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_JS);
+  // TODO(crbug.com/1261902): Clean-up old implementation once feature is
+  // launched.
+  if (features::IsOobeNewRecommendAppsEnabled()) {
+    source->AddResourcePath(kRecommendAppListViewJSPath,
+                            IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_JS);
+  } else {
+    source->AddResourcePath(kRecommendAppOldListViewJSPath,
+                            IDR_ARC_SUPPORT_RECOMMEND_APP_OLD_LIST_VIEW_JS);
+  }
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   source->AddResourcePath(kArcAppDownloadingVideoPath,
                           IDR_OOBE_ARC_APPS_DOWNLOADING_VIDEO);
@@ -225,8 +234,6 @@ void AddArcScreensResources(content::WebUIDataSource* source) {
 void AddAssistantScreensResources(content::WebUIDataSource* source) {
   source->AddResourcePath("voice_match_animation.json",
                           IDR_ASSISTANT_VOICE_MATCH_ANIMATION);
-  source->AddResourcePath("voice_match_already_setup_animation.json",
-                          IDR_ASSISTANT_VOICE_MATCH_ALREADY_SETUP_ANIMATION);
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::WorkerSrc, "worker-src blob: 'self';");
 }
@@ -570,6 +577,9 @@ void OobeUI::ConfigureOobeDisplay() {
   AddScreenHandler(
       std::make_unique<GuestTosScreenHandler>(js_calls_container_.get()));
 
+  AddScreenHandler(std::make_unique<SmartPrivacyProtectionScreenHandler>(
+      js_calls_container_.get()));
+
   Profile* profile = Profile::FromWebUI(web_ui());
   // Set up the chrome://theme/ source, for Chrome logo.
   content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
@@ -627,6 +637,7 @@ void OobeUI::BindInterface(
 
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
     : ui::MojoWebUIController(web_ui, true /* enable_chrome_send */) {
+  LOG(WARNING) << "OobeUI created";
   display_type_ = GetDisplayType(url);
 
   js_calls_container_ = std::make_unique<JSCallsContainer>();
@@ -672,7 +683,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 OobeUI::~OobeUI() {
   for (Observer& observer : observer_list_)
     observer.OnDestroyingOobeUI();
-  VLOG(4) << "~OobeUI";
+  LOG(WARNING) << "OobeUI destroyed";
 }
 
 // static
@@ -718,20 +729,20 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
     handler->GetLocalizedStrings(localized_strings);
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, localized_strings);
-  localized_strings->SetString("app_locale", app_locale);
+  localized_strings->SetStringKey("app_locale", app_locale);
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  localized_strings->SetString("buildType", "chrome");
+  localized_strings->SetStringKey("buildType", "chrome");
 #else
-  localized_strings->SetString("buildType", "chromium");
+  localized_strings->SetStringKey("buildType", "chromium");
 #endif
 
   bool keyboard_driven_oobe =
       system::InputDeviceSettings::Get()->ForceKeyboardDrivenUINavigation();
-  localized_strings->SetString("highlightStrength",
-                               keyboard_driven_oobe ? "strong" : "normal");
+  localized_strings->SetStringKey("highlightStrength",
+                                  keyboard_driven_oobe ? "strong" : "normal");
 
-  localized_strings->SetBoolean(
+  localized_strings->SetBoolKey(
       "changePictureVideoModeEnabled",
       base::FeatureList::IsEnabled(::features::kChangePictureVideoMode));
 }
@@ -794,7 +805,7 @@ void OobeUI::ShowOobeUI(bool show) {
 void OobeUI::ShowSigninScreen(SigninScreenHandlerDelegate* delegate) {
   signin_screen_handler_->SetDelegate(delegate);
 
-  signin_screen_handler_->Show(core_handler_->show_oobe_ui());
+  signin_screen_handler_->Show();
 }
 
 void OobeUI::ForwardAccelerator(std::string accelerator_name) {

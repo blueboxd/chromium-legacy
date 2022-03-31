@@ -25,7 +25,6 @@ import {ProvidersModel} from '../providers_model.js';
 import {A11yAnnounce} from './a11y_announce.js';
 import {ActionModelUI} from './action_model_ui.js';
 import {ActionsSubmenu} from './actions_submenu.js';
-import {Banners} from './banners.js';
 import {ComboButton} from './combobutton.js';
 import {DefaultTaskDialog} from './default_task_dialog.js';
 import {DialogFooter} from './dialog_footer.js';
@@ -291,12 +290,6 @@ export class FileManagerUI {
     this.listContainer;
 
     /**
-     * @type {!HTMLElement}
-     */
-    this.formatPanelError =
-        queryRequiredElement('#format-panel > .error', this.element);
-
-    /**
      * @type {!MultiMenu}
      * @const
      */
@@ -333,7 +326,7 @@ export class FileManagerUI {
 
     /**
      * Banners in the file list.
-     * @type {Banners|BannerController}
+     * @type {BannerController}
      */
     this.banners = null;
 
@@ -541,7 +534,7 @@ export class FileManagerUI {
 
   /**
    * TODO(mtomasz): Merge the method into initAdditionalUI if possible.
-   * @param {!Banners|!BannerController} banners
+   * @param {!BannerController} banners
    */
   initBanners(banners) {
     this.banners = banners;

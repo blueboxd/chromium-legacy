@@ -139,7 +139,7 @@ export class ChromeHelper {
         wrapEndpoint(new CameraUsageOwnershipMonitorCallbackRouter());
 
     usageCallbackRouter.onCameraUsageOwnershipChanged.addListener(
-        async (hasUsage) => {
+        async (hasUsage: boolean) => {
           if (hasUsage) {
             await exploitUsage();
           } else {
@@ -189,6 +189,14 @@ export class ChromeHelper {
    */
   openFeedbackDialog(placeholder: string): void {
     this.remote.openFeedbackDialog(placeholder);
+  }
+
+  /**
+   * Opens the given URL in the browser.
+   * @param url The URL to open.
+   */
+  openUrlInBrowser(url: string): void {
+    this.remote.openUrlInBrowser({url: url});
   }
 
   /**

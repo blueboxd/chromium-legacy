@@ -37,19 +37,21 @@ struct AXTreeData;
 class AX_EXPORT AXNode final {
  public:
   // Replacement character used to represent an embedded (or, additionally for
-  // text navigation, an empty) object. Encoded in UTF16 format. Part of the
-  // Unicode Standard.
+  // text navigation, an empty) object. Part of the Unicode Standard.
   //
   // On some platforms, most objects are represented in the text of their
   // parents with a special "embedded object character" and not with their
   // actual text contents. Also on the same platforms, if a node has only
   // ignored descendants, i.e., it appears to be empty to assistive software, we
   // need to treat it as a character and a word boundary.
-  static constexpr char16_t kEmbeddedCharacter[] = u"\uFFFC";
-  // We compute the embedded character's length instead of manually typing it in
-  // order to avoid the two variables getting out of sync in a future update.
-  static constexpr int kEmbeddedCharacterLength =
-      base::CharTraits<char16_t>::length(kEmbeddedCharacter);
+  static constexpr char kEmbeddedObjectCharacterUTF8[] = "\xEF\xBF\xBC";
+  static constexpr char16_t kEmbeddedObjectCharacterUTF16[] = u"\xFFFC";
+  // We compute the embedded characters' length instead of manually typing it in
+  // order to avoid the variable pairs getting out of sync in a future update.
+  static constexpr int kEmbeddedObjectCharacterLengthUTF8 =
+      base::CharTraits<char>::length(kEmbeddedObjectCharacterUTF8);
+  static constexpr int kEmbeddedObjectCharacterLengthUTF16 =
+      base::CharTraits<char16_t>::length(kEmbeddedObjectCharacterUTF16);
 
   // Interface to the tree class that owns an AXNode. We use this instead
   // of letting AXNode have a pointer to its AXTree directly so that we're
@@ -434,6 +436,12 @@ class AX_EXPORT AXNode final {
   // Container objects that should be ignored for computing PosInSet and SetSize
   // for ordered sets.
   bool IsIgnoredContainerForOrderedSet() const;
+
+  // Helper functions that returns true when we are on a row/row group inside of
+  // a tree grid. Also works for rows that are part of a row group inside a tree
+  // grid. Returns false otherwise.
+  bool IsRowInTreeGrid(const AXNode* ordered_set) const;
+  bool IsRowGroupInTreeGrid() const;
 
   // Returns the accessible name for this node. This could have originated from
   // e.g. an onscreen label, or an ARIA label.

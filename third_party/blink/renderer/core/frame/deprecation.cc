@@ -64,6 +64,9 @@ enum Milestone {
   kM101 = 101,
   kM102 = 102,
   kM103 = 103,
+  kM104 = 104,
+  kM105 = 105,
+  kM106 = 106,
 };
 
 // Returns estimated milestone dates as milliseconds since January 1, 1970.
@@ -148,6 +151,12 @@ base::Time::Exploded MilestoneDate(Milestone milestone) {
       return {2022, 5, 0, 24, 4};
     case kM103:
       return {2022, 6, 0, 21, 4};
+    case kM104:
+      return {2022, 7, 0, 26, 4};
+    case kM105:
+      return {2022, 8, 0, 30, 4};
+    case kM106:
+      return {2022, 9, 0, 27, 4};
   }
 
   NOTREACHED();
@@ -685,7 +694,7 @@ const DeprecationInfo GetDeprecationInfo(const WebFeature feature) {
 
     case WebFeature::kPaymentRequestShowWithoutGesture:
       return DeprecationInfo::WithFeatureAndChromeStatusID(
-          "PaymentRequestShowWithoutGesture", kM100,
+          "PaymentRequestShowWithoutGesture", kM102,
           "Calling PaymentRequest.show() without user activation",
           "5948593429020672");
 
@@ -708,16 +717,16 @@ const DeprecationInfo GetDeprecationInfo(const WebFeature feature) {
     case WebFeature::kDocumentDomainSettingWithoutOriginAgentClusterHeader:
       return DeprecationInfo::WithDetails(
           "WebFeature::kDocumentDomainSettingWithoutOriginAgentClusterHeader",
-          kM101,
+          kM106,
           String::Format(
               "Relaxing the same-origin policy by setting \"document.domain\" "
               "is deprecated, and will be disabled by default in %s. To "
               "continue using this feature, please opt-out of origin-keyed "
               "agent clusters by sending an `Origin-Agent-Cluster: ?0` header "
-              "along with the HTTP response for the document. See "
-              "https://developer.chrome.com/blog/immutable-document-domain for "
-              "more details.",
-              MilestoneString(kM101).Ascii().c_str()));
+              "along with the HTTP response for the document and "
+              "frames. See %s for more details.",
+              MilestoneString(kM106).Ascii().c_str(),
+              "https://developer.chrome.com/blog/immutable-document-domain/"));
 
     // Features that aren't deprecated don't have a deprecation message.
     default:

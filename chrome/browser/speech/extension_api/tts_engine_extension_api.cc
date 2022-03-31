@@ -129,7 +129,7 @@ ValidateAndConvertToTtsVoiceVector(const extensions::Extension* extension,
 
     if (event_types) {
       const base::Value::ConstListView event_types_list =
-          event_types->GetList();
+          event_types->GetListDeprecated();
       for (size_t j = 0; j < event_types_list.size(); j++) {
         std::string event_type;
         if (event_types_list[j].is_string())
@@ -156,7 +156,7 @@ std::unique_ptr<std::vector<extensions::TtsVoice>> GetVoicesInternal(
                                       &voices_data)) {
     const char* error = nullptr;
     return ValidateAndConvertToTtsVoiceVector(
-        extension, voices_data->GetList(),
+        extension, voices_data->GetListDeprecated(),
         /* return_after_first_error = */ false, &error);
   }
 
@@ -277,7 +277,7 @@ void TtsExtensionEngine::Speak(content::TtsUtterance* utterance,
 
   auto event = std::make_unique<extensions::Event>(
       extensions::events::TTS_ENGINE_ON_SPEAK, tts_engine_events::kOnSpeak,
-      std::move(*args).TakeList(), profile);
+      std::move(*args).TakeListDeprecated(), profile);
   event_router->DispatchEventToExtension(engine_id, std::move(event));
 }
 
@@ -393,7 +393,7 @@ ExtensionTtsEngineUpdateVoicesFunction::Run() {
   // Validate the voices and return an error if there's a problem.
   const char* error = nullptr;
   auto tts_voices = ValidateAndConvertToTtsVoiceVector(
-      extension(), voices_data.GetList(),
+      extension(), voices_data.GetListDeprecated(),
       /* return_after_first_error = */ true, &error);
   if (error)
     return RespondNow(Error(error));
@@ -512,7 +512,7 @@ ExtensionTtsEngineSendTtsAudioFunction::Run() {
     return RespondNow(Error("Invalid audio buffer format."));
 
   // Interpret the audio buffer as a sequence of float samples.
-  int sample_count = audio_buffer_blob->size() / 4;
+  size_t sample_count = audio_buffer_blob->size() / 4;
   std::vector<float> audio_buffer(sample_count);
   const float* view = reinterpret_cast<const float*>(&(*audio_buffer_blob)[0]);
   for (size_t i = 0; i < sample_count; i++, view++)

@@ -37,8 +37,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.ModelListAdapter;
 import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.ui.test.util.DisableAnimationsTestRule;
-import org.chromium.ui.test.util.DummyUiActivity;
+import org.chromium.ui.test.util.BlankUiTestActivity;
 import org.chromium.ui.test.util.NightModeTestUtils;
 
 import java.io.IOException;
@@ -59,10 +58,8 @@ public class AppMenuItemViewBinderRenderTest {
                     new ParameterSet().value(true, false).name("NightMode_MenuItemDisabled"));
 
     @ClassRule
-    public static DisableAnimationsTestRule disableAnimationsRule = new DisableAnimationsTestRule();
-    @ClassRule
-    public static BaseActivityTestRule<DummyUiActivity> mActivityTestRule =
-            new BaseActivityTestRule<>(DummyUiActivity.class);
+    public static BaseActivityTestRule<BlankUiTestActivity> mActivityTestRule =
+            new BaseActivityTestRule<>(BlankUiTestActivity.class);
     @Rule
     public ChromeRenderTestRule mRenderTestRule =
             ChromeRenderTestRule.Builder.withPublicCorpus().build();
@@ -87,7 +84,7 @@ public class AppMenuItemViewBinderRenderTest {
 
     public AppMenuItemViewBinderRenderTest(boolean nightMode, boolean menuItemEnabled) {
         mMenuItemEnabled = menuItemEnabled;
-        NightModeTestUtils.setUpNightModeForDummyUiActivity(nightMode);
+        NightModeTestUtils.setUpNightModeForBlankUiTestActivity(nightMode);
         mRenderTestRule.setNightModeEnabled(nightMode);
         mRenderTestRule.setVariantPrefix(menuItemEnabled ? "MenuItemEnabled" : "MenuItemDisabled");
     }
@@ -131,7 +128,7 @@ public class AppMenuItemViewBinderRenderTest {
 
     @AfterClass
     public static void afterClass() {
-        NightModeTestUtils.tearDownNightModeForDummyUiActivity();
+        NightModeTestUtils.tearDownNightModeForBlankUiTestActivity();
     }
 
     private PropertyModel createStandardMenuItem(

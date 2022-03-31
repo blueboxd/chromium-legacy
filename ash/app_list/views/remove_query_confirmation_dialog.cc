@@ -42,7 +42,6 @@ constexpr int kMarginBetweenButtons = 8;
 }  // namespace
 
 RemoveQueryConfirmationDialog::RemoveQueryConfirmationDialog(
-    const std::u16string& query,
     RemovalConfirmationCallback confirm_callback)
     : confirm_callback_(std::move(confirm_callback)) {
   SetModalType(ui::MODAL_TYPE_WINDOW);
@@ -63,14 +62,14 @@ RemoveQueryConfirmationDialog::RemoveQueryConfirmationDialog(
   title_->SetTextContext(views::style::CONTEXT_DIALOG_TITLE);
   title_->SetTextStyle(ash::STYLE_EMPHASIZED);
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title_->SetAutoColorReadabilityEnabled(false);
   // Needs to paint to layer so it's stacked above `this` view.
   title_->SetPaintToLayer();
   title_->layer()->SetFillsBoundsOpaquely(false);
 
   // Add dialog body.
-  body_ =
-      AddChildView(std::make_unique<views::Label>(l10n_util::GetStringFUTF16(
-          IDS_REMOVE_ZERO_STATE_SUGGESTION_DETAILS, query)));
+  body_ = AddChildView(std::make_unique<views::Label>(
+      l10n_util::GetStringUTF16(IDS_REMOVE_ZERO_STATE_SUGGESTION_DETAILS)));
   body_->SetProperty(views::kMarginsKey,
                      gfx::Insets(kMarginBetweenTitleAndBody, 0,
                                  kMarginBetweenBodyAndButtons, 0));
@@ -78,6 +77,7 @@ RemoveQueryConfirmationDialog::RemoveQueryConfirmationDialog(
   body_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   body_->SetMultiLine(true);
   body_->SetAllowCharacterBreak(true);
+  body_->SetAutoColorReadabilityEnabled(false);
   // Needs to paint to layer so it's stacked above `this` view.
   body_->SetPaintToLayer();
   body_->layer()->SetFillsBoundsOpaquely(false);

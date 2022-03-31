@@ -56,9 +56,7 @@ class SyncScreenCoordinatorTest : public PlatformTest {
         SyncSetupServiceFactory::GetInstance(),
         base::BindRepeating(&SyncSetupServiceMock::CreateKeyedService));
     browser_state_ = builder.Build();
-    WebStateList* web_state_list = nullptr;
-    browser_ =
-        std::make_unique<TestBrowser>(browser_state_.get(), web_state_list);
+    browser_ = std::make_unique<TestBrowser>(browser_state_.get());
     PolicyWatcherBrowserAgent::CreateForBrowser(browser_.get());
 
     sync_setup_service_mock_ = static_cast<SyncSetupServiceMock*>(
@@ -109,7 +107,7 @@ TEST_F(SyncScreenCoordinatorTest, TestStart) {
                                                                 gaiaID:@"gaiaID"
                                                                   name:@"name"];
 
-  auth_service_->SignIn(identity);
+  auth_service_->SignIn(identity, nil);
 
   // The delegate is a strict mock, it will fail if it calls it.
   [coordinator_ start];
@@ -134,7 +132,7 @@ TEST_F(SyncScreenCoordinatorTest, TestStartWithSyncActivated) {
                                                                 gaiaID:@"gaiaID"
                                                                   name:@"name"];
 
-  auth_service_->SignIn(identity);
+  auth_service_->SignIn(identity, nil);
 
   OCMExpect([delegate_ willFinishPresenting]);
   [coordinator_ start];
@@ -153,7 +151,7 @@ TEST_F(SyncScreenCoordinatorTest, TestStartWithSyncPolicyDisabled) {
                                                                 gaiaID:@"gaiaID"
                                                                   name:@"name"];
 
-  auth_service_->SignIn(identity);
+  auth_service_->SignIn(identity, nil);
 
   OCMExpect([delegate_ willFinishPresenting]);
   [coordinator_ start];

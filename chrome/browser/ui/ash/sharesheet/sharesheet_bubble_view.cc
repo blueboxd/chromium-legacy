@@ -9,6 +9,9 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_typography.h"
+#include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
+#include "ash/public/cpp/style/scoped_light_mode_as_default.h"
+#include "ash/style/ash_color_provider.h"
 #include "base/cxx17_backports.h"
 #include "base/i18n/rtl.h"
 #include "base/scoped_observation.h"
@@ -25,7 +28,7 @@
 #include "chrome/browser/ui/ash/sharesheet/sharesheet_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
+#include "chromeos/components/sharesheet/constants.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
@@ -66,7 +69,6 @@ namespace {
 constexpr int kButtonWidth = 92;
 constexpr int kCornerRadius = 12;
 constexpr int kBubbleTopPaddingFromWindow = 28;
-constexpr int kDefaultBubbleWidth = 416;
 
 constexpr int kMaxTargetsPerRow = 4;
 constexpr int kMaxRowsForDefaultView = 2;
@@ -107,10 +109,7 @@ bool IsKeyboardCodeArrow(ui::KeyboardCode key_code) {
 }
 
 void RecordFormFactorMetric() {
-  auto form_factor =
-      ash::TabletMode::Get()->InTabletMode()
-          ? ::sharesheet::SharesheetMetrics::FormFactor::kTablet
-          : ::sharesheet::SharesheetMetrics::FormFactor::kClamshell;
+  auto form_factor = ::sharesheet::SharesheetMetrics::GetFormFactorForMetrics();
   ::sharesheet::SharesheetMetrics::RecordSharesheetFormFactor(form_factor);
 }
 
@@ -164,16 +163,19 @@ SharesheetBubbleView::SharesheetBubbleView(
     gfx::NativeWindow native_window,
     ::sharesheet::SharesheetServiceDelegator* delegator)
     : delegator_(delegator) {
+  DCHECK(native_window);
+  DCHECK(delegator);
   SetID(SHARESHEET_BUBBLE_VIEW_ID);
   // We set the dialog role because views::BubbleDialogDelegate defaults this to
   // an alert dialog. This would make screen readers announce all of this dialog
   // which is undesirable.
   SetAccessibleRole(ax::mojom::Role::kDialog);
   set_parent_window(native_window);
-  parent_widget_observer_ = std::make_unique<SharesheetParentWidgetObserver>(
-      this, views::Widget::GetWidgetForNativeWindow(native_window));
-  parent_view_ =
-      views::Widget::GetWidgetForNativeWindow(native_window)->GetRootView();
+  views::Widget* const widget =
+      views::Widget::GetWidgetForNativeWindow(native_window);
+  parent_view_ = widget->GetRootView();
+  parent_widget_observer_ =
+      std::make_unique<SharesheetParentWidgetObserver>(this, widget);
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
   CreateBubble();
 }
@@ -220,17 +222,24 @@ void SharesheetBubbleView::ShowBubble(
   if (targets.empty()) {
     auto* image =
         body_view_->AddChildView(std::make_unique<views::ImageView>());
-    image->SetImage(*ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        IDR_SHARESHEET_EMPTY));
+    image->SetImage(
+        ui::ResourceBundle::GetSharedInstance().GetThemedLottieImageNamed(
+            IDR_SHARESHEET_EMPTY_STATE_IMAGE));
     image->SetProperty(views::kMarginsKey, gfx::Insets(0, 0, kSpacing, 0));
+    ScopedLightModeAsDefault scoped_light_mode_as_default;
+    auto* color_provider = AshColorProvider::Get();
     body_view_->AddChildView(CreateShareLabel(
         l10n_util::GetStringUTF16(IDS_SHARESHEET_ZERO_STATE_PRIMARY_LABEL),
         CONTEXT_SHARESHEET_BUBBLE_BODY, kPrimaryTextLineHeight,
-        kPrimaryTextColor, gfx::ALIGN_CENTER));
+        color_provider->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kTextColorPrimary),
+        gfx::ALIGN_CENTER));
     body_view_->AddChildView(CreateShareLabel(
         l10n_util::GetStringUTF16(IDS_SHARESHEET_ZERO_STATE_SECONDARY_LABEL),
         CONTEXT_SHARESHEET_BUBBLE_BODY_SECONDARY, kPrimaryTextLineHeight,
-        kSecondaryTextColor, gfx::ALIGN_CENTER, views::style::STYLE_PRIMARY));
+        color_provider->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kTextColorSecondary),
+        gfx::ALIGN_CENTER, views::style::STYLE_PRIMARY));
   } else {
     if (show_content_previews) {
       header_body_separator_ =
@@ -319,10 +328,13 @@ std::unique_ptr<views::View> SharesheetBubbleView::MakeScrollableTargetView(
     expanded_layout->AddPaddingRow(views::GridLayout::kFixedSize,
                                    kExpandViewPaddingTop);
     expanded_layout->StartRow(views::GridLayout::kFixedSize, kColumnSetIdTitle);
+    ScopedLightModeAsDefault scoped_light_mode_as_default;
     expanded_layout->AddView(CreateShareLabel(
         l10n_util::GetStringUTF16(IDS_SHARESHEET_APPS_LIST_LABEL),
         CONTEXT_SHARESHEET_BUBBLE_BODY, kSubtitleTextLineHeight,
-        kPrimaryTextColor, gfx::ALIGN_CENTER));
+        AshColorProvider::Get()->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kTextColorPrimary),
+        gfx::ALIGN_CENTER));
     expanded_layout->AddPaddingRow(views::GridLayout::kFixedSize,
                                    kExpandViewPaddingBottom);
   }

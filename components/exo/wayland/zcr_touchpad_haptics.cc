@@ -8,9 +8,69 @@
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
 
+#include "base/feature_list.h"
+#include "base/logging.h"
+#include "components/exo/wayland/server_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/events/devices/haptic_touchpad_effects.h"
+#include "ui/ozone/public/input_controller.h"
+#include "ui/ozone/public/ozone_platform.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
+#endif
+
 namespace exo {
 namespace wayland {
 namespace {
+
+class WaylandTouchpadHapticsDelegate {
+ public:
+  explicit WaylandTouchpadHapticsDelegate(wl_resource* resource)
+      : resource_{resource} {}
+  ~WaylandTouchpadHapticsDelegate() = default;
+
+  void UpdateTouchpadHapticsState() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    if (!base::FeatureList::IsEnabled(
+            chromeos::features::kExoHapticFeedbackSupport))
+      return;
+#endif
+
+    ui::InputController* controller =
+        ui::OzonePlatform::GetInstance()->GetInputController();
+    if (!controller) {
+      LOG(ERROR) << "InputController is not available.";
+      return;
+    }
+    if (last_activation_state_ &&
+        *last_activation_state_ == controller->HasHapticTouchpad()) {
+      // No need to send the update.
+      return;
+    }
+    last_activation_state_ = controller->HasHapticTouchpad();
+    if (*last_activation_state_)
+      zcr_touchpad_haptics_v1_send_activated(resource_);
+    else
+      zcr_touchpad_haptics_v1_send_deactivated(resource_);
+  }
+
+  void Play(uint32_t effect, int32_t strength) {
+    ui::InputController* controller =
+        ui::OzonePlatform::GetInstance()->GetInputController();
+    if (!controller) {
+      LOG(ERROR) << "InputController is not available.";
+      return;
+    }
+    controller->PlayHapticTouchpadEffect(
+        static_cast<ui::HapticTouchpadEffect>(effect),
+        static_cast<ui::HapticTouchpadEffectStrength>(strength));
+  }
+
+ private:
+  wl_resource* const resource_;
+  absl::optional<bool> last_activation_state_;
+};
 
 void touchpad_haptics_destroy(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
@@ -20,7 +80,13 @@ void touchpad_haptics_play(wl_client* client,
                            wl_resource* resource,
                            uint32_t effect,
                            int32_t strength) {
-  // TODO(b/205702807): Call InputController::PlayHapticTouchpadEffect.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (!base::FeatureList::IsEnabled(
+          chromeos::features::kExoHapticFeedbackSupport))
+    return;
+#endif
+  GetUserDataAs<WaylandTouchpadHapticsDelegate>(resource)->Play(effect,
+                                                                strength);
 }
 
 const struct zcr_touchpad_haptics_v1_interface touchpad_haptics_implementation =
@@ -38,8 +104,10 @@ void bind_touchpad_haptics(wl_client* client,
   wl_resource* resource = wl_resource_create(
       client, &zcr_touchpad_haptics_v1_interface, version, id);
 
-  wl_resource_set_implementation(resource, &touchpad_haptics_implementation,
-                                 nullptr, nullptr);
+  SetImplementation(resource, &touchpad_haptics_implementation,
+                    std::make_unique<WaylandTouchpadHapticsDelegate>(resource));
+  GetUserDataAs<WaylandTouchpadHapticsDelegate>(resource)
+      ->UpdateTouchpadHapticsState();
 }
 
 }  // namespace wayland

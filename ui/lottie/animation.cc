@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/check.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/paint/skottie_wrapper.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -41,8 +42,8 @@ void Animation::TimerControl::Step(const base::TimeTicks& timestamp) {
   base::TimeDelta completed_cycles_duration =
       completed_cycles_ * cycle_duration_;
   if (progress_ >= completed_cycles_duration + cycle_duration_) {
-    completed_cycles_++;
-    completed_cycles_duration += cycle_duration_;
+    completed_cycles_ = base::ClampFloor(progress_ / cycle_duration_);
+    completed_cycles_duration = cycle_duration_ * completed_cycles_;
   }
 
   current_cycle_progress_ =
@@ -79,12 +80,14 @@ Animation::Animation(scoped_refptr<cc::SkottieWrapper> skottie,
   if (animation_has_image_assets) {
     DCHECK(frame_data_provider)
         << "SkottieFrameDataProvider required for animations with image assets";
-    for (const auto& asset_metadata :
+    for (const auto& asset_metadata_pair :
          skottie_->GetImageAssetMetadata().asset_storage()) {
-      const std::string& asset_id = asset_metadata.first;
-      const base::FilePath& asset_path = asset_metadata.second;
+      const std::string& asset_id = asset_metadata_pair.first;
+      const cc::SkottieResourceMetadataMap::ImageAssetMetadata& asset_metadata =
+          asset_metadata_pair.second;
       scoped_refptr<cc::SkottieFrameDataProvider::ImageAsset> new_asset =
-          frame_data_provider->LoadImageAsset(asset_id, asset_path);
+          frame_data_provider->LoadImageAsset(
+              asset_id, asset_metadata.resource_path, asset_metadata.size);
       DCHECK(new_asset);
       image_assets_.emplace(cc::HashSkottieResourceId(asset_id),
                             std::move(new_asset));
@@ -243,11 +246,8 @@ cc::SkottieWrapper::FrameDataFetchResult Animation::LoadImageForAsset(
     SkSamplingOptions&) {
   cc::SkottieFrameDataProvider::ImageAsset& image_asset =
       *image_assets_.at(asset_id);
-  absl::optional<cc::SkottieFrameData> frame_data =
-      image_asset.GetFrameData(t, canvas->image_scale());
-  if (frame_data) {
-    all_frame_data.emplace(asset_id, std::move(frame_data.value()));
-  }
+  all_frame_data.emplace(asset_id,
+                         image_asset.GetFrameData(t, canvas->image_scale()));
   // Since this callback is only used for Seek() and not rendering, the output
   // arguments can be ignored and NO_UPDATE can be returned.
   return cc::SkottieWrapper::FrameDataFetchResult::NO_UPDATE;

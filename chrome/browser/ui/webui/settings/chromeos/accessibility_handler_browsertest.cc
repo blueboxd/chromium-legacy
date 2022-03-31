@@ -106,12 +106,13 @@ class AccessibilityHandlerTest : public InProcessBrowserTest {
     for (const std::unique_ptr<content::TestWebUI::CallData>& data :
          base::Reversed(web_ui_.call_data())) {
       std::string listener;
-      data->arg1()->GetAsString(&listener);
+      if (data->arg1()->is_string())
+        listener = data->arg1()->GetString();
       if (data->function_name() == "cr.webUIListenerCallback" &&
           listener == expected_listener) {
         if (!data->arg2()->is_list())
           return false;
-        *argument = data->arg2()->GetList();
+        *argument = data->arg2()->GetListDeprecated();
         return true;
       }
     }

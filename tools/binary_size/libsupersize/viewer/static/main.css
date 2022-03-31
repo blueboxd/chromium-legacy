@@ -72,12 +72,13 @@ body {
 }
 
 .headline {
-  margin: 0;
-  font-family: "Google Sans", Arial, sans-serif;
-  font-weight: normal;
   color: #202124;
-  font-size: 22px;
   flex: 1;
+  font-family: "Google Sans", Arial, sans-serif;
+  font-size: 22px;
+  font-weight: normal;
+  line-height: 34px;
+  margin: 0;
 }
 .subtitle {
   font-weight: 500;
@@ -231,7 +232,6 @@ ul {
 
 .modal {
   background-color: rgba(0,0,0,0.5);
-  display: none;
   height: 100%;
   left: 0;
   overflow: auto;
@@ -253,4 +253,42 @@ ul {
   min-width: 250px;
   padding: 20px;
   width: 50%;
+}
+
+.download-button {
+  fill: #1a73e8;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.metadata-symbol-name {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  padding-left: 5px;
+  word-break: break-word;
+}
+
+.metadata {
+  margin: 0 auto;
+  max-width: 1200px;
+  user-select: none;
+}
+
+#metadata-view:not(.active) {
+  display: none;
+}
+
+#metadata-content:not(.active) {
+  display: none;
+}
+
+#review-info{
+  font-size: 13px;
+}
+
+#review-text {
+  color: #0000d1;
+  text-decoration: none;
+  white-space: pre;
 }

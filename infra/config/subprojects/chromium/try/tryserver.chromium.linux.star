@@ -4,7 +4,6 @@
 """Definitions of builders in the tryserver.chromium.linux builder group."""
 
 load("//lib/branches.star", "branches")
-load("//lib/builder_config.star", "builder_config")
 load("//lib/builders.star", "goma", "os")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
@@ -85,6 +84,12 @@ try_.builder(
     tryjob = try_.job(
         experiment_percentage = 20,
     ),
+)
+
+try_.builder(
+    name = "fuchsia-clang-tidy-rel",
+    executable = "recipe:tricium_clang_tidy_wrapper",
+    goma_jobs = goma.jobs.J150,
 )
 
 try_.builder(
@@ -249,6 +254,10 @@ try_.builder(
 
 try_.builder(
     name = "linux-inverse-fieldtrials-fyi-rel",
+)
+
+try_.builder(
+    name = "linux-fieldtrial-fyi-rel",
 )
 
 try_.builder(
@@ -435,11 +444,6 @@ try_.builder(
 try_.builder(
     name = "linux_chromium_compile_dbg_ng",
     branch_selector = branches.STANDARD_MILESTONE,
-    mirrors = ["ci/Linux Builder (dbg)"],
-    try_settings = builder_config.try_settings(
-        include_all_triggered_testers = True,
-        is_compile_only = True,
-    ),
     builderless = not settings.is_main,
     caches = [
         swarming.cache(
@@ -459,10 +463,6 @@ try_.builder(
 try_.builder(
     name = "linux_chromium_dbg_ng",
     branch_selector = branches.STANDARD_MILESTONE,
-    mirrors = [
-        "ci/Linux Builder (dbg)",
-        "Linux Tests (dbg)(1)",
-    ],
     caches = [
         swarming.cache(
             name = "builder",

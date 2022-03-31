@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
 #include "base/notreached.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -29,7 +30,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button_delegate.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
-#include "chrome/browser/ui/views/user_education/feature_promo_controller_views.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
@@ -66,8 +66,7 @@ AvatarToolbarButton::AvatarToolbarButton(BrowserView* browser_view,
                                         base::Unretained(this))),
       browser_(browser_view->browser()),
       parent_(parent),
-      creation_time_(base::TimeTicks::Now()),
-      feature_promo_controller_(browser_view->feature_promo_controller()) {
+      creation_time_(base::TimeTicks::Now()) {
   delegate_ =
       std::make_unique<AvatarToolbarButtonDelegate>(this, browser_->profile());
 
@@ -228,10 +227,14 @@ void AvatarToolbarButton::NotifyHighlightAnimationFinished() {
 
 void AvatarToolbarButton::MaybeShowProfileSwitchIPH() {
   // If the tracker is already initialized, the callback is called immediately.
-  feature_promo_controller_->feature_engagement_tracker()
-      ->AddOnInitializedCallback(base::BindOnce(
-          &AvatarToolbarButton::MaybeShowProfileSwitchIPHInitialized,
-          weak_ptr_factory_.GetWeakPtr()));
+  auto* const promo_controller =
+      BrowserFeaturePromoController::GetForView(this);
+  if (promo_controller) {
+    promo_controller->feature_engagement_tracker()->AddOnInitializedCallback(
+        base::BindOnce(
+            &AvatarToolbarButton::MaybeShowProfileSwitchIPHInitialized,
+            weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void AvatarToolbarButton::OnMouseExited(const ui::MouseEvent& event) {
@@ -356,12 +359,11 @@ void AvatarToolbarButton::MaybeShowProfileSwitchIPHInitialized(bool success) {
     return;
   }
 
-  DCHECK(
-      feature_promo_controller_->feature_engagement_tracker()->IsInitialized());
-  if (browser_->window()->IsActive() ||
-      FeaturePromoControllerViews::IsActiveWindowCheckBlockedForTesting())
-    feature_promo_controller_->MaybeShowPromo(
-        feature_engagement::kIPHProfileSwitchFeature);
+  auto* const promo_controller =
+      BrowserFeaturePromoController::GetForView(this);
+  DCHECK(promo_controller->feature_engagement_tracker()->IsInitialized());
+  promo_controller->MaybeShowPromo(
+      feature_engagement::kIPHProfileSwitchFeature);
 }
 
 BEGIN_METADATA(AvatarToolbarButton, ToolbarButton)

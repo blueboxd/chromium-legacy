@@ -1,5 +1,6 @@
 tools/metrics/histograms/histograms.xml
 tools/metrics/histograms/metadata/accessibility/histograms.xml
+tools/metrics/histograms/metadata/account_manager/histograms.xml
 tools/metrics/histograms/metadata/android/histograms.xml
 tools/metrics/histograms/metadata/apps/histograms.xml
 tools/metrics/histograms/metadata/arc/histograms.xml
@@ -11,6 +12,7 @@ tools/metrics/histograms/metadata/autofill/histograms.xml
 tools/metrics/histograms/metadata/background/histograms.xml
 tools/metrics/histograms/metadata/blink/histograms.xml
 tools/metrics/histograms/metadata/bluetooth/histograms.xml
+tools/metrics/histograms/metadata/bookmarks/histograms.xml
 tools/metrics/histograms/metadata/borealis/histograms.xml
 tools/metrics/histograms/metadata/browser/histograms.xml
 tools/metrics/histograms/metadata/chrome/histograms.xml
@@ -37,8 +39,8 @@ tools/metrics/histograms/metadata/disk/histograms.xml
 tools/metrics/histograms/metadata/download/histograms.xml
 tools/metrics/histograms/metadata/enterprise/histograms.xml
 tools/metrics/histograms/metadata/event/histograms.xml
-tools/metrics/histograms/metadata/extension/histograms.xml
 tools/metrics/histograms/metadata/extensions/histograms.xml
+tools/metrics/histograms/metadata/families/histograms.xml
 tools/metrics/histograms/metadata/feature_engagement/histograms.xml
 tools/metrics/histograms/metadata/file/histograms.xml
 tools/metrics/histograms/metadata/fingerprint/histograms.xml

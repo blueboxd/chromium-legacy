@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
@@ -22,7 +21,6 @@
 #include "content/browser/compositor/surface_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/device_service.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 
@@ -45,19 +43,6 @@ std::unique_ptr<T, BrowserThread::DeleteOnUIThread> RescopeToUIThread(
     std::unique_ptr<T>&& ptr) {
   return std::unique_ptr<T, BrowserThread::DeleteOnUIThread>(ptr.release());
 }
-
-// Adapter for a VideoFrameReceiver to notify once frame consumption is
-// complete. VideoFrameReceiver requires owning an object that it will destroy
-// once consumption is complete. This class adapts between that scheme and
-// running a "done callback" to notify that consumption is complete.
-class ScopedFrameDoneHelper final
-    : public base::ScopedClosureRunner,
-      public media::VideoCaptureDevice::Client::Buffer::ScopedAccessPermission {
- public:
-  explicit ScopedFrameDoneHelper(base::OnceClosure done_callback)
-      : base::ScopedClosureRunner(std::move(done_callback)) {}
-  ~ScopedFrameDoneHelper() final = default;
-};
 
 void BindWakeLockProvider(
     mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver) {
@@ -93,7 +78,7 @@ void FrameSinkVideoCaptureDevice::AllocateAndStartWithReceiver(
   if (fatal_error_message_) {
     receiver->OnLog(*fatal_error_message_);
     receiver->OnError(media::VideoCaptureError::
-                          kFrameSinkVideoCaptureDeviceAleradyEndedOnFatalError);
+                          kFrameSinkVideoCaptureDeviceAlreadyEndedOnFatalError);
     return;
   }
 
@@ -175,6 +160,7 @@ void FrameSinkVideoCaptureDevice::Resume() {
 
 void FrameSinkVideoCaptureDevice::Crop(
     const base::Token& crop_id,
+    uint32_t crop_version,
     base::OnceCallback<void(media::mojom::CropRequestResult)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(callback);
@@ -271,12 +257,21 @@ void FrameSinkVideoCaptureDevice::OnFrameCaptured(
   receiver_->OnFrameReadyInBuffer(
       media::ReadyFrameInBuffer(
           buffer_id, buffer_id,
-          std::make_unique<ScopedFrameDoneHelper>(
-              media::BindToCurrentLoop(base::BindOnce(
-                  &FrameSinkVideoCaptureDevice::OnFramePropagationComplete,
-                  weak_factory_.GetWeakPtr(), buffer_id))),
+          std::make_unique<media::ScopedFrameDoneHelper>(base::BindOnce(
+              &FrameSinkVideoCaptureDevice::OnFramePropagationComplete,
+              weak_factory_.GetWeakPtr(), buffer_id)),
           std::move(info)),
       {});
+}
+
+void FrameSinkVideoCaptureDevice::OnFrameWithEmptyRegionCapture() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!receiver_) {
+    return;
+  }
+
+  receiver_->OnFrameWithEmptyRegionCapture();
 }
 
 void FrameSinkVideoCaptureDevice::OnStopped() {

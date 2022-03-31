@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './shimless_rma_fonts_css.js';
 import './shimless_rma_shared_css.js';
 import './icons.js';
 
@@ -58,6 +59,16 @@ export class CalibrationComponentChipElement extends PolymerElement {
 
   click() {
     this.onComponentButtonClicked_();
+  }
+
+  /**
+   * Show the checked icon for disabled calibration components because if it's
+   * disabled, that means it alerady passed calibration.
+   * @return {boolean}
+   * @protected
+   */
+  shouldShowCheckIcon_() {
+    return this.checked || this.disabled;
   }
 }
 

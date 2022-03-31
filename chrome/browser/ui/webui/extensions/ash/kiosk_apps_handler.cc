@@ -53,15 +53,15 @@ void PopulateAppDict(const KioskAppManager::App& app_data,
   // The items which are to be written into app_dict are also described in
   // chrome/browser/resources/extensions/chromeos/kiosk_app_list.js in @typedef
   // for AppDict. Please update it whenever you add or remove any keys here.
-  app_dict->SetString("id", app_data.app_id);
-  app_dict->SetString("name", app_data.name);
-  app_dict->SetString("iconURL", icon_url);
-  app_dict->SetBoolean(
+  app_dict->SetStringKey("id", app_data.app_id);
+  app_dict->SetStringKey("name", app_data.name);
+  app_dict->SetStringKey("iconURL", icon_url);
+  app_dict->SetBoolKey(
       "autoLaunch",
       KioskAppManager::Get()->GetAutoLaunchApp() == app_data.app_id &&
-      (KioskAppManager::Get()->IsAutoLaunchEnabled() ||
-          KioskAppManager::Get()->IsAutoLaunchRequested()));
-  app_dict->SetBoolean("isLoading", app_data.is_loading);
+          (KioskAppManager::Get()->IsAutoLaunchEnabled() ||
+           KioskAppManager::Get()->IsAutoLaunchRequested()));
+  app_dict->SetBoolKey("isLoading", app_data.is_loading);
 }
 
 // Sanitize app id input value and extracts app id out of it.
@@ -195,8 +195,8 @@ void KioskAppsHandler::OnGetConsumerKioskAutoLaunchStatus(
   }
 
   base::DictionaryValue kiosk_params;
-  kiosk_params.SetBoolean("kioskEnabled", is_kiosk_enabled_);
-  kiosk_params.SetBoolean("autoLaunchEnabled", is_auto_launch_enabled_);
+  kiosk_params.SetBoolKey("kioskEnabled", is_kiosk_enabled_);
+  kiosk_params.SetBoolKey("autoLaunchEnabled", is_auto_launch_enabled_);
   ResolveJavascriptCallback(base::Value(callback_id), kiosk_params);
 }
 
@@ -219,8 +219,8 @@ KioskAppsHandler::GetSettingsDictionary() {
     enable_bailout_shortcut = true;
   }
 
-  settings->SetBoolean("disableBailout", !enable_bailout_shortcut);
-  settings->SetBoolean("hasAutoLaunchApp",
+  settings->SetBoolKey("disableBailout", !enable_bailout_shortcut);
+  settings->SetBoolKey("hasAutoLaunchApp",
                        !kiosk_app_manager_->GetAutoLaunchApp().empty());
 
   KioskAppManager::AppList apps;
@@ -242,8 +242,8 @@ KioskAppsHandler::GetSettingsDictionary() {
 
 void KioskAppsHandler::HandleInitializeKioskAppSettings(
     const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetList().size());
-  const std::string& callback_id = args->GetList()[0].GetString();
+  CHECK_EQ(1U, args->GetListDeprecated().size());
+  const std::string& callback_id = args->GetListDeprecated()[0].GetString();
 
   AllowJavascript();
   KioskAppManager::Get()->GetConsumerKioskAutoLaunchStatus(
@@ -252,8 +252,8 @@ void KioskAppsHandler::HandleInitializeKioskAppSettings(
 }
 
 void KioskAppsHandler::HandleGetKioskAppSettings(const base::ListValue* args) {
-  CHECK_EQ(1U, args->GetList().size());
-  const std::string& callback_id = args->GetList()[0].GetString();
+  CHECK_EQ(1U, args->GetListDeprecated().size());
+  const std::string& callback_id = args->GetListDeprecated()[0].GetString();
 
   ResolveJavascriptCallback(base::Value(callback_id), *GetSettingsDictionary());
 }
@@ -263,7 +263,7 @@ void KioskAppsHandler::HandleAddKioskApp(const base::ListValue* args) {
   if (!initialized_ || !is_kiosk_enabled_)
     return;
 
-  const std::string& input = args->GetList()[0].GetString();
+  const std::string& input = args->GetListDeprecated()[0].GetString();
 
   std::string app_id;
   if (!ExtractsAppIdFromInput(input, &app_id)) {
@@ -278,7 +278,7 @@ void KioskAppsHandler::HandleRemoveKioskApp(const base::ListValue* args) {
   if (!initialized_ || !is_kiosk_enabled_)
     return;
 
-  const std::string& app_id = args->GetList()[0].GetString();
+  const std::string& app_id = args->GetListDeprecated()[0].GetString();
 
   kiosk_app_manager_->RemoveApp(app_id, owner_settings_service_);
 }
@@ -288,7 +288,7 @@ void KioskAppsHandler::HandleEnableKioskAutoLaunch(
   if (!initialized_ || !is_kiosk_enabled_ || !is_auto_launch_enabled_)
     return;
 
-  const std::string& app_id = args->GetList()[0].GetString();
+  const std::string& app_id = args->GetListDeprecated()[0].GetString();
 
   kiosk_app_manager_->SetAutoLaunchApp(app_id, owner_settings_service_);
 }
@@ -298,7 +298,7 @@ void KioskAppsHandler::HandleDisableKioskAutoLaunch(
   if (!initialized_ || !is_kiosk_enabled_ || !is_auto_launch_enabled_)
     return;
 
-  const std::string& app_id = args->GetList()[0].GetString();
+  const std::string& app_id = args->GetListDeprecated()[0].GetString();
 
   std::string startup_app_id = kiosk_app_manager_->GetAutoLaunchApp();
   if (startup_app_id != app_id)
@@ -312,7 +312,7 @@ void KioskAppsHandler::HandleSetDisableBailoutShortcut(
   if (!initialized_ || !is_kiosk_enabled_)
     return;
 
-  const auto& list = args->GetList();
+  const auto& list = args->GetListDeprecated();
   CHECK(!list.empty());
   const bool disable_bailout_shortcut = list[0].GetBool();
 

@@ -21,10 +21,12 @@ import '../settings_shared_css.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {IronCollapseElement} from 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import {IronSelectorElement} from 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {PageVisibility} from '../page_visibility.js';
 import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
+
+import {getTemplate} from './settings_menu.html.js';
 
 export interface SettingsMenuElement {
   $: {
@@ -46,7 +48,7 @@ export class SettingsMenuElement extends SettingsMenuElementBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {

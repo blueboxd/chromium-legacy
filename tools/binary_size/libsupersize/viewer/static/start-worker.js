@@ -2,8 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// @ts-check
 'use strict';
+
+/** @type {Object} */
+window.supersize = window.supersize || {};
+
+/** @type {?Worker} */
+window.supersize.worker = null;
 
 /**
  * We use a worker to keep large tree creation logic off the UI thread.
@@ -12,26 +17,28 @@
 class TreeWorker {
   /**
    * @param {Worker} worker Web worker to wrap
+   * @param {function(TreeProgress): *} onProgressHandler
    */
-  constructor(worker) {
+  constructor(worker, onProgressHandler) {
+    /** @const {Worker} */
     this._worker = worker;
-    /** ID counter used by `waitForResponse` */
+
+    /** @type {number} ID counter used by `waitForResponse` */
     this._requestId = 1;
 
-    /** @type {(data: TreeProgress) => void | null} callback for `loadTree` */
-    this._loadTreeCallback = null;
-
     this._worker.addEventListener('message', event => {
-      if (this._loadTreeCallback && event.data.id === 0) {
-        this._loadTreeCallback(event.data);
+      // An ID of 0 means it's a progress event.
+      if (event.data.id === 0) {
+        onProgressHandler(event.data);
       }
     });
   }
 
   /**
-   *
    * @param {string} action
    * @param {any} data
+   * @returns {Promise<*, string>}
+   * @private
    */
   _waitForResponse(action, data) {
     const id = ++this._requestId;
@@ -53,62 +60,46 @@ class TreeWorker {
   }
 
   /**
+   * Loads a new file.
+   * @param {?string=} input
+   * @param {?string=} accessToken
+   * @returns {Promise<BuildTreeResults, string>}
+   */
+  loadAndBuildTree(input=null, accessToken=null) {
+    return this._waitForResponse('loadAndBuildTree', {
+      input,
+      accessToken,
+      optionsStr: location.search.slice(1),
+    });
+  }
+
+  /**
+   * Rebuilds the tree with the current query parameters.
+   * @returns {Promise<BuildTreeResults>}
+   */
+  buildTree() {
+    return this._waitForResponse('buildTree', {
+      optionsStr: location.search.slice(1),
+    });
+  }
+
+  /**
    * Get data for a node with `idPath`. Loads information about the node and its
    * direct children. Deeper children can be loaded by calling this function
    * again.
    * @param {string} idPath Path of the node to find
-   * @returns {Promise<TreeNode | null>}
+   * @returns {Promise<TreeNode, string>}
    */
   openNode(idPath) {
     return this._waitForResponse('open', idPath);
   }
-
-  /**
-   * Set callback used after `loadTree` is first called.
-   * @param {(data: TreeProgress) => void} callback Called when the worker
-   * has some data to display. Complete when `progress` is 1.
-   */
-  setOnProgressHandler(callback) {
-    this._loadTreeCallback = callback;
-  }
-
-  /**
-   * Loads the tree data given on a worker thread and replaces the tree view in
-   * the UI once complete. Uses query string as state for the options.
-   * Use `onProgress` before calling `loadTree`.
-   * @param {?string=} input
-   * @param {?string=} accessToken
-   * @returns {Promise<TreeProgress>}
-   */
-  loadTree(input = null, accessToken = null) {
-    return this._waitForResponse('load', {
-      input,
-      accessToken,
-      options: location.search.slice(1),
-    });
-  }
 }
-
-window.supersize = {
-  worker: null,
-  treeReady: null,
-};
-
-function restartWorker() {
-  window.supersize.worker = null;
-  let innerWorker = new Worker('tree-worker-wasm.js');
-  window.supersize.worker = new TreeWorker(innerWorker);
+/**
+ * @param {function(TreeProgress): *} onProgressHandler
+ * @return {TreeWorker}
+ */
+function restartWorker(onProgressHandler) {
+  const innerWorker = new Worker('tree-worker-wasm.js');
+  window.supersize.worker = new TreeWorker(innerWorker, onProgressHandler);
+  return window.supersize.worker;
 }
-
-(function() {
-  restartWorker();
-
-  if (requiresAuthentication()) {
-    window.supersize.treeReady = window.googleAuthPromise.then((authResponse) =>
-        window.supersize.worker.loadTree('from-url://',
-          authResponse.access_token));
-  } else {
-    window.supersize.treeReady = window.supersize.worker.loadTree(
-        'from-url://');
-  }
-})()

@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
+#include "chromeos/ui/base/window_properties.h"
 #include "components/exo/buffer.h"
 #include "components/exo/data_source.h"
 #include "components/exo/data_source_delegate.h"
@@ -45,10 +46,30 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
+#include "ash/drag_drop/drag_drop_controller.h"
+#include "base/test/bind.h"
+#include "ui/aura/client/drag_drop_client.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/events/test/events_test_utils.h"
 #endif
+
+using ::testing::_;
+using ::testing::AnyNumber;
 
 namespace exo {
 namespace {
+
+void DispatchGesture(ui::EventType gesture_type, gfx::Point location) {
+  ui::GestureEventDetails event_details(gesture_type);
+  ui::GestureEvent gesture_event(location.x(), location.y(), 0,
+                                 ui::EventTimeForNow(), event_details);
+  ui::EventSource* event_source =
+      ash::Shell::GetPrimaryRootWindow()->GetHost()->GetEventSource();
+  ui::EventSourceTestApi event_source_test(event_source);
+  ui::EventDispatchDetails details =
+      event_source_test.SendEventToSink(&gesture_event);
+  CHECK(!details.dispatcher_destroyed);
+}
 
 class MockPointerDelegate : public PointerDelegate {
  public:
@@ -82,12 +103,26 @@ class MockRelativePointerDelegate : public RelativePointerDelegate {
 
 class MockPointerConstraintDelegate : public PointerConstraintDelegate {
  public:
-  MockPointerConstraintDelegate() = default;
+  MockPointerConstraintDelegate() {
+    ON_CALL(*this, OnConstraintActivated).WillByDefault([this]() {
+      activated_count++;
+    });
+    ON_CALL(*this, OnConstraintBroken).WillByDefault([this]() {
+      broken_count++;
+    });
+  }
   ~MockPointerConstraintDelegate() = default;
 
   // Overridden from PointerConstraintDelegate:
+  MOCK_METHOD0(OnConstraintActivated, void());
+  MOCK_METHOD0(OnAlreadyConstrained, void());
   MOCK_METHOD0(OnConstraintBroken, void());
+  MOCK_METHOD0(IsPersistent, bool());
   MOCK_METHOD0(GetConstrainedSurface, Surface*());
+  MOCK_METHOD0(OnDefunct, void());
+
+  int activated_count = 0;
+  int broken_count = 0;
 };
 
 class MockPointerStylusDelegate : public PointerStylusDelegate {
@@ -149,7 +184,7 @@ class PointerConstraintTest : public PointerTest {
     PointerTest::SetUp();
     feature_list_.InitAndEnableFeature(chromeos::features::kExoPointerLock);
 
-    shell_surface_ = test::ShellSurfaceBuilder({10, 10}).BuildShellSurface();
+    shell_surface_ = BuildShellSurfaceWhichPermitsPointerLock();
     surface_ = shell_surface_->surface_for_testing();
     seat_ = std::make_unique<Seat>();
     pointer_ = std::make_unique<Pointer>(&delegate_, seat_.get());
@@ -182,11 +217,23 @@ class PointerConstraintTest : public PointerTest {
     PointerTest::TearDown();
   }
 
+  std::unique_ptr<ShellSurface> BuildShellSurfaceWhichPermitsPointerLock() {
+    std::unique_ptr<ShellSurface> shell_surface =
+        test::ShellSurfaceBuilder({10, 10}).BuildShellSurface();
+
+    shell_surface->surface_for_testing()
+        ->window()
+        ->GetToplevelWindow()
+        ->SetProperty(chromeos::kUseOverviewToExitPointerLock, true);
+
+    return shell_surface;
+  }
+
   std::unique_ptr<ui::test::EventGenerator> generator_;
   std::unique_ptr<Pointer> pointer_;
   std::unique_ptr<Seat> seat_;
-  MockPointerConstraintDelegate constraint_delegate_;
-  MockPointerDelegate delegate_;
+  testing::NiceMock<MockPointerConstraintDelegate> constraint_delegate_;
+  testing::NiceMock<MockPointerDelegate> delegate_;
   std::unique_ptr<ShellSurface> shell_surface_;
   Surface* surface_;
   base::test::ScopedFeatureList feature_list_;
@@ -1030,6 +1077,104 @@ TEST_F(PointerTest, DragDropAbort) {
   pointer.reset();
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+TEST_F(PointerTest, DragDropAndPointerEnterLeaveEvents) {
+  Seat seat(std::make_unique<TestDataExchangeDelegate>());
+  MockPointerDelegate pointer_delegate;
+  std::unique_ptr<Pointer> pointer(new Pointer(&pointer_delegate, &seat));
+  TestDataSourceDelegate data_source_delegate;
+  DataSource source(&data_source_delegate);
+  Surface origin;
+
+  // Make origin into a real window so the pointer can click it
+  ShellSurface shell_surface(&origin);
+  Buffer buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(10, 10)));
+  origin.Attach(&buffer);
+  origin.Commit();
+
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  EXPECT_CALL(pointer_delegate, CanAcceptPointerEventsForSurface(&origin))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(pointer_delegate, OnPointerFrame()).Times(AnyNumber());
+  EXPECT_CALL(pointer_delegate, OnPointerEnter(&origin, gfx::PointF(), 0));
+  generator.MoveMouseTo(origin.window()->GetBoundsInScreen().origin());
+
+  auto* drag_drop_controller = static_cast<ash::DragDropController*>(
+      aura::client::GetDragDropClient(ash::Shell::GetPrimaryRootWindow()));
+  ASSERT_TRUE(drag_drop_controller);
+
+  generator.PressLeftButton();
+  seat.StartDrag(&source, &origin, /*icon=*/nullptr,
+                 ui::mojom::DragEventSource::kMouse);
+  EXPECT_TRUE(seat.get_drag_drop_operation_for_testing());
+
+  // As soon as the runloop gets triggered, emit a mouse release event.
+  drag_drop_controller->SetLoopClosureForTesting(
+      base::BindLambdaForTesting([&]() {
+        EXPECT_CALL(pointer_delegate, OnPointerEnter(_, _, _));
+        generator.ReleaseLeftButton();
+      }),
+      base::DoNothing());
+
+  EXPECT_CALL(pointer_delegate, OnPointerLeave(_));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_CALL(pointer_delegate, OnPointerDestroying(pointer.get()));
+  pointer.reset();
+}
+
+TEST_F(PointerTest, DragDropAndPointerEnterLeaveEvents_NoOpOnTouchDrag) {
+  Seat seat(std::make_unique<TestDataExchangeDelegate>());
+  MockPointerDelegate pointer_delegate;
+  std::unique_ptr<Pointer> pointer(new Pointer(&pointer_delegate, &seat));
+  TestDataSourceDelegate data_source_delegate;
+  DataSource source(&data_source_delegate);
+  Surface origin;
+
+  // Make origin into a real window so the pointer can click it
+  ShellSurface shell_surface(&origin);
+  Buffer buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(10, 10)));
+  origin.Attach(&buffer);
+  origin.Commit();
+
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  EXPECT_CALL(pointer_delegate, CanAcceptPointerEventsForSurface(&origin))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(pointer_delegate, OnPointerFrame()).Times(AnyNumber());
+  EXPECT_CALL(pointer_delegate, OnPointerEnter(&origin, gfx::PointF(), 0));
+  generator.MoveMouseTo(origin.window()->GetBoundsInScreen().origin());
+
+  auto* drag_drop_controller = static_cast<ash::DragDropController*>(
+      aura::client::GetDragDropClient(ash::Shell::GetPrimaryRootWindow()));
+  ASSERT_TRUE(drag_drop_controller);
+
+  seat.StartDrag(&source, &origin, /*icon=*/nullptr,
+                 ui::mojom::DragEventSource::kTouch);
+  EXPECT_TRUE(seat.get_drag_drop_operation_for_testing());
+
+  // Initiate the gesture sequence.
+  DispatchGesture(ui::ET_GESTURE_BEGIN, gfx::Point(10, 10));
+
+  // As soon as the runloop gets triggered, emit a mouse release event.
+  drag_drop_controller->SetLoopClosureForTesting(
+      base::BindLambdaForTesting([&]() {
+        EXPECT_CALL(pointer_delegate, OnPointerEnter(_, _, _)).Times(0);
+        // generator.ReleaseLeftButton();
+        generator.set_current_screen_location(gfx::Point(10, 10));
+        generator.PressMoveAndReleaseTouchBy(50, 50);
+      }),
+      base::DoNothing());
+
+  EXPECT_CALL(pointer_delegate, OnPointerLeave(_)).Times(0);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_CALL(pointer_delegate, OnPointerDestroying(pointer.get()));
+  pointer.reset();
+}
+#endif
+
 TEST_F(PointerTest, OnPointerRelativeMotion) {
   auto surface = std::make_unique<Surface>();
   auto shell_surface = std::make_unique<ShellSurface>(surface.get());
@@ -1220,37 +1365,84 @@ TEST_F(PointerConstraintTest, ConstrainPointer) {
   EXPECT_CALL(delegate_, OnPointerFrame());
   // Moving the cursor to a different surface should change the focus when
   // the pointer is unconstrained.
-  pointer_->UnconstrainPointer();
+  pointer_->UnconstrainPointerByUserAction();
   generator_->MoveMouseTo(
       child_surface->window()->GetBoundsInScreen().origin());
 
+  pointer_->OnPointerConstraintDelegateDestroying(&constraint_delegate_);
   EXPECT_CALL(delegate_, OnPointerDestroying(pointer_.get()));
   pointer_.reset();
 }
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-TEST_F(PointerConstraintTest, ConstrainPointerFailsWhenSurfaceIsNotActive) {
-  auto second_shell_surface =
+TEST_F(PointerConstraintTest, CanOnlyConstrainPermittedWindows) {
+  std::unique_ptr<ShellSurface> shell_surface =
       test::ShellSurfaceBuilder({10, 10}).BuildShellSurface();
+  EXPECT_CALL(constraint_delegate_, GetConstrainedSurface())
+      .WillRepeatedly(testing::Return(shell_surface->surface_for_testing()));
+  // Called once when ConstrainPointer is denied, and again when the delegate
+  // is destroyed.
+  EXPECT_CALL(constraint_delegate_, OnDefunct()).Times(2);
+
+  EXPECT_FALSE(pointer_->ConstrainPointer(&constraint_delegate_));
+
+  pointer_->OnPointerConstraintDelegateDestroying(&constraint_delegate_);
+  EXPECT_CALL(delegate_, OnPointerDestroying(pointer_.get()));
+  pointer_.reset();
+}
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+TEST_F(PointerConstraintTest, OneConstraintPerSurface) {
+  ON_CALL(constraint_delegate_, IsPersistent())
+      .WillByDefault(testing::Return(false));
+  EXPECT_TRUE(pointer_->ConstrainPointer(&constraint_delegate_));
+
+  EXPECT_CALL(delegate_, OnPointerEnter(surface_, gfx::PointF(), 0));
+  EXPECT_CALL(delegate_, OnPointerFrame()).Times(testing::AtLeast(1));
+  generator_->MoveMouseTo(surface_->window()->GetBoundsInScreen().origin());
+
+  // Add a second constraint for the same surface, it should fail.
+  MockPointerConstraintDelegate second_constraint;
+  EXPECT_CALL(second_constraint, GetConstrainedSurface())
+      .WillRepeatedly(testing::Return(surface_));
+  ON_CALL(second_constraint, IsPersistent())
+      .WillByDefault(testing::Return(false));
+  EXPECT_CALL(second_constraint, OnAlreadyConstrained());
+  EXPECT_CALL(second_constraint, OnDefunct());
+  EXPECT_FALSE(pointer_->ConstrainPointer(&second_constraint));
+
+  pointer_->OnPointerConstraintDelegateDestroying(&constraint_delegate_);
+  EXPECT_CALL(delegate_, OnPointerDestroying(pointer_.get()));
+  pointer_.reset();
+}
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+TEST_F(PointerConstraintTest, OneShotConstraintActivatedOnFirstFocus) {
+  auto second_shell_surface = BuildShellSurfaceWhichPermitsPointerLock();
   Surface* second_surface = second_shell_surface->surface_for_testing();
 
   EXPECT_CALL(delegate_, CanAcceptPointerEventsForSurface(second_surface))
       .WillRepeatedly(testing::Return(true));
 
-  // Setting the focused window also makes it activated.
   focus_client_->FocusWindow(second_surface->window());
-  EXPECT_FALSE(pointer_->ConstrainPointer(&constraint_delegate_));
 
+  // Assert: Can no longer activate the constraint on the first surface.
+  EXPECT_FALSE(pointer_->ConstrainPointer(&constraint_delegate_));
+  EXPECT_EQ(constraint_delegate_.activated_count, 0);
+
+  // Assert: Constraint is activated when first surface gains focus.
   focus_client_->FocusWindow(surface_->window());
-  EXPECT_TRUE(pointer_->ConstrainPointer(&constraint_delegate_));
+  EXPECT_EQ(constraint_delegate_.activated_count, 1);
 
   EXPECT_CALL(delegate_, OnPointerEnter(surface_, gfx::PointF(), 0));
   EXPECT_CALL(delegate_, OnPointerFrame());
   generator_->MoveMouseTo(surface_->window()->GetBoundsInScreen().origin());
 
-  pointer_->UnconstrainPointer();
-
+  // Teardown
+  pointer_->OnPointerConstraintDelegateDestroying(&constraint_delegate_);
   EXPECT_CALL(delegate_, OnPointerDestroying(pointer_.get()));
   pointer_.reset();
 }
@@ -1277,6 +1469,29 @@ TEST_F(PointerConstraintTest, UnconstrainPointerWhenSurfaceIsDestroyed) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(PointerConstraintTest, UnconstrainPointerWhenWindowLosesFocus) {
+  ON_CALL(constraint_delegate_, IsPersistent())
+      .WillByDefault(testing::Return(false));
+  EXPECT_TRUE(pointer_->ConstrainPointer(&constraint_delegate_));
+
+  EXPECT_CALL(delegate_, OnPointerEnter(surface_, gfx::PointF(), 0));
+  EXPECT_CALL(delegate_, OnPointerFrame());
+  generator_->MoveMouseTo(surface_->window()->GetBoundsInScreen().origin());
+
+  EXPECT_CALL(constraint_delegate_, OnConstraintBroken());
+  EXPECT_CALL(constraint_delegate_, OnConstraintActivated()).Times(0);
+  focus_client_->FocusWindow(nullptr);
+  focus_client_->FocusWindow(surface_->window());
+
+  pointer_->OnPointerConstraintDelegateDestroying(&constraint_delegate_);
+  EXPECT_CALL(delegate_, OnPointerDestroying(pointer_.get()));
+  pointer_.reset();
+}
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+TEST_F(PointerConstraintTest, PersistentConstraintActivatedOnRefocus) {
+  ON_CALL(constraint_delegate_, IsPersistent())
+      .WillByDefault(testing::Return(true));
   EXPECT_TRUE(pointer_->ConstrainPointer(&constraint_delegate_));
 
   EXPECT_CALL(delegate_, OnPointerEnter(surface_, gfx::PointF(), 0));
@@ -1285,7 +1500,128 @@ TEST_F(PointerConstraintTest, UnconstrainPointerWhenWindowLosesFocus) {
 
   EXPECT_CALL(constraint_delegate_, OnConstraintBroken());
   focus_client_->FocusWindow(nullptr);
+  EXPECT_CALL(constraint_delegate_, OnConstraintActivated());
+  focus_client_->FocusWindow(surface_->window());
 
+  pointer_->OnPointerConstraintDelegateDestroying(&constraint_delegate_);
+  EXPECT_CALL(delegate_, OnPointerDestroying(pointer_.get()));
+  pointer_.reset();
+}
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+TEST_F(PointerConstraintTest, MultipleSurfacesCanBeConstrained) {
+  // Arrange: First surface + persistent constraint
+  ON_CALL(constraint_delegate_, IsPersistent())
+      .WillByDefault(testing::Return(true));
+  EXPECT_TRUE(pointer_->ConstrainPointer(&constraint_delegate_));
+
+  EXPECT_CALL(delegate_, OnPointerEnter(surface_, gfx::PointF(), 0));
+  EXPECT_CALL(delegate_, OnPointerFrame());
+  generator_->MoveMouseTo(surface_->window()->GetBoundsInScreen().origin());
+
+  EXPECT_EQ(constraint_delegate_.activated_count, 1);
+
+  // Arrange: Second surface + persistent constraint
+  auto second_shell_surface = BuildShellSurfaceWhichPermitsPointerLock();
+  Surface* second_surface = second_shell_surface->surface_for_testing();
+  focus_client_->FocusWindow(second_surface->window());
+  EXPECT_CALL(delegate_, CanAcceptPointerEventsForSurface(second_surface))
+      .WillRepeatedly(testing::Return(true));
+  testing::NiceMock<MockPointerConstraintDelegate> second_constraint;
+  EXPECT_CALL(second_constraint, GetConstrainedSurface())
+      .WillRepeatedly(testing::Return(second_surface));
+  ON_CALL(second_constraint, IsPersistent())
+      .WillByDefault(testing::Return(true));
+  EXPECT_TRUE(pointer_->ConstrainPointer(&second_constraint));
+
+  EXPECT_EQ(constraint_delegate_.activated_count, 1);
+  EXPECT_EQ(second_constraint.activated_count, 1);
+
+  // Act: Toggle focus, first surface's constraint should activate.
+  focus_client_->FocusWindow(surface_->window());
+
+  EXPECT_EQ(constraint_delegate_.activated_count, 2);
+  EXPECT_EQ(second_constraint.activated_count, 1);
+
+  // Act: Toggle focus, second surface's constraint should activate.
+  focus_client_->FocusWindow(second_surface->window());
+
+  EXPECT_EQ(constraint_delegate_.activated_count, 2);
+  EXPECT_EQ(second_constraint.activated_count, 2);
+
+  pointer_->OnPointerConstraintDelegateDestroying(&constraint_delegate_);
+  pointer_->OnPointerConstraintDelegateDestroying(&second_constraint);
+  EXPECT_CALL(delegate_, OnPointerDestroying(pointer_.get()));
+  pointer_.reset();
+}
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+TEST_F(PointerConstraintTest, UserActionPreventsConstraint) {
+  ON_CALL(constraint_delegate_, IsPersistent())
+      .WillByDefault(testing::Return(false));
+  EXPECT_TRUE(pointer_->ConstrainPointer(&constraint_delegate_));
+
+  EXPECT_CALL(delegate_, OnPointerEnter(surface_, gfx::PointF(), 0));
+  EXPECT_CALL(delegate_, OnPointerFrame()).Times(testing::AtLeast(1));
+  generator_->MoveMouseTo(surface_->window()->GetBoundsInScreen().origin());
+
+  EXPECT_CALL(constraint_delegate_, OnConstraintBroken());
+  pointer_->UnconstrainPointerByUserAction();
+
+  // New constraints are no longer permitted.
+  MockPointerConstraintDelegate second_constraint;
+  EXPECT_CALL(second_constraint, GetConstrainedSurface())
+      .WillRepeatedly(testing::Return(surface_));
+  ON_CALL(second_constraint, IsPersistent())
+      .WillByDefault(testing::Return(false));
+  EXPECT_FALSE(pointer_->ConstrainPointer(&second_constraint));
+  EXPECT_EQ(second_constraint.activated_count, 0);
+
+  // A click event will activate the pending constraint.
+  generator_->ClickLeftButton();
+  EXPECT_EQ(second_constraint.activated_count, 1);
+
+  pointer_->OnPointerConstraintDelegateDestroying(&second_constraint);
+
+  // New constraints are now permitted too.
+  MockPointerConstraintDelegate third_constraint;
+  EXPECT_CALL(third_constraint, GetConstrainedSurface())
+      .WillRepeatedly(testing::Return(surface_));
+  ON_CALL(third_constraint, IsPersistent())
+      .WillByDefault(testing::Return(false));
+  EXPECT_TRUE(pointer_->ConstrainPointer(&third_constraint));
+  pointer_->OnPointerConstraintDelegateDestroying(&third_constraint);
+
+  pointer_->OnPointerConstraintDelegateDestroying(&constraint_delegate_);
+  EXPECT_CALL(delegate_, OnPointerDestroying(pointer_.get()));
+  pointer_.reset();
+}
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+TEST_F(PointerConstraintTest, UserCanBreakAndActivatePersistentConstraint) {
+  ON_CALL(constraint_delegate_, IsPersistent())
+      .WillByDefault(testing::Return(true));
+  EXPECT_TRUE(pointer_->ConstrainPointer(&constraint_delegate_));
+  EXPECT_EQ(constraint_delegate_.activated_count, 1);
+  EXPECT_EQ(constraint_delegate_.broken_count, 0);
+
+  EXPECT_CALL(delegate_, OnPointerEnter(surface_, gfx::PointF(), 0));
+  EXPECT_CALL(delegate_, OnPointerFrame()).Times(testing::AtLeast(1));
+  generator_->MoveMouseTo(surface_->window()->GetBoundsInScreen().origin());
+
+  EXPECT_CALL(constraint_delegate_, OnConstraintBroken());
+  pointer_->UnconstrainPointerByUserAction();
+  EXPECT_EQ(constraint_delegate_.activated_count, 1);
+  EXPECT_EQ(constraint_delegate_.broken_count, 1);
+
+  // Click events re-enable the constraint.
+  generator_->ClickLeftButton();
+  EXPECT_EQ(constraint_delegate_.activated_count, 2);
+
+  pointer_->OnPointerConstraintDelegateDestroying(&constraint_delegate_);
   EXPECT_CALL(delegate_, OnPointerDestroying(pointer_.get()));
   pointer_.reset();
 }

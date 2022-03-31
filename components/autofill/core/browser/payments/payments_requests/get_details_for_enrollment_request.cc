@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/payments/payments_requests/get_details_for_enrollment_request.h"
 
 #include "base/json/json_writer.h"
+#include "base/strings/string_number_conversions.h"
 
 namespace autofill::payments {
 
@@ -31,7 +32,8 @@ GetDetailsForEnrollmentRequest::GetDetailsForEnrollmentRequest(
         request_details,
     base::OnceCallback<
         void(AutofillClient::PaymentsRpcResult,
-             PaymentsClient::GetDetailsForEnrollmentResponseDetails&)> callback)
+             const PaymentsClient::GetDetailsForEnrollmentResponseDetails&)>
+        callback)
     : request_details_(request_details), callback_(std::move(callback)) {}
 
 GetDetailsForEnrollmentRequest::~GetDetailsForEnrollmentRequest() = default;
@@ -74,8 +76,10 @@ std::string GetDetailsForEnrollmentRequest::GetRequestContent() {
       "instrument_id",
       base::Value(base::NumberToString(request_details_.instrument_id)));
 
-  request_dict.SetKey("risk_data_encoded",
-                      BuildRiskDictionary(request_details_.risk_data));
+  if (!request_details_.risk_data.empty()) {
+    request_dict.SetKey("risk_data_encoded",
+                        BuildRiskDictionary(request_details_.risk_data));
+  }
 
   std::string request_content;
   base::JSONWriter::Write(request_dict, &request_content);

@@ -26,6 +26,16 @@ namespace features {
 // Main feature flag for the feature notification guide feature.
 extern const base::Feature kFeatureNotificationGuide;
 
+// Feature flag used for running the segmentation model for low engaged users.
+extern const base::Feature kSegmentationModelLowEngagedUsers;
+
+// Feature flag to determine whether to skip check for the low engaged users.
+extern const base::Feature kSkipCheckForLowEngagedUsers;
+
+// Feature flag to determine whether feature engagement tracker should be used
+// instead of segmentation platform.
+extern const base::Feature kUseFeatureEngagementForUserTargeting;
+
 }  // namespace features
 
 // The central class responsible for managing feature notification guide in
@@ -46,6 +56,19 @@ class FeatureNotificationGuideService : public KeyedService,
     // Called when the notification associated with the given |feature| is
     // clicked.
     virtual void OnNotificationClick(FeatureType feature) = 0;
+
+    // Called to cancel the notification from notification drawer if the feature
+    // has been already used.
+    virtual void CloseNotification(const std::string& notification_guid) = 0;
+
+    // Called to determine if we should skip the feature feature notification.
+    virtual bool ShouldSkipFeature(FeatureType feature) = 0;
+
+    // Called to get the guid that should be used for displaying the
+    // notification. The actual android notification id is derived as the hash
+    // code of this guid.
+    virtual std::string GetNotificationParamGuidForFeature(
+        FeatureType feature) = 0;
 
     // Getter/Setter method for the service.
     FeatureNotificationGuideService* GetService();

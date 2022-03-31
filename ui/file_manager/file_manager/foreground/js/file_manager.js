@@ -30,7 +30,6 @@ import {ProgressCenter} from '../../externs/background/progress_center.js';
 import {BackgroundWindow} from '../../externs/background_window.js';
 import {CommandHandlerDeps} from '../../externs/command_handler_deps.js';
 import {FakeEntry, FilesAppDirEntry} from '../../externs/files_app_entry_interfaces.js';
-import {FilesMessage} from '../elements/files_message.js';
 
 import {ActionsController} from './actions_controller.js';
 import {AndroidAppListModel} from './android_app_list_model.js';
@@ -77,7 +76,6 @@ import {SpinnerController} from './spinner_controller.js';
 import {TaskController} from './task_controller.js';
 import {ToolbarController} from './toolbar_controller.js';
 import {A11yAnnounce} from './ui/a11y_announce.js';
-import {Banners} from './ui/banners.js';
 import {CommandButton} from './ui/commandbutton.js';
 import {DirectoryTree} from './ui/directory_tree.js';
 import {FileGrid} from './ui/file_grid.js';
@@ -777,17 +775,10 @@ export class FileManager extends EventTarget {
     this.selectionHandler_.onFileSelectionChanged();
     this.ui_.listContainer.endBatchUpdates();
 
-    if (util.isBannerFrameworkEnabled()) {
-      const bannerController = new BannerController(
-          this.directoryModel_, this.volumeManager_, assert(this.crostini_));
-      this.ui_.initBanners(bannerController);
-      bannerController.initialize();
-    } else {
-      this.ui_.initBanners(new Banners(
-          this.directoryModel_, this.volumeManager_, this.document_,
-          // Whether to show any welcome banner.
-          this.dialogType === DialogType.FULL_PAGE));
-    }
+    const bannerController = new BannerController(
+        this.directoryModel_, this.volumeManager_, assert(this.crostini_));
+    this.ui_.initBanners(bannerController);
+    bannerController.initialize();
 
     this.ui_.attachFilesTooltip();
     this.ui_.decorateFilesMenuItems();
@@ -1219,7 +1210,8 @@ export class FileManager extends EventTarget {
 
     this.recentEntry_ = new FakeEntryImpl(
         str('RECENT_ROOT_LABEL'), VolumeManagerCommon.RootType.RECENT,
-        this.getSourceRestriction_());
+        this.getSourceRestriction_(),
+        chrome.fileManagerPrivate.RecentFileType.ALL);
 
     assert(this.launchParams_);
     this.selectionHandler_ = new FileSelectionHandler(
@@ -1339,8 +1331,7 @@ export class FileManager extends EventTarget {
     chrome.fileManagerPrivate.onCrostiniChanged.addListener(
         this.onCrostiniChanged_.bind(this));
     this.crostiniController_ = new CrostiniController(
-        assert(this.crostini_), /** @type {!FilesMessage} */
-        (this.document_.querySelector('#files-message')), this.directoryModel_,
+        assert(this.crostini_), this.directoryModel_,
         assert(this.directoryTree));
     await this.crostiniController_.redraw();
     // Never show toast in an open-file dialog.
@@ -1439,7 +1430,11 @@ export class FileManager extends EventTarget {
           }
         }
       } catch (error) {
-        console.warn(error.stack || error);
+        // If `selectionURL` doesn't exist we just don't select it, thus we
+        // don't need to log the failure.
+        if (error.name !== 'NotFoundError') {
+          console.warn(error.stack || error);
+        }
       }
     }
 
@@ -1543,9 +1538,15 @@ export class FileManager extends EventTarget {
                 this.launchParams_.targetName, {}, resolve, reject);
           });
         } catch (error2) {
-          // Failed to resolve as either file or directory.
-          console.warn(error1.stack || error1);
-          console.warn(error2.stack || error2);
+          // If `targetName` doesn't exist we just don't select it, thus we
+          // don't need to log the failure.
+          if (error1.name !== 'NotFoundError') {
+            console.warn(error1.stack || error1);
+            console.log(error1);
+          }
+          if (error2.name !== 'NotFoundError') {
+            console.warn(error2.stack || error2);
+          }
         }
       }
     }

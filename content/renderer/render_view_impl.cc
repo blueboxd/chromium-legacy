@@ -22,12 +22,12 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/public/renderer/window_features_converter.h"
 #include "content/renderer/agent_scheduling_group.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
-#include "content/renderer/render_thread_impl.h"
 #include "third_party/blink/public/mojom/page/page.mojom.h"
 #include "third_party/blink/public/platform/impression_conversions.h"
 #include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
@@ -74,6 +74,7 @@ WindowOpenDisposition RenderViewImpl::NavigationPolicyToDisposition(
     case blink::kWebNavigationPolicyNewWindow:
       return WindowOpenDisposition::NEW_WINDOW;
     case blink::kWebNavigationPolicyNewPopup:
+    case blink::kWebNavigationPolicyPictureInPicture:
       return WindowOpenDisposition::NEW_POPUP;
     default:
       NOTREACHED() << "Unexpected WebNavigationPolicy";
@@ -134,6 +135,7 @@ void RenderViewImpl::Initialize(
 
   bool local_main_frame = params->main_frame->is_local_params();
 
+  webview_->SetRendererPreferences(params->renderer_preferences);
   webview_->SetWebPreferences(params->web_preferences);
 
   if (local_main_frame) {
@@ -156,8 +158,6 @@ void RenderViewImpl::Initialize(
   // TODO(davidben): Move this state from Blink into content.
   if (params->window_was_opened_by_another_window)
     GetWebView()->SetOpenedByDOM();
-
-  webview_->SetRendererPreferences(params->renderer_preferences);
 
   GetContentClient()->renderer()->WebViewCreated(webview_);
 

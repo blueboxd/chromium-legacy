@@ -5,12 +5,11 @@
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
-import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 
 import {isNonEmptyArray} from '../../common/utils.js';
-import {FetchGooglePhotosAlbumsResponse, GooglePhotosAlbum, WallpaperCollection, WallpaperImage, WallpaperLayout, WallpaperProviderInterface, WallpaperType} from '../personalization_app.mojom-webui.js';
+import {FetchGooglePhotosAlbumsResponse, FetchGooglePhotosPhotosResponse, GooglePhotosAlbum, GooglePhotosPhoto, WallpaperCollection, WallpaperImage, WallpaperLayout, WallpaperProviderInterface, WallpaperType} from '../personalization_app.mojom-webui.js';
 import {PersonalizationStore} from '../personalization_store.js';
-import {isFilePath, isWallpaperImage} from '../utils.js';
+import {isFilePath, isGooglePhotosPhoto, isWallpaperImage} from '../utils.js';
 
 import * as action from './wallpaper_actions.js';
 
@@ -67,17 +66,29 @@ async function fetchAllImagesForCollections(
  * specified id and saves it to the store.
  */
 export async function fetchGooglePhotosAlbum(
-    _: WallpaperProviderInterface, store: PersonalizationStore,
+    provider: WallpaperProviderInterface, store: PersonalizationStore,
     albumId: string): Promise<void> {
   store.dispatch(action.beginLoadGooglePhotosAlbumAction(albumId));
 
-  // TODO(dmblack): Create and wire up mojo API. For now, simulate an async
-  // request that returns a list of 1,000 Google Photos photos.
-  return new Promise(resolve => setTimeout(() => {
-                       store.dispatch(action.setGooglePhotosAlbumAction(
-                           albumId, Array.from({length: 1000})));
-                       resolve();
-                     }, 1000));
+  let photos: Array<GooglePhotosPhoto>|null = [];
+  let resumeToken: string|null|undefined = null;
+
+  // TODO(b/216882690): Support incremental load of photos as the user scrolls
+  // through their library as opposed to loading them all at once.
+  do {
+    const {response} = await provider.fetchGooglePhotosPhotos(
+                           /*itemId=*/ null, albumId, resumeToken) as
+        {response: FetchGooglePhotosPhotosResponse};
+    if (!Array.isArray(response.photos)) {
+      console.warn('Failed to fetch Google Photos album');
+      photos = null;
+      break;
+    }
+    photos.push(...response.photos);
+    resumeToken = response.resumeToken;
+  } while (resumeToken);
+
+  store.dispatch(action.setGooglePhotosAlbumAction(albumId, photos));
 }
 
 /** Fetches the list of Google Photos albums and saves it to the store. */
@@ -89,6 +100,8 @@ async function fetchGooglePhotosAlbums(
   let albums: Array<GooglePhotosAlbum>|null = [];
   let resumeToken: string|null|undefined = null;
 
+  // TODO(b/215179074): Support incremental load of albums as the user scrolls
+  // through their library as opposed to loading them all at once.
   do {
     const {response} = await provider.fetchGooglePhotosAlbums(resumeToken) as
         {response: FetchGooglePhotosAlbumsResponse};
@@ -115,29 +128,29 @@ async function fetchGooglePhotosCount(
 
 /** Fetches the list of Google Photos photos and saves it to the store. */
 async function fetchGooglePhotosPhotos(
-    _: WallpaperProviderInterface, store: PersonalizationStore): Promise<void> {
+    provider: WallpaperProviderInterface,
+    store: PersonalizationStore): Promise<void> {
   store.dispatch(action.beginLoadGooglePhotosPhotosAction());
 
-  // TODO(dmblack): Create and wire up mojo API. For now, simulate an async
-  // request that returns a list of 1,000 Google Photos photos.
-  return new Promise(
-      resolve => setTimeout(() => {
-        // Temporarily use hard-coded URLs from the solid colors backdrop
-        // collection since the backdrop server is already allowlisted with the
-        // untrusted iframe's content security policy.
-        const urls = [
-          'https://lh6.googleusercontent.com/proxy/dVgC6TzmRH-4uhdcqZK37RyRErOz46Y4S9W8Pw3tfRHyPluwELODHfvrx-SorsUFq5YphXy1VXIxQO2oXlF7GfjeRLY4hsH9c20FqCM4Tpk',
-          'https://lh6.googleusercontent.com/proxy/qcBQd3OJ8qwQeFvAb0p23WJau6s1w5RQ0UAUFD1bm56SVBgP1X7-LAfv2_uF47-9Dd6v_fCVKYVU6SCsorTxMRahBSdv6of9FBdReaoqPg',
-          'https://lh6.googleusercontent.com/proxy/fahpL4TekPUgLhKJQ289ISWz_FPG9XutzfjqBiSdDhxjuBfZ7SjlE4j58rg9wzEsu9NcQ0Yrm0B5NW_MWaLbX0TWJ5yRDVH1z-Zf',
-          'https://lh6.googleusercontent.com/proxy/dVgC6TzmRH-4uhdcqZK37RyRErOz46Y4S9W8Pw3tfRHyPluwELODHfvrx-SorsUFq5YphXy1VXIxQO2oXlF7GfjeRLY4hsH9c20FqCM4Tpk',
-          'https://lh6.googleusercontent.com/proxy/5ftru2Wt8g3R7r4TzRAOhJD7jMpLWOiqKxgql3vd_s26EnV51M5WfJe-ZJZkrMnqbOQ4uB1iBycwwGziEVYCwMeRx2Tcdmiq2lH44hUD3OLX',
-          'https://lh6.googleusercontent.com/proxy/qcBQd3OJ8qwQeFvAb0p23WJau6s1w5RQ0UAUFD1bm56SVBgP1X7-LAfv2_uF47-9Dd6v_fCVKYVU6SCsorTxMRahBSdv6of9FBdReaoqPg',
-        ];
-        store.dispatch(action.setGooglePhotosPhotosAction(
-            Array.from({length: 1000})
-                .map((_, i) => ({url: urls[i % urls.length]}))));
-        resolve();
-      }, 1000));
+  let photos: Array<GooglePhotosPhoto>|null = [];
+  let resumeToken: string|null|undefined = null;
+
+  // TODO(b/216882690): Support incremental load of photos as the user scrolls
+  // through their library as opposed to loading them all at once.
+  do {
+    const {response} = await provider.fetchGooglePhotosPhotos(
+                           /*itemId=*/ null, /*albumId=*/ null, resumeToken) as
+        {response: FetchGooglePhotosPhotosResponse};
+    if (!Array.isArray(response.photos)) {
+      console.warn('Failed to fetch Google Photos photos');
+      photos = null;
+      break;
+    }
+    photos.push(...response.photos);
+    resumeToken = response.resumeToken;
+  } while (resumeToken);
+
+  store.dispatch(action.setGooglePhotosPhotosAction(photos));
 }
 
 /** Get list of local images from disk and save it to the store. */
@@ -199,8 +212,8 @@ async function getMissingLocalImageThumbnails(
 }
 
 export async function selectWallpaper(
-    image: WallpaperImage|FilePath, provider: WallpaperProviderInterface,
-    store: PersonalizationStore,
+    image: WallpaperImage|FilePath|GooglePhotosPhoto,
+    provider: WallpaperProviderInterface, store: PersonalizationStore,
     layout: WallpaperLayout = WallpaperLayout.kCenterCropped): Promise<void> {
   // Batch these changes together to reduce polymer churn as multiple state
   // fields change quickly.
@@ -218,6 +231,8 @@ export async function selectWallpaper(
     } else if (isFilePath(image)) {
       return provider.selectLocalImage(
           image, layout, /*preview_mode=*/ shouldPreview);
+    } else if (isGooglePhotosPhoto(image)) {
+      return provider.selectGooglePhotosPhoto(image.id);
     } else {
       console.warn('Image must be a local image or a WallpaperImage');
       return {success: false};

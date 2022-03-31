@@ -11,11 +11,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
-import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.SheetState;
+import org.chromium.components.image_fetcher.ImageFetcher;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.ApplicationViewportInsetSupplier;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.util.AccessibilityUtil;
 
 /**
@@ -33,23 +34,25 @@ public class AssistantCoordinator {
             @Nullable AssistantOverlayCoordinator overlayCoordinator,
             AssistantKeyboardCoordinator.Delegate keyboardCoordinatorDelegate,
             @NonNull KeyboardVisibilityDelegate keyboardDelegate, @NonNull View rootView,
-            @NonNull BrowserControlsStateProvider browserControls,
+            @NonNull AssistantBrowserControlsFactory browserControlsFactory,
             @NonNull ApplicationViewportInsetSupplier applicationBottomInsetProvider,
             AccessibilityUtil accessibilityUtil, AssistantInfoPageUtil infoPageUtil,
-            @Nullable AssistantProfileImageUtil profileImageUtil) {
+            @Nullable AssistantProfileImageUtil profileImageUtil, ImageFetcher imageFetcher,
+            AssistantEditorFactory editorFactory, WindowAndroid windowAndroid) {
         if (overlayCoordinator != null) {
             mModel = new AssistantModel(overlayCoordinator.getModel());
             mOverlayCoordinator = overlayCoordinator;
         } else {
             mModel = new AssistantModel();
-            mOverlayCoordinator = new AssistantOverlayCoordinator(activity, browserControls,
+            mOverlayCoordinator = new AssistantOverlayCoordinator(activity, browserControlsFactory,
                     rootView, controller.getScrimCoordinator(), mModel.getOverlayModel(),
                     accessibilityUtil);
         }
 
         mBottomBarCoordinator = new AssistantBottomBarCoordinator(activity, mModel,
                 mOverlayCoordinator, controller, applicationBottomInsetProvider, tabObscuringUtil,
-                browserControls, accessibilityUtil, infoPageUtil, profileImageUtil);
+                browserControlsFactory, accessibilityUtil, infoPageUtil, profileImageUtil,
+                imageFetcher, editorFactory, windowAndroid);
         mKeyboardCoordinator = new AssistantKeyboardCoordinator(activity, keyboardDelegate,
                 rootView, mModel, keyboardCoordinatorDelegate, controller);
     }

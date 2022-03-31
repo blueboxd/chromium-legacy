@@ -190,13 +190,22 @@ try_.builder(
 
 try_.builder(
     name = "linux-chromeos-dbg",
-    # The CI builder that this mirrors is enabled on branches, so this will
-    # allow testing changes that would break it before submitting
-    branch_selector = branches.STANDARD_MILESTONE,
 )
 
 try_.builder(
     name = "linux-chromeos-annotator-rel",
+)
+
+try_.builder(
+    name = "linux-chromeos-clang-tidy-rel",
+    executable = "recipe:tricium_clang_tidy_wrapper",
+    goma_jobs = goma.jobs.J150,
+)
+
+try_.builder(
+    name = "linux-lacros-clang-tidy-rel",
+    executable = "recipe:tricium_clang_tidy_wrapper",
+    goma_jobs = goma.jobs.J150,
 )
 
 try_.builder(

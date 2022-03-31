@@ -62,11 +62,9 @@ export class UpdateCardElement extends UpdateCardElementBase {
 
   /** @protected */
   onUpdateButtonClicked_() {
-    this.dispatchEvent(new CustomEvent('open-update-dialog', {
-      bubbles: true,
-      composed: true,
-      detail: {update: this.update, inflight: false}
-    }));
+    this.dispatchEvent(new CustomEvent(
+        'open-confirmation-dialog',
+        {bubbles: true, composed: true, detail: {update: this.update}}));
   }
 
   /**
@@ -93,8 +91,8 @@ export class UpdateCardElement extends UpdateCardElementBase {
    * @protected
    * @return {string}
    */
-  computeDeviceDescription_() {
-    return mojoString16ToString(this.update.deviceDescription);
+  getUpdateButtonA11yLabel_() {
+    return this.i18n('updateButtonA11yLabel', this.computeDeviceName_());
   }
 }
 

@@ -6,22 +6,35 @@
 
 #include <random>
 
+#include "base/json/json_reader.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
+#include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
+#include "chrome/common/pref_names.h"
 #include "components/services/app_service/public/cpp/url_handler_info.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "url/gurl.h"
+
+namespace {
+
+std::vector<std::string> features = {
+    "default_on_feature", "default_self_feature", "default_disabled_feature"};
+
+}  // namespace
 
 namespace web_app {
 namespace test {
@@ -114,6 +127,35 @@ apps::ShareTarget CreateRandomShareTarget(uint32_t suffix) {
   }
 
   return share_target;
+}
+
+std::vector<PermissionsPolicyDeclaration> CreateRandomPermissionsPolicy(
+    RandomHelper& random) {
+  const int num_permissions_policy_declarations =
+      random.next_uint(features.size());
+
+  std::vector<std::string> available_features;
+  for (const auto& feature : features)
+    available_features.push_back(feature);
+
+  const auto suffix = random.next_uint();
+  std::default_random_engine rng;
+  std::shuffle(available_features.begin(), available_features.end(), rng);
+
+  std::vector<PermissionsPolicyDeclaration> permissions_policy(
+      num_permissions_policy_declarations);
+  for (int i = 0; i < num_permissions_policy_declarations; ++i) {
+    permissions_policy[i].feature = available_features[i];
+    for (unsigned int j = 0; j < 5; ++j) {
+      std::string suffix_str =
+          base::NumberToString(suffix) + base::NumberToString(j);
+
+      const auto origin =
+          url::Origin::Create(GURL("https://app-" + suffix_str + ".com/"));
+      permissions_policy[i].allowlist.push_back(origin.Serialize());
+    }
+  }
+  return permissions_policy;
 }
 
 std::vector<apps::ProtocolHandlerInfo> CreateRandomProtocolHandlers(
@@ -330,6 +372,7 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
     app->SetLaunchQueryParams(base::NumberToString(random.next_uint()));
 
   app->SetRunOnOsLoginMode(random.next_enum<RunOnOsLoginMode>());
+  app->SetRunOnOsLoginOsIntegrationState(RunOnOsLoginMode::kNotRun);
 
   const SquareSizePx size = 256;
   const int num_icons = random.next_uint(10);
@@ -432,15 +475,24 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
 
   app->SetHandleLinks(random.next_enum<blink::mojom::HandleLinks>());
 
-  // `random` should not be used after the chromeos block if the result
-  // is expected to be deterministic across cros and non-cros builds.
+  if (random.next_bool())
+    app->SetPermissionsPolicy(CreateRandomPermissionsPolicy(random));
+
+  uint32_t install_source =
+      random.next_uint(static_cast<int>(webapps::WebappInstallSource::COUNT));
+  app->SetInstallSourceForMetrics(
+      static_cast<webapps::WebappInstallSource>(install_source));
+
   if (IsChromeOsDataMandatory()) {
+    // Use a separate random generator for CrOS so the result is deterministic
+    // across cros and non-cros builds.
+    RandomHelper cros_random(seed);
     auto chromeos_data = absl::make_optional<WebAppChromeOsData>();
-    chromeos_data->show_in_launcher = random.next_bool();
-    chromeos_data->show_in_search = random.next_bool();
-    chromeos_data->show_in_management = random.next_bool();
-    chromeos_data->is_disabled = random.next_bool();
-    chromeos_data->oem_installed = random.next_bool();
+    chromeos_data->show_in_launcher = cros_random.next_bool();
+    chromeos_data->show_in_search = cros_random.next_bool();
+    chromeos_data->show_in_management = cros_random.next_bool();
+    chromeos_data->is_disabled = cros_random.next_bool();
+    chromeos_data->oem_installed = cros_random.next_bool();
     app->SetWebAppChromeOsData(std::move(chromeos_data));
   }
 
@@ -494,6 +546,14 @@ void CheckServiceWorkerStatus(const GURL& url,
             run_loop.Quit();
           }));
   run_loop.Run();
+}
+
+void SetWebAppSettingsDictPref(Profile* profile, const base::StringPiece pref) {
+  base::JSONReader::ValueWithError result =
+      base::JSONReader::ReadAndReturnValueWithError(
+          pref, base::JSONParserOptions::JSON_ALLOW_TRAILING_COMMAS);
+  DCHECK(result.value && result.value->is_dict()) << result.error_message;
+  profile->GetPrefs()->Set(prefs::kWebAppSettings, std::move(*result.value));
 }
 
 }  // namespace test

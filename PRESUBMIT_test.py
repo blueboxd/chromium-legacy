@@ -1,8 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import io
 import os.path
 import subprocess
 import unittest
@@ -506,9 +507,26 @@ class UserMetricsActionTest(unittest.TestCase):
 
 
 class PydepsNeedsUpdatingTest(unittest.TestCase):
+  class MockPopen:
+    def __init__(self, stdout_func):
+      self._stdout_func = stdout_func
 
-  class MockSubprocess(object):
+    def wait(self):
+      self.stdout = io.StringIO(self._stdout_func())
+      return 0
+
+  class MockSubprocess:
     CalledProcessError = subprocess.CalledProcessError
+    PIPE = 0
+
+    def __init__(self):
+      self._popen_func = None
+
+    def SetPopenCallback(self, func):
+      self._popen_func = func
+
+    def Popen(self, cmd, *args, **kwargs):
+      return PydepsNeedsUpdatingTest.MockPopen(lambda: self._popen_func(cmd))
 
   def _MockParseGclientArgs(self, is_android=True):
     return lambda: {'checkout_android': 'true' if is_android else 'false' }
@@ -604,16 +622,15 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
       MockAffectedFile('A.py', []),
     ]
 
-    def mock_check_output(cmd, shell=False, env=None):
+    def popen_callback(cmd):
       self.assertEqual('CMD --output A.pydeps A --output ""', cmd)
       return self.checker._file_cache['A.pydeps']
 
-    self.mock_input_api.subprocess.check_output = mock_check_output
+    self.mock_input_api.subprocess.SetPopenCallback(popen_callback)
 
     results = self._RunCheck()
     self.assertEqual(0, len(results), 'Unexpected results: %r' % results)
 
-  @unittest.skip("Disabled, see crbug.com/1289871")
   def testRelevantPyOneChange(self):
     # PRESUBMIT.CheckPydepsNeedsUpdating is only implemented for Linux.
     if not self.mock_input_api.platform.startswith('linux'):
@@ -623,17 +640,18 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
       MockAffectedFile('A.py', []),
     ]
 
-    def mock_check_output(cmd, shell=False, env=None):
+    def popen_callback(cmd):
       self.assertEqual('CMD --output A.pydeps A --output ""', cmd)
       return 'changed data'
 
-    self.mock_input_api.subprocess.check_output = mock_check_output
+    self.mock_input_api.subprocess.SetPopenCallback(popen_callback)
 
     results = self._RunCheck()
     self.assertEqual(1, len(results))
+    # Check that --output "" is not included.
+    self.assertNotIn('""', str(results[0]))
     self.assertIn('File is stale', str(results[0]))
 
-  @unittest.skip("Disabled, see crbug.com/1289871")
   def testRelevantPyTwoChanges(self):
     # PRESUBMIT.CheckPydepsNeedsUpdating is only implemented for Linux.
     if not self.mock_input_api.platform.startswith('linux'):
@@ -643,17 +661,16 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
       MockAffectedFile('C.py', []),
     ]
 
-    def mock_check_output(cmd, shell=False, env=None):
+    def popen_callback(cmd):
       return 'changed data'
 
-    self.mock_input_api.subprocess.check_output = mock_check_output
+    self.mock_input_api.subprocess.SetPopenCallback(popen_callback)
 
     results = self._RunCheck()
     self.assertEqual(2, len(results))
     self.assertIn('File is stale', str(results[0]))
     self.assertIn('File is stale', str(results[1]))
 
-  @unittest.skip("Disabled, see crbug.com/1289871")
   def testRelevantAndroidPyInNonAndroidCheckout(self):
     # PRESUBMIT.CheckPydepsNeedsUpdating is only implemented for Linux.
     if not self.mock_input_api.platform.startswith('linux'):
@@ -663,11 +680,11 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
       MockAffectedFile('D.py', []),
     ]
 
-    def mock_check_output(cmd, shell=False, env=None):
+    def popen_callback(cmd):
       self.assertEqual('CMD --output D.pydeps D --output ""', cmd)
       return 'changed data'
 
-    self.mock_input_api.subprocess.check_output = mock_check_output
+    self.mock_input_api.subprocess.SetPopenCallback(popen_callback)
     PRESUBMIT._ParseGclientArgs = self._MockParseGclientArgs(is_android=False)
 
     results = self._RunCheck()
@@ -675,7 +692,6 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
     self.assertIn('Android', str(results[0]))
     self.assertIn('D.pydeps', str(results[0]))
 
-  @unittest.skip("Disabled, see crbug.com/1289871")
   def testGnPathsAndMissingOutputFlag(self):
     # PRESUBMIT.CheckPydepsNeedsUpdating is only implemented for Linux.
     if not self.mock_input_api.platform.startswith('linux'):
@@ -691,11 +707,11 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
       MockAffectedFile('A.py', []),
     ]
 
-    def mock_check_output(cmd, shell=False, env=None):
+    def popen_callback(cmd):
       self.assertEqual('CMD --gn-paths A --output A.pydeps --output ""', cmd)
       return 'changed data'
 
-    self.mock_input_api.subprocess.check_output = mock_check_output
+    self.mock_input_api.subprocess.SetPopenCallback(popen_callback)
 
     results = self._RunCheck()
     self.assertEqual(1, len(results))
@@ -4123,21 +4139,26 @@ class CheckDeprecationOfPreferencesTest(unittest.TestCase):
         errors[0].message)
 
 class MPArchApiUsage(unittest.TestCase):
-  def _assert_notify(self, expect_cc, msg, local_path, new_contents):
+  def _assert_notify(
+      self, expected_uses, msg, local_path, new_contents):
     mock_input_api = MockInputApi()
     mock_output_api = MockOutputApi()
     mock_input_api.files = [
         MockFile(local_path, new_contents),
     ]
-    PRESUBMIT.CheckMPArchApiUsage(mock_input_api, mock_output_api)
+    result = PRESUBMIT.CheckMPArchApiUsage(mock_input_api, mock_output_api)
     self.assertEqual(
-        expect_cc,
+        bool(expected_uses),
         'mparch-reviews+watch@chromium.org' in mock_output_api.more_cc,
         msg)
+    if expected_uses:
+        self.assertEqual(1, len(result), msg)
+        self.assertEqual(result[0].type, 'notify', msg)
+        self.assertEqual(sorted(result[0].items), sorted(expected_uses), msg)
 
   def testNotify(self):
     self._assert_notify(
-        True,
+        ['WebContentsObserver', 'WebContentsUserData'],
         'Introduce WCO and WCUD',
         'chrome/my_feature.h',
         ['class MyFeature',
@@ -4145,14 +4166,14 @@ class MPArchApiUsage(unittest.TestCase):
          '      public content::WebContentsUserData<MyFeature> {};',
         ])
     self._assert_notify(
-        True,
+        ['DidFinishNavigation'],
         'Introduce WCO override',
         'chrome/my_feature.h',
         ['void DidFinishNavigation(',
          '    content::NavigationHandle* navigation_handle) override;',
         ])
     self._assert_notify(
-        True,
+        ['IsInMainFrame'],
         'Introduce IsInMainFrame',
         'chrome/my_feature.cc',
         ['void DoSomething(content::NavigationHandle* navigation_handle) {',
@@ -4161,7 +4182,7 @@ class MPArchApiUsage(unittest.TestCase):
          '}',
         ])
     self._assert_notify(
-        True,
+        ['FromRenderFrameHost'],
         'Introduce WC::FromRenderFrameHost',
         'chrome/my_feature.cc',
         ['void DoSomething(content::RenderFrameHost* rfh) {',
@@ -4172,7 +4193,7 @@ class MPArchApiUsage(unittest.TestCase):
 
   def testNoNotify(self):
     self._assert_notify(
-        False,
+        [],
         'No API usage',
         'chrome/my_feature.cc',
         ['void DoSomething() {',
@@ -4182,7 +4203,7 @@ class MPArchApiUsage(unittest.TestCase):
     # Something under a top level directory we're not concerned about happens
     # to share a name with a content API.
     self._assert_notify(
-        False,
+        [],
         'Uninteresting top level directory',
         'third_party/my_dep/my_code.cc',
         ['bool HasParent(Node* node) {',
@@ -4191,7 +4212,7 @@ class MPArchApiUsage(unittest.TestCase):
         ])
     # We're not concerned with usage in test code.
     self._assert_notify(
-        False,
+        [],
         'Usage in test code',
         'chrome/my_feature_unittest.cc',
         ['TEST_F(MyFeatureTest, DoesSomething) {',

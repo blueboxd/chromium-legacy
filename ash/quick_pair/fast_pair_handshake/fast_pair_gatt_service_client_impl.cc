@@ -9,6 +9,7 @@
 #include "ash/quick_pair/common/logging.h"
 #include "ash/quick_pair/fast_pair_handshake/fast_pair_data_encryptor.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
@@ -128,8 +129,7 @@ void FastPairGattServiceClientImpl::OnGattConnection(
   RecordGattConnectionResult(/*success=*/!error_code.has_value());
 
   if (error_code) {
-    QP_LOG(WARNING) << "Error creating GATT connection to device at address:["
-                    << device_address_ << "].";
+    QP_LOG(WARNING) << "Error creating GATT connection to device.";
     RecordGattConnectionErrorCode(error_code.value());
     NotifyInitializedError(PairFailure::kCreateGattConnection);
   } else {
@@ -361,6 +361,10 @@ FastPairGattServiceClientImpl::CreatePasskeyBlock(uint8_t message_type,
   data_to_write[2] = (passkey & 0x0000ff00) >> 8;
   data_to_write[3] = passkey & 0x000000ff;
   return data_to_write;
+}
+
+bool FastPairGattServiceClientImpl::IsConnected() {
+  return gatt_connection_ && gatt_connection_->IsConnected();
 }
 
 void FastPairGattServiceClientImpl::WriteRequestAsync(

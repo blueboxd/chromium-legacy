@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <queue>
 #include <set>
 #include <string>
 #include <utility>
@@ -34,6 +35,7 @@
 #include "net/base/network_isolation_key.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
+#include "net/cookies/first_party_set_metadata.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/public/dns_config_overrides.h"
 #include "net/http/http_auth_preferences.h"
@@ -96,6 +98,10 @@ class ChromeCTPolicyEnforcer;
 namespace domain_reliability {
 class DomainReliabilityMonitor;
 }  // namespace domain_reliability
+
+namespace url_matcher {
+class URLMatcher;
+}
 
 namespace network {
 class CertVerifierWithTrustAnchors;
@@ -233,6 +239,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void DeleteStoredTrustTokens(
       const url::Origin& issuer,
       DeleteStoredTrustTokensCallback callback) override;
+  void SetBlockTrustTokens(bool block) override;
   void ClearNetworkingHistoryBetween(
       base::Time start_time,
       base::Time end_time,
@@ -296,7 +303,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const net::X509Certificate* validated_certificate_chain,
       const net::SignedCertificateTimestampAndStatusList&
           signed_certificate_timestamps);
-  void SetSCTAuditingEnabled(bool enabled) override;
+  void SetSCTAuditingMode(mojom::SCTAuditingMode mode) override;
   void OnCTLogListUpdated(
       const std::vector<network::mojom::CTLogInfoPtr>& log_list,
       base::Time update_time);
@@ -497,10 +504,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     return proxy_lookup_requests_.size();
   }
 
-  NetworkServiceProxyDelegate* proxy_delegate() const {
-    return proxy_delegate_;
-  }
-
   void set_network_qualities_pref_delegate_for_testing(
       std::unique_ptr<NetworkQualitiesPrefDelegate>
           network_qualities_pref_delegate) {
@@ -556,6 +559,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   const PendingTrustTokenStore* trust_token_store() const {
     return trust_token_store_.get();
   }
+  bool are_trust_tokens_blocked() const { return block_trust_tokens_; }
 
   WebBundleManager& GetWebBundleManager() { return web_bundle_manager_; }
 
@@ -610,6 +614,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // On connection errors the NetworkContext destroys itself.
   void OnConnectionError();
 
+  // Invoked with the FirstPartySetMetadata to be associated with the given
+  // RestrictedCookieManager that is being set up.
+  void OnComputedFirstPartySetMetadata(
+      mojo::PendingReceiver<mojom::RestrictedCookieManager> receiver,
+      mojom::RestrictedCookieManagerRole role,
+      const url::Origin& origin,
+      const net::IsolationInfo& isolation_info,
+      mojo::PendingRemote<mojom::CookieAccessObserver> cookie_observer,
+      net::FirstPartySetMetadata first_party_set_metadata);
+
   GURL GetHSTSRedirect(const GURL& original_url);
 
 #if BUILDFLAG(IS_P2P_ENABLED)
@@ -619,7 +633,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void CanUploadDomainReliability(const GURL& origin,
                                   base::OnceCallback<void(bool)> callback);
 
-  void OnVerifyCertForSignedExchangeComplete(int cert_verify_id, int result);
+  void OnVerifyCertForSignedExchangeComplete(uint64_t cert_verify_id,
+                                             int result);
 
 #if BUILDFLAG(IS_CHROMEOS)
   void TrustAnchorUsed();
@@ -631,6 +646,20 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void LazyCreateExpectCTReporter(net::URLRequestContext* url_request_context);
 
   void OnSetExpectCTTestReportFailure();
+
+  // Checks the Certificate Transparency policy compliance for a given
+  // certificate and SCTs in `cert_verify_result`, and updates
+  // `cert_verify_result.cert_status` and
+  // `cert_verify_result.policy_compliance`. Returns net::OK or
+  // net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED.
+  // TODO(crbug.com/828447): This code is more-or-less duplicated in
+  // SSLClientSocket and QUIC. Fold this into some CertVerifier-shaped class
+  // in //net.
+  int CheckCTComplianceForSignedExchange(
+      net::CertVerifyResult& cert_verify_result,
+      const net::X509Certificate& certificate,
+      const net::HostPortPair& host_port_pair,
+      const net::NetworkIsolationKey& network_isolation_key);
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
   void InitializeCorsParams();
@@ -641,6 +670,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // asynchronous initialization has finished.
   void FinishConstructingTrustTokenStore(
       std::unique_ptr<SQLiteTrustTokenPersister> persister);
+
+  bool IsAllowedToUseAllHttpAuthSchemes(
+      const url::SchemeHostPort& scheme_host_port);
 
   const raw_ptr<NetworkService> network_service_;
 
@@ -691,6 +723,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // |trust_token_store_|.
   mojo::UniqueReceiverSet<mojom::HasTrustTokensAnswerer>
       has_trust_tokens_answerers_;
+
+  // Whether the user is blocking Trust Tokens, value provided by the
+  // PrivacySandboxSettings service.
+  bool block_trust_tokens_ = false;
 
 #if !BUILDFLAG(IS_IOS)
   std::unique_ptr<WebSocketFactory> websocket_factory_;
@@ -775,7 +811,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   raw_ptr<NetworkServiceProxyDelegate> proxy_delegate_ = nullptr;
 
   // Used for Signed Exchange certificate verification.
-  int next_cert_verify_id_ = 0;
+  uint64_t next_cert_verify_id_ = 0;
   struct PendingCertVerify {
     PendingCertVerify();
     ~PendingCertVerify();
@@ -791,7 +827,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     std::string ocsp_result;
     std::string sct_list;
   };
-  std::map<int, std::unique_ptr<PendingCertVerify>> cert_verifier_requests_;
+  std::map<uint64_t, std::unique_ptr<PendingCertVerify>>
+      cert_verifier_requests_;
 
   // Manages allowed origin access lists.
   cors::OriginAccessList cors_origin_access_list_;
@@ -845,6 +882,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   std::set<std::unique_ptr<cors::CorsURLLoaderFactory>,
            base::UniquePtrComparator>
       url_loader_factories_;
+
+  std::unique_ptr<url_matcher::URLMatcher> url_matcher_;
 
   base::WeakPtrFactory<NetworkContext> weak_factory_{this};
 };

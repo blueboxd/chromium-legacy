@@ -18,7 +18,7 @@
 #include "content/browser/devtools/protocol/network.h"
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/protocol/storage.h"
-#include "content/browser/interest_group/interest_group_manager.h"
+#include "content/browser/interest_group/interest_group_manager_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -642,12 +642,13 @@ void StorageHandler::ClearTrustTokens(
 }
 
 void StorageHandler::OnInterestGroupAccessed(
-    InterestGroupManager::InterestGroupObserverInterface::AccessType type,
+    const base::Time& access_time,
+    InterestGroupManagerImpl::InterestGroupObserverInterface::AccessType type,
     const std::string& owner_origin,
     const std::string& name) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   using AccessType =
-      InterestGroupManager::InterestGroupObserverInterface::AccessType;
+      InterestGroupManagerImpl::InterestGroupObserverInterface::AccessType;
   std::string type_enum;
   switch (type) {
     case AccessType::kJoin:
@@ -666,7 +667,8 @@ void StorageHandler::OnInterestGroupAccessed(
       type_enum = Storage::InterestGroupAccessTypeEnum::Win;
       break;
   };
-  frontend_->InterestGroupAccessed(type_enum, owner_origin, name);
+  frontend_->InterestGroupAccessed(access_time.ToDoubleT(), type_enum,
+                                   owner_origin, name);
 }
 
 namespace {
@@ -713,7 +715,7 @@ void SendGetInterestGroup(
       protocol::Storage::InterestGroupDetails::Create()
           .SetOwnerOrigin(group.owner.Serialize())
           .SetName(group.name)
-          .SetExpirationTime(group.expiry.ToJsTimeIgnoringNull())
+          .SetExpirationTime(group.expiry.ToDoubleT())
           .SetJoiningOrigin(storage_group->joining_origin.Serialize())
           .SetTrustedBiddingSignalsKeys(std::move(trusted_bidding_signals_keys))
           .SetAds(std::move(ads))
@@ -746,9 +748,8 @@ void StorageHandler::GetInterestGroupDetails(
     return;
   }
 
-  InterestGroupManager* manager =
-      static_cast<StoragePartitionImpl*>(storage_partition_)
-          ->GetInterestGroupManager();
+  InterestGroupManagerImpl* manager = static_cast<InterestGroupManagerImpl*>(
+      storage_partition_->GetInterestGroupManager());
   if (!manager) {
     callback->sendFailure(
         Response::ServerError("Interest group storage is disabled"));
@@ -772,9 +773,8 @@ Response StorageHandler::SetInterestGroupTracking(bool enable) {
   if (!storage_partition_)
     return Response::InternalError();
 
-  InterestGroupManager* manager =
-      static_cast<StoragePartitionImpl*>(storage_partition_)
-          ->GetInterestGroupManager();
+  InterestGroupManagerImpl* manager = static_cast<InterestGroupManagerImpl*>(
+      storage_partition_->GetInterestGroupManager());
   if (!manager)
     return Response::ServerError("Interest group storage is disabled.");
 

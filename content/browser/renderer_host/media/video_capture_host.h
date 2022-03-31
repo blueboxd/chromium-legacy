@@ -73,6 +73,8 @@ class CONTENT_EXPORT VideoCaptureHost
   void OnBufferReady(const VideoCaptureControllerID& controller_id,
                      const ReadyBuffer& buffer,
                      const std::vector<ReadyBuffer>& scaled_buffers) override;
+  void OnFrameWithEmptyRegionCapture(
+      const VideoCaptureControllerID& controller_id) override;
   void OnEnded(const VideoCaptureControllerID& id) override;
   void OnStarted(const VideoCaptureControllerID& id) override;
   void OnStartedUsingGpuDecode(const VideoCaptureControllerID& id) override;
@@ -141,6 +143,8 @@ class CONTENT_EXPORT VideoCaptureHost
   std::map<base::UnguessableToken,
            mojo::Remote<media::mojom::VideoCaptureObserver>>
       device_id_to_observer_map_;
+
+  absl::optional<gfx::Rect> region_capture_rect_;
 
   base::WeakPtrFactory<VideoCaptureHost> weak_factory_{this};
 };

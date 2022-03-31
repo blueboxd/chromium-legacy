@@ -1,13 +1,4 @@
 {
-  "$build/chromium_tests": {
-    "project_trigger_overrides": {
-<<<<<<< HEAD
-      "chromium": "chromium-m98"
-=======
-      "chromium": "chromium-m99"
->>>>>>> 99.0.4844.51
-    }
-  },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],
     "grouping_keys": [
@@ -16,8 +7,5 @@
     ]
   },
   "builder_group": "chromium.dawn",
-  "recipe": "chromium",
-  "sheriff_rotations": [
-    "chrome_browser_release"
-  ]
+  "recipe": "chromium"
 }

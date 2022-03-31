@@ -288,6 +288,10 @@ enum BadMessageReason {
   PMM_GET_SUBSCRIPTION_INVALID_ORIGIN = 261,
   RFH_INACTIVE_CHECK_FROM_PENDING_COMMIT_RFH = 262,
   MSDH_INVALID_STREAM_TYPE_COMBINATION = 263,
+  AUTH_INVALID_FENCED_FRAME = 264,
+  BIBI_BIND_GAMEPAD_MONITOR_FOR_FENCED_FRAME = 265,
+  BIBI_BIND_GAMEPAD_HAPTICS_MANAGER_FOR_FENCED_FRAME = 266,
+  BIBI_BIND_BATTERY_MONITOR_FOR_FENCED_FRAME = 267,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

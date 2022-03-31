@@ -67,6 +67,7 @@
 #include "third_party/blink/renderer/core/style/style_inherited_variables.h"
 #include "third_party/blink/renderer/core/style/style_non_inherited_variables.h"
 #include "third_party/blink/renderer/core/style/style_ray.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
@@ -110,7 +111,7 @@ struct SameSizeAsComputedStyleBase {
  private:
   void* data_refs[8];
   void* pointers[1];
-  unsigned bitfields[5];
+  unsigned bitfields[6];
 };
 
 struct SameSizeAsComputedStyle : public SameSizeAsComputedStyleBase,
@@ -688,9 +689,7 @@ StyleDifference ComputedStyle::VisualInvalidationDiff(
   // property inside this function anyway.
 
   StyleDifference diff;
-  if ((!diff.NeedsReshape() || !diff.NeedsFullLayout() ||
-       !diff.NeedsPaintInvalidation()) &&
-      DiffNeedsReshapeAndFullLayoutAndPaintInvalidation(*this, other)) {
+  if (DiffNeedsReshapeAndFullLayoutAndPaintInvalidation(*this, other)) {
     diff.SetNeedsReshape();
     diff.SetNeedsFullLayout();
     diff.SetNeedsPaintInvalidation();
@@ -2361,7 +2360,7 @@ Color ComputedStyle::ResolvedColor(const StyleColor& color) const {
 bool ComputedStyle::ShouldForceColor(const StyleColor& unforced_color) const {
   return InForcedColorsMode() &&
          ForcedColorAdjust() == EForcedColorAdjust::kAuto &&
-         !unforced_color.IsSystemColor();
+         !unforced_color.IsSystemColorIncludingDeprecated();
 }
 
 bool ComputedStyle::ShouldPreserveParentColor() const {
@@ -2542,7 +2541,7 @@ Color ComputedStyle::GetInternalVisitedCurrentColor() const {
 
 Color ComputedStyle::GetInternalForcedCurrentColor() const {
   DCHECK(!InternalForcedColor().IsCurrentColor());
-  if (GetColor().IsSystemColor())
+  if (GetColor().IsSystemColorIncludingDeprecated())
     return GetCurrentColor();
   return InternalForcedColor().Resolve(Color(), UsedColorScheme(),
                                        /* is_forced_color */ true);
@@ -2550,7 +2549,7 @@ Color ComputedStyle::GetInternalForcedCurrentColor() const {
 
 Color ComputedStyle::GetInternalForcedVisitedCurrentColor() const {
   DCHECK(!InternalForcedVisitedColor().IsCurrentColor());
-  if (InternalVisitedColor().IsSystemColor())
+  if (InternalVisitedColor().IsSystemColorIncludingDeprecated())
     return GetInternalVisitedCurrentColor();
   return InternalForcedVisitedColor().Resolve(Color(), UsedColorScheme(),
                                               /* is_forced_color */ true);
@@ -2651,7 +2650,10 @@ bool ComputedStyle::ShouldApplyAnyContainment(const Element& element) const {
 
 bool ComputedStyle::IsContainerForContainerQueries(
     const Element& element) const {
-  return IsContainerForContainerQueries() && !element.ShouldForceLegacyLayout();
+  return IsContainerForContainerQueries() &&
+         !element.ShouldForceLegacyLayout() &&
+         (!element.IsSVGElement() ||
+          To<SVGElement>(element).IsOutermostSVGSVGElement());
 }
 
 STATIC_ASSERT_ENUM(cc::OverscrollBehavior::Type::kAuto,

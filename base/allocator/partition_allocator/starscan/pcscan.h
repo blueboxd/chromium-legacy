@@ -12,6 +12,7 @@
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
 #include "base/allocator/partition_allocator/partition_page.h"
 #include "base/allocator/partition_allocator/starscan/pcscan_scheduling.h"
+#include "base/allocator/partition_allocator/tagging.h"
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
 
@@ -97,7 +98,7 @@ class BASE_EXPORT PCScan final {
   // Registers a newly allocated super page for |root|.
   static void RegisterNewSuperPage(Root* root, uintptr_t super_page_base);
 
-  ALWAYS_INLINE static void MoveToQuarantine(void* ptr,
+  ALWAYS_INLINE static void MoveToQuarantine(void* object,
                                              size_t usable_size,
                                              uintptr_t slot_start,
                                              size_t slot_size);
@@ -230,7 +231,7 @@ ALWAYS_INLINE void PCScan::JoinScanIfNeeded() {
     instance.JoinScan();
 }
 
-ALWAYS_INLINE void PCScan::MoveToQuarantine(void* ptr,
+ALWAYS_INLINE void PCScan::MoveToQuarantine(void* object,
                                             size_t usable_size,
                                             uintptr_t slot_start,
                                             size_t slot_size) {
@@ -242,22 +243,23 @@ ALWAYS_INLINE void PCScan::MoveToQuarantine(void* ptr,
     // TODO(bikineev): If we start protecting quarantine memory, we can lose
     // double-free coverage (the check below). Consider performing the
     // double-free check before protecting if eager clearing becomes default.
-    SecureMemset(ptr, 0, usable_size);
+    SecureMemset(object, 0, usable_size);
   }
 
-  uintptr_t unmasked_slot_start = memory::UnmaskPtr(slot_start);
+  // TODO(bartekn): Remove MTE untagging, once its done in the caller.
+  uintptr_t unmasked_slot_start =
+      ::partition_alloc::internal::UnmaskPtr(slot_start);
   auto* state_bitmap = StateBitmapFromAddr(unmasked_slot_start);
 
   // Mark the state in the state bitmap as quarantined. Make sure to do it after
   // the clearing to avoid racing with *Scan Sweeper.
-  const bool succeeded =
+  [[maybe_unused]] const bool succeeded =
       state_bitmap->Quarantine(unmasked_slot_start, instance.epoch());
 #if PA_STARSCAN_EAGER_DOUBLE_FREE_DETECTION_ENABLED
   if (UNLIKELY(!succeeded))
     DoubleFreeAttempt();
 #else
   // The compiler is able to optimize cmpxchg to a lock-prefixed and.
-  (void)succeeded;
 #endif
 
   const bool is_limit_reached = instance.scheduler_.AccountFreed(slot_size);

@@ -46,6 +46,9 @@ class ScriptParameters {
   // to the additional values with a "param:" prefix.
   void WriteToUserData(UserData* user_data) const;
 
+  // Returns whether |experiment_id| is contained in the experiments parameter.
+  bool HasExperimentId(const std::string& experiment_id) const;
+
   // Getters for specific parameters.
   absl::optional<std::string> GetOverlayColors() const;
   absl::optional<std::string> GetPasswordChangeUsername() const;
@@ -58,6 +61,7 @@ class ScriptParameters {
   absl::optional<std::string> GetIntent() const;
   absl::optional<std::string> GetCallerEmail() const;
   absl::optional<bool> GetEnableTts() const;
+  absl::optional<bool> GetEnableObserverWaitForDom() const;
   absl::optional<int> GetCaller() const;
   absl::optional<int> GetSource() const;
   std::vector<std::string> GetExperiments() const;

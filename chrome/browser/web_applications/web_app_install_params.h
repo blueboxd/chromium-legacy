@@ -11,9 +11,9 @@
 
 #include "base/callback.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
-#include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
+#include "components/webapps/browser/install_result_code.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
@@ -27,7 +27,8 @@ namespace web_app {
 
 // |app_id| may be empty on failure.
 using OnceInstallCallback =
-    base::OnceCallback<void(const AppId& app_id, InstallResultCode code)>;
+    base::OnceCallback<void(const AppId& app_id,
+                            webapps::InstallResultCode code)>;
 using OnceUninstallCallback =
     base::OnceCallback<void(const AppId& app_id, bool uninstalled)>;
 
@@ -82,11 +83,16 @@ struct WebAppInstallParams {
   absl::optional<std::u16string> fallback_app_name;
 
   bool locally_installed = true;
+
+  // If true, OsIntegrationManager::InstallOsHooks won't be called at all,
+  // meaning that all other OS Hooks related parameters will be ignored.
+  bool bypass_os_hooks = false;
+
   // These OS shortcut fields can't be true if |locally_installed| is false.
+  // They only have an effect when |bypass_os_hooks| is false.
   bool add_to_applications_menu = true;
   bool add_to_desktop = true;
   bool add_to_quick_launch_bar = true;
-  bool run_on_os_login = false;
 
   // These have no effect outside of Chrome OS.
   bool add_to_search = true;

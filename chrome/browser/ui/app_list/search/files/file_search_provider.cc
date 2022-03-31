@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "base/files/file_enumerator.h"
+#include "base/i18n/rtl.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,6 +18,8 @@
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/files/file_result.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace app_list {
 namespace {
@@ -135,7 +138,7 @@ void FileSearchProvider::OnSearchComplete(
 
   constexpr double kScoreEps = 1.0e-5;
   SearchProvider::Results results;
-  for (int i = 0; i < paths.size(); ++i) {
+  for (size_t i = 0; i < paths.size(); ++i) {
     double relevance =
         FileResult::CalculateRelevance(last_tokenized_query_, paths[i].path);
     // Slightly penalize scores for less recently accessed files, but don't let
@@ -155,8 +158,15 @@ std::unique_ptr<FileResult> FileSearchProvider::MakeResult(
     const double relevance) {
   const auto type = path.is_directory ? FileResult::Type::kDirectory
                                       : FileResult::Type::kFile;
+  // Use the parent directory name as details text. Take care to remove newlines
+  // and handle RTL as this is displayed directly.
+  std::u16string parent_dir_name = base::CollapseWhitespace(
+      path.path.DirName().BaseName().LossyDisplayName(), true);
+  base::i18n::SanitizeUserSuppliedString(&parent_dir_name);
+
   auto result = std::make_unique<FileResult>(
-      kFileSearchSchema, path.path, ash::AppListSearchResultType::kFileSearch,
+      kFileSearchSchema, path.path, parent_dir_name,
+      ash::AppListSearchResultType::kFileSearch,
       ash::SearchResultDisplayType::kList, relevance, last_query_, type,
       profile_);
   result->RequestThumbnail(&thumbnail_loader_);

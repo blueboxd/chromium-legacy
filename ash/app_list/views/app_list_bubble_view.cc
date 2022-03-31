@@ -30,6 +30,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/view_shadow.h"
 #include "ash/search_box/search_box_constants.h"
+#include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/highlight_border.h"
 #include "base/bind.h"
@@ -44,6 +45,8 @@
 #include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_type.h"
+#include "ui/events/event.h"
+#include "ui/events/event_handler.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/insets.h"
@@ -96,15 +99,63 @@ class SeparatorWithLayer : public views::View {
 
 // Returns the layer bounds to use for the start of the show animation and the
 // end of the hide animation.
-gfx::Rect GetShowHideAnimationBounds(gfx::Rect target_bounds) {
+gfx::Rect GetShowHideAnimationBounds(bool is_side_shelf,
+                                     gfx::Rect target_bounds) {
+  // For either shelf: Height 75% → 100%
   const int delta_height = target_bounds.height() / 4;  // 25% of height
+  const int initial_height = target_bounds.height() - delta_height;
   const int y_offset = 8;
-  return gfx::Rect(
-      target_bounds.x(), target_bounds.y() + delta_height + y_offset,
-      target_bounds.width(), target_bounds.height() - delta_height);
+  if (is_side_shelf) {
+    // For side shelf: Y Position: Up 8px → End position, expanding down.
+    return gfx::Rect(target_bounds.x(), target_bounds.y() - y_offset,
+                     target_bounds.width(), initial_height);
+  }
+  // For bottom shelf: Y Position: Down 8px → End position, expanding up.
+  return gfx::Rect(target_bounds.x(),
+                   target_bounds.y() + delta_height + y_offset,
+                   target_bounds.width(), initial_height);
 }
 
 }  // namespace
+
+// Makes focus traversal skip the assistant button when pressing the down arrow
+// key or the up arrow key. Normally views would move focus from the search box
+// to the assistant button on arrow down. However, the assistant button is
+// visually to the right, so this feels weird. Likewise, on arrow up from
+// continue tasks it feels better to put focus directly in the search box.
+class AssistantButtonFocusSkipper : public ui::EventHandler {
+ public:
+  explicit AssistantButtonFocusSkipper(views::View* button) : button_(button) {
+    DCHECK(button_);
+    Shell::Get()->AddPreTargetHandler(this);
+  }
+
+  ~AssistantButtonFocusSkipper() override {
+    Shell::Get()->RemovePreTargetHandler(this);
+  }
+
+  // ui::EventHandler:
+  void OnEvent(ui::Event* event) override {
+    // Don't adjust focus behavior if the user already focused the button.
+    if (button_->HasFocus())
+      return;
+
+    bool skip_focus = false;
+    // This class overrides OnEvent() to examine all events so that focus
+    // behavior is restored by mouse events, gesture events, etc.
+    if (event->type() == ui::ET_KEY_PRESSED) {
+      ui::KeyboardCode key = event->AsKeyEvent()->key_code();
+      if (key == ui::VKEY_UP || key == ui::VKEY_DOWN) {
+        skip_focus = true;
+      }
+    }
+    button_->SetFocusBehavior(skip_focus ? views::View::FocusBehavior::NEVER
+                                         : views::View::FocusBehavior::ALWAYS);
+  }
+
+ private:
+  views::View* const button_;
+};
 
 AppListBubbleView::AppListBubbleView(
     AppListViewDelegate* view_delegate,
@@ -183,25 +234,39 @@ void AppListBubbleView::InitContentsView(
   params.animate_changing_search_icon = false;
   search_box_view_->Init(params);
 
+  assistant_button_focus_skipper_ =
+      std::make_unique<AssistantButtonFocusSkipper>(
+          search_box_view_->assistant_button());
+
   // The main view has a solid color layer, so the separator needs its own
   // layer to visibly paint.
   separator_ = contents->AddChildView(std::make_unique<SeparatorWithLayer>());
 
+  auto* pages_container =
+      contents->AddChildView(std::make_unique<views::View>());
+
+  // Apps page and search page must both fill the page for page transition
+  // animations to look right.
+  pages_container->SetUseDefaultFillLayout(true);
+
+  // The apps page must fill the bubble so that the apps grid view can flex to
+  // include empty space below the visible icons. The search page doesn't care,
+  // so flex the entire container.
+  layout->SetFlexForView(pages_container, 1);
+
   // NOTE: Passing drag and drop host from a specific shelf instance assumes
   // that the `apps_page_` will not get reused for showing the app list in
   // another root window.
-  apps_page_ = contents->AddChildView(std::make_unique<AppListBubbleAppsPage>(
-      view_delegate_, drag_and_drop_host, GetAppListConfig(),
-      a11y_announcer_.get(),
-      /*folder_controller=*/this));
-  // The apps page must fill the bubble so that the apps grid view can flex to
-  // include empty space below the visible icons.
-  layout->SetFlexForView(apps_page_, 1);
+  apps_page_ =
+      pages_container->AddChildView(std::make_unique<AppListBubbleAppsPage>(
+          view_delegate_, drag_and_drop_host, GetAppListConfig(),
+          a11y_announcer_.get(),
+          /*folder_controller=*/this));
 
   search_page_dialog_controller_ =
       std::make_unique<SearchResultPageDialogController>(this);
   search_page_ =
-      contents->AddChildView(std::make_unique<AppListBubbleSearchPage>(
+      pages_container->AddChildView(std::make_unique<AppListBubbleSearchPage>(
           view_delegate_, search_page_dialog_controller_.get(),
           search_box_view_));
   search_page_->SetVisible(false);
@@ -224,7 +289,7 @@ void AppListBubbleView::InitFolderView(
   folder_view_->SetVisible(false);
 }
 
-void AppListBubbleView::StartShowAnimation() {
+void AppListBubbleView::StartShowAnimation(bool is_side_shelf) {
   // For performance, don't animate the shadow.
   view_shadow_.reset();
 
@@ -233,9 +298,9 @@ void AppListBubbleView::StartShowAnimation() {
     Layout();
   DCHECK(!needs_layout());
 
-  // Bubble animation specification:
+  // Animation specification for bottom shelf:
   //
-  // Y Position: Down 8px → End position
+  // Y Position: Down 8px → End position (visually moves up)
   // Duration: 150ms
   // Ease: (0.00, 0.00, 0.20, 1.00)
   //
@@ -246,11 +311,16 @@ void AppListBubbleView::StartShowAnimation() {
   // Opacity: 0% → 100%
   // Duration: 150ms
   // Ease: Linear
+  //
+  // Side shelf uses shorter duration (100ms) and visually moves down.
 
   // Start by making the layer shorter, pushed down, and transparent.
   const gfx::Rect target_bounds = layer()->GetTargetBounds();
-  layer()->SetBounds(GetShowHideAnimationBounds(target_bounds));
+  layer()->SetBounds(GetShowHideAnimationBounds(is_side_shelf, target_bounds));
   layer()->SetOpacity(0.f);
+
+  const base::TimeDelta duration =
+      is_side_shelf ? base::Milliseconds(100) : base::Milliseconds(150);
 
   // Animate the layer to fully opaque at its target bounds.
   views::AnimationBuilder()
@@ -259,7 +329,7 @@ void AppListBubbleView::StartShowAnimation() {
       .OnAborted(base::BindOnce(&AppListBubbleView::OnShowAnimationEnded,
                                 weak_factory_.GetWeakPtr(), target_bounds))
       .Once()
-      .SetDuration(base::Milliseconds(150))
+      .SetDuration(duration)
       .SetBounds(layer(), target_bounds, gfx::Tween::LINEAR_OUT_SLOW_IN)
       .SetOpacity(layer(), 1.f, gfx::Tween::LINEAR);
 
@@ -267,12 +337,13 @@ void AppListBubbleView::StartShowAnimation() {
   // smoothness reporting, because the view movement animation has a longer
   // duration.
   if (current_page_ == AppListBubblePage::kApps)
-    apps_page_->AnimateShowLauncher();
+    apps_page_->AnimateShowLauncher(is_side_shelf);
 
   // Note: The assistant page handles its own show animation internally.
 }
 
 void AppListBubbleView::StartHideAnimation(
+    bool is_side_shelf,
     base::OnceClosure on_animation_ended) {
   on_hide_animation_ended_ = std::move(on_animation_ended);
 
@@ -291,7 +362,7 @@ void AppListBubbleView::StartHideAnimation(
 
   // Animation spec:
   //
-  // Y Position: Current → Down 8px
+  // Y Position: Current → Down 8px, or for side shelf: Current → Up 8px
   // Duration: 100ms
   // Ease: (0.4, 0, 1, 1).
   //
@@ -303,7 +374,8 @@ void AppListBubbleView::StartHideAnimation(
   // Duration: 100ms
   // Ease: Linear
   const gfx::Rect target_bounds = layer()->GetTargetBounds();
-  const gfx::Rect final_bounds = GetShowHideAnimationBounds(target_bounds);
+  const gfx::Rect final_bounds =
+      GetShowHideAnimationBounds(is_side_shelf, target_bounds);
 
   if (current_page_ == AppListBubblePage::kApps)
     apps_page_->AnimateHideLauncher();
@@ -321,6 +393,7 @@ void AppListBubbleView::StartHideAnimation(
 
 void AppListBubbleView::AbortAllAnimations() {
   apps_page_->AbortAllAnimations();
+  search_page_->AbortAllAnimations();
   layer()->GetAnimator()->AbortAllAnimations();
 }
 
@@ -349,7 +422,6 @@ void AppListBubbleView::ShowPage(AppListBubblePage page) {
   search_box_view_->SetVisible(page != AppListBubblePage::kAssistant);
   separator_->SetVisible(page != AppListBubblePage::kAssistant);
 
-  search_page_->SetVisible(page == AppListBubblePage::kSearch);
   search_page_dialog_controller_->SetEnabled(page ==
                                              AppListBubblePage::kSearch);
   assistant_page_->SetVisible(page == AppListBubblePage::kAssistant);
@@ -359,19 +431,26 @@ void AppListBubbleView::ShowPage(AppListBubblePage page) {
       break;
     case AppListBubblePage::kApps:
       apps_page_->ResetScrollPosition();
-      if (previous_page == AppListBubblePage::kSearch)
+      if (previous_page == AppListBubblePage::kSearch) {
+        // Trigger hiding first so animations don't overlap.
+        search_page_->AnimateHidePage();
         apps_page_->AnimateShowPage();
-      else
+      } else {
         apps_page_->SetVisible(true);
+        search_page_->SetVisible(false);
+      }
       search_box_view_->SetSearchBoxActive(true, /*event_type=*/ui::ET_UNKNOWN);
       // Explicitly request focus in case the search box was active before.
       search_box_view_->search_box()->RequestFocus();
       break;
     case AppListBubblePage::kSearch:
-      if (previous_page == AppListBubblePage::kApps)
+      if (previous_page == AppListBubblePage::kApps) {
         apps_page_->AnimateHidePage();
-      else
+        search_page_->AnimateShowPage();
+      } else {
         apps_page_->SetVisible(false);
+        search_page_->SetVisible(true);
+      }
       search_box_view_->SetSearchBoxActive(true, /*event_type=*/ui::ET_UNKNOWN);
       // Explicitly request focus in case the search box was active before.
       search_box_view_->search_box()->RequestFocus();
@@ -381,6 +460,7 @@ void AppListBubbleView::ShowPage(AppListBubblePage page) {
         apps_page_->AnimateHidePage();
       else
         apps_page_->SetVisible(false);
+      search_page_->SetVisible(false);
       // Explicitly set search box inactive so the next attempt to activate it
       // will succeed.
       search_box_view_->SetSearchBoxActive(false,
@@ -492,7 +572,8 @@ void AppListBubbleView::CloseButtonPressed() {
 
 void AppListBubbleView::OnSearchBoxKeyEvent(ui::KeyEvent* event) {
   // Nothing to do. Search box starts focused, and FocusManager handles arrow
-  // key traversal from there.
+  // key traversal from there. AssistantButtonFocusSkipper above handles
+  // skipping the assistant button on arrow up and arrow down.
 }
 
 bool AppListBubbleView::CanSelectSearchResults() {

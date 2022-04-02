@@ -101,7 +101,7 @@ crbug.com/1048761 external/wpt/websockets/interfaces/WebSocket/close/close-neste
 crbug.com/1048761 external/wpt/websockets/interfaces/WebSocket/readyState/003.html?wss [ Failure Pass ]
 crbug.com/1048761 external/wpt/websockets/unload-a-document/002.html?wss [ Failure Pass ]
 
-# oopr-canvas is disabled on Mac10.12. Skipping test to avoid having to 
+# oopr-canvas is disabled on Mac10.12. Skipping test to avoid having to
 # maintain useless baselines.
 crbug.com/1305679 [ Mac10.12 ] virtual/oopr-canvas2d/fast/canvas/* [ Skip ]
 
@@ -276,6 +276,11 @@ crbug.com/1123606 wpt_internal/fenced_frame/* [ Skip ]
 crbug.com/1123606 http/tests/fenced_frame/* [ Skip ]
 crbug.com/1123606 virtual/fenced-frame-shadow-dom/* [ Pass ]
 crbug.com/1123606 virtual/fenced-frame-mparch/* [ Pass ]
+
+# These fail due to subtle anti-aliasing differences cause by the fact that
+# <canvas> renders via IOSurface and OffscreenCanvas does not.
+crbug.com/1311760 [ Mac ] virtual/oopr-canvas2d/fast/canvas/OffscreenCanvas-2d-gradients-in-worker.html [ Failure ]
+crbug.com/1311760 [ Mac ] virtual/oopr-canvas2d/fast/canvas/OffscreenCanvas-paths-in-worker.html [ Failure ]
 
 # These tests require shared-storage and fenced-frames
 # Keep this in sync with VirtualTestSuites.
@@ -1292,50 +1297,7 @@ crbug.com/1253732 external/wpt/css/css-ui/input-security-none-sensitive-text-inp
 crbug.com/591099 external/wpt/css/css-ui/text-overflow-015.html [ Failure ]
 # Various issues related to the 'appearance' property:
 crbug.com/1284269 external/wpt/css/css-ui/compute-kind-widget-fallback-props-revert-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-background-color-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-background-position-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-block-start-color-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-bottom-left-radius-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-bottom-width-001.html [ Failure ]
 crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-end-start-radius-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-image-source-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-inline-end-width-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-inline-start-style-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-left-style-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-top-right-radius-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-top-style-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-top-width-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-background-attachment-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-background-clip-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-background-image-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-background-origin-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-background-size-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-block-end-color-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-block-end-style-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-block-end-width-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-block-start-style-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-block-start-width-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-bottom-color-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-bottom-right-radius-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-bottom-style-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-end-end-radius-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-image-outset-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-image-repeat-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-image-slice-001.html [ Crash Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-image-width-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-inline-end-color-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-inline-end-style-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-inline-start-color-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-inline-start-width-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-left-color-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-left-width-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-right-color-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-right-style-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-right-width-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-start-end-radius-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-start-start-radius-001.html [ Failure Timeout ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-top-color-001.html [ Failure ]
-crbug.com/1284251 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-border-top-left-radius-001.html [ Failure ]
 crbug.com/1284270 [ Fuchsia ] external/wpt/css/css-ui/compute-kind-widget-no-fallback-props-001.html [ Failure ]
 crbug.com/1284270 [ Linux ] external/wpt/css/css-ui/compute-kind-widget-no-fallback-props-001.html [ Failure ]
 crbug.com/1284270 [ Mac10.12 ] external/wpt/css/css-ui/compute-kind-widget-no-fallback-props-001.html [ Failure Timeout ]
@@ -3368,10 +3330,65 @@ crbug.com/626703 virtual/prerender/external/wpt/speculation-rules/prerender/work
 crbug.com/626703 [ Win ] external/wpt/preload/avoid-delaying-onload-link-modulepreload.html [ Failure ]
 crbug.com/626703 [ Win ] virtual/prerender/external/wpt/speculation-rules/prerender/restriction-presentation-request.https.html [ Failure ]
 crbug.com/626703 [ Win ] virtual/prerender/external/wpt/speculation-rules/prerender/storage-foundation.https.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/wasm/serialization/arraybuffer/transfer.window.html [ Failure ]
 crbug.com/626703 [ Win ] virtual/partitioned-cookies/http/tests/inspector-protocol/network/disabled-cache-navigation.js [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-background-attachment-001.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-background-clip-001.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-background-clip-001.html [ Failure ]
+crbug.com/626703 [ Mac10.14 ] external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-background-clip-001.html [ Failure ]
+crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-background-clip-001.html [ Failure ]
+crbug.com/626703 [ Mac11 ] external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-background-clip-001.html [ Failure ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-background-clip-001.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-background-clip-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-background-color-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-background-image-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-background-origin-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-background-position-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-background-size-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-block-end-color-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-block-end-style-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-block-end-width-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-block-start-color-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-block-start-style-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-block-start-width-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-bottom-color-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-bottom-left-radius-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-bottom-right-radius-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-bottom-style-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-bottom-width-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-end-end-radius-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-end-start-radius-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-image-outset-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-image-repeat-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-image-slice-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-image-source-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-image-width-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-inline-end-color-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-inline-end-style-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-inline-end-width-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-inline-start-color-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-inline-start-style-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-inline-start-width-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-left-color-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-left-style-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-left-width-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-right-color-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-right-style-001.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-right-width-001.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-right-width-001.html [ Failure ]
+crbug.com/626703 [ Mac10.14 ] external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-right-width-001.html [ Failure ]
+crbug.com/626703 [ Mac10.15 ] external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-right-width-001.html [ Failure ]
+crbug.com/626703 [ Mac11 ] external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-right-width-001.html [ Failure ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-right-width-001.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-right-width-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-start-end-radius-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-start-start-radius-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-top-color-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-top-left-radius-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-top-right-radius-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-top-style-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-top-width-001.html [ Failure ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/fetch/api/basic/request-upload.h2.any.worker.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/loading/early-hints/coep-early-hints-none-final-require-corp.h2.window.html [ Timeout ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/websockets/Close-1000-reason.any.html?wpt_flags=h2 [ Failure Timeout ]
@@ -4114,6 +4131,9 @@ crbug.com/626703 [ Mac10.12 ] virtual/plz-dedicated-worker/external/wpt/service-
 crbug.com/626703 [ Mac10.12 ] virtual/plz-dedicated-worker/external/wpt/service-workers/idlharness.https.any.worker.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] virtual/portals/external/wpt/portals/idlharness.window.html [ Failure ]
 
+# Update the serializing wasm memory case when crbug.com/v8/12703 is fixed.
+crbug.com/v8/12703 external/wpt/wasm/serialization/arraybuffer/transfer.window.html [ Failure Pass ]
+
 ### virtual/prerender/external/wpt/speculation-rules/prerender
 crbug.com/1126305 [ Mac10.15 ] virtual/prerender/external/wpt/speculation-rules/prerender/local-storage.html [ Skip Timeout ]
 crbug.com/1126305 [ Linux ] virtual/prerender/external/wpt/speculation-rules/prerender/local-storage.html [ Skip Timeout ]
@@ -4337,7 +4357,6 @@ crbug.com/963109 external/wpt/css/css-multicol/multicol-span-all-button-001.html
 crbug.com/963109 external/wpt/css/css-multicol/multicol-span-all-button-002.html [ Failure ]
 crbug.com/963109 external/wpt/css/css-multicol/multicol-span-all-button-003.html [ Failure ]
 crbug.com/915204 external/wpt/css/css-multicol/multicol-span-all-005.html [ Failure ]
-crbug.com/1267847 external/wpt/css/css-multicol/multicol-span-all-010.html [ Failure ]
 crbug.com/636055 external/wpt/css/css-multicol/multicol-span-all-margin-nested-002.xht [ Failure ]
 crbug.com/990240 external/wpt/css/css-multicol/multicol-span-all-rule-001.html [ Failure ]
 crbug.com/964183 external/wpt/css/css-multicol/multicol-width-005.html [ Failure ]
@@ -4466,7 +4485,7 @@ crbug.com/764235 external/wpt/css/css-grid/alignment/grid-baseline-align-001.htm
 crbug.com/764235 external/wpt/css/css-grid/alignment/grid-baseline-justify-001.html [ Failure ]
 
 # [css-subgrid]
-crbug.com/618969 external/wpt/css/css-grid/subgrid/abs-pos-002.html [ Failure Crash Timeout ]
+crbug.com/618969 external/wpt/css/css-grid/subgrid/abs-pos-002.html [ Crash Failure Timeout ]
 crbug.com/618969 external/wpt/css/css-grid/subgrid/abs-pos-003.html [ Failure ]
 crbug.com/618969 external/wpt/css/css-grid/subgrid/abs-pos-004.html [ Failure ]
 crbug.com/618969 external/wpt/css/css-grid/subgrid/auto-track-sizing-001.html [ Failure ]
@@ -4510,9 +4529,9 @@ crbug.com/618969 external/wpt/css/css-grid/subgrid/repeat-auto-fill-006.html [ F
 crbug.com/618969 external/wpt/css/css-grid/subgrid/repeat-auto-fill-007.html [ Failure ]
 crbug.com/618969 external/wpt/css/css-grid/subgrid/repeat-auto-fill-008.html [ Failure ]
 crbug.com/618969 external/wpt/css/css-grid/subgrid/subgrid-item-block-size-001.html [ Failure ]
-crbug.com/618969 external/wpt/css/css-grid/subgrid/subgrid-mbp-overflow-001.html [ Failure Crash Timeout ]
-crbug.com/618969 external/wpt/css/css-grid/subgrid/subgrid-mbp-overflow-002.html [ Failure Crash Timeout ]
-crbug.com/618969 external/wpt/css/css-grid/subgrid/subgrid-mbp-overflow-003.html [ Failure Crash Timeout ]
+crbug.com/618969 external/wpt/css/css-grid/subgrid/subgrid-mbp-overflow-001.html [ Crash Failure Timeout ]
+crbug.com/618969 external/wpt/css/css-grid/subgrid/subgrid-mbp-overflow-002.html [ Crash Failure Timeout ]
+crbug.com/618969 external/wpt/css/css-grid/subgrid/subgrid-mbp-overflow-003.html [ Crash Failure Timeout ]
 crbug.com/618969 external/wpt/css/css-grid/subgrid/subgrid-mbp-overflow-004.html [ Failure ]
 crbug.com/618969 external/wpt/css/css-grid/subgrid/subgrid-stretch.html [ Failure ]
 
@@ -5057,9 +5076,6 @@ crbug.com/862643 http/tests/serviceworker/navigation_preload/use-counter.html [ 
 # Sheriff 2018-07-30
 crbug.com/868706 external/wpt/css/css-layout-api/auto-block-size-inflow.https.html [ Failure Pass ]
 
-# Sheriff 2018-08-01
-crbug.com/869773 http/tests/misc/window-dot-stop.html [ Failure Pass ]
-
 crbug.com/873873 external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Pass Timeout ]
 crbug.com/873873 external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Pass Timeout ]
 
@@ -5103,9 +5119,6 @@ crbug.com/898378 [ Mac10.13 ] fast/scroll-behavior/smooth-scroll/keyboard-scroll
 
 # Sheriff 2018-10-29
 crbug.com/766357 [ Win ] virtual/threaded-prefer-compositing/fast/scrolling/wheel-and-touch-scroll-use-count.html [ Failure Pass ]
-
-# ecosystem-infra sheriff 2018-11-02, 2019-03-18
-crbug.com/901271 external/wpt/dom/events/Event-dispatch-on-disabled-elements.html [ Failure Pass Timeout ]
 
 # Test is flaky under load
 crbug.com/904389 http/tests/preload/delaying_onload_link_preload_after_discovery.html [ Failure Pass ]
@@ -7524,9 +7537,6 @@ crbug.com/1197296 [ Mac10.12 ] virtual/unified-autoplay/external/wpt/feature-pol
 crbug.com/1038139 [ Linux ] virtual/gpu-rasterization/images/2-comp.html [ Failure Pass ]
 crbug.com/1038139 [ Mac ] virtual/gpu-rasterization/images/2-comp.html [ Failure Pass ]
 
-# Need implementation of blocking=render on link headers
-crbug.com/626703 virtual/no-forced-frame-updates/external/wpt/html/dom/render-blocking/header-inserted-preload-link.tentative.html [ Timeout ]
-
 crbug.com/1309664 virtual/no-forced-frame-updates/external/wpt/html/dom/render-blocking/render-blocked-apis-by-preload-link.tentative.html [ Failure ]
 
 # Sheriff 2022-02-07
@@ -7630,10 +7640,10 @@ crbug.com/1298836 virtual/plz-dedicated-worker/external/wpt/fetch/api/basic/resp
 # Anonymous iframe > CacheStorage:
 # From two same-origin-different-partition context, the second `cache.put`
 # request hangs indefinitely.
-crbug.com/1285275 external/wpt/html/anonymous-iframe/cache-storage.tentative.https.window.html [ Timeout Pass ]
-crbug.com/1285275 virtual/fenced-frame-mparch/external/wpt/html/anonymous-iframe/cache-storage.tentative.https.window.html [ Timeout Pass ]
-crbug.com/1285275 virtual/fenced-frame-shadow-dom/external/wpt/html/anonymous-iframe/cache-storage.tentative.https.window.html [ Timeout Pass ]
-crbug.com/1285275 virtual/partitioned-cookies/external/wpt/html/anonymous-iframe/cache-storage.tentative.https.window.html [ Timeout Pass ]
+crbug.com/1285275 external/wpt/html/anonymous-iframe/cache-storage.tentative.https.window.html [ Pass Timeout ]
+crbug.com/1285275 virtual/fenced-frame-mparch/external/wpt/html/anonymous-iframe/cache-storage.tentative.https.window.html [ Pass Timeout ]
+crbug.com/1285275 virtual/fenced-frame-shadow-dom/external/wpt/html/anonymous-iframe/cache-storage.tentative.https.window.html [ Pass Timeout ]
+crbug.com/1285275 virtual/partitioned-cookies/external/wpt/html/anonymous-iframe/cache-storage.tentative.https.window.html [ Pass Timeout ]
 
 # Sheriff 2022-03-10
 crbug.com/1304956 storage/indexeddb/dont-wedge.html [ Failure Pass ]
@@ -7641,6 +7651,8 @@ crbug.com/1304956 storage/indexeddb/dont-wedge.html [ Failure Pass ]
 # Sheriff 2022-03-15
 crbug.com/626703 external/wpt/scroll-to-text-fragment/force-load-at-top.html [ Pass Timeout ]
 crbug.com/1269534 fast/spatial-navigation/snav-zero-margin-content.html [ Failure Pass ]
+crbug.com/1295980 virtual/fenced-frame-mparch/wpt_internal/fenced_frame/user-activation.https.html [ Failure Pass Timeout ]
+crbug.com/1295980 virtual/fenced-frame-shadow-dom/wpt_internal/fenced_frame/user-activation.https.html [ Failure Pass Timeout ]
 crbug.com/1280537 virtual/first-party-sets/http/tests/inspector-protocol/network/blocked-cookie-same-site-lax.js [ Failure Pass Timeout ]
 crbug.com/1277877 virtual/partitioned-cookies-first-party-sets/http/tests/inspector-protocol/network/blocked-cookie-same-site-strict.js [ Failure Pass Timeout ]
 crbug.com/1298633 http/tests/inspector-protocol/network/cross-origin-isolation/coep-load-error-reporting-worker.js [ Pass Timeout ]
@@ -7655,6 +7667,13 @@ crbug.com/1290040 [ Linux ] external/wpt/service-workers/service-worker/same-sit
 crbug.com/1307741 [ Mac ] external/wpt/webaudio/the-audio-api/the-mediastreamaudiosourcenode-interface/mediastreamaudiosourcenode-routing.html [ Timeout ]
 crbug.com/1307741 external/wpt/webaudio/the-audio-api/the-pannernode-interface/pannernode-basic.html [ Timeout ]
 crbug.com/1307741 webaudio/AudioParam/audioparam-k-rate.html [ Timeout ]
+
+# WebAudio internals flaky GC (crbug.com/1312164)
+crbug.com/1312164 webaudio/internals/mediaelementaudiosourcenode-wrapper.html [ Skip ]
+crbug.com/1312164 webaudio/internals/scriptprocessornode-premature-death.html [ Skip ]
+crbug.com/1312164 webaudio/internals/audiocontext-close.html [ Skip ]
+crbug.com/1312164 webaudio/internals/mediaelementaudiosourcenode-gc.html [ Skip ]
+crbug.com/1312164 webaudio/internals/audiocontext-gc.html [ Skip ]
 
 # Sheriff 2022-03-21: More flaky tests.
 crbug.com/1277696 [ Mac ] fast/loader/reload-zero-byte-plugin.html [ Failure Pass ]
@@ -7681,6 +7700,27 @@ crbug.com/1197296 [ Linux ] external/wpt/feature-policy/feature-policy-frame-pol
 crbug.com/1311015 [ Mac ] external/wpt/paint-timing/fcp-only/fcp-document-opacity-image.html [ Failure Pass ]
 crbug.com/1311128 external/wpt/paint-timing/fcp-only/fcp-document-opacity-text.html [ Skip ]
 
+# Navigation API incorrectly leaves promises forever unsettled (crbug.com/1311786)
+crbug.com/1311786 external/wpt/navigation-api/navigation-methods/sandboxing-back-parent.html [ Skip ]
+crbug.com/1311786 external/wpt/navigation-api/navigation-methods/sandboxing-back-sibling.html [ Skip ]
+
 # Sheriff 2022-03-29
 crbug.com/1311138 [ Mac10.13 ] virtual/document-transition/wpt_internal/document-transition/one-element-two-targets.html [ Skip ]
 crbug.com/1311138 [ Mac10.14 ] virtual/document-transition/wpt_internal/document-transition/one-element-two-targets.html [ Skip ]
+
+# These tests fail on SwiftShader FEMU due to a change in log/exp implementation.
+crbug.com/1311456 [ Fuchsia ] fast/css3-text/css3-text-decoration/text-decoration-style-inherit.html [ Skip ]
+crbug.com/1311456 [ Fuchsia ] tables/mozilla/core/bloomberg.html [ Skip ]
+
+# Sheriff 2022-04-01
+crbug.com/1312266 [ Mac10.13 ] external/wpt/preload/preload-time-to-fetch.https.html [ Failure ]
+crbug.com/1312266 [ Mac10.13 ] external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-border-right-width-001.html [ Failure ]
+crbug.com/1312266 [ Mac10.13 ] external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-background-clip-001.html [ Failure ]
+crbug.com/1312469 [ Mac10.12 ] external/wpt/hr-time/clamped-time-origin-isolated.https.html [ Skip ]
+crbug.com/1312469 [ Mac10.12 ] fast/forms/calendar-picker/date-picker-select-value-with-keyboard.html [ Skip ]
+crbug.com/1312469 [ Mac10.12 ] virtual/scroll-unification-prefer_compositing_to_lcd_text/fast/scroll-behavior/smooth-scroll/mousewheel-scroll.html [ Skip ]
+crbug.com/1312469 [ Mac10.12 ] virtual/threaded-no-composited-antialiasing/animations/interpolation/svg-d-interpolation-001.html [ Skip ]
+crbug.com/1312469 [ Mac10.12 ] virtual/fledge/http/tests/inspector-protocol/storage/interest-groups.js [ Skip ]
+crbug.com/1312469 [ Mac10.12 ] virtual/partitioned-cookies-first-party-sets/http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax.js [ Skip ]
+crbug.com/1312469 [ Mac10.12 ] virtual/partitioned-cookies/http/tests/inspector-protocol/network/blocked-cookie-same-site-strict.js [ Skip ]
+crbug.com/1312484 [ Mac11 ] external/wpt/navigation-api/ordering-and-transition/navigate-cross-document-double.html [ Skip ]

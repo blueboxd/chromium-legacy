@@ -209,7 +209,7 @@ group("gn_all") {
     ]
   }
 
-  if (is_win || (is_linux && !is_chromeos_lacros) || is_android) {
+  if (is_win || is_linux || is_android) {
     deps += [
       "//weblayer/shell:weblayer_shell",
       "//weblayer/test:weblayer_browsertests",
@@ -262,9 +262,22 @@ group("gn_all") {
   if (is_fuchsia && !is_chromecast) {
     deps += [
       ":d8_fuchsia",
-      "//fuchsia:gn_all",
-      "//headless:headless_non_renderer",
+      "//fuchsia/engine:web_engine",
+      "//fuchsia/release:fuchsia_sizes",
+      "//fuchsia/runners:cast_runner",
+      "//fuchsia/runners:web_runner",
+
+      # Ensure this target, used by cipd, is built in all configurations.
+      # TODO(crbug.com/1265618): Remove this once it has a natural dependency.
+      "//media/cdm/library_cdm/clear_key_cdm",
+
+      # Ensure this target continues to build.
+      "//chromecast/bindings:bindings_manager_fuchsia",
     ]
+
+    if (is_official_build) {
+      deps += [ "//fuchsia/cipd" ]
+    }
   }
 
   deps += root_extra_deps
@@ -795,7 +808,7 @@ group("gn_all") {
     deps += [ "//native_client_sdk/src:nacl_core_sdk" ]
   }
 
-  if ((is_linux || is_chromeos) && use_ozone) {
+  if (((is_linux || is_chromeos) && use_ozone) || is_fuchsia) {
     deps += [
       "//headless:headless_non_renderer",
       "//headless:headless_tests",
@@ -833,8 +846,8 @@ group("gn_all") {
       "//third_party/dawn/src/dawn/tests:dawn_end2end_tests",
       "//third_party/dawn/src/dawn/tests:dawn_unittests",
       "//third_party/dawn/src/fuzzers/dawn:dawn_fuzzers",
-      "//third_party/dawn/third_party/tint/src/tint/fuzzers",
-      "//third_party/dawn/third_party/tint/test/tint:tint_unittests",
+      "//third_party/dawn/src/tint/fuzzers",
+      "//third_party/dawn/test/tint:tint_unittests",
     ]
   }
 
@@ -1195,6 +1208,10 @@ if (!is_ios) {
         "//third_party/apache-mac/",
         "//third_party/apache-mac-arm64/",
       ]
+    }
+
+    if (is_linux || is_fuchsia) {
+      data += [ "//third_party/apache-linux/" ]
     }
 
     if (is_android) {
@@ -1589,7 +1606,7 @@ if (!is_ios && !is_android && !is_chromecast) {
     }
 
     if (build_dawn_tests) {
-      deps += [ "//third_party/dawn/third_party/tint/src/tint/fuzzers:fuzzers" ]
+      deps += [ "//third_party/dawn/src/tint/fuzzers:fuzzers" ]
     }
   }
 }

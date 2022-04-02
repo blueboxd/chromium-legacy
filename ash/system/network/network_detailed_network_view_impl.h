@@ -8,12 +8,11 @@
 #include "ash/ash_export.h"
 
 #include "ash/system/network/network_detailed_network_view.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 
 namespace ash {
 
 class DetailedViewDelegate;
-
-namespace tray {
 
 // This class is an implementation for NetworkDetailedNetworkView.
 // TODO(b/207089013): extend and implement
@@ -22,6 +21,8 @@ class ASH_EXPORT NetworkDetailedNetworkViewImpl
     : public NetworkDetailedView,
       public NetworkDetailedNetworkView {
  public:
+  METADATA_HEADER(NetworkDetailedNetworkViewImpl);
+
   NetworkDetailedNetworkViewImpl(
       DetailedViewDelegate* detailed_view_delegate,
       NetworkDetailedNetworkView::Delegate* delegate);
@@ -36,7 +37,6 @@ class ASH_EXPORT NetworkDetailedNetworkViewImpl
   views::View* GetAsView() override;
 };
 
-}  // namespace tray
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_NETWORK_NETWORK_DETAILED_NETWORK_VIEW_H_

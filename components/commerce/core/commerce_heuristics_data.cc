@@ -5,6 +5,7 @@
 #include "components/commerce/core/commerce_heuristics_data.h"
 
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/no_destructor.h"
 
 namespace commerce_heuristics {
@@ -65,6 +66,7 @@ bool CommerceHeuristicsData::PopulateDataFromComponent(
     return false;
   }
   hint_heuristics_ = std::move(*hint_json_value->GetIfDict());
+  global_heuristics_string_ = global_json_data;
   global_heuristics_ = std::move(*global_json_value->GetIfDict());
   // Global regex patterns.
   product_skip_pattern_ = ConstructGlobalRegex(kSkipProductPatternType);
@@ -78,6 +80,8 @@ bool CommerceHeuristicsData::PopulateDataFromComponent(
       ConstructGlobalRegex(kPurchaseButtonTextPatternType);
   add_to_cart_request_pattern_ =
       ConstructGlobalRegex(kAddToCartRequestPatternType);
+  product_id_json_ = product_id_json_data;
+  cart_extraction_script_ = cart_extraction_script;
   domain_cart_url_pattern_mapping_.clear();
   domain_checkout_url_pattern_mapping_.clear();
   domain_purchase_url_pattern_mapping_.clear();
@@ -92,6 +96,27 @@ absl::optional<std::string> CommerceHeuristicsData::GetMerchantName(
 absl::optional<std::string> CommerceHeuristicsData::GetMerchantCartURL(
     const std::string& domain) {
   return GetCommerceHintHeuristics(kMerchantCartURLType, domain);
+}
+
+absl::optional<std::string>
+CommerceHeuristicsData::GetHintHeuristicsJSONForDomain(
+    const std::string& domain) {
+  if (!hint_heuristics_.contains(domain)) {
+    return absl::nullopt;
+  }
+  base::Value::Dict* domain_heuristics = hint_heuristics_.FindDict(domain);
+  if (!domain_heuristics || domain_heuristics->empty()) {
+    return absl::nullopt;
+  }
+  base::Value::Dict res_dic;
+  res_dic.Set(domain, std::move(*domain_heuristics));
+  std::string res_string;
+  base::JSONWriter::Write(res_dic, &res_string);
+  return absl::optional<std::string>(res_string);
+}
+
+absl::optional<std::string> CommerceHeuristicsData::GetGlobalHeuristicsJSON() {
+  return global_heuristics_string_;
 }
 
 const re2::RE2* CommerceHeuristicsData::GetProductSkipPattern() {
@@ -140,6 +165,14 @@ const re2::RE2* CommerceHeuristicsData::GetPurchasePageURLPatternForDomain(
     const std::string& domain) {
   return GetCommerceHintHeuristicsRegex(domain_purchase_url_pattern_mapping_,
                                         kMerchantPurchaseURLRegexType, domain);
+}
+
+std::string CommerceHeuristicsData::GetProductIDExtractionJSON() {
+  return product_id_json_;
+}
+
+std::string CommerceHeuristicsData::GetCartProductExtractionScript() {
+  return cart_extraction_script_;
 }
 
 absl::optional<std::string> CommerceHeuristicsData::GetCommerceHintHeuristics(

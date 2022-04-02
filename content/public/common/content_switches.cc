@@ -135,12 +135,6 @@ const char kDisableWebGL2[] = "disable-webgl2";
 // Disable FileSystem API.
 const char kDisableFileSystem[]             = "disable-file-system";
 
-// Disable 3D inside of flapper.
-const char kDisableFlash3d[]                = "disable-flash-3d";
-
-// Disable Stage3D inside of flapper.
-const char kDisableFlashStage3d[]           = "disable-flash-stage3d";
-
 // Disable user gesture requirement for presentation.
 const char kDisableGestureRequirementForPresentation[] =
     "disable-gesture-requirement-for-presentation";
@@ -798,6 +792,11 @@ const char kTrustableWebBundleFileUrl[] = "trustable-web-bundles-file-url";
 // codec entry that create a fake video encoder and decoder.
 const char kUseFakeCodecForPeerConnection[] =
     "use-fake-codec-for-peer-connection";
+
+// Bypass the FedCM account selection dialog. If a value is provided for
+// this switch, that account ID is selected, otherwise the first account
+// is chosen.
+const char kUseFakeUIForFedCM[] = "use-fake-ui-for-fedcm";
 
 // Bypass the media stream infobar by selecting the default device for media
 // streams (e.g. WebRTC). Works with --use-fake-device-for-media-stream.

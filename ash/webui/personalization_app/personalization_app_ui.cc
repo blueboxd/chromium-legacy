@@ -25,6 +25,7 @@
 #include "ui/webui/mojo_web_ui_controller.h"
 
 namespace ash {
+namespace personalization_app {
 
 namespace {
 
@@ -92,6 +93,7 @@ void AddStrings(content::WebUIDataSource* source) {
       {"zeroImages", IDS_PERSONALIZATION_APP_NO_IMAGES},
       {"oneImage", IDS_PERSONALIZATION_APP_ONE_IMAGE},
       {"multipleImages", IDS_PERSONALIZATION_APP_MULTIPLE_IMAGES},
+      {"managedSetting", IDS_PERSONALIZATION_APP_MANAGED_SETTING},
 
       // User/avatar related strings.
       {"avatarLabel", IDS_PERSONALIZATION_APP_AVATAR_LABEL},
@@ -260,4 +262,5 @@ void PersonalizationAppUI::BindInterface(
 
 WEB_UI_CONTROLLER_TYPE_IMPL(PersonalizationAppUI)
 
+}  // namespace personalization_app
 }  // namespace ash

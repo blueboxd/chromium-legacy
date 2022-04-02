@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
@@ -156,6 +157,27 @@ bool AppendAuctionConfig(AuctionV8Helper* const v8_helper,
   }
   if (!per_buyer_timeouts.IsEmpty())
     auction_config_dict.Set("perBuyerTimeouts", per_buyer_timeouts);
+
+  const auto& component_auctions =
+      auction_ad_config_non_shared_params.component_auctions;
+  if (!component_auctions.empty()) {
+    std::vector<v8::Local<v8::Value>> component_auction_vector;
+    for (const auto& component_auction : component_auctions) {
+      if (!AppendAuctionConfig(
+              v8_helper, context, component_auction->decision_logic_url,
+              component_auction->trusted_scoring_signals_url,
+              *component_auction->auction_ad_config_non_shared_params,
+              &component_auction_vector)) {
+        return false;
+      }
+    }
+    v8::Maybe<bool> result = auction_config_value->Set(
+        context, v8_helper->CreateStringFromLiteral("componentAuctions"),
+        v8::Array::New(isolate, component_auction_vector.data(),
+                       component_auction_vector.size()));
+    if (result.IsNothing() || !result.FromJust())
+      return false;
+  }
 
   args->push_back(std::move(auction_config_value));
   return true;
@@ -486,11 +508,14 @@ void SellerWorklet::V8State::ScoreAd(
            ->RunScript(context, worklet_script_.Get(isolate), debug_id_.get(),
                        "scoreAd", args, std::move(seller_timeout), errors_out)
            .ToLocal(&score_ad_result)) {
+    // Keep debug loss reports since `scoreAd()` might use it to detect script
+    // timeout or failures.
     PostScoreAdCallbackToUserThread(
         std::move(callback), /*score=*/0,
         /*component_auction_modified_bid_params=*/nullptr,
         /*scoring_signals_data_version=*/absl::nullopt,
-        /*debug_loss_report_url=*/absl::nullopt,
+        /*debug_loss_report_url=*/
+        for_debugging_only_bindings.TakeLossReportUrl(),
         /*debug_win_report_url=*/absl::nullopt, std::move(errors_out));
     return;
   }
@@ -804,6 +829,9 @@ void SellerWorklet::Start() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
   DCHECK(!paused_);
 
+  base::UmaHistogramCounts100000(
+      "Ads.InterestGroup.Net.RequestUrlSizeBytes.ScoringScriptJS",
+      script_source_url_.spec().size());
   worklet_loader_ = std::make_unique<WorkletLoader>(
       url_loader_factory_.get(), script_source_url_, v8_helper_, debug_id_,
       base::BindOnce(&SellerWorklet::OnDownloadComplete,
@@ -813,6 +841,9 @@ void SellerWorklet::Start() {
 void SellerWorklet::OnDownloadComplete(WorkletLoader::Result worklet_script,
                                        absl::optional<std::string> error_msg) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
+  base::UmaHistogramCounts10M(
+      "Ads.InterestGroup.Net.ResponseSizeBytes.ScoringScriptJS",
+      worklet_script.original_size_bytes());
   worklet_loader_.reset();
 
   // On failure, delete `this`, as it can't do anything without a loaded script.

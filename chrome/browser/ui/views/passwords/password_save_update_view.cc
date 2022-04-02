@@ -20,9 +20,9 @@
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/hats/hats_service_factory.h"
-#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
+#include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/user_education/feature_promo_specification.h"
 #include "chrome/browser/ui/user_education/help_bubble_params.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -519,12 +519,8 @@ ui::ImageModel PasswordSaveUpdateView::GetWindowIcon() {
           password_manager::features::kUnifiedPasswordManagerDesktop)) {
     return ui::ImageModel();
   }
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  return ui::ImageModel::FromVectorIcon(kGooglePasswordManagerIcon,
+  return ui::ImageModel::FromVectorIcon(GooglePasswordManagerVectorIcon(),
                                         ui::kColorIcon, kIconHeight);
-#else
-  return ui::ImageModel::FromVectorIcon(kKeyIcon, ui::kColorIcon, kIconHeight);
-#endif
 }
 
 void PasswordSaveUpdateView::AddedToWidget() {

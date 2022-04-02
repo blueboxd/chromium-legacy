@@ -189,6 +189,7 @@ class NodeIterator;
 class NthIndexCache;
 class Page;
 class PendingAnimations;
+class PendingLinkPreload;
 class ProcessingInstruction;
 class PropertyRegistry;
 class QualifiedName;
@@ -1683,6 +1684,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // Return true if any accessibility contexts have been enabled.
   bool IsAccessibilityEnabled() const { return !ax_contexts_.IsEmpty(); }
 
+  void DispatchHandleLoadStart();
+  void DispatchHandleLoadOrLayoutComplete();
+
   bool HaveRenderBlockingStylesheetsLoaded() const;
   bool HaveRenderBlockingResourcesLoaded() const;
 
@@ -1833,6 +1837,11 @@ class CORE_EXPORT Document : public ContainerNode,
   // For more details and explanation, see
   // https://github.com/flackr/reduce-motion/blob/main/explainer.md
   bool ShouldForceReduceMotion() const;
+
+  void AddPendingLinkHeaderPreload(const PendingLinkPreload&);
+
+  // Has no effect if the preload is not initiated by link header.
+  void RemovePendingLinkHeaderPreloadIfNeeded(const PendingLinkPreload&);
 
   void WriteIntoTrace(perfetto::TracedValue ctx) const;
 
@@ -2464,6 +2473,10 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Whether any resource loads that block printing are happening.
   bool loading_for_print_ = false;
+
+  // Document owns pending preloads, prefetches and modulepreloads initiated by
+  // link header so that they won't be incidentally GC-ed and cancelled.
+  HeapHashSet<Member<const PendingLinkPreload>> pending_link_header_preloads_;
 
   // If you want to add new data members to blink::Document, please reconsider
   // if the members really should be in blink::Document.  document.h is a very

@@ -15,8 +15,10 @@ import './animation_theme_list_element.js';
 import './toggle_row_element.js';
 import './topic_source_list_element.js';
 
+import {assert} from 'chrome://resources/js/assert_ts.js';
+
 import {AmbientModeAlbum, AnimationTheme, TemperatureUnit, TopicSource} from '../personalization_app.mojom-webui.js';
-import {Paths} from '../personalization_router_element.js';
+import {isAmbientModeAllowed, Paths} from '../personalization_router_element.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 import {getZerosArray} from '../utils.js';
 
@@ -51,10 +53,6 @@ export class AmbientSubpage extends WithPersonalizationStore {
         computed:
             'computeLoadingSettings_(albums_, temperatureUnit_, topicSource_)',
       },
-      disabled_: {
-        type: Boolean,
-        computed: 'computeDisabled_(ambientModeEnabled_)',
-      },
     };
   }
 
@@ -67,6 +65,10 @@ export class AmbientSubpage extends WithPersonalizationStore {
   private topicSource_: TopicSource|null = null;
 
   override connectedCallback() {
+    assert(
+        isAmbientModeAllowed(),
+        'ambient subpage should not load if ambient not allowed');
+
     super.connectedCallback();
     AmbientObserver.initAmbientObserverIfNeeded();
     this.watch<AmbientSubpage['albums_']>(
@@ -80,6 +82,8 @@ export class AmbientSubpage extends WithPersonalizationStore {
     this.watch<AmbientSubpage['topicSource_']>(
         'topicSource_', state => state.ambient.topicSource);
     this.updateFromStore();
+
+    getAmbientProvider().setPageViewed();
   }
 
   private onClickAmbientModeButton_(event: Event) {
@@ -140,13 +144,13 @@ export class AmbientSubpage extends WithPersonalizationStore {
     return path === Paths.AmbientAlbums;
   }
 
+  private loadingAmbientMode_(): boolean {
+    return this.ambientModeEnabled_ === null;
+  }
+
   private computeLoadingSettings_(): boolean {
     return this.albums_ === null || this.topicSource_ === null ||
         this.temperatureUnit_ === null;
-  }
-
-  private computeDisabled_(): boolean {
-    return this.ambientModeEnabled_ !== null && !this.ambientModeEnabled_;
   }
 
   private getPlaceholders_(x: number): number[] {

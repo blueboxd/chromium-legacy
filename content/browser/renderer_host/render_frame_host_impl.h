@@ -74,6 +74,7 @@
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/extra_mojo_js_features.mojom-forward.h"
 #include "content/public/common/javascript_dialog_type.h"
 #include "media/mojo/mojom/interface_factory.mojom-forward.h"
 #include "media/mojo/mojom/media_metrics_provider.mojom-forward.h"
@@ -326,6 +327,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                              bool exclude_offscreen,
                              size_t max_nodes,
                              const base::TimeDelta& timeout) override;
+  void RequestDistilledAXTree(AXTreeDistillerCallback callback) override;
   SiteInstanceImpl* GetSiteInstance() const override;
   RenderProcessHost* GetProcess() const override;
   GlobalRenderFrameHostId GetGlobalId() const override;
@@ -456,6 +458,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool IsErrorDocument() override;
   DocumentRef GetDocumentRef() override;
   WeakDocumentPtr GetWeakDocumentPtr() override;
+  void EnableMojoJsBindings(
+      content::mojom::ExtraMojoJsFeaturesPtr features) override;
 
   // Additional non-override const version of GetMainFrame.
   const RenderFrameHostImpl* GetMainFrame() const;
@@ -781,13 +785,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   WebUIImpl* web_ui() const { return web_ui_.get(); }
   WebUI::TypeID web_ui_type() const { return web_ui_type_; }
 
-  // Enable Mojo JavaScript bindings in the renderer process. It will be
-  // effective on the first creation of script context after the call is made.
-  // If called at frame creation time (RenderFrameCreated) or just before a
-  // document is committed (ReadyToCommitNavigation), the resulting document
-  // will have the JS bindings enabled.
-  void EnableMojoJsBindings();
-
   // Enable Mojo JavaScript bindings in the renderer process, and use the
   // provided BrowserInterfaceBroker to handle JavaScript calls to
   // Mojo.bindInterface. This method should be called in
@@ -870,6 +867,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // with the navigation to this RenderFrameHost.
   void SetNavigationRequest(
       std::unique_ptr<NavigationRequest> navigation_request);
+
+  const scoped_refptr<NavigationOrDocumentHandle>&
+  GetNavigationOrDocumentHandle();
 
   // Tells the renderer that this RenderFrame is being replaced with one in a
   // different renderer process.  It should run its unload handler and move to
@@ -1516,7 +1516,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Called when a Portal needs to be destroyed.
   void DestroyPortal(Portal* portal);
 
-  // Return fenced frames owned by |this|.
+  // Return fenced frames owned by |this|. The returned vector is in the order
+  // the fenced frames were added (most recent at end).
   std::vector<FencedFrame*> GetFencedFrames() const;
 
   // Called when a fenced frame needs to be destroyed.
@@ -2920,6 +2921,19 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                      const ui::AXTreeUpdate& snapshot);
 
   // Callback that will be called as a response to the call to the method
+  // content::mojom::RenderAccessibility::DistillAXTree(). The |callback| passed
+  // will be invoked after the renderer has responded with a list of text node
+  // ID's as |text_nodes|.
+  void RequestDistilledAXTreeCallback(
+      AXTreeDistillerCallback callback,
+      const ui::AXTreeUpdate& snapshot,
+      const std::vector<ui::AXNodeID>& text_node_ids);
+
+  // Makes a copy of an AXTreeUpdate to send to the destination.
+  void CopyAXTreeUpdate(const ui::AXTreeUpdate& snapshot,
+                        ui::AXTreeUpdate* snapshot_copy);
+
+  // Callback that will be called as a response to the call to the method
   // blink::mojom::LocalFrame::GetSavableResourceLinks(). The |reply| passed
   // will be a nullptr when the url is not the savable URLs or valid.
   void GetSavableResourceLinksCallback(
@@ -3948,7 +3962,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // back to |this|.
   base::flat_set<std::unique_ptr<Portal>, base::UniquePtrComparator> portals_;
 
-  // The fenced frames owned by this document.
+  // The fenced frames owned by this document, ordered with newer fenced frames
+  // being appended to the end.
   std::vector<std::unique_ptr<FencedFrame>> fenced_frames_;
 
   // Tracking active features in this frame, for use in figuring out whether
@@ -4005,6 +4020,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
     // "Owned" but not with std::unique_ptr, as a DocumentServiceBase is
     // allowed to delete itself directly.
     std::vector<internal::DocumentServiceBase*> services;
+
+    // This handle supports a seamless transfer from a navigation to a committed
+    // document.
+    scoped_refptr<NavigationOrDocumentHandle> navigation_or_document_handle;
 
     // Produces weak pointers to the hosting RenderFrameHostImpl. This is
     // invalidated whenever DocumentAssociatedData is destroyed, due to
@@ -4164,6 +4183,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Manages a transient affordance for this frame or subframes to open a popup.
   TransientAllowPopup transient_allow_popup_;
+
+  // Used to avoid sending AXTreeData to the renderer if the renderer has not
+  // been told root ID yet. See UpdateAXTreeData() for more details.
+  bool needs_ax_root_id_ = true;
 
   // BrowserInterfaceBroker implementation through which this
   // RenderFrameHostImpl exposes document-scoped Mojo services to the currently

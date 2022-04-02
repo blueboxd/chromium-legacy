@@ -30,13 +30,6 @@ class HTMLPopupElement final : public HTMLElement {
   void hide();
   void show();
 
-  Element* anchor() const;
-  Element* invoker() const;
-
-  // This is used by invoking elements (which have a "popup" attribute)
-  // to invoke the popup.
-  void Invoke(Element* invoker);
-
   // TODO(crbug.com/1197720): The popup position should be provided by the new
   // anchored positioning scheme.
   void SetNeedsRepositioningForSelectMenu(bool flag);
@@ -50,9 +43,6 @@ class HTMLPopupElement final : public HTMLElement {
  private:
   void ScheduleHideEvent();
   void MarkStyleDirty();
-  void focus(const FocusParams& params) override;
-  Element* GetFocusableArea(bool autofocus_only) const;
-  void SetFocus();
   bool IsKeyboardFocusable() const override;
   bool IsMouseFocusable() const override;
 
@@ -70,7 +60,6 @@ class HTMLPopupElement final : public HTMLElement {
 
   bool open_;
   bool had_initiallyopen_when_parsed_;
-  WeakMember<Element> invoker_;
 
   bool needs_repositioning_for_select_menu_;
   WeakMember<HTMLSelectMenuElement> owner_select_menu_element_;

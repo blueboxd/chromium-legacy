@@ -124,7 +124,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.InvalidCombinationsOfAllowedUsersPolicies"
-    enum="AllowedUsersPoliciesInvalidState" expires_after="2022-04-17">
+    enum="AllowedUsersPoliciesInvalidState" expires_after="2022-10-17">
   <owner>emaamari@google.com</owner>
   <owner>src/ash/components/policy/OWNERS</owner>
   <summary>
@@ -240,9 +240,6 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Login.PromptToCompleteLoginTime" units="ms"
     expires_after="2022-04-24">
-  <obsolete>
-    Removed in M102.
-  </obsolete>
   <owner>rsorokin@chromium.org</owner>
   <owner>achuith@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
@@ -252,11 +249,11 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Login.PromptToLoginTime" units="ms" expires_after="2022-04-10">
+<histogram name="Login.PromptToLoginTime" units="ms" expires_after="2022-07-10">
   <owner>elijahtaylor@google.com</owner>
   <owner>yusukes@chromium.org</owner>
-  <owner>rsorokin@chromium.org</owner>
-  <owner>cros-oac@google.com</owner>
+  <owner>antrim@chromium.org</owner>
+  <owner>cros-lurs@google.com</owner>
   <summary>
     Time from first display of the login prompt until the existing user
     completes signing in.

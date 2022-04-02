@@ -46,11 +46,11 @@ AttributionInternalsUI::~AttributionInternalsUI() = default;
 void AttributionInternalsUI::WebUIRenderFrameCreated(RenderFrameHost* rfh) {
   // Enable the JavaScript Mojo bindings in the renderer process, so the JS
   // code can call the Mojo APIs exposed by this WebUI.
-  static_cast<RenderFrameHostImpl*>(rfh)->EnableMojoJsBindings();
+  rfh->EnableMojoJsBindings(nullptr);
 }
 
 void AttributionInternalsUI::BindInterface(
-    mojo::PendingReceiver<mojom::AttributionInternalsHandler> receiver) {
+    mojo::PendingReceiver<attribution_internals::mojom::Handler> receiver) {
   ui_handler_ = std::make_unique<AttributionInternalsHandlerImpl>(
       web_ui(), std::move(receiver));
 }

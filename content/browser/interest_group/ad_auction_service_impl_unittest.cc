@@ -748,9 +748,9 @@ TEST_F(AdAuctionServiceImplTest, JoinInterestGroupCrossSiteUrls) {
   JoinInterestGroupAndFlush(interest_group);
   EXPECT_EQ(0, GetJoinCount(kOriginA, kInterestGroupName));
 
-  // Test `update_url`.
+  // Test `daily_update_url`.
   interest_group = CreateInterestGroup();
-  interest_group.update_url = kBadUrl;
+  interest_group.daily_update_url = kBadUrl;
   JoinInterestGroupAndFlush(interest_group);
   EXPECT_EQ(0, GetJoinCount(kOriginA, kInterestGroupName));
 
@@ -842,22 +842,26 @@ TEST_F(AdAuctionServiceImplTest, LeaveInterestFromCrossSiteIFrame) {
 // The server JSON updates all fields that can be updated.
 TEST_F(AdAuctionServiceImplTest, UpdateAllUpdatableFields) {
   network_responder_->RegisterUpdateResponse(
-      kDailyUpdateUrlPath,
-      base::StringPrintf(R"({
+      kDailyUpdateUrlPath, base::StringPrintf(R"({
 "priority": 1.59,
 "biddingLogicUrl": "%s/interest_group/new_bidding_logic.js",
+"biddingWasmHelperUrl":"%s/interest_group/new_bidding_wasm_helper_url.wasm",
 "trustedBiddingSignalsUrl":
   "%s/interest_group/new_trusted_bidding_signals_url.json",
 "trustedBiddingSignalsKeys": ["new_key"],
 "ads": [{"renderUrl": "%s/new_ad_render_url",
          "metadata": {"new_a": "b"}
-        }]
+        }],
+"adComponents": [{"renderUrl": "https://example.com/component_url",
+                  "metadata": {"new_c": "d"}
+                 }]
 })",
-                         kOriginStringA, kOriginStringA, kOriginStringA));
+                                              kOriginStringA, kOriginStringA,
+                                              kOriginStringA, kOriginStringA));
 
   blink::InterestGroup interest_group = CreateInterestGroup();
   interest_group.priority = 2.0;
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.bidding_url = kBiddingLogicUrlA;
   interest_group.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
   interest_group.trusted_bidding_signals_keys.emplace();
@@ -883,6 +887,11 @@ TEST_F(AdAuctionServiceImplTest, UpdateAllUpdatableFields) {
   EXPECT_EQ(group.bidding_url->spec(),
             base::StringPrintf("%s/interest_group/new_bidding_logic.js",
                                kOriginStringA));
+  ASSERT_TRUE(group.bidding_wasm_helper_url.has_value());
+  EXPECT_EQ(
+      group.bidding_wasm_helper_url->spec(),
+      base::StringPrintf("%s/interest_group/new_bidding_wasm_helper_url.wasm",
+                         kOriginStringA));
   ASSERT_TRUE(group.trusted_bidding_signals_url.has_value());
   EXPECT_EQ(group.trusted_bidding_signals_url->spec(),
             base::StringPrintf(
@@ -896,6 +905,11 @@ TEST_F(AdAuctionServiceImplTest, UpdateAllUpdatableFields) {
   EXPECT_EQ(group.ads.value()[0].render_url.spec(),
             base::StringPrintf("%s/new_ad_render_url", kOriginStringA));
   EXPECT_EQ(group.ads.value()[0].metadata, "{\"new_a\":\"b\"}");
+  ASSERT_TRUE(group.ad_components.has_value());
+  ASSERT_EQ(group.ad_components->size(), 1u);
+  EXPECT_EQ(group.ad_components.value()[0].render_url.spec(),
+            "https://example.com/component_url");
+  EXPECT_EQ(group.ad_components.value()[0].metadata, "{\"new_c\":\"d\"}");
 }
 
 // Only set the ads field -- the other fields shouldn't be changed.
@@ -910,7 +924,7 @@ TEST_F(AdAuctionServiceImplTest, UpdatePartialPerformsMerge) {
 
   blink::InterestGroup interest_group = CreateInterestGroup();
   interest_group.priority = 2.0;
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.bidding_url = kBiddingLogicUrlA;
   interest_group.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
   interest_group.trusted_bidding_signals_keys.emplace();
@@ -936,8 +950,8 @@ TEST_F(AdAuctionServiceImplTest, UpdatePartialPerformsMerge) {
   EXPECT_EQ(
       group.bidding_url->spec(),
       base::StringPrintf("%s/interest_group/bidding_logic.js", kOriginStringA));
-  ASSERT_TRUE(group.update_url.has_value());
-  EXPECT_EQ(group.update_url->spec(),
+  ASSERT_TRUE(group.daily_update_url.has_value());
+  EXPECT_EQ(group.daily_update_url->spec(),
             base::StringPrintf("%s/interest_group/daily_update_partial.json",
                                kOriginStringA));
   ASSERT_TRUE(group.trusted_bidding_signals_url.has_value());
@@ -962,7 +976,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateDoesntChangeExpiration) {
 })");
 
   blink::InterestGroup interest_group = CreateInterestGroup();
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.bidding_url = kBiddingLogicUrlA;
   interest_group.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
   interest_group.trusted_bidding_signals_keys.emplace();
@@ -1010,7 +1024,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateSucceedsIfOptionalNameOwnerMatch) {
                          kInterestGroupName, kOriginStringA, kOriginStringA));
 
   blink::InterestGroup interest_group = CreateInterestGroup();
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.bidding_url = kBiddingLogicUrlA;
   interest_group.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
   interest_group.trusted_bidding_signals_keys.emplace();
@@ -1035,8 +1049,8 @@ TEST_F(AdAuctionServiceImplTest, UpdateSucceedsIfOptionalNameOwnerMatch) {
   EXPECT_EQ(
       group.bidding_url->spec(),
       base::StringPrintf("%s/interest_group/bidding_logic.js", kOriginStringA));
-  ASSERT_TRUE(group.update_url.has_value());
-  EXPECT_EQ(group.update_url->spec(),
+  ASSERT_TRUE(group.daily_update_url.has_value());
+  EXPECT_EQ(group.daily_update_url->spec(),
             base::StringPrintf("%s/interest_group/daily_update_partial.json",
                                kOriginStringA));
   ASSERT_TRUE(group.trusted_bidding_signals_url.has_value());
@@ -1063,7 +1077,7 @@ TEST_F(AdAuctionServiceImplTest, NoUpdateIfOptionalNameDoesntMatch) {
 })");
 
   blink::InterestGroup interest_group = CreateInterestGroup();
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.bidding_url = kBiddingLogicUrlA;
   interest_group.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
   interest_group.trusted_bidding_signals_keys.emplace();
@@ -1103,7 +1117,7 @@ TEST_F(AdAuctionServiceImplTest, NoUpdateIfOptionalOwnerDoesntMatch) {
                                               kOriginStringB, kOriginStringA));
 
   blink::InterestGroup interest_group = CreateInterestGroup();
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.bidding_url = kBiddingLogicUrlA;
   interest_group.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
   interest_group.trusted_bidding_signals_keys.emplace();
@@ -1148,7 +1162,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateMultipleInterestGroups) {
 
   blink::InterestGroup interest_group = CreateInterestGroup();
   interest_group.name = kGroupName1;
-  interest_group.update_url = kUrlA.Resolve(kDailyUpdateUrlPath1);
+  interest_group.daily_update_url = kUrlA.Resolve(kDailyUpdateUrlPath1);
   interest_group.bidding_url = kBiddingLogicUrlA;
   interest_group.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
   interest_group.trusted_bidding_signals_keys.emplace();
@@ -1164,7 +1178,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateMultipleInterestGroups) {
   // Now, join the second interest group, also belonging to `kOriginA`.
   blink::InterestGroup interest_group_2 = CreateInterestGroup();
   interest_group_2.name = kGroupName2;
-  interest_group_2.update_url = kUrlA.Resolve(kDailyUpdateUrlPath2);
+  interest_group_2.daily_update_url = kUrlA.Resolve(kDailyUpdateUrlPath2);
   interest_group_2.bidding_url = kBiddingLogicUrlA;
   interest_group_2.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
   interest_group_2.trusted_bidding_signals_keys.emplace();
@@ -1217,7 +1231,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateOnlyOwnOrigin) {
 })");
 
   blink::InterestGroup interest_group = CreateInterestGroup();
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.bidding_url = kBiddingLogicUrlA;
   interest_group.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
   interest_group.trusted_bidding_signals_keys.emplace();
@@ -1234,7 +1248,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateOnlyOwnOrigin) {
   NavigateAndCommit(kUrlB);
   blink::InterestGroup interest_group_b = CreateInterestGroup();
   interest_group_b.owner = kOriginB;
-  interest_group_b.update_url = kUrlB.Resolve(kDailyUpdateUrlPath);
+  interest_group_b.daily_update_url = kUrlB.Resolve(kDailyUpdateUrlPath);
   interest_group_b.bidding_url = kUrlB.Resolve(kBiddingUrlPath);
   interest_group_b.trusted_bidding_signals_url =
       kUrlB.Resolve(kTrustedBiddingSignalsUrlPath);
@@ -1284,7 +1298,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateFromCrossSiteIFrame) {
 })");
 
   blink::InterestGroup interest_group = CreateInterestGroup();
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.bidding_url = kBiddingLogicUrlA;
   interest_group.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
   interest_group.trusted_bidding_signals_keys.emplace();
@@ -1301,7 +1315,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateFromCrossSiteIFrame) {
   NavigateAndCommit(kUrlB);
   blink::InterestGroup interest_group_b = CreateInterestGroup();
   interest_group_b.owner = kOriginB;
-  interest_group_b.update_url = kUrlB.Resolve(kDailyUpdateUrlPath);
+  interest_group_b.daily_update_url = kUrlB.Resolve(kDailyUpdateUrlPath);
   interest_group_b.bidding_url = kUrlB.Resolve(kBiddingUrlPath);
   interest_group_b.trusted_bidding_signals_url =
       kUrlB.Resolve(kTrustedBiddingSignalsUrlPath);
@@ -1319,7 +1333,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateFromCrossSiteIFrame) {
   NavigateAndCommit(kUrlC);
   blink::InterestGroup interest_group_c = CreateInterestGroup();
   interest_group_c.owner = kOriginC;
-  interest_group_c.update_url = kUrlC.Resolve(kDailyUpdateUrlPath);
+  interest_group_c.daily_update_url = kUrlC.Resolve(kDailyUpdateUrlPath);
   interest_group_c.bidding_url = kUrlC.Resolve(kBiddingUrlPath);
   interest_group_c.trusted_bidding_signals_url =
       kUrlC.Resolve(kTrustedBiddingSignalsUrlPath);
@@ -1402,7 +1416,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateInvalidFieldCancelsAllUpdates) {
                                               kOriginStringA));
 
   blink::InterestGroup interest_group = CreateInterestGroup();
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.bidding_url = kBiddingLogicUrlA;
   interest_group.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
   interest_group.trusted_bidding_signals_keys.emplace();
@@ -1444,7 +1458,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateInvalidPriorityCancelsAllUpdates) {
 
   blink::InterestGroup interest_group = CreateInterestGroup();
   interest_group.priority = 2.0;
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.bidding_url = kBiddingLogicUrlA;
   interest_group.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
   interest_group.trusted_bidding_signals_keys.emplace();
@@ -1476,7 +1490,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateInvalidJSONIgnored) {
                                              "This isn't JSON.");
 
   blink::InterestGroup interest_group = CreateInterestGroup();
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.bidding_url = kBiddingLogicUrlA;
   interest_group.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
   interest_group.trusted_bidding_signals_keys.emplace();
@@ -1521,7 +1535,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateJSONParserCrash) {
   // Set a long expiration delta so that we can advance to the next rate limit
   // period without the interest group expiring.
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.bidding_url = kBiddingLogicUrlA;
   interest_group.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
   interest_group.trusted_bidding_signals_keys.emplace();
@@ -1584,7 +1598,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateBlockedByContentBrowserClient) {
 
   blink::InterestGroup interest_group = CreateInterestGroup();
   interest_group.owner = kOriginNoUpdate;
-  interest_group.update_url = kUpdateUrlNoUpdate;
+  interest_group.daily_update_url = kUpdateUrlNoUpdate;
   interest_group.ads.emplace();
   blink::InterestGroup::Ad ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -1612,7 +1626,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateBlockedByContentBrowserClient) {
 // The network request fails (not implemented), so the update is cancelled.
 TEST_F(AdAuctionServiceImplTest, UpdateNetworkFailure) {
   blink::InterestGroup interest_group = CreateInterestGroup();
-  interest_group.update_url = kUrlA.Resolve("no_handler.json");
+  interest_group.daily_update_url = kUrlA.Resolve("no_handler.json");
   interest_group.bidding_url = kBiddingLogicUrlA;
   interest_group.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
   interest_group.trusted_bidding_signals_keys.emplace();
@@ -1644,7 +1658,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateNetworkFailure) {
 TEST_F(AdAuctionServiceImplTest, UpdateTimeout) {
   network_responder_->RegisterDeferredUpdateResponse(kDailyUpdateUrlPath);
   blink::InterestGroup interest_group = CreateInterestGroup();
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.bidding_url = kBiddingLogicUrlA;
   interest_group.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
   interest_group.trusted_bidding_signals_keys.emplace();
@@ -1692,7 +1706,7 @@ TEST_F(AdAuctionServiceImplTest,
   ASSERT_GT(kExpiryDelta, base::Seconds(0));
   blink::InterestGroup interest_group = CreateInterestGroup();
   interest_group.expiry = base::Time::Now() + kExpiryDelta;
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.bidding_url = kBiddingLogicUrlA;
   interest_group.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
   interest_group.trusted_bidding_signals_keys.emplace();
@@ -1771,7 +1785,7 @@ TEST_F(AdAuctionServiceImplTest,
       now + InterestGroupStorage::kIdlePeriod;
   blink::InterestGroup interest_group = CreateInterestGroup();
   interest_group.expiry = now + kExpiryDelta;
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.bidding_url = kBiddingLogicUrlA;
   interest_group.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
   interest_group.trusted_bidding_signals_keys.emplace();
@@ -1834,7 +1848,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateNeverFinishesBeforeDestruction) {
 
   blink::InterestGroup interest_group = CreateInterestGroup();
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.bidding_url = kBiddingLogicUrlA;
   interest_group.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
   interest_group.trusted_bidding_signals_keys.emplace();
@@ -1910,7 +1924,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateDoesntChangeBrowserSignals) {
 })");
 
   blink::InterestGroup interest_group = CreateInterestGroup();
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.bidding_url = kBiddingLogicUrlA;
   interest_group.trusted_bidding_signals_url = kTrustedBiddingSignalsUrlA;
   interest_group.trusted_bidding_signals_keys.emplace();
@@ -1973,7 +1987,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateRateLimitedAfterSuccessfulUpdate) {
   // Set a long expiration delta so that we can advance to the next rate limit
   // period without the interest group expiring.
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.ads.emplace();
   blink::InterestGroup::Ad ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -2065,7 +2079,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateRateLimitedAfterBadUpdateResponse) {
   // Set a long expiration delta so that we can advance to the next rate limit
   // period without the interest group expiring.
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.ads.emplace();
   blink::InterestGroup::Ad ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -2156,7 +2170,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateRateLimitedAfterFailedUpdate) {
   // Set a long expiration delta so that we can advance to the next rate limit
   // period without the interest group expiring.
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.ads.emplace();
   blink::InterestGroup::Ad ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -2247,7 +2261,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateNotRateLimitedIfDisconnected) {
   // Set a long expiration delta so that we can advance to the next rate limit
   // period without the interest group expiring.
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.ads.emplace();
   blink::InterestGroup::Ad ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -2313,7 +2327,7 @@ TEST_F(AdAuctionServiceImplTest, DisconnectedAndSuccessInFlightTogether) {
 
   blink::InterestGroup interest_group_1 = CreateInterestGroup();
   interest_group_1.expiry = base::Time::Now() + base::Days(30);
-  interest_group_1.update_url = kUpdateUrlA;
+  interest_group_1.daily_update_url = kUpdateUrlA;
   interest_group_1.ads.emplace();
   blink::InterestGroup::Ad ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -2329,7 +2343,7 @@ TEST_F(AdAuctionServiceImplTest, DisconnectedAndSuccessInFlightTogether) {
   blink::InterestGroup interest_group_2 = CreateInterestGroup();
   interest_group_2.name = kInterestGroupName2;
   interest_group_2.expiry = base::Time::Now() + base::Days(30);
-  interest_group_2.update_url = kUpdateUrlA2;
+  interest_group_2.daily_update_url = kUpdateUrlA2;
   interest_group_2.ads.emplace();
   ad = blink::InterestGroup::Ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -2406,7 +2420,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateRateLimitedTightLoop) {
   // Set a long expiration delta so that we can advance to the next rate limit
   // period without the interest group expiring.
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.ads.emplace();
   blink::InterestGroup::Ad ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -2462,7 +2476,7 @@ TEST_F(AdAuctionServiceImplTest, OnlyOneOriginUpdatesAtATime) {
   // Set a long expiration delta so that we can advance to the next rate limit
   // period without the interest group expiring.
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.ads.emplace();
   blink::InterestGroup::Ad ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -2478,7 +2492,7 @@ TEST_F(AdAuctionServiceImplTest, OnlyOneOriginUpdatesAtATime) {
   // period without the interest group expiring.
   interest_group.owner = kOriginB;
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlB;
+  interest_group.daily_update_url = kUpdateUrlB;
   interest_group.ads.emplace();
   ad = blink::InterestGroup::Ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -2494,7 +2508,7 @@ TEST_F(AdAuctionServiceImplTest, OnlyOneOriginUpdatesAtATime) {
   // period without the interest group expiring.
   interest_group.owner = kOriginC;
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlC;
+  interest_group.daily_update_url = kUpdateUrlC;
   interest_group.ads.emplace();
   ad = blink::InterestGroup::Ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -2601,7 +2615,7 @@ TEST_F(AdAuctionServiceImplTest, UpdatesInBatches) {
   // Create 3 interest groups for kOriginA.
   blink::InterestGroup interest_group = CreateInterestGroup();
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.ads.emplace();
   blink::InterestGroup::Ad ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -2614,7 +2628,7 @@ TEST_F(AdAuctionServiceImplTest, UpdatesInBatches) {
   interest_group = CreateInterestGroup();
   interest_group.name = kInterestGroupName2;
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.ads.emplace();
   ad = blink::InterestGroup::Ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -2627,7 +2641,7 @@ TEST_F(AdAuctionServiceImplTest, UpdatesInBatches) {
   interest_group = CreateInterestGroup();
   interest_group.name = kInterestGroupName3;
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.ads.emplace();
   ad = blink::InterestGroup::Ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -2681,7 +2695,7 @@ TEST_F(AdAuctionServiceImplTest, UpdatesInBatchesWithFailuresAndTimeouts) {
   // so that some timeout and some fail.
   blink::InterestGroup interest_group = CreateInterestGroup();
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.ads.emplace();
   blink::InterestGroup::Ad ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -2694,7 +2708,7 @@ TEST_F(AdAuctionServiceImplTest, UpdatesInBatchesWithFailuresAndTimeouts) {
   interest_group = CreateInterestGroup();
   interest_group.name = kInterestGroupName2;
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlA2;
+  interest_group.daily_update_url = kUpdateUrlA2;
   interest_group.ads.emplace();
   ad = blink::InterestGroup::Ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -2707,7 +2721,7 @@ TEST_F(AdAuctionServiceImplTest, UpdatesInBatchesWithFailuresAndTimeouts) {
   interest_group = CreateInterestGroup();
   interest_group.name = kInterestGroupName3;
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlA3;
+  interest_group.daily_update_url = kUpdateUrlA3;
   interest_group.ads.emplace();
   ad = blink::InterestGroup::Ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -2746,7 +2760,7 @@ TEST_F(AdAuctionServiceImplTest, UpdatesInBatchesWithFailuresAndTimeouts) {
     ASSERT_TRUE(group.ads.has_value());
     ASSERT_EQ(group.ads->size(), 1u);
 
-    if (group.update_url == kUpdateUrlA) {
+    if (group.daily_update_url == kUpdateUrlA) {
       EXPECT_EQ(group.ads.value()[0].render_url.spec(),
                 "https://example.com/new_render");
     } else {
@@ -2794,7 +2808,7 @@ TEST_F(AdAuctionServiceImplTest, CancelsLongstandingUpdates) {
   // Set a long expiration delta so that we can advance to update cancellation
   // without the interest group expiring.
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.ads.emplace();
   blink::InterestGroup::Ad ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -2810,7 +2824,7 @@ TEST_F(AdAuctionServiceImplTest, CancelsLongstandingUpdates) {
   // without the interest group expiring.
   interest_group.owner = kOriginB;
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlB;
+  interest_group.daily_update_url = kUpdateUrlB;
   interest_group.ads.emplace();
   ad = blink::InterestGroup::Ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -2938,7 +2952,7 @@ TEST_F(AdAuctionServiceImplTest, CancelsLongstandingUpdates2) {
   // Set a long expiration delta so that we can advance to update cancellation
   // without the interest group expiring.
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.ads.emplace();
   blink::InterestGroup::Ad ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -2954,7 +2968,7 @@ TEST_F(AdAuctionServiceImplTest, CancelsLongstandingUpdates2) {
   // without the interest group expiring.
   interest_group.owner = kOriginB;
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlB;
+  interest_group.daily_update_url = kUpdateUrlB;
   interest_group.ads.emplace();
   ad = blink::InterestGroup::Ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -3036,7 +3050,7 @@ TEST_F(AdAuctionServiceImplTest, CancelsLongstandingUpdates2) {
   interest_group = CreateInterestGroup();
   interest_group.owner = kOriginC;
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlC;
+  interest_group.daily_update_url = kUpdateUrlC;
   interest_group.ads.emplace();
   ad = blink::InterestGroup::Ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -3098,7 +3112,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateCancellationTimerClearedOnCompletion) {
   // Set a long expiration delta so that we can advance to update cancellation
   // without the interest group expiring.
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.ads.emplace();
   blink::InterestGroup::Ad ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -3114,7 +3128,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateCancellationTimerClearedOnCompletion) {
   // without the interest group expiring.
   interest_group.owner = kOriginB;
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlB;
+  interest_group.daily_update_url = kUpdateUrlB;
   interest_group.ads.emplace();
   ad = blink::InterestGroup::Ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -3213,21 +3227,21 @@ TEST_F(AdAuctionServiceImplTest, CancelsLongstandingUpdatesComplex) {
                                              kServerResponse);
 
   // Create interest groups for kOriginA.
-  for (const GURL& update_url :
+  for (const GURL& daily_update_url :
        {kUpdateUrlA, kUpdateUrlA2, kUpdateUrlA3, kUpdateUrlA4}) {
     blink::InterestGroup interest_group = CreateInterestGroup();
     // Set a long expiration delta so that we can advance to update cancellation
     // without the interest group expiring.
     interest_group.expiry = base::Time::Now() + base::Days(30);
-    interest_group.name = update_url.path();
-    interest_group.update_url = update_url;
+    interest_group.name = daily_update_url.path();
+    interest_group.daily_update_url = daily_update_url;
     interest_group.ads.emplace();
     blink::InterestGroup::Ad ad(
         /*render_url=*/GURL("https://example.com/render"),
         /*metadata=*/absl::nullopt);
     interest_group.ads->emplace_back(std::move(ad));
     JoinInterestGroupAndFlush(interest_group);
-    EXPECT_EQ(1, GetJoinCount(kOriginA, /*name=*/update_url.path()));
+    EXPECT_EQ(1, GetJoinCount(kOriginA, /*name=*/daily_update_url.path()));
   }
 
   // Create interest group for kOriginB.
@@ -3237,7 +3251,7 @@ TEST_F(AdAuctionServiceImplTest, CancelsLongstandingUpdatesComplex) {
   // without the interest group expiring.
   interest_group.owner = kOriginB;
   interest_group.expiry = base::Time::Now() + base::Days(30);
-  interest_group.update_url = kUpdateUrlB;
+  interest_group.daily_update_url = kUpdateUrlB;
   interest_group.ads.emplace();
   blink::InterestGroup::Ad ad(
       /*render_url=*/GURL("https://example.com/render"),
@@ -3445,7 +3459,7 @@ function scoreAd(
   network_responder_->RegisterScriptResponse(kDecisionUrlPath, kDecisionScript);
 
   blink::InterestGroup interest_group_a = CreateInterestGroup();
-  interest_group_a.update_url = kUpdateUrlA;
+  interest_group_a.daily_update_url = kUpdateUrlA;
   interest_group_a.bidding_url = kUrlA.Resolve(kBiddingUrlPath);
   interest_group_a.ads.emplace();
   blink::InterestGroup::Ad ad(
@@ -3508,7 +3522,7 @@ function scoreAd(
   network_responder_->RegisterScriptResponse(kDecisionUrlPath, kDecisionScript);
 
   blink::InterestGroup interest_group_a = CreateInterestGroup();
-  interest_group_a.update_url = kUpdateUrlA;
+  interest_group_a.daily_update_url = kUpdateUrlA;
   interest_group_a.bidding_url = kUrlA.Resolve(kBiddingUrlPath);
   interest_group_a.ads.emplace();
   blink::InterestGroup::Ad ad(
@@ -3564,7 +3578,7 @@ function generateBid(
                                            net::ERR_FILE_NOT_FOUND);
 
   blink::InterestGroup interest_group_a = CreateInterestGroup();
-  interest_group_a.update_url = kUpdateUrlA;
+  interest_group_a.daily_update_url = kUpdateUrlA;
   interest_group_a.bidding_url = kUrlA.Resolve(kBiddingUrlPath);
   interest_group_a.ads.emplace();
   blink::InterestGroup::Ad ad(
@@ -3627,7 +3641,7 @@ function scoreAd(
 
   blink::InterestGroup interest_group_no_update = CreateInterestGroup();
   interest_group_no_update.owner = kOriginNoUpdate;
-  interest_group_no_update.update_url = kUpdateUrlNoUpdate;
+  interest_group_no_update.daily_update_url = kUpdateUrlNoUpdate;
   interest_group_no_update.bidding_url = kUrlNoUpdate.Resolve(kBiddingUrlPath);
   interest_group_no_update.ads.emplace();
   blink::InterestGroup::Ad ad(
@@ -3717,7 +3731,7 @@ function scoreAd(
   network_responder_->RegisterScriptResponse(kDecisionUrlPath, kDecisionScript);
 
   blink::InterestGroup interest_group_a = CreateInterestGroup();
-  interest_group_a.update_url = kUpdateUrlA;
+  interest_group_a.daily_update_url = kUpdateUrlA;
   interest_group_a.bidding_url = kUrlA.Resolve(kBiddingUrlPath);
   interest_group_a.ads.emplace();
   blink::InterestGroup::Ad ad(
@@ -3730,7 +3744,7 @@ function scoreAd(
   NavigateAndCommit(kUrlC);
   blink::InterestGroup interest_group_b = CreateInterestGroup();
   interest_group_b.owner = kOriginC;
-  interest_group_b.update_url = kUpdateUrlC;
+  interest_group_b.daily_update_url = kUpdateUrlC;
   interest_group_b.bidding_url = kUrlC.Resolve(kNewBiddingUrlPath);
   interest_group_b.ads.emplace();
   ad = blink::InterestGroup::Ad(
@@ -3755,7 +3769,8 @@ function scoreAd(
       blink::mojom::AuctionAdConfigNonSharedParams::New();
   component_auction->auction_ad_config_non_shared_params
       ->interest_group_buyers = {kOriginC};
-  auction_config->component_auctions.emplace_back(std::move(component_auction));
+  auction_config->auction_ad_config_non_shared_params->component_auctions
+      .emplace_back(std::move(component_auction));
   absl::optional<GURL> auction_result =
       RunAdAuctionAndFlush(std::move(auction_config));
   ASSERT_NE(auction_result, absl::nullopt);
@@ -3826,7 +3841,7 @@ function scoreAd(
   network_responder_->RegisterScriptResponse(kDecisionUrlPath, kDecisionScript);
 
   blink::InterestGroup interest_group_a = CreateInterestGroup();
-  interest_group_a.update_url = kUpdateUrlA;
+  interest_group_a.daily_update_url = kUpdateUrlA;
   interest_group_a.bidding_url = kUrlA.Resolve(kBiddingUrlPath);
   interest_group_a.ads.emplace();
   blink::InterestGroup::Ad ad(
@@ -3839,7 +3854,7 @@ function scoreAd(
   NavigateAndCommit(kUrlC);
   blink::InterestGroup interest_group_b = CreateInterestGroup();
   interest_group_b.owner = kOriginC;
-  interest_group_b.update_url = kUpdateUrlC;
+  interest_group_b.daily_update_url = kUpdateUrlC;
   interest_group_b.bidding_url = kUrlC.Resolve(kNewBiddingUrlPath);
   interest_group_b.ads.emplace();
   ad = blink::InterestGroup::Ad(
@@ -3864,7 +3879,8 @@ function scoreAd(
       blink::mojom::AuctionAdConfigNonSharedParams::New();
   component_auction->auction_ad_config_non_shared_params
       ->interest_group_buyers = {kOriginC};
-  auction_config->component_auctions.emplace_back(std::move(component_auction));
+  auction_config->auction_ad_config_non_shared_params->component_auctions
+      .emplace_back(std::move(component_auction));
   absl::optional<GURL> auction_result =
       RunAdAuctionAndFlush(std::move(auction_config));
   ASSERT_NE(auction_result, absl::nullopt);
@@ -3937,7 +3953,7 @@ function scoreAd(
   network_responder_->RegisterScriptResponse(kDecisionUrlPath, kDecisionScript);
 
   blink::InterestGroup interest_group_a = CreateInterestGroup();
-  interest_group_a.update_url = kUpdateUrlA;
+  interest_group_a.daily_update_url = kUpdateUrlA;
   interest_group_a.bidding_url = kUrlA.Resolve(kBiddingUrlPath);
   interest_group_a.ads.emplace();
   blink::InterestGroup::Ad ad(
@@ -3950,7 +3966,7 @@ function scoreAd(
   NavigateAndCommit(kUrlC);
   blink::InterestGroup interest_group_b = CreateInterestGroup();
   interest_group_b.owner = kOriginC;
-  interest_group_b.update_url = kUpdateUrlC;
+  interest_group_b.daily_update_url = kUpdateUrlC;
   interest_group_b.bidding_url = kUrlC.Resolve(kNewBiddingUrlPath);
   interest_group_b.ads.emplace();
   ad = blink::InterestGroup::Ad(
@@ -3975,7 +3991,8 @@ function scoreAd(
       blink::mojom::AuctionAdConfigNonSharedParams::New();
   component_auction->auction_ad_config_non_shared_params
       ->interest_group_buyers = {kOriginC};
-  auction_config->component_auctions.emplace_back(std::move(component_auction));
+  auction_config->auction_ad_config_non_shared_params->component_auctions
+      .emplace_back(std::move(component_auction));
   absl::optional<GURL> auction_result =
       RunAdAuctionAndFlush(std::move(auction_config));
   EXPECT_EQ(auction_result, absl::nullopt);
@@ -4761,7 +4778,7 @@ TEST_F(AdAuctionServiceImplRestrictedPermissionsPolicyTest,
       base::StringPrintf(R"({"biddingLogicUrl": "%s%s"})", kOriginStringA,
                          kNewBiddingUrlPath));
   blink::InterestGroup interest_group = CreateInterestGroup();
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.bidding_url = kBiddingLogicUrlA;
   JoinInterestGroupAndFlush(interest_group);
   EXPECT_EQ(1, GetJoinCount(kOriginA, kInterestGroupName));
@@ -4798,7 +4815,7 @@ TEST_F(AdAuctionServiceImplRestrictedPermissionsPolicyTest,
       NavigationSimulator::NavigateAndCommitFromDocument(kUrlA, subframe);
 
   blink::InterestGroup interest_group = CreateInterestGroup();
-  interest_group.update_url = kUpdateUrlA;
+  interest_group.daily_update_url = kUpdateUrlA;
   interest_group.bidding_url = kBiddingLogicUrlA;
   JoinInterestGroupAndFlushForFrame(std::move(interest_group), subframe);
   EXPECT_EQ(1, GetJoinCount(kOriginA, kInterestGroupName));

@@ -287,7 +287,7 @@
       // https://github.com/WICG/display-locking/blob/master/explainer-beforematch.md
       name: "BeforeMatchEvent",
       origin_trial_feature_name: "BeforeMatchEvent",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "BiddingAndScoringDebugReportingAPI",
@@ -358,6 +358,7 @@
     },
     {
       name: "CanvasFormattedText",
+      depends_on: ["LayoutNG"],
       status: "experimental",
     },
     {
@@ -542,11 +543,6 @@
       // https://drafts.csswg.org/css-values-4/#calc-simplification
       // https://drafts.csswg.org/css-values-4/#calc-serialize
       name: "CSSCalcSimplificationAndSerialization"
-    },
-    {
-      // https://drafts.csswg.org/css-cascade-5/#layering
-      name: "CSSCascadeLayers",
-      status: "stable",
     },
     {
       // Support case-sensitive attribute selector modifier
@@ -891,7 +887,8 @@
       origin_trial_feature_name: "DigitalGoodsV2",
       origin_trial_os: ["android", "chromeos"],
       status: {
-        "Android": "stable",
+        // Disable on Android since we can't have it on WebView. crbug.com/1312509
+        "Android": "test",
         "ChromeOS_Ash": "stable",
         "ChromeOS_Lacros": "stable",
         // crbug.com/1143079: Web tests cannot differentiate ChromeOS and Linux,
@@ -1395,16 +1392,6 @@
       depends_on: ["LayoutNG"],
     },
     {
-      name: "LayoutNGTextCombine",
-      depends_on: ["LayoutNG"],
-      status: "stable"
-    },
-    {
-      name: "LayoutNGTextControl",
-      depends_on: ["EditingNG"],
-      status: "stable",
-    },
-    {
       name: "LayoutNGView",
       implied_by: ["LayoutNGPrinting"],
     },
@@ -1586,10 +1573,6 @@
     },
     {
       name: "MojoJS",
-      status: "test",
-    },
-    {
-      name: "MojoJSFileSystemAccess",
       status: "test",
     },
     // MojoJSTest is used exclusively in testing environments, whereas MojoJS

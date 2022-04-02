@@ -1284,6 +1284,27 @@
             ]
         }
     ],
+    "AvoidUnnecessaryBeforeUnloadCheckSync": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AvoidUnnecessaryBeforeUnloadCheckSync"
+                    ]
+                }
+            ]
+        }
+    ],
     "BackForwardCache": [
         {
             "platforms": [
@@ -1361,6 +1382,25 @@
             ]
         }
     ],
+    "BackForwardCacheDedicatedWorker": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "BackForwardCacheDedicatedWorker"
+                    ]
+                }
+            ]
+        }
+    ],
     "BackForwardCacheMemoryControls": [
         {
             "platforms": [
@@ -1379,20 +1419,29 @@
             ]
         }
     ],
-    "BackForwardDedicatedWorker": [
+    "BatchSimpleURLLoader": [
         {
             "platforms": [
                 "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
+                "android_webview"
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "EnabledUmaUkm",
+                    "params": {
+                        "batching_enabled_traffic_annotation_hashes": "727528,727478"
+                    },
                     "enable_features": [
-                        "BackForwardDedicatedWorker"
+                        "BatchSimpleURLLoader"
+                    ]
+                },
+                {
+                    "name": "EnabledOtherComponents",
+                    "params": {
+                        "batching_enabled_traffic_annotation_hashes": "57144960,54845618"
+                    },
+                    "enable_features": [
+                        "BatchSimpleURLLoader"
                     ]
                 }
             ]
@@ -2884,7 +2933,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_M100",
+                    "name": "Enabled_MovementThreshold_6_20220328",
+                    "params": {
+                        "DragAndDropMovementThresholdDipParam": "6"
+                    },
                     "enable_features": [
                         "ContextMenuPopupStyle",
                         "TouchDragAndContextMenu"
@@ -4114,8 +4166,8 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
-                    "enable_features": [
+                    "name": "Disabled",
+                    "disable_features": [
                         "LacrosNonSyncingProfiles"
                     ]
                 }
@@ -4507,6 +4559,21 @@
             ]
         }
     ],
+    "NearbySharingOnePageOnboarding": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "NearbySharingOnePageOnboarding"
+                    ]
+                }
+            ]
+        }
+    ],
     "NetworkServiceUsesDisplayThreadPriority": [
         {
             "platforms": [
@@ -4614,7 +4681,7 @@
                         "EntitySuggestionsReduceLatencyDecoderTimeout": "405",
                         "MaxZeroSuggestMatches": "10",
                         "OmniboxBookmarkPathsUiDynamicReplaceUrl": "true",
-                        "OmniboxLocalZeroSuggestAgeThreshold": "14",
+                        "OmniboxLocalZeroSuggestAgeThreshold": "60",
                         "OmniboxMaxURLMatches": "7",
                         "RichAutocompletionAutocompleteNonPrefixAll": "true",
                         "RichAutocompletionAutocompleteTitles": "true",
@@ -4668,8 +4735,6 @@
                         "OmniboxMaxURLMatches",
                         "OmniboxOnFocusSuggestionsContextualWebAllowSRP",
                         "OmniboxUIExperimentMaxAutocompleteMatches",
-                        "QuickActionSearchWidgetAndroid",
-                        "QuickActionSearchWidgetAndroidDinoVariant",
                         "ZeroSuggestPrefetching"
                     ]
                 }
@@ -4955,6 +5020,50 @@
                         "LoadModelFileForEachExecution",
                         "PageContentAnnotations",
                         "PageVisibilityPageContentAnnotations"
+                    ]
+                }
+            ]
+        },
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "PageContentAnnotationsWithVisibility_JourneysWithOmniboxAction_20211202",
+                    "params": {
+                        "annotate_title_instead_of_page_content": "true",
+                        "bag_of_words_entities": "false",
+                        "content_clustering_enabled": "false",
+                        "extract_related_searches": "true",
+                        "min_page_topics_model_version_for_visibility": "2110051800",
+                        "models_to_execute_v2": "OPTIMIZATION_TARGET_PAGE_TOPICS:en",
+                        "write_to_history_service": "true"
+                    },
+                    "enable_features": [
+                        "PageContentAnnotations",
+                        "PageEntitiesPageContentAnnotations"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PageEntitiesModelBypassFilters": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20220330",
+                    "enable_features": [
+                        "PageEntitiesModelBypassFilters"
                     ]
                 }
             ]
@@ -6066,6 +6175,21 @@
                     },
                     "enable_features": [
                         "ScaleTileMemoryLimit"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ScreenTime": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ScreenTime"
                     ]
                 }
             ]

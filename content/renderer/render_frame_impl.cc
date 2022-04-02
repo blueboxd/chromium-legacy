@@ -67,6 +67,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/extra_mojo_js_features.mojom.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -76,6 +77,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/accessibility/aom_content_ax_tree.h"
+#include "content/renderer/accessibility/ax_tree_distiller.h"
 #include "content/renderer/accessibility/ax_tree_snapshotter_impl.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "content/renderer/accessibility/render_accessibility_manager.h"
@@ -2275,6 +2277,15 @@ void RenderFrameImpl::SnapshotAccessibilityTree(
   std::move(callback).Run(response);
 }
 
+void RenderFrameImpl::SnapshotAndDistillAXTree(
+    SnapshotAndDistillAXTreeCallback callback) {
+  if (!ax_tree_distiller_)
+    ax_tree_distiller_ = std::make_unique<AXTreeDistiller>(this);
+  ax_tree_distiller_->Distill();
+  std::move(callback).Run(*ax_tree_distiller_->GetSnapshot(),
+                          *ax_tree_distiller_->GetTextNodeIDs());
+}
+
 void RenderFrameImpl::GetSerializedHtmlWithLocalLinks(
     const base::flat_map<GURL, base::FilePath>& url_map,
     const base::flat_map<blink::FrameToken, base::FilePath>& frame_token_map,
@@ -2540,8 +2551,10 @@ void RenderFrameImpl::AllowBindings(int32_t enabled_bindings_flags) {
   enabled_bindings_ |= enabled_bindings_flags;
 }
 
-void RenderFrameImpl::EnableMojoJsBindings() {
+void RenderFrameImpl::EnableMojoJsBindings(
+    content::mojom::ExtraMojoJsFeaturesPtr features) {
   enable_mojo_js_bindings_ = true;
+  mojo_js_features_ = std::move(features);
 }
 
 void RenderFrameImpl::EnableMojoJsBindingsWithBroker(
@@ -3604,6 +3617,10 @@ blink::WebRemoteFrame* RenderFrameImpl::CreateFencedFrame(
       agent_scheduling_group_, this, proxy_routing_id, frame_token,
       devtools_frame_token, fenced_frame);
   proxy->SetReplicatedState(std::move(initial_replicated_state));
+
+  for (auto& observer : observers_)
+    observer.DidCreateFencedFrame(frame_token);
+
   return proxy->web_frame();
 }
 
@@ -4429,6 +4446,11 @@ void RenderFrameImpl::DidCreateScriptContext(v8::Local<v8::Context> context,
     // We only allow these bindings to be installed when creating the main
     // world context of the main frame.
     blink::WebV8Features::EnableMojoJS(context, true);
+
+    if (mojo_js_features_) {
+      if (mojo_js_features_->file_system_access)
+        blink::WebV8Features::EnableMojoJSFileSystemAccessHelper(context, true);
+    }
   }
 
   if (world_id == ISOLATED_WORLD_ID_GLOBAL &&
@@ -6182,6 +6204,10 @@ RenderFrameImpl::GetAgentGroupScheduler() {
 
 url::Origin RenderFrameImpl::GetSecurityOriginOfTopFrame() {
   return frame_->Top()->GetSecurityOrigin();
+}
+
+base::WeakPtr<media::DecoderFactory> RenderFrameImpl::GetMediaDecoderFactory() {
+  return media_factory_.GetDecoderFactory();
 }
 
 gfx::RectF RenderFrameImpl::ElementBoundsInWindow(

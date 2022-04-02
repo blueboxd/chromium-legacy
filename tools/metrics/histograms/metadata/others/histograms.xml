@@ -80,6 +80,22 @@ chromium-metrics-reviews@google.com.
       summary="the message introducing price chips"/>
 </variants>
 
+<variants name="InterestGroupRequestType">
+  <variant name="BiddingScriptJS" summary="buyer JavaScript bidding script"/>
+  <variant name="BiddingScriptWasm" summary="buyer WebAssembly bidding script"/>
+  <variant name="DebugLossReport"
+      summary="post-auction forDebuggingOnly.reportAdAuctionLoss() report"/>
+  <variant name="DebugWinReport"
+      summary="post-auction forDebuggingOnly.reportAdAuctionWin() report"/>
+  <variant name="ScoringScriptJS" summary="seller JavaScript scoring script"/>
+  <variant name="SendReportToReport"
+      summary="post-auction sendReportTo() report (from either the winning
+               bidder or the seller)"/>
+  <variant name="TrustedBidding" summary="trusted bidding signals"/>
+  <variant name="TrustedScoring" summary="trusted scoring signals"/>
+  <variant name="Update" summary="interest group update"/>
+</variants>
+
 <variants name="MerchantTrustMessageStarRating">
   <variant name="AboveFour" summary="rating value within [4 - 4.5)"/>
   <variant name="AboveFourPointFive" summary="rating value within [4.5 - 5]"/>
@@ -292,6 +308,28 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ads.InterestGroup.Auction.GroupFreshness.{Type}"
+    units="minutes" expires_after="2022-08-31">
+  <owner>caraitto@chromium.org</owner>
+  <owner>pauljensen@chromium.org</owner>
+  <owner>privacy-sandbox-dev@chromium.org</owner>
+  <summary>
+    For every interest group that participates in an auction, the time duration
+    since the last join or update of that interest group.
+
+    This metric only measures {Type}.
+
+    See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
+    version of the FLEDGE explainer.
+  </summary>
+  <token key="Type">
+    <variant name="NoDailyUpdates"
+        summary="interest groups that don't specify a dailyUpdateUrl"/>
+    <variant name="WithDailyUpdates"
+        summary="interest groups that specify a dailyUpdateUrl"/>
+  </token>
+</histogram>
+
 <histogram name="Ads.InterestGroup.Auction.NumAuctionsPerPage" units="auctions"
     expires_after="2022-08-31">
   <owner>caraitto@chromium.org</owner>
@@ -402,6 +440,37 @@ chromium-metrics-reviews@google.com.
     See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
     version of the FLEDGE explainer.
   </summary>
+</histogram>
+
+<histogram name="Ads.InterestGroup.Net.RequestUrlSizeBytes.{Type}"
+    units="bytes" expires_after="2022-08-31">
+  <owner>caraitto@chromium.org</owner>
+  <owner>pauljensen@chromium.org</owner>
+  <owner>privacy-sandbox-dev@chromium.org</owner>
+  <summary>
+    The number of bytes sent for {Type} requests, reported upon each request.
+    This is just the size of the request URL; it doesn't include the size of the
+    HTTP headers or the word &quot;GET&quot;.
+
+    See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
+    version of the FLEDGE explainer.
+  </summary>
+  <token key="Type" variants="InterestGroupRequestType"/>
+</histogram>
+
+<histogram name="Ads.InterestGroup.Net.ResponseSizeBytes.{Type}" units="bytes"
+    expires_after="2022-08-31">
+  <owner>caraitto@chromium.org</owner>
+  <owner>pauljensen@chromium.org</owner>
+  <owner>privacy-sandbox-dev@chromium.org</owner>
+  <summary>
+    The number of bytes received for {Type} requests, reported upon receving a
+    response.
+
+    See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
+    version of the FLEDGE explainer.
+  </summary>
+  <token key="Type" variants="InterestGroupRequestType"/>
 </histogram>
 
 <histogram name="Ads.Media.Duration" units="ms" expires_after="2022-08-28">
@@ -3078,6 +3147,23 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Conversions.AggregatableReport.CreateReportStatus"
     enum="ConversionCreateAggregatableReportStatus" expires_after="2022-09-17">
+  <obsolete>
+    Replaced with Conversions.AggregatableReport.CreateReportStatus2 due to enum
+    value change, 04/2022.
+  </obsolete>
+  <owner>linnan@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Measures how often aggregatable reports are stored successfully or rejected
+    and why. Recorded once for each trigger event processed by the attribution
+    storage layer. `kNoHistograms` will be logged if the trigger doesn't declare
+    aggregatable trigger data.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.AggregatableReport.CreateReportStatus2"
+    enum="ConversionCreateAggregatableReportStatus" expires_after="2022-10-01">
   <owner>linnan@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
   <owner>measurement-api-dev+metrics@google.com</owner>
@@ -3116,6 +3202,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Conversions.AppToWeb.AttributionEvents"
     enum="AttributionEvent" expires_after="2022-12-08">
+  <obsolete>
+    App To Web Impressions no longer supported through this mechanism.
+  </obsolete>
   <owner>johnidel@chromium.org</owner>
   <owner>mthiesse@chromium.org</owner>
   <owner>measurement-api-dev+metrics@google.com</owner>
@@ -7627,7 +7716,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mojo.InvalidUTF8String" units="BooleanValid"
-    expires_after="2022-04-01">
+    expires_after="2023-04-01">
   <owner>rsesek@chromium.org</owner>
   <owner>chrome-mojo@google.com</owner>
   <summary>

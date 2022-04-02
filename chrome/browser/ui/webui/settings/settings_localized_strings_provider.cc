@@ -28,7 +28,7 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_consistency_mode_manager_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
-#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/management/management_ui.h"
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
@@ -1776,6 +1776,10 @@ void AddPrivacyGuideStrings(content::WebUIDataSource* html_source) {
       {"privacyGuidePromoBody", IDS_SETTINGS_PRIVACY_GUIDE_PROMO_BODY},
       {"privacyGuidePromoStartButton",
        IDS_SETTINGS_PRIVACY_GUIDE_PROMO_START_BUTTON},
+      {"privacyGuideBackToSettingsAriaLabel",
+       IDS_SETTINGS_PRIVACY_GUIDE_BACK_TO_SETTINGS_ARIA_LABEL},
+      {"privacyGuideBackToSettingsAriaRoleDescription",
+       IDS_SETTINGS_PRIVACY_GUIDE_BACK_TO_SETTINGS_ARIA_ROLE_DESC},
       {"privacyGuideBackButton", IDS_SETTINGS_PRIVACY_GUIDE_BACK_BUTTON},
       {"privacyGuideSteps", IDS_SETTINGS_PRIVACY_GUIDE_STEPS},
       {"privacyGuideNextButton", IDS_SETTINGS_PRIVACY_GUIDE_NEXT_BUTTON},

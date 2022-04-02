@@ -80,6 +80,7 @@
 #include "content/browser/manifest/manifest_manager_host.h"
 #include "content/browser/media/media_interface_proxy.h"
 #include "content/browser/media/webaudio/audio_context_manager_impl.h"
+#include "content/browser/navigation_or_document_handle.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/net/cross_origin_embedder_policy_reporter.h"
 #include "content/browser/net/cross_origin_opener_policy_reporter.h"
@@ -180,6 +181,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/extra_mojo_js_features.mojom.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/page_visibility_state.h"
@@ -4476,6 +4478,15 @@ void RenderFrameHostImpl::SetNavigationRequest(
       std::move(navigation_request);
 }
 
+const scoped_refptr<NavigationOrDocumentHandle>&
+RenderFrameHostImpl::GetNavigationOrDocumentHandle() {
+  if (!document_associated_data_->navigation_or_document_handle) {
+    document_associated_data_->navigation_or_document_handle =
+        NavigationOrDocumentHandle::CreateForDocument(GetGlobalId());
+  }
+  return document_associated_data_->navigation_or_document_handle;
+}
+
 void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
   // The end of this event is in OnUnloadACK when the RenderFrame has completed
   // the operation and sends back an IPC message.
@@ -5723,7 +5734,12 @@ void RenderFrameHostImpl::SetNeedsOcclusionTracking(bool needs_tracking) {
 void RenderFrameHostImpl::SetVirtualKeyboardOverlayPolicy(
     bool vk_overlays_content) {
   // TODO(crbug.com/1225366): Consider moving this to PageImpl.
-  DCHECK(is_main_frame());
+  if (GetOutermostMainFrame() != this) {
+    bad_message::ReceivedBadMessage(
+        GetProcess(),
+        bad_message::RFHI_SET_OVERLAYS_CONTENT_NOT_OUTERMOST_FRAME);
+    return;
+  }
   GetPage().set_virtual_keyboard_overlays_content(vk_overlays_content);
 }
 
@@ -5913,7 +5929,12 @@ void RenderFrameHostImpl::NavigateToNavigationApiKey(const std::string& key,
           frame_tree_->root()->navigation_request(), has_user_gesture)) {
     return;
   }
-  frame_tree_->controller().NavigateToNavigationApiKey(frame_tree_node(), key);
+  int sandboxed_source_frame_tree_node_id =
+      IsSandboxed(network::mojom::WebSandboxFlags::kTopNavigation)
+          ? frame_tree_node()->frame_tree_node_id()
+          : FrameTreeNode::kFrameTreeNodeInvalidId;
+  frame_tree_->controller().NavigateToNavigationApiKey(
+      frame_tree_node(), sandboxed_source_frame_tree_node_id, key);
 }
 
 void RenderFrameHostImpl::HandleAccessibilityFindInPageResult(
@@ -7537,6 +7558,14 @@ void RenderFrameHostImpl::HandleAXEvents(
         details.updates[i].tree_data = GetAXTreeData();
       }
     }
+  }
+
+  if (needs_ax_root_id_) {
+    // This is the first update after the tree id changed. AXTree must be sent
+    // a new root id, otherwise crashes are likely to result.
+    DCHECK(!details.updates.empty());
+    DCHECK_NE(ui::kInvalidAXNodeID, details.updates[0].root_id);
+    needs_ax_root_id_ = false;
   }
 
   if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs))
@@ -9181,6 +9210,17 @@ void RenderFrameHostImpl::RequestAXTreeSnapshot(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void RenderFrameHostImpl::RequestDistilledAXTree(
+    AXTreeDistillerCallback callback) {
+  // TODO(https://crbug.com/859110): Remove once frame_ can no longer be null.
+  if (!IsRenderFrameCreated())
+    return;
+
+  GetMojomFrameInRenderer()->SnapshotAndDistillAXTree(
+      base::BindOnce(&RenderFrameHostImpl::RequestDistilledAXTreeCallback,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 void RenderFrameHostImpl::GetSavableResourceLinksFromRenderer() {
   if (!IsRenderFrameLive())
     return;
@@ -9201,6 +9241,13 @@ void RenderFrameHostImpl::UpdateAXTreeData() {
           DisallowActivationReasonId::kAXUpdateTree)) {
     return;
   }
+
+  // If `needs_ax_root_id_` is true, an AXTreeUpdate has not been sent to
+  // the renderer with a valid root id. This effectively means the renderer
+  // does not really know about the tree, and the renderer should not be
+  // updated. The renderer will be updated once the root id is known.
+  if (needs_ax_root_id_)
+    return;
 
   AXEventNotificationDetails detail;
   detail.ax_tree_id = GetAXTreeID();
@@ -9675,18 +9722,38 @@ void RenderFrameHostImpl::AccessibilityHitTestCallback(
 void RenderFrameHostImpl::RequestAXTreeSnapshotCallback(
     AXTreeSnapshotCallback callback,
     const ui::AXTreeUpdate& snapshot) {
+  // Since |snapshot| is const, we need to make a copy in order to modify the
+  // tree data.
   ui::AXTreeUpdate dst_snapshot;
-  dst_snapshot.root_id = snapshot.root_id;
-  dst_snapshot.nodes.resize(snapshot.nodes.size());
+  CopyAXTreeUpdate(snapshot, &dst_snapshot);
+  std::move(callback).Run(dst_snapshot);
+}
+
+void RenderFrameHostImpl::RequestDistilledAXTreeCallback(
+    AXTreeDistillerCallback callback,
+    const ui::AXTreeUpdate& snapshot,
+    const std::vector<ui::AXNodeID>& text_nodes) {
+  // Since |snapshot| is const, we need to make a copy in order to modify the
+  // tree data.
+  ui::AXTreeUpdate dst_snapshot;
+  CopyAXTreeUpdate(snapshot, &dst_snapshot);
+  std::move(callback).Run(dst_snapshot, text_nodes);
+}
+
+void RenderFrameHostImpl::CopyAXTreeUpdate(const ui::AXTreeUpdate& snapshot,
+                                           ui::AXTreeUpdate* snapshot_copy) {
+  snapshot_copy->root_id = snapshot.root_id;
+  snapshot_copy->nodes.resize(snapshot.nodes.size());
   for (size_t i = 0; i < snapshot.nodes.size(); ++i)
-    dst_snapshot.nodes[i] = snapshot.nodes[i];
+    snapshot_copy->nodes[i] = snapshot.nodes[i];
 
   if (snapshot.has_tree_data) {
     ax_tree_data_ = snapshot.tree_data;
-    dst_snapshot.tree_data = GetAXTreeData();
-    dst_snapshot.has_tree_data = true;
+    // Set the AXTreeData to be the last |ax_tree_data_| received from the
+    // render frame.
+    snapshot_copy->tree_data = GetAXTreeData();
+    snapshot_copy->has_tree_data = true;
   }
-  std::move(callback).Run(dst_snapshot);
 }
 
 void RenderFrameHostImpl::CreatePaymentManager(
@@ -12761,14 +12828,15 @@ void RenderFrameHostImpl::LogCannotCommitOriginCrashKeys(
   }
 }
 
-void RenderFrameHostImpl::EnableMojoJsBindings() {
+void RenderFrameHostImpl::EnableMojoJsBindings(
+    content::mojom::ExtraMojoJsFeaturesPtr features) {
   // This method should only be called on RenderFrameHost which is for a WebUI.
   DCHECK_NE(WebUI::kNoWebUI,
             WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
                 GetSiteInstance()->GetBrowserContext(),
                 site_instance_->GetSiteInfo().site_url()));
 
-  GetFrameBindingsControl()->EnableMojoJsBindings();
+  GetFrameBindingsControl()->EnableMojoJsBindings(std::move(features));
 }
 
 void RenderFrameHostImpl::EnableMojoJsBindingsWithBroker(
@@ -13224,8 +13292,11 @@ void RenderFrameHostImpl::SetEmbeddingToken(
   // The AXTreeID of a frame is backed by its embedding token, so we need to
   // update its AXTreeID, as well as the associated mapping in
   // AXActionHandlerRegistry.
+  const ui::AXTreeID old_id = GetAXTreeID();
   ui::AXTreeID ax_tree_id = ui::AXTreeID::FromToken(embedding_token);
+  DCHECK_NE(old_id, ax_tree_id);
   SetAXTreeID(ax_tree_id);
+  needs_ax_root_id_ = true;
   ui::AXActionHandlerRegistry::GetInstance()->SetFrameIDForAXTreeID(
       ui::AXActionHandlerRegistry::FrameID(GetProcess()->GetID(), routing_id_),
       ax_tree_id);

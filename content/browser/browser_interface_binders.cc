@@ -33,6 +33,7 @@
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/media/midi_host.h"
 #include "content/browser/media/session/media_session_service_impl.h"
+#include "content/browser/ml/ml_service_factory.h"
 #include "content/browser/net/reporting_service_proxy.h"
 #include "content/browser/picture_in_picture/picture_in_picture_service_impl.h"
 #include "content/browser/prerender/prerender_internals.mojom.h"
@@ -268,7 +269,7 @@ void BindColorChooserFactoryForFrame(
 
 void BindAttributionInternalsHandler(
     RenderFrameHost* host,
-    mojo::PendingReceiver<mojom::AttributionInternalsHandler> receiver) {
+    mojo::PendingReceiver<attribution_internals::mojom::Handler> receiver) {
   WebUI* web_ui = host->GetWebUI();
 
   // Performs a safe downcast to the concrete AttributionInternalsUI subclass.
@@ -892,6 +893,12 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
   map->Add<handwriting::mojom::HandwritingRecognitionService>(
       base::BindRepeating(&CreateHandwritingRecognitionService));
 
+  if (base::FeatureList::IsEnabled(
+          features::kEnableMachineLearningModelLoaderWebPlatformApi)) {
+    map->Add<ml::model_loader::mojom::MLService>(
+        base::BindRepeating(&CreateMLService));
+  }
+
   map->Add<blink::mojom::WebBluetoothService>(base::BindRepeating(
       &RenderFrameHostImpl::CreateWebBluetoothService, base::Unretained(host)));
 
@@ -1078,6 +1085,10 @@ void PopulateBinderMapWithContext(
       &EmptyBinderForFrame<blink::mojom::AnchorElementMetricsHost>));
   map->Add<blink::mojom::CredentialManager>(base::BindRepeating(
       &EmptyBinderForFrame<blink::mojom::CredentialManager>));
+  if (base::FeatureList::IsEnabled(blink::features::kBrowsingTopics)) {
+    map->Add<blink::mojom::BrowsingTopicsDocumentService>(
+        base::BindRepeating(&BrowsingTopicsDocumentHost::CreateMojoService));
+  }
 #if !BUILDFLAG(IS_ANDROID)
   if (SiteIsolationPolicy::IsApplicationIsolationLevelEnabled()) {
     map->Add<blink::mojom::DirectSocketsService>(
@@ -1091,10 +1102,6 @@ void PopulateBinderMapWithContext(
               media::mojom::SpeechRecognitionClientBrowserInterface>));
   map->Add<media::mojom::MediaFoundationRendererNotifier>(base::BindRepeating(
       &EmptyBinderForFrame<media::mojom::MediaFoundationRendererNotifier>));
-  if (base::FeatureList::IsEnabled(blink::features::kBrowsingTopics)) {
-    map->Add<blink::mojom::BrowsingTopicsDocumentService>(
-        base::BindRepeating(&BrowsingTopicsDocumentHost::CreateMojoService));
-  }
   map->Add<media::mojom::MediaPlayerObserverClient>(base::BindRepeating(
       &EmptyBinderForFrame<media::mojom::MediaPlayerObserverClient>));
 #endif
@@ -1132,7 +1139,7 @@ void PopulateBinderMapWithContext(
   map->Add<device::mojom::VRService>(
       base::BindRepeating(&EmptyBinderForFrame<device::mojom::VRService>));
 #endif
-  map->Add<mojom::AttributionInternalsHandler>(
+  map->Add<attribution_internals::mojom::Handler>(
       base::BindRepeating(&BindAttributionInternalsHandler));
   map->Add<mojom::PrerenderInternalsHandler>(
       base::BindRepeating(&BindPrerenderInternalsHandler));

@@ -39,6 +39,13 @@ class CommerceHeuristicsData {
   // Try to get merchant cart URL for `domain`.
   absl::optional<std::string> GetMerchantCartURL(const std::string& domain);
 
+  // Try to get hint heuristics JSON data for `domain`.
+  absl::optional<std::string> GetHintHeuristicsJSONForDomain(
+      const std::string& domain);
+
+  // Try to get global heuristics JSON data.
+  absl::optional<std::string> GetGlobalHeuristicsJSON();
+
   // Try to get the product skip pattern.
   const re2::RE2* GetProductSkipPattern();
 
@@ -75,6 +82,12 @@ class CommerceHeuristicsData {
   // `domain`.
   const re2::RE2* GetPurchasePageURLPatternForDomain(const std::string& domain);
 
+  // Get the JSON data with product ID extraction heuristics.
+  std::string GetProductIDExtractionJSON();
+
+  // Get the cart extraction script.
+  std::string GetCartProductExtractionScript();
+
  private:
   friend class CommerceHeuristicsDataTest;
 
@@ -95,6 +108,7 @@ class CommerceHeuristicsData {
   base::Version version_;
   base::Value::Dict hint_heuristics_;
   base::Value::Dict global_heuristics_;
+  std::string global_heuristics_string_;
   std::unique_ptr<re2::RE2> product_skip_pattern_;
   std::unique_ptr<re2::RE2> rule_discount_partner_merchant_pattern_;
   std::unique_ptr<re2::RE2> coupon_discount_partner_merchant_pattern_;
@@ -108,6 +122,8 @@ class CommerceHeuristicsData {
       domain_checkout_url_pattern_mapping_;
   std::map<std::string, std::unique_ptr<re2::RE2>>
       domain_purchase_url_pattern_mapping_;
+  std::string product_id_json_;
+  std::string cart_extraction_script_;
 };
 
 }  // namespace commerce_heuristics

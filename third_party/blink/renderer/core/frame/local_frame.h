@@ -398,6 +398,13 @@ class CORE_EXPORT LocalFrame final
   // navigation at a later time.
   bool CanNavigate(const Frame&, const KURL& destination_url = KURL());
 
+  // Whether a navigation should replace the current history entry or not.
+  // Note this isn't exhaustive; there are other cases where a navigation does a
+  // replacement which this function doesn't cover.
+  bool NavigationShouldReplaceCurrentHistoryEntry(
+      const FrameLoadRequest& request,
+      WebFrameLoadType frame_load_type);
+
   // Return this frame's BrowserInterfaceBroker. Must not be called on detached
   // frames (that is, frames where `Client()` returns nullptr).
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker();
@@ -520,6 +527,10 @@ class CORE_EXPORT LocalFrame final
   // Called by the embedder on creation of the initial empty document and, for
   // all other documents, just before commit (ReadyToCommitNavigation time).
   void SetAdEvidence(const blink::FrameAdEvidence& ad_evidence);
+
+  // This is used to check if a script tagged as an ad is currently on the v8
+  // stack.
+  bool IsAdScriptInStack() const;
 
   // The evidence for or against a frame being an ad. `absl::nullopt` if not yet
   // set or if the frame is a top-level frame as only subframes can be tagged as
@@ -809,13 +820,6 @@ class CORE_EXPORT LocalFrame final
                                     String& clip_html,
                                     gfx::Rect& clip_rect);
 
-  // Whether a navigation should replace the current history entry or not.
-  // Note this isn't exhaustive; there are other cases where a navigation does a
-  // replacement which this function doesn't cover.
-  bool NavigationShouldReplaceCurrentHistoryEntry(
-      const FrameLoadRequest& request,
-      WebFrameLoadType frame_load_type);
-
   std::unique_ptr<FrameScheduler> frame_scheduler_;
 
   // Holds all PauseSubresourceLoadingHandles allowing either |this| to delete
@@ -952,6 +956,8 @@ class CORE_EXPORT LocalFrame final
   // True if this frame is a subframe that had a script tagged as an ad on the
   // v8 stack at the time of creation. This is updated in `SetAdEvidence()`,
   // allowing the bit to be propagated when a frame navigates cross-origin.
+  // Fenced frames do not set this bit for the initial empty document, see
+  // SubresourceFilterAgent::Initialize.
   bool is_subframe_created_by_ad_script_ = false;
 
   bool evict_cached_session_storage_on_freeze_or_unload_ = false;

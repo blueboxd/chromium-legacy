@@ -1048,6 +1048,7 @@ interface CanvasFilter
 interface CanvasFormattedText
     attribute @@toStringTag
     getter length
+    getter styleMap
     method @@iterator
     method appendRun
     method constructor
@@ -1057,6 +1058,7 @@ interface CanvasFormattedText
     method setRun
 interface CanvasFormattedTextRun
     attribute @@toStringTag
+    getter styleMap
     getter text
     method constructor
     setter text
@@ -4133,7 +4135,6 @@ interface HTMLPictureElement : HTMLElement
     method constructor
 interface HTMLPopupElement : HTMLElement
     attribute @@toStringTag
-    getter anchor
     getter initiallyOpen
     getter open
     method constructor
@@ -5604,7 +5605,6 @@ interface Mojo
     static method createDataPipe
     static method createMessagePipe
     static method createSharedBuffer
-    static method getFileSystemAccessTransferToken
     attribute @@toStringTag
     attribute RESULT_ABORTED
     attribute RESULT_ALREADY_EXISTS

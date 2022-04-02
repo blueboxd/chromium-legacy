@@ -124,10 +124,10 @@
 #include "chrome/browser/enterprise/connectors/enterprise_connectors_policy_handler.h"
 #include "chrome/browser/enterprise/reporting/extension_request/extension_request_policy_handler.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h"
-#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/policy/local_sync_policy_handler.h"
 #include "chrome/browser/policy/managed_account_policy_handler.h"
 #include "components/history_clusters/core/history_clusters_prefs.h"
+#include "components/media_router/common/pref_names.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_CHROMEOS)
@@ -557,6 +557,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kScreenCaptureAllowedByOrigins,
     prefs::kScreenCaptureAllowedByOrigins,
+    base::Value::Type::LIST },
+  { key::kGetDisplayMediaSetSelectAllScreensAllowedForUrls,
+    prefs::kManagedGetDisplayMediaSetSelectAllScreensAllowedForUrls,
     base::Value::Type::LIST },
   { key::kWindowCaptureAllowedByOrigins,
     prefs::kWindowCaptureAllowedByOrigins,
@@ -1329,6 +1332,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kFloatingWorkspaceEnabled,
     ash::prefs::kFloatingWorkspaceEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kDevicePowerAdaptiveChargingEnabled,
+    ash::prefs::kPowerAdaptiveChargingEnabled,
     base::Value::Type::BOOLEAN },
 #endif // BUILDFLAG(IS_CHROMEOS_ASH)
 

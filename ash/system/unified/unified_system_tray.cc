@@ -170,9 +170,8 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
           new CameraMicTrayItemView(shelf,
                                     CameraMicTrayItemView::Type::kCamera)),
       mic_view_(
-          new CameraMicTrayItemView(shelf, CameraMicTrayItemView::Type::kMic)) {
-  time_view_ =
-      new tray::TimeTrayItemView(shelf, model_, tray::TimeView::Type::kTime);
+          new CameraMicTrayItemView(shelf, CameraMicTrayItemView::Type::kMic)),
+      time_view_(new TimeTrayItemView(shelf, model_, TimeView::Type::kTime)) {
   tray_container()->SetMargin(
       kUnifiedTrayContentPadding -
           ShelfConfig::Get()->status_area_hit_region_padding(),
@@ -206,16 +205,16 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
 
   if (features::IsSeparateNetworkIconsEnabled()) {
     network_tray_view_ =
-        new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kPrimary);
+        new NetworkTrayView(shelf, ActiveNetworkIcon::Type::kPrimary);
     AddTrayItemToContainer(
-        new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kCellular));
+        new NetworkTrayView(shelf, ActiveNetworkIcon::Type::kCellular));
   } else {
     network_tray_view_ =
-        new tray::NetworkTrayView(shelf, ActiveNetworkIcon::Type::kSingle);
+        new NetworkTrayView(shelf, ActiveNetworkIcon::Type::kSingle);
   }
 
   AddTrayItemToContainer(network_tray_view_);
-  AddTrayItemToContainer(new tray::PowerTrayView(shelf));
+  AddTrayItemToContainer(new PowerTrayView(shelf));
 
   auto vertical_clock_padding = std::make_unique<views::View>();
   vertical_clock_padding->SetPreferredSize(

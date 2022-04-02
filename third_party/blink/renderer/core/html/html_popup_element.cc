@@ -24,7 +24,6 @@ HTMLPopupElement::HTMLPopupElement(Document& document)
     : HTMLElement(html_names::kPopupTag, document),
       open_(false),
       had_initiallyopen_when_parsed_(false),
-      invoker_(nullptr),
       needs_repositioning_for_select_menu_(false),
       owner_select_menu_element_(nullptr) {
   DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled());
@@ -48,7 +47,6 @@ void HTMLPopupElement::hide() {
   if (!open_)
     return;
   open_ = false;
-  invoker_ = nullptr;
   needs_repositioning_for_select_menu_ = false;
   DCHECK(isConnected());
   GetDocument().HideAllPopupsUntil(this);
@@ -64,12 +62,6 @@ void HTMLPopupElement::ScheduleHideEvent() {
   GetDocument().EnqueueAnimationFrameEvent(event);
 }
 
-void HTMLPopupElement::Invoke(Element* invoker) {
-  DCHECK(invoker);
-  invoker_ = invoker;
-  show();
-}
-
 void HTMLPopupElement::show() {
   if (open_ || !isConnected())
     return;
@@ -79,7 +71,7 @@ void HTMLPopupElement::show() {
   PseudoStateChanged(CSSSelector::kPseudoPopupOpen);
   PushNewPopupElement(this);
   MarkStyleDirty();
-  SetFocus();
+  SetPopupFocusOnShow();
 }
 
 bool HTMLPopupElement::IsKeyboardFocusable() const {
@@ -89,79 +81,6 @@ bool HTMLPopupElement::IsKeyboardFocusable() const {
 bool HTMLPopupElement::IsMouseFocusable() const {
   // Popup *is* mouse focusable.
   return true;
-}
-
-// TODO(masonf) This should really live in either Element or FocusController.
-// The spec for
-// https://html.spec.whatwg.org/multipage/interaction.html#get-the-focusable-area
-// does not include dialogs or popups yet.
-Element* HTMLPopupElement::GetFocusableArea(bool autofocus_only) const {
-  Node* next = nullptr;
-  for (Node* node = FlatTreeTraversal::FirstChild(*this); node; node = next) {
-    if (IsA<HTMLPopupElement>(*node) || IsA<HTMLDialogElement>(*node)) {
-      next = FlatTreeTraversal::NextSkippingChildren(*node, this);
-      continue;
-    }
-    next = FlatTreeTraversal::Next(*node, this);
-    auto* element = DynamicTo<Element>(node);
-    if (element && element->IsFocusable() &&
-        (!autofocus_only || element->IsAutofocusable())) {
-      return element;
-    }
-  }
-  return nullptr;
-}
-
-void HTMLPopupElement::focus(const FocusParams& params) {
-  if (hasAttribute(html_names::kDelegatesfocusAttr)) {
-    if (auto* node_to_focus = GetFocusableArea(/*autofocus_only=*/false)) {
-      node_to_focus->focus(params);
-    }
-  } else {
-    HTMLElement::focus(params);
-  }
-}
-
-void HTMLPopupElement::SetFocus() {
-  // The layout must be updated here because we call Element::isFocusable,
-  // which requires an up-to-date layout.
-  GetDocument().UpdateStyleAndLayoutTreeForNode(this);
-
-  Element* control = nullptr;
-  if (IsAutofocusable() || hasAttribute(html_names::kDelegatesfocusAttr)) {
-    // If the <popup> has the autofocus or delegatesfocus, focus it.
-    control = this;
-  } else {
-    // Otherwise, look for a child control that has the autofocus attribute.
-    control = GetFocusableArea(/*autofocus_only=*/true);
-  }
-
-  // If the popup does not use autofocus or delegatesfocus, then the focus
-  // should remain on the currently active element.
-  // https://open-ui.org/components/popup.research.explainer#autofocus-logic
-  if (!control)
-    return;
-
-  // 3. Run the focusing steps for control.
-  DCHECK(control->IsFocusable());
-  control->focus();
-
-  // 4. Let topDocument be the active document of control's node document's
-  // browsing context's top-level browsing context.
-  // 5. If control's node document's origin is not the same as the origin of
-  // topDocument, then return.
-  Document& doc = control->GetDocument();
-  if (!doc.IsActive())
-    return;
-  if (!doc.IsInMainFrame() &&
-      !doc.TopFrameOrigin()->CanAccess(
-          doc.GetExecutionContext()->GetSecurityOrigin())) {
-    return;
-  }
-
-  // 6. Empty topDocument's autofocus candidates.
-  // 7. Set topDocument's autofocus processed flag to true.
-  doc.TopDocument().FinalizeAutofocus();
 }
 
 namespace {
@@ -219,21 +138,6 @@ void HTMLPopupElement::PopPopupElement(HTMLPopupElement* popup) {
   DCHECK(stack.back() == popup);
   stack.pop_back();
   GetDocument().RemoveFromTopLayer(popup);
-}
-
-Element* HTMLPopupElement::anchor() const {
-  const AtomicString& anchor_id = FastGetAttribute(html_names::kAnchorAttr);
-  if (anchor_id.IsNull())
-    return nullptr;
-  if (!IsInTreeScope())
-    return nullptr;
-  if (Element* anchor = GetTreeScope().getElementById(anchor_id))
-    return anchor;
-  return nullptr;
-}
-
-Element* HTMLPopupElement::invoker() const {
-  return invoker_.Get();
 }
 
 // TODO(crbug.com/1197720): The popup position should be provided by the new
@@ -329,7 +233,6 @@ void HTMLPopupElement::AdjustPopupPositionForSelectMenu(ComputedStyle& style) {
 }
 
 void HTMLPopupElement::Trace(Visitor* visitor) const {
-  visitor->Trace(invoker_);
   visitor->Trace(owner_select_menu_element_);
   HTMLElement::Trace(visitor);
 }

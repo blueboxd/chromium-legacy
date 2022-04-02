@@ -6,7 +6,7 @@
 // #import 'chrome://os-settings/chromeos/lazy_load.js';
 // #import 'chrome://os-settings/chromeos/os_settings.js';
 
-// #import {TestGuestOsBrowserProxy} from './test_guest_os_browser_proxy.m.js';
+// #import {TestGuestOsBrowserProxy} from './test_guest_os_browser_proxy.js';
 // #import {TestCrostiniBrowserProxy} from './test_crostini_browser_proxy.m.js';
 // #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 // #import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
@@ -165,7 +165,7 @@ suite('CrostiniPageTests', function() {
     });
 
     test('Deep link to setup Crostini', async () => {
-      const params = new URLSearchParams;
+      const params = new URLSearchParams();
       params.append('settingId', '800');
       settings.Router.getInstance().navigateTo(
           settings.routes.CROSTINI, params);
@@ -286,7 +286,7 @@ suite('CrostiniPageTests', function() {
       });
 
       test('Deep link to backup linux', async () => {
-        const params = new URLSearchParams;
+        const params = new URLSearchParams();
         params.append('settingId', '802');
         settings.Router.getInstance().navigateTo(
             settings.routes.CROSTINI_EXPORT_IMPORT, params);
@@ -478,7 +478,7 @@ suite('CrostiniPageTests', function() {
             'getCrostiniDiskInfo',
             {succeeded: true, canResize: true, isUserChosenSize: true});
 
-        const params = new URLSearchParams;
+        const params = new URLSearchParams();
         params.append('settingId', '805');
         settings.Router.getInstance().navigateTo(
             settings.routes.CROSTINI_DETAILS, params);
@@ -1105,7 +1105,7 @@ suite('CrostiniPageTests', function() {
     });
 
     test('Deep link to enable adb debugging', async () => {
-      const params = new URLSearchParams;
+      const params = new URLSearchParams();
       params.append('settingId', '804');
       settings.Router.getInstance().navigateTo(
           settings.routes.CROSTINI_ANDROID_ADB, params);

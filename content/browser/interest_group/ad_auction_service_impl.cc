@@ -9,6 +9,7 @@
 
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -154,7 +155,8 @@ bool IsAuctionValid(const blink::mojom::AuctionAdConfig& config,
     }
   }
 
-  for (const auto& component_auction : config.component_auctions) {
+  for (const auto& component_auction :
+       config.auction_ad_config_non_shared_params->component_auctions) {
     // Component auctions may not have their own nested component auctions.
     if (!is_top_level_auction)
       return false;
@@ -483,13 +485,28 @@ void AdAuctionServiceImpl::OnAuctionComplete(
 
   network::mojom::URLLoaderFactory* factory = GetTrustedURLLoaderFactory();
   for (const GURL& report_url : report_urls) {
+    base::UmaHistogramCounts100000(
+        "Ads.InterestGroup.Net.RequestUrlSizeBytes.SendReportToReport",
+        report_url.spec().size());
+    base::UmaHistogramCounts100(
+        "Ads.InterestGroup.Net.ResponseSizeBytes.SendReportToReport", 0);
     FetchReport(factory, report_url, origin(), GetClientSecurityState());
   }
   for (const auto& debug_loss_report_url : debug_loss_report_urls) {
+    base::UmaHistogramCounts100000(
+        "Ads.InterestGroup.Net.RequestUrlSizeBytes.DebugLossReport",
+        debug_loss_report_url.spec().size());
+    base::UmaHistogramCounts100(
+        "Ads.InterestGroup.Net.ResponseSizeBytes.DebugLossReport", 0);
     FetchReport(factory, debug_loss_report_url, origin(),
                 GetClientSecurityState());
   }
   for (const auto& debug_win_report_url : debug_win_report_urls) {
+    base::UmaHistogramCounts100000(
+        "Ads.InterestGroup.Net.RequestUrlSizeBytes.DebugWinReport",
+        debug_win_report_url.spec().size());
+    base::UmaHistogramCounts100(
+        "Ads.InterestGroup.Net.ResponseSizeBytes.DebugWinReport", 0);
     FetchReport(factory, debug_win_report_url, origin(),
                 GetClientSecurityState());
   }

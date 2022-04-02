@@ -60,7 +60,10 @@ class CommerceHintAgent
   void MaybeExtractProducts();
   void ExtractProducts();
   void ExtractCartFromCurrentFrame();
-
+  void ExtractCartWithUpdatedScript(
+      mojo::Remote<mojom::CommerceHintObserver> observer,
+      const std::string& product_id_json,
+      const std::string& cart_extraction_script);
   class JavaScriptRequest;
 
   JavaScriptRequest* javascript_request_{nullptr};
@@ -70,6 +73,7 @@ class CommerceHintAgent
   bool is_extraction_pending_{false};
   bool is_extraction_running_{false};
   bool should_skip_{false};
+  bool extraction_script_initialized_{false};
   base::WeakPtrFactory<CommerceHintAgent> weak_factory_{this};
 
   class JavaScriptRequest : public blink::WebScriptExecutionCallback {
@@ -101,15 +105,18 @@ class CommerceHintAgent
 
   // Callbacks with business logics for handling navigation-related observer
   // calls. These callbacks are triggered when navigation-related signals are
-  // captured and carry an extra bool |should_act| indicating whether commerce
-  // hint signals should be collected on current URL or not.
+  // captured and carry (1) a bool `should_skip` indicating whether commerce
+  // hint signals should be collected on current URL or not. (2) `heuristics`
+  // carrying commerce heuristics that are applicable in current domain.
   void DidStartNavigationCallback(
       const GURL& url,
       mojo::Remote<mojom::CommerceHintObserver> observer,
-      bool should_skip);
+      bool should_skip,
+      mojom::HeuristicsPtr heuristics);
   void DidFinishLoadCallback(const GURL& url,
                              mojo::Remote<mojom::CommerceHintObserver> observer,
-                             bool should_skip);
+                             bool should_skip,
+                             mojom::HeuristicsPtr heuristics);
 };
 
 }  // namespace cart

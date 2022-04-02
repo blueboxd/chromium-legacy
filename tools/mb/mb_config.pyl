@@ -233,7 +233,7 @@
       'Dawn Win10 x86 DEPS Builder': 'dawn_tests_release_bot_dcheck_always_on_x86',
       'Dawn Win10 x64 DEPS Builder': 'dawn_tests_release_bot_dcheck_always_on_reclient',
 
-      'Dawn Win10 x64 ASAN Release': 'dawn_tests_asan_release_bot_dcheck_always_on',
+      'Dawn Win10 x64 ASAN Release': 'dawn_tests_asan_release_bot_dcheck_always_on_reclient',
     },
 
     'chromium.devtools-frontend': {
@@ -381,7 +381,7 @@
       'linux-lacros-version-skew-fyi': 'lacros_on_linux_release_not_build_ash_bot',
       'linux-perfetto-rel': 'perfetto_release_bot_reclient',
       'linux-upload-perfetto': 'release_bot_perfetto_zlib_reclient',
-      'linux-wpt-fyi-rel': 'release_bot_minimal_symbols_dcheck_always_on_reclient',
+      'linux-wpt-fyi-rel': 'release_trybot_minimal_symbols_reclient',
       'linux-wpt-identity-fyi-rel': 'release_bot_minimal_symbols_reclient',
       'linux-wpt-input-fyi-rel': 'release_bot_minimal_symbols_reclient',
       # TODO(crbug.com/1252626): remove this after the migration.
@@ -639,6 +639,8 @@
       'Linux Builder reclient test': 'gpu_tests_release_bot_reclient',
       'Win x64 Builder reclient staging': 'gpu_tests_release_bot_minimal_symbols_reclient',
       'Win x64 Builder reclient test': 'gpu_tests_release_bot_minimal_symbols_reclient',
+      'Simple Chrome reclient staging': 'chromeos_arm-generic_reclient',
+      'Simple Chrome reclient test': 'chromeos_arm-generic_reclient',
     },
 
     'chromium.rust': {
@@ -844,15 +846,15 @@
       'android-cronet-arm-dbg': 'android_cronet_debug_static_bot_arm_no_neon',
       'android-cronet-arm64-dbg': 'android_cronet_debug_static_bot_arm64',
       'android-cronet-arm64-rel': 'android_cronet_release_bot_minimal_symbols_arm64',
-      'android-cronet-kitkat-arm-rel': 'android_cronet_release_bot_minimal_symbols_arm_no_neon',
       'android-cronet-lollipop-arm-rel': 'android_cronet_release_bot_minimal_symbols_arm_no_neon',
       'android-cronet-marshmallow-arm64-rel': 'android_cronet_release_trybot_arm64',
       'android-cronet-x86-dbg': 'android_cronet_debug_static_bot_x86',
-      'android-cronet-x86-rel': 'android_cronet_release_bot_minimal_symbols_x86',
       'android-cronet-x86-dbg-10-tests': 'android_cronet_debug_static_bot_x86',
       'android-cronet-x86-dbg-11-tests': 'android_cronet_debug_static_bot_x86',
       'android-cronet-x86-dbg-oreo-tests': 'android_cronet_debug_static_bot_x86',
       'android-cronet-x86-dbg-pie-tests': 'android_cronet_debug_static_bot_x86',
+      'android-cronet-x86-rel': 'android_cronet_release_bot_minimal_symbols_x86',
+      'android-cronet-x86-rel-kitkat-tests': 'android_cronet_release_bot_minimal_symbols_x86',
       'android-inverse-fieldtrials-pie-x86-fyi-rel': 'android_release_trybot_x86_fastbuild_webview_google_invert_fieldtrials',
       'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_fastbuild_java_coverage',
       'android-marshmallow-x86-fyi-rel-reviver': 'android_release_trybot_x86_fastbuild_webview_google',
@@ -1996,6 +1998,10 @@
       'chromeos_device', 'arm-generic',
     ],
 
+    'chromeos_arm-generic_reclient': [
+      'chromeos_device_reclient', 'arm-generic',
+    ],
+
     'chromeos_arm64-generic_dchecks': [
       'chromeos_device', 'arm64-generic', 'dcheck_always_on',
     ],
@@ -2241,8 +2247,8 @@
       'codesearch',
     ],
 
-    'dawn_tests_asan_release_bot_dcheck_always_on': [
-      'dawn_tests', 'asan', 'release_trybot_minimal_symbols',
+    'dawn_tests_asan_release_bot_dcheck_always_on_reclient': [
+      'dawn_tests', 'asan', 'release_trybot_minimal_symbols_reclient',
     ],
 
     'dawn_tests_asan_release_trybot': [
@@ -2941,7 +2947,7 @@
     ],
 
     'official_goma_perf_pgo': [
-      'official', 'goma', 'minimal_symbols', 'pgo_phase_1',
+      'official', 'goma', 'minimal_symbols',
     ],
 
     'official_goma_mac_perf': [
@@ -2949,7 +2955,7 @@
     ],
 
     'official_goma_mac_perf_pgo': [
-      'official', 'goma', 'no_keystone_registration_framework', 'no_widevine_cdm_host_verification', 'full_symbols', 'pgo_phase_1',
+      'official', 'goma', 'no_keystone_registration_framework', 'no_widevine_cdm_host_verification', 'full_symbols',
     ],
 
     'official_goma_mac_arm_perf': [
@@ -2957,7 +2963,7 @@
     ],
 
     'official_goma_mac_arm_perf_pgo': [
-      'official', 'goma', 'no_keystone_registration_framework', 'no_widevine_cdm_host_verification', 'full_symbols', 'arm64', 'pgo_phase_1',
+      'official', 'goma', 'no_keystone_registration_framework', 'no_widevine_cdm_host_verification', 'full_symbols', 'arm64',
     ],
 
     'official_goma_mac_arm_pgo': [
@@ -2973,7 +2979,7 @@
     ],
 
     'official_goma_linux_perf_pgo': [
-      'official', 'goma', 'no_gnome_keyring', 'minimal_symbols', 'pgo_phase_1',
+      'official', 'goma', 'no_gnome_keyring', 'minimal_symbols',
     ],
 
     'official_goma_fuchsia_arm64_perf': [
@@ -2996,7 +3002,7 @@
     ],
 
     'official_goma_minimal_symbols_android_pgo': [
-      'official', 'goma', 'minimal_symbols', 'android', 'pgo_phase_1', 'no_default_afdo'
+      'official', 'goma', 'minimal_symbols', 'android', 'no_default_afdo'
     ],
 
     'official_goma_minimal_symbols_android_arm64': [
@@ -3004,7 +3010,7 @@
     ],
 
     'official_goma_minimal_symbols_android_arm64_pgo': [
-      'official', 'goma', 'minimal_symbols', 'android', 'arm64', 'pgo_phase_1', 'no_default_afdo'
+      'official', 'goma', 'minimal_symbols', 'android', 'arm64', 'no_default_afdo'
     ],
 
     'official_goma_minimal_symbols_android_thin_lto_opt': [
@@ -3032,7 +3038,7 @@
     ],
 
     'official_goma_x86_perf_pgo': [
-      'official', 'goma', 'x86', 'minimal_symbols', 'pgo_phase_1',
+      'official', 'goma', 'x86', 'minimal_symbols',
     ],
 
     'official_goma_x86_pgo': [
@@ -3164,10 +3170,6 @@
 
     'release_bot_minimal_symbols_reclient': [
       'release_bot_reclient', 'minimal_symbols',
-    ],
-
-    'release_bot_minimal_symbols_dcheck_always_on_reclient': [
-      'release_bot_reclient', 'minimal_symbols', 'dcheck_always_on',
     ],
 
     'release_bot_x86_minimal_symbols': [
@@ -3477,8 +3479,8 @@
       'args_file': '//build/args/chromeos/betty-pi-arc.gni',
     },
 
-    'blink_disable_generated_code_formatting': {
-      'gn_args': 'blink_enable_generated_code_formatting=false'
+    'blink_enable_generated_code_formatting': {
+      'gn_args': 'blink_enable_generated_code_formatting=true'
     },
 
     'cast': {
@@ -3584,11 +3586,13 @@
     # Settings used by the codesearch builders to generate cross-references.
     'codesearch': {
       'gn_args': 'clang_use_chrome_plugins=false enable_kythe_annotations=true',
-      'mixins': ['goma', 'clang', 'shared', 'debug', 'minimal_symbols'],
+      'mixins': ['goma', 'clang', 'shared', 'debug', 'minimal_symbols',
+                 'blink_enable_generated_code_formatting'],
     },
     'codesearch_release': {
       'gn_args': 'clang_use_chrome_plugins=false enable_kythe_annotations=true',
-      'mixins': ['release', 'static', 'goma'],
+      'mixins': ['release', 'static', 'goma',
+                 'blink_enable_generated_code_formatting'],
     },
 
     'compile_only': {
@@ -4148,8 +4152,7 @@
     },
 
     'release_trybot': {
-      'mixins': ['release_bot', 'no_symbols', 'dcheck_always_on',
-                 'blink_disable_generated_code_formatting'],
+      'mixins': ['release_bot', 'no_symbols', 'dcheck_always_on'],
     },
 
     'release_trybot_blink': {
@@ -4157,18 +4160,15 @@
     },
 
     'release_trybot_dcheck_off': {
-      'mixins': ['release_trybot', 'dcheck_off',
-                 'blink_disable_generated_code_formatting'],
+      'mixins': ['release_trybot', 'dcheck_off'],
     },
 
     'release_trybot_minimal_symbols': {
-      'mixins': ['release_bot', 'minimal_symbols', 'dcheck_always_on',
-                 'blink_disable_generated_code_formatting'],
+      'mixins': ['release_bot', 'minimal_symbols', 'dcheck_always_on'],
     },
 
     'release_trybot_minimal_symbols_reclient': {
-      'mixins': ['release_bot_reclient', 'minimal_symbols', 'dcheck_always_on',
-                 'blink_disable_generated_code_formatting'],
+      'mixins': ['release_bot_reclient', 'minimal_symbols', 'dcheck_always_on'],
     },
 
     'resource_allowlisting': {

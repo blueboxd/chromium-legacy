@@ -7,9 +7,9 @@
 #include "ash/constants/ash_features.h"
 #include "ash/system/network/network_detailed_view.h"
 #include "ash/system/tray/detailed_view_delegate.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 
 namespace ash {
-namespace tray {
 
 NetworkDetailedNetworkViewImpl::NetworkDetailedNetworkViewImpl(
     DetailedViewDelegate* detailed_view_delegate,
@@ -27,5 +27,7 @@ views::View* NetworkDetailedNetworkViewImpl::GetAsView() {
   return this;
 }
 
-}  // namespace tray
+BEGIN_METADATA(NetworkDetailedNetworkViewImpl, views::View)
+END_METADATA
+
 }  // namespace ash

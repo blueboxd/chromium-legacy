@@ -2716,12 +2716,6 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
 
   prefs.pepper_3d_enabled = !command_line.HasSwitch(switches::kDisablePepper3d);
 
-  prefs.flash_3d_enabled = !command_line.HasSwitch(switches::kDisableFlash3d);
-  prefs.flash_stage3d_enabled =
-      !command_line.HasSwitch(switches::kDisableFlashStage3d);
-  prefs.flash_stage3d_baseline_enabled =
-      !command_line.HasSwitch(switches::kDisableFlashStage3d);
-
   prefs.allow_file_access_from_file_urls =
       command_line.HasSwitch(switches::kAllowFileAccessFromFiles);
 
@@ -5887,8 +5881,8 @@ void WebContentsImpl::DidInferColorScheme(PageImpl& page) {
                   blink::mojom::PreferredColorScheme::kDark;
       base::UmaHistogramBoolean("Power.DarkMode.InferredDarkPageColorScheme",
                                 dark);
-      if (preferred_color_scheme_ ==
-          ui::NativeTheme::PreferredColorScheme::kDark) {
+      if (web_preferences_->preferred_color_scheme ==
+          blink::mojom::PreferredColorScheme::kDark) {
         base::UmaHistogramBoolean(
             "Power.DarkMode.DarkColorScheme.InferredDarkPageColorScheme", dark);
       }
@@ -8127,7 +8121,13 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
             .Clone());
   }
 
-  if (!proxy_host)
+  // If `render_view_host` is for an inner WebContents, ensure that its
+  // RenderWidgetHostView is properly reattached to the outer WebContents. Note
+  // that this should only be done when `render_view_host` is already the
+  // current RenderViewHost in this WebContents.  If it isn't, the reattachment
+  // will happen later when `render_view_host` becomes current as part of
+  // committing the speculative RenderFrameHost it's associated with.
+  if (!proxy_host && render_view_host == GetRenderViewHost())
     ReattachOuterDelegateIfNeeded();
 
   SetHistoryOffsetAndLengthForView(

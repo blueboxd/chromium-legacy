@@ -939,18 +939,20 @@ document.getElementById("overlay_in_frame").style.visibility='hidden';
     std::string serialized_actions_response;
     actions_response.SerializeToString(&serialized_actions_response);
     EXPECT_CALL(mock_service, OnGetActions)
-        .WillOnce(RunOnceCallback<5>(200, serialized_actions_response));
+        .WillOnce(RunOnceCallback<5>(200, serialized_actions_response,
+                                     ServiceRequestSender::ResponseInfo{}));
 
     std::vector<ProcessedActionProto> captured_processed_actions;
     EXPECT_CALL(mock_service, OnGetNextActions)
         .WillOnce(WithArgs<3, 5>(
             [&captured_processed_actions](
                 const std::vector<ProcessedActionProto>& processed_actions,
-                Service::ResponseCallback& callback) {
+                ServiceRequestSender::ResponseCallback& callback) {
               captured_processed_actions = processed_actions;
 
               // Send empty response to stop the script executor.
-              std::move(callback).Run(200, std::string());
+              std::move(callback).Run(200, std::string(),
+                                      ServiceRequestSender::ResponseInfo{});
             }));
     ON_CALL(mock_script_executor_delegate, GetTriggerContext())
         .WillByDefault(Return(&trigger_context));
@@ -3590,6 +3592,41 @@ IN_PROC_BROWSER_TEST_F(
       1, result.predicted_elements(0).semantic_information().semantic_role());
   EXPECT_THAT(2,
               result.predicted_elements(0).semantic_information().objective());
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SemanticAndCssComparison) {
+  ClientStatus status;
+  int backend_node_id = GetBackendNodeId(Selector({"#button"}), &status);
+  EXPECT_TRUE(status.ok());
+
+  NodeData node_data;
+  node_data.backend_node_id = backend_node_id;
+  EXPECT_CALL(autofill_assistant_agent_,
+              GetSemanticNodes(1, 2, false, base::Milliseconds(5000), _))
+      .WillOnce(RunOnceCallback<4>(mojom::NodeDataStatus::kSuccess,
+                                   std::vector<NodeData>{node_data}))
+      // Capture any other frames.
+      .WillRepeatedly(RunOnceCallback<4>(
+          mojom::NodeDataStatus::kUnexpectedError, std::vector<NodeData>()));
+
+  // We pretend that the button is the correct element.
+  SelectorProto proto = ToSelectorProto("#button");
+  auto* semantic_information = proto.mutable_semantic_information();
+  semantic_information->set_semantic_role(1);
+  semantic_information->set_objective(2);
+  semantic_information->set_check_matches_css_element(true);
+  RunStrictElementCheck(Selector(proto), true);
+
+  ASSERT_EQ(log_info_.element_finder_info().size(), 1);
+  const auto& result =
+      log_info_.element_finder_info(0).semantic_inference_result();
+  ASSERT_EQ(1, result.predicted_elements().size());
+  EXPECT_EQ(backend_node_id, result.predicted_elements(0).backend_node_id());
+  EXPECT_THAT(
+      1, result.predicted_elements(0).semantic_information().semantic_role());
+  EXPECT_THAT(2,
+              result.predicted_elements(0).semantic_information().objective());
+  EXPECT_TRUE(result.predicted_elements(0).matches_css_element());
 }
 
 }  // namespace autofill_assistant

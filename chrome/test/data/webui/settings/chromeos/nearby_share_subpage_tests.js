@@ -219,7 +219,7 @@ suite('NearbyShare', function() {
       test(
           'Deep link to nearby setting element ' + testData.deepLinkElement,
           async () => {
-            const params = new URLSearchParams;
+            const params = new URLSearchParams();
             params.append('settingId', testData.settingId);
             Router.getInstance().navigateTo(routes.NEARBY_SHARE, params);
 
@@ -395,7 +395,7 @@ suite('NearbyShare', function() {
       return 0;
     };
 
-    const params = new URLSearchParams;
+    const params = new URLSearchParams();
     params.append('receive', '1');
     params.append('timeout', '600');  // 10 minutes
     Router.getInstance().navigateTo(routes.NEARBY_SHARE, params);
@@ -423,7 +423,7 @@ suite('NearbyShare', function() {
       return 0;
     };
 
-    const params = new URLSearchParams;
+    const params = new URLSearchParams();
     params.append('receive', '1');
     params.append('timeout', '600');  // 10 minutes
     Router.getInstance().navigateTo(routes.NEARBY_SHARE, params);
@@ -490,8 +490,14 @@ suite('NearbyShare', function() {
     subpage.$$('#setupRow').querySelector('cr-button').click();
     await flushAsync();
     assertTrue(doesElementExist('#receiveDialog'));
-    assertEquals(
-        'active', subpage.$$('#receiveDialog').$$('#onboarding').className);
+    if (loadTimeData.getValue('isOnePageOnboardingEnabled')) {
+      assertEquals(
+          'active',
+          subpage.$$('#receiveDialog').$$('#onboarding-one').className);
+    } else {
+      assertEquals(
+          'active', subpage.$$('#receiveDialog').$$('#onboarding').className);
+    }
   });
 
   test('feature toggle UI changes', function() {

@@ -267,8 +267,13 @@ const base::Feature kDesktopPWAsCacheDuringDefaultInstall{
 
 // Generates customised default offline page that is shown when web app is
 // offline if no custom page is provided by developer.
+#if BUILDFLAG(IS_ANDROID)
+const base::Feature kAndroidPWAsDefaultOfflinePage{
+    "AndroidPWAsDefaultOfflinePage", base::FEATURE_DISABLED_BY_DEFAULT};
+#else
 const base::Feature kDesktopPWAsDefaultOfflinePage{
     "DesktopPWAsDefaultOfflinePage", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(IS_ANDROID)
 
 // Moves the Extensions "puzzle piece" icon from the title bar into the app menu
 // for web app windows.
@@ -579,6 +584,18 @@ const base::Feature kHappinessTrackingSystemArcGames{
 // Enables or disables the Happiness Tracking System for Audio survey.
 const base::Feature kHappinessTrackingSystemAudio{
     "HappinessTrackingAudio", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables the Happiness Tracking System for Personalization Avatar survey.
+const base::Feature kHappinessTrackingPersonalizationAvatar{
+    "HappinessTrackingPersonalizationAvatar",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables the Happiness Tracking System for Personalization Screensaver survey.
+const base::Feature kHappinessTrackingPersonalizationScreensaver{
+    "HappinessTrackingPersonalizationScreensaver",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables the Happiness Tracking System for Personalization Wallpaper survey.
+const base::Feature kHappinessTrackingPersonalizationWallpaper{
+    "HappinessTrackingPersonalizationWallpaper",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Hides the origin text from showing up briefly in WebApp windows.

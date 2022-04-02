@@ -20,7 +20,7 @@ export {ExtensionsItemElement, ItemDelegate} from './item.js';
 export {ExtensionsItemListElement} from './item_list.js';
 export {UserAction} from './item_util.js';
 export {ExtensionsKeyboardShortcutsElement} from './keyboard_shortcuts.js';
-// <if expr="chromeos">
+// <if expr="chromeos_ash">
 export {KioskApp, KioskAppSettings, KioskBrowserProxy, KioskBrowserProxyImpl, KioskSettings} from './kiosk_browser_proxy.js';
 export {ExtensionsKioskDialogElement} from './kiosk_dialog.js';
 // </if>
@@ -32,8 +32,7 @@ export {ExtensionsOptionsDialogElement} from './options_dialog.js';
 export {ExtensionsPackDialogElement, PackDialogDelegate} from './pack_dialog.js';
 export {ExtensionsPackDialogAlertElement} from './pack_dialog_alert.js';
 export {ExtensionsRuntimeHostPermissionsElement} from './runtime_host_permissions.js';
-export {getPatternFromSite} from './runtime_hosts_dialog.js';
-export {ExtensionsRuntimeHostsDialogElement} from './runtime_hosts_dialog.js';
+export {ExtensionsRuntimeHostsDialogElement, getMatchingUserSpecifiedSites, getPatternFromSite} from './runtime_hosts_dialog.js';
 export {Service, ServiceInterface} from './service.js';
 export {ExtensionsShortcutInputElement} from './shortcut_input.js';
 export {isValidKeyCode, Key, keystrokeToString} from './shortcut_util.js';

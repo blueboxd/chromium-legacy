@@ -185,7 +185,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   ~WebGPUDecoderImpl() override;
 
   // WebGPUDecoder implementation
-  ContextResult Initialize() override;
+  ContextResult Initialize(const GpuFeatureInfo& gpu_feature_info) override;
 
   // DecoderContext implementation.
   base::WeakPtr<DecoderContext> AsWeakPtr() override {
@@ -1030,7 +1030,13 @@ void WebGPUDecoderImpl::Destroy(bool have_context) {
   destroyed_ = true;
 }
 
-ContextResult WebGPUDecoderImpl::Initialize() {
+ContextResult WebGPUDecoderImpl::Initialize(
+    const GpuFeatureInfo& gpu_feature_info) {
+  if (kGpuFeatureStatusSoftware ==
+      gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGPU]) {
+    use_webgpu_adapter_ = WebGPUAdapterName::kSwiftShader;
+  }
+
   if (use_webgpu_adapter_ == WebGPUAdapterName::kCompat) {
     gl_surface_ = new gl::SurfacelessEGL(gfx::Size(1, 1));
     gl::GLContextAttribs attribs;
@@ -1055,7 +1061,7 @@ void WebGPUDecoderImpl::DoRequestDevice(
   DCHECK_LT(static_cast<size_t>(requested_adapter_index),
             dawn_adapters_.size());
 
-  WGPUDeviceDescriptor device_descriptor;
+  WGPUDeviceDescriptor device_descriptor = {};
 
   // We need to request internal usage to be able to do operations with internal
   // methods that would need specific usages.

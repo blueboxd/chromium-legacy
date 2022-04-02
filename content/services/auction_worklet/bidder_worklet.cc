@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -440,6 +441,10 @@ void BidderWorklet::V8State::GenerateBid(
       (wasm_helper_url_ &&
        !interest_group_dict.Set("biddingWasmHelperUrl",
                                 wasm_helper_url_->spec())) ||
+      (bidder_worklet_non_shared_params->daily_update_url &&
+       !interest_group_dict.Set(
+           "dailyUpdateUrl",
+           bidder_worklet_non_shared_params->daily_update_url->spec())) ||
       (trusted_bidding_signals_url_ &&
        !interest_group_dict.Set("trustedBiddingSignalsUrl",
                                 trusted_bidding_signals_url_->spec())) ||
@@ -589,8 +594,11 @@ void BidderWorklet::V8State::GenerateBid(
   if (!set_bid_bindings.has_bid()) {
     // If we either don't have a valid return value, or we have no return value
     // and no intermediate result was given through setBid, return an error.
-    PostErrorBidCallbackToUserThread(std::move(callback),
-                                     std::move(errors_out));
+    // Keep debug loss reports since `generateBid()` might use it to detect
+    // script timeout or failures.
+    PostErrorBidCallbackToUserThread(
+        std::move(callback), std::move(errors_out),
+        for_debugging_only_bindings.TakeLossReportUrl());
     return;
   }
 
@@ -641,13 +649,14 @@ void BidderWorklet::V8State::PostReportWinCallbackToUserThread(
 
 void BidderWorklet::V8State::PostErrorBidCallbackToUserThread(
     GenerateBidCallbackInternal callback,
-    std::vector<std::string> error_msgs) {
+    std::vector<std::string> error_msgs,
+    absl::optional<GURL> debug_loss_report_url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(v8_sequence_checker_);
   user_thread_->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), mojom::BidderWorkletBidPtr(),
                      /*bidding_signals_data_version=*/absl::nullopt,
-                     /*debug_loss_report_url=*/absl::nullopt,
+                     /*debug_loss_report_url=*/std::move(debug_loss_report_url),
                      /*debug_win_report_url=*/absl::nullopt,
                      std::move(error_msgs)));
 }
@@ -665,12 +674,18 @@ void BidderWorklet::Start() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
   DCHECK(!paused_);
 
+  base::UmaHistogramCounts100000(
+      "Ads.InterestGroup.Net.RequestUrlSizeBytes.BiddingScriptJS",
+      script_source_url_.spec().size());
   worklet_loader_ = std::make_unique<WorkletLoader>(
       url_loader_factory_.get(), script_source_url_, v8_helper_, debug_id_,
       base::BindOnce(&BidderWorklet::OnScriptDownloaded,
                      base::Unretained(this)));
 
   if (wasm_helper_url_.has_value()) {
+    base::UmaHistogramCounts100000(
+        "Ads.InterestGroup.Net.RequestUrlSizeBytes.BiddingScriptWasm",
+        wasm_helper_url_->spec().size());
     wasm_loader_ = std::make_unique<WorkletWasmLoader>(
         url_loader_factory_.get(), wasm_helper_url_.value(), v8_helper_,
         debug_id_,
@@ -682,7 +697,9 @@ void BidderWorklet::Start() {
 void BidderWorklet::OnScriptDownloaded(WorkletLoader::Result worklet_script,
                                        absl::optional<std::string> error_msg) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
-
+  base::UmaHistogramCounts10M(
+      "Ads.InterestGroup.Net.ResponseSizeBytes.BiddingScriptJS",
+      worklet_script.original_size_bytes());
   worklet_loader_.reset();
 
   // On failure, close pipe and delete `this`, as it can't do anything without a
@@ -708,7 +725,9 @@ void BidderWorklet::OnScriptDownloaded(WorkletLoader::Result worklet_script,
 void BidderWorklet::OnWasmDownloaded(WorkletWasmLoader::Result wasm_helper,
                                      absl::optional<std::string> error_msg) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
-
+  base::UmaHistogramCounts10M(
+      "Ads.InterestGroup.Net.ResponseSizeBytes.BiddingScriptWasm",
+      wasm_helper.original_size_bytes());
   wasm_loader_.reset();
 
   // If the WASM helper is actually requested, delete `this` and inform the

@@ -452,12 +452,6 @@ bool CalculateStyleShouldForceLegacyLayout(const Element& element,
   if (NeedsLegacyLayoutForEntireDocument(document))
     return true;
 
-  if (!RuntimeEnabledFeatures::LayoutNGTextCombineEnabled() &&
-      style.HasTextCombine() && !style.IsHorizontalWritingMode()) {
-    UseCounter::Count(document, WebFeature::kLegacyLayoutByTextCombine);
-    return true;
-  }
-
   if (NeedsLegacyBlockFragmentation(element, style)) {
     UseCounter::Count(
         document,
@@ -2415,7 +2409,7 @@ void Element::showPopup() {
   stack.push_back(this);
   GetDocument().AddToTopLayer(this);
   PseudoStateChanged(CSSSelector::kPseudoPopupOpen);
-  // TODO(masonf): Set the focus appropriately here.
+  SetPopupFocusOnShow();
 }
 
 void Element::hidePopup() {
@@ -2440,8 +2434,79 @@ void Element::hidePopup() {
   GetDocument().EnqueueAnimationFrameEvent(event);
 }
 
+void Element::SetPopupFocusOnShow() {
+  DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled() ||
+         RuntimeEnabledFeatures::HTMLPopupElementEnabled());
+  // The layout must be updated here because we call Element::isFocusable,
+  // which requires an up-to-date layout.
+  GetDocument().UpdateStyleAndLayoutTreeForNode(this);
+
+  Element* control = nullptr;
+  if (IsAutofocusable() || hasAttribute(html_names::kDelegatesfocusAttr)) {
+    // If the popup has autofocus or delegatesfocus, focus it.
+    control = this;
+  } else {
+    // Otherwise, look for a child control that has the autofocus attribute.
+    control = GetPopupFocusableArea(/*autofocus_only=*/true);
+  }
+
+  // If the popup does not use autofocus or delegatesfocus, then the focus
+  // should remain on the currently active element.
+  // https://open-ui.org/components/popup.research.explainer#autofocus-logic
+  if (!control)
+    return;
+
+  // 3. Run the focusing steps for control.
+  control->focus();
+
+  // 4. Let topDocument be the active document of control's node document's
+  // browsing context's top-level browsing context.
+  // 5. If control's node document's origin is not the same as the origin of
+  // topDocument, then return.
+  Document& doc = control->GetDocument();
+  if (!doc.IsActive())
+    return;
+  if (!doc.IsInMainFrame() &&
+      !doc.TopFrameOrigin()->CanAccess(
+          doc.GetExecutionContext()->GetSecurityOrigin())) {
+    return;
+  }
+
+  // 6. Empty topDocument's autofocus candidates.
+  // 7. Set topDocument's autofocus processed flag to true.
+  doc.TopDocument().FinalizeAutofocus();
+}
+
+// TODO(masonf) This should really be combined with Element::GetFocusableArea(),
+// and can possibly be merged with the similar logic for <dialog>. The spec for
+// https://html.spec.whatwg.org/multipage/interaction.html#get-the-focusable-area
+// does not include dialogs or popups yet.
+Element* Element::GetPopupFocusableArea(bool autofocus_only) const {
+  DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled() ||
+         RuntimeEnabledFeatures::HTMLPopupElementEnabled());
+  Node* next = nullptr;
+  for (Node* node = FlatTreeTraversal::FirstChild(*this); node; node = next) {
+    next = FlatTreeTraversal::Next(*node, this);
+    auto* element = DynamicTo<Element>(node);
+    if (!element)
+      continue;
+    if (IsA<HTMLPopupElement>(*element) || element->HasValidPopupAttribute() ||
+        IsA<HTMLDialogElement>(*element)) {
+      next = FlatTreeTraversal::NextSkippingChildren(*element, this);
+      continue;
+    }
+    if (element->IsFocusable() &&
+        (!autofocus_only || element->IsAutofocusable())) {
+      return element;
+    }
+  }
+  return nullptr;
+}
+
 // static
 const Element* Element::NearestOpenAncestralPopup(Node* start_node) {
+  DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled() ||
+         RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
   if (!start_node)
     return nullptr;
   // We need to walk up from the start node to see if there is a parent popup,
@@ -2451,22 +2516,13 @@ const Element* Element::NearestOpenAncestralPopup(Node* start_node) {
   // popup, but we will stop on any of them. Therefore, just store the popup
   // that is highest (last) on the popup stack for each anchor and/or invoker.
 
-  // TODO(masonf): getAnchor and getInvoker can be removed once the
-  // HTMLPopupElement is removed.
-  auto getAnchor = [](const Element* element) -> Element* {
-    if (auto* popup_element = DynamicTo<HTMLPopupElement>(element)) {
-      DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled());
-      return popup_element->anchor();
-    } else {
-      DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
-      // TODO(masonf): Implement the anchor attribute for general elements.
-      return nullptr;
-    }
-  };
+  // TODO(masonf): getInvoker can be removed once the HTMLPopupElement is
+  // removed.
   auto getInvoker = [](const Element* element) -> Element* {
     if (auto* popup_element = DynamicTo<HTMLPopupElement>(element)) {
       DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled());
-      return popup_element->invoker();
+      // The <popup> element `popup` attribute has been deprecated and removed.
+      return nullptr;
     } else {
       DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
       return element->GetPopupData()->invoker();
@@ -2477,7 +2533,7 @@ const Element* Element::NearestOpenAncestralPopup(Node* start_node) {
       anchors_and_invokers;
   Document& document = start_node->GetDocument();
   for (auto popup : document.PopupElementStack()) {
-    if (const auto* anchor = getAnchor(popup))
+    if (const auto* anchor = popup->anchorElement())
       anchors_and_invokers.Set(anchor, popup);
     if (const auto* invoker = getInvoker(popup))
       anchors_and_invokers.Set(invoker, popup);
@@ -2506,7 +2562,7 @@ const Element* Element::NearestOpenAncestralPopup(Node* start_node) {
     if (IsA<HTMLPopupElement>(start_element) ||
         start_element->HasValidPopupAttribute()) {
       if (auto* anchor_ancestor =
-              NearestOpenAncestralPopup(getAnchor(start_element))) {
+              NearestOpenAncestralPopup(start_element->anchorElement())) {
         return anchor_ancestor;
       }
       if (auto* invoker_ancestor =
@@ -2530,12 +2586,9 @@ void Element::HandlePopupLightDismiss(const Event& event) {
   auto& document = target_node->GetDocument();
   DCHECK(document.PopupShowing());
   const AtomicString& event_type = event.type();
-  if (event_type == event_type_names::kMousedown ||
-      event_type == event_type_names::kScroll) {
-    // - For scroll, hide everything up to the scrolled element, to allow
-    //   scrolling within a popup.
-    // - For mousedown, hide everything up to the clicked element. We do
-    //   this on mousedown, rather than mouseup/click, for two reasons:
+  if (event_type == event_type_names::kMousedown) {
+    // - Hide everything up to the clicked element. We do this on mousedown,
+    //   rather than mouseup/click, for two reasons:
     //    1. This mirrors typical platform popups, which dismiss on mousedown.
     //    2. This allows a mouse-drag that starts on a popup and finishes off
     //       the popup, without light-dismissing the popup.
@@ -2557,6 +2610,18 @@ void Element::InvokePopup(Element* invoker) {
   showPopup();
 }
 
+Element* Element::anchorElement() const {
+  if (!RuntimeEnabledFeatures::HTMLPopupAttributeEnabled() &&
+      !RuntimeEnabledFeatures::HTMLPopupElementEnabled()) {
+    return nullptr;
+  }
+  const AtomicString& anchor_id = FastGetAttribute(html_names::kAnchorAttr);
+  if (anchor_id.IsNull())
+    return nullptr;
+  if (!IsInTreeScope())
+    return nullptr;
+  return GetTreeScope().getElementById(anchor_id);  // may be null
+}
 bool Element::HasLegalLinkAttribute(const QualifiedName&) const {
   return false;
 }
@@ -4778,6 +4843,16 @@ void Element::focus(const FocusParams& params) {
   if (frame_owner_element && frame_owner_element->contentDocument() &&
       frame_owner_element->contentDocument()->UnloadStarted())
     return;
+
+  if ((IsA<HTMLPopupElement>(this) || HasValidPopupAttribute()) &&
+      hasAttribute(html_names::kDelegatesfocusAttr)) {
+    DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled() ||
+           RuntimeEnabledFeatures::HTMLPopupElementEnabled());
+    if (auto* node_to_focus = GetPopupFocusableArea(/*autofocus_only=*/false)) {
+      node_to_focus->focus(params);
+    }
+    return;
+  }
 
   // Ensure we have clean style (including forced display locks).
   GetDocument().UpdateStyleAndLayoutTreeForNode(this);

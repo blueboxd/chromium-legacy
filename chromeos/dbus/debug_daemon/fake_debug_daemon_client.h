@@ -15,7 +15,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 
 namespace chromeos {
@@ -104,9 +104,6 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) FakeDebugDaemonClient
   void SetU2fFlags(const std::set<std::string>& flags,
                    VoidDBusMethodCallback callback) override;
   void GetU2fFlags(DBusMethodCallback<std::set<std::string>> callback) override;
-  void GetKernelFeatureList(KernelFeatureListCallback callback) override;
-  void KernelFeatureEnable(const std::string& name,
-                           KernelFeatureEnableCallback callback) override;
 
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;

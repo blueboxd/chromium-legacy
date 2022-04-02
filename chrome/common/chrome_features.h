@@ -195,8 +195,13 @@ extern const base::Feature kDesktopPWAsAdditionalWindowingControls;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsCacheDuringDefaultInstall;
 
+#if BUILDFLAG(IS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kAndroidPWAsDefaultOfflinePage;
+#else
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsDefaultOfflinePage;
+#endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsElidedExtensionsMenu;
@@ -395,6 +400,16 @@ extern const base::Feature kHappinessTrackingSystemArcGames;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kHappinessTrackingSystemAudio;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kHappinessTrackingPersonalizationAvatar;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kHappinessTrackingPersonalizationScreensaver;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kHappinessTrackingPersonalizationWallpaper;
+
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)

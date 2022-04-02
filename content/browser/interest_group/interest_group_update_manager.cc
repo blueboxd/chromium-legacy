@@ -11,6 +11,7 @@
 #include "base/containers/span.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -109,20 +110,16 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
   return true;
 }
 
-// Copies the `ads` list  JSON field into `interest_group_update`, returns true
-// iff the JSON is valid and the copy completed.
-[[nodiscard]] bool TryToCopyAds(blink::InterestGroup& interest_group_update,
-                                const base::Value& value) {
-  const base::Value* maybe_ads = value.FindListKey("ads");
-  if (!maybe_ads)
-    return true;
+// Helper for TryToCopyAds() and TryToCopyAdComponents().
+[[nodiscard]] absl::optional<std::vector<blink::InterestGroup::Ad>> ExtractAds(
+    const base::Value& ads_list) {
   std::vector<blink::InterestGroup::Ad> ads;
-  for (const base::Value& ads_value : maybe_ads->GetListDeprecated()) {
+  for (const base::Value& ads_value : ads_list.GetListDeprecated()) {
     if (!ads_value.is_dict())
-      return false;
+      return absl::nullopt;
     const std::string* maybe_render_url = ads_value.FindStringKey("renderUrl");
     if (!maybe_render_url)
-      return false;
+      return absl::nullopt;
     blink::InterestGroup::Ad ad;
     ad.render_url = GURL(*maybe_render_url);
     const base::Value* maybe_metadata = ads_value.FindKey("metadata");
@@ -132,13 +129,43 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
       if (!serializer.Serialize(*maybe_metadata)) {
         // Binary blobs shouldn't be present, but it's possible we exceeded the
         // max JSON depth.
-        return false;
+        return absl::nullopt;
       }
       ad.metadata = std::move(metadata);
     }
     ads.push_back(std::move(ad));
   }
-  interest_group_update.ads = std::move(ads);
+  return ads;
+}
+
+// Copies the `ads` list JSON field into `interest_group_update`, returns true
+// iff the JSON is valid and the copy completed.
+[[nodiscard]] bool TryToCopyAds(blink::InterestGroup& interest_group_update,
+                                const base::Value& value) {
+  const base::Value* maybe_ads = value.FindListKey("ads");
+  if (!maybe_ads)
+    return true;
+  absl::optional<std::vector<blink::InterestGroup::Ad>> maybe_extracted_ads =
+      ExtractAds(*maybe_ads);
+  if (!maybe_extracted_ads)
+    return false;
+  interest_group_update.ads = std::move(*maybe_extracted_ads);
+  return true;
+}
+
+// Copies the `adComponents` list JSON field into `interest_group_update`,
+// returns true iff the JSON is valid and the copy completed.
+[[nodiscard]] bool TryToCopyAdComponents(
+    blink::InterestGroup& interest_group_update,
+    const base::Value& value) {
+  const base::Value* maybe_ads = value.FindListKey("adComponents");
+  if (!maybe_ads)
+    return true;
+  absl::optional<std::vector<blink::InterestGroup::Ad>> maybe_extracted_ads =
+      ExtractAds(*maybe_ads);
+  if (!maybe_extracted_ads)
+    return false;
+  interest_group_update.ad_components = std::move(*maybe_extracted_ads);
   return true;
 }
 
@@ -170,6 +197,12 @@ absl::optional<blink::InterestGroup> ParseUpdateJson(
   const std::string* maybe_bidding_url = value.FindStringKey("biddingLogicUrl");
   if (maybe_bidding_url)
     interest_group_update.bidding_url = GURL(*maybe_bidding_url);
+  const std::string* maybe_bidding_wasm_helper_url =
+      value.FindStringKey("biddingWasmHelperUrl");
+  if (maybe_bidding_wasm_helper_url) {
+    interest_group_update.bidding_wasm_helper_url =
+        GURL(*maybe_bidding_wasm_helper_url);
+  }
   const std::string* maybe_update_trusted_bidding_signals_url =
       value.FindStringKey("trustedBiddingSignalsUrl");
   if (maybe_update_trusted_bidding_signals_url) {
@@ -180,6 +213,9 @@ absl::optional<blink::InterestGroup> ParseUpdateJson(
     return absl::nullopt;
   }
   if (!TryToCopyAds(interest_group_update, value)) {
+    return absl::nullopt;
+  }
+  if (!TryToCopyAdComponents(interest_group_update, value)) {
     return absl::nullopt;
   }
   if (!interest_group_update.IsValid()) {
@@ -332,12 +368,15 @@ void InterestGroupUpdateManager::DidUpdateInterestGroupsOfOwnerDbLoad(
       net::IsolationInfo::CreateTransient();
 
   for (auto& storage_group : storage_groups) {
-    if (!storage_group.interest_group.update_url)
+    if (!storage_group.interest_group.daily_update_url)
       continue;
     ++num_in_flight_updates_;
+    base::UmaHistogramCounts100000(
+        "Ads.InterestGroup.Net.RequestUrlSizeBytes.Update",
+        storage_group.interest_group.daily_update_url->spec().size());
     auto resource_request = std::make_unique<network::ResourceRequest>();
     resource_request->url =
-        std::move(storage_group.interest_group.update_url).value();
+        std::move(storage_group.interest_group.daily_update_url).value();
     resource_request->redirect_mode = network::mojom::RedirectMode::kError;
     resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
     resource_request->request_initiator = owner;
@@ -384,6 +423,8 @@ void InterestGroupUpdateManager::DidUpdateInterestGroupsOfOwnerNetFetch(
                            : UpdateDelayType::kNetFailure);
     return;
   }
+  base::UmaHistogramCounts100000(
+      "Ads.InterestGroup.Net.ResponseSizeBytes.Update", fetch_body->size());
   data_decoder::DataDecoder::ParseJsonIsolated(
       *fetch_body,
       base::BindOnce(

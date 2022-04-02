@@ -884,20 +884,16 @@ void PopulateChromeWebUIFrameBinders(
         task_module::mojom::TaskModuleHandler, NewTabPageUI>(map);
   }
 
-  if (reading_list::switches::IsReadingListEnabled()) {
-    RegisterWebUIControllerInterfaceBinder<
-        read_later::mojom::PageHandlerFactory, ReadLaterUI>(map);
-  }
+  RegisterWebUIControllerInterfaceBinder<read_later::mojom::PageHandlerFactory,
+                                         ReadLaterUI>(map);
 
-  if (base::FeatureList::IsEnabled(features::kSidePanel)) {
-    if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
-      RegisterWebUIControllerInterfaceBinder<
-          side_panel::mojom::BookmarksPageHandlerFactory, BookmarksSidePanelUI>(
-          map);
-    } else {
-      RegisterWebUIControllerInterfaceBinder<
-          side_panel::mojom::BookmarksPageHandlerFactory, ReadLaterUI>(map);
-    }
+  if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
+    RegisterWebUIControllerInterfaceBinder<
+        side_panel::mojom::BookmarksPageHandlerFactory, BookmarksSidePanelUI>(
+        map);
+  } else {
+    RegisterWebUIControllerInterfaceBinder<
+        side_panel::mojom::BookmarksPageHandlerFactory, ReadLaterUI>(map);
   }
 
   if (features::IsReadAnythingEnabled()) {
@@ -1091,21 +1087,21 @@ void PopulateChromeWebUIFrameBinders(
   if (chromeos::features::IsWallpaperWebUIEnabled()) {
     RegisterWebUIControllerInterfaceBinder<
         ash::personalization_app::mojom::WallpaperProvider,
-        ash::PersonalizationAppUI>(map);
+        ash::personalization_app::PersonalizationAppUI>(map);
   }
 
   if (ash::features::IsPersonalizationHubEnabled()) {
     RegisterWebUIControllerInterfaceBinder<
         ash::personalization_app::mojom::AmbientProvider,
-        ash::PersonalizationAppUI>(map);
+        ash::personalization_app::PersonalizationAppUI>(map);
 
     RegisterWebUIControllerInterfaceBinder<
         ash::personalization_app::mojom::ThemeProvider,
-        ash::PersonalizationAppUI>(map);
+        ash::personalization_app::PersonalizationAppUI>(map);
 
     RegisterWebUIControllerInterfaceBinder<
         ash::personalization_app::mojom::UserProvider,
-        ash::PersonalizationAppUI>(map);
+        ash::personalization_app::PersonalizationAppUI>(map);
   }
 
   RegisterWebUIControllerInterfaceBinder<

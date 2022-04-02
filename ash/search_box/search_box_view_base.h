@@ -65,6 +65,10 @@ class SearchBoxViewBase : public views::View,
 
     // Whether to animate the transition when the search icon is changed.
     bool animate_changing_search_icon = false;
+
+    // Whether we should increase spacing between `search_icon_', 'search_box_',
+    // and the 'search_box_button_container_'.
+    bool increase_child_view_padding = false;
   };
   virtual void Init(const InitParams& params);
 
@@ -121,6 +125,9 @@ class SearchBoxViewBase : public views::View,
 
   // Called when the search box active state changes.
   virtual void OnSearchBoxActiveChanged(bool active);
+
+  // Updates the painting if the focus moves to or from the search box.
+  virtual void UpdateSearchBoxFocusPaint();
 
  protected:
   // Fires query change notification.
@@ -190,9 +197,6 @@ class SearchBoxViewBase : public views::View,
 
  private:
   void OnEnabledChanged();
-
-  // Gets the search box background. May return null.
-  views::Background* GetSearchBoxBackground();
 
   SearchBoxViewDelegate* const delegate_;
 

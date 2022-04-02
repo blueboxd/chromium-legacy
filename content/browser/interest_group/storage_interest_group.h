@@ -51,10 +51,12 @@ struct CONTENT_EXPORT StorageInterestGroup {
   blink::InterestGroup interest_group;
   auction_worklet::mojom::BiddingBrowserSignalsPtr bidding_browser_signals;
   absl::optional<KAnonymityData> name_kanon;
-  absl::optional<KAnonymityData> update_url_kanon;
+  absl::optional<KAnonymityData> daily_update_url_kanon;
   std::vector<KAnonymityData> ads_kanon;
   // Top level page origin from when the interest group was joined.
   url::Origin joining_origin;
+  // The last time this interest group was updated.
+  base::Time last_updated;
 };
 
 // Stream operator so KAnonymityData can be used in assertion statements.

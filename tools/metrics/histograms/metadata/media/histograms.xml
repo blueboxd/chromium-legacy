@@ -980,6 +980,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Media.Audio.Render.SinkCache.InfoSinkReusedForOutput"
     enum="BooleanReused" expires_after="2022-04-05">
+  <obsolete>
+    Removed 04/2022.
+  </obsolete>
   <owner>guidou@chromium.org</owner>
   <owner>olka@chromium.org</owner>
   <summary>
@@ -5182,6 +5185,26 @@ chromium-metrics-reviews@google.com.
     Wall time of WebMediaPlayer playbacks. Each count represents one second of
     media playback. Multiple WebMediaPlayer instances can together accumulate
     watch time faster than real time.
+  </summary>
+</histogram>
+
+<histogram name="Media.WebrtcVideoPerfHistory.GetPerfInfoCodecProfile"
+    enum="VideoCodecProfile" expires_after="2023-04-01">
+  <owner>kron@chromium.org</owner>
+  <owner>webrtc-video@google.com</owner>
+  <summary>
+    The video codec profile that was used when calling GetPerfInfo. Recorded for
+    each call to GetPerfInfo if certain sanity checks pass.
+  </summary>
+</histogram>
+
+<histogram name="Media.WebrtcVideoPerfHistory.SavePerfRecordCodecProfile"
+    enum="VideoCodecProfile" expires_after="2023-04-01">
+  <owner>kron@chromium.org</owner>
+  <owner>webrtc-video@google.com</owner>
+  <summary>
+    The video codec profile that was provided to SavePerfRecord. Recorded for
+    each call to SavePerfRecord if certain sanity checks pass.
   </summary>
 </histogram>
 

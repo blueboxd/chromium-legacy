@@ -46,6 +46,11 @@ namespace {
 
 constexpr base::TimeDelta kMaxTimeout = base::Milliseconds(500);
 
+// For group freshness metrics.
+constexpr base::TimeDelta kGroupFreshnessMin = base::Minutes(1);
+constexpr base::TimeDelta kGroupFreshnessMax = base::Days(30);
+constexpr int kGroupFreshnessBuckets = 100;
+
 // All URLs received from worklets must be valid HTTPS URLs. It's up to callers
 // to call ReportBadMessage() on invalid URLs.
 bool IsUrlValid(const GURL& url) {
@@ -143,7 +148,8 @@ AuctionRunner::Auction::Auction(
       config_(config),
       parent_(parent),
       auction_start_time_(auction_start_time) {
-  for (const auto& component_auction_config : config->component_auctions) {
+  for (const auto& component_auction_config :
+       config->auction_ad_config_non_shared_params->component_auctions) {
     // Nested component auctions are not supported.
     DCHECK(!parent_);
     component_auctions_.emplace_back(std::make_unique<Auction>(
@@ -486,6 +492,22 @@ void AuctionRunner::Auction::OnInterestGroupRead(
     post_auction_update_owners_.push_back(
         interest_groups[0].interest_group.owner);
     ++num_owners_with_interest_groups_;
+    // Report freshness metrics.
+    for (const StorageInterestGroup& group : interest_groups) {
+      if (group.interest_group.daily_update_url.has_value()) {
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Ads.InterestGroup.Auction.GroupFreshness.WithDailyUpdates",
+            (base::Time::Now() - group.last_updated).InMinutes(),
+            kGroupFreshnessMin.InMinutes(), kGroupFreshnessMax.InMinutes(),
+            kGroupFreshnessBuckets);
+      } else {
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Ads.InterestGroup.Auction.GroupFreshness.NoDailyUpdates",
+            (base::Time::Now() - group.last_updated).InMinutes(),
+            kGroupFreshnessMin.InMinutes(), kGroupFreshnessMax.InMinutes(),
+            kGroupFreshnessBuckets);
+      }
+    }
   }
   OnOneLoadCompleted();
 }
@@ -636,7 +658,8 @@ void AuctionRunner::Auction::OnBidderWorkletReceived(BidState* bid_state) {
   const blink::InterestGroup& interest_group = bid_state->bidder.interest_group;
   bid_state->worklet_handle->GetBidderWorklet()->GenerateBid(
       auction_worklet::mojom::BidderWorkletNonSharedParams::New(
-          interest_group.name, interest_group.trusted_bidding_signals_keys,
+          interest_group.name, interest_group.daily_update_url,
+          interest_group.trusted_bidding_signals_keys,
           interest_group.user_bidding_signals, interest_group.ads,
           interest_group.ad_components),
       config_->auction_ad_config_non_shared_params->auction_signals,

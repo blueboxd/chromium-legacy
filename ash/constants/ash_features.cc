@@ -1163,10 +1163,6 @@ const base::Feature kQuickUnlockPinAutosubmitBackfill{
 const base::Feature kRedirectToDefaultIdP{"RedirectToDefaultIdP",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables suppression of Displays notifications other than resolution change.
-const base::Feature kReduceDisplayNotifications{
-    "ReduceDisplayNotifications", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables Release Notes notifications on non-stable Chrome OS
 // channels. Used for testing.
 const base::Feature kReleaseNotesNotificationAllChannels{
@@ -1186,10 +1182,6 @@ const base::Feature kReverseScrollGestures{"EnableReverseScrollGestures",
 // Enables the system tray to show more information in larger screen.
 const base::Feature kScalableStatusArea{"ScalableStatusArea",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables or disables flatbed multi-page scanning.
-const base::Feature kScanAppMultiPageScan{"ScanAppMultiPageScan",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable kSecondaryGoogleAccountUsage policy.
 const base::Feature kSecondaryGoogleAccountUsage{
@@ -2001,10 +1993,6 @@ bool IsQuickSettingsNetworkRevampEnabled() {
 
 bool IsRedirectToDefaultIdPEnabled() {
   return base::FeatureList::IsEnabled(kRedirectToDefaultIdP);
-}
-
-bool IsReduceDisplayNotificationsEnabled() {
-  return base::FeatureList::IsEnabled(kReduceDisplayNotifications);
 }
 
 bool IsReverseScrollGesturesEnabled() {

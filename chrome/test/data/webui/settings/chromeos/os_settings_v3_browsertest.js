@@ -61,7 +61,7 @@ var OSSettingsPeoplePageAccountManagerV3Test =
     class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/people_page_account_manager_test.m.js';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/people_page_account_manager_test.js';
   }
 
   /** @override */
@@ -81,7 +81,7 @@ var OSSettingsPeoplePageAccountManagerWithArcAccountRestrictionsEnabledV3Test =
     class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/people_page_account_manager_test.m.js';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/people_page_account_manager_test.js';
   }
 
   /** @override */
@@ -288,7 +288,7 @@ var OSSettingsAppManagementAppDetailsV3Test =
     class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/app_details_item_test.m.js';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/app_management/app_details_item_test.js';
   }
 
   /** @override */
@@ -344,54 +344,66 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
 
 [['AccessibilityPage', 'os_a11y_page_tests.m.js'],
  ['AboutPage', 'os_about_page_tests.m.js'],
- ['AccountsPage', 'add_users_tests.m.js'],
- ['AmbientModePage', 'ambient_mode_page_test.m.js'],
- ['AmbientModePhotosPage', 'ambient_mode_photos_page_test.m.js'],
- ['AppsPage', 'apps_page_test.m.js'],
- ['AppNotificationsSubpage', 'app_notifications_subpage_tests.m.js'],
- ['AppManagementAppDetailsItem', 'app_details_item_test.m.js'],
- ['AppManagementAppDetailView', 'app_detail_view_test.m.js'],
- ['AppManagementAppItem', 'app_item_test.m.js'],
- ['AppManagementArcDetailView', 'arc_detail_view_test.m.js'],
- ['AppManagementBorealisDetailView', 'borealis_detail_view_test.m.js'],
- ['AppManagementChromeAppDetailView', 'chrome_app_detail_view_test.m.js'],
- ['AppManagementDomSwitch', 'dom_switch_test.m.js'],
- ['AppManagementFileHandlingItem', 'file_handling_item_test.m.js'],
- ['AppManagementMainView', 'main_view_test.m.js'],
- ['AppManagementManagedApp', 'managed_apps_test.m.js'],
- ['AppManagementPage', 'app_management_page_tests.m.js'],
- ['AppManagementPinToShelfItem', 'pin_to_shelf_item_test.m.js'],
- ['AppManagementPluginVmDetailView', 'plugin_vm_detail_view_test.m.js'],
- ['AppManagementPwaDetailView', 'pwa_detail_view_test.m.js'],
- ['AppManagementReducers', 'reducers_test.m.js'],
- ['AppManagementResizeLockItem', 'resize_lock_item_test.m.js'],
- ['AppManagementSupportedLinksItem', 'supported_links_item_test.m.js'],
- ['AppManagementToggleRow', 'toggle_row_test.m.js'],
- ['AppManagementUninstallButton', 'uninstall_button_test.m.js'],
+ ['AccountsPage', 'add_users_tests.js'],
+ ['AmbientModePage', 'ambient_mode_page_test.js'],
+ ['AmbientModePhotosPage', 'ambient_mode_photos_page_test.js'],
+ ['AppsPage', 'apps_page_test.js'],
+ ['AppNotificationsSubpage', 'app_notifications_subpage_tests.js'],
+ ['AppManagementAppDetailsItem', 'app_management/app_details_item_test.js'],
+ ['AppManagementAppDetailView', 'app_management/app_detail_view_test.js'],
+ ['AppManagementAppItem', 'app_management/app_item_test.js'],
+ ['AppManagementArcDetailView', 'app_management/arc_detail_view_test.js'],
+ [
+   'AppManagementBorealisDetailView',
+   'app_management/borealis_detail_view_test.js'
+ ],
+ [
+   'AppManagementChromeAppDetailView',
+   'app_management/chrome_app_detail_view_test.js'
+ ],
+ ['AppManagementDomSwitch', 'app_management/dom_switch_test.js'],
+ ['AppManagementFileHandlingItem', 'app_management/file_handling_item_test.js'],
+ ['AppManagementMainView', 'app_management/main_view_test.js'],
+ ['AppManagementManagedApp', 'app_management/managed_apps_test.js'],
+ ['AppManagementPage', 'app_management/app_management_page_tests.js'],
+ ['AppManagementPinToShelfItem', 'app_management/pin_to_shelf_item_test.js'],
+ [
+   'AppManagementPluginVmDetailView',
+   'app_management/plugin_vm_detail_view_test.js'
+ ],
+ ['AppManagementPwaDetailView', 'app_management/pwa_detail_view_test.js'],
+ ['AppManagementReducers', 'app_management/reducers_test.js'],
+ ['AppManagementResizeLockItem', 'app_management/resize_lock_item_test.js'],
+ [
+   'AppManagementSupportedLinksItem',
+   'app_management/supported_links_item_test.js'
+ ],
+ ['AppManagementToggleRow', 'app_management/toggle_row_test.js'],
+ ['AppManagementUninstallButton', 'app_management/uninstall_button_test.js'],
  ['BluetoothPage', 'bluetooth_page_tests.js'],
- ['CellularNetworksList', 'cellular_networks_list_test.m.js'],
- ['CellularRoamingToggleButton', 'cellular_roaming_toggle_button_test.m.js'],
- ['CellularSetupDialog', 'cellular_setup_dialog_test.m.js'],
+ ['CellularNetworksList', 'cellular_networks_list_test.js'],
+ ['CellularRoamingToggleButton', 'cellular_roaming_toggle_button_test.js'],
+ ['CellularSetupDialog', 'cellular_setup_dialog_test.js'],
  [
    'DictationChangeLanguageLocaleDialogTest',
-   'change_dictation_locale_dialog_test.m.js'
+   'change_dictation_locale_dialog_test.js'
  ],
  ['CupsPrinterEntry', 'cups_printer_entry_tests.m.js'],
  ['CupsPrinterLandingPage', 'cups_printer_landing_page_tests.m.js'],
  // TODO(crbug/1240970): Re-enable once flakiness is fixed.
  // ['CupsPrinterPage', 'cups_printer_page_tests.m.js'],
- ['DarkModeSubpage', 'dark_mode_subpage_tests.m.js'],
- ['DateTimePage', 'date_time_page_tests.m.js'],
- ['EsimInstallErrorDialog', 'esim_install_error_dialog_test.m.js'],
- ['EsimRemoveProfileDialog', 'esim_remove_profile_dialog_test.m.js'],
- ['EsimRenameDialog', 'esim_rename_dialog_test.m.js'],
+ ['DarkModeSubpage', 'dark_mode_subpage_tests.js'],
+ ['DateTimePage', 'date_time_page_tests.js'],
+ ['EsimInstallErrorDialog', 'esim_install_error_dialog_test.js'],
+ ['EsimRemoveProfileDialog', 'esim_remove_profile_dialog_test.js'],
+ ['EsimRenameDialog', 'esim_rename_dialog_test.js'],
  ['FilesPage', 'os_files_page_test.m.js'],
  ['FingerprintPage', 'fingerprint_browsertest_chromeos.m.js'],
- ['GoogleAssistantPage', 'google_assistant_page_test.m.js'],
- ['GuestOsSharedPaths', 'guest_os_shared_paths_test.m.js'],
- ['GuestOsSharedUsbDevices', 'guest_os_shared_usb_devices_test.m.js'],
- ['InputMethodOptionPage', 'input_method_options_page_test.m.js'],
- ['InputPage', 'input_page_test.m.js'],
+ ['GoogleAssistantPage', 'google_assistant_page_test.js'],
+ ['GuestOsSharedPaths', 'guest_os_shared_paths_test.js'],
+ ['GuestOsSharedUsbDevices', 'guest_os_shared_usb_devices_test.js'],
+ ['InputMethodOptionPage', 'input_method_options_page_test.js'],
+ ['InputPage', 'input_page_test.js'],
  ['InternetConfig', 'internet_config_test.js'],
  ['InternetDetailMenu', 'internet_detail_menu_test.js'],
  ['InternetDetailPage', 'internet_detail_page_tests.js'],
@@ -400,7 +412,7 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['InternetPage', 'internet_page_tests.js'],
  ['KerberosAccounts', 'kerberos_accounts_test.m.js'],
  ['KerberosPage', 'kerberos_page_test.m.js'],
- ['KeyboardShortcutBanner', 'keyboard_shortcut_banner_test.m.js'],
+ ['KeyboardShortcutBanner', 'keyboard_shortcut_banner_test.js'],
  ['LockScreenPage', 'lock_screen_tests.m.js'],
  ['ManageAccessibilityPage', 'manage_accessibility_page_tests.m.js'],
  ['MultideviceCombinedSetupItem', 'multidevice_combined_setup_item_tests.js'],
@@ -434,10 +446,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['MultideviceWifiSyncItem', 'multidevice_wifi_sync_item_tests.js'],
  ['NearbyShareConfirmPage', 'nearby_share_confirm_page_test.js'],
  ['NearbyShareReceiveDialog', 'nearby_share_receive_dialog_tests.js'],
- ['NetworkAlwaysOnVpn', 'network_always_on_vpn_test.m.js'],
- ['NetworkProxySection', 'network_proxy_section_test.m.js'],
- ['NetworkSummary', 'network_summary_test.m.js'],
- ['NetworkSummaryItem', 'network_summary_item_test.m.js'],
+ ['NetworkAlwaysOnVpn', 'network_always_on_vpn_test.js'],
+ ['NetworkProxySection', 'network_proxy_section_test.js'],
+ ['NetworkSummary', 'network_summary_test.js'],
+ ['NetworkSummaryItem', 'network_summary_item_test.js'],
  ['OncMojoTest', 'onc_mojo_test.m.js'],
  ['OsBluetoothPage', 'os_bluetooth_page_tests.js'],
  ['OsBluetoothPairingDialog', 'os_bluetooth_pairing_dialog_tests.js'],
@@ -455,14 +467,14 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['OsSearchPage', 'os_search_page_test.m.js'],
  ['OsSettingsSearchBox', 'os_settings_search_box_test.m.js'],
  ['OSSettingsMenu', 'os_settings_menu_test.m.js'],
- ['ParentalControlsPage', 'parental_controls_page_test.m.js'],
- ['PeoplePage', 'os_people_page_test.m.js'],
- ['PeoplePageChangePicture', 'people_page_change_picture_test.m.js'],
+ ['ParentalControlsPage', 'parental_controls_page_test.js'],
+ ['PeoplePage', 'os_people_page_test.js'],
+ ['PeoplePageChangePicture', 'people_page_change_picture_test.js'],
  [
    'PeoplePageQuickUnlock',
    'quick_unlock_authenticate_browsertest_chromeos.m.js'
  ],
- ['PersonalizationPage', 'personalization_page_test.m.js'],
+ ['PersonalizationPage', 'personalization_page_test.js'],
  ['PrintingPage', 'os_printing_page_tests.m.js'],
  ['PrivacyPage', 'os_privacy_page_test.m.js'],
  ['ResetPage', 'os_reset_page_test.m.js'],
@@ -480,10 +492,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['SwitchAccessSubpage', 'switch_access_subpage_tests.m.js'],
  ['TetherConnectionDialog', 'tether_connection_dialog_test.m.js'],
  ['TextToSpeechSubpage', 'text_to_speech_subpage_tests.m.js'],
- ['TimezoneSelector', 'timezone_selector_test.m.js'],
- ['TimezoneSubpage', 'timezone_subpage_test.m.js'],
+ ['TimezoneSelector', 'timezone_selector_test.js'],
+ ['TimezoneSubpage', 'timezone_subpage_test.js'],
  ['TtsSubpage', 'tts_subpage_test.m.js'],
- ['UserPage', 'user_page_tests.m.js'],
+ ['UserPage', 'user_page_tests.js'],
 ].forEach(test => registerTest(...test));
 
 function registerTest(testName, module, caseName) {

@@ -8007,9 +8007,7 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides) {
 
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client =
-      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
-                                        base::BindRepeating(&base::RandInt));
+  auto client = DnsClient::CreateClient(nullptr /* net_log */);
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -8078,9 +8076,7 @@ TEST_F(HostResolverManagerDnsTest,
        SetDnsConfigOverrides_OverrideEverythingCreation) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client =
-      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
-                                        base::BindRepeating(&base::RandInt));
+  auto client = DnsClient::CreateClient(nullptr /* net_log */);
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -8110,9 +8106,7 @@ TEST_F(HostResolverManagerDnsTest,
 TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_PartialOverride) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client =
-      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
-                                        base::BindRepeating(&base::RandInt));
+  auto client = DnsClient::CreateClient(nullptr /* net_log */);
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -8153,9 +8147,7 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_PartialOverride) {
 TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_NewConfig) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client =
-      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
-                                        base::BindRepeating(&base::RandInt));
+  auto client = DnsClient::CreateClient(nullptr /* net_log */);
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -8188,9 +8180,7 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_NewConfig) {
 TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_ClearOverrides) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client =
-      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
-                                        base::BindRepeating(&base::RandInt));
+  auto client = DnsClient::CreateClient(nullptr /* net_log */);
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -8216,9 +8206,7 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_NoChange) {
 
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client =
-      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
-                                        base::BindRepeating(&base::RandInt));
+  auto client = DnsClient::CreateClient(nullptr /* net_log */);
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -8253,9 +8241,7 @@ TEST_F(HostResolverManagerDnsTest, NoBaseConfig_PartialOverrides) {
 
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client =
-      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
-                                        base::BindRepeating(&base::RandInt));
+  auto client = DnsClient::CreateClient(nullptr /* net_log */);
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -8279,9 +8265,7 @@ TEST_F(HostResolverManagerDnsTest, NoBaseConfig_OverridesEverything) {
 
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client =
-      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
-                                        base::BindRepeating(&base::RandInt));
+  auto client = DnsClient::CreateClient(nullptr /* net_log */);
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -8307,9 +8291,7 @@ TEST_F(HostResolverManagerDnsTest, NoBaseConfig_OverridesEverything) {
 TEST_F(HostResolverManagerDnsTest, DohMapping) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client =
-      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
-                                        base::BindRepeating(&base::RandInt));
+  auto client = DnsClient::CreateClient(nullptr /* net_log */);
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -8331,9 +8313,7 @@ TEST_F(HostResolverManagerDnsTest, DohMapping) {
 TEST_F(HostResolverManagerDnsTest, DohMappingDisabled) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client =
-      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
-                                        base::BindRepeating(&base::RandInt));
+  auto client = DnsClient::CreateClient(nullptr /* net_log */);
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -8352,9 +8332,7 @@ TEST_F(HostResolverManagerDnsTest, DohMappingDisabled) {
 TEST_F(HostResolverManagerDnsTest, DohMappingModeIneligibleForUpgrade) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client =
-      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
-                                        base::BindRepeating(&base::RandInt));
+  auto client = DnsClient::CreateClient(nullptr /* net_log */);
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -8374,9 +8352,7 @@ TEST_F(HostResolverManagerDnsTest,
        DohMappingUnhandledOptionsIneligibleForUpgrade) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client =
-      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
-                                        base::BindRepeating(&base::RandInt));
+  auto client = DnsClient::CreateClient(nullptr /* net_log */);
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -8393,9 +8369,7 @@ TEST_F(HostResolverManagerDnsTest,
 TEST_F(HostResolverManagerDnsTest, DohMappingWithExclusion) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client =
-      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
-                                        base::BindRepeating(&base::RandInt));
+  auto client = DnsClient::CreateClient(nullptr /* net_log */);
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -8423,9 +8397,7 @@ TEST_F(HostResolverManagerDnsTest, DohMappingWithExclusion) {
 TEST_F(HostResolverManagerDnsTest, DohMappingIgnoredIfTemplateSpecified) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client =
-      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
-                                        base::BindRepeating(&base::RandInt));
+  auto client = DnsClient::CreateClient(nullptr /* net_log */);
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -8450,9 +8422,7 @@ TEST_F(HostResolverManagerDnsTest,
        DohMappingUnhandledOptionsAndTemplateSpecified) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client =
-      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
-                                        base::BindRepeating(&base::RandInt));
+  auto client = DnsClient::CreateClient(nullptr /* net_log */);
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -8479,9 +8449,7 @@ TEST_F(HostResolverManagerDnsTest,
 TEST_F(HostResolverManagerDnsTest, DohMappingWithAutomaticDot) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client =
-      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
-                                        base::BindRepeating(&base::RandInt));
+  auto client = DnsClient::CreateClient(nullptr /* net_log */);
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -8504,9 +8472,7 @@ TEST_F(HostResolverManagerDnsTest, DohMappingWithAutomaticDot) {
 TEST_F(HostResolverManagerDnsTest, DohMappingWithStrictDot) {
   // Use a real DnsClient to test config-handling behavior.
   AlwaysFailSocketFactory socket_factory;
-  auto client =
-      DnsClient::CreateClientForTesting(nullptr /* net_log */, &socket_factory,
-                                        base::BindRepeating(&base::RandInt));
+  auto client = DnsClient::CreateClient(nullptr /* net_log */);
   DnsClient* client_ptr = client.get();
   resolver_->SetDnsClientForTesting(std::move(client));
 
@@ -11230,6 +11196,122 @@ TEST_F(HostResolverManagerDnsTest,
   EXPECT_FALSE(response.request()->GetHostnameResults());
   EXPECT_THAT(response.request()->GetExperimentalResultsForTesting(),
               testing::Pointee(testing::IsEmpty()));
+}
+
+TEST_F(
+    HostResolverManagerDnsTest,
+    FailedHttpsInAddressRequestAfterAddressFailureIsFatalWhenFeatureEnabled) {
+  const char kName[] = "name.test";
+
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeatureWithParameters(
+      features::kUseDnsHttpsSvcb,
+      {{"UseDnsHttpsSvcbEnforceSecureResponse", "true"}});
+
+  MockDnsClientRuleList rules;
+  // Delay HTTPS result to ensure it comes after A failure.
+  rules.emplace_back(
+      kName, dns_protocol::kTypeHttps, /*secure=*/true,
+      MockDnsClientRule::Result(MockDnsClientRule::ResultType::kFail),
+      /*delay=*/true);
+  rules.emplace_back(
+      kName, dns_protocol::kTypeA, /*secure=*/true,
+      MockDnsClientRule::Result(MockDnsClientRule::ResultType::kFail),
+      /*delay=*/false);
+  // Delay AAAA result to ensure it is cancelled after A failure.
+  rules.emplace_back(
+      kName, dns_protocol::kTypeAAAA, /*secure=*/true,
+      MockDnsClientRule::Result(MockDnsClientRule::ResultType::kUnexpected),
+      /*delay=*/true);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+  DnsConfigOverrides overrides;
+  overrides.secure_dns_mode = SecureDnsMode::kAutomatic;
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      url::SchemeHostPort(url::kHttpsScheme, kName, 443), NetworkIsolationKey(),
+      NetLogWithSource(), absl::nullopt, resolve_context_.get(),
+      resolve_context_->host_cache()));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(response.complete());
+  dns_client_->CompleteDelayedTransactions();
+
+  EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_FALSE(response.request()->GetAddressResults());
+  EXPECT_FALSE(response.request()->GetEndpointResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetExperimentalResultsForTesting());
+
+  // Expect result not cached.
+  EXPECT_EQ(resolve_context_->host_cache()->size(), 0u);
+}
+
+TEST_F(
+    HostResolverManagerDnsTest,
+    FailedHttpsInAddressRequestAfterAddressFailureIgnoredWhenFeatureDisabled) {
+  const char kName[] = "name.test";
+
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeatureWithParameters(
+      features::kUseDnsHttpsSvcb,
+      {{"UseDnsHttpsSvcbEnforceSecureResponse", "false"}});
+
+  MockDnsClientRuleList rules;
+  // Delay HTTPS result to ensure it is cancelled after AAAA failure.
+  rules.emplace_back(
+      kName, dns_protocol::kTypeHttps, /*secure=*/true,
+      MockDnsClientRule::Result(MockDnsClientRule::ResultType::kUnexpected),
+      /*delay=*/true);
+  // Delay A result to ensure it is cancelled after AAAA failure.
+  rules.emplace_back(
+      kName, dns_protocol::kTypeA, /*secure=*/true,
+      MockDnsClientRule::Result(MockDnsClientRule::ResultType::kUnexpected),
+      /*delay=*/true);
+  rules.emplace_back(
+      kName, dns_protocol::kTypeAAAA, /*secure=*/true,
+      MockDnsClientRule::Result(MockDnsClientRule::ResultType::kFail),
+      /*delay=*/false);
+
+  // Expect fall back to insecure due to AAAA failure.
+  rules.emplace_back(
+      kName, dns_protocol::kTypeHttps, /*secure=*/false,
+      MockDnsClientRule::Result(MockDnsClientRule::ResultType::kEmpty),
+      /*delay=*/false);
+  rules.emplace_back(
+      kName, dns_protocol::kTypeA, /*secure=*/false,
+      MockDnsClientRule::Result(MockDnsClientRule::ResultType::kOk),
+      /*delay=*/false);
+  rules.emplace_back(
+      kName, dns_protocol::kTypeAAAA, /*secure=*/false,
+      MockDnsClientRule::Result(MockDnsClientRule::ResultType::kOk),
+      /*delay=*/false);
+
+  CreateResolver();
+  UseMockDnsClient(CreateValidDnsConfig(), std::move(rules));
+  DnsConfigOverrides overrides;
+  overrides.secure_dns_mode = SecureDnsMode::kAutomatic;
+  resolver_->SetDnsConfigOverrides(overrides);
+
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      url::SchemeHostPort(url::kHttpsScheme, kName, 443), NetworkIsolationKey(),
+      NetLogWithSource(), absl::nullopt, resolve_context_.get(),
+      resolve_context_->host_cache()));
+
+  base::RunLoop().RunUntilIdle();
+  // Unnecessary to complete delayed transactions because they should be
+  // cancelled after first failure (AAAA).
+  EXPECT_TRUE(response.complete());
+
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_TRUE(response.request()->GetAddressResults());
+  EXPECT_TRUE(response.request()->GetEndpointResults());
+  EXPECT_FALSE(response.request()->GetTextResults());
+  EXPECT_FALSE(response.request()->GetHostnameResults());
+  EXPECT_FALSE(response.request()->GetExperimentalResultsForTesting());
 }
 
 TEST_F(HostResolverManagerDnsTest, TimeoutHttpsInAddressRequestIsFatal) {

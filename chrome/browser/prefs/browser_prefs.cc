@@ -261,7 +261,6 @@
 #include "chrome/browser/ui/webui/whats_new/whats_new_ui.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "components/live_caption/live_caption_controller.h"
-#include "components/media_router/common/pref_names.h"
 #include "components/ntp_tiles/custom_links_manager_impl.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -743,6 +742,7 @@ const char kStabilityLaunchCount[] =
 #endif
 const char kStabilityExtensionRendererLaunchCount[] =
     "user_experience_metrics.stability.extension_renderer_launch_count";
+const char kShowReadingListInBookmarkBar[] = "bookmark_bar.show_reading_list";
 
 // Register local state used only for migration (clearing or moving to a new
 // key).
@@ -967,6 +967,8 @@ void RegisterProfilePrefsForMigration(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   registry->RegisterIntegerPref(kPhoneHubCameraRollPendingStatePrefName, 0);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  registry->RegisterBooleanPref(kShowReadingListInBookmarkBar, true);
 }
 
 }  // namespace
@@ -1520,23 +1522,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 
   registry->RegisterBooleanPref(prefs::kPrivacyGuideViewed, false);
 
-// TODO(crbug.com/1308056): Migrate media_router prefs to
-// media_router::RegisterProfilePrefs().
-#if !BUILDFLAG(IS_ANDROID)
-  registry->RegisterBooleanPref(
-      media_router::prefs::kMediaRouterMediaRemotingEnabled, true);
-  registry->RegisterListPref(
-      media_router::prefs::kMediaRouterTabMirroringSources);
-#endif
-
-// TODO(crbug.com/1308053): Register it on ChromeOS after Cast+GMC ships on
-// ChromeOS.
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
-  registry->RegisterBooleanPref(
-      media_router::prefs::kMediaRouterShowCastSessionsStartedByOtherDevices,
-      true);
-#endif
-
   RegisterProfilePrefsForMigration(registry);
 }
 
@@ -1909,6 +1894,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // TODO(crbug.com/1298250): Remove after M107.
   crostini::RemoveDuplicateContainerEntries(profile_prefs);
 #endif
+
+  // Added 03/2022
+  profile_prefs->ClearPref(kShowReadingListInBookmarkBar);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

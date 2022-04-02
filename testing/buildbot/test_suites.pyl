@@ -575,7 +575,6 @@
           'bullhead',
           'flame',
           'hammerhead',
-          'kitkat',
           'marshmallow',
           'marshmallow_generic',
           'mdarcy',
@@ -1521,7 +1520,6 @@
           'bullhead',
           'flame',
           'hammerhead',
-          'kitkat',
           'marshmallow',
           'marshmallow_generic',
           'mdarcy',
@@ -2728,6 +2726,7 @@
       'webgpu_cts': {
         'args': [
           '--extra-browser-args=--force_high_performance_gpu',
+          '--retry-limit=3',
         ],
         'linux_args': [
           '--extra-browser-args=--enable-features=UseSkiaRenderer,Vulkan',
@@ -2750,6 +2749,7 @@
           '--extra-browser-args=--force_high_performance_gpu',
           '--is-backend-validation',
           '--override-timeout=30',
+          '--retry-limit=3',
         ],
         'linux_args': [
           '--extra-browser-args=--enable-features=UseSkiaRenderer,Vulkan',
@@ -2773,6 +2773,7 @@
           '--extra-browser-args=--force_high_performance_gpu',
           '--is-backend-validation',
           '--override-timeout=30',
+          '--retry-limit=3',
         ],
         'linux_args': [
           '--extra-browser-args=--enable-features=UseSkiaRenderer,Vulkan',
@@ -4349,7 +4350,6 @@
           'bullhead',
           'flame',
           'hammerhead',
-          'kitkat',
           'marshmallow',
           'marshmallow_generic',
           'mdarcy',

@@ -147,6 +147,8 @@ class BidderWorkletTest : public testing::Test {
     interest_group_ad_components_->emplace_back(blink::InterestGroup::Ad(
         GURL("https://ad_component.test/"), absl::nullopt /* metadata */));
 
+    daily_update_url_.reset();
+
     interest_group_trusted_bidding_signals_url_.reset();
     interest_group_trusted_bidding_signals_keys_.reset();
 
@@ -302,7 +304,8 @@ class BidderWorkletTest : public testing::Test {
   // configuration.
   mojom::BidderWorkletNonSharedParamsPtr CreateBidderWorkletNonSharedParams() {
     return mojom::BidderWorkletNonSharedParams::New(
-        interest_group_name_, interest_group_trusted_bidding_signals_keys_,
+        interest_group_name_, daily_update_url_,
+        interest_group_trusted_bidding_signals_keys_,
         interest_group_user_bidding_signals_, interest_group_ads_,
         interest_group_ad_components_);
   }
@@ -460,6 +463,7 @@ class BidderWorkletTest : public testing::Test {
   std::vector<blink::InterestGroup::Ad> interest_group_ads_;
   absl::optional<std::vector<blink::InterestGroup::Ad>>
       interest_group_ad_components_;
+  absl::optional<GURL> daily_update_url_;
   absl::optional<GURL> interest_group_trusted_bidding_signals_url_;
   absl::optional<std::vector<std::string>>
       interest_group_trusted_bidding_signals_keys_;
@@ -631,8 +635,7 @@ TEST_F(BidderWorkletTest, GenerateBidReturnValueBid) {
       R"({ad: "ad", render:"https://response.test/"})",
       /*expected_bid=*/mojom::BidderWorkletBidPtr(),
       /*expected_data_version=*/absl::nullopt,
-      {"https://url.test/ generateBid() bid "
-       "has incorrect structure."});
+      {"https://url.test/ generateBid() bid has incorrect structure."});
 
   // Valid positive bid values.
   RunGenerateBidWithReturnValueExpectingResult(
@@ -694,14 +697,12 @@ TEST_F(BidderWorkletTest, GenerateBidReturnValueBid) {
       R"({ad: ["ad"], bid:"1", render:"https://response.test/"})",
       /*expected_bid=*/mojom::BidderWorkletBidPtr(),
       /*expected_data_version=*/absl::nullopt,
-      {"https://url.test/ generateBid() bid "
-       "has incorrect structure."});
+      {"https://url.test/ generateBid() bid has incorrect structure."});
   RunGenerateBidWithReturnValueExpectingResult(
       R"({ad: ["ad"], bid:[1], render:"https://response.test/"})",
       /*expected_bid=*/mojom::BidderWorkletBidPtr(),
       /*expected_data_version=*/absl::nullopt,
-      {"https://url.test/ generateBid() bid "
-       "has incorrect structure."});
+      {"https://url.test/ generateBid() bid has incorrect structure."});
 }
 
 TEST_F(BidderWorkletTest, GenerateBidReturnValueUrl) {
@@ -710,8 +711,7 @@ TEST_F(BidderWorkletTest, GenerateBidReturnValueUrl) {
       R"({ad: ["ad"], bid:1})",
       /*expected_bid=*/mojom::BidderWorkletBidPtr(),
       /*expected_data_version=*/absl::nullopt,
-      {"https://url.test/ generateBid() bid "
-       "has incorrect structure."});
+      {"https://url.test/ generateBid() bid has incorrect structure."});
 
   RunGenerateBidWithReturnValueExpectingResult(
       R"({ad: ["ad"], bid:1, render:"https://response.test/"})",
@@ -762,14 +762,12 @@ TEST_F(BidderWorkletTest, GenerateBidReturnValueUrl) {
       R"({ad: ["ad"], bid:1, render:["http://response.test/"]})",
       /*expected_bid=*/mojom::BidderWorkletBidPtr(),
       /*expected_data_version=*/absl::nullopt,
-      {"https://url.test/ generateBid() bid "
-       "has incorrect structure."});
+      {"https://url.test/ generateBid() bid has incorrect structure."});
   RunGenerateBidWithReturnValueExpectingResult(
       R"({ad: ["ad"], bid:1, render:9})",
       /*expected_bid=*/mojom::BidderWorkletBidPtr(),
       /*expected_data_version=*/absl::nullopt,
-      {"https://url.test/ generateBid() bid "
-       "has incorrect structure."});
+      {"https://url.test/ generateBid() bid has incorrect structure."});
 }
 
 TEST_F(BidderWorkletTest, GenerateBidReturnValueAdComponents) {
@@ -1031,8 +1029,7 @@ TEST_F(BidderWorkletTest, GenerateBidSetBidThrows) {
        })",
       /*expected_bid=*/mojom::BidderWorkletBidPtr(),
       /*expected_data_version=*/absl::nullopt,
-      {"https://url.test/:2 Uncaught TypeError: bid "
-       "has incorrect structure."});
+      {"https://url.test/:2 Uncaught TypeError: bid has incorrect structure."});
   RunGenerateBidWithJavascriptExpectingResult(
       R"(function generateBid() {
          setBid({ad: ["ad"], bid:[1], render:"https://response.test/"});
@@ -1265,8 +1262,7 @@ TEST_F(BidderWorkletTest, GenerateBidSetBidThrows) {
        })",
       /*expected_bid=*/mojom::BidderWorkletBidPtr(),
       /*expected_data_version=*/absl::nullopt,
-      {"https://url.test/:2 Uncaught TypeError: bid "
-       "has incorrect structure."});
+      {"https://url.test/:2 Uncaught TypeError: bid has incorrect structure."});
   RunGenerateBidWithJavascriptExpectingResult(
       R"(function generateBid() {
          setBid({ad: ["ad"], render:"https://response.test/"});
@@ -1274,8 +1270,7 @@ TEST_F(BidderWorkletTest, GenerateBidSetBidThrows) {
        })",
       /*expected_bid=*/mojom::BidderWorkletBidPtr(),
       /*expected_data_version=*/absl::nullopt,
-      {"https://url.test/:2 Uncaught TypeError: bid "
-       "has incorrect structure."});
+      {"https://url.test/:2 Uncaught TypeError: bid has incorrect structure."});
   RunGenerateBidWithJavascriptExpectingResult(
       R"(function generateBid() {
          setBid({ad: ["ad"], bid:"a"});
@@ -1375,6 +1370,28 @@ TEST_F(BidderWorkletTest, GenerateBidInterestGroupBiddingWasmHelperUrl) {
   RunGenerateBidWithReturnValueExpectingResult(
       kGenerateBidBody,
       mojom::BidderWorkletBid::New(R"("https://foo.test/helper.wasm")", 1,
+                                   GURL("https://response.test/"),
+                                   /*ad_components=*/absl::nullopt,
+                                   base::TimeDelta()));
+}
+
+TEST_F(BidderWorkletTest, GenerateBidInterestGroupDailyUpdateUrl) {
+  const std::string kGenerateBidBody =
+      R"({ad: "dailyUpdateUrl" in interestGroup ?
+            interestGroup.dailyUpdateUrl : "missing",
+        bid:1,
+        render:"https://response.test/"})";
+
+  RunGenerateBidWithReturnValueExpectingResult(
+      kGenerateBidBody,
+      mojom::BidderWorkletBid::New(
+          R"("missing")", 1, GURL("https://response.test/"),
+          /*ad_components=*/absl::nullopt, base::TimeDelta()));
+
+  daily_update_url_ = GURL("https://url.test/daily_update");
+  RunGenerateBidWithReturnValueExpectingResult(
+      kGenerateBidBody,
+      mojom::BidderWorkletBid::New(R"("https://url.test/daily_update")", 1,
                                    GURL("https://response.test/"),
                                    /*ad_components=*/absl::nullopt,
                                    base::TimeDelta()));
@@ -2568,6 +2585,16 @@ TEST_F(BidderWorkletTest, GenerateBidWithSetBid) {
 }
 
 TEST_F(BidderWorkletTest, GenerateBidTimedOut) {
+  // The bidding script has an endless while loop. It will time out due to
+  // AuctionV8Helper's default script timeout (50 ms).
+  RunGenerateBidWithJavascriptExpectingResult(
+      CreateGenerateBidScript(/*raw_return_value=*/"", R"(while (1))"),
+      /*expected_bid=*/mojom::BidderWorkletBidPtr(),
+      /*expected_data_version=*/absl::nullopt,
+      {"https://url.test/ execution of `generateBid` timed out."});
+}
+
+TEST_F(BidderWorkletTest, GenerateBidPerBuyerTimeOut) {
   // Use a very long default script timeout, and a short per buyer timeout, so
   // that if the bidder script with endless loop times out, we know that the per
   // buyer timeout overwrote the default script timeout and worked.
@@ -2594,22 +2621,8 @@ TEST_F(BidderWorkletTest, GenerateBidTimedOut) {
 // Even though the script timed out, it had set an intermediate result with
 // setBid, so we should use that instead.
 TEST_F(BidderWorkletTest, GenerateBidTimedOutWithSetBid) {
-  // Use a very long default script timeout, and a short per buyer timeout, so
-  // that if the bidder script with endless loop times out, we know that the per
-  // buyer timeout overwrote the default script timeout and worked.
-  const base::TimeDelta kScriptTimeout = base::Days(360);
-  v8_helper_->v8_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](scoped_refptr<AuctionV8Helper> v8_helper,
-             const base::TimeDelta script_timeout) {
-            v8_helper->set_script_timeout_for_testing(script_timeout);
-          },
-          v8_helper_, kScriptTimeout));
-  // Make sure set_script_timeout_for_testing is called.
-  task_environment_.RunUntilIdle();
-
-  per_buyer_timeout_ = base::Milliseconds(20);
+  // The bidding script has an endless while loop. It will time out due to
+  // AuctionV8Helper's default script timeout (500 ms).
   RunGenerateBidWithJavascriptExpectingResult(
       CreateGenerateBidScript(
           /*raw_return_value=*/
@@ -2630,22 +2643,8 @@ TEST_F(BidderWorkletTest, GenerateBidTimedOutWithSetBid) {
 // setBid, so we should use that instead. The bid value should not change if we
 // mutate the object passed to setBid after it returns.
 TEST_F(BidderWorkletTest, GenerateBidTimedOutWithSetBidMutateAfter) {
-  // Use a very long default script timeout, and a short per buyer timeout, so
-  // that if the bidder script with endless loop times out, we know that the per
-  // buyer timeout overwrote the default script timeout and worked.
-  const base::TimeDelta kScriptTimeout = base::Days(360);
-  v8_helper_->v8_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](scoped_refptr<AuctionV8Helper> v8_helper,
-             const base::TimeDelta script_timeout) {
-            v8_helper->set_script_timeout_for_testing(script_timeout);
-          },
-          v8_helper_, kScriptTimeout));
-  // Make sure set_script_timeout_for_testing is called.
-  task_environment_.RunUntilIdle();
-
-  per_buyer_timeout_ = base::Milliseconds(20);
+  // The bidding script has an endless while loop. It will time out due to
+  // AuctionV8Helper's default script timeout (50 ms).
   RunGenerateBidWithJavascriptExpectingResult(
       CreateGenerateBidScript(
           /*raw_return_value=*/
@@ -3504,7 +3503,7 @@ class BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest
 };
 
 // Test forDebuggingOnly.reportAdAuctionLoss() and
-// forDebuggingOnly.reportAdAuctionWin() called in scoreAd().
+// forDebuggingOnly.reportAdAuctionWin() called in generateBid().
 TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
        ForDebuggingOnlyReports) {
   RunGenerateBidWithJavascriptExpectingResult(
@@ -3537,19 +3536,6 @@ TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
       /*expected_data_version=*/absl::nullopt,
       /*expected_errors=*/{}, /*expected_debug_loss_report_url=*/absl::nullopt,
       GURL("https://win.url"));
-
-  // There should be no debugging report URLs when generateBid() returns invalid
-  // value type.
-  RunGenerateBidWithJavascriptExpectingResult(
-      CreateGenerateBidScript(
-          R"({ad: ["ad"], bid:"invalid", render:"https://response.test/"})",
-          R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url");
-            forDebuggingOnly.reportAdAuctionWin("https://win.url"))"),
-      /*expected_bid=*/mojom::BidderWorkletBidPtr(),
-      /*expected_data_version=*/absl::nullopt,
-      {"https://url.test/ generateBid() bid has incorrect structure."},
-      /*expected_debug_loss_report_url=*/absl::nullopt,
-      /*expected_debug_win_report_url=*/absl::nullopt);
 }
 
 TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
@@ -3627,6 +3613,55 @@ TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
       /*expected_errors=*/{},
       /*expected_debug_loss_report_url=*/absl::nullopt,
       GURL("https://win.url2"));
+}
+
+TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
+       GenerateBidHasError) {
+  // The bidding script has an error statement and the script will fail. But
+  // th loss report URLs before bidding script encounters error should be kept.
+  RunGenerateBidWithJavascriptExpectingResult(
+      CreateGenerateBidScript(
+          /*raw_return_value=*/"[\"ad\"]",
+          R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url1");
+            error;
+            forDebuggingOnly.reportAdAuctionLoss("https://loss.url2"))"),
+      /*expected_bid=*/mojom::BidderWorkletBidPtr(),
+      /*expected_data_version=*/absl::nullopt,
+      {"https://url.test/:5 Uncaught ReferenceError: error is not defined."},
+      GURL("https://loss.url1"));
+}
+
+TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
+       GenerateBidInvalidReturnValue) {
+  // Keep debugging loss report URLs when generateBid() returns invalid
+  // value type.
+  RunGenerateBidWithJavascriptExpectingResult(
+      CreateGenerateBidScript(
+          R"({ad: ["ad"], bid:"invalid", render:"https://response.test/"})",
+          R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url");
+            forDebuggingOnly.reportAdAuctionWin("https://win.url"))"),
+      /*expected_bid=*/mojom::BidderWorkletBidPtr(),
+      /*expected_data_version=*/absl::nullopt,
+      {"https://url.test/ generateBid() bid has incorrect structure."},
+      GURL("https://loss.url"),
+      /*expected_debug_win_report_url=*/absl::nullopt);
+}
+
+// Loss report URLs before bidding script times out should be kept.
+TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
+       GenerateBidTimedOut) {
+  // The bidding script has an endless while loop. It will time out due to
+  // AuctionV8Helper's default script timeout (50 ms).
+  RunGenerateBidWithJavascriptExpectingResult(
+      CreateGenerateBidScript(
+          /*raw_return_value=*/"[\"ad\"]",
+          R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url1");
+            while (1);
+            forDebuggingOnly.reportAdAuctionLoss("https://loss.url2"))"),
+      /*expected_bid=*/mojom::BidderWorkletBidPtr(),
+      /*expected_data_version=*/absl::nullopt,
+      {"https://url.test/ execution of `generateBid` timed out."},
+      GURL("https://loss.url1"));
 }
 
 }  // namespace

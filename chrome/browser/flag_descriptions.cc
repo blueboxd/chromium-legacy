@@ -67,6 +67,11 @@ const char kAllowInsecureLocalhostDescription[] =
     "Allows requests to localhost over HTTPS even when an invalid certificate "
     "is presented.";
 
+const char kAndroidPWAsDefaultOfflinePageName[] =
+    "Android PWAs default offline page";
+const char kAndroidPWAsDefaultOfflinePageDescription[] =
+    "Shows customised default offline page when web app is offline.";
+
 const char kWindowsFollowCursorName[] =
     "Windows open on the display with the cursor";
 const char kWindowsFollowCursorDescription[] =
@@ -82,10 +87,6 @@ const char kAriaElementReflectionName[] = "Enable ARIA element reflection";
 const char kAriaElementReflectionDescription[] =
     "Enable setting ARIA relationship attributes that reference other elements "
     "directly without an IDREF";
-
-const char kCSSCascadeLayersName[] = "Enable CSS Cascade Layers";
-const char kCSSCascadeLayersDescription[] =
-    "Enables support for CSS @layer rules and layered @import syntax.";
 
 const char kCSSContainerQueriesName[] = "Enable CSS Container Queries";
 const char kCSSContainerQueriesDescription[] =
@@ -323,6 +324,12 @@ const char kAutofillEnableMerchantBoundVirtualCardsName[] =
 const char kAutofillEnableMerchantBoundVirtualCardsDescription[] =
     "When enabled, Autofill will offer to use merchant bound virtual cards in "
     "payment forms.";
+
+const char kAutofillEnableManualFallbackForVirtualCardsName[] =
+    "Show manual fallback for virtual cards";
+const char kAutofillEnableManualFallbackForVirtualCardsDescription[] =
+    "When enabled, manual fallback will be enabled for virtual cards on "
+    "Android.";
 
 const char kAutofillEnableOfferNotificationForPromoCodesName[] =
     "Extend Autofill offers and rewards notification to promo code offers";
@@ -1256,6 +1263,11 @@ const char kEnableWebAuthenticationChromeOSAuthenticatorDescription[] =
     "Enable the ChromeOS platform authenticator for the Web Authentication "
     "API.";
 
+const char kEnableWebAuthenticationPasskeysUIExperimentName[] =
+    "Passkeys UI exploration";
+const char kEnableWebAuthenticationPasskeysUIExperimentDescription[] =
+    "Enable some experimental tweaks to the WebAuthn UI for passkeys.";
+
 const char kEnableZeroCopyTabCaptureName[] = "Zero-copy tab capture";
 const char kEnableZeroCopyTabCaptureDescription[] =
     "Enable zero-copy content tab for getDisplayMedia() APIs.";
@@ -1628,6 +1640,11 @@ const char kCanvas2DLayersName[] =
     "Enables canvas 2D methods BeginLayer and EndLayer";
 const char kCanvas2DLayersDescription[] =
     "Enables the canvas 2D methods BeginLayer and EndLayer.";
+
+const char kEnableMachineLearningModelLoaderWebPlatformApiName[] =
+    "Enables Machine Learning Model Loader Web Platform API";
+const char kEnableMachineLearningModelLoaderWebPlatformApiDescription[] =
+    "Enables the Machine Learning Model Loader Web Platform API.";
 
 const char kSystemProxyForSystemServicesName[] =
     "Enable system-proxy for selected system services";
@@ -2160,11 +2177,6 @@ const char kSettingsAppNotificationSettingsDescription[] =
     "lacros-chrome browser's notification permission page "
     "and the ChromeOS settings app.";
 
-const char kReadLaterNewBadgePromoName[] = "Reading list 'New' badge promo";
-const char kReadLaterNewBadgePromoDescription[] =
-    "Causes a 'New' badge to appear on the entry point for adding to the "
-    "reading list in the tab context menu.";
-
 const char kRecordWebAppDebugInfoName[] = "Record web app debug info";
 const char kRecordWebAppDebugInfoDescription[] =
     "Enables recording additional web app related debugging data to be "
@@ -2258,12 +2270,6 @@ const char kSendTabToSelfSigninPromoDescription[] =
 const char kShoppingListName[] = "Shopping List";
 const char kShoppingListDescription[] = "Enable shopping list in bookmarks.";
 
-const char kSidePanelFlagId[] = "side-panel";
-const char kSidePanelName[] = "Side panel";
-const char kSidePanelDescription[] =
-    "Enables a browser-level side panel for a useful and persistent way to "
-    "access your Reading List and Bookmarks.";
-
 const char kSidePanelDragAndDropFlagId[] = "side-panel-drag-and-drop";
 const char kSidePanelDragAndDropName[] = "Side panel drag and drop";
 const char kSidePanelDragAndDropDescription[] =
@@ -2273,6 +2279,11 @@ const char kSidePanelImprovedClobberingName[] =
     "Side panel improved clobbering";
 const char kSidePanelImprovedClobberingDescription[] =
     "Improves the side panel clobbering experience for RHS side panels.";
+
+const char kSidePanelJourneysFlagId[] = "side-panel-journeys";
+const char kSidePanelJourneysName[] = "Side panel journeys";
+const char kSidePanelJourneysDescription[] =
+    "Enables Journeys within the side panel.";
 
 const char kSharedClipboardUIName[] =
     "Enable shared clipboard feature signals to be handled";
@@ -2361,10 +2372,6 @@ const char kSiteIsolationOptOutChoiceOptOut[] = "Disabled (not recommended)";
 const char kSmoothScrollingName[] = "Smooth Scrolling";
 const char kSmoothScrollingDescription[] =
     "Animate smoothly when scrolling page content.";
-
-const char kWebOTPCrossDeviceName[] = "WebOTP Cross Device";
-const char kWebOTPCrossDeviceDescription[] =
-    "Enable the WebOTP API to work across devices";
 
 const char kSplitCacheByNetworkIsolationKeyName[] = "HTTP Cache Partitioning";
 const char kSplitCacheByNetworkIsolationKeyDescription[] =
@@ -3835,12 +3842,6 @@ const char kOmniboxShortBookmarkSuggestionsDescription[] =
     "Match very short input words to beginning of words in bookmark "
     "suggestions.";
 
-const char kReadLaterFlagId[] = "read-later";
-const char kReadLaterName[] = "Reading List";
-const char kReadLaterDescription[] =
-    "Click on the Bookmark icon or right click on a tab to add tabs to a "
-    "reading list.";
-
 const char kScreenAIName[] = "Screen AI";
 const char kScreenAIDescription[] =
     "Enables Screen AI local machine intelligence library to use the screen "
@@ -5096,9 +5097,16 @@ const char kNearbySharingReceiveWifiCredentialsName[] =
 const char kNearbySharingReceiveWifiCredentialsDescription[] =
     "Enables receiving WiFi networks using Nearby Share.";
 
-const char kNearbySharingSelfShareName[] = "Nearby Sharing Self Share";
-const char kNearbySharingSelfShareDescription[] =
-    "Enables seamless sharing between a user's own devices.";
+const char kNearbySharingSelfShareAutoAcceptName[] =
+    "Nearby Sharing Self Share Auto-Accept";
+const char kNearbySharingSelfShareAutoAcceptDescription[] =
+    "Enables auto-accept functionality when sharing between a user's own "
+    "devices.";
+
+const char kNearbySharingSelfShareUIName[] = "Nearby Sharing Self Share UI";
+const char kNearbySharingSelfShareUIDescription[] =
+    "Enables UI features for Self Share to allow seamless sharing between a "
+    "user's own devices.";
 
 const char kNearbySharingVisibilityReminderName[] =
     "Nearby Sharing visibility reminder notification";
@@ -5159,11 +5167,6 @@ const char kForceShowContinueSectionDescription[] =
     "Forces the continue section of the app launcher to show. If there are no "
     "file suggestions available, the suggestions will be faked.";
 
-const char kReduceDisplayNotificationsName[] = "Reduce display notifications";
-const char kReduceDisplayNotificationsDescription[] =
-    "If enabled, notifications for display rotation, display removed, display "
-    "mirroring, and display extending will be suppressed.";
-
 const char kReleaseNotesNotificationAllChannelsName[] =
     "Release Notes Notification All Channels";
 const char kReleaseNotesNotificationAllChannelsDescription[] =
@@ -5182,11 +5185,6 @@ const char kArcInputOverlayName[] = "Enable ARC Input Overlay";
 const char kArcInputOverlayDescription[] =
     "Enables the input overlay feature for some Android game apps, "
     "so it can play with a keyboard and a mouse instead of touch screen";
-
-const char kScanAppMultiPageScanName[] =
-    "Enable multi-page scanning in Scan app";
-const char kScanAppMultiPageScanDescription[] =
-    "Enables creating a single PDF file from multiple flatbed scans";
 
 const char kSecondaryGoogleAccountUsageName[] =
     "Enable Secondary Google account usage policy.";

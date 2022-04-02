@@ -6,7 +6,11 @@
 
 namespace user_notes {
 
-UserNote::UserNote(const std::string& guid) : guid_(guid) {}
+UserNote::UserNote(const base::UnguessableToken& id,
+                   std::unique_ptr<UserNoteMetadata> metadata,
+                   std::unique_ptr<UserNoteBody> body,
+                   std::unique_ptr<UserNoteTarget> target)
+    : id_(id), metadata_(std::move(metadata)), target_(std::move(target)) {}
 
 UserNote::~UserNote() = default;
 

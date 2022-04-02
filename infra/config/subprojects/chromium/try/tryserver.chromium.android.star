@@ -47,7 +47,7 @@ try_.orchestrator_builder(
     # branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(
-        experiment_percentage = 80,
+        experiment_percentage = 100,
     ),
 )
 
@@ -132,10 +132,6 @@ try_.builder(
 )
 
 try_.builder(
-    name = "android-cronet-kitkat-arm-rel",
-)
-
-try_.builder(
     name = "android-cronet-x86-dbg",
 )
 
@@ -171,6 +167,10 @@ try_.builder(
 
 try_.builder(
     name = "android-cronet-x86-dbg-pie-tests",
+)
+
+try_.builder(
+    name = "android-cronet-x86-rel-kitkat-tests",
 )
 
 try_.builder(

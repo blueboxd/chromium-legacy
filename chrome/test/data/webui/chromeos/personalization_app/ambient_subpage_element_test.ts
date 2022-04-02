@@ -7,6 +7,7 @@ import 'chrome://webui-test/mojo_webui_test_support.js';
 
 import {AlbumsSubpage, AmbientActionName, AmbientModeAlbum, AmbientObserver, AmbientSubpage, AnimationTheme, AnimationThemeItem, emptyState, Paths, PersonalizationRouter, SetAlbumsAction, SetAmbientModeEnabledAction, SetAnimationThemeAction, SetTemperatureUnitAction, SetTopicSourceAction, TemperatureUnit, TopicSource, TopicSourceItem, WallpaperGridItem} from 'chrome://personalization/trusted/personalization_app.js';
 import {CrRadioButtonElement} from 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 import {waitAfterNextRender} from 'chrome://webui-test/test_util.js';
@@ -30,6 +31,7 @@ suite('AmbientSubpageTest', function() {
   const routerMock = TestBrowserProxy.fromClass(PersonalizationRouter);
 
   setup(() => {
+    loadTimeData.overrideValues({isAmbientModeAllowed: true});
     const mocks = baseSetup();
     ambientProvider = mocks.ambientProvider;
     personalizationStore = mocks.personalizationStore;
@@ -46,7 +48,7 @@ suite('AmbientSubpageTest', function() {
 
   async function displayMainSettings(
       topicSource: TopicSource|null, temperatureUnit: TemperatureUnit|null,
-      ambientModeEnabled: boolean,
+      ambientModeEnabled: boolean|null,
       animationTheme = AnimationTheme.kSlideshow): Promise<AmbientSubpage> {
     personalizationStore.data.ambient.albums = ambientProvider.albums;
     personalizationStore.data.ambient.animationTheme = animationTheme;
@@ -63,7 +65,21 @@ suite('AmbientSubpageTest', function() {
   test('displays content', async () => {
     ambientSubpageElement = await displayMainSettings(
         /*topicSource=*/ null, /*temperatureUnit=*/ null,
-        /*ambientModeEnabled=*/ false);
+        /*ambientModeEnabled=*/ null);
+    // Shows placeholder for ambient mode toggle row while loading ambient mode
+    // status.
+    const toggleRowPlaceholder =
+        ambientSubpageElement.shadowRoot!.querySelector(
+            '#toggleRowPlaceholder');
+    assertTrue(!!toggleRowPlaceholder);
+
+    personalizationStore.data.ambient.ambientModeEnabled = false;
+    personalizationStore.notifyObservers();
+    await waitAfterNextRender(ambientSubpageElement);
+
+    // Ambient mode is loaded, should not show toggle row placeholder.
+    assertTrue(!!toggleRowPlaceholder);
+    assertEquals(getComputedStyle(toggleRowPlaceholder).display, 'none');
 
     const toggleRow =
         ambientSubpageElement.shadowRoot!.querySelector('toggle-row');
@@ -438,10 +454,10 @@ suite('AmbientSubpageTest', function() {
         const reloadCalledPromise = new Promise<void>((resolve) => {
           PersonalizationRouter.reloadAtAmbient = resolve;
         });
-        initElement(AlbumsSubpage, {
-          path: Paths.AmbientAlbums,
-          disabled: true,
-        });
+        let albumsSubpageElement = initElement(AlbumsSubpage);
+        personalizationStore.data.ambient.ambientModeEnabled = false;
+        personalizationStore.notifyObservers();
+        await waitAfterNextRender(albumsSubpageElement);
 
         await reloadCalledPromise;
       });

@@ -51,10 +51,7 @@ preprocess_if_expr("preprocess_src") {
   in_folder = "."
   out_folder = "$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_src_manifest"
-  in_files = [
-    "cr_auto_img/cr_auto_img.js",
-    "cr_search_field/cr_search_field_behavior.js",
-  ]
+  in_files = [ "cr_search_field/cr_search_field_behavior.js" ]
 
   if (is_chromeos_ash) {
     in_files += [
@@ -71,6 +68,7 @@ preprocess_if_expr("preprocess_src_ts") {
   in_folder = "."
   out_folder = preprocess_folder
   in_files = [
+    "cr_auto_img/cr_auto_img.ts",
     "cr_container_shadow_mixin.ts",
     "cr_splitter/cr_splitter.ts",
     "find_shortcut_mixin.ts",
@@ -154,7 +152,6 @@ preprocess_if_expr("preprocess_generated") {
     "cr_checkbox/cr_checkbox.m.js",
     "cr_container_shadow_behavior.m.js",
     "cr_dialog/cr_dialog.m.js",
-    "cr_drawer/cr_drawer.js",
     "cr_expand_button/cr_expand_button.m.js",
     "cr_fingerprint/cr_fingerprint_icon.m.js",
     "cr_fingerprint/cr_fingerprint_progress_arc.m.js",
@@ -176,8 +173,6 @@ preprocess_if_expr("preprocess_generated") {
     "cr_radio_group/cr_radio_group.m.js",
     "cr_scrollable_behavior.m.js",
     "cr_search_field/cr_search_field.js",
-    "cr_toast/cr_toast_manager.js",
-    "cr_toast/cr_toast.js",
     "cr_toggle/cr_toggle.m.js",
     "cr_toolbar/cr_toolbar.js",
     "cr_toolbar/cr_toolbar_search_field.js",
@@ -216,10 +211,13 @@ preprocess_if_expr("preprocess_generated_ts") {
   in_files = [
     "cr_a11y_announcer/cr_a11y_announcer.ts",
     "cr_action_menu/cr_action_menu.ts",
+    "cr_drawer/cr_drawer.ts",
     "cr_grid/cr_grid.ts",
     "cr_nav_menu_item_style.ts",
     "cr_slider/cr_slider.ts",
     "cr_tabs/cr_tabs.ts",
+    "cr_toast/cr_toast.ts",
+    "cr_toast/cr_toast_manager.ts",
     "cr_toolbar/cr_toolbar_selection_overlay.ts",
     "cr_view_manager/cr_view_manager.ts",
     "mwb_element_shared_style.ts",
@@ -233,7 +231,6 @@ preprocess_if_expr("preprocess_generated_ts") {
 group("closure_compile") {
   deps = [
     ":cr_elements_resources",
-    "cr_auto_img:closure_compile",
     "cr_button:closure_compile",
     "cr_checkbox:closure_compile",
     "cr_dialog:closure_compile",
@@ -253,7 +250,6 @@ group("closure_compile") {
     "cr_button:closure_compile_module",
     "cr_checkbox:closure_compile_module",
     "cr_dialog:closure_compile_module",
-    "cr_drawer:closure_compile_module",
     "cr_expand_button:closure_compile_module",
     "cr_fingerprint:closure_compile_module",
     "cr_icon_button:closure_compile_module",
@@ -265,7 +261,6 @@ group("closure_compile") {
     "cr_radio_button:closure_compile_module",
     "cr_radio_group:closure_compile_module",
     "cr_search_field:closure_compile_module",
-    "cr_toast:closure_compile_module",
     "cr_toggle:closure_compile_module",
     "cr_toolbar:closure_compile_module",
     "policy:closure_compile_module",

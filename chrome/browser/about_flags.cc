@@ -52,7 +52,6 @@
 #include "chrome/browser/share/share_features.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
-#include "chrome/browser/sharing/sms/sms_flags.h"
 #include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/site_isolation/about_flags.h"
 #include "chrome/browser/ui/app_list/search/search_features.h"
@@ -2442,6 +2441,19 @@ const FeatureEntry::FeatureVariation
              kPasswordChangeInSettingsVariationWithForcedWarningForEverySite),
          nullptr}};
 
+// The variations of --password-domain-capabilities-fetching.
+const FeatureEntry::FeatureParam
+    kPasswordDomainCapabilitiesFetchingVariationLiveExperiment[] = {
+        {password_manager::features::kPasswordChangeLiveExperimentParam.name,
+         "true"}};
+
+const FeatureEntry::FeatureVariation
+    kPasswordDomainCapabilitiesFetchingFeatureVariations[] = {
+        {"Live experiment",
+         kPasswordDomainCapabilitiesFetchingVariationLiveExperiment,
+         std::size(kPasswordDomainCapabilitiesFetchingVariationLiveExperiment),
+         nullptr}};
+
 // The variations of --password-change-support.
 const FeatureEntry::FeatureParam
     kPasswordChangeVariationWithForcedDialogAfterEverySuccessfulSubmission[] = {
@@ -2700,24 +2712,24 @@ const FeatureEntry::FeatureParam kSnoopingProtectionPrecision[] = {
     {"SnoopingProtection_positive_count_threshold", "1"},
     {"SnoopingProtection_negative_count_threshold", "1"},
     {"SnoopingProtection_uncertain_count_threshold", "1"},
-    {"SnoopingProtection_positive_score_threshold", "-50"},
-    {"SnoopingProtection_negative_score_threshold", "-50"}};
+    {"SnoopingProtection_positive_score_threshold", "-20"},
+    {"SnoopingProtection_negative_score_threshold", "-20"}};
 
 const FeatureEntry::FeatureParam kSnoopingProtectionConfidence[] = {
     {"SnoopingProtection_filter_config_case", "2"},
     {"SnoopingProtection_positive_count_threshold", "2"},
     {"SnoopingProtection_negative_count_threshold", "2"},
     {"SnoopingProtection_uncertain_count_threshold", "2"},
-    {"SnoopingProtection_positive_score_threshold", "-50"},
-    {"SnoopingProtection_negative_score_threshold", "-50"}};
+    {"SnoopingProtection_positive_score_threshold", "-20"},
+    {"SnoopingProtection_negative_score_threshold", "-20"}};
 
 const FeatureEntry::FeatureParam kSnoopingProtectionRecall[] = {
     {"SnoopingProtection_filter_config_case", "2"},
     {"SnoopingProtection_positive_count_threshold", "1"},
     {"SnoopingProtection_negative_count_threshold", "1"},
     {"SnoopingProtection_uncertain_count_threshold", "1"},
-    {"SnoopingProtection_positive_score_threshold", "-70"},
-    {"SnoopingProtection_negative_score_threshold", "-70"}};
+    {"SnoopingProtection_positive_score_threshold", "-40"},
+    {"SnoopingProtection_negative_score_threshold", "-40"}};
 
 const FeatureEntry::FeatureVariation kSnoopingProtectionVariations[] = {
     {"Precise", kSnoopingProtectionPrecision,
@@ -3130,9 +3142,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsLinux | kOsCrOS | kOsWin | kOsAndroid | kOsFuchsia,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSmoothScrolling,
                                switches::kDisableSmoothScrolling)},
-    {"sms-receiver-cross-device", flag_descriptions::kWebOTPCrossDeviceName,
-     flag_descriptions::kWebOTPCrossDeviceDescription, kOsAll,
-     FEATURE_VALUE_TYPE(kWebOTPCrossDevice)},
     {"fractional-scroll-offsets",
      flag_descriptions::kFractionalScrollOffsetsName,
      flag_descriptions::kFractionalScrollOffsetsDescription, kOsAll,
@@ -3926,10 +3935,17 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsRemoveStatusBarName,
      flag_descriptions::kDesktopPWAsRemoveStatusBarDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kRemoveStatusBarInWebApps)},
+#if BUILDFLAG(IS_ANDROID)
+    {"enable-android-pwas-default-offline-page",
+     flag_descriptions::kAndroidPWAsDefaultOfflinePageName,
+     flag_descriptions::kAndroidPWAsDefaultOfflinePageDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kAndroidPWAsDefaultOfflinePage)},
+#else
     {"enable-desktop-pwas-default-offline-page",
      flag_descriptions::kDesktopPWAsDefaultOfflinePageName,
      flag_descriptions::kDesktopPWAsDefaultOfflinePageDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDesktopPWAsDefaultOfflinePage)},
+#endif  // BUILDFLAG(IS_ANDROID)
     {"enable-desktop-pwas-elided-extensions-menu",
      flag_descriptions::kDesktopPWAsElidedExtensionsMenuName,
      flag_descriptions::kDesktopPWAsElidedExtensionsMenuDescription, kOsDesktop,
@@ -5100,16 +5116,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(reading_list::switches::kReadLater,
                                     kReadLaterVariations,
                                     "Collections")},
-#else
-    {flag_descriptions::kReadLaterFlagId, flag_descriptions::kReadLaterName,
-     flag_descriptions::kReadLaterDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(reading_list::switches::kReadLater)},
 #endif
-
-    {"read-later-new-badge-promo",
-     flag_descriptions::kReadLaterNewBadgePromoName,
-     flag_descriptions::kReadLaterNewBadgePromoDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kReadLaterNewBadgePromo)},
 
 #if BUILDFLAG(IS_ANDROID)
     {"read-later-reminder-notification",
@@ -5149,10 +5156,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kScrollableTabStripButtonsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kScrollableTabStripButtons)},
 
-    {flag_descriptions::kSidePanelFlagId, flag_descriptions::kSidePanelName,
-     flag_descriptions::kSidePanelDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kSidePanel)},
-
     {flag_descriptions::kSidePanelDragAndDropFlagId,
      flag_descriptions::kSidePanelDragAndDropName,
      flag_descriptions::kSidePanelDragAndDropDescription, kOsDesktop,
@@ -5162,6 +5165,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSidePanelImprovedClobberingName,
      flag_descriptions::kSidePanelImprovedClobberingDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSidePanelImprovedClobbering)},
+
+    {flag_descriptions::kSidePanelJourneysFlagId,
+     flag_descriptions::kSidePanelJourneysName,
+     flag_descriptions::kSidePanelJourneysDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kSidePanelJourneys)},
 
     {flag_descriptions::kUnifiedSidePanelFlagId,
      flag_descriptions::kUnifiedSidePanelName,
@@ -5430,6 +5438,11 @@ const FeatureEntry kFeatureEntries[] = {
          webauthn::switches::kPermitEnterpriseAttestationOriginList,
          "")},
 #endif
+
+    {"enable-web-authentication-passkeys-ui-experiment",
+     flag_descriptions::kEnableWebAuthenticationPasskeysUIExperimentName,
+     flag_descriptions::kEnableWebAuthenticationPasskeysUIExperimentDescription,
+     kOsDesktop, FEATURE_VALUE_TYPE(device::kWebAuthPasskeysUIExperiment)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-web-authentication-chromeos-authenticator",
@@ -6052,11 +6065,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPcieBillboardNotificationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kPcieBillboardNotification)},
 
-    {"reduce-display-notifications",
-     flag_descriptions::kReduceDisplayNotificationsName,
-     flag_descriptions::kReduceDisplayNotificationsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kReduceDisplayNotifications)},
-
     {"use-search-click-for-right-click",
      flag_descriptions::kUseSearchClickForRightClickName,
      flag_descriptions::kUseSearchClickForRightClickDescription, kOsCrOS,
@@ -6594,6 +6602,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillEnableVirtualCardName,
      flag_descriptions::kAutofillEnableVirtualCardDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableVirtualCard)},
+#if BUILDFLAG(IS_ANDROID)
+    {"autofill-enable-manual-fallback-for-virtual-cards",
+     flag_descriptions::kAutofillEnableManualFallbackForVirtualCardsName,
+     flag_descriptions::kAutofillEnableManualFallbackForVirtualCardsDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableManualFallbackForVirtualCards)},
+#endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"account-id-migration", flag_descriptions::kAccountIdMigrationName,
@@ -6666,8 +6682,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPasswordDomainCapabilitiesFetchingName,
      flag_descriptions::kPasswordDomainCapabilitiesFetchingDescription,
      kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kPasswordDomainCapabilitiesFetching)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         password_manager::features::kPasswordDomainCapabilitiesFetching,
+         kPasswordDomainCapabilitiesFetchingFeatureVariations,
+         "PasswordDomainCapabilitiesFetchingFeatureVariations")},
     {"password-scripts-fetching",
      flag_descriptions::kPasswordScriptsFetchingName,
      flag_descriptions::kPasswordScriptsFetchingDescription, kOsAndroid,
@@ -6728,12 +6746,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(media::kMediaFoundationVideoCapture)},
 #endif  // BUILDFLAG(IS_WIN)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"scan-app-multi-page-scan", flag_descriptions::kScanAppMultiPageScanName,
-     flag_descriptions::kScanAppMultiPageScanDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kScanAppMultiPageScan)},
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
     {"color-provider-redirection-for-theme-provider",
      flag_descriptions::kColorProviderRedirectionForThemeProviderName,
      flag_descriptions::kColorProviderRedirectionForThemeProviderDescription,
@@ -6779,10 +6791,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNearbySharingReceiveWifiCredentialsDescription,
      kOsCrOS,
      FEATURE_VALUE_TYPE(features::kNearbySharingReceiveWifiCredentials)},
-    {"nearby-sharing-self-share",
-     flag_descriptions::kNearbySharingSelfShareName,
-     flag_descriptions::kNearbySharingSelfShareDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kNearbySharingSelfShare)},
+    {"nearby-sharing-self-share-auto-accept",
+     flag_descriptions::kNearbySharingSelfShareAutoAcceptName,
+     flag_descriptions::kNearbySharingSelfShareAutoAcceptDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kNearbySharingSelfShareAutoAccept)},
+    {"nearby-sharing-self-share-ui",
+     flag_descriptions::kNearbySharingSelfShareUIName,
+     flag_descriptions::kNearbySharingSelfShareUIDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kNearbySharingSelfShareUI)},
     {"nearby-sharing-visibility-reminder",
      flag_descriptions::kNearbySharingVisibilityReminderName,
      flag_descriptions::kNearbySharingVisibilityReminderDescription, kOsCrOS,
@@ -6824,6 +6840,14 @@ const FeatureEntry kFeatureEntries[] = {
     {"canvas-2d-layers", flag_descriptions::kCanvas2DLayersName,
      flag_descriptions::kCanvas2DLayersDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableCanvas2DLayers)},
+
+    {"enable-machine-learning-model-loader-web-platform-api",
+     flag_descriptions::kEnableMachineLearningModelLoaderWebPlatformApiName,
+     flag_descriptions::
+         kEnableMachineLearningModelLoaderWebPlatformApiDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         features::kEnableMachineLearningModelLoaderWebPlatformApi)},
 
     {"enable-translate-sub-frames",
      flag_descriptions::kEnableTranslateSubFramesName,
@@ -7134,6 +7158,7 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE_AND_VALUE(switches::kEnableFeatures,
                                  "PrivacySandboxAdsAPIsOverride,"
                                  "InterestGroupStorage,Fledge,"
+                                 "BiddingAndScoringDebugReportingAPI,"
                                  "AllowURNsInIframes,BrowsingTopics,"
                                  "ConversionMeasurement,"
                                  "OverridePrivacySandboxSettingsLocalTesting")},
@@ -7914,10 +7939,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesksTrackpadSwipeImprovementsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kEnableDesksTrackpadSwipeImprovements)},
 #endif
-
-    {"enable-cascade-layers", flag_descriptions::kCSSCascadeLayersName,
-     flag_descriptions::kCSSCascadeLayersDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kCSSCascadeLayers)},
 
     {"enable-commerce-developer", flag_descriptions::kCommerceDeveloperName,
      flag_descriptions::kCommerceDeveloperDescription, kOsAll,

@@ -15,8 +15,8 @@
 #include "build/branding_buildflags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/passwords/bubble_controllers/items_bubble_controller.h"
-#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
+#include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/password_form.h"
@@ -306,12 +306,8 @@ const PasswordBubbleControllerBase* PasswordItemsView::GetController() const {
 }
 
 ui::ImageModel PasswordItemsView::GetWindowIcon() {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  return ui::ImageModel::FromVectorIcon(kGooglePasswordManagerIcon,
+  return ui::ImageModel::FromVectorIcon(GooglePasswordManagerVectorIcon(),
                                         ui::kColorIcon, kIconHeight);
-#else
-  return ui::ImageModel::FromVectorIcon(kKeyIcon, ui::kColorIcon, kIconHeight);
-#endif
 }
 
 void PasswordItemsView::RecreateLayout() {

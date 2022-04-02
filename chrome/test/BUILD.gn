@@ -1224,7 +1224,7 @@ if (!is_android) {
       "//components/cast_channel",
       "//components/cbor",
       "//components/certificate_transparency",
-      "//components/certificate_transparency:proto",
+      "//components/commerce/core:commerce_heuristics_data",
       "//components/commerce/core:feature_list",
       "//components/constrained_window",
       "//components/content_settings/browser",
@@ -1647,7 +1647,6 @@ if (!is_android) {
       "../browser/chrome_worker_browsertest.cc",
       "../browser/client_hints/client_hints_browsertest.cc",
       "../browser/component_updater/component_patcher_operation_browsertest.cc",
-      "../browser/component_updater/pki_metadata_component_installer_browsertest.cc",
       "../browser/content_index/content_index_browsertest.cc",
       "../browser/content_language/content_language_browsertest.cc",
       "../browser/content_settings/mixed_content_settings_tab_helper_browsertest.cc",
@@ -1739,6 +1738,7 @@ if (!is_android) {
       "../browser/media/webrtc/capture_handle_browsertest.cc",
       "../browser/media/webrtc/conditional_focus_browsertest.cc",
       "../browser/media/webrtc/media_stream_devices_controller_browsertest.cc",
+      "../browser/media/webrtc/multi_capture_browsertest.cc",
       "../browser/media/webrtc/region_capture_browsertest.cc",
       "../browser/media/webrtc/same_origin_observer_browsertest.cc",
       "../browser/media/webrtc/test_stats_dictionary_unittest.cc",
@@ -1779,6 +1779,7 @@ if (!is_android) {
       "../browser/metrics/variations/variations_http_headers_browsertest.cc",
       "../browser/metrics/variations/variations_safe_mode_browsertest.cc",
       "../browser/metrics/variations/variations_safe_mode_end_to_end_browsertest.cc",
+      "../browser/navigation_predictor/anchor_element_preloader_browsertest.cc",
       "../browser/navigation_predictor/navigation_predictor_browsertest.cc",
       "../browser/navigation_predictor/navigation_predictor_preconnect_client_browsertest.cc",
       "../browser/navigation_predictor/search_engine_preconnector_browsertest.cc",
@@ -1827,6 +1828,7 @@ if (!is_android) {
       "../browser/new_tab_page/new_tab_page_browsertest.cc",
       "../browser/no_best_effort_tasks_browsertest.cc",
       "../browser/no_best_effort_tasks_during_startup_browsertest.cc",
+      "../browser/notifications/notification_permission_browsertest.cc",
       "../browser/notifications/scheduler/notification_schedule_service_browsertest.cc",
       "../browser/ntp_tiles/ntp_tiles_browsertest.cc",
       "../browser/optimization_guide/browser_test_util.cc",
@@ -2292,8 +2294,8 @@ if (!is_android) {
     }
 
     # https://crbug.com/1252812 The intent picker (launch icon) actions
-    # are not working on Lacros.
-    if (is_chromeos_ash && !is_chromeos_lacros) {
+    # are not working on Lacros. Remove the lacros exclusion when fixed.
+    if (is_chromeos && !is_chromeos_lacros) {
       sources += [
         "../browser/ui/views/web_apps/web_app_integration_browsertest_cros.cc",
       ]
@@ -2374,7 +2376,7 @@ if (!is_android) {
       ]
     }
 
-    if (is_linux && !is_chromeos_lacros) {
+    if (is_linux) {
       sources += [
         "../browser/chrome_main_browsertest.cc",
         "../browser/process_singleton_browsertest.cc",
@@ -2492,20 +2494,6 @@ if (!is_android) {
       ]
 
       data_deps += [ "//chrome:packed_resources" ]
-    }
-
-    if (is_fuchsia) {
-      # These files have tests parameterized based on base::Time and
-      # base::TimeDelta. These parameters are evaluated early within
-      # Google Test' RegisterTests() before Chromium code has had a chance
-      # to initialize. On Fuchsia, which uses ICU for exploding time, the
-      # locale gets initialized during this evaluation, causing some tests
-      # to fail to load the data needed for formatting.
-      # TODO(crbug.com/1300895): Restore this test after fixing the issue.
-      sources -= [
-        "../browser/browsing_data/browsing_data_remover_browsertest.cc",
-        "../browser/enterprise/connectors/analysis/content_analysis_dialog_browsertest.cc",
-      ]
     }
 
     if (enable_soda) {
@@ -3240,7 +3228,6 @@ if (!is_android) {
         "../browser/ui/views/permission_bubble/permission_prompt_bubble_view_browsertest.cc",
         "../browser/ui/views/profiles/profile_menu_view_browsertest.cc",
         "../browser/ui/views/qrcode_generator/qrcode_generator_bubble_browsertest.cc",
-        "../browser/ui/views/read_later/read_later_button_browsertest.cc",
         "../browser/ui/views/safe_browsing/deep_scanning_failure_modal_dialog_browsertest.cc",
         "../browser/ui/views/safe_browsing/password_reuse_modal_warning_dialog_browsertest.cc",
         "../browser/ui/views/safe_browsing/prompt_for_scanning_modal_dialog_browsertest.cc",
@@ -4307,7 +4294,7 @@ if (!is_android) {
       sources += [ "../browser/ui/views/side_search/default_search_icon_source_browsertest.cc" ]
     }
 
-    if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
+    if (is_win || is_mac || is_linux) {
       sources += [
         "../browser/ui/views/profiles/profile_picker_view_browsertest.cc",
         "../browser/ui/views/web_apps/web_app_integration_browsertest_mac_win_linux.cc",
@@ -4371,6 +4358,10 @@ if (!is_android) {
       ]
 
       # TODO(crbug.com/1278123): Enable once PWAs are supported.
+      deps -= [
+        "//chrome/browser/web_applications:browser_tests",
+        "//chrome/browser/web_applications:browser_tests_base",
+      ]
       sources -= [
         "../../apps/app_restore_service_browsertest.cc",
         "../../apps/load_and_launch_browsertest.cc",
@@ -4387,6 +4378,7 @@ if (!is_android) {
         "../browser/apps/platform_apps/platform_app_navigation_redirector_browsertest.cc",
         "../browser/apps/platform_apps/service_worker_browsertest.cc",
         "../browser/ui/startup/startup_browser_creator_browsertest.cc",
+        "../browser/ui/views/frame/system_web_app_non_client_frame_view_browsertest.cc",
         "../browser/ui/views/web_apps/deprecated_apps_dialog_view_browsertest.cc",
         "../browser/ui/views/web_apps/force_installed_deprecated_apps_dialog_view_browsertest.cc",
         "../browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_browsertest.cc",
@@ -4397,6 +4389,27 @@ if (!is_android) {
         "../browser/ui/views/web_apps/web_app_integration_browsertest.cc",
         "../browser/ui/views/web_apps/web_app_protocol_handler_intent_picker_dialog_browsertest.cc",
         "../browser/ui/views/web_apps/web_app_tab_strip_browsertest.cc",
+        "../browser/ui/web_applications/app_browser_controller_browsertest.cc",
+        "../browser/ui/web_applications/create_shortcut_browsertest.cc",
+        "../browser/ui/web_applications/pwa_mixed_content_browsertest.cc",
+        "../browser/ui/web_applications/sub_apps_service_impl_browsertest.cc",
+        "../browser/ui/web_applications/web_app_badging_browsertest.cc",
+        "../browser/ui/web_applications/web_app_browsertest.cc",
+        "../browser/ui/web_applications/web_app_dark_mode_browsertest.cc",
+        "../browser/ui/web_applications/web_app_engagement_browsertest.cc",
+        "../browser/ui/web_applications/web_app_file_handling_browsertest.cc",
+        "../browser/ui/web_applications/web_app_handle_links_browsertest.cc",
+        "../browser/ui/web_applications/web_app_launch_handler_browsertest.cc",
+        "../browser/ui/web_applications/web_app_link_capturing_browsertest.cc",
+        "../browser/ui/web_applications/web_app_metrics_browsertest.cc",
+        "../browser/ui/web_applications/web_app_navigate_browsertest.cc",
+        "../browser/ui/web_applications/web_app_profile_deletion_browsertest.cc",
+        "../browser/ui/web_applications/web_app_protocol_handling_browsertest.cc",
+        "../browser/ui/web_applications/web_app_ui_manager_impl_browsertest.cc",
+        "../browser/ui/web_applications/web_app_uninstall_browsertest.cc",
+        "../browser/ui/web_applications/web_app_url_handling_browsertest.cc",
+        "../browser/ui/web_applications/web_app_window_controls_overlay_browsertest.cc",
+        "../browser/web_applications/alternative_error_page_override_info_browsertest.cc",
       ]
 
       # Exclude tests which depend on native messaging.
@@ -5102,6 +5115,8 @@ test("unit_tests") {
     "../browser/policy/messaging_layer/util/report_queue_manual_test_context_unittest.cc",
     "../browser/policy/messaging_layer/util/test_request_payload.cc",
     "../browser/policy/messaging_layer/util/test_request_payload.h",
+    "../browser/policy/messaging_layer/util/test_response_payload.cc",
+    "../browser/policy/messaging_layer/util/test_response_payload.h",
     "../browser/policy/messaging_layer/util/user_dm_token_retriever_unittest.cc",
     "../browser/policy/profile_policy_connector_unittest.cc",
     "../browser/policy/webusb_allow_devices_for_urls_policy_handler_unittest.cc",
@@ -5206,6 +5221,7 @@ test("unit_tests") {
     "../browser/signin/chrome_signin_proxying_url_loader_factory_unittest.cc",
     "../browser/signin/chrome_signin_status_metrics_provider_delegate_unittest.cc",
     "../browser/signin/chrome_signin_url_loader_throttle_unittest.cc",
+    "../browser/signin/primary_account_policy_manager_unittest.cc",
     "../browser/signin/reauth_tab_helper_unittest.cc",
     "../browser/signin/signin_profile_attributes_updater_unittest.cc",
     "../browser/signin/test_signin_client_builder.cc",
@@ -5243,10 +5259,10 @@ test("unit_tests") {
     "../browser/ui/login/login_handler_unittest.cc",
     "../browser/ui/page_info/page_info_unittest.cc",
     "../browser/ui/passwords/manage_passwords_state_unittest.cc",
-    "../browser/ui/passwords/manage_passwords_view_utils_unittest.cc",
     "../browser/ui/passwords/password_generation_popup_controller_impl_unittest.cc",
     "../browser/ui/passwords/settings/password_manager_porter_unittest.cc",
     "../browser/ui/passwords/settings/password_manager_presenter_unittest.cc",
+    "../browser/ui/passwords/ui_utils_unittest.cc",
     "../browser/ui/search_engines/keyword_editor_controller_unittest.cc",
     "../browser/ui/sync/tab_contents_synced_tab_delegate_unittest.cc",
     "../browser/ui/webui/fileicon_source_unittest.cc",
@@ -9372,7 +9388,7 @@ if (!is_android) {
       ]
     }
 
-    if (is_win || is_mac || (is_linux && !is_chromeos_lacros)) {
+    if (is_win || is_mac || is_linux) {
       sources += [
         "../browser/ui/views/profiles/profile_bubble_interactive_uitest.cc",
       ]

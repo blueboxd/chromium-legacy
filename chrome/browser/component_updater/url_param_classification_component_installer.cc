@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/version.h"
@@ -27,7 +26,7 @@ using component_updater::ComponentUpdateService;
 namespace {
 
 const base::FilePath::CharType kUrlParamClassificationsFileName[] =
-    FILE_PATH_LITERAL("url_param_classifications.pb");
+    FILE_PATH_LITERAL("url-param-filter-list.textproto");
 
 // The SHA256 of the SubjectPublicKeyInfo used to sign the extension.
 // The extension id is: dnhnnofocefcglhjeigmkhcgfoaipbaa

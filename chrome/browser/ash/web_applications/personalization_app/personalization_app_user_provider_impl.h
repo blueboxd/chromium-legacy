@@ -34,8 +34,11 @@ namespace content {
 class WebUI;
 }  // namespace content
 
+namespace ash {
+namespace personalization_app {
+
 class PersonalizationAppUserProviderImpl
-    : public ash::PersonalizationAppUserProvider,
+    : public PersonalizationAppUserProvider,
       public user_manager::UserManager::Observer,
       public ash::CameraPresenceNotifier::Observer {
  public:
@@ -60,6 +63,9 @@ class PersonalizationAppUserProviderImpl
 
   void GetUserInfo(GetUserInfoCallback callback) override;
 
+  // This function is called when a user navigates to the page to change
+  // Avatar image. Therefore use it to track if the user has seen the change
+  // avatar page for Personalization HaTS.
   void GetDefaultUserImages(GetDefaultUserImagesCallback callback) override;
 
   void SelectImageFromDisk() override;
@@ -114,6 +120,9 @@ class PersonalizationAppUserProviderImpl
   // Pointer to profile of user that opened personalization SWA. Not owned.
   raw_ptr<Profile> profile_ = nullptr;
 
+  // Flag to track whether the user viewed the user subpage.
+  bool page_viewed_ = false;
+
   std::unique_ptr<user_manager::UserImage> last_external_user_image_;
 
   std::unique_ptr<CameraImageDecoder> camera_image_decoder_;
@@ -145,5 +154,8 @@ class PersonalizationAppUserProviderImpl
   base::WeakPtrFactory<PersonalizationAppUserProviderImpl>
       image_decode_weak_ptr_factory_{this};
 };
+
+}  // namespace personalization_app
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_WEB_APPLICATIONS_PERSONALIZATION_APP_PERSONALIZATION_APP_USER_PROVIDER_IMPL_H_

@@ -24,7 +24,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
 #include "content/browser/attribution_reporting/attribution_aggregatable_source.h"
 #include "content/browser/attribution_reporting/attribution_filter_data.h"
@@ -39,13 +38,11 @@
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/attribution_reporting/stored_source.h"
-#include "content/public/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-#include "url/url_util.h"
 
 namespace content {
 
@@ -186,23 +183,6 @@ TEST_F(AttributionStorageTest, ImpressionStoredAndRetrieved_ValuesIdentical) {
               ElementsAre(CommonSourceInfoIs(
                   SourceBuilder().SetDefaultFilterData().BuildCommonInfo())));
 }
-
-#if BUILDFLAG(IS_ANDROID)
-TEST_F(AttributionStorageTest,
-       ImpressionStoredAndRetrieved_ValuesIdentical_AndroidApp) {
-  url::ScopedSchemeRegistryForTests scoped_registry;
-  url::AddStandardScheme(kAndroidAppScheme, url::SCHEME_WITH_HOST);
-  SourceBuilder builder;
-  builder.SetImpressionOrigin(
-      url::Origin::Create(GURL("android-app:com.any.app")));
-  storage()->StoreSource(builder.Build());
-
-  // Verify that each field was stored as expected.
-  EXPECT_THAT(storage()->GetActiveSources(),
-              ElementsAre(CommonSourceInfoIs(
-                  builder.SetDefaultFilterData().BuildCommonInfo())));
-}
-#endif
 
 TEST_F(AttributionStorageTest,
        GetWithNoMatchingImpressions_NoImpressionsReturned) {
@@ -847,7 +827,7 @@ TEST_F(AttributionStorageTest, MaxAttributionsBetweenSites) {
       AllOf(CreateReportEventLevelStatusIs(
                 AttributionTrigger::EventLevelResult::kSuccess),
             CreateReportAggregatableStatusIs(
-                AttributionTrigger::AggregatableResult::kNoHistograms)));
+                AttributionTrigger::AggregatableResult::kNotRegistered)));
 
   auto conversion2 =
       DefaultAggregatableTriggerBuilder(/*histogram_values=*/{5}).Build();
@@ -2608,6 +2588,42 @@ TEST_F(
       storage()->GetActiveSources(),
       ElementsAre(SourceActiveStateIs(
           StoredSource::ActiveState::kReachedEventLevelAttributionLimit)));
+}
+
+TEST_F(AttributionStorageTest, AggregatableReportFiltering) {
+  auto aggregatable_source = AggregatableSourceProtoBuilder()
+                                 .AddKey("0", AggregatableKeyProtoBuilder()
+                                                  .SetHighBits(0)
+                                                  .SetLowBits(1)
+                                                  .Build())
+                                 .Build();
+
+  auto aggregatable_trigger =
+      blink::mojom::AttributionAggregatableTrigger::New();
+  aggregatable_trigger->trigger_data.push_back(
+      blink::mojom::AttributionAggregatableTriggerData::New(
+          blink::mojom::AttributionAggregatableKey::New(/*high_bits=*/1,
+                                                        /*low_bits=*/0),
+          std::vector<std::string>{"0"},
+          blink::mojom::AttributionFilterData::New(
+              AttributionFilterData::FilterValues{{"abc", {"456"}}}),
+          blink::mojom::AttributionFilterData::New()));
+
+  storage()->StoreSource(
+      SourceBuilder()
+          .SetFilterData(*AttributionFilterData::FromSourceFilterValues(
+              {{"abc", {"123"}}}))
+          .SetAggregatableSource(*AttributionAggregatableSource::Create(
+              std::move(aggregatable_source)))
+          .Build());
+
+  EXPECT_EQ(
+      MaybeCreateAndStoreAggregatableReport(
+          TriggerBuilder()
+              .SetAggregatableTrigger(*AttributionAggregatableTrigger::FromMojo(
+                  std::move(aggregatable_trigger)))
+              .Build()),
+      AttributionTrigger::AggregatableResult::kNoHistograms);
 }
 
 }  // namespace content

@@ -1878,6 +1878,34 @@ TEST_F(SellerWorkletTest, ReportResultAuctionConfigParam) {
   auction_ad_config_non_shared_params_->all_buyers_timeout =
       base::Milliseconds(150);
 
+  // Add and populate two component auctions, each with one the mandatory
+  // `seller` and `decision_logic_url` fields filled in, one one extra field:
+  // One that's directly a member of the AuctionAdConfig, and one that's in the
+  // non-shared params.
+
+  auto& component_auctions =
+      auction_ad_config_non_shared_params_->component_auctions;
+
+  component_auctions.emplace_back(blink::mojom::AuctionAdConfig::New());
+  component_auctions[0]->auction_ad_config_non_shared_params =
+      blink::mojom::AuctionAdConfigNonSharedParams::New();
+  component_auctions[0]->seller =
+      url::Origin::Create(GURL("http://component1.com"));
+  component_auctions[0]->decision_logic_url =
+      GURL("http://component1.com/script.js");
+  component_auctions[0]->auction_ad_config_non_shared_params->seller_timeout =
+      base::Milliseconds(111);
+
+  component_auctions.emplace_back(blink::mojom::AuctionAdConfig::New());
+  component_auctions[1]->auction_ad_config_non_shared_params =
+      blink::mojom::AuctionAdConfigNonSharedParams::New();
+  component_auctions[1]->seller =
+      url::Origin::Create(GURL("http://component2.com"));
+  component_auctions[1]->decision_logic_url =
+      GURL("http://component2.com/script.js");
+  component_auctions[1]->trusted_scoring_signals_url =
+      GURL("http://component2.com/signals.json");
+
   const char kExpectedJson[] =
       R"({"seller":"https://example.com",)"
       R"("decisionLogicUrl":"https://example.com/auction.js",)"
@@ -1888,7 +1916,13 @@ TEST_F(SellerWorkletTest, ReportResultAuctionConfigParam) {
       R"("sellerTimeout":200,)"
       R"("perBuyerSignals":{"https://a.com":{"signals_a":"A"},)"
       R"("https://b.com":{"signals_b":"B"}},)"
-      R"("perBuyerTimeouts":{"https://a.com":100,"*":150}})";
+      R"("perBuyerTimeouts":{"https://a.com":100,"*":150},)"
+      R"("componentAuctions":[{"seller":"http://component1.com",)"
+      R"("decisionLogicUrl":"http://component1.com/script.js",)"
+      R"("sellerTimeout":111},)"
+      R"({"seller":"http://component2.com",)"
+      R"("decisionLogicUrl":"http://component2.com/script.js",)"
+      R"("trustedScoringSignalsUrl":"http://component2.com/signals.json"}]})";
   RunReportResultCreatedScriptExpectingResult(
       "auctionConfig", /*extra_code=*/std::string(), kExpectedJson,
       /*expected_report_url=*/absl::nullopt);
@@ -2615,7 +2649,15 @@ class SellerWorkletRealTimeTest : public SellerWorkletTest {
             base::test::TaskEnvironment::TimeSource::SYSTEM_TIME) {}
 };
 
+// `scoreAd` should time out due to AuctionV8Helper's default script timeout (50
+// ms).
 TEST_F(SellerWorkletRealTimeTest, ScoreAdTimedOut) {
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript(/*raw_return_value=*/"", R"(while (1))"), 0,
+      {"https://url.test/ execution of `scoreAd` timed out."});
+}
+
+TEST_F(SellerWorkletRealTimeTest, ScoreAdSellerTimeoutFromAuctionConfig) {
   // Use a very long default script timeout, and a short seller timeout, so
   // that if the seller script with endless loop times out, we know that the
   // seller timeout overwrote the default script timeout and worked.
@@ -2638,7 +2680,7 @@ TEST_F(SellerWorkletRealTimeTest, ScoreAdTimedOut) {
 }
 
 class SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest
-    : public SellerWorkletTest {
+    : public SellerWorkletRealTimeTest {
  public:
   SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest() {
     feature_list_.InitAndEnableFeature(
@@ -2818,6 +2860,38 @@ TEST_F(SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
       /*expected_data_version=*/absl::nullopt,
       /*expected_debug_loss_report_url=*/absl::nullopt,
       /*expected_debug_win_report_url=*/GURL("https://win.url"));
+}
+
+// Loss report URLs before seller script times out should be kept.
+TEST_F(SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
+       ScoreAdHasError) {
+  // The seller script has an endless while loop. It will time out due to
+  // AuctionV8Helper's default script timeout (50 ms).
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript(
+          /*raw_return_value=*/"",
+          R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url1");
+            error;
+            forDebuggingOnly.reportAdAuctionLoss("https://loss.url2"))"),
+      0, {"https://url.test/:5 Uncaught ReferenceError: error is not defined."},
+      mojom::ComponentAuctionModifiedBidParamsPtr(),
+      /*expected_data_version=*/{}, GURL("https://loss.url1"));
+}
+
+// Loss report URLs before seller script times out should be kept.
+TEST_F(SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
+       ScoreAdTimedOut) {
+  // The seller script has an endless while loop. It will time out due to
+  // AuctionV8Helper's default script timeout (50 ms).
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript(
+          /*raw_return_value=*/"",
+          R"(forDebuggingOnly.reportAdAuctionLoss("https://loss.url1");
+            while (1);
+            forDebuggingOnly.reportAdAuctionLoss("https://loss.url2"))"),
+      0, {"https://url.test/ execution of `scoreAd` timed out."},
+      mojom::ComponentAuctionModifiedBidParamsPtr(),
+      /*expected_data_version=*/{}, GURL("https://loss.url1"));
 }
 
 // Subsequent runs of the same script should not affect each other.

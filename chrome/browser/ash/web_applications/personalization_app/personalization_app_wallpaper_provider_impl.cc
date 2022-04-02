@@ -31,6 +31,8 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/wallpaper/wallpaper_enumerator.h"
 #include "chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.h"
+#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager.h"
+#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager_factory.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/thumbnail_loader.h"
@@ -58,6 +60,9 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "url/gurl.h"
+
+namespace ash {
+namespace personalization_app {
 
 namespace {
 
@@ -99,7 +104,17 @@ PersonalizationAppWallpaperProviderImpl::
 }
 
 PersonalizationAppWallpaperProviderImpl::
-    ~PersonalizationAppWallpaperProviderImpl() = default;
+    ~PersonalizationAppWallpaperProviderImpl() {
+  if (!image_asset_id_map_.empty()) {
+    // User viewed wallpaper page at least once during this session because
+    // |image_asset_id_map_| has wallpaper asset ids saved. Check if this user
+    // should see a wallpaper HaTS.
+    ::ash::personalization_app::PersonalizationAppManagerFactory::
+        GetForBrowserContext(profile_)
+            ->MaybeStartHatsTimer(
+                ::ash::personalization_app::HatsSurveyType::kWallpaper);
+  }
+}
 
 void PersonalizationAppWallpaperProviderImpl::BindInterface(
     mojo::PendingReceiver<ash::personalization_app::mojom::WallpaperProvider>
@@ -133,6 +148,18 @@ void PersonalizationAppWallpaperProviderImpl::MakeTransparent() {
                                     web_contents->GetTopLevelNativeWindow())
                                     ->contents_web_view())
       ->SetBackgroundVisible(false);
+}
+
+void PersonalizationAppWallpaperProviderImpl::MakeOpaque() {
+  auto* web_contents = web_ui_->GetWebContents();
+
+  // Reversing `contents_web_view` is sufficient to make the view opaque,
+  // as `window_backdrop`, `top_level_window` and `web_contents` are not
+  // highly impactful to the animated theme change effect.
+  static_cast<ContentsWebView*>(BrowserView::GetBrowserViewForNativeWindow(
+                                    web_contents->GetTopLevelNativeWindow())
+                                    ->contents_web_view())
+      ->SetBackgroundVisible(true);
 }
 
 void PersonalizationAppWallpaperProviderImpl::FetchCollections(
@@ -788,3 +815,6 @@ void PersonalizationAppWallpaperProviderImpl::NotifyWallpaperChanged(
   DCHECK(wallpaper_observer_remote_.is_bound());
   wallpaper_observer_remote_->OnWallpaperChanged(std::move(current_wallpaper));
 }
+
+}  // namespace personalization_app
+}  // namespace ash

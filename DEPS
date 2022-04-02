@@ -261,7 +261,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '8f9043636bfcc762670d1613cd7c34e550a58d31',
+  'angle_revision': 'cd9e887aef6b09d3c5df94ba3f9c28a091733961',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -328,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'f6f73b8d9eedbc5b6006e61c3be0d843188eac55',
+  'devtools_frontend_revision': '19290bc784a66486e2ed813612bed49276dd29f5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1163,7 +1163,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/google/farmhash.git' + '@' + '816a4ae622e964763ca0862d9dbd19324a1eaf45',
 
   'src/third_party/ffmpeg':
-    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + '574c39cce3231c69bc9a02ac475c27d944bdb113',
+    Var('chromium_git') + '/chromium/third_party/ffmpeg.git' + '@' + '32b2d1d52612e47531df9289e3f5fdd5447507dd',
 
   'src/third_party/flac':
     Var('chromium_git') + '/chromium/deps/flac.git' + '@' + 'af862024c8c8fa0ae07ced05e89013d881b00596',
@@ -1593,7 +1593,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/android/aemu/release/linux-amd64',
-              'version': 'sZ4uxq0EA46Lc0lxfmGRb2znwe8PY0pITymUy9mdJv8C'
+              'version': 'kh_pRBcjUEXYrzw_OXh3BDKYOHY5Hc0YiWnxQqg-EGIC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1697,7 +1697,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '62d7d0c928c9a040dce96aa2f16c00e7e67d59cb',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@4cef968d5909db0abf6e1ba36965a80e4b184d26',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@62741cb4edab56608170a0f20bba3a8fe52a6418',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'ebe84bec02c041d28f902da0214bf442743fc907',
@@ -1806,7 +1806,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@08a17b6f54e84dbb4c44a6c7d130a258b87349f7',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e94d38671e18b6ded30db85e407b4056e0093bcd',
     'condition': 'checkout_src_internal',
   },
 

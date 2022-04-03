@@ -253,7 +253,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'b198752832ed2d4495ce4ed737ddb65484d8b6ee',
+  'skia_revision': 'fd9c66e1803092e5fc6f9d6c4cad3d8c030bb860',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -261,7 +261,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'cd9e887aef6b09d3c5df94ba3f9c28a091733961',
+  'angle_revision': '4b232a9a826182308e0523a74998e355d3733792',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -269,7 +269,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '82c5172b87a874baf965d69bbfc45296cc9861a3',
+  'pdfium_revision': '96f11830ebcb757ae919d286438a074e94c15508',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -328,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '19290bc784a66486e2ed813612bed49276dd29f5',
+  'devtools_frontend_revision': '1079e9f8a1d3eb5c0e57641da2f151ad9cee62b4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -431,7 +431,7 @@ vars = {
   'libcxx_revision':       '79a2e924d96e2fc1e4b937c42efd08898fa472d7',
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:bb8f66fdb5990ae5c0eb05152d51aca9a263b10d',
+  'gn_version': 'git_revision:859dde4a7f34a4383179522f8e1061dcffac8691',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -836,7 +836,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'VgNtqsjcflrAuiNKeIxSjcq3CE9yPDGwJaW5RbpztrMC',
+          'version': 'woPA7odqdGVdNIclP8gNFVKRs3DK_4dw1tB8W98Hz9gC',
         },
       ],
       'dep_type': 'cipd',
@@ -847,7 +847,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': 'JvBPOFe9P3msMz1MGka_9UTu-qRUEuxbK14m7djDb78C',
+          'version': 'OTMEVvvyh7nnUTBb_w1nI8meP2sQGINsUnS0Xm6DrHcC',
         },
       ],
       'dep_type': 'cipd',
@@ -858,7 +858,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'FioUkqctr8a_cSSXVCWZxcbhTFhs3XidDCwMy_-s9YgC',
+          'version': 'sRKPK6bmdPBUqLCxulOnuoD7i5-UHd8QDyciDc4eLCAC',
         },
       ],
       'dep_type': 'cipd',
@@ -1127,7 +1127,7 @@ deps = {
 
   # For Linux and Chromium OS.
   'src/third_party/cros_system_api': {
-      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + 'a737e50d9430bc69516f6ca3e8a8d6beb7d15e68',
+      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '4d104db182fff273c83014a7d6fa16e1e0ca48c1',
       'condition': 'checkout_linux',
   },
 
@@ -1697,7 +1697,7 @@ deps = {
   'src/third_party/usrsctp/usrsctplib':
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '62d7d0c928c9a040dce96aa2f16c00e7e67d59cb',
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@62741cb4edab56608170a0f20bba3a8fe52a6418',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@e806dc1f8ff0e7bbf5b23dd6d4c0c41b0a87861f',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'ebe84bec02c041d28f902da0214bf442743fc907',
@@ -1736,7 +1736,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '7afd2efc27572eda0e9b3a8c0831b47f5e6c3353',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '5601ea6125504a664d555063ba3f3a80a6d42302',
+    Var('webrtc_git') + '/src.git' + '@' + '3225385b3e4d5667beef90811cf859aae48ff78a',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1806,7 +1806,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e94d38671e18b6ded30db85e407b4056e0093bcd',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8117c0e37560476361d8bf11af28f27e497b28b8',
     'condition': 'checkout_src_internal',
   },
 
@@ -1836,7 +1836,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': '9813WWMrH5MqPee81_USOgOQKPm4VjeROpT8SuwBqSIC',
+        'version': 'chlK7ebjAqFmK6W9dizXajfjhTuYnEFbHtuvB24pasQC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1847,7 +1847,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'XK4WVCQ_KI0bCb1neir0h-PC5fHJ3uNkN7lAcr24crcC',
+        'version': 'ccbcGT7uf9WaY1n-6ZRm-i7J3S-J5mFaHX899XSZYHUC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1858,7 +1858,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': '3k0GumLG1gaDNNMX_SeFqVhhsyzxgcQG8-4PYUen1XwC',
+        'version': 'JqYr8NYI7QomYa-CkoZ048ETCGWWZFrqCP6jOJ9bxagC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

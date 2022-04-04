@@ -78,7 +78,8 @@ struct VideoEncoderClientConfig {
   const bool reverse = false;
 };
 
-struct VideoEncoderStats {
+class VideoEncoderStats {
+ public:
   VideoEncoderStats();
   VideoEncoderStats(const VideoEncoderStats&);
   ~VideoEncoderStats();
@@ -86,6 +87,7 @@ struct VideoEncoderStats {
                     size_t num_temporal_layers,
                     size_t num_spatial_layers);
   uint32_t Bitrate() const;
+  uint32_t LayerBitrate(size_t spatial_idx, size_t temporal_idx) const;
   void Reset();
 
   uint32_t framerate = 0;
@@ -266,6 +268,10 @@ class VideoEncoderClient : public VideoEncodeAccelerator::Client {
 
   // The current top spatial layer index.
   uint8_t current_top_spatial_index_ = 0;
+
+  // A map from an input VideoFrame timestamp to the time when it is enqueued
+  // into |encoder_|.
+  std::map<base::TimeDelta, base::TimeTicks> source_timestamps_;
 
   // Force a key frame on next Encode(), only accessed on the
   // |encoder_client_thread_|.

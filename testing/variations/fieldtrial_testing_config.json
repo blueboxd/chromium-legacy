@@ -657,6 +657,27 @@
             ]
         }
     ],
+    "AutofillComplementCountryCodeOnImport": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillComplementCountryCodeOnImport"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillDelayPopupControllerDeletion": [
         {
             "platforms": [
@@ -913,6 +934,28 @@
                     "name": "Enabled",
                     "enable_features": [
                         "AutofillIgnoreAutocompleteForImport"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillIgnoreEarlyClicksOnPopup": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_500ms",
+                    "params": {
+                        "duration": "500ms"
+                    },
+                    "enable_features": [
+                        "AutofillIgnoreEarlyClicksOnPopup"
                     ]
                 }
             ]
@@ -6881,6 +6924,25 @@
                     "name": "Enabled_20220302",
                     "enable_features": [
                         "TailoredSecurityIntegration"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ThemeProviderColorProviderRedirection": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ColorProviderRedirectionForThemeProvider"
                     ]
                 }
             ]

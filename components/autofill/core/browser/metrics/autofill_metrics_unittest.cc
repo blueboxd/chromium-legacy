@@ -12749,7 +12749,7 @@ TEST_F(AutofillMetricsTest,
 }
 
 // Base class for cross-frame filling metrics, in particular for
-// Autofill.CreditCard.SeamlessFills.* and Autofill.CreditCard.NumberFills.*.
+// Autofill.CreditCard.SeamlessFills.*.
 class AutofillMetricsCrossFrameFormTest : public AutofillMetricsTest {
  public:
   struct CreditCardAndCvc {
@@ -12882,7 +12882,7 @@ class AutofillMetricsCrossFrameFormTest : public AutofillMetricsTest {
 };
 
 // Tests that Autofill.CreditCard.SeamlessFills.* is not emitted for manual
-// fills and that Autofill.CreditCard.NumberFills.AtSubmissionTime emits false.
+// fills.
 TEST_F(AutofillMetricsCrossFrameFormTest,
        DoNotLogCreditCardSeamlessFillsMetricIfNotAutofilled) {
   base::HistogramTester histogram_tester;
@@ -12901,35 +12901,37 @@ TEST_F(AutofillMetricsCrossFrameFormTest,
   CommitMetrics();
 
   histogram_tester.ExpectTotalCount(
-      "Autofill.CreditCard.NumberFills.AtFillTimeBeforeSecurityPolicy", 0);
-  histogram_tester.ExpectTotalCount(
       "Autofill.CreditCard.SeamlessFills.AtFillTimeBeforeSecurityPolicy", 0);
-
   histogram_tester.ExpectTotalCount(
-      "Autofill.CreditCard.NumberFills.AtFillTimeAfterSecurityPolicy", 0);
+      "Autofill.CreditCard.SeamlessFills.AtFillTimeBeforeSecurityPolicy."
+      "Bitmask",
+      0);
+
   histogram_tester.ExpectTotalCount(
       "Autofill.CreditCard.SeamlessFills.AtFillTimeAfterSecurityPolicy", 0);
-
   histogram_tester.ExpectTotalCount(
-      "Autofill.CreditCard.NumberFillable.AtFillTimeBeforeSecurityPolicy", 0);
+      "Autofill.CreditCard.SeamlessFills.AtFillTimeAfterSecurityPolicy.Bitmask",
+      0);
+
   histogram_tester.ExpectTotalCount(
       "Autofill.CreditCard.SeamlessFillable.AtFillTimeBeforeSecurityPolicy", 0);
-
   histogram_tester.ExpectTotalCount(
-      "Autofill.CreditCard.NumberFillable.AtFillTimeAfterSecurityPolicy", 0);
+      "Autofill.CreditCard.SeamlessFillable.AtFillTimeBeforeSecurityPolicy."
+      "Bitmask",
+      0);
+
   histogram_tester.ExpectTotalCount(
       "Autofill.CreditCard.SeamlessFillable.AtFillTimeAfterSecurityPolicy", 0);
-
-  ExpectBuckets<bool>(histogram_tester,
-                      "Autofill.CreditCard.NumberFills.AtSubmissionTime",
-                      {{false, 1}, {true, 0}});
+  histogram_tester.ExpectTotalCount(
+      "Autofill.CreditCard.SeamlessFillable.AtFillTimeAfterSecurityPolicy."
+      "Bitmask",
+      0);
 }
 
-// Tests that Autofill.CreditCard.SeamlessFills.* and
-// Autofill.CreditCard.NumberFills.* are emitted.
+// Tests that Autofill.CreditCard.SeamlessFills.* are emitted.
 TEST_F(AutofillMetricsCrossFrameFormTest,
        LogCreditCardSeamlessFillsMetricIfAutofilledWithoutCvc) {
-  using SFM = AutofillMetrics::CreditCardSeamlessFillMetric;
+  using Metric = AutofillMetrics::CreditCardSeamlessness::Metric;
   base::HistogramTester histogram_tester;
   SeeForm();
 
@@ -12959,48 +12961,52 @@ TEST_F(AutofillMetricsCrossFrameFormTest,
   SubmitForm();
   CommitMetrics();
 
-  ExpectBuckets<bool>(
-      histogram_tester,
-      "Autofill.CreditCard.NumberFillable.AtFillTimeBeforeSecurityPolicy",
-      {{false, 0}, {true, 2}});
-  ExpectBuckets<SFM>(
+  ExpectBuckets<Metric>(
       histogram_tester,
       "Autofill.CreditCard.SeamlessFillable.AtFillTimeBeforeSecurityPolicy",
-      {{SFM::kFullFill, 2}});
-
-  ExpectBuckets<bool>(
+      {{Metric::kFullFill, 2}});
+  ExpectBuckets<int>(
       histogram_tester,
-      "Autofill.CreditCard.NumberFills.AtFillTimeBeforeSecurityPolicy",
-      {{false, 0}, {true, 2}});
-  ExpectBuckets<SFM>(
+      "Autofill.CreditCard.SeamlessFillable.AtFillTimeBeforeSecurityPolicy."
+      "Bitmask",
+      {{/*cardholder*/ 8 | /*number*/ 4 | /*exp*/ 2 | /*cvc*/ 1, 2}});
+
+  ExpectBuckets<Metric>(
       histogram_tester,
       "Autofill.CreditCard.SeamlessFills.AtFillTimeBeforeSecurityPolicy",
-      {{SFM::kOptionalCvcMissing, 1}, {SFM::kPartialFill, 1}});
-
-  ExpectBuckets<bool>(
+      {{Metric::kOptionalCvcMissing, 1}, {Metric::kPartialFill, 1}});
+  ExpectBuckets<int>(
       histogram_tester,
-      "Autofill.CreditCard.NumberFillable.AtFillTimeAfterSecurityPolicy",
-      {{false, 1}, {true, 1}});
-  ExpectBuckets<SFM>(
+      "Autofill.CreditCard.SeamlessFills.AtFillTimeBeforeSecurityPolicy."
+      "Bitmask",
+      {{/*cardholder*/ 8 | /*number*/ 4 | /*exp*/ 2, 1}, {/*number*/ 4, 1}});
+
+  ExpectBuckets<Metric>(
       histogram_tester,
       "Autofill.CreditCard.SeamlessFillable.AtFillTimeAfterSecurityPolicy",
-      {{SFM::kPartialFill, 2}});
-
-  ExpectBuckets<bool>(
+      {{Metric::kPartialFill, 2}});
+  ExpectBuckets<int>(
       histogram_tester,
-      "Autofill.CreditCard.NumberFills.AtFillTimeAfterSecurityPolicy",
-      {{false, 1}, {true, 1}});
-  ExpectBuckets<SFM>(
+      "Autofill.CreditCard.SeamlessFillable.AtFillTimeAfterSecurityPolicy."
+      "Bitmask",
+      {{/*cardholder*/ 8 | /*exp*/ 2, 1}, {/*number*/ 4 | /*cvc*/ 1, 1}});
+
+  ExpectBuckets<Metric>(
       histogram_tester,
       "Autofill.CreditCard.SeamlessFills.AtFillTimeAfterSecurityPolicy",
-      {{SFM::kPartialFill, 2}});
+      {{Metric::kPartialFill, 2}});
+  ExpectBuckets<int>(
+      histogram_tester,
+      "Autofill.CreditCard.SeamlessFills.AtFillTimeAfterSecurityPolicy.Bitmask",
+      {{/*cardholder*/ 8 | /*exp*/ 2, 1}, {/*number*/ 4, 1}});
 
-  ExpectBuckets<bool>(histogram_tester,
-                      "Autofill.CreditCard.NumberFills.AtSubmissionTime",
-                      {{false, 0}, {true, 1}});
-  ExpectBuckets<SFM>(histogram_tester,
-                     "Autofill.CreditCard.SeamlessFills.AtSubmissionTime",
-                     {{SFM::kOptionalCvcMissing, 1}});
+  ExpectBuckets<Metric>(histogram_tester,
+                        "Autofill.CreditCard.SeamlessFills.AtSubmissionTime",
+                        {{Metric::kOptionalCvcMissing, 1}});
+  ExpectBuckets<int>(
+      histogram_tester,
+      "Autofill.CreditCard.SeamlessFills.AtSubmissionTime.Bitmask",
+      {{/*cardholder*/ 8 | /*number*/ 4 | /*exp*/ 2, 1}});
 }
 
 }  // namespace autofill

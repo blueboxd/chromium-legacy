@@ -1226,7 +1226,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
     enable = canOpenNewBrowser;
   } else if (action == @selector(toggleConfirmToQuit:)) {
     [self updateConfirmToQuitPrefMenuItem:static_cast<NSMenuItem*>(item)];
-    enable = YES;
+    enable = [self shouldEnableConfirmToQuitPrefMenuItem];
   }
   return enable;
 }
@@ -1553,6 +1553,12 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   const PrefService* prefService = g_browser_process->local_state();
   bool enabled = prefService->GetBoolean(prefs::kConfirmToQuitEnabled);
   [item setState:enabled ? NSOnState : NSOffState];
+}
+
+- (BOOL)shouldEnableConfirmToQuitPrefMenuItem {
+  const PrefService* prefService = g_browser_process->local_state();
+  return !prefService->FindPreference(prefs::kConfirmToQuitEnabled)
+              ->IsManaged();
 }
 
 - (void)registerServicesMenuTypesTo:(NSApplication*)app {

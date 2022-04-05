@@ -79,7 +79,7 @@ if (use_fuzzing_engine) {
 # {micro,mini}dump_stackwalk and minidump_dump are tool-type executables
 # that do not build on Windows.
 if (!is_win) {
-  if (current_toolchain == host_toolchain) {
+  if (current_toolchain == host_toolchain || target_os == "mac") {
     # Contains the code shared by both {micro,mini}dump_stackwalk.
     static_library("stackwalk_common") {
       sources = [
@@ -279,7 +279,7 @@ if (!is_win) {
 # Mac --------------------------------------------------------------------------
 
 if (is_mac) {
-  if (current_toolchain == host_toolchain) {
+  if (current_toolchain == host_toolchain || target_os != "ios") {
     source_set("common") {
       sources = [
         "breakpad/src/common/dwarf/bytereader.cc",

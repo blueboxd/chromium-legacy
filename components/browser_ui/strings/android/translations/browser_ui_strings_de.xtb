@@ -21,7 +21,7 @@
 <translation id="1446450296470737166">Volle Kontr. über MIDI-Ger. erl.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1644574205037202324">Verlauf</translation>
-<translation id="1647582022260550163">Möchten Sie die Berechtigungen dieser Website wirklich zurücksetzen und ihre Cookies und Daten löschen?</translation>
+<translation id="1647582022260550163">Möchtest du die Berechtigungen dieser Website wirklich zurücksetzen und ihre Cookies und Daten löschen?</translation>
 <translation id="1660204651932907780">Wiedergabe von Ton auf Websites zulassen (empfohlen)</translation>
 <translation id="1677097821151855053">Durch Cookies und andere Websitedaten erinnert sich die Website an Sie, z. B. bei der Anmeldung oder für personalisierte Werbung. Sie können Cookies für alle Websites <ph name="BEGIN_LINK" />in den Einstellungen verwalten<ph name="END_LINK" />.</translation>
 <translation id="1688867105868176567">Websitedaten löschen?</translation>
@@ -48,7 +48,7 @@
 <translation id="2148716181193084225">Heute</translation>
 <translation id="2182457891543959921">Nachfragen, bevor Websites erlaubt wird, eine 3D-Karte meiner Umgebung zu erstellen oder die Kameraposition zu verfolgen (empfohlen)</translation>
 <translation id="2212565012507486665">Cookies zulassen</translation>
-<translation id="2228071138934252756">Um <ph name="APP_NAME" /> Zugriff auf Ihre Kamera zu gewähren, muss die Kameraberechtigung auch in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktiviert werden.</translation>
+<translation id="2228071138934252756">Um <ph name="APP_NAME" /> Zugriff auf deine Kamera zu gewähren, muss die Kameraberechtigung auch in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktiviert werden.</translation>
 <translation id="2241634353105152135">Nur einmal</translation>
 <translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> entfernen</translation>
 <translation id="2289270750774289114">Nachfragen, wenn eine Website nach Bluetooth-Geräten in der Nähe suchen möchte (empfohlen)</translation>
@@ -134,19 +134,19 @@
 <translation id="429312253194641664">Eine Website gibt Medien wieder</translation>
 <translation id="42981349822642051">Maximieren</translation>
 <translation id="4336434711095810371">Alle Daten löschen</translation>
-<translation id="4402755511846832236">Websites daran hindern, Informationen zu Ihrer aktiven Nutzung dieses Geräts abzurufen</translation>
+<translation id="4402755511846832236">Websites daran hindern, Informationen zu deiner aktiven Nutzung dieses Geräts abzurufen</translation>
 <translation id="4428065317363009941">Personalisierte Werbung</translation>
 <translation id="4434045419905280838">Pop-ups und Weiterleitungen</translation>
 <translation id="445467742685312942">Websites erlauben, geschützte Inhalte wiederzugeben</translation>
 <translation id="4468959413250150279">Eine bestimmte Website stummschalten.</translation>
 <translation id="4479647676395637221">Nachfragen, bevor Websites Zugriff auf meine Kamera erhalten (empfohlen)</translation>
 <translation id="4505788138578415521">URL maximiert</translation>
-<translation id="4534723447064627427">Um <ph name="APP_NAME" /> Zugriff auf Ihr Mikrofon zu gewähren, muss die Mikrofonberechtigung auch in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktiviert werden.</translation>
+<translation id="4534723447064627427">Um <ph name="APP_NAME" /> Zugriff auf dein Mikrofon zu gewähren, muss die Mikrofonberechtigung auch in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktiviert werden.</translation>
 <translation id="4570913071927164677">Details</translation>
 <translation id="4645575059429386691">Von deinen Eltern verwaltet</translation>
 <translation id="4670064810192446073">Virtual Reality</translation>
 <translation id="4751476147751820511">Bewegungs- oder Lichtsensoren</translation>
-<translation id="4836046166855586901">Nachfragen, wenn eine Website Informationen zu Ihrer aktiven Nutzung dieses Geräts abrufen möchte</translation>
+<translation id="4836046166855586901">Nachfragen, wenn eine Website Informationen zu deiner aktiven Nutzung dieses Geräts abrufen möchte</translation>
 <translation id="4883854917563148705">Verwaltete Einstellungen können nicht zurückgesetzt werden</translation>
 <translation id="4887024562049524730">Nachfragen, bevor Websites erlaubt wird, mein Virtual-Reality-Gerät und meine Virtual-Reality-Daten zu verwenden (empfohlen)</translation>
 <translation id="4962975101802056554">Alle Berechtigungen für Gerät entziehen</translation>
@@ -204,7 +204,7 @@
 <translation id="5939518447894949180">Zurücksetzen</translation>
 <translation id="5975083100439434680">Verkleinern</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
-<translation id="6015775454662021376">Zugriff dieser Website auf Ihr Gerät steuern</translation>
+<translation id="6015775454662021376">Zugriff dieser Website auf dein Gerät steuern</translation>
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="6042308850641462728">Mehr</translation>
 <translation id="6064125863973209585">Abgeschlossene Downloads</translation>
@@ -264,7 +264,7 @@
 <translation id="7423538860840206698">Es dürfen keine Dateien aus der Zwischenablage abgerufen werden</translation>
 <translation id="7425915948813553151">Dunkles Design für Websites</translation>
 <translation id="7521387064766892559">JavaScript</translation>
-<translation id="7554752735887601236">Eine Website verwendet Ihr Mikrofon</translation>
+<translation id="7554752735887601236">Eine Website verwendet dein Mikrofon</translation>
 <translation id="7561196759112975576">Immer</translation>
 <translation id="757524316907819857">Wiedergabe von geschützten Inhalten für Websites blockieren</translation>
 <translation id="7577900504646297215">Interessen verwalten</translation>
@@ -273,9 +273,9 @@
 <translation id="7781829728241885113">Gestern</translation>
 <translation id="7791543448312431591">Hinzufügen</translation>
 <translation id="780301667611848630">Kein Interesse</translation>
-<translation id="7804248752222191302">Eine Website verwendet Ihre Kamera</translation>
+<translation id="7804248752222191302">Eine Website verwendet deine Kamera</translation>
 <translation id="7817023149356982970">Sie werden von dieser Website abgemeldet.</translation>
-<translation id="7828557259026017104">Cookies sind Dateien, die von Websites erstellt werden, die Sie besuchen. Sie werden zum Speichern Ihrer Einstellungen verwendet. Drittanbieter-Cookies werden von anderen Websites erstellt. Diesen Websites gehören einige der Inhalte, wie z. B. Werbeanzeigen oder Bilder, die Sie auf der besuchten Webseite sehen.</translation>
+<translation id="7828557259026017104">Cookies sind Dateien, die von Websites erstellt werden, die du besuchst. Sie werden zum Speichern deiner Einstellungen verwendet. Drittanbieter-Cookies werden von anderen Websites erstellt. Diesen Websites gehören einige der Inhalte, wie z. B. Werbeanzeigen oder Bilder, die du auf der besuchten Webseite siehst.</translation>
 <translation id="7835852323729233924">Medien werden wiedergegeben</translation>
 <translation id="783819812427904514">Stummschaltung des Videos aufheben</translation>
 <translation id="7846076177841592234">Auswahl aufheben</translation>
@@ -296,7 +296,7 @@
 <translation id="8154912474061769055">Viele Websites funktionieren dann möglicherweise nicht mehr richtig</translation>
 <translation id="8197286292360124385"><ph name="PERMISSION_1" /> zugelassen</translation>
 <translation id="8200772114523450471">Fortsetzen</translation>
-<translation id="8206354486702514201">Diese Einstellung wird von Ihrem Administrator erzwungen.</translation>
+<translation id="8206354486702514201">Diese Einstellung wird von deinem Administrator erzwungen.</translation>
 <translation id="8211406090763984747">Verbindung ist sicher</translation>
 <translation id="8249310407154411074">Ganz nach oben</translation>
 <translation id="8261506727792406068">Löschen</translation>
@@ -305,7 +305,7 @@
 <translation id="8324158725704657629">Nicht mehr fragen</translation>
 <translation id="8372893542064058268">Lässt die Hintergrundsynchronisierung für eine bestimmte Website zu.</translation>
 <translation id="8376384591331888629">Einschließlich Cookies von Drittanbietern auf dieser Website</translation>
-<translation id="83792324527827022">Eine Website verwendet Ihre Kamera und Ihr Mikrofon</translation>
+<translation id="83792324527827022">Eine Website verwendet deine Kamera und dein Mikrofon</translation>
 <translation id="8380167699614421159">Diese Website zeigt aufdringliche oder irreführende Werbung an</translation>
 <translation id="8394832520002899662">Tippen, um zur Website zurückzukehren</translation>
 <translation id="8425213833346101688">Ändern</translation>

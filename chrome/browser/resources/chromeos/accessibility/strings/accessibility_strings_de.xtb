@@ -35,12 +35,12 @@
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1207086294218137981">Keine nächste Überschrift der Ebene 4</translation>
 <translation id="1212770441379271564">Bei den nächsten Tastaturbefehlen handelt es sich zwar nicht um ChromeVox-Befehle, aber sie sind für die optimale Bedienung von Chrome dennoch sehr hilfreich.
-    Wenn Sie durch ausführbare Elemente, z. B. Schaltflächen und Links, vorwärtsgehen möchten, drücken Sie die Tabulatortaste. Rückwärts gelangen Sie mit Umschalttaste + Tab.
-    Wenn Sie auf die Adressleiste des Chrome-Browsers, auch als Omnibox bezeichnet, zugreifen möchten, drücken Sie Strg + L.
-    Um einen neuen Tab zu öffnen und automatisch dorthin zu wechseln, drücken Sie Strg + T. Ihr Cursor befindet sich dann in der Omnibox.
-    Wenn Sie einen Tab schließen möchten, drücken Sie Strg + W.
-    Um zwischen offenen Tabs vorwärtszugehen, verwenden Sie Strg + Tab.
-    Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
+    Wenn du durch ausführbare Elemente, z. B. Schaltflächen und Links, vorwärtsgehen möchtest, drücke die Tabulatortaste. Rückwärts gelangst du mit Umschalttaste + Tab.
+    Wenn du auf die Adressleiste des Chrome-Browsers, auch als Omnibox bezeichnet, zugreifen möchtest, drücke Strg + L.
+    Um einen neuen Tab zu öffnen und automatisch dorthin zu wechseln, drücke Strg + T. Dein Cursor befindet sich dann in der Omnibox.
+    Wenn du einen Tab schließen möchtest, drücke Strg + W.
+    Um zwischen offenen Tabs vorwärtszugehen, verwende Strg + Tab.
+    Um das Chrome-Browsermenü zu öffnen, drücke Alt + F.</translation>
 <translation id="1213216066620407844">ChromeVox – eine Stimme für Chrome</translation>
 <translation id="1225969361094801578">Dunkles Schiefergrau</translation>
 <translation id="1230503547248836149">Beginn der Auswahl</translation>
@@ -173,7 +173,7 @@
 <translation id="2152179395627233441">Übungsbereich schließen</translation>
 <translation id="2163782704988363449">Druckfehler</translation>
 <translation id="2169714232367507776">Auf aktuelles Element klicken</translation>
-<translation id="2179452035581866348">Mit ChromeVox erhalten Sie wichtige und zusätzliche Informationen mithilfe von Tönen. Wenn Sie sich merken, was die einzelnen Töne bedeuten, können Sie sie zur schnelleren Navigation verwenden. Sobald Sie mit dem Gerät vertraut sind, können Sie die ausführlichen gesprochenen Beschreibungen deaktivieren und Töne nutzen, um wichtige Informationen zur Seite zu erhalten. Nachfolgend finden Sie eine vollständige Liste der Töne und ihrer Bedeutung.</translation>
+<translation id="2179452035581866348">Mit ChromeVox erhältst du wichtige und zusätzliche Informationen mithilfe von Tönen. Wenn du dir merkst, was die einzelnen Töne bedeuten, kannst du sie zur schnelleren Navigation verwenden. Sobald du mit dem Gerät vertraut bist, kannst du die ausführlichen gesprochenen Beschreibungen deaktivieren und Töne nutzen, um wichtige Informationen zur Seite zu erhalten. Nachfolgend findest du eine vollständige Liste der Töne und ihrer Bedeutung.</translation>
 <translation id="2183409941723714159">Bedienung mit der Tabulatortaste</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{runde Klammer zu}other{# runde Klammern zu}}</translation>
 <translation id="2197863150503783129">Sattelbraun</translation>
@@ -314,7 +314,7 @@
 <translation id="3082249673510793544">Zurückscrollen</translation>
 <translation id="3084806535845658316">Kein Eingabeecho</translation>
 <translation id="3086746722712840547">note</translation>
-<translation id="308736057934395497">Hiermit wird das Display ausgeschaltet, um Ihre Privatsphäre besser zu schützen. Damit verhindern Sie, dass andere Personen den Bildschirminhalt sehen können. Durch Drücken von „Suchtaste + ‚Helligkeit erhöhen‘“ lässt sich das Display jederzeit wieder einschalten.</translation>
+<translation id="308736057934395497">Hiermit wird das Display ausgeschaltet, um deine Privatsphäre besser zu schützen. Damit verhinderst du, dass andere Personen den Bildschirminhalt sehen können. Durch Drücken von „Suchtaste + ‚Helligkeit erhöhen‘“ lässt sich das Display jederzeit wieder einschalten.</translation>
 <translation id="3090227230165225418">Download-Benachrichtigungen ankündigen</translation>
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">Nächste Markierung</translation>
@@ -463,7 +463,7 @@
 <translation id="4035381225449278841">Frühling</translation>
 <translation id="4038098586530338813">Wiederholen</translation>
 <translation id="4047216625641135770">Mark-Element</translation>
-<translation id="4047910800766704982">Sie können jetzt Texte mit natürlicher Stimme wiedergeben, wenn Ihr Gerät online ist. Der Text wird zur Verarbeitung an Google gesendet. In den Einstellungen kann diese Funktion jederzeit wieder deaktiviert werden.</translation>
+<translation id="4047910800766704982">Du kannst jetzt Texte mit natürlicher Stimme wiedergeben, wenn dein Gerät online ist. Der Text wird zur Verarbeitung an Google gesendet. In den Einstellungen kann diese Funktion jederzeit wieder deaktiviert werden.</translation>
 <translation id="4053520724192563562">Gelbgrün</translation>
 <translation id="4054936709456751127">sts</translation>
 <translation id="4058278702844053247">Eine Seite wird aufgebaut</translation>
@@ -657,7 +657,7 @@
 <translation id="5452267669091857717">Keine nächste Überschrift der Ebene 1</translation>
 <translation id="5455441614648621694">Ergänzend</translation>
 <translation id="5462510922370980473">Seitenliste</translation>
-<translation id="5471768120198416576">Hallo! Ich bin die Stimme Ihrer Sprachausgabe.</translation>
+<translation id="5471768120198416576">Hallo! Ich bin die Stimme deiner Sprachausgabe.</translation>
 <translation id="5495517933067991341">Wichtige Tasten: Umschalttaste</translation>
 <translation id="549602578321198708">Wort</translation>
 <translation id="5513242761114685513">Kontextmenü</translation>
@@ -753,7 +753,7 @@
 <translation id="6082768461603900813">Grundlegende Navigation</translation>
 <translation id="609281021724813947">Kein vorheriger Schieberegler</translation>
 <translation id="6100239002225743044">Eine Zeile nach oben</translation>
-<translation id="6118126368611144850">Android-Apps für Chrome. Wenn Sie den Play Store auf Ihrem Gerät installiert haben, können Sie vorab einen Blick auf ChromeVox mit Android-Apps werfen. Um die experimentelle Unterstützung auszuprobieren, laden Sie Google Chrome Canary aus dem Play Store herunter.</translation>
+<translation id="6118126368611144850">Android-Apps für Chrome. Wenn du den Play Store auf deinem Gerät installiert hast, kannst du vorab einen Blick auf ChromeVox mit Android-Apps werfen. Um die experimentelle Unterstützung auszuprobieren, lade Google Chrome Canary aus dem Play Store herunter.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6132506484792346370">Ein Listen- oder Kombinationsfeld</translation>

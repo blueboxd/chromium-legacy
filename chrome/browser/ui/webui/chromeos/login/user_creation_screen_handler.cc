@@ -63,7 +63,7 @@ void UserCreationScreenHandler::DeclareLocalizedValues(
                IDS_OOBE_USER_CREATION_CHILD_SIGN_IN_LEARN_MORE_DIALOG_TEXT);
 }
 
-void UserCreationScreenHandler::Initialize() {}
+void UserCreationScreenHandler::InitializeDeprecated() {}
 
 void UserCreationScreenHandler::Show() {
   ShowInWebUI();
@@ -71,12 +71,12 @@ void UserCreationScreenHandler::Show() {
 
 void UserCreationScreenHandler::Bind(UserCreationScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void UserCreationScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void UserCreationScreenHandler::SetIsBackButtonVisible(bool value) {

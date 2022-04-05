@@ -643,7 +643,7 @@ void GaiaScreenHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
                base::Value(features::IsRedirectToDefaultIdPEnabled()));
 }
 
-void GaiaScreenHandler::Initialize() {
+void GaiaScreenHandler::InitializeDeprecated() {
   initialized_ = true;
   // This should be called only once on page load.
   AllowJavascript();
@@ -1171,11 +1171,11 @@ void GaiaScreenHandler::Hide() {
 }
 
 void GaiaScreenHandler::Bind(GaiaScreen* screen) {
-  BaseScreenHandler::SetBaseScreen(screen);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen);
 }
 
 void GaiaScreenHandler::Unbind() {
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void GaiaScreenHandler::SetGaiaPath(GaiaScreenHandler::GaiaPath gaia_path) {

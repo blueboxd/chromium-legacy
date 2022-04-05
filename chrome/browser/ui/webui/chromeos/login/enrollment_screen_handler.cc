@@ -254,12 +254,12 @@ void EnrollmentScreenHandler::Hide() {}
 
 void EnrollmentScreenHandler::Bind(ash::EnrollmentScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void EnrollmentScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void EnrollmentScreenHandler::ShowSigninScreen() {
@@ -621,7 +621,7 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
 
 // EnrollmentScreenHandler BaseScreenHandler implementation -----
 
-void EnrollmentScreenHandler::Initialize() {
+void EnrollmentScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     Show();
     show_on_init_ = false;

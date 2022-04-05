@@ -214,8 +214,8 @@ const char kUseStorkSmdsServerAddressDescription[] =
     "Use the Stork SM-DS address to fetch pending eSIM profiles managed by the "
     "Stork prod server. Note that Stork profiles can be created with an EID at "
     "go/stork-profile, and managed at go/stork-batch > View Profiles. Also "
-    "note that an external EUICC card is required to use this feature, and "
-    "that the kCellularUseExternal flag must be enabled. Go to "
+    "note that an test EUICC card is required to use this feature, usually "
+    "that requires the kCellularUseSecond flag to be enabled. Go to "
     "go/cros-connectivity > Dev Tips for more instructions.";
 
 const char kUseWallpaperStagingUrlName[] = "Use Wallpaper staging URL";
@@ -4081,12 +4081,6 @@ const char kAmbientModeAnimationDescription[] =
     "slideshow) when entering ambient mode. Currently, there is only one "
     "animation theme available (feel the breeze).";
 
-const char kAmbientModeNewUrlName[] =
-    "Use new backend URL format for ChromeOS Screensaver";
-const char kAmbientModeNewUrlDescription[] =
-    "Use new backend URL format for ChromeOS Screensaver.  This helps with "
-    "testing new backend migration.";
-
 const char kAppDiscoveryForOobeName[] =
     "OOBE app recommendations with App Discovery Service.";
 const char kAppDiscoveryForOobeDescription[] =
@@ -4290,10 +4284,10 @@ const char kCellularUseAttachApnDescription[] =
     "for the LTE connections rather than letting the modem decide which "
     "attach APN to use or retrieve it from the network";
 
-const char kCellularUseExternalEuiccName[] = "Use external Euicc";
-const char kCellularUseExternalEuiccDescription[] =
-    "When enabled Cellular Setup and Settings UI will use the first available "
-    "external Euicc.";
+const char kCellularUseSecondEuiccName[] = "Use second Euicc";
+const char kCellularUseSecondEuiccDescription[] =
+    "When enabled Cellular Setup and Settings UI will use the second available "
+    "Euicc that's exposed by Hermes.";
 
 const char kComponentUpdaterTestRequestName[] =
     "Enable the component updater check 'test-request' parameter";
@@ -4666,11 +4660,6 @@ const char kEcheCustomWidgetDescription[] =
 const char kEcheSWADebugModeName[] = "Enable Eche Debug Mode";
 const char kEcheSWADebugModeDescription[] = "Enable the Debug Mode of the Eche";
 
-const char kEcheSWAInBackgroundName[] = "Enable Eche Background Mode";
-const char kEcheSWAInBackgroundDescription[] =
-    "Enable the Eche SWA to run in the background before connection "
-    "established";
-
 const char kEnableIdleInhibitName[] = "Enable Idle Inhibit Protocol";
 const char kEnableIdleInhibitDescription[] =
     "Enables the Wayland idle-inhibit-unstable-v1 protocol";
@@ -4959,12 +4948,6 @@ const char kCrosLanguageSettingsImeOptionsInSettingsName[] =
     "Ime settings in settings";
 const char kCrosLanguageSettingsImeOptionsInSettingsDescription[] =
     "Adds IME settings to the settings menu";
-
-const char kKeyboardBasedDisplayArrangementInSettingsName[] =
-    "Keyboard-based Display Arrangement in Settings";
-const char kKeyboardBasedDisplayArrangementInSettingsDescription[] =
-    "Enables using arrow keys to rearrange displays on Settings > Device > "
-    "Displays page.";
 
 const char kLacrosAvailabilityIgnoreName[] =
     "Ignore lacros-availability policy";
@@ -5805,6 +5788,12 @@ const char kWebrtcPipeWireCapturerDescription[] =
 #endif  // #if defined(WEBRTC_USE_PIPEWIRE)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+const char kChromeKioskEnableLacrosName[] =
+    "Enables Lacros in the chrome app Kiosk";
+const char kChromeKioskEnableLacrosDescription[] =
+    "Uses Lacros-chrome as the web browser in the chrome app Kiosk session on "
+    "Chrome OS. When disabled, the Ash-chrome will be used";
+
 const char kWebKioskEnableLacrosName[] =
     "Enables Lacros in the web (PWA) Kiosk";
 const char kWebKioskEnableLacrosDescription[] =

@@ -17,7 +17,7 @@
 
 /** @polymerBehavior */
 /* #export */ const I18nBehavior = {
-  // <if expr="chromeos">
+  // <if expr="chromeos_ash">
   // Dynamic locale changes are only relevant in ChromeOS OOBE/Login flows.
   // On other platforms Chrome process is restarted upon locale changes.
   // TODO(crbug.com/955194): move it to OobeI18nBehavior.
@@ -46,12 +46,12 @@
    * Returns a translated string where $1 to $9 are replaced by the given
    * values.
    * @param {string} id The ID of the string to translate.
-   * @param {...string} var_args Values to replace the placeholders $1 to $9
+   * @param {...string} varArgs Values to replace the placeholders $1 to $9
    *     in the string.
    * @return {string} A translated, substituted string.
    * @private
    */
-  i18nRaw_(id, var_args) {
+  i18nRaw_(id, varArgs) {
     return arguments.length === 1 ?
         loadTimeData.getString(id) :
         loadTimeData.getStringF.apply(loadTimeData, arguments);
@@ -63,11 +63,11 @@
    * Use with Polymer bindings that are *not* inner-h-t-m-l.
    * NOTE: This is not related to $i18n{foo} in HTML, see file overview.
    * @param {string} id The ID of the string to translate.
-   * @param {...string|number} var_args Values to replace the placeholders $1
+   * @param {...string|number} varArgs Values to replace the placeholders $1
    *     to $9 in the string.
    * @return {string} A translated, sanitized, substituted string.
    */
-  i18n(id, var_args) {
+  i18n(id, varArgs) {
     const rawString = this.i18nRaw_.apply(this, arguments);
     return parseHtmlSubset('<b>' + rawString + '</b>').firstChild.textContent;
   },
@@ -93,26 +93,26 @@
    * updates when |this.locale| changes.
    * @param {string} locale The UI language used.
    * @param {string} id The ID of the string to translate.
-   * @param {...string} var_args Values to replace the placeholders $1 to $9
+   * @param {...string} varArgs Values to replace the placeholders $1 to $9
    *     in the string.
    * @return {string} A translated, sanitized, substituted string.
    */
-  i18nDynamic(locale, id, var_args) {
+  i18nDynamic(locale, id, varArgs) {
     return this.i18n.apply(this, Array.prototype.slice.call(arguments, 1));
   },
 
   /**
-   * Similar to 'i18nDynamic', but var_args valus are interpreted as keys in
+   * Similar to 'i18nDynamic', but varArgs valus are interpreted as keys in
    * loadTimeData. This allows generation of strings that take other localized
    * strings as parameters.
    * @param {string} locale The UI language used.
    * @param {string} id The ID of the string to translate.
-   * @param {...string} var_args Values to replace the placeholders $1 to $9
+   * @param {...string} varArgs Values to replace the placeholders $1 to $9
    *     in the string. Values are interpreted as strings IDs if found in the
    *     list of localized strings.
    * @return {string} A translated, sanitized, substituted string.
    */
-  i18nRecursive(locale, id, var_args) {
+  i18nRecursive(locale, id, varArgs) {
     let args = Array.prototype.slice.call(arguments, 2);
     if (args.length > 0) {
       // Try to replace IDs with localized values.
@@ -137,22 +137,22 @@
 /** @interface */
 /* #export */ class I18nBehaviorInterface {
   constructor() {
-    // <if expr="chromeos">
+    // <if expr="chromeos_ash">
     /** @type {string} */
     this.locale;
     // </if>
   }
 
-  // <if expr="chromeos">
+  // <if expr="chromeos_ash">
   i18nUpdateLocale() {}
   // </if>
 
   /**
    * @param {string} id
-   * @param {...string|number} var_args
+   * @param {...string|number} varArgs
    * @return {string}
    */
-  i18n(id, var_args) {}
+  i18n(id, varArgs) {}
 
   /**
    * @param {string} id
@@ -164,18 +164,18 @@
   /**
    * @param {string} locale
    * @param {string} id
-   * @param {...string} var_args
+   * @param {...string} varArgs
    * @return {string}
    */
-  i18nDynamic(locale, id, var_args) {}
+  i18nDynamic(locale, id, varArgs) {}
 
   /**
    * @param {string} locale
    * @param {string} id
-   * @param {...string} var_args
+   * @param {...string} varArgs
    * @return {string}
    */
-  i18nRecursive(locale, id, var_args) {}
+  i18nRecursive(locale, id, varArgs) {}
 
   /**
    * @param {string} id

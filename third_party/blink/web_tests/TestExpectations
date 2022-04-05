@@ -2032,8 +2032,6 @@ crbug.com/520188 [ Win ] http/tests/local/fileapi/file-last-modified-after-delet
 crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Failure Pass ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
 
-crbug.com/892032 fast/events/wheel/wheel-latched-scroll-node-removed.html [ Failure Pass ]
-
 crbug.com/1051136 fast/forms/select/listbox-overlay-scrollbar.html [ Failure ]
 
 # These performance-sensitive user-timing tests are flaky in debug on all platforms, and flaky on all configurations of windows.
@@ -3333,6 +3331,15 @@ crbug.com/626703 [ Win ] virtual/prerender/external/wpt/speculation-rules/preren
 crbug.com/626703 [ Win ] virtual/partitioned-cookies/http/tests/inspector-protocol/network/disabled-cache-navigation.js [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/motion/offset-path-shape.html [ Failure ]
+crbug.com/626703 external/wpt/css/motion/offset-path-url.html [ Failure ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/fetch/private-network-access/nested-worker.https.window.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/html/cross-origin-opener-policy/header-parsing.https.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/html/cross-origin-opener-policy/reporting/access-reporting/property-opener-set.https.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] virtual/document-transition/wpt_internal/document-transition/new-content-container-writing-modes.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] virtual/no-alloc-direct-call/external/wpt/html/canvas/element/manual/wide-gamut-canvas/canvas-display-p3-drawImage-ImageBitmap-cloned.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] virtual/split-http-cache/external/wpt/signed-exchange/reporting/sxg-reporting-navigation-cert_fetch_error-downgraded.tentative.html [ Timeout ]
+crbug.com/626703 [ Mac11-arm64 ] external/wpt/navigation-api/ordering-and-transition/navigate-cross-document-double.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-background-attachment-001.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-background-clip-001.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-ui/compute-kind-widget-generated/kind-of-widget-fallback-meter-background-clip-001.html [ Failure ]
@@ -5034,15 +5041,6 @@ crbug.com/833658 media/video-controls-focus-movement-on-hide.html [ Failure Pass
 # Sheriff 2018-05-22
 crbug.com/845610 [ Win ] http/tests/inspector-protocol/target/target-browser-context.js [ Failure Pass ]
 
-# Sheriff 2018-05-28
-# Merged failing devtools/editor tests.
-### See crbug.com/891427 comment near the top of this file:
-crbug.com/749738 http/tests/devtools/editor/text-editor-word-jumps.js [ Pass Timeout ]
-crbug.com/846997 http/tests/devtools/editor/text-editor-ctrl-d-1.js [ Pass Timeout ]
-crbug.com/846982 http/tests/devtools/editor/text-editor-formatter.js [ Pass Timeout ]
-###crbug.com/847114 [ Linux ] http/tests/devtools/tracing/decode-resize.js [ Pass Failure ]
-###crbug.com/847114 [ Linux ] virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Pass Failure ]
-
 crbug.com/843135 virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ Failure Pass ]
 
 crbug.com/941429 virtual/gpu/fast/canvas/canvas-arc-circumference.html [ Failure ]
@@ -5064,8 +5062,7 @@ crbug.com/849978 http/tests/devtools/elements/styles-4/stylesheet-source-url-com
 crbug.com/854538 [ Win7 ] http/tests/security/contentSecurityPolicy/1.1/form-action-src-default-ignored-with-redirect.html [ Skip ]
 
 # User Activation
-crbug.com/736415 crbug.com/1066190 external/wpt/html/user-activation/navigation-state-reset-crossorigin.sub.tentative.html [ Failure Timeout ]
-crbug.com/736415 external/wpt/html/user-activation/navigation-state-reset-sameorigin.tentative.html [ Failure ]
+crbug.com/1066190 external/wpt/html/user-activation/navigation-state-reset-crossorigin.sub.tentative.html [ Failure Timeout ]
 
 # Sheriff 2018-07-05
 crbug.com/861682 [ Win ] external/wpt/css/mediaqueries/device-aspect-ratio-003.html [ Failure Pass ]
@@ -6893,9 +6890,6 @@ crbug.com/1194498 http/tests/misc/iframe-script-modify-attr.html [ Crash Failure
 crbug.com/1242243 external/wpt/css/css-paint-api/parse-input-arguments-018.https.html [ Crash Failure Pass ]
 crbug.com/1242243 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/parse-input-arguments-018.https.html [ Crash Failure Pass ]
 
-# Sheriff 2021-08-24
-crbug.com/1244896 [ Mac ] fast/mediacapturefromelement/CanvasCaptureMediaStream-set-size-too-large.html [ Pass Timeout ]
-
 # Sheriff 2021-08-25
 crbug.com/1243128 [ Win ] external/wpt/web-share/disabled-by-permissions-policy.https.sub.html [ Failure ]
 
@@ -7178,7 +7172,6 @@ crbug.com/1254163 [ Mac ] virtual/scroll-unification/ietestcenter/css3/bordersba
 
 # Sheriff 2021-10-01
 crbug.com/1255014 [ Linux ] virtual/scroll-unification-overlay-scrollbar/plugin-overlay-scrollbar-mouse-capture.html [ Failure Pass ]
-crbug.com/1254963 [ Win ] external/wpt/mathml/presentation-markup/mrow/inferred-mrow-stretchy.html [ Crash Pass ]
 crbug.com/1255221 http/tests/devtools/elements/styles-4/svg-style.js [ Failure Pass ]
 
 # Skip devtools test hitting an unexpected tracing infrastructure exception 2021-10-04
@@ -7581,6 +7574,12 @@ crbug.com/1295707 http/tests/devtools/elements/elements-treeoutline-copy.js [ Fa
 # Disable to skip performance test caused by potential O(n^2) problem in AXObjectCacheImpl::ChildrenChanged
 crbug.com/1293714 external/wpt/css/selectors/invalidation/has-complexity.html [ Skip ]
 
+# Temporarily disabled to unblock https://crrev.com/c/3565724
+crbug.com/1294619 http/tests/devtools/editor/text-editor-ctrl-d-1.js [ Skip ]
+crbug.com/1294619 http/tests/devtools/editor/text-editor-formatter.js [ Skip ]
+crbug.com/1294619 http/tests/devtools/editor/text-editor-word-jumps.js [ Skip ]
+crbug.com/1294619 http/tests/inspector-protocol/target/target-expose-devtools-protocol-errors.js [ Skip ]
+
 # Sheriff 2022-02-15
 crbug.com/1297587 [ Mac10.12 ] external/wpt/webrtc-encoded-transform/RTCPeerConnection-insertable-streams-simulcast.https.html [ Failure Pass ]
 
@@ -7678,7 +7677,6 @@ crbug.com/1272376 [ Mac ] plugins/plugin-document-back-forward.html [ Failure Pa
 # Tests that need updates due to rounding math in layout
 crbug.com/1309975 http/tests/devtools/console/console-viewport-indices.js [ Failure ]
 crbug.com/1309975 http/tests/devtools/console/viewport-testing/console-stick-to-bottom-expand-object.js [ Failure ]
-crbug.com/1309972 external/wpt/css/css-tables/tentative/table-width-redistribution-fixed-padding.html [ Failure ]
 
 # Sheriff 2022-03-23: More flaky tests.
 crbug.com/1309483 [ Win7 ] virtual/gpu-rasterization/images/directly-composited-image-orientation.html [ Failure Pass ]
@@ -7700,6 +7698,15 @@ crbug.com/1311128 external/wpt/paint-timing/fcp-only/fcp-document-opacity-text.h
 crbug.com/1311786 external/wpt/navigation-api/navigation-methods/sandboxing-back-parent.html [ Skip ]
 crbug.com/1311786 external/wpt/navigation-api/navigation-methods/sandboxing-back-sibling.html [ Skip ]
 
+# Scroll Unification known issues (go/su-web-tests) for enabling in test:
+crbug.com/1311431 [ Mac ] fast/scroll-behavior/overscroll-behavior.html [ Failure Pass ]
+crbug.com/1248231 fast/events/touch/touch-latched-scroll-node-removed.html [ Failure Pass ]
+crbug.com/1248231 fast/events/wheel/wheel-latched-scroll-node-removed.html [ Failure Pass Timeout ]
+crbug.com/1311731 [ Linux ] fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Failure Pass ]
+crbug.com/1311731 [ Win ] fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Failure Pass ]
+crbug.com/1248581 fast/scrolling/resize-corner-tracking-touch.html [ Failure Pass ]
+crbug.com/1312036 virtual/hidpi/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Pass ]
+
 # Sheriff 2022-03-29
 crbug.com/1311138 [ Mac10.13 ] virtual/document-transition/wpt_internal/document-transition/one-element-two-targets.html [ Skip ]
 crbug.com/1311138 [ Mac10.14 ] virtual/document-transition/wpt_internal/document-transition/one-element-two-targets.html [ Skip ]
@@ -7720,3 +7727,16 @@ crbug.com/1312469 [ Mac10.12 ] virtual/fledge/http/tests/inspector-protocol/stor
 crbug.com/1312469 [ Mac10.12 ] virtual/partitioned-cookies-first-party-sets/http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax.js [ Skip ]
 crbug.com/1312469 [ Mac10.12 ] virtual/partitioned-cookies/http/tests/inspector-protocol/network/blocked-cookie-same-site-strict.js [ Skip ]
 crbug.com/1312484 [ Mac11 ] external/wpt/navigation-api/ordering-and-transition/navigate-cross-document-double.html [ Skip ]
+
+# Sheriff 2022-04-05
+crbug.com/1203491 [ Linux ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Failure Pass ]
+crbug.com/1203491 [ Win ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Failure Pass ]
+crbug.com/1313282 inspector-protocol/input/dispatchMouseEvent.js [ Failure Pass ]
+crbug.com/1313331 [ Mac10.13 ] virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/subpixel-overflow-mouse-drag.html [ Failure Pass ]
+crbug.com/1313331 [ Debug Linux ] virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/subpixel-overflow-mouse-drag.html [ Failure Pass ]
+crbug.com/1095540 [ Mac11-arm64 ] virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/resize-corner-tracking-touch.html [ Skip ]
+crbug.com/1254163 [ Mac10.12 ] ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ Failure ]
+crbug.com/1254163 [ Mac10.13 ] ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ Failure ]
+crbug.com/1313396 [ Linux ] external/wpt/dom/events/Event-dispatch-on-disabled-elements.html [ Failure Pass ]
+crbug.com/1194945 external/wpt/dom/events/scrolling/overscroll-event-fired-to-scrolled-element.html [ Failure Pass ]
+crbug.com/1244896 fast/mediacapturefromelement/CanvasCaptureMediaStream-set-size-too-large.html [ Failure Pass Timeout ]

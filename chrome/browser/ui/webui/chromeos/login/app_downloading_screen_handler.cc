@@ -58,7 +58,7 @@ void AppDownloadingScreenHandler::RegisterMessages() {
 
 void AppDownloadingScreenHandler::Bind(AppDownloadingScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen);
 }
 
 void AppDownloadingScreenHandler::Show() {
@@ -69,6 +69,6 @@ void AppDownloadingScreenHandler::Show() {
 
 void AppDownloadingScreenHandler::Hide() {}
 
-void AppDownloadingScreenHandler::Initialize() {}
+void AppDownloadingScreenHandler::InitializeDeprecated() {}
 
 }  // namespace chromeos

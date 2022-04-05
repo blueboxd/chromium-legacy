@@ -50,12 +50,12 @@ void LacrosDataMigrationScreenHandler::DeclareLocalizedValues(
 }
 
 void LacrosDataMigrationScreenHandler::Bind(LacrosDataMigrationScreen* screen) {
-  BaseScreenHandler::SetBaseScreen(screen);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen);
   screen_ = screen;
 }
 
 void LacrosDataMigrationScreenHandler::Unbind() {
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
   screen_ = nullptr;
 }
 
@@ -89,7 +89,7 @@ void LacrosDataMigrationScreenHandler::SetFailureStatus(
          show_goto_files);
 }
 
-void LacrosDataMigrationScreenHandler::Initialize() {
+void LacrosDataMigrationScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     Show();
     show_on_init_ = false;

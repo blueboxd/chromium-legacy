@@ -40,7 +40,7 @@ void OsTrialScreenHandler::DeclareLocalizedValues(
   builder->Add("osTrialNextButton", IDS_OS_TRIAL_NEXT_BUTTON);
 }
 
-void OsTrialScreenHandler::Initialize() {}
+void OsTrialScreenHandler::InitializeDeprecated() {}
 
 void OsTrialScreenHandler::Show() {
   ShowInWebUI();
@@ -48,12 +48,12 @@ void OsTrialScreenHandler::Show() {
 
 void OsTrialScreenHandler::Bind(ash::OsTrialScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void OsTrialScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 }  // namespace chromeos

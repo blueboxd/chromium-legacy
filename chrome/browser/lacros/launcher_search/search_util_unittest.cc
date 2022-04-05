@@ -22,6 +22,7 @@ namespace {
 TEST(SearchUtilTest, ProviderTypes) {
   const int types = ProviderTypes();
   EXPECT_FALSE(types & AutocompleteProvider::TYPE_DOCUMENT);
+  EXPECT_TRUE(types & AutocompleteProvider::TYPE_OPEN_TAB);
 }
 
 // Tests result conversion for a default answer result.
@@ -80,8 +81,8 @@ TEST(SearchUtilTest, CreateResult) {
   match.description_class = {
       ACMatchClassification(0, ACMatchClassification::Style::MATCH)};
 
-  const auto result =
-      CreateResult(match, nullptr, u"query", AutocompleteInput());
+  const auto result = CreateResult(match, nullptr, nullptr, nullptr, u"query",
+                                   AutocompleteInput());
   EXPECT_EQ(result->type, mojom::SearchResultType::kOmniboxResult);
   EXPECT_EQ(result->relevance, 300);
   ASSERT_TRUE(result->destination_url.has_value());

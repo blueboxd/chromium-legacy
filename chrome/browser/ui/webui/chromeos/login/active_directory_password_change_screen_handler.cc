@@ -35,7 +35,7 @@ void ActiveDirectoryPasswordChangeScreenHandler::DeclareLocalizedValues(
   builder->Add("adPassChangeMessage", IDS_AD_PASSWORD_CHANGE_MESSAGE);
 }
 
-void ActiveDirectoryPasswordChangeScreenHandler::Initialize() {}
+void ActiveDirectoryPasswordChangeScreenHandler::InitializeDeprecated() {}
 
 void ActiveDirectoryPasswordChangeScreenHandler::RegisterMessages() {
   BaseScreenHandler::RegisterMessages();
@@ -55,12 +55,12 @@ void ActiveDirectoryPasswordChangeScreenHandler::Show(
 void ActiveDirectoryPasswordChangeScreenHandler::Bind(
     ActiveDirectoryPasswordChangeScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void ActiveDirectoryPasswordChangeScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void ActiveDirectoryPasswordChangeScreenHandler::ShowSignInError(

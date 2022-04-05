@@ -48,7 +48,7 @@ void TpmErrorScreenHandler::DeclareLocalizedValues(
                 IDS_INSTALLED_PRODUCT_OS_NAME);
 }
 
-void TpmErrorScreenHandler::Initialize() {
+void TpmErrorScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     show_on_init_ = false;
     Show();
@@ -74,12 +74,12 @@ void TpmErrorScreenHandler::SetTPMDbusErrorStep() {
 
 void TpmErrorScreenHandler::Bind(TpmErrorScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void TpmErrorScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 }  // namespace chromeos

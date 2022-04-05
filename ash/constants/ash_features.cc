@@ -116,10 +116,6 @@ const base::Feature kAmbientModeDevUseProdFeature{
 const base::Feature kAmbientModePhotoPreviewFeature{
     "ChromeOSAmbientModePhotoPreview", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls whether to fetch ambient mode images using new url format.
-const base::Feature kAmbientModeNewUrl{"ChromeOSAmbientModeNewUrl",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether to enable ARC account restrictions.
 const base::Feature kArcAccountRestrictions{"ArcAccountRestrictions",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
@@ -284,9 +280,10 @@ const base::Feature kCellularForbidAttachApn{"CellularForbidAttachApn",
 const base::Feature kCellularUseAttachApn{"CellularUseAttachApn",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-// If enabled, use external euicc in Cellular Setup and Settings.
-const base::Feature kCellularUseExternalEuicc{
-    "CellularUseExternalEuicc", base::FEATURE_DISABLED_BY_DEFAULT};
+// If enabled, use second the Euicc that is exposed by Hermes in Cellular Setup
+// and Settings.
+const base::Feature kCellularUseSecondEuicc{"CellularUseSecondEuicc",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables pasting a few recently copied items in a menu when pressing search +
 // v.
@@ -477,10 +474,6 @@ const base::Feature kEcheCustomWidget{"EcheCustomWidget",
 // Enables the Debug Mode of Eche.
 const base::Feature kEcheSWADebugMode{"EcheSWADebugMode",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables the Eche SWA to run in the background.
-const base::Feature kEcheSWAInBackground{"EcheSWAInBackground",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables background blur for the app list, shelf, unified system tray,
 // autoclick menu, etc. Also enables the AppsGridView mask layer, slower devices
@@ -842,11 +835,6 @@ const base::Feature kImprovedDesksKeyboardShortcuts{
 const base::Feature kInstantTethering{"InstantTethering",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables using arrow keys for display arrangement in display settings page.
-const base::Feature kKeyboardBasedDisplayArrangementInSettings{
-    "KeyboardBasedDisplayArrangementInSettings",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables to use lacros-chrome as the only web browser on Chrome OS.
 // This works only when both LacrosSupport and LacrosPrimary below are enabled.
 // NOTE: Use crosapi::browser_util::IsAshWebBrowserEnabled() instead of checking
@@ -872,12 +860,6 @@ const base::Feature kLacrosPrimary{"LacrosPrimary",
 // is complete.
 const base::Feature kLacrosSupport{"LacrosSupport",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Pretend that profile migration has been completed regardless of the actual
-// state. Enabling this will allow users to use lacros without completing
-// profile mgiration.
-const base::Feature kForceProfileMigrationCompletion{
-    "ForceProfileMigrationCompletion", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Emergency switch to turn off profile migration.
 const base::Feature kLacrosProfileMigrationForceOff{
@@ -1503,10 +1485,6 @@ bool IsAmbientModePhotoPreviewEnabled() {
   return base::FeatureList::IsEnabled(kAmbientModePhotoPreviewFeature);
 }
 
-bool IsAmbientModeNewUrlEnabled() {
-  return base::FeatureList::IsEnabled(kAmbientModeNewUrl);
-}
-
 bool IsAppNotificationsPageEnabled() {
   return base::FeatureList::IsEnabled(kOsSettingsAppNotificationsPage);
 }
@@ -1631,10 +1609,6 @@ bool IsEcheSWADebugModeEnabled() {
   return base::FeatureList::IsEnabled(kEcheSWADebugMode);
 }
 
-bool IsEcheSWAInBackgroundEnabled() {
-  return base::FeatureList::IsEnabled(kEcheSWAInBackground);
-}
-
 bool IsESimPolicyEnabled() {
   return base::FeatureList::IsEnabled(kESimPolicy);
 }
@@ -1757,11 +1731,6 @@ bool IsInstantTetheringBackgroundAdvertisingSupported() {
 
 bool IsKeyboardBacklightToggleEnabled() {
   return base::FeatureList::IsEnabled(kEnableKeyboardBacklightToggle);
-}
-
-bool IsKeyboardBasedDisplayArrangementInSettingsEnabled() {
-  return base::FeatureList::IsEnabled(
-      kKeyboardBasedDisplayArrangementInSettings);
 }
 
 bool IsLanguagePacksEnabled() {

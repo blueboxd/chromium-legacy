@@ -241,10 +241,6 @@ extern const char kExpandedTabStripDescription[];
 extern const char kFillingAcrossAffiliatedWebsitesName[];
 extern const char kFillingAcrossAffiliatedWebsitesDescription[];
 
-// Title and description for the flag to disable all extended sync promos.
-extern const char kForceDisableExtendedSyncPromosName[];
-extern const char kForceDisableExtendedSyncPromosDescription[];
-
 // Title and description for the flag to trigger the startup sign-in promo.
 extern const char kForceStartupSigninPromoName[];
 extern const char kForceStartupSigninPromoDescription[];
@@ -505,11 +501,6 @@ extern const char kTabsSearchRegularResultsSuggestedActionsDescription[];
 // implementation.
 extern const char kToolbarContainerName[];
 extern const char kToolbarContainerDescription[];
-
-// Title and description for the flag to enable removing any entry points to the
-// history UI from Incognito mode.
-extern const char kUpdateHistoryEntryPointsInIncognitoName[];
-extern const char kUpdateHistoryEntryPointsInIncognitoDescription[];
 
 // Title and description for the flag to enable using Lens to search for an
 // image from the long press context menu.

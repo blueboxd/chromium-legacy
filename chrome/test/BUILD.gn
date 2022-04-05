@@ -1499,6 +1499,7 @@ if (!is_android) {
       "//ash/components/arc/test/data/icons",
       "//chrome/browser/page_load_metrics/integration_tests/data/",
       "//chrome/test/data/cart/",
+      "//components/test/data/",
       "//components/test/data/ad_tagging/",
       "//components/test/data/ads_observer/",
       "//components/test/data/autofill/",
@@ -5510,9 +5511,15 @@ test("unit_tests") {
       "../browser/webauthn/authenticator_request_scheduler_unittest.cc",
       "../browser/webauthn/cablev2_devices_unittest.cc",
       "../browser/webauthn/chrome_authenticator_request_delegate_unittest.cc",
-      "../common/net/x509_certificate_model_unittest.cc",
       "../renderer/cart/commerce_hint_agent_unittest.cc",
     ]
+  }
+
+  # TODO(crbug.com/1265746): Enable x509_certificate_model_unittest on windows
+  # once the cert viewer on windows is changed to use the internal one.
+  # Currently disabled on win due to crbug.com/1311991.
+  if (!is_android && !is_win) {
+    sources += [ "../common/net/x509_certificate_model_unittest.cc" ]
   }
 
   if (is_chromeos) {
@@ -6676,9 +6683,6 @@ test("unit_tests") {
         # Fuchsia does not need real file lock as the filesystem is not shared
         # across components.
         "../browser/importer/firefox_profile_lock_unittest.cc",
-
-        # Fuchsia does not currently support the service process.
-        "../common/multi_process_lock_unittest.cc",
       ]
     }
     if (is_posix) {
@@ -6823,7 +6827,7 @@ test("unit_tests") {
       "../browser/apps/app_service/app_service_test.h",
       "../browser/apps/app_service/launch_utils_unittest.cc",
       "../browser/apps/app_service/publishers/publisher_unittest.cc",
-      "../browser/apps/intent_helper/intent_picker_auto_display_service_unittest.cc",
+      "../browser/apps/intent_helper/intent_picker_auto_display_prefs_unittest.cc",
       "../browser/apps/intent_helper/intent_picker_internal_unittest.cc",
       "../browser/apps/intent_helper/page_transition_util_unittest.cc",
       "../browser/devtools/devtools_file_system_indexer_unittest.cc",

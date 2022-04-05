@@ -9,11 +9,13 @@
  */
 export const CrSearchFieldBehavior = {
   properties: {
+    // Prompt text to display in the search field.
     label: {
       type: String,
       value: '',
     },
 
+    // Tooltip to display on the clear search button.
     clearLabel: {
       type: String,
       value: '',
@@ -48,10 +50,10 @@ export const CrSearchFieldBehavior = {
   /**
    * Sets the value of the search field.
    * @param {string} value
-   * @param {boolean=} opt_noEvent Whether to prevent a 'search-changed' event
+   * @param {boolean=} noEvent Whether to prevent a 'search-changed' event
    *     firing for this change.
    */
-  setValue(value, opt_noEvent) {
+  setValue(value, noEvent) {
     const updated = this.updateEffectiveValue_(value);
     this.getSearchInput().value = this.effectiveValue_;
     if (!updated) {
@@ -64,7 +66,7 @@ export const CrSearchFieldBehavior = {
     }
 
     this.onSearchTermInput();
-    if (!opt_noEvent) {
+    if (!noEvent) {
       this.fire('search-changed', this.effectiveValue_);
     }
   },
@@ -162,10 +164,10 @@ export class CrSearchFieldBehaviorInterface {
 
   /**
    * @param {string} value
-   * @param {boolean=} opt_noEvent Whether to prevent a 'search-changed' event
+   * @param {boolean=} noEvent Whether to prevent a 'search-changed' event
    *     firing for this change.
    */
-  setValue(value, opt_noEvent) {}
+  setValue(value, noEvent) {}
 
   onSearchTermSearch() {}
 

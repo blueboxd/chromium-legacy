@@ -962,6 +962,14 @@ const FeatureEntry::FeatureParam
         {"content_clustering_enabled", "false"},
 };
 const FeatureEntry::FeatureParam
+    kJourneysOnDeviceClusteringLabelingNoHostnamesNoContentClusteringParams[] =
+        {
+            {"should_label_clusters", "true"},
+            {"labels_from_hostnames", "false"},
+            {"labels_from_entities", "true"},
+            {"content_clustering_enabled", "false"},
+};
+const FeatureEntry::FeatureParam
     kJourneysOnDeviceClusteringNoContentClusteringParams[] = {
         {"should_label_clusters", "false"},
         {"content_clustering_enabled", "false"},
@@ -981,6 +989,11 @@ const FeatureEntry::FeatureVariation kJourneysOnDeviceClusteringVariations[] = {
     {"Label Clusters and No Content Clustering",
      kJourneysOnDeviceClusteringLabelingNoContentClusteringParams,
      std::size(kJourneysOnDeviceClusteringLabelingNoContentClusteringParams),
+     nullptr},
+    {"Label Clusters, No Hostnames, & No Content Clustering",
+     kJourneysOnDeviceClusteringLabelingNoHostnamesNoContentClusteringParams,
+     std::size(
+         kJourneysOnDeviceClusteringLabelingNoHostnamesNoContentClusteringParams),
      nullptr},
     {"No Content Clustering",
      kJourneysOnDeviceClusteringNoContentClusteringParams,
@@ -2974,6 +2987,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kWebRtcPipeWireCapturer)},
 #endif  // defined(WEBRTC_USE_PIPEWIRE)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"enable-lacros-in-chrome-kiosk",
+     flag_descriptions::kChromeKioskEnableLacrosName,
+     flag_descriptions::kChromeKioskEnableLacrosDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kChromeKioskEnableLacros)},
     {"enable-lacros-in-web-kiosk", flag_descriptions::kWebKioskEnableLacrosName,
      flag_descriptions::kWebKioskEnableLacrosDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kWebKioskEnableLacros)},
@@ -3278,10 +3295,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"cellular-use-attach-apn", flag_descriptions::kCellularUseAttachApnName,
      flag_descriptions::kCellularUseAttachApnDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCellularUseAttachApn)},
-    {"cellular-use-external-euicc",
-     flag_descriptions::kCellularUseExternalEuiccName,
-     flag_descriptions::kCellularUseExternalEuiccDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kCellularUseExternalEuicc)},
+    {"cellular-use-second-euicc",
+     flag_descriptions::kCellularUseSecondEuiccName,
+     flag_descriptions::kCellularUseSecondEuiccDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kCellularUseSecondEuicc)},
     {"cryptauth-v2-dedup-device-last-activity-time",
      flag_descriptions::kCryptAuthV2DedupDeviceLastActivityTimeName,
      flag_descriptions::kCryptAuthV2DedupDeviceLastActivityTimeDescription,
@@ -3814,12 +3831,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExtensionContentVerificationDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kExtensionContentVerificationChoices)},
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"keyboard-based-display-arrangement-in-settings",
-     flag_descriptions::kKeyboardBasedDisplayArrangementInSettingsName,
-     flag_descriptions::kKeyboardBasedDisplayArrangementInSettingsDescription,
-     kOsCrOS,
-     FEATURE_VALUE_TYPE(
-         ash::features::kKeyboardBasedDisplayArrangementInSettings)},
     {"enable-lock-screen-notification",
      flag_descriptions::kLockScreenNotificationName,
      flag_descriptions::kLockScreenNotificationDescription, kOsCrOS,
@@ -4723,9 +4734,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"eche-swa-debug-mode", flag_descriptions::kEcheSWADebugModeName,
      flag_descriptions::kEcheSWADebugModeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kEcheSWADebugMode)},
-    {"eche-swa-in-background", flag_descriptions::kEcheSWAInBackgroundName,
-     flag_descriptions::kEcheSWAInBackgroundDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kEcheSWAInBackground)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_MAC)
@@ -7852,12 +7860,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAppDiscoveryForOobeName,
      flag_descriptions::kAppDiscoveryForOobeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kAppDiscoveryForOobe)},
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"ambient-mode-new-url", flag_descriptions::kAmbientModeNewUrlName,
-     flag_descriptions::kAmbientModeNewUrlDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kAmbientModeNewUrl)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_ANDROID)

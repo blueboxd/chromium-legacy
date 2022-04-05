@@ -102,7 +102,7 @@ void RecommendAppsScreenHandler::RegisterMessages() {
 
 void RecommendAppsScreenHandler::Bind(RecommendAppsScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen);
 }
 
 void RecommendAppsScreenHandler::Show() {
@@ -129,7 +129,7 @@ void RecommendAppsScreenHandler::OnParseResponseError() {
   HandleSkip();
 }
 
-void RecommendAppsScreenHandler::Initialize() {
+void RecommendAppsScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     Show();
     show_on_init_ = false;

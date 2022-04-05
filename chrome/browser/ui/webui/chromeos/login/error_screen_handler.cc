@@ -46,12 +46,12 @@ void ErrorScreenHandler::Hide() {
 
 void ErrorScreenHandler::Bind(ErrorScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void ErrorScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void ErrorScreenHandler::ShowOobeScreen(OobeScreenId screen) {
@@ -138,7 +138,7 @@ void ErrorScreenHandler::DeclareLocalizedValues(
   builder->Add("offlineLogin", IDS_OFFLINE_LOGIN_HTML);
 }
 
-void ErrorScreenHandler::Initialize() {
+void ErrorScreenHandler::InitializeDeprecated() {
   if (!page_is_ready())
     return;
 

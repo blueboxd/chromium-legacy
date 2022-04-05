@@ -37,7 +37,7 @@ void DemoSetupScreenHandler::Hide() {}
 
 void DemoSetupScreenHandler::Bind(DemoSetupScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen);
 }
 
 void DemoSetupScreenHandler::OnSetupFailed(
@@ -61,7 +61,7 @@ void DemoSetupScreenHandler::OnSetupSucceeded() {
   CallJS("login.DemoSetupScreen.onSetupSucceeded");
 }
 
-void DemoSetupScreenHandler::Initialize() {}
+void DemoSetupScreenHandler::InitializeDeprecated() {}
 
 void DemoSetupScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {

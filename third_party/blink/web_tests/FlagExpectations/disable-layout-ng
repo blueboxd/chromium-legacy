@@ -189,6 +189,9 @@ crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-row-flex-fragment
 crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-042.tentative.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-044.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-045.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-052.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-053.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-054.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-012.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-014.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-015.html [ Failure ]
@@ -1762,3 +1765,5 @@ crbug.com/591099 fast/forms/text/input-appearance-scroll-size-mocked.html [ Fail
 
 # HighlightOverlayPainting is only implemented in ng
 crbug.com/1147859 virtual/css-highlight-overlay-painting/* [ Skip ]
+
+crbug.com/1303102 wpt_internal/css/css-images/object-view-box* [ Skip ]

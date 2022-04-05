@@ -42,7 +42,7 @@ void ParentalHandoffScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_PARENTAL_HANDOFF_SCREEN_SUBTITLE);
 }
 
-void ParentalHandoffScreenHandler::Initialize() {}
+void ParentalHandoffScreenHandler::InitializeDeprecated() {}
 
 void ParentalHandoffScreenHandler::Show(const std::u16string& username) {
   base::Value::Dict data;
@@ -53,12 +53,12 @@ void ParentalHandoffScreenHandler::Show(const std::u16string& username) {
 
 void ParentalHandoffScreenHandler::Bind(ParentalHandoffScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void ParentalHandoffScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 }  // namespace chromeos

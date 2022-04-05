@@ -27,7 +27,8 @@ class BaseScreenHandler : public BaseWebUIHandler {
 
   OobeScreenId oobe_screen() const { return oobe_screen_; }
 
-  void SetBaseScreen(BaseScreen* base_screen);
+  // DEPRECATED: To be removed.
+  void SetBaseScreenDeprecated(BaseScreen* base_screen);
 
   // BaseWebUIHandler:
   void RegisterMessages() override;
@@ -36,6 +37,12 @@ class BaseScreenHandler : public BaseWebUIHandler {
   // Advances to the `oobe_screen_` in the WebUI. Optional `data` will be passed
   // to the `onBeforeShow` on the javascript side.
   void ShowInWebUI(absl::optional<base::Value::Dict> data = absl::nullopt);
+
+  template <typename... Args>
+  void CallExternalAPI(const std::string& api_function, Args... args) {
+    CallJS<Args...>(GetFullExternalAPIFunctionName(api_function),
+                    std::move(args)...);
+  }
 
   // Set the method identifier for a userActed callback. The actual callback
   // will be registered in RegisterMessages so this should be called in the
@@ -54,13 +61,19 @@ class BaseScreenHandler : public BaseWebUIHandler {
   // Handles user action.
   void HandleUserAction(const std::string& action_id);
 
+  // Generates the full function name to call an API function of the screen.
+  // `oobe_screen_.external_api_prefix` must be set.
+  std::string GetFullExternalAPIFunctionName(const std::string& short_name);
+
   // Path that is used to invoke user actions.
   std::string user_acted_method_path_;
 
   // OobeScreen that this handler corresponds to.
   const OobeScreenId oobe_screen_;
 
+#if DCHECK_IS_ON()
   BaseScreen* base_screen_ = nullptr;
+#endif
 };
 
 }  // namespace chromeos

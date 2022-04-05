@@ -121,7 +121,7 @@
   {
     "name": "allow-touchpad-haptic-click-settings",
     "owners": [ "gavinwill", "cros-peripherals@google.com" ],
-    "expiry_milestone": 101
+    "expiry_milestone": 105
   },
   {
     "name": "always-enable-hdcp",
@@ -273,7 +273,7 @@
   {
     "name": "arc-use-limit-cache-balloon-policy",
     "owners": [ "cwd" ],
-    "expiry_milestone": 97
+    "expiry_milestone": 110
   },
   {
     "name": "arc-window-predictor",
@@ -727,7 +727,7 @@
     "expiry_milestone": 105
   },
   {
-    "name": "cellular-use-external-euicc",
+    "name": "cellular-use-second-euicc",
     "owners": [ "azeemarshad", "khorimoto", "cros-connectivity@google.com" ],
     // Never expires. This used in ChromeOS to switch to removable EUICC for
     // all eSIM operations. This is useful for debugging with test SIM cards.
@@ -1177,7 +1177,7 @@
   {
     "name": "device-posture",
     "owners": [ "alexis.menard@intel.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 112
   },
   {
     "name": "diagnostics-app-navigation",
@@ -1432,11 +1432,6 @@
   },
   {
     "name": "eche-swa-debug-mode",
-    "owners": [ "dhnishi" ],
-    "expiry_milestone": 106
-  },
-  {
-    "name": "eche-swa-in-background",
     "owners": [ "dhnishi" ],
     "expiry_milestone": 106
   },
@@ -1855,7 +1850,7 @@
   {
     "name": "enable-desks-trackpad-swipe-improvements",
     "owners": [ "fanafan", "sammiequon", "tclaiborne" ],
-    "expiry_milestone": 101
+    "expiry_milestone": 110
   },
   {
     "name": "enable-desktop-capture-lacros-v2",
@@ -1950,7 +1945,7 @@
   {
     "name": "enable-disco-feed-endpoint",
     "owners": [ "adamta", "sczs" ],
-    "expiry_milestone": 101
+    "expiry_milestone": 106
   },
   {
     "name": "enable-discount-consent-v2",
@@ -1965,12 +1960,12 @@
   {
     "name": "enable-discover-feed-shorter-cache",
     "owners": [ "edchin", "adamta", "sczs" ],
-    "expiry_milestone": 101
+    "expiry_milestone": 106
   },
   {
     "name": "enable-discover-feed-static-resource-serving",
     "owners": [ "adamta", "sczs" ],
-    "expiry_milestone": 101
+    "expiry_milestone": 106
   },
   {
     "name": "enable-dns-proxy",
@@ -2275,6 +2270,11 @@
     "expiry_milestone": 105
   },
   {
+    "name": "enable-lacros-in-chrome-kiosk",
+    "owners": ["bfranz", "chromeos-kiosk-eng@google.com"],
+    "expiry_milestone": 120
+  },
+  {
     "name": "enable-lacros-in-web-kiosk",
     "owners": ["bfranz", "chromeos-kiosk-eng@google.com"],
     "expiry_milestone": 120
@@ -2355,11 +2355,6 @@
     "name": "enable-media-foundation-video-capture",
     "owners": [ "agpalak", "guidou" ],
     "expiry_milestone": 99
-  },
-  {
-    "name": "enable-media-internals",
-    "owners": [ "tmathmeyer", "media-dev@chromium.org" ],
-    "expiry_milestone": 92
   },
   {
     "name": "enable-migrate-default-chrome-app-to-web-apps-gsuite",
@@ -3322,11 +3317,6 @@
     "name": "force-control-face-ae",
     "owners": [ "chromeos-camera-eng@google.com" ],
     "expiry_milestone": 110
-  },
-  {
-    "name": "force-disable-extended-sync-promos",
-    "owners": ["fernandex", "msarda"],
-    "expiry_milestone": 100
   },
   {
     "name": "force-enable-cast-remoting-query",
@@ -4611,22 +4601,22 @@
   {
     "name": "override-language-prefs-for-href-translate",
     "owners": [ "sclittle", "chrome-language@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 106
   },
   {
     "name": "override-similar-languages-for-href-translate",
     "owners": [ "sclittle", "chrome-language@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 106
   },
   {
     "name": "override-site-prefs-for-href-translate",
     "owners": [ "sclittle", "chrome-language@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 106
   },
   {
     "name": "override-unsupported-page-language-for-href-translate",
     "owners": [ "sclittle", "chrome-language@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 106
   },
   {
     // This flag is used by ChromeOS for some accessibility users.

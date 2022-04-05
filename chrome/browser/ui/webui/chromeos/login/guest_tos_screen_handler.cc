@@ -39,7 +39,7 @@ void GuestTosScreenHandler::DeclareLocalizedValues(
   builder->Add("guestTosLoading", IDS_GUEST_TOS_LOADING);
 }
 
-void GuestTosScreenHandler::Initialize() {
+void GuestTosScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     Show(google_eula_url_, cros_eula_url_);
     show_on_init_ = false;
@@ -63,12 +63,12 @@ void GuestTosScreenHandler::Show(const std::string& google_eula_url,
 
 void GuestTosScreenHandler::Bind(GuestTosScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void GuestTosScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void GuestTosScreenHandler::RegisterMessages() {

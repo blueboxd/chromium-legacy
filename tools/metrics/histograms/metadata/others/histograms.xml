@@ -2931,7 +2931,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContextMenu.LensSupportStatus" enum="LensSupportStatus"
-    expires_after="2022-07-31">
+    expires_after="2022-10-02">
   <owner>benwgold@google.com</owner>
   <owner>lens-chrome@google.com</owner>
   <summary>
@@ -3063,7 +3063,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContextMenu.TimeToTakeAction.Abandoned" units="ms"
-    expires_after="2022-07-31">
+    expires_after="2022-10-02">
   <owner>twellington@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
   <summary>
@@ -3492,6 +3492,21 @@ chromium-metrics-reviews@google.com.
     Records the high level request status of a conversion report. Recorded for
     every conversion report sent. For conversion report that has been retried,
     every retry will be counted.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.SourceEligibleDataHostLifeTime" units="ms"
+    expires_after="2022-09-25">
+  <owner>linnan@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records the time between the registration and completion of a data host that
+    is eligible to register a source. For trigger data hosts, the completion
+    time is when the trigger data is available for the data host. For source
+    data hosts, the completion time is after the final source data is available
+    for the data host. This can be used as an upper bound to determine the
+    amount of delay a trigger event may receive.
   </summary>
 </histogram>
 
@@ -11196,7 +11211,7 @@ Safe Browsing lookups, which is critical for security. -->
 </histogram>
 
 <histogram name="SB2.RemoteCall.Result" enum="SB2RemoteCallResult"
-    expires_after="2022-07-31">
+    expires_after="2022-10-02">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>

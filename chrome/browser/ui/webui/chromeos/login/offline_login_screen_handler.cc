@@ -51,7 +51,7 @@ void OfflineLoginScreenHandler::DeclareLocalizedValues(
   builder->Add("offlineLoginOkBtn", IDS_OFFLINE_LOGIN_OK_BUTTON_TEXT);
 }
 
-void OfflineLoginScreenHandler::Initialize() {
+void OfflineLoginScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     show_on_init_ = false;
     Show();
@@ -72,12 +72,12 @@ void OfflineLoginScreenHandler::Hide() {
 
 void OfflineLoginScreenHandler::Bind(OfflineLoginScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void OfflineLoginScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void OfflineLoginScreenHandler::Reset() {

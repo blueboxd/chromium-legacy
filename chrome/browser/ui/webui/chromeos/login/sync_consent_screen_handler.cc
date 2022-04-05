@@ -170,7 +170,7 @@ void SyncConsentScreenHandler::DeclareLocalizedValues(
 
 void SyncConsentScreenHandler::Bind(SyncConsentScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen);
 }
 
 void SyncConsentScreenHandler::Show(bool is_arc_restricted) {
@@ -191,7 +191,7 @@ void SyncConsentScreenHandler::SetIsMinorMode(bool value) {
   CallJS("login.SyncConsentScreen.setIsMinorMode", value);
 }
 
-void SyncConsentScreenHandler::Initialize() {}
+void SyncConsentScreenHandler::InitializeDeprecated() {}
 
 void SyncConsentScreenHandler::RegisterMessages() {
   AddCallback("login.SyncConsentScreen.nonSplitSettingsContinue",

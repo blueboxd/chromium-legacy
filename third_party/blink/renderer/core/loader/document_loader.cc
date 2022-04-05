@@ -1961,10 +1961,9 @@ scoped_refptr<SecurityOrigin> DocumentLoader::CalculateOrigin(
     // origin, but for opaque origins, it creates an origin with the
     // initiator origin as the precursor.
     scoped_refptr<const SecurityOrigin> precursor = requestor_origin_;
-    // For urn: / uuid-in-package: resources served from WebBundles, use the
-    // Bundle's origin as the precursor.
-    // TODO(https://crbug.com/1257045): Remove urn: scheme support.
-    if ((url_.ProtocolIs("urn") || url_.ProtocolIs("uuid-in-package")) &&
+    // For uuid-in-package: resources served from WebBundles, use the Bundle's
+    // origin as the precursor.
+    if (url_.ProtocolIs("uuid-in-package") &&
         response_.WebBundleURL().IsValid())
       precursor = SecurityOrigin::Create(response_.WebBundleURL());
     origin = SecurityOrigin::CreateWithReferenceOrigin(url_, precursor.get());
@@ -2356,9 +2355,7 @@ void DocumentLoader::CommitNavigation() {
   RecordConsoleMessagesForCommit();
 
   // Clear the user activation state.
-  // TODO(crbug.com/736415): Clear this bit unconditionally for all frames.
-  if (frame_->IsMainFrame())
-    frame_->ClearUserActivation();
+  frame_->ClearUserActivation();
 
   // The DocumentLoader was flagged as activated if it needs to notify the frame
   // that it was activated before navigation. Update the frame state based on

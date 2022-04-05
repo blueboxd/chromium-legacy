@@ -22,6 +22,7 @@
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
@@ -703,8 +704,20 @@ void FormStructure::DetermineHeuristicTypes(
   if (!field_type_map.empty()) {
     for (const auto& field : fields_) {
       auto iter = field_type_map.find(field->global_id());
-      if (iter != field_type_map.end())
-        field->set_heuristic_type(iter->second.BestHeuristicType());
+      if (iter != field_type_map.end()) {
+        const FieldCandidates& candidates = iter->second;
+        field->set_heuristic_type(candidates.BestHeuristicType());
+
+        auto set_hypothetical_type =
+            [&field, &candidates](PredictionSource source) -> void {
+          absl::optional<ServerFieldType> type =
+              candidates.GetHypotheticalType(source);
+          if (type)
+            field->set_prediction(source, *type);
+        };
+        set_hypothetical_type(PredictionSource::kExperimentalHeuristics);
+        set_hypothetical_type(PredictionSource::kNextGenHeuristics);
+      }
     }
   }
 

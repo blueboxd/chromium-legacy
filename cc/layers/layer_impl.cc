@@ -12,6 +12,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -282,7 +283,7 @@ void LayerImpl::AppendDebugBorderQuad(
         color, static_cast<uint8_t>(SkColorGetA(color) * kFillOpacity));
     float fill_width = width * 3;
     gfx::Rect fill_rect = quad_rect;
-    fill_rect.Inset(fill_width / 2.f, fill_width / 2.f);
+    fill_rect.Inset(fill_width / 2.f);
     if (fill_rect.IsEmpty())
       return;
     gfx::Rect visible_fill_rect =

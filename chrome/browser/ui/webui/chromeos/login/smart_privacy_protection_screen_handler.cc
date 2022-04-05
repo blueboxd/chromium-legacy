@@ -40,12 +40,12 @@ void SmartPrivacyProtectionScreenHandler::Hide() {
 void SmartPrivacyProtectionScreenHandler::Bind(
     ash::SmartPrivacyProtectionScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void SmartPrivacyProtectionScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void SmartPrivacyProtectionScreenHandler::DeclareLocalizedValues(
@@ -76,7 +76,7 @@ void SmartPrivacyProtectionScreenHandler::GetAdditionalParameters(
                base::Value(ash::features::IsSnoopingProtectionEnabled()));
 }
 
-void SmartPrivacyProtectionScreenHandler::Initialize() {
+void SmartPrivacyProtectionScreenHandler::InitializeDeprecated() {
   if (!page_is_ready() || !screen_)
     return;
 

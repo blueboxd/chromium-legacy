@@ -98,12 +98,12 @@ void WelcomeScreenHandler::Hide() {}
 
 void WelcomeScreenHandler::Bind(WelcomeScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void WelcomeScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void WelcomeScreenHandler::ReloadLocalizedContent() {
@@ -299,7 +299,7 @@ void WelcomeScreenHandler::GetAdditionalParameters(
   dict->SetKey("demoModeCountryList", DemoSession::GetCountryList());
 }
 
-void WelcomeScreenHandler::Initialize() {
+void WelcomeScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     show_on_init_ = false;
     Show();

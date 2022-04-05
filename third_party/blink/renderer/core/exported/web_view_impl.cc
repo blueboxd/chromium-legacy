@@ -449,7 +449,7 @@ WebView* WebView::Create(
     bool is_hidden,
     bool is_prerendering,
     bool is_inside_portal,
-    bool is_fenced_frame,
+    absl::optional<mojom::blink::FencedFrameMode> fenced_frame_mode,
     bool compositing_enabled,
     bool widgets_never_composited,
     WebView* opener,
@@ -462,7 +462,7 @@ WebView* WebView::Create(
       client,
       is_hidden ? mojom::blink::PageVisibilityState::kHidden
                 : mojom::blink::PageVisibilityState::kVisible,
-      is_prerendering, is_inside_portal, is_fenced_frame, compositing_enabled,
+      is_prerendering, is_inside_portal, fenced_frame_mode, compositing_enabled,
       widgets_never_composited, To<WebViewImpl>(opener), std::move(page_handle),
       agent_group_scheduler, session_storage_namespace_id,
       std::move(page_base_background_color));
@@ -473,7 +473,7 @@ WebViewImpl* WebViewImpl::Create(
     mojom::blink::PageVisibilityState visibility,
     bool is_prerendering,
     bool is_inside_portal,
-    bool is_fenced_frame,
+    absl::optional<mojom::blink::FencedFrameMode> fenced_frame_mode,
     bool compositing_enabled,
     bool widgets_never_composited,
     WebViewImpl* opener,
@@ -484,7 +484,7 @@ WebViewImpl* WebViewImpl::Create(
   // Take a self-reference for WebViewImpl that is released by calling Close(),
   // then return a raw pointer to the caller.
   auto web_view = base::AdoptRef(new WebViewImpl(
-      client, visibility, is_prerendering, is_inside_portal, is_fenced_frame,
+      client, visibility, is_prerendering, is_inside_portal, fenced_frame_mode,
       compositing_enabled, widgets_never_composited, opener,
       std::move(page_handle), agent_group_scheduler,
       session_storage_namespace_id, std::move(page_base_background_color)));
@@ -547,7 +547,7 @@ WebViewImpl::WebViewImpl(
     mojom::blink::PageVisibilityState visibility,
     bool is_prerendering,
     bool is_inside_portal,
-    bool is_fenced_frame,
+    absl::optional<mojom::blink::FencedFrameMode> fenced_frame_mode,
     bool does_composite,
     bool widgets_never_composited,
     WebViewImpl* opener,
@@ -583,9 +583,14 @@ WebViewImpl::WebViewImpl(
   // page.
   SetInsidePortal(is_inside_portal);
 
-  if (is_fenced_frame && features::IsFencedFramesEnabled() &&
+  if (fenced_frame_mode && features::IsFencedFramesEnabled() &&
       features::IsFencedFramesMPArchBased()) {
     page_->SetIsMainFrameFencedFrameRoot();
+    page_->SetFencedFrameMode(*fenced_frame_mode);
+  } else {
+    // `fenced_frame_mode` should only be set if creating an MPArch
+    // fenced frame.
+    DCHECK(!fenced_frame_mode);
   }
 
   // When not compositing, keep the Page in the loop so that it will paint all
@@ -2199,14 +2204,13 @@ double WebViewImpl::SetZoomLevel(double zoom_level) {
           : static_cast<float>(PageZoomLevelToZoomFactor(zoom_level_));
   if (zoom_factor_for_device_scale_factor_) {
     if (compositor_device_scale_factor_override_) {
-      // Adjust the page's DSF so that DevicePixelRatio becomes
-      // |zoom_factor_for_device_scale_factor_|.
-      page_->SetDeviceScaleFactorDeprecated(
+      page_->SetInspectorDeviceScaleFactorOverride(
           zoom_factor_for_device_scale_factor_ /
           compositor_device_scale_factor_override_);
+
       zoom_factor *= compositor_device_scale_factor_override_;
     } else {
-      page_->SetDeviceScaleFactorDeprecated(1.f);
+      page_->SetInspectorDeviceScaleFactorOverride(1.0f);
       zoom_factor *= zoom_factor_for_device_scale_factor_;
     }
   }
@@ -2263,16 +2267,6 @@ void WebViewImpl::SetPageScaleFactor(float scale_factor) {
   DCHECK(MainFrameImpl());
 
   MainFrameImpl()->GetFrame()->SetScaleFactor(scale_factor);
-}
-
-void WebViewImpl::SetDeviceScaleFactor(float scale_factor) {
-  if (!GetPage())
-    return;
-
-  if (GetPage()->DeviceScaleFactorDeprecated() == scale_factor)
-    return;
-
-  GetPage()->SetDeviceScaleFactorDeprecated(scale_factor);
 }
 
 void WebViewImpl::SetZoomFactorForDeviceScaleFactor(
@@ -2697,9 +2691,7 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
 
   if (SettingsImpl()->ClobberUserAgentInitialScaleQuirk() &&
       GetPageScaleConstraintsSet().UserAgentConstraints().initial_scale != -1 &&
-      GetPageScaleConstraintsSet().UserAgentConstraints().initial_scale *
-              DeviceScaleFactor() <=
-          1) {
+      GetPageScaleConstraintsSet().UserAgentConstraints().initial_scale <= 1) {
     if (description.max_width == Length::DeviceWidth() ||
         (description.max_width.IsAuto() &&
          GetPageScaleConstraintsSet().PageDefinedConstraints().initial_scale ==
@@ -2709,7 +2701,7 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
 
   Settings& page_settings = GetPage()->GetSettings();
   GetPageScaleConstraintsSet().AdjustForAndroidWebViewQuirks(
-      description, default_min_width.IntValue(), DeviceScaleFactor(),
+      description, default_min_width.IntValue(),
       SettingsImpl()->SupportDeprecatedTargetDensityDPI(),
       page_settings.GetWideViewportQuirkEnabled(),
       page_settings.GetUseWideViewport(),
@@ -3693,16 +3685,6 @@ void WebViewImpl::SetVisibilityState(
 mojom::blink::PageVisibilityState WebViewImpl::GetVisibilityState() {
   DCHECK(GetPage());
   return GetPage()->GetVisibilityState();
-}
-
-float WebViewImpl::DeviceScaleFactor() const {
-  // TODO(oshima): Investigate if this should return the ScreenInfo's scale
-  // factor rather than page's scale factor, which can be 1 in use-zoom-for-dsf
-  // mode.
-  if (!GetPage())
-    return 1;
-
-  return GetPage()->DeviceScaleFactorDeprecated();
 }
 
 LocalFrame* WebViewImpl::FocusedLocalFrameInWidget() const {

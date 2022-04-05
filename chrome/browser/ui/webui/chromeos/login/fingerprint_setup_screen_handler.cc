@@ -133,7 +133,7 @@ void FingerprintSetupScreenHandler::RegisterMessages() {
 
 void FingerprintSetupScreenHandler::Bind(FingerprintSetupScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen);
 }
 
 void FingerprintSetupScreenHandler::Show() {
@@ -145,7 +145,7 @@ void FingerprintSetupScreenHandler::Show() {
 
 void FingerprintSetupScreenHandler::Hide() {}
 
-void FingerprintSetupScreenHandler::Initialize() {}
+void FingerprintSetupScreenHandler::InitializeDeprecated() {}
 
 void FingerprintSetupScreenHandler::OnEnrollScanDone(
     device::mojom::ScanResult scan_result,

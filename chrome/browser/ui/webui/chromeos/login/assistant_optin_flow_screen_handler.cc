@@ -204,15 +204,15 @@ void AssistantOptInFlowScreenHandler::GetAdditionalParameters(
 }
 
 void AssistantOptInFlowScreenHandler::Bind(AssistantOptInFlowScreen* screen) {
-  BaseScreenHandler::SetBaseScreen(screen);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen);
   screen_ = screen;
   if (page_is_ready())
-    Initialize();
+    InitializeDeprecated();
 }
 
 void AssistantOptInFlowScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void AssistantOptInFlowScreenHandler::Show() {
@@ -228,7 +228,7 @@ void AssistantOptInFlowScreenHandler::Show() {
 
 void AssistantOptInFlowScreenHandler::Hide() {}
 
-void AssistantOptInFlowScreenHandler::Initialize() {
+void AssistantOptInFlowScreenHandler::InitializeDeprecated() {
   if (!screen_ || !show_on_init_)
     return;
 

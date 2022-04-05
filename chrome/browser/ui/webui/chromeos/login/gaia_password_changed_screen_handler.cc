@@ -45,7 +45,7 @@ void GaiaPasswordChangedScreenHandler::DeclareLocalizedValues(
   builder->Add("passwordChangedTryAgain", IDS_LOGIN_PASSWORD_CHANGED_TRY_AGAIN);
 }
 
-void GaiaPasswordChangedScreenHandler::Initialize() {
+void GaiaPasswordChangedScreenHandler::InitializeDeprecated() {
   AddCallback("migrateUserData",
               &GaiaPasswordChangedScreenHandler::HandleMigrateUserData);
 }
@@ -60,12 +60,12 @@ void GaiaPasswordChangedScreenHandler::Show(const std::string& email,
 
 void GaiaPasswordChangedScreenHandler::Bind(GaiaPasswordChangedScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void GaiaPasswordChangedScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void GaiaPasswordChangedScreenHandler::HandleMigrateUserData(

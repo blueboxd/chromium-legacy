@@ -37,12 +37,12 @@ void WrongHWIDScreenHandler::Hide() {
 
 void WrongHWIDScreenHandler::Bind(WrongHWIDScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void WrongHWIDScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void WrongHWIDScreenHandler::DeclareLocalizedValues(
@@ -56,7 +56,7 @@ void WrongHWIDScreenHandler::DeclareLocalizedValues(
                 IDS_WRONG_HWID_SCREEN_SKIP_LINK);
 }
 
-void WrongHWIDScreenHandler::Initialize() {
+void WrongHWIDScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     show_on_init_ = false;
     Show();

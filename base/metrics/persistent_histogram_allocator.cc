@@ -24,6 +24,7 @@
 #include "base/metrics/persistent_sample_map.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
 #include "base/process/process_handle.h"
@@ -277,7 +278,6 @@ PersistentHistogramAllocator::Iterator::GetNextWithIgnore(Reference ignore) {
   return nullptr;
 }
 
-
 PersistentHistogramAllocator::PersistentHistogramAllocator(
     std::unique_ptr<PersistentMemoryAllocator> memory)
     : memory_allocator_(std::move(memory)),
@@ -499,6 +499,11 @@ void PersistentHistogramAllocator::UpdateTrackingHistograms() {
   memory_allocator_->UpdateTrackingHistograms();
 }
 
+void PersistentHistogramAllocator::SetRangesManager(
+    RangesManager* ranges_manager) {
+  ranges_manager_.reset(ranges_manager);
+}
+
 void PersistentHistogramAllocator::ClearLastCreatedReferenceForTesting() {
   subtle::NoBarrier_Store(&last_created_, 0);
 }
@@ -557,9 +562,14 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::CreateHistogram(
   DCHECK_EQ(created_ranges->range(1), histogram_minimum);
   DCHECK_EQ(created_ranges->range(histogram_bucket_count - 1),
             histogram_maximum);
-  const BucketRanges* ranges =
-      StatisticsRecorder::RegisterOrDeleteDuplicateRanges(
-          created_ranges.release());
+  const BucketRanges* ranges;
+  if (ranges_manager_) {
+    ranges = ranges_manager_->RegisterOrDeleteDuplicateRanges(
+        created_ranges.release());
+  } else {
+    ranges = StatisticsRecorder::RegisterOrDeleteDuplicateRanges(
+        created_ranges.release());
+  }
 
   size_t counts_bytes = CalculateRequiredCountsBytes(histogram_bucket_count);
   PersistentMemoryAllocator::Reference counts_ref =

@@ -176,7 +176,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/weak_document_ptr.h"
 #include "content/public/browser/web_ui_url_loader_factory.h"
-#include "content/public/common/alternative_error_page_override_info.mojom-forward.h"
+#include "content/public/common/alternative_error_page_override_info.mojom.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -2447,7 +2447,7 @@ void RenderFrameHostImpl::ExecuteJavaScriptMethod(
 
   const bool wants_result = !callback.is_null();
   GetAssociatedLocalFrame()->JavaScriptMethodExecuteRequest(
-      object_name, method_name, std::move(arguments), wants_result,
+      object_name, method_name, std::move(arguments.GetList()), wants_result,
       std::move(callback));
 }
 
@@ -3621,12 +3621,10 @@ void RenderFrameHostImpl::DidNavigate(
     navigation_request->frame_tree_node()->SetNotOnInitialEmptyDocument();
   }
 
-  // For uuid-in-package: and urn: resources served from WebBundles, use the
-  // Bundle's origin.
-  // TODO(https://crbug.com/1257045): Remove urn: scheme support.
+  // For uuid-in-package: resources served from WebBundles, use the Bundle's
+  // origin.
   url::Origin origin =
-      ((params.url.SchemeIs(url::kUrnScheme) ||
-        params.url.SchemeIs(url::kUuidInPackageScheme)) &&
+      (params.url.SchemeIs(url::kUuidInPackageScheme) &&
        navigation_request->GetWebBundleURL().is_valid())
           ? url::Origin::Create(navigation_request->GetWebBundleURL())
           : GetLastCommittedOrigin();
@@ -7259,9 +7257,22 @@ void RenderFrameHostImpl::CreateFencedFrame(
                             base::UnguessableToken::Create());
     return;
   }
+  // A fenced frame embedded in another fenced frame cannot have a different
+  // mode than its embedder. This is checked in the renderer, but needs
+  // verification in the browser in case the renderer is compromised.
+  if (GetMainFrame()->IsFencedFrameRoot() &&
+      GetMainFrame()->frame_tree_node()->GetFencedFrameMode() != mode) {
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::FF_DIFFERENT_MODE_THAN_EMBEDDER);
+    std::move(callback).Run(0, blink::mojom::FrameReplicationState::New(),
+                            blink::RemoteFrameToken(),
+                            base::UnguessableToken::Create());
+    return;
+  }
   fenced_frames_.push_back(
       std::make_unique<FencedFrame>(weak_ptr_factory_.GetSafeRef(), mode));
   FencedFrame* fenced_frame = fenced_frames_.back().get();
+  fenced_frame->CreateProxyAndAttachToOuterFrameTree();
   fenced_frame->Bind(std::move(pending_receiver));
 
   RenderFrameProxyHost* proxy_host = fenced_frame->GetProxyToInnerMainFrame();
@@ -7406,12 +7417,10 @@ void RenderFrameHostImpl::BeginNavigation(
     }
   }
 
-  // Only uuid-in-package: or urn: URL are allowed for navigation to a resource
-  // in Subresource WebBundles.
-  // TODO(https://crbug.com/1257045): Remove urn: scheme support.
+  // Only uuid-in-package: URL are allowed for navigation to a resource in
+  // Subresource WebBundles.
   if (begin_params->web_bundle_token &&
-      !(common_params->url.SchemeIs(url::kUrnScheme) ||
-        common_params->url.SchemeIs(url::kUuidInPackageScheme))) {
+      !common_params->url.SchemeIs(url::kUuidInPackageScheme)) {
     bad_message::ReceivedBadMessage(
         GetProcess(), bad_message::WEB_BUNDLE_INVALID_NAVIGATION_URL);
     return;
@@ -10227,7 +10236,7 @@ void RenderFrameHostImpl::BindRestrictedCookieManagerWithOrigin(
   GetStoragePartition()->CreateRestrictedCookieManager(
       network::mojom::RestrictedCookieManagerRole::SCRIPT, origin,
       isolation_info,
-      /*is_service_worker=*/false, GetProcess()->GetID(), routing_id(),
+      /*is_service_worker=*/false, GetProcess()->GetID(), GetRoutingID(),
       std::move(receiver), CreateCookieAccessObserver());
 }
 

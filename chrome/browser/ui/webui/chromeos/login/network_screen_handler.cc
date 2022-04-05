@@ -59,12 +59,12 @@ void NetworkScreenHandler::Hide() {}
 
 void NetworkScreenHandler::Bind(NetworkScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void NetworkScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void NetworkScreenHandler::ShowError(const std::u16string& message) {
@@ -97,7 +97,7 @@ void NetworkScreenHandler::GetAdditionalParameters(
   cellular_setup::AddNonStringLoadTimeDataToDict(dict);
 }
 
-void NetworkScreenHandler::Initialize() {
+void NetworkScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     show_on_init_ = false;
     Show();

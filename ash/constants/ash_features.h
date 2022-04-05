@@ -60,7 +60,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kAmbientModeDevUseProdFeature;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kAmbientModePhotoPreviewFeature;
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kAmbientModeNewUrl;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kArcAccountRestrictions;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -120,7 +119,7 @@ extern const base::Feature kCellularForbidAttachApn;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCellularUseAttachApn;
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kCellularUseExternalEuicc;
+extern const base::Feature kCellularUseSecondEuicc;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kClipboardHistory;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kClipboardHistoryContextMenuNudge;
@@ -195,7 +194,6 @@ extern const base::Feature kEchePhoneHubPermissionsOnboarding;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kEcheSWA;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kEcheCustomWidget;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kEcheSWADebugMode;
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kEcheSWAInBackground;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kEnableBackgroundBlur;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -330,13 +328,9 @@ extern const base::Feature kImeStylusHandwriting;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kImprovedDesksKeyboardShortcuts;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kInstantTethering;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kKeyboardBasedDisplayArrangementInSettings;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kLacrosOnly;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kLacrosPrimary;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kLacrosSupport;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kForceProfileMigrationCompletion;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kLacrosProfileMigrationForAnyUser;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -566,7 +560,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeAnimationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeDevUseProdEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModePhotoPreviewEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeNewUrlEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAppNotificationsPageEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsArcInputOverlayEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsArcNetworkDiagnosticsButtonEnabled();
@@ -598,7 +591,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEchePhoneHubPermissionsOnboarding();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEcheSWAEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEcheCustomWidgetEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEcheSWADebugModeEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsEcheSWAInBackgroundEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsESimPolicyEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsExtendedOpenVpnSettingsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFamilyLinkOnSchoolDeviceEnabled();
@@ -632,8 +624,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsInstantTetheringBackgroundAdvertisingSupported();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsKeyboardBacklightToggleEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS)
-bool IsKeyboardBasedDisplayArrangementInSettingsEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsLanguagePacksEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsLauncherAppSortEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)

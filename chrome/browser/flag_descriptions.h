@@ -2343,9 +2343,6 @@ extern const char kAlwaysEnableHdcpType1[];
 extern const char kAmbientModeAnimationName[];
 extern const char kAmbientModeAnimationDescription[];
 
-extern const char kAmbientModeNewUrlName[];
-extern const char kAmbientModeNewUrlDescription[];
-
 extern const char kAppDiscoveryForOobeName[];
 extern const char kAppDiscoveryForOobeDescription[];
 
@@ -2460,8 +2457,8 @@ extern const char kCellularForbidAttachApnDescription[];
 extern const char kCellularUseAttachApnName[];
 extern const char kCellularUseAttachApnDescription[];
 
-extern const char kCellularUseExternalEuiccName[];
-extern const char kCellularUseExternalEuiccDescription[];
+extern const char kCellularUseSecondEuiccName[];
+extern const char kCellularUseSecondEuiccDescription[];
 
 extern const char kComponentUpdaterTestRequestName[];
 extern const char kComponentUpdaterTestRequestDescription[];
@@ -2673,9 +2670,6 @@ extern const char kEcheCustomWidgetDescription[];
 extern const char kEcheSWADebugModeName[];
 extern const char kEcheSWADebugModeDescription[];
 
-extern const char kEcheSWAInBackgroundName[];
-extern const char kEcheSWAInBackgroundDescription[];
-
 extern const char kEnableIdleInhibitName[];
 extern const char kEnableIdleInhibitDescription[];
 
@@ -2856,9 +2850,6 @@ extern const char kImeSystemEmojiPickerSearchExtensionDescription[];
 
 extern const char kImeStylusHandwritingName[];
 extern const char kImeStylusHandwritingDescription[];
-
-extern const char kKeyboardBasedDisplayArrangementInSettingsName[];
-extern const char kKeyboardBasedDisplayArrangementInSettingsDescription[];
 
 extern const char kLacrosAvailabilityIgnoreName[];
 extern const char kLacrosAvailabilityIgnoreDescription[];
@@ -3369,6 +3360,9 @@ extern const char kWebrtcPipeWireCapturerDescription[];
 #endif  // #if defined(WEBRTC_USE_PIPEWIRE)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+extern const char kChromeKioskEnableLacrosName[];
+extern const char kChromeKioskEnableLacrosDescription[];
+
 extern const char kWebKioskEnableLacrosName[];
 extern const char kWebKioskEnableLacrosDescription[];
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

@@ -268,6 +268,17 @@ const base::Feature kDesktopPWAsTabStrip{"DesktopPWAsTabStrip",
 const base::Feature kDevicePosture{"DevicePosture",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether the Digital Goods API is enabled.
+// https://github.com/WICG/digital-goods/
+const base::Feature kDigitalGoodsApi {
+  "DigitalGoodsApi",
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
 // Enable document policy for configuring and restricting feature behavior.
 const base::Feature kDocumentPolicy{"DocumentPolicy",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
@@ -779,7 +790,7 @@ const base::Feature kSecurePaymentConfirmation {
 
 // Enables API V3 changes in Secure Payment Confirmation.
 const base::Feature kSecurePaymentConfirmationAPIV3{
-    "SecurePaymentConfirmationAPIV3", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SecurePaymentConfirmationAPIV3", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Used to control whether to remove the restriction that PaymentCredential in
 // WebAuthn and secure payment confirmation method in PaymentRequest API must

@@ -34,16 +34,15 @@ void EnableAdbSideloadingScreenHandler::Hide() {}
 
 void EnableAdbSideloadingScreenHandler::Bind(
     EnableAdbSideloadingScreen* screen) {
-  BaseScreenHandler::SetBaseScreen(screen);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen);
 }
 
 void EnableAdbSideloadingScreenHandler::Unbind() {
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void EnableAdbSideloadingScreenHandler::SetScreenState(UIState value) {
-  CallJS("login.EnableAdbSideloadingScreen.setScreenState",
-         static_cast<int>(value));
+  CallExternalAPI("setScreenState", static_cast<int>(value));
 }
 
 void EnableAdbSideloadingScreenHandler::DeclareLocalizedValues(
@@ -66,7 +65,7 @@ void EnableAdbSideloadingScreenHandler::DeclareLocalizedValues(
                IDS_ENABLE_ARC_ADB_SIDELOADING_OK_BUTTON);
 }
 
-void EnableAdbSideloadingScreenHandler::Initialize() {
+void EnableAdbSideloadingScreenHandler::InitializeDeprecated() {
   if (!page_is_ready())
     return;
 

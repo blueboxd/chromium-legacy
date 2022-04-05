@@ -365,8 +365,12 @@ AppsGridView::AppsGridView(AppListA11yAnnouncer* a11y_announcer,
   bounds_animator_->SetAnimationDuration(base::Milliseconds(300));
   if (features::IsProductivityLauncherEnabled()) {
     GetViewAccessibility().OverrideRole(ax::mojom::Role::kGroup);
-    GetViewAccessibility().OverrideName(
-        l10n_util::GetStringUTF16(IDS_ALL_APPS_INDICATOR));
+
+    // Override the a11y name of top level apps grid.
+    if (!folder_delegate) {
+      GetViewAccessibility().OverrideName(
+          l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_APPS_GRID_A11Y_NAME));
+    }
   }
 
   if (!IsTabletMode()) {
@@ -2497,7 +2501,7 @@ void AppsGridView::DeleteItemViewAtIndex(int index) {
 
 bool AppsGridView::IsPointWithinDragBuffer(const gfx::Point& point) const {
   gfx::Rect rect(GetLocalBounds());
-  rect.Inset(-kDragBufferPx, -kDragBufferPx, -kDragBufferPx, -kDragBufferPx);
+  rect.Inset(-kDragBufferPx);
   return rect.Contains(point);
 }
 

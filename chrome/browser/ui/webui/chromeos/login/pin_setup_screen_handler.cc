@@ -81,13 +81,12 @@ void PinSetupScreenHandler::GetAdditionalParameters(
 
 void PinSetupScreenHandler::Bind(PinSetupScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen);
 }
 
 void PinSetupScreenHandler::Hide() {}
 
-void PinSetupScreenHandler::Initialize() {
-}
+void PinSetupScreenHandler::InitializeDeprecated() {}
 
 void PinSetupScreenHandler::Show(const std::string& token,
                                  bool is_child_account) {

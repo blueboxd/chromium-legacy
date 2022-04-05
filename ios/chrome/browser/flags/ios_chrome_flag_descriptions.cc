@@ -273,11 +273,6 @@ const char kFillingAcrossAffiliatedWebsitesDescription[] =
     "Enables filling password on a website when there is saved "
     "password on affiliated website.";
 
-const char kForceDisableExtendedSyncPromosName[] =
-    "Disable all extended sync promos";
-const char kForceDisableExtendedSyncPromosDescription[] =
-    "When enabled, will not display any extended sync promos";
-
 const char kForceStartupSigninPromoName[] = "Display the startup sign-in promo";
 const char kForceStartupSigninPromoDescription[] =
     "When enabled, the startup sign-in promo is always displayed when starting "
@@ -560,12 +555,6 @@ const char kToolbarContainerName[] = "Use Toolbar Containers";
 const char kToolbarContainerDescription[] =
     "When enabled, the toolbars and their fullscreen animations will be "
     "managed by the toolbar container coordinator rather than BVC.";
-
-const char kUpdateHistoryEntryPointsInIncognitoName[] =
-    "Update history entry points in Incognito.";
-const char kUpdateHistoryEntryPointsInIncognitoDescription[] =
-    "When enabled, the entry points to history UI from Incognito mode will be "
-    "removed.";
 
 const char kUseLensToSearchForImageName[] =
     "Use Google Lens to Search for images";

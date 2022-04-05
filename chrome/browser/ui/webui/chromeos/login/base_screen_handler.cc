@@ -4,29 +4,41 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
+#include "base/check_op.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/screens/base_screen.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 
 namespace chromeos {
+
+namespace {
+constexpr char kLoginPrefix[] = "login.";
+constexpr char kUserActedCallback[] = ".userActed";
+}  // namespace
 
 BaseScreenHandler::BaseScreenHandler(OobeScreenId oobe_screen)
     : oobe_screen_(oobe_screen) {
   DCHECK_NE(oobe_screen_.name, OobeScreen::SCREEN_UNKNOWN.name);
   if (!oobe_screen_.external_api_prefix.empty()) {
     user_acted_method_path_ = base::StrCat(
-        {"login.", oobe_screen_.external_api_prefix, ".userActed"});
+        {kLoginPrefix, oobe_screen_.external_api_prefix, kUserActedCallback});
   }
 }
 
 BaseScreenHandler::~BaseScreenHandler() = default;
 
-void BaseScreenHandler::SetBaseScreen(BaseScreen* base_screen) {
-  if (base_screen_ == base_screen)
-    return;
+void BaseScreenHandler::SetBaseScreenDeprecated(BaseScreen* base_screen) {
+#if DCHECK_IS_ON()
   base_screen_ = base_screen;
+  if (!base_screen) {
+    // TODO(rsorokin): Insert check if LDH is finalizing here.
+    return;
+  }
+#endif
 }
 
 void BaseScreenHandler::ShowInWebUI(absl::optional<base::Value::Dict> data) {
@@ -45,8 +57,29 @@ void BaseScreenHandler::RegisterMessages() {
 }
 
 void BaseScreenHandler::HandleUserAction(const std::string& action_id) {
-  if (base_screen_)
-    base_screen_->HandleUserAction(action_id);
+  if (!ash::LoginDisplayHost::default_host())
+    return;
+
+#if DCHECK_IS_ON()
+  if (base_screen_) {
+    DCHECK_EQ(
+        ash::LoginDisplayHost::default_host()->GetWizardController()->GetScreen(
+            oobe_screen_),
+        base_screen_);
+  }
+#endif
+
+  ash::LoginDisplayHost::default_host()
+      ->GetWizardController()
+      ->GetScreen(oobe_screen_)
+      ->HandleUserAction(action_id);
+}
+
+std::string BaseScreenHandler::GetFullExternalAPIFunctionName(
+    const std::string& short_name) {
+  DCHECK(!oobe_screen_.external_api_prefix.empty());
+  return base::StrCat(
+      {kLoginPrefix, oobe_screen_.external_api_prefix, ".", short_name});
 }
 
 }  // namespace chromeos

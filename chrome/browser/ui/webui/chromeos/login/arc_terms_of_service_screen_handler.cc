@@ -296,7 +296,7 @@ void ArcTermsOfServiceScreenHandler::Hide() {
 }
 
 void ArcTermsOfServiceScreenHandler::Bind(ArcTermsOfServiceScreen* screen) {
-  BaseScreenHandler::SetBaseScreen(screen);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen);
 }
 
 void ArcTermsOfServiceScreenHandler::StartNetworkAndTimeZoneObserving() {
@@ -310,7 +310,7 @@ void ArcTermsOfServiceScreenHandler::StartNetworkAndTimeZoneObserving() {
   network_time_zone_observing_ = true;
 }
 
-void ArcTermsOfServiceScreenHandler::Initialize() {
+void ArcTermsOfServiceScreenHandler::InitializeDeprecated() {
   if (!show_on_init_) {
     // Send time zone information as soon as possible to able to pre-load the
     // Play Store ToS.

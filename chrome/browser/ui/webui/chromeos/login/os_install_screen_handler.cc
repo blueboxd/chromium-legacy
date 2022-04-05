@@ -94,7 +94,7 @@ void OsInstallScreenHandler::DeclareLocalizedValues(
                IDS_OS_INSTALL_SCREEN_SHUTDOWN_BUTTON);
 }
 
-void OsInstallScreenHandler::Initialize() {}
+void OsInstallScreenHandler::InitializeDeprecated() {}
 
 void OsInstallScreenHandler::Show() {
   ShowInWebUI();
@@ -102,12 +102,12 @@ void OsInstallScreenHandler::Show() {
 
 void OsInstallScreenHandler::Bind(ash::OsInstallScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void OsInstallScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void OsInstallScreenHandler::ShowStep(const char* step) {

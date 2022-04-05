@@ -438,27 +438,6 @@
       "v8_enable_verify_heap": true
     }
   },
-  "Win x64 Builder (dbg) (goma cache silo)": {
-    "gn_args": {
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": true,
-      "is_debug": true,
-      "proprietary_codecs": true,
-      "symbol_level": 1,
-      "use_goma": true
-    }
-  },
-  "Win x64 Builder (dbg) (reclient shadow)": {
-    "gn_args": {
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": true,
-      "is_debug": true,
-      "proprietary_codecs": true,
-      "symbol_level": 1,
-      "use_rbe": true,
-      "use_remoteexec": true
-    }
-  },
   "Win x64 Builder (reclient compare)": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -905,8 +884,8 @@
     "args_file": "//build/args/chromeos/amd64-generic-crostoolchain.gni",
     "gn_args": {
       "chromeos_is_browser_only": true,
-      "cros_host_sysroot": "//build/linux/debian_sid_amd64-sysroot",
-      "cros_v8_snapshot_sysroot": "//build/linux/debian_sid_amd64-sysroot",
+      "cros_host_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
+      "cros_v8_snapshot_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
       "dcheck_always_on": false,
       "is_chromeos_device": true,
       "is_debug": false,
@@ -919,8 +898,8 @@
     "args_file": "//build/args/chromeos/amd64-generic-vm.gni",
     "gn_args": {
       "chromeos_is_browser_only": true,
-      "cros_host_sysroot": "//build/linux/debian_sid_amd64-sysroot",
-      "cros_v8_snapshot_sysroot": "//build/linux/debian_sid_amd64-sysroot",
+      "cros_host_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
+      "cros_v8_snapshot_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
       "dcheck_always_on": false,
       "is_chromeos_device": true,
       "ozone_platform_headless": true,
@@ -933,8 +912,8 @@
     "args_file": "//build/args/chromeos/amd64-generic-crostoolchain.gni",
     "gn_args": {
       "chromeos_is_browser_only": true,
-      "cros_host_sysroot": "//build/linux/debian_sid_amd64-sysroot",
-      "cros_v8_snapshot_sysroot": "//build/linux/debian_sid_amd64-sysroot",
+      "cros_host_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
+      "cros_v8_snapshot_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
       "dcheck_always_on": false,
       "is_chromeos_device": true,
       "is_debug": false,
@@ -947,8 +926,8 @@
     "args_file": "//build/args/chromeos/amd64-generic-crostoolchain.gni",
     "gn_args": {
       "chromeos_is_browser_only": true,
-      "cros_host_sysroot": "//build/linux/debian_sid_amd64-sysroot",
-      "cros_v8_snapshot_sysroot": "//build/linux/debian_sid_amd64-sysroot",
+      "cros_host_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
+      "cros_v8_snapshot_sysroot": "//build/linux/debian_bullseye_amd64-sysroot",
       "dcheck_always_on": false,
       "is_chromeos_device": true,
       "is_debug": false,
@@ -1331,43 +1310,6 @@
       "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
-      "use_goma": true
-    }
-  },
-  "win-archive-dbg (goma cache silo)": {
-    "gn_args": {
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 1,
-      "use_goma": true
-    }
-  },
-  "win-archive-dbg (reclient shadow)": {
-    "gn_args": {
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 1,
-      "use_rbe": true,
-      "use_remoteexec": true
-    }
-  },
-  "win-archive-rel (goma cache silo)": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "skip_archive_compression": false,
-      "symbol_level": 1,
-      "use_goma": true
-    }
-  },
-  "win-archive-rel (reclient shadow)": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "is_component_build": false,
-      "is_debug": false,
-      "skip_archive_compression": false,
-      "symbol_level": 1,
       "use_rbe": true,
       "use_remoteexec": true
     }
@@ -1395,7 +1337,8 @@
       "target_cpu": "x86",
       "use_allocator": "partition",
       "use_backup_ref_ptr": true,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "win-celab-builder-rel": {

@@ -37,7 +37,7 @@ var OSSettingsV3BrowserTest = class extends PolymerTest {
 var OSSettingsDevicePageV3Test = class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/device_page_tests.m.js';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/device_page_tests.js';
   }
 
   /** @override */
@@ -98,26 +98,6 @@ var OSSettingsPeoplePageAccountManagerWithArcAccountRestrictionsEnabledV3Test =
 TEST_F(
     'OSSettingsPeoplePageAccountManagerWithArcAccountRestrictionsEnabledV3Test',
     'All', () => mocha.run());
-
-var OSSettingsDevicePageKeyboardArrangementDisabledV3Test =
-    class extends OSSettingsV3BrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/device_page_tests.m.js';
-  }
-
-  /** @override */
-  get featureList() {
-    return {
-      enabled: super.featureList.enabled,
-      disabled: ['ash::features::kKeyboardBasedDisplayArrangementInSettings']
-    };
-  }
-};
-
-TEST_F(
-    'OSSettingsDevicePageKeyboardArrangementDisabledV3Test', 'All',
-    () => mocha.grep('/.*arrow_key_arrangement_disabled.*/').run());
 
 var OSSettingsNearbyShareSubPageV3Test = class extends OSSettingsV3BrowserTest {
   /** @override */
@@ -312,7 +292,7 @@ TEST_F('OSSettingsAppManagementAppDetailsV3Test', 'AllJsTests', () => {
 var OSSettingsCrostiniPageV3Test = class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/crostini_page_test.m.js';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/crostini_page_test.js';
   }
 
   /** @override */
@@ -329,7 +309,7 @@ var OSSettingsCrostiniExtraContainerPageV3Test =
     class extends OSSettingsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/crostini_extra_containers_subpage_test.m.js';
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/crostini_extra_containers_subpage_test.js';
   }
 
   /** @override */
@@ -342,8 +322,8 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
   mocha.run();
 });
 
-[['AccessibilityPage', 'os_a11y_page_tests.m.js'],
- ['AboutPage', 'os_about_page_tests.m.js'],
+[['AccessibilityPage', 'os_a11y_page_tests.js'],
+ ['AboutPage', 'os_about_page_tests.js'],
  ['AccountsPage', 'add_users_tests.js'],
  ['AmbientModePage', 'ambient_mode_page_test.js'],
  ['AmbientModePhotosPage', 'ambient_mode_photos_page_test.js'],
@@ -388,17 +368,17 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
    'DictationChangeLanguageLocaleDialogTest',
    'change_dictation_locale_dialog_test.js'
  ],
- ['CupsPrinterEntry', 'cups_printer_entry_tests.m.js'],
- ['CupsPrinterLandingPage', 'cups_printer_landing_page_tests.m.js'],
+ ['CupsPrinterEntry', 'cups_printer_entry_tests.js'],
+ ['CupsPrinterLandingPage', 'cups_printer_landing_page_tests.js'],
  // TODO(crbug/1240970): Re-enable once flakiness is fixed.
- // ['CupsPrinterPage', 'cups_printer_page_tests.m.js'],
+ // ['CupsPrinterPage', 'cups_printer_page_tests.js'],
  ['DarkModeSubpage', 'dark_mode_subpage_tests.js'],
  ['DateTimePage', 'date_time_page_tests.js'],
  ['EsimInstallErrorDialog', 'esim_install_error_dialog_test.js'],
  ['EsimRemoveProfileDialog', 'esim_remove_profile_dialog_test.js'],
  ['EsimRenameDialog', 'esim_rename_dialog_test.js'],
  ['FilesPage', 'os_files_page_test.m.js'],
- ['FingerprintPage', 'fingerprint_browsertest_chromeos.m.js'],
+ ['FingerprintPage', 'fingerprint_browsertest_chromeos.js'],
  ['GoogleAssistantPage', 'google_assistant_page_test.js'],
  ['GuestOsSharedPaths', 'guest_os_shared_paths_test.js'],
  ['GuestOsSharedUsbDevices', 'guest_os_shared_usb_devices_test.js'],
@@ -413,8 +393,8 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['KerberosAccounts', 'kerberos_accounts_test.m.js'],
  ['KerberosPage', 'kerberos_page_test.m.js'],
  ['KeyboardShortcutBanner', 'keyboard_shortcut_banner_test.js'],
- ['LockScreenPage', 'lock_screen_tests.m.js'],
- ['ManageAccessibilityPage', 'manage_accessibility_page_tests.m.js'],
+ ['LockScreenPage', 'lock_screen_tests.js'],
+ ['ManageAccessibilityPage', 'manage_accessibility_page_tests.js'],
  ['MultideviceCombinedSetupItem', 'multidevice_combined_setup_item_tests.js'],
  // TODO(crbug.com/1227116): Re-enable once flakiness is fixed.
  //  ['MultideviceFeatureItem', 'multidevice_feature_item_tests.js'],
@@ -458,8 +438,8 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
    'OsBluetoothChangeDeviceNameDialog',
    'os_bluetooth_change_device_name_dialog_tests.js'
  ],
- ['OsEditDictionaryPage', 'os_edit_dictionary_page_test.m.js'],
- ['OsLanguagesPageV2', 'os_languages_page_v2_tests.m.js'],
+ ['OsEditDictionaryPage', 'os_edit_dictionary_page_test.js'],
+ ['OsLanguagesPageV2', 'os_languages_page_v2_tests.js'],
  ['OsPairedBluetoothList', 'os_paired_bluetooth_list_tests.js'],
  ['OsSettingsUi', 'os_settings_ui_test.m.js'],
  ['OsSettingsUi2', 'os_settings_ui_test_2.m.js'],
@@ -470,31 +450,28 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['ParentalControlsPage', 'parental_controls_page_test.js'],
  ['PeoplePage', 'os_people_page_test.js'],
  ['PeoplePageChangePicture', 'people_page_change_picture_test.js'],
- [
-   'PeoplePageQuickUnlock',
-   'quick_unlock_authenticate_browsertest_chromeos.m.js'
- ],
+ ['PeoplePageQuickUnlock', 'quick_unlock_authenticate_browsertest_chromeos.js'],
  ['PersonalizationPage', 'personalization_page_test.js'],
- ['PrintingPage', 'os_printing_page_tests.m.js'],
- ['PrivacyPage', 'os_privacy_page_test.m.js'],
+ ['PrintingPage', 'os_printing_page_tests.js'],
+ ['PrivacyPage', 'os_privacy_page_test.js'],
  ['ResetPage', 'os_reset_page_test.m.js'],
  ['SettingsSchedulerSlider', 'settings_scheduler_slider_test.m.js'],
  ['SearchSubpage', 'search_subpage_test.m.js'],
  ['SettingsTrafficCounters', 'settings_traffic_counters_test.m.js'],
- ['SmartInputsPage', 'smart_inputs_page_test.m.js'],
+ ['SmartInputsPage', 'smart_inputs_page_test.js'],
  ['SmbPage', 'smb_shares_page_tests.m.js'],
- ['SmartPrivacySubpage', 'smart_privacy_subpage_tests.m.js'],
+ ['SmartPrivacySubpage', 'smart_privacy_subpage_tests.js'],
  [
    'SwitchAccessActionAssignmentDialog',
-   'switch_access_action_assignment_dialog_test.m.js'
+   'switch_access_action_assignment_dialog_test.js'
  ],
- ['SwitchAccessSetupGuideDialog', 'switch_access_setup_guide_dialog_test.m.js'],
- ['SwitchAccessSubpage', 'switch_access_subpage_tests.m.js'],
+ ['SwitchAccessSetupGuideDialog', 'switch_access_setup_guide_dialog_test.js'],
+ ['SwitchAccessSubpage', 'switch_access_subpage_tests.js'],
  ['TetherConnectionDialog', 'tether_connection_dialog_test.m.js'],
- ['TextToSpeechSubpage', 'text_to_speech_subpage_tests.m.js'],
+ ['TextToSpeechSubpage', 'text_to_speech_subpage_tests.js'],
  ['TimezoneSelector', 'timezone_selector_test.js'],
  ['TimezoneSubpage', 'timezone_subpage_test.js'],
- ['TtsSubpage', 'tts_subpage_test.m.js'],
+ ['TtsSubpage', 'tts_subpage_test.js'],
  ['UserPage', 'user_page_tests.js'],
 ].forEach(test => registerTest(...test));
 

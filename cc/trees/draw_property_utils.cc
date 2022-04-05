@@ -13,6 +13,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/stack.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/draw_properties.h"
@@ -704,7 +705,7 @@ gfx::Rect LayerVisibleRect(PropertyTrees* property_trees, LayerImpl* layer) {
     if (layer->IsAffectedByPageScale()) {
       padding_amount /= layer->layer_tree_impl()->current_page_scale_factor();
     }
-    visible_rect.Inset(0.0f, -padding_amount);
+    visible_rect.Inset(gfx::Insets::VH(-padding_amount, 0.0f));
   }
   visible_rect.Intersect(layer_content_rect);
   return visible_rect;

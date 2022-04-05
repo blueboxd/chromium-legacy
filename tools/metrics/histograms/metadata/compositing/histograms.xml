@@ -295,7 +295,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Display.DrawToSwapUs" units="microseconds"
-    expires_after="2022-07-31">
+    expires_after="2022-10-02">
   <owner>backer@chromium.org</owner>
   <owner>rjkroege@chromium.org</owner>
   <summary>
@@ -315,6 +315,16 @@ chromium-metrics-reviews@google.com.
     Indicates whether DrmOverlayManager was able to find the overlay
     configuration in its cache. Recorded when DrmOverlayManager is asked to
     verify an overlay configuration.
+  </summary>
+</histogram>
+
+<histogram name="Compositing.Display.DrmOverlayManager.FirstTestPageFlipPassed"
+    enum="Boolean" expires_after="2022-11-30">
+  <owner>khaslett@chromium.org</owner>
+  <owner>kylechar@chromium.org</owner>
+  <summary>
+    Logged zero or more times per frame, whether the first call to
+    HardwareDisplayController.TestPageFlip succeeded.
   </summary>
 </histogram>
 
@@ -1438,7 +1448,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Graphics.Smoothness.PerSession.MaxPercentDroppedFrames_1sWindow"
-    units="%" expires_after="2022-07-31">
+    units="%" expires_after="2022-10-02">
   <owner>sadrul@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>

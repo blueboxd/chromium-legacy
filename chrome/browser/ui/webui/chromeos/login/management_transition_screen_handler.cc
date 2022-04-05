@@ -72,15 +72,15 @@ void ManagementTransitionScreenHandler::RegisterMessages() {
 
 void ManagementTransitionScreenHandler::Bind(
     ManagementTransitionScreen* screen) {
-  BaseScreenHandler::SetBaseScreen(screen);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen);
   screen_ = screen;
   if (page_is_ready())
-    Initialize();
+    InitializeDeprecated();
 }
 
 void ManagementTransitionScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
   timer_.Stop();
 }
 
@@ -129,7 +129,7 @@ base::OneShotTimer* ManagementTransitionScreenHandler::GetTimerForTesting() {
   return &timer_;
 }
 
-void ManagementTransitionScreenHandler::Initialize() {
+void ManagementTransitionScreenHandler::InitializeDeprecated() {
   if (!screen_ || !show_on_init_)
     return;
 

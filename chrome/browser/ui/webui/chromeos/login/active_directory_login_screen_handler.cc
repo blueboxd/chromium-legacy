@@ -46,7 +46,7 @@ void ActiveDirectoryLoginScreenHandler::DeclareLocalizedValues(
                 ui::GetChromeOSDeviceTypeResourceId());
 }
 
-void ActiveDirectoryLoginScreenHandler::Initialize() {
+void ActiveDirectoryLoginScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     show_on_init_ = false;
     Show();
@@ -76,12 +76,12 @@ void ActiveDirectoryLoginScreenHandler::Show() {
 void ActiveDirectoryLoginScreenHandler::Bind(
     ActiveDirectoryLoginScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
 }
 
 void ActiveDirectoryLoginScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 void ActiveDirectoryLoginScreenHandler::Reset() {

@@ -32,14 +32,14 @@ void QuickStartScreenHandler::Show() {
 
 void QuickStartScreenHandler::Bind(QuickStartScreen* screen) {
   screen_ = screen;
-  BaseScreenHandler::SetBaseScreen(screen_);
+  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
   if (page_is_ready())
-    Initialize();
+    InitializeDeprecated();
 }
 
 void QuickStartScreenHandler::Unbind() {
   screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreen(nullptr);
+  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
 }
 
 std::vector<base::Value> ToValue(const ash::quick_start::ShapeList& list) {
@@ -59,7 +59,7 @@ void QuickStartScreenHandler::SetShapes(
   CallJS("login.QuickStartScreen.setFigures", base::Value(ToValue(shape_list)));
 }
 
-void QuickStartScreenHandler::Initialize() {
+void QuickStartScreenHandler::InitializeDeprecated() {
   if (show_on_init_) {
     Show();
     show_on_init_ = false;

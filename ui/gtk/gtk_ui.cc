@@ -166,7 +166,7 @@ class GtkButtonImageSource : public gfx::ImageSkiaSource {
       if (!GtkCheckVersion(3, 14)) {
         gint focus_pad;
         GtkStyleContextGetStyle(context, "focus-padding", &focus_pad, nullptr);
-        focus_rect.Inset(focus_pad, focus_pad);
+        focus_rect.Inset(focus_pad);
 
         if (state_ == ui::NativeTheme::kPressed) {
           gint child_displacement_x, child_displacement_y;
@@ -502,10 +502,13 @@ base::TimeDelta GtkUi::GetCursorBlinkInterval() const {
 }
 
 ui::NativeTheme* GtkUi::GetNativeTheme(aura::Window* window) const {
-  return (use_system_theme_callback_.is_null() ||
-          use_system_theme_callback_.Run(window))
-             ? native_theme_
-             : ui::NativeTheme::GetInstanceForNativeUi();
+  return GetNativeTheme(use_system_theme_callback_.is_null() ||
+                        use_system_theme_callback_.Run(window));
+}
+
+ui::NativeTheme* GtkUi::GetNativeTheme(bool use_system_theme) const {
+  return use_system_theme ? native_theme_
+                          : ui::NativeTheme::GetInstanceForNativeUi();
 }
 
 void GtkUi::SetUseSystemThemeCallback(UseSystemThemeCallback callback) {

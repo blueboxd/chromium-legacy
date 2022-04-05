@@ -24,12 +24,11 @@ chromium-metrics-reviews@google.com.
 
 <variants name="ArcAccessibilityFeatures">
   <variant name="DockedMagnifier"/>
-  <variant name="FocusHighlight"/>
-  <variant name="FullScreenMagnifier"/>
+  <variant name="FullscreenMagnifier"/>
   <variant name="SelectToSpeak"/>
   <variant name="SpokenFeedback" summary="SpokenFeedback without Talkback"/>
   <variant name="SwitchAccess"/>
-  <variant name="Talkback"/>
+  <variant name="TalkBack"/>
 </variants>
 
 <variants name="ArcPerformanceAppCategories">
@@ -141,8 +140,21 @@ chromium-metrics-reviews@google.com.
   <token key="ArcAccessibilityFeatures" variants="ArcAccessibilityFeatures"/>
 </histogram>
 
+<histogram name="Arc.Accessibility.WindowCount" enum="ArcAccessibilityFeature"
+    expires_after="2023-04-10">
+  <owner>sahok@chromium.org</owner>
+  <owner>arc-framework@google.com</owner>
+  <summary>
+    Count the number of windows with accessibility features enabled when a
+    window is opened or an accessibility feature is enabled while windows exist.
+  </summary>
+</histogram>
+
 <histogram name="Arc.AccessibilityWithTalkBack" enum="BooleanEnabled"
     expires_after="2023-04-10">
+  <obsolete>
+    Removed 2022/03.
+  </obsolete>
   <owner>hirokisato@chromium.org</owner>
   <owner>arc-framework@google.com</owner>
   <summary>
@@ -167,9 +179,26 @@ chromium-metrics-reviews@google.com.
   <summary>The time elapsed for booting up the ARC instance.</summary>
 </histogram>
 
-<histogram name="Arc.Anr.{AnrSource}" enum="ArcAnr" expires_after="2022-05-01">
+<histogram name="Arc.Anr.{AnrPeriod}" units="ANRs" expires_after="2022-09-01">
   <owner>khmel@google.com</owner>
   <owner>alanding@google.com</owner>
+  <owner>arc-performance@google.com</owner>
+  <summary>
+    ANR rate separated by {AnrPeriod} as ANR count happened in this period.
+  </summary>
+  <token key="AnrPeriod">
+    <variant name="First10MinutesAfterStart"
+        summary="10 minutes after ARC start."/>
+    <variant name="Per4Hours"
+        summary="Regular per 4 hours of ARC active session including session
+                 restarts. This also includes period First10MinutesAfterStart"/>
+  </token>
+</histogram>
+
+<histogram name="Arc.Anr.{AnrSource}" enum="ArcAnr" expires_after="2022-09-01">
+  <owner>khmel@google.com</owner>
+  <owner>alanding@google.com</owner>
+  <owner>arc-performance@google.com</owner>
   <summary>
     Counts ANR events in the system separated by ANR type and {AnrSource}.
   </summary>
@@ -1460,6 +1489,20 @@ chromium-metrics-reviews@google.com.
     Recorded when ARC++ provisioning flow completes. {ArcUserTypes}
   </summary>
   <token key="ArcUserTypes" variants="ArcUserTypes"/>
+</histogram>
+
+<histogram name="Arc.Provisioning.PreSignIn.TimeDelta{ArcUserTypes}" units="ms"
+    expires_after="2022-10-14">
+  <owner>yaohuali@google.com</owner>
+  <owner>mhasank@google.com</owner>
+  <owner>arc-commercial@google.com</owner>
+  <summary>
+    Elapsed time from the signing in process start to right before GMS sign-in
+    or CloudDPC provisioning. {ArcUserTypes}
+  </summary>
+  <token key="ArcUserTypes" variants="ArcUserTypes">
+    <variant name=""/>
+  </token>
 </histogram>
 
 <histogram name="Arc.Provisioning.SignInError{ArcUserTypes}"

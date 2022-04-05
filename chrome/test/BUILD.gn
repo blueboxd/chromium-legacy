@@ -372,14 +372,14 @@ static_library("test_support") {
       "../browser/themes/test/theme_service_changed_waiter.h",
       "../browser/ui/tabs/pinned_tab_test_utils.cc",
       "../browser/ui/tabs/pinned_tab_test_utils.h",
-      "../browser/ui/user_education/interaction_sequence_browser_util.cc",
-      "../browser/ui/user_education/interaction_sequence_browser_util.h",
       "../test/base/browser_with_test_window_test.cc",
       "../test/base/browser_with_test_window_test.h",
       "base/dialog_test_browser_window.cc",
       "base/dialog_test_browser_window.h",
       "base/test_browser_window.cc",
       "base/test_browser_window.h",
+      "interaction/interaction_sequence_browser_util.cc",
+      "interaction/interaction_sequence_browser_util.h",
     ]
     allow_circular_includes_from = [ ":test_support_ui" ]
   }
@@ -567,7 +567,7 @@ static_library("test_support") {
     ]
   }
 
-  if (is_win || is_mac || (is_linux || is_chromeos_lacros)) {
+  if (is_win || is_mac || is_linux || is_chromeos_lacros) {
     public_deps += [ "//ui/base:pixel_diff_test_support" ]
     sources += [
       "pixel/browser_skia_gold_pixel_diff.cc",
@@ -2107,7 +2107,6 @@ if (!is_android) {
       "../browser/ui/thumbnails/thumbnail_readiness_tracker_browsertest.cc",
       "../browser/ui/toolbar/toolbar_actions_model_browsertest.cc",
       "../browser/ui/update_chrome_dialog_browsertest.cc",
-      "../browser/ui/user_education/interaction_sequence_browser_util_browsertest.cc",
       "../browser/ui/views/apps/app_info_dialog/app_info_dialog_views_browsertest.cc",
       "../browser/ui/views/bluetooth_device_credentials_view_browsertest.cc",
       "../browser/ui/views/bookmarks/bookmark_bar_view_browsertest.cc",
@@ -2253,6 +2252,7 @@ if (!is_android) {
       "data/webui/ntp4_browsertest.h",
       "data/webui/webui_resource_browsertest.cc",
       "gpu/webgl_infobar_browsertest.cc",
+      "interaction/interaction_sequence_browser_util_browsertest.cc",
       "origin_policy/origin_policy_browsertest.cc",
       "v8/wasm_trap_handler_browsertest.cc",
     ]
@@ -2820,7 +2820,6 @@ if (!is_android) {
         "../browser/extensions/api/tabs/tabs_test.cc",
         "../browser/extensions/api/test/apitest_apitest.cc",
         "../browser/extensions/api/top_sites/top_sites_apitest.cc",
-        "../browser/extensions/api/web_authentication_proxy/web_authentication_proxy_apitest.cc",
         "../browser/extensions/api/web_navigation/web_navigation_apitest.cc",
         "../browser/extensions/api/web_request/web_request_apitest.cc",
         "../browser/extensions/api/webrtc_audio_private/webrtc_audio_private_browsertest.cc",
@@ -2970,6 +2969,7 @@ if (!is_android) {
         sources += [
           "../browser/enterprise/connectors/device_trust/device_trust_browsertest.cc",
           "../browser/extensions/api/system_indicator/system_indicator_apitest.cc",
+          "../browser/extensions/api/web_authentication_proxy/web_authentication_proxy_apitest.cc",
           "../browser/ui/views/web_apps/file_handler_launch_dialog_browsertest.cc",
         ]
 
@@ -4162,7 +4162,7 @@ if (!is_android) {
       sources -= [ "../common/time_format_browsertest.cc" ]
     }
 
-    if (is_mac || is_win || (is_linux || is_chromeos_lacros)) {
+    if (is_mac || is_win || is_linux || is_chromeos_lacros) {
       sources += [
         # Tests for non mobile and non CrOS (includes Linux, Win, Mac).
         "../browser/extensions/api/image_writer_private/image_writer_utility_client_browsertest.cc",
@@ -4176,7 +4176,7 @@ if (!is_android) {
         ]
       }
     }
-    if (((is_linux || is_chromeos_lacros) && !is_chromeos_lacros) || is_mac) {
+    if (is_linux || is_mac) {
       sources +=
           [ "../browser/first_run/first_run_internal_posix_browsertest.cc" ]
     }
@@ -5540,7 +5540,7 @@ test("unit_tests") {
     ]
   }
 
-  if (is_win || is_mac || (is_linux || is_chromeos_lacros)) {
+  if (is_win || is_mac || is_linux || is_chromeos_lacros) {
     sources += [ "../test/pixel/browser_skia_gold_pixel_diff_unittest.cc" ]
   }
 
@@ -6170,7 +6170,7 @@ test("unit_tests") {
     ]
   }
 
-  if (is_win || is_mac || (is_linux || is_chromeos_lacros)) {
+  if (is_win || is_mac || is_linux || is_chromeos_lacros) {
     sources += [
       "../browser/ui/profile_picker_unittest.cc",
       "../browser/ui/webui/signin/turn_sync_on_helper_unittest.cc",
@@ -6572,7 +6572,6 @@ test("unit_tests") {
       "../browser/ui/toolbar/toolbar_actions_model_unittest.cc",
       "../browser/ui/user_education/active_tab_tracker_unittest.cc",
       "../browser/ui/user_education/help_bubble_factory_registry_unittest.cc",
-      "../browser/ui/user_education/interaction_sequence_browser_util_unittest.cc",
       "../browser/ui/user_education/mock_feature_promo_controller.cc",
       "../browser/ui/user_education/mock_feature_promo_controller.h",
       "../browser/ui/user_education/reopen_tab_in_product_help_trigger_unittest.cc",
@@ -6639,6 +6638,7 @@ test("unit_tests") {
       "../browser/usb/web_usb_detector_unittest.cc",
       "../browser/usb/web_usb_service_impl_unittest.cc",
       "../browser/webauthn/authenticator_request_dialog_model_unittest.cc",
+      "interaction/interaction_sequence_browser_util_unittest.cc",
 
       # The importer code is not used on Android.
       "../common/importer/firefox_importer_utils_unittest.cc",
@@ -6912,8 +6912,7 @@ test("unit_tests") {
   }
 
   if (enable_system_notifications) {
-    # TODO(crbug.com/1052397): Rename is_chromeos_lacros to is_chromeos_lacros.
-    if ((is_linux || is_chromeos_lacros) && !is_chromeos_lacros) {
+    if (is_linux) {
       sources += [ "../browser/notifications/notification_platform_bridge_linux_unittest.cc" ]
     }
 
@@ -8405,7 +8404,7 @@ test("unit_tests") {
     sources += [ "../browser/extensions/blocklist_unittest.cc" ]
   }
 
-  if (is_win || is_mac || (is_linux || is_chromeos_lacros)) {
+  if (is_win || is_mac || is_linux || is_chromeos_lacros) {
     sources += [
       "../browser/browser_switcher/alternative_browser_driver_unittest.cc",
       "../browser/browser_switcher/browser_switcher_navigation_throttle_unittest.cc",
@@ -9152,10 +9151,10 @@ if (!is_android) {
         "../browser/ui/views/user_education/help_bubble_factory_registry_interactive_uitest.cc",
         "../browser/ui/views/user_education/help_bubble_factory_views_interactive_uitest.cc",
         "../browser/ui/views/user_education/help_bubble_view_interactive_uitest.cc",
-        "../browser/ui/views/user_education/interaction_sequence_browser_util_interactive_uitest.cc",
-        "../browser/ui/views/user_education/interaction_sequence_interactive_uitest.cc",
-        "../browser/ui/views/user_education/interaction_test_util_interactive_uitest.cc",
         "../browser/ui/views/user_education/tutorial_interactive_uitest.cc",
+        "interaction/interaction_sequence_browser_util_interactive_uitest.cc",
+        "interaction/interaction_sequence_interactive_uitest.cc",
+        "interaction/interaction_test_util_interactive_uitest.cc",
       ]
       deps += [
         "//components/optimization_guide/core:test_support",

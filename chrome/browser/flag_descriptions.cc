@@ -3586,10 +3586,6 @@ const char kUseRealColorSpaceForAndroidVideoName[] =
 const char kUseRealColorSpaceForAndroidVideoDescription[] =
     "When enabled video will use real color space instead of srgb.";
 
-const char kUserMediaScreenCapturingName[] = "Screen Capture API";
-const char kUserMediaScreenCapturingDescription[] =
-    "Allows sites to request a video stream of your screen.";
-
 const char kVideoTutorialsName[] = "Enable video tutorials";
 const char kVideoTutorialsDescription[] = "Show video tutorials in Chrome";
 const char kVideoTutorialsInstantFetchName[] =
@@ -3856,6 +3852,11 @@ const char kSharingDesktopScreenshotsEditName[] =
     "Desktop Screenshots Edit Mode";
 const char kSharingDesktopScreenshotsEditDescription[] =
     "Enables an edit flow for users who create screenshots on desktop";
+
+const char kSharingDesktopSharePreviewName[] = "Desktop share hub preview";
+const char kSharingDesktopSharePreviewDescription[] =
+    "Adds a preview section to the desktop sharing hub to make it clearer what "
+    "is about to be shared.";
 
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -4639,6 +4640,11 @@ const char kQuickAnswersAlwaysTriggerForSingleWordName[] =
     "Enable Quick Answers always trigger for single word";
 const char kQuickAnswersAlwaysTriggerForSingleWordDescription[] =
     "Enable Quick Answers always trigger for single word selection.";
+
+const char kQuickAnswersForMoreLocalesName[] =
+    "Enable Quick Answers for more locales";
+const char kQuickAnswersForMoreLocalesDescription[] =
+    "Enable Quick Answers for more locales.";
 
 const char kTrimOnMemoryPressureName[] = "Trim Working Set on memory pressure";
 const char kTrimOnMemoryPressureDescription[] =

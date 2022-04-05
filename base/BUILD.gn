@@ -1293,7 +1293,6 @@ mixed_component("base") {
       "process/launch_ios.cc",
       "process/process_metrics_ios.cc",
       "profiler/module_cache_mac.cc",
-      "profiler/stack_sampler_ios.cc",
     ]
     if (is_cronet_build) {
       sources += [
@@ -1309,6 +1308,7 @@ mixed_component("base") {
 
     if (ios_stack_profiler_enabled) {
       sources += [
+        "profiler/stack_sampler_ios.cc",
         "profiler/native_unwinder_apple.cc",
         "profiler/native_unwinder_apple.h",
         "profiler/suspendable_thread_delegate_mac.cc",
@@ -2564,7 +2564,10 @@ buildflag_header("profiler_buildflags") {
   header = "profiler_buildflags.h"
   header_dir = "base/profiler"
 
-  flags = [ "ENABLE_ARM_CFI_TABLE=$enable_arm_cfi_table" ]
+  flags = [
+    "ENABLE_ARM_CFI_TABLE=$enable_arm_cfi_table",
+    "IOS_STACK_PROFILER_ENABLED=$ios_stack_profiler_enabled",
+  ]
 }
 
 # This is the subset of files from base that should not be used with a dynamic
@@ -3948,6 +3951,7 @@ if (is_android) {
 
     deps = [
       "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
+      "//third_party/androidx:androidx_annotation_annotation_experimental_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/androidx:androidx_collection_collection_java",
       "//third_party/androidx:androidx_core_core_java",

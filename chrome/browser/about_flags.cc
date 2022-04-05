@@ -2920,6 +2920,25 @@ const FeatureEntry::Choice kAlwaysEnableHdcpChoices[] = {
 };
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if !BUILDFLAG(IS_ANDROID)
+const FeatureEntry::FeatureParam kDesktopSharePreviewVariantHQ{
+    "variant", share::kDesktopSharePreviewVariant_HQ};
+const FeatureEntry::FeatureParam kDesktopSharePreviewVariantHQFavicon{
+    "variant", share::kDesktopSharePreviewVariant_HQFavicon};
+const FeatureEntry::FeatureParam kDesktopSharePreviewVariantHQFaviconFallback{
+    "variant", share::kDesktopSharePreviewVariant_HQFaviconFallback};
+const FeatureEntry::FeatureParam kDesktopSharePreviewVariantHQFallback{
+    "variant", share::kDesktopSharePreviewVariant_HQFallback};
+
+const FeatureEntry::FeatureVariation kDesktopSharePreviewVariations[] = {
+    {"HQ then favicon then fallback",
+     &kDesktopSharePreviewVariantHQFaviconFallback, 1, nullptr},
+    {"HQ only", &kDesktopSharePreviewVariantHQ, 1, nullptr},
+    {"HQ then favicon", &kDesktopSharePreviewVariantHQFavicon, 1, nullptr},
+    {"HQ then fallback", &kDesktopSharePreviewVariantHQFallback, 1, nullptr},
+};
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -5394,12 +5413,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDownloadRangeDescription, kOsAll,
      FEATURE_VALUE_TYPE(download::features::kDownloadRange)},
 
-#if BUILDFLAG(IS_ANDROID)
-    {"screen-capture-android", flag_descriptions::kUserMediaScreenCapturingName,
-     flag_descriptions::kUserMediaScreenCapturingDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kUserMediaScreenCapturing)},
-#endif
-
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"chrome-tips-in-main-menu", flag_descriptions::kChromeTipsInMainMenuName,
      flag_descriptions::kChromeTipsInMainMenuDescription, kOsDesktop,
@@ -5836,6 +5849,11 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(
          chromeos::features::kQuickAnswersAlwaysTriggerForSingleWord)},
+
+    {"quick-answers-for-more-locales",
+     flag_descriptions::kQuickAnswersForMoreLocalesName,
+     flag_descriptions::kQuickAnswersForMoreLocalesDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswersForMoreLocales)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_ANDROID)
@@ -5870,6 +5888,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSharingDesktopScreenshotsEditName,
      flag_descriptions::kSharingDesktopScreenshotsEditDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(share::kSharingDesktopScreenshotsEdit)},
+    {"sharing-desktop-share-preview",
+     flag_descriptions::kSharingDesktopSharePreviewName,
+     flag_descriptions::kSharingDesktopSharePreviewDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(share::kDesktopSharePreview,
+                                    kDesktopSharePreviewVariations,
+                                    "DesktopSharePreview")},
 #endif
 
     {"sharing-prefer-vapid", flag_descriptions::kSharingPreferVapidName,

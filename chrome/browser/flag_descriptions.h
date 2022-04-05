@@ -2042,9 +2042,6 @@ extern const char kUpdateMenuTypeUnsupportedOSVersion[];
 extern const char kUseRealColorSpaceForAndroidVideoName[];
 extern const char kUseRealColorSpaceForAndroidVideoDescription[];
 
-extern const char kUserMediaScreenCapturingName[];
-extern const char kUserMediaScreenCapturingDescription[];
-
 extern const char kVideoTutorialsName[];
 extern const char kVideoTutorialsDescription[];
 extern const char kVideoTutorialsInstantFetchName[];
@@ -2205,6 +2202,9 @@ extern const char kScreenAIDescription[];
 
 extern const char kSCTAuditingName[];
 extern const char kSCTAuditingDescription[];
+
+extern const char kSharingDesktopSharePreviewName[];
+extern const char kSharingDesktopSharePreviewDescription[];
 
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -2651,6 +2651,9 @@ extern const char kDisableQuickAnswersV2TranslationDescription[];
 
 extern const char kQuickAnswersAlwaysTriggerForSingleWordName[];
 extern const char kQuickAnswersAlwaysTriggerForSingleWordDescription[];
+
+extern const char kQuickAnswersForMoreLocalesName[];
+extern const char kQuickAnswersForMoreLocalesDescription[];
 
 extern const char kESimPolicyName[];
 extern const char kESimPolicyDescription[];

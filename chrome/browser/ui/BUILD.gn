@@ -212,10 +212,10 @@ static_library("ui") {
     "webid/identity_dialog_controller.h",
     "webui/about_ui.cc",
     "webui/about_ui.h",
-    "webui/autofill_and_password_manager_internals/apc_internals_handler.cc",
-    "webui/autofill_and_password_manager_internals/apc_internals_handler.h",
-    "webui/autofill_and_password_manager_internals/apc_internals_ui.cc",
-    "webui/autofill_and_password_manager_internals/apc_internals_ui.h",
+    "webui/apc_internals/apc_internals_handler.cc",
+    "webui/apc_internals/apc_internals_handler.h",
+    "webui/apc_internals/apc_internals_ui.cc",
+    "webui/apc_internals/apc_internals_ui.h",
     "webui/autofill_and_password_manager_internals/autofill_internals_ui.cc",
     "webui/autofill_and_password_manager_internals/autofill_internals_ui.h",
     "webui/autofill_and_password_manager_internals/internals_ui_handler.cc",
@@ -1777,6 +1777,7 @@ static_library("ui") {
       "//components/services/app_service/public/mojom",
       "//components/ui_metrics",
       "//components/url_formatter",
+      "//components/user_notes:features",
       "//components/vector_icons",
       "//components/web_modal",
       "//components/webauthn/content/browser",
@@ -3368,7 +3369,7 @@ static_library("ui") {
     ]
   }
 
-  if (is_win || is_mac || is_fuchsia || (is_linux || is_chromeos_lacros)) {
+  if (is_win || is_mac || is_fuchsia || is_linux || is_chromeos_lacros) {
     sources += [
       "profile_picker.cc",
       "profile_picker.h",
@@ -4687,8 +4688,8 @@ static_library("ui") {
       "views/side_panel/side_panel_registry_observer.h",
       "views/side_panel/side_panel_web_ui_view.cc",
       "views/side_panel/side_panel_web_ui_view.h",
-      "views/side_panel/user_note_ui_coordinator.cc",
-      "views/side_panel/user_note_ui_coordinator.h",
+      "views/side_panel/user_note/user_note_ui_coordinator.cc",
+      "views/side_panel/user_note/user_note_ui_coordinator.h",
       "views/ssl_client_certificate_selector.cc",
       "views/ssl_client_certificate_selector.h",
       "views/status_bubble_views.cc",
@@ -4942,6 +4943,7 @@ static_library("ui") {
       "//components/soda:constants",
       "//components/tab_count_metrics",
       "//components/ui_devtools/views",
+      "//components/user_notes:features",
       "//components/user_notes/interfaces",
       "//device/vr/buildflags:buildflags",
       "//services/media_session/public/mojom",
@@ -5031,7 +5033,7 @@ static_library("ui") {
       ]
     }
 
-    if (is_win || is_fuchsia || (is_linux || is_chromeos_lacros)) {
+    if (is_win || is_fuchsia || is_linux || is_chromeos_lacros) {
       sources += [
         "views/native_widget_factory.cc",
         "views/native_widget_factory.h",

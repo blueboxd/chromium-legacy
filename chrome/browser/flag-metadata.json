@@ -86,7 +86,7 @@
   {
     "name": "allow-disable-touchpad-haptic-feedback",
     "owners": [ "gavinwill", "cros-peripherals@google.com" ],
-    "expiry_milestone": 101
+    "expiry_milestone": 105
   },
    {
     "name": "allow-dsp-based-aec",
@@ -4994,7 +4994,12 @@
   {
     "name": "quick-answers-always-trigger-for-single-word",
     "owners": [ "croissant-eng", "updowndota" ],
-    "expiry_milestone": 105
+    "expiry_milestone": 120
+  },
+  {
+    "name": "quick-answers-for-more-locales",
+    "owners": [ "croissant-eng", "updowndota" ],
+    "expiry_milestone": 120
   },
   {
     "name": "quick-commands",
@@ -5193,11 +5198,6 @@
     "expiry_milestone": 110
   },
   {
-    "name": "screen-capture-android",
-    "owners": [ "alcooper", "guidou" ],
-    "expiry_milestone": 96
-  },
-  {
     "name": "screen-time-integration-ios",
     "owners": [ "edchin", "bling-flags@google.com" ],
     "expiry_milestone": 92
@@ -5312,6 +5312,11 @@
   {
     "name": "sharing-desktop-screenshots-edit",
     "owners": ["skare", "jeffreycohen", "chrome-sharing-eng@google.com" ],
+    "expiry_milestone": 104
+  },
+  {
+    "name": "sharing-desktop-share-preview",
+    "owners": ["ellyjones", "chrome-with-friends-robots@google.com"],
     "expiry_milestone": 104
   },
   {

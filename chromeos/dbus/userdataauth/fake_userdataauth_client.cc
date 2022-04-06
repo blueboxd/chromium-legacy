@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/containers/contains.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -442,6 +443,25 @@ void FakeUserDataAuthClient::PreparePersistentVault(
   ReturnProtobufMethodCallback(reply, std::move(callback));
 }
 
+void FakeUserDataAuthClient::PrepareVaultForMigration(
+    const ::user_data_auth::PrepareVaultForMigrationRequest& request,
+    PrepareVaultForMigrationCallback callback) {
+  ::user_data_auth::PrepareVaultForMigrationReply reply;
+
+  auto error = ::user_data_auth::CryptohomeErrorCode::CRYPTOHOME_ERROR_NOT_SET;
+  auto* authenticated_auth_session =
+      GetAuthenticatedAuthSession(request.auth_session_id(), &error);
+
+  if (authenticated_auth_session == nullptr) {
+    reply.set_error(error);
+  } else if (!UserExists(authenticated_auth_session->account)) {
+    reply.set_error(::user_data_auth::CryptohomeErrorCode::
+                        CRYPTOHOME_ERROR_ACCOUNT_NOT_FOUND);
+  }
+
+  ReturnProtobufMethodCallback(reply, std::move(callback));
+}
+
 void FakeUserDataAuthClient::InvalidateAuthSession(
     const ::user_data_auth::InvalidateAuthSessionRequest& request,
     InvalidateAuthSessionCallback callback) {
@@ -613,6 +633,11 @@ FakeUserDataAuthClient::FindKey(
 
   // Specific label
   return keys.find(label);
+}
+
+void FakeUserDataAuthClient::CreateUserProfileDir(
+    const cryptohome::AccountIdentifier& account_id) {
+  base::CreateDirectory(GetUserProfileDir(account_id));
 }
 
 base::FilePath FakeUserDataAuthClient::GetUserProfileDir(

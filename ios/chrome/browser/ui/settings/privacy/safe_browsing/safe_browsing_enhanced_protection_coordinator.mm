@@ -12,10 +12,13 @@
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/settings/privacy/safe_browsing/safe_browsing_enhanced_protection_mediator.h"
 #import "ios/chrome/browser/ui/settings/privacy/safe_browsing/safe_browsing_enhanced_protection_view_controller.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -29,6 +32,8 @@
 // View controller for privacy safe browsing enhanced protection.
 @property(nonatomic, strong)
     SafeBrowsingEnhancedProtectionViewController* viewController;
+// Mediator instantiated by coordinator.
+@property(nonatomic, strong) SafeBrowsingEnhancedProtectionMediator* mediator;
 
 @end
 
@@ -48,7 +53,10 @@
 - (void)start {
   self.viewController = [[SafeBrowsingEnhancedProtectionViewController alloc]
       initWithStyle:ChromeTableViewStyle()];
+  self.viewController.styler.cellSeparatorColor = UIColor.clearColor;
   self.viewController.presentationDelegate = self;
+  self.mediator = [[SafeBrowsingEnhancedProtectionMediator alloc] init];
+  self.mediator.consumer = self.viewController;
 
   self.viewController.dispatcher = static_cast<
       id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>>(

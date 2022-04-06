@@ -109,6 +109,7 @@ This file contains the strings for ash.
     <file path="strings/ash_strings_bs.xtb" lang="bs" />
     <file path="strings/ash_strings_ca.xtb" lang="ca" />
     <file path="strings/ash_strings_cs.xtb" lang="cs" />
+    <file path="strings/ash_strings_cy.xtb" lang="cy" />
     <file path="strings/ash_strings_da.xtb" lang="da" />
     <file path="strings/ash_strings_de.xtb" lang="de" />
     <file path="strings/ash_strings_el.xtb" lang="el" />
@@ -4642,6 +4643,9 @@ New install
       </message>
       <message name="IDS_REMOVE_ZERO_STATE_SUGGESTION_DETAILS" desc="Detailed explanation message for removing removing an omnibox search result from launcher search results UI. This is a text in the dialog shown to the user when they try to remove a suggested omnibox search result from list of results shown in the launcher search - the omnibox search result may appear if the search query in launcher search matches a previous user search. The dialog asks the user to confirm the result removal.">
         You searched for this query before. Deleting this search from your history will permanently remove it from your Google Account across all of your devices.
+      </message>
+      <message name="IDS_REMOVE_SUGGESTION_ANNOUNCEMENT" desc="Announcement confirming the removal of an omnibox suggestion from the launcher search results UI.">
+        Search history result deleted
       </message>
       <message name="IDS_REMOVE_SUGGESTION_BUTTON_LABEL" desc="Remove suggestion button label">
         Delete

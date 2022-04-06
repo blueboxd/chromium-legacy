@@ -26,7 +26,6 @@
 #import "ios/chrome/browser/ui/settings/google_services/sync_error_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
@@ -34,6 +33,7 @@
 #include "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -51,6 +51,11 @@ namespace {
 NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
 // Sync error icon.
 NSString* const kGoogleServicesSyncErrorImage = @"google_services_sync_error";
+// External link SF symbol.
+NSString* const kExternalLinkSystemImage = @"arrow.up.forward.square";
+// Chevron SF symbol.
+NSString* const kChevronForwardSystemImage = @"chevron.forward";
+
 // Ordered list of all sync switches. If a new switch is added, a new entry
 // must be added in |kSyncableItemTypes| below.
 const std::vector<SyncSetupService::SyncableDatatype> kSyncSwitchItems = {
@@ -288,9 +293,15 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
   BOOL hasDisclosureIndicator =
       self.syncSetupService->GetSyncServiceState() !=
       SyncSetupService::kSyncServiceNeedsTrustedVaultKey;
-  self.encryptionItem.accessoryType =
-      hasDisclosureIndicator ? UITableViewCellAccessoryDisclosureIndicator
-                             : UITableViewCellAccessoryNone;
+  if (hasDisclosureIndicator) {
+    self.encryptionItem.accessoryView = [[UIImageView alloc]
+        initWithImage:[UIImage systemImageNamed:kChevronForwardSystemImage]];
+    self.encryptionItem.accessoryView.tintColor =
+        [UIColor colorNamed:kTextQuaternaryColor];
+  } else {
+    self.encryptionItem.accessoryView = nil;
+  }
+  self.encryptionItem.accessibilityTraits |= UIAccessibilityTraitButton;
   [self updateEncryptionItem:NO];
   [model addItem:self.encryptionItem
       toSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
@@ -298,6 +309,10 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
   // GoogleActivityControlsItemType.
   TableViewImageItem* googleActivityControlsItem =
       [[TableViewImageItem alloc] initWithType:GoogleActivityControlsItemType];
+  googleActivityControlsItem.accessoryView = [[UIImageView alloc]
+      initWithImage:[UIImage systemImageNamed:kExternalLinkSystemImage]];
+  googleActivityControlsItem.accessoryView.tintColor =
+      [UIColor colorNamed:kTextQuaternaryColor];
   googleActivityControlsItem.title =
       GetNSString(IDS_IOS_MANAGE_SYNC_GOOGLE_ACTIVITY_CONTROLS_TITLE);
   googleActivityControlsItem.detailText =
@@ -309,6 +324,10 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
   // AdvancedSettingsSectionIdentifier.
   TableViewImageItem* dataFromChromeSyncItem =
       [[TableViewImageItem alloc] initWithType:DataFromChromeSync];
+  dataFromChromeSyncItem.accessoryView = [[UIImageView alloc]
+      initWithImage:[UIImage systemImageNamed:kExternalLinkSystemImage]];
+  dataFromChromeSyncItem.accessoryView.tintColor =
+      [UIColor colorNamed:kTextQuaternaryColor];
   dataFromChromeSyncItem.title =
       GetNSString(IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_TITLE);
   dataFromChromeSyncItem.detailText =

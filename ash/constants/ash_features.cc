@@ -1226,6 +1226,10 @@ const base::Feature kShowPlayInDemoMode{"ShowPlayInDemoMode",
 const base::Feature kShutdownConfirmationBubble{
     "ShutdownConfirmationBubble", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables enterprise policy control for SIM PIN Lock.
+const base::Feature kSimLockPolicy{"SimLockPolicy",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Uses experimental component version for smart dim.
 const base::Feature kSmartDimExperimentalComponent{
     "SmartDimExperimentalComponent", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1349,7 +1353,7 @@ const base::Feature kVirtualKeyboardBorderedKey{
 
 // Enable or disable multitouch for virtual keyboard on Chrome OS.
 const base::Feature kVirtualKeyboardMultitouch{
-    "kVirtualKeyboardMultitouch", base::FEATURE_DISABLED_BY_DEFAULT};
+    "VirtualKeyboardMultitouch", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to allow enabling wake on WiFi features in shill.
 const base::Feature kWakeOnWifiAllowed{"WakeOnWifiAllowed",
@@ -2004,6 +2008,10 @@ bool IsShelfLauncherNudgeEnabled() {
 
 bool IsShimlessRMAFlowEnabled() {
   return base::FeatureList::IsEnabled(kShimlessRMAFlow);
+}
+
+bool IsSimLockPolicyEnabled() {
+  return base::FeatureList::IsEnabled(kSimLockPolicy);
 }
 
 bool IsSyncSettingsCategorizationEnabled() {

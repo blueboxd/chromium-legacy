@@ -203,10 +203,12 @@ const char kEnableFREDefaultBrowserScreenTestingDescription[] =
     "browser promo depending on experiment.";
 
 const char kEnableFaviconForPasswordsName[] =
-    "Enable favicons in the Password Manager";
+    "Enable favicons for the Password Manager and for the Credential Provider "
+    "Extension";
 const char kEnableFaviconForPasswordsDescription[] =
     "Show favicons in the Password Manager settings for the Saved Passwords "
-    "and Never Saved sections.";
+    "and Never Saved sections and also for the AutoFill Passwords for the "
+    "Credential Provider.";
 
 const char kEnableFREUIModuleIOSName[] = "Enable FRE UI module with options";
 const char kEnableFREUIModuleIOSDescription[] =
@@ -225,22 +227,6 @@ const char kEnableLongMessageDurationDescription[] =
 const char kEnableNewDownloadAPIName[] = "Enable new download API";
 const char kEnableNewDownloadAPIDescription[] =
     "Enable new download API (restricted to iOS 15.0+).";
-
-const char kEnableOptimizationGuideName[] = "Enable optimization guide";
-const char kEnableOptimizationGuideDescription[] =
-    "Enables the optimization guide to provide intelligence for page loads.";
-
-const char kEnableOptimizationGuideMetadataValidationName[] =
-    "Enable optimization guide metadata validation";
-const char kEnableOptimizationGuideMetadataValidationDescription[] =
-    "Enables the validation of optimization guide metadata fetch and "
-    "allowlist/blocklist bloom filter.";
-
-const char kEnableOptimizationHintsFetchingMSBBName[] =
-    "Enable MSBB optimization hints fetching";
-const char kEnableOptimizationHintsFetchingMSBBDescription[] =
-    "Enable optimization hints fetching for users who have enabled the 'Make "
-    "Searches and Browsing Better' setting.";
 
 const char kEnableUnicornAccountSupportName[] =
     "Enable Unicorn account support";

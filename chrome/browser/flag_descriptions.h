@@ -459,9 +459,6 @@ extern const char kEnableDelegatedCompositingDescription[];
 extern const char kEnableRemovingAllThirdPartyCookiesName[];
 extern const char kEnableRemovingAllThirdPartyCookiesDescription[];
 
-extern const char kEnableBrowsingDataLifetimeManagerName[];
-extern const char kEnableBrowsingDataLifetimeManagerDescription[];
-
 extern const char kColorProviderRedirectionForThemeProviderName[];
 extern const char kColorProviderRedirectionForThemeProviderDescription[];
 
@@ -638,9 +635,6 @@ extern const char kEnableGamepadButtonAxisEventsDescription[];
 extern const char kEnableLensStandaloneFlagId[];
 extern const char kEnableLensStandaloneName[];
 extern const char kEnableLensStandaloneDescription[];
-
-extern const char kEnableLoginDetectionName[];
-extern const char kEnableLoginDetectionDescription[];
 
 extern const char kEnableManagedConfigurationWebApiName[];
 extern const char kEnableManagedConfigurationWebApiDescription[];
@@ -1057,11 +1051,8 @@ extern const char kOmniboxDynamicMaxAutocompleteDescription[];
 extern const char kOptimizationGuideDebugLogsName[];
 extern const char kOptimizationGuideDebugLogsDescription[];
 
-extern const char kOptimizationGuideModelDownloadingName[];
-extern const char kOptimizationGuideModelDownloadingDescription[];
-
-extern const char kOptimizationGuideModelPushNotificationName[];
-extern const char kOptimizationGuideModelPushNotificationDescription[];
+extern const char kOptimizationGuidePushNotificationName[];
+extern const char kOptimizationGuidePushNotificationDescription[];
 
 extern const char kOsSettingsAppNotificationsPageName[];
 extern const char kOsSettingsAppNotificationsPageDescription[];
@@ -1880,6 +1871,9 @@ extern const char kMessagesForAndroidSafetyTipDescription[];
 extern const char kMessagesForAndroidSaveCardName[];
 extern const char kMessagesForAndroidSaveCardDescription[];
 
+extern const char kMessagesForAndroidStackingAnimationName[];
+extern const char kMessagesForAndroidStackingAnimationDescription[];
+
 extern const char kMessagesForAndroidSyncErrorName[];
 extern const char kMessagesForAndroidSyncErrorDescription[];
 
@@ -2191,12 +2185,6 @@ extern const char kOmniboxDriveSuggestionsDescriptions[];
 extern const char kOmniboxExperimentalKeywordModeName[];
 extern const char kOmniboxExperimentalKeywordModeDescription[];
 
-extern const char kOmniboxPedalsBatch2NonEnglishName[];
-extern const char kOmniboxPedalsBatch2NonEnglishDescription[];
-
-extern const char kOmniboxPedalsTranslationConsoleName[];
-extern const char kOmniboxPedalsTranslationConsoleDescription[];
-
 extern const char kScreenAIName[];
 extern const char kScreenAIDescription[];
 
@@ -2429,6 +2417,9 @@ extern const char kCaptureSelfieCamDescription[];
 
 extern const char kDefaultLinkCapturingInBrowserName[];
 extern const char kDefaultLinkCapturingInBrowserDescription[];
+
+extern const char kDesksCloseAllName[];
+extern const char kDesksCloseAllDescription[];
 
 extern const char kDesksTemplatesName[];
 extern const char kDesksTemplatesDescription[];
@@ -3002,6 +2993,9 @@ extern const char kShowTapsDescription[];
 extern const char kShowTouchHudName[];
 extern const char kShowTouchHudDescription[];
 
+extern const char kSimLockPolicyName[];
+extern const char kSimLockPolicyDescription[];
+
 extern const char kSmartLockUIRevampName[];
 extern const char kSmartLockUIRevampDescription[];
 
@@ -3194,6 +3188,9 @@ extern const char kLinkCapturingUiUpdateDescription[];
 
 extern const char kMessagesPreinstallName[];
 extern const char kMessagesPreinstallDescription[];
+
+extern const char kSyncChromeOSExplicitPassphraseSharingName[];
+extern const char kSyncChromeOSExplicitPassphraseSharingDescription[];
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)

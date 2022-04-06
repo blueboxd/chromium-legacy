@@ -20,7 +20,6 @@
 #include "pdf/pdf_accessibility_action_handler.h"
 #include "pdf/pdf_view_plugin_base.h"
 #include "pdf/post_message_receiver.h"
-#include "pdf/post_message_sender.h"
 #include "pdf/ppapi_migration/graphics.h"
 #include "pdf/ppapi_migration/url_loader.h"
 #include "pdf/v8_value_converter.h"
@@ -96,6 +95,12 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
     // Gets the scroll position.
     virtual gfx::PointF GetScrollPosition() = 0;
+
+    // Enqueues a "message" event carrying `message` to the plugin embedder.
+    virtual void PostMessage(base::Value message) = 0;
+
+    // Tells the embedder to allow the plugin to handle find requests.
+    virtual void UsePluginAsFindHandler() = 0;
 
     // Calls underlying WebLocalFrame::SetReferrerForRequest().
     virtual void SetReferrerForRequest(blink::WebURLRequest& request,
@@ -282,9 +287,10 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
       const AccessibilityActionData& action_data) override;
 
   // Initializes the plugin using the `container_wrapper` and `engine` provided
-  // by tests.
+  // by tests. Lets CreateUrlLoaderInternal() return `loader` on its first call.
   bool InitializeForTesting(std::unique_ptr<ContainerWrapper> container_wrapper,
-                            std::unique_ptr<PDFiumEngine> engine);
+                            std::unique_ptr<PDFiumEngine> engine,
+                            std::unique_ptr<UrlLoader> loader);
 
   const gfx::Rect& GetPluginRectForTesting() const { return plugin_rect(); }
 
@@ -323,8 +329,10 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // Call `Destroy()` instead.
   ~PdfViewWebPlugin() override;
 
+  // Passing in a null `engine_override` allows InitializeCommon() to create a
+  // PDFiumEngine normally. Otherwise, `engine_override` is used.
   bool InitializeCommon(std::unique_ptr<ContainerWrapper> container_wrapper,
-                        std::unique_ptr<PDFiumEngine> engine);
+                        std::unique_ptr<PDFiumEngine> engine_override);
 
   // Sends whether to do smooth scrolling.
   void SendSetSmoothScrolling();
@@ -381,6 +389,15 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // Records metrics about the document metadata.
   void RecordDocumentMetrics();
 
+  // Sends the attachments data.
+  void SendAttachments();
+
+  // Sends the bookmarks data.
+  void SendBookmarks();
+
+  // Send document metadata data.
+  void SendMetadata();
+
   blink::WebString selected_text_;
 
   std::unique_ptr<Client> const client_;
@@ -410,7 +427,6 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   std::unique_ptr<ContainerWrapper> container_wrapper_;
 
   v8::Persistent<v8::Object> scriptable_receiver_;
-  PostMessageSender post_message_sender_;
 
   // The current image snapshot.
   cc::PaintImage snapshot_;
@@ -453,6 +469,10 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
   // The indices of pages to print.
   std::vector<int> pages_to_print_;
+
+  // If non-null, the UrlLoader that CreateUrlLoaderInternal() returns for
+  // testing purposes.
+  std::unique_ptr<UrlLoader> test_loader_;
 
   base::WeakPtrFactory<PdfViewWebPlugin> weak_factory_{this};
 };

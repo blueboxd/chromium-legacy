@@ -16,6 +16,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/i18n/char_iterator.h"
 #include "base/i18n/string_search.h"
+#include "base/i18n/time_formatting.h"
 #include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
@@ -40,10 +41,12 @@
 #include "pdf/pdf_init.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/post_message_receiver.h"
+#include "pdf/post_message_sender.h"
 #include "pdf/ppapi_migration/bitmap.h"
 #include "pdf/ppapi_migration/graphics.h"
 #include "pdf/ppapi_migration/result_codes.h"
 #include "pdf/ppapi_migration/url_loader.h"
+#include "pdf/ui/document_properties.h"
 #include "printing/metafile_skia.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -80,6 +83,7 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
+#include "ui/base/text/bytes_formatting.h"
 #include "ui/display/screen_info.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_event_util.h"
@@ -148,9 +152,12 @@ class PerProcessInitializer final {
 
 class BlinkContainerWrapper final : public PdfViewWebPlugin::ContainerWrapper {
  public:
-  explicit BlinkContainerWrapper(blink::WebPluginContainer* container)
-      : container_(container) {
+  BlinkContainerWrapper(blink::WebPluginContainer* container,
+                        V8ValueConverter* v8_value_converter)
+      : container_(container),
+        post_message_sender_(container_, v8_value_converter) {
     DCHECK(container_);
+    DCHECK(v8_value_converter);
   }
   BlinkContainerWrapper(const BlinkContainerWrapper&) = delete;
   BlinkContainerWrapper& operator=(const BlinkContainerWrapper&) = delete;
@@ -195,6 +202,14 @@ class BlinkContainerWrapper final : public PdfViewWebPlugin::ContainerWrapper {
     // Note that `blink::WebLocalFrame::GetScrollOffset()` actually returns a
     // scroll position (a point relative to the top-left corner).
     return GetFrame()->GetScrollOffset();
+  }
+
+  void PostMessage(base::Value message) override {
+    post_message_sender_.Post(std::move(message));
+  }
+
+  void UsePluginAsFindHandler() override {
+    container_->UsePluginAsFindHandler();
   }
 
   void SetReferrerForRequest(blink::WebURLRequest& request,
@@ -275,6 +290,7 @@ class BlinkContainerWrapper final : public PdfViewWebPlugin::ContainerWrapper {
 
  private:
   const raw_ptr<blink::WebPluginContainer> container_;
+  PostMessageSender post_message_sender_;
 };
 
 }  // namespace
@@ -292,7 +308,6 @@ PdfViewWebPlugin::PdfViewWebPlugin(
     : client_(std::move(client)),
       pdf_service_remote_(std::move(pdf_service_remote)),
       initial_params_(params),
-      post_message_sender_(client_.get()),
       pdf_accessibility_data_handler_(
           client_->CreateAccessibilityDataHandler(this)) {
   auto* service = GetPdfService();
@@ -304,29 +319,30 @@ PdfViewWebPlugin::~PdfViewWebPlugin() = default;
 
 bool PdfViewWebPlugin::Initialize(blink::WebPluginContainer* container) {
   DCHECK_EQ(container->Plugin(), this);
-  return InitializeCommon(std::make_unique<BlinkContainerWrapper>(container),
-                          nullptr);
+  return InitializeCommon(
+      std::make_unique<BlinkContainerWrapper>(container, client_.get()),
+      /*engine_override=*/nullptr);
 }
 
 bool PdfViewWebPlugin::InitializeForTesting(
     std::unique_ptr<ContainerWrapper> container_wrapper,
-    std::unique_ptr<PDFiumEngine> engine) {
+    std::unique_ptr<PDFiumEngine> engine,
+    std::unique_ptr<UrlLoader> loader) {
+  test_loader_ = std::move(loader);
   return InitializeCommon(std::move(container_wrapper), std::move(engine));
 }
 
 bool PdfViewWebPlugin::InitializeCommon(
     std::unique_ptr<ContainerWrapper> container_wrapper,
-    std::unique_ptr<PDFiumEngine> engine) {
+    std::unique_ptr<PDFiumEngine> engine_override) {
   container_wrapper_ = std::move(container_wrapper);
-  post_message_sender_.set_container(Container());
 
   // Allow the plugin to handle touch events.
   container_wrapper_->RequestTouchEventType(
       blink::WebPluginContainer::kTouchEventRequestTypeRaw);
 
   // Allow the plugin to handle find requests.
-  if (Container())
-    Container()->UsePluginAsFindHandler();
+  container_wrapper_->UsePluginAsFindHandler();
 
   absl::optional<ParsedParams> params = ParseWebPluginParams(initial_params_);
 
@@ -350,8 +366,9 @@ bool PdfViewWebPlugin::InitializeCommon(
 
   PerProcessInitializer::GetInstance().Acquire();
   InitializeBase(
-      engine ? std::move(engine)
-             : std::make_unique<PDFiumEngine>(this, params->script_option),
+      engine_override
+          ? std::move(engine_override)
+          : std::make_unique<PDFiumEngine>(this, params->script_option),
       /*embedder_origin=*/container_wrapper_->GetEmbedderOriginString(),
       /*src_url=*/params->src_url,
       /*original_url=*/params->original_url,
@@ -382,7 +399,6 @@ void PdfViewWebPlugin::Destroy() {
     DestroyPreviewEngine();
     DestroyEngine();
     PerProcessInitializer::GetInstance().Release();
-    post_message_sender_.set_container(nullptr);
     container_wrapper_.reset();
   }
 
@@ -909,6 +925,9 @@ base::WeakPtr<PdfViewPluginBase> PdfViewWebPlugin::GetWeakPtr() {
 }
 
 std::unique_ptr<UrlLoader> PdfViewWebPlugin::CreateUrlLoaderInternal() {
+  if (test_loader_)
+    return std::move(test_loader_);
+
   auto loader = std::make_unique<BlinkUrlLoader>(weak_factory_.GetWeakPtr());
   loader->GrantUniversalAccess();
   return loader;
@@ -916,10 +935,14 @@ std::unique_ptr<UrlLoader> PdfViewWebPlugin::CreateUrlLoaderInternal() {
 
 void PdfViewWebPlugin::OnDocumentLoadComplete() {
   RecordDocumentMetrics();
+
+  SendAttachments();
+  SendBookmarks();
+  SendMetadata();
 }
 
 void PdfViewWebPlugin::SendMessage(base::Value message) {
-  post_message_sender_.Post(std::move(message));
+  container_wrapper_->PostMessage(std::move(message));
 }
 
 void PdfViewWebPlugin::SaveAs() {
@@ -1157,6 +1180,97 @@ void PdfViewWebPlugin::RecordDocumentMetrics() {
   metrics_handler_->RecordDocumentMetrics(engine()->GetDocumentMetadata());
   metrics_handler_->RecordAttachmentTypes(
       engine()->GetDocumentAttachmentInfoList());
+}
+
+void PdfViewWebPlugin::SendAttachments() {
+  const std::vector<DocumentAttachmentInfo>& attachment_infos =
+      engine()->GetDocumentAttachmentInfoList();
+  if (attachment_infos.empty())
+    return;
+
+  base::Value attachments(base::Value::Type::LIST);
+  for (const DocumentAttachmentInfo& attachment_info : attachment_infos) {
+    // Send `size` as -1 to indicate that the attachment is too large to be
+    // downloaded.
+    const int size = attachment_info.size_bytes <= kMaximumSavedFileSize
+                         ? static_cast<int>(attachment_info.size_bytes)
+                         : -1;
+
+    base::Value attachment(base::Value::Type::DICTIONARY);
+    attachment.SetStringKey("name", attachment_info.name);
+    attachment.SetIntKey("size", size);
+    attachment.SetBoolKey("readable", attachment_info.is_readable);
+    attachments.Append(std::move(attachment));
+  }
+
+  base::Value message(base::Value::Type::DICTIONARY);
+  message.SetStringKey("type", "attachments");
+  message.SetKey("attachmentsData", std::move(attachments));
+  SendMessage(std::move(message));
+}
+
+void PdfViewWebPlugin::SendBookmarks() {
+  base::Value bookmarks = engine()->GetBookmarks();
+  if (bookmarks.GetListDeprecated().empty())
+    return;
+
+  base::Value message(base::Value::Type::DICTIONARY);
+  message.SetStringKey("type", "bookmarks");
+  message.SetKey("bookmarksData", std::move(bookmarks));
+  SendMessage(std::move(message));
+}
+
+void PdfViewWebPlugin::SendMetadata() {
+  base::Value metadata(base::Value::Type::DICTIONARY);
+  const DocumentMetadata& document_metadata = engine()->GetDocumentMetadata();
+
+  const std::string version = FormatPdfVersion(document_metadata.version);
+  if (!version.empty())
+    metadata.SetStringKey("version", version);
+
+  metadata.SetStringKey("fileSize",
+                        ui::FormatBytes(document_metadata.size_bytes));
+
+  metadata.SetBoolKey("linearized", document_metadata.linearized);
+
+  if (!document_metadata.title.empty())
+    metadata.SetStringKey("title", document_metadata.title);
+
+  if (!document_metadata.author.empty())
+    metadata.SetStringKey("author", document_metadata.author);
+
+  if (!document_metadata.subject.empty())
+    metadata.SetStringKey("subject", document_metadata.subject);
+
+  if (!document_metadata.keywords.empty())
+    metadata.SetStringKey("keywords", document_metadata.keywords);
+
+  if (!document_metadata.creator.empty())
+    metadata.SetStringKey("creator", document_metadata.creator);
+
+  if (!document_metadata.producer.empty())
+    metadata.SetStringKey("producer", document_metadata.producer);
+
+  if (!document_metadata.creation_date.is_null()) {
+    metadata.SetStringKey("creationDate", base::TimeFormatShortDateAndTime(
+                                              document_metadata.creation_date));
+  }
+
+  if (!document_metadata.mod_date.is_null()) {
+    metadata.SetStringKey("modDate", base::TimeFormatShortDateAndTime(
+                                         document_metadata.mod_date));
+  }
+
+  metadata.SetStringKey("pageSize",
+                        FormatPageSize(engine()->GetUniformPageSizePoints()));
+
+  metadata.SetBoolKey("canSerializeDocument",
+                      IsSaveDataSizeValid(engine()->GetLoadedByteSize()));
+
+  base::Value message(base::Value::Type::DICTIONARY);
+  message.SetStringKey("type", "metadata");
+  message.SetKey("metadataData", std::move(metadata));
+  SendMessage(std::move(message));
 }
 
 }  // namespace chrome_pdf

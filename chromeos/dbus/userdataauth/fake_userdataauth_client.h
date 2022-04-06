@@ -198,6 +198,9 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
   void PreparePersistentVault(
       const ::user_data_auth::PreparePersistentVaultRequest& request,
       PreparePersistentVaultCallback callback) override;
+  void PrepareVaultForMigration(
+      const ::user_data_auth::PrepareVaultForMigrationRequest& request,
+      PrepareVaultForMigrationCallback callback) override;
   void InvalidateAuthSession(
       const ::user_data_auth::InvalidateAuthSessionRequest& request,
       InvalidateAuthSessionCallback callback) override;
@@ -275,6 +278,8 @@ class COMPONENT_EXPORT(USERDATAAUTH_CLIENT) FakeUserDataAuthClient
   void AddExistingUser(const cryptohome::AccountIdentifier& account_id);
 
   void set_user_data_dir(base::FilePath path) { user_data_dir_ = path; }
+
+  void CreateUserProfileDir(const cryptohome::AccountIdentifier& account_id);
 
  private:
   // Helper that returns the protobuf reply.

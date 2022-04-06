@@ -80,14 +80,22 @@ class BaseWebUIHandler : public content::WebUIMessageHandler {
       return;
     }
 
-    if (page_is_ready()) {
-      // Ignore call because javascript was disallowed after the initialization.
-      return;
-    }
-
     deferred_calls_.push_back(base::BindOnce(
         &BaseWebUIHandler::CallJS<Args...>, base::Unretained(this),
         function_name, std::move(args)...));
+  }
+
+  template <typename... Args>
+  void FireWebUIListenerWhenAllowed(const std::string& event_name,
+                                    Args... args) {
+    if (IsJavascriptAllowed()) {
+      FireWebUIListener(event_name, args...);
+      return;
+    }
+
+    deferred_calls_.push_back(
+        base::BindOnce(&BaseWebUIHandler::FireWebUIListenerWhenAllowed<Args...>,
+                       base::Unretained(this), event_name, std::move(args)...));
   }
 
   template <typename T, typename... Args>
@@ -111,14 +119,8 @@ class BaseWebUIHandler : public content::WebUIMessageHandler {
   // Returns current visible OOBE screen.
   OobeScreenId GetCurrentScreen();
 
-  // Whether page is ready.
-  bool page_is_ready() const { return page_is_ready_; }
-
  private:
   friend class OobeUI;
-
-  // Keeps whether page is ready.
-  bool page_is_ready_ = false;
 
   std::vector<base::OnceClosure> deferred_calls_;
 };

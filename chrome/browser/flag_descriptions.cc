@@ -792,12 +792,6 @@ const char kEnableRemovingAllThirdPartyCookiesDescription[] =
     "Enables UI on chrome://settings/siteData to remove all third-party "
     "cookies and site data.";
 
-const char kEnableBrowsingDataLifetimeManagerName[] =
-    "Enables the BrowsingDataLifetimeManager service to run.";
-const char kEnableBrowsingDataLifetimeManagerDescription[] =
-    "Enables the BrowsingDataLifetimeManager service to run and periodically "
-    "delete browsing data as specified by the BrowsingDataLifetime policy.";
-
 const char kColorProviderRedirectionForThemeProviderName[] =
     "Color Provider Redirection For Theme Provider";
 const char kColorProviderRedirectionForThemeProviderDescription[] =
@@ -1182,10 +1176,6 @@ const char kEnableLensStandaloneName[] = "Enable Lens features in Chrome.";
 const char kEnableLensStandaloneDescription[] =
     "Enables Lens image and region search to learn about the visual content "
     "you see while you browse and shop on the web.";
-
-const char kEnableLoginDetectionName[] = "Enable login detection";
-const char kEnableLoginDetectionDescription[] =
-    "Allow user sign-in to be detected based on heuristics.";
 
 const char kEnableManagedConfigurationWebApiName[] =
     "Enable Managed Configuration Web API";
@@ -1878,14 +1868,9 @@ const char kOptimizationGuideDebugLogsDescription[] =
     "Enables the optimization guide to log and save debug messages that can be "
     "shown in the internals page.";
 
-const char kOptimizationGuideModelDownloadingName[] =
-    "Allow optimization guide model downloads";
-const char kOptimizationGuideModelDownloadingDescription[] =
-    "Enables the optimization guide to download prediction models.";
-
-const char kOptimizationGuideModelPushNotificationName[] =
+const char kOptimizationGuidePushNotificationName[] =
     "Enable optimization guide push notifications";
-const char kOptimizationGuideModelPushNotificationDescription[] =
+const char kOptimizationGuidePushNotificationDescription[] =
     "Enables the optimization guide to receive push notifications.";
 
 const char kEnableDeJellyName[] = "Experimental de-jelly effect";
@@ -2338,6 +2323,11 @@ const char kShowOverdrawFeedbackName[] = "Show overdraw feedback";
 const char kShowOverdrawFeedbackDescription[] =
     "Visualize overdraw by color-coding elements based on if they have other "
     "elements drawn underneath.";
+
+extern const char kSimLockPolicyName[] = "SIM Lock Policy";
+extern const char kSimLockPolicyDescription[] =
+    "Enable the support for policy controlled enabling or disabling of PIN "
+    "Locking SIMs on managed devices.";
 
 const char kSkiaRendererName[] = "Skia API for compositing";
 const char kSkiaRendererDescription[] =
@@ -3296,6 +3286,11 @@ const char kMessagesForAndroidSaveCardName[] = "Save Card Messages UI";
 const char kMessagesForAndroidSaveCardDescription[] =
     "When enabled, save card prompt will use the new Messages UI.";
 
+const char kMessagesForAndroidStackingAnimationName[] =
+    "Stacking Animation of Messages UI";
+const char kMessagesForAndroidStackingAnimationDescription[] =
+    "When enabled, Messages UI will use the new stacking animation.";
+
 const char kMessagesForAndroidSyncErrorName[] = "Sync Error Messages UI";
 const char kMessagesForAndroidSyncErrorDescription[] =
     "When enabled, sync error prompt will use the new Messages UI.";
@@ -3820,18 +3815,6 @@ const char kOmniboxExperimentalKeywordModeDescription[] =
     "Enables various experimental features related to keyword mode, its "
     "suggestions and layout.";
 
-const char kOmniboxPedalsBatch2NonEnglishName[] =
-    "Omnibox Pedals batch 2 for non-English locales";
-const char kOmniboxPedalsBatch2NonEnglishDescription[] =
-    "Enable the second batch of Omnibox Pedals (Safety Check, etc.) for "
-    "locales other than 'en' and 'en-GB'.";
-
-const char kOmniboxPedalsTranslationConsoleName[] =
-    "Omnibox Pedals Translation Console";
-const char kOmniboxPedalsTranslationConsoleDescription[] =
-    "Use translation strings sourced from Translation Console "
-    "for triggering some omnibox Pedals (aka Chrome Actions).";
-
 const char kOmniboxShortBookmarkSuggestionsName[] =
     "Omnibox short bookmark suggestions";
 const char kOmniboxShortBookmarkSuggestionsDescription[] =
@@ -4236,6 +4219,10 @@ const char kDefaultLinkCapturingInBrowserName[] =
 const char kDefaultLinkCapturingInBrowserDescription[] =
     "When enabled, newly installed apps will not capture links clicked in the "
     "browser.";
+
+const char kDesksCloseAllName[] = "Desks Close All";
+const char kDesksCloseAllDescription[] =
+    "Close a desk along with all of its windows and tabs.";
 
 const char kDesksTemplatesName[] = "Desk Templates";
 const char kDesksTemplatesDescription[] =
@@ -5553,6 +5540,11 @@ const char kLinkCapturingUiUpdateDescription[] =
 const char kMessagesPreinstallName[] = "Preinstall  Messages PWA";
 const char kMessagesPreinstallDescription[] =
     "Enables preinstallation of the Messages for Web PWA for unmanaged users.";
+
+const char kSyncChromeOSExplicitPassphraseSharingName[] =
+    "Sync passphrase sharing";
+const char kSyncChromeOSExplicitPassphraseSharingDescription[] =
+    "Allows sharing custom sync passphrase between OS and Browser on ChromeOS";
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)

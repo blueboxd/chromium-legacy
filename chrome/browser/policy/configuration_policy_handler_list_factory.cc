@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browsing_data/browsing_data_lifetime_policy_handler.h"
+#include "chrome/browser/first_party_sets/first_party_sets_overrides_policy_handler.h"
 #include "chrome/browser/first_party_sets/first_party_sets_pref_names.h"
 #include "chrome/browser/net/disk_cache_dir_policy_handler.h"
 #include "chrome/browser/net/explicitly_allowed_network_ports_policy_handler.h"
@@ -1470,6 +1471,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kForceMaximizeOnFirstRun,
     prefs::kForceMaximizeOnFirstRun,
     base::Value::Type::BOOLEAN },
+  { key::kInsightsExtensionEnabled,
+    prefs::kInsightsExtensionEnabled,
+    base::Value::Type::BOOLEAN },
 #endif // BUILDFLAG(IS_CHROMEOS)
 
 #if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_CHROMEOS)
@@ -1633,9 +1637,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     webauthn::pref_names::kRemoteProxiedRequestsAllowed,
     base::Value::Type::BOOLEAN },
 #endif
-  { key::kFirstPartySetsOverrides,
-    first_party_sets::kFirstPartySetsOverrides,
-    base::Value::Type::DICTIONARY},
 #if BUILDFLAG(IS_MAC)
   { key::kWarnBeforeQuittingEnabled,
     prefs::kConfirmToQuitEnabled,
@@ -2319,6 +2320,9 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       key::kAllHttpAuthSchemesAllowedForOrigins,
       prefs::kAllHttpAuthSchemesAllowedForOrigins));
 
+  handlers->AddHandler(
+      std::make_unique<first_party_sets::FirstPartySetsOverridesPolicyHandler>(
+          chrome_schema));
   return handlers;
 }
 

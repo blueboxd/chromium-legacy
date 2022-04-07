@@ -13,6 +13,7 @@
 # Tests that fail in legacy but pass in NG
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-multicol/column-fill-balance-orthog-block-001.html [ Failure ]
 crbug.com/626703 virtual/prerender/wpt_internal/prerender/unload-on-prerender-cross-origin-subframe-navigation.html [ Timeout ]
 crbug.com/626703 virtual/prerender/wpt_internal/prerender/unload-on-prerender-main-frame-navigation.html [ Timeout ]
 crbug.com/626703 virtual/prerender/wpt_internal/prerender/unload-on-prerender-remove-subframe.html [ Timeout ]
@@ -156,6 +157,7 @@ crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-column-flex-fragm
 crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-037.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-039.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-040.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-column-flex-fragmentation-047.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-007.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-008.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/multi-line-row-flex-fragmentation-010.html [ Failure ]
@@ -209,6 +211,8 @@ crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-column-flex-frag
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-035.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-039.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-043.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-044.html [ Failure ]
+crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-column-flex-fragmentation-045.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-row-flex-fragmentation-008.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-row-flex-fragmentation-014.html [ Failure ]
 crbug.com/660611 external/wpt/css/css-break/flexbox/single-line-row-flex-fragmentation-015.html [ Failure ]
@@ -490,6 +494,7 @@ crbug.com/829028 external/wpt/css/css-multicol/multicol-fill-balance-012.html [ 
 crbug.com/829028 external/wpt/css/css-multicol/multicol-fill-balance-013.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/multicol-fill-balance-014.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/multicol-fill-balance-021.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/multicol-fill-balance-022.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/multicol-nested-007.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/multicol-nested-008.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/multicol-nested-009.html [ Failure ]

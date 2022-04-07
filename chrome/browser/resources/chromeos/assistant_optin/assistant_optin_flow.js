@@ -3,12 +3,8 @@
 // found in the LICENSE file.
 
 // <include src="utils.js">
-// <include src="setting_zippy.js">
-// <include src="browser_proxy.js">
 // <include src="assistant_loading.js">
 // <include src="assistant_related_info.js">
-// <include src="assistant_value_prop.js">
-// <include src="assistant_voice_match.js">
 
 /**
  * @fileoverview Polymer element for displaying material design assistant

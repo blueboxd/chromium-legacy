@@ -64,13 +64,14 @@
 #import "ios/chrome/browser/ui/default_promo/tailored_promo_coordinator.h"
 #import "ios/chrome/browser/ui/download/ar_quick_look_coordinator.h"
 #import "ios/chrome/browser/ui/download/features.h"
-#import "ios/chrome/browser/ui/download/mobileconfig_coordinator.h"
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
+#import "ios/chrome/browser/ui/download/safari_download_coordinator.h"
 #import "ios/chrome/browser/ui/download/vcard_coordinator.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_coordinator.h"
 #import "ios/chrome/browser/ui/follow/first_follow_coordinator.h"
+#import "ios/chrome/browser/ui/follow/followed_web_channel.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_mediator.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
@@ -189,7 +190,8 @@
     FormInputAccessoryCoordinator* formInputAccessoryCoordinator;
 
 // Presents a SFSafariViewController in order to download .mobileconfig file.
-@property(nonatomic, strong) MobileConfigCoordinator* mobileConfigCoordinator;
+@property(nonatomic, strong)
+    SafariDownloadCoordinator* SafariDownloadCoordinator;
 
 // Opens downloaded Vcard.
 @property(nonatomic, strong) VcardCoordinator* vcardCoordinator;
@@ -495,17 +497,15 @@
   self.formInputAccessoryCoordinator.navigator = self;
   [self.formInputAccessoryCoordinator start];
 
-  self.mobileConfigCoordinator = [[MobileConfigCoordinator alloc]
+  self.SafariDownloadCoordinator = [[SafariDownloadCoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser];
-  [self.mobileConfigCoordinator start];
+  [self.SafariDownloadCoordinator start];
 
-  if (base::FeatureList::IsEnabled(kDownloadVcard)) {
-    self.vcardCoordinator =
-        [[VcardCoordinator alloc] initWithBaseViewController:self.viewController
-                                                     browser:self.browser];
-    [self.vcardCoordinator start];
-  }
+  self.vcardCoordinator =
+      [[VcardCoordinator alloc] initWithBaseViewController:self.viewController
+                                                   browser:self.browser];
+  [self.vcardCoordinator start];
 
   self.passKitCoordinator =
       [[PassKitCoordinator alloc] initWithBaseViewController:self.viewController
@@ -589,8 +589,8 @@
   [self.formInputAccessoryCoordinator stop];
   self.formInputAccessoryCoordinator = nil;
 
-  [self.mobileConfigCoordinator stop];
-  self.mobileConfigCoordinator = nil;
+  [self.SafariDownloadCoordinator stop];
+  self.SafariDownloadCoordinator = nil;
 
   [self.vcardCoordinator stop];
   self.vcardCoordinator = nil;
@@ -862,11 +862,11 @@
 
 #pragma mark - FeedCommands
 
-- (void)showFirstFollowModalWithWebChannelTitle:(NSString*)webChannelTitle {
+- (void)showFirstFollowUIForWebChannel:(FollowedWebChannel*)followedWebChannel {
   self.firstFollowCoordinator = [[FirstFollowCoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser];
-  self.firstFollowCoordinator.webChannelTitle = webChannelTitle;
+  self.firstFollowCoordinator.followedWebChannel = followedWebChannel;
   [self.firstFollowCoordinator start];
 }
 

@@ -15,7 +15,6 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.core.AllOf.allOf;
 
-import android.os.Build.VERSION_CODES;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -31,7 +30,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -112,8 +110,6 @@ public class LanguageSettingsTest {
 
     @Test
     @SmallTest
-    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.Q, supported_abis_includes = "x86",
-        message = "https://crbug.com/1313660")
     public void testToggleOfferToTranslate() {
         RecyclerView acceptLanguageList = mActivity.findViewById(R.id.language_list);
         int originalAcceptLanguageCount = acceptLanguageList.getChildCount();
@@ -207,7 +203,7 @@ public class LanguageSettingsTest {
         TestThreadUtils.runOnUiThreadBlocking(moreButton::dismiss);
 
         // Toggle the switch.
-        onView(withId(R.id.switchWidget)).perform(click());
+        TestThreadUtils.runOnUiThreadBlocking((Runnable) pref::performClick);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals("Preference of 'offer to translate' should be toggled when switch "
                             + "widget is clicked.",

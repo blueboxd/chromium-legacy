@@ -290,11 +290,6 @@
       status: "stable",
     },
     {
-      name: "BiddingAndScoringDebugReportingAPI",
-      origin_trial_feature_name: "BiddingAndScoringDebugReportingAPI",
-      implied_by: ["Fledge", "Parakeet"],
-    },
-    {
       name: "BidiCaretAffinity",
     },
     {
@@ -986,6 +981,11 @@
     {
       name: "EnterKeyHintAttribute",
       status: "stable",
+    },
+    {
+      // Making MouseEvent#layerX, layerY interoperable
+      name: "EventLayerInterop",
+      status: "stable"
     },
     {
       // Non-standard API Event.path. Should be replaced by Event.composedPath.

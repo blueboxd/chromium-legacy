@@ -446,13 +446,6 @@ const char kNetworkQualities[] = "net.network_qualities";
 // Pref storing the user's network easter egg game high score.
 const char kNetworkEasterEggHighScore[] = "net.easter_egg_high_score";
 
-#if BUILDFLAG(IS_ANDROID)
-// Last time that a check for cloud policy management was done. This time is
-// recorded on Android so that retries aren't attempted on every startup.
-// Instead the cloud policy registration is retried at least 1 or 3 days later.
-const char kLastPolicyCheckTime[] = "policy.last_policy_check_time";
-#endif
-
 // A preference of enum chrome_browser_net::NetworkPredictionOptions shows
 // if prediction of network actions is allowed, depending on network type.
 // Actions include DNS prefetching, TCP and SSL preconnection, prerendering
@@ -483,6 +476,10 @@ const char kAttestationExtensionAllowlist[] = "attestation.extension_allowlist";
 // name and the string value.
 const char kPrintingAPIExtensionsAllowlist[] =
     "printing.printing_api_extensions_whitelist";
+
+// A boolean specifying whether the insights extension is enabled. If set to
+// true, the CCaaS Chrome component extension will be installed.
+const char kInsightsExtensionEnabled[] = "insights_extension_enabled";
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1965,13 +1962,8 @@ const char kNtpModulesVisible[] = "NewTabPage.ModulesVisible";
 const char kNtpModulesShownCount[] = "NewTabPage.ModulesShownCount";
 // Time modules were first shown to user.
 const char kNtpModulesFirstShownTime[] = "NewTabPage.ModulesFirstShownTime";
-// Time Modular NTP Desktop v1 First Run Experience was first shown to user.
-const char kNtpModulesFreFirstShownTime[] =
-    "NewTabPage.ModulesFreFirstShownTime";
 // Whether Modular NTP Desktop v1 First Run Experience is visible.
 const char kNtpModulesFreVisible[] = "NewTabPage.ModulesFreVisible";
-// Number of times Modular NTP Desktop v1 First Run Experience has been visible.
-const char kNtpModulesFreShownCount[] = "NewTabPage.ModulesFreShownCount";
 // List of promos that the user has dismissed while on the NTP.
 const char kNtpPromoBlocklist[] = "ntp.promo_blocklist";
 // Whether the promo is visible.

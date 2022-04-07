@@ -1356,6 +1356,20 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
     return NO;
   }
 
+  // TODO(crbug.com/1308875): Remove this when |canShowMIMEType| is fixed.
+  // On iOS 15 |canShowMIMEType| returns true for AR files although WebKit is
+  // not capable of displaying them natively.
+  if (@available(iOS 15, *)) {
+    NSString* MIMEType = WKResponse.response.MIMEType;
+    if ([MIMEType isEqual:@"model/vnd.pixar.usd"] ||
+        [MIMEType isEqual:@"model/usd"] ||
+        [MIMEType isEqual:@"model/vnd.usdz+zip"] ||
+        [MIMEType isEqual:@"model/vnd.pixar.usd"] ||
+        [MIMEType isEqual:@"model/vnd.reality"]) {
+      return NO;
+    }
+  }
+
   GURL responseURL = net::GURLWithNSURL(WKResponse.response.URL);
   if (responseURL.SchemeIs(url::kDataScheme) && WKResponse.forMainFrame) {
     // Block rendering data URLs for renderer-initiated navigations in main
@@ -1784,20 +1798,18 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
                 [NSString stringWithContentsOfFile:path
                                           encoding:NSUTF8StringEncoding
                                              error:nil];
-
-            NSURLRequest* URL = [NSURLRequest
-                requestWithURL:[NSURL URLWithString:failingURLString]];
+            NSURL* URL = [NSURL URLWithString:failingURLString];
+            NSURLRequest* URLRequest = [NSURLRequest requestWithURL:URL];
             WKNavigation* errorNavigation = nil;
 
             if (errorHTML) {
               NSString* injectedHTML =
-                  [errorHTML stringByAppendingString:reloadPageHTMLTemplate];
-              errorNavigation = [webView loadSimulatedRequest:URL
+                  [reloadPageHTMLTemplate stringByAppendingString:errorHTML];
+              errorNavigation = [webView loadSimulatedRequest:URLRequest
                                            responseHTMLString:injectedHTML];
             } else {
-              errorNavigation =
-                  [webView loadSimulatedRequest:URL
-                             responseHTMLString:reloadPageHTMLTemplate];
+              errorNavigation = [webView loadSimulatedRequest:URLRequest
+                                           responseHTMLString:@""];
             }
 
             std::unique_ptr<web::NavigationContextImpl> originalContext =

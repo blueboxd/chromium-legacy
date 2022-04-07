@@ -4536,6 +4536,12 @@ static_library("browser") {
         "//extensions/common:mojom",
       ]
     }
+    if (enable_side_search) {
+      sources += [
+        "page_load_metrics/observers/side_search_page_load_metrics_observer.cc",
+        "page_load_metrics/observers/side_search_page_load_metrics_observer.h",
+      ]
+    }
 
     # On Windows, the hashes are embedded in //chrome:chrome_initial rather
     # than here in :chrome_dll.
@@ -5065,8 +5071,6 @@ static_library("browser") {
       "fullscreen.h",
       "policy/browser_signin_policy_handler.cc",
       "policy/browser_signin_policy_handler.h",
-      "policy/cloud/user_cloud_policy_manager_builder.cc",
-      "policy/cloud/user_cloud_policy_manager_builder.h",
       "policy/cloud/user_policy_signin_service_factory.cc",
       "policy/cloud/user_policy_signin_service_factory.h",
       "policy/cloud/user_policy_signin_service_util.cc",
@@ -5317,6 +5321,7 @@ static_library("browser") {
     ]
     deps += [
       ":dlp_policy_event_proto",
+      "//chrome/browser/chromeos/extensions/login_screen",
       "//chromeos/crosapi/cpp",
       "//chromeos/crosapi/mojom",
       "//chromeos/dbus/dlp:dlp",
@@ -5327,6 +5332,9 @@ static_library("browser") {
       "//ui/chromeos/styles:cros_styles_views",
       "//ui/platform_window",
     ]
+
+    allow_circular_includes_from +=
+        [ "//chrome/browser/chromeos/extensions/login_screen" ]
 
     # component builds are not compatible on device.
     assert(!is_chromeos_device || !is_component_build)

@@ -21,6 +21,7 @@ This file contains the strings for ash.
     <output filename="ash_strings_bs.pak" type="data_package" lang="bs" />
     <output filename="ash_strings_ca.pak" type="data_package" lang="ca" />
     <output filename="ash_strings_cs.pak" type="data_package" lang="cs" />
+    <output filename="ash_strings_cy.pak" type="data_package" lang="cy" />
     <output filename="ash_strings_da.pak" type="data_package" lang="da" />
     <output filename="ash_strings_de.pak" type="data_package" lang="de" />
     <output filename="ash_strings_el.pak" type="data_package" lang="el" />
@@ -1660,6 +1661,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_SEARCH_KEY" desc="Name of [Search] key name. This name should be lower case.">
         search
+      </message>
+      <message name="IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_ACCESSIBLE_NAME" desc="Template for the accessible name for categorized search result lists that are shown in launcher search. The placeholder will be replaced with the name of a category of search results.">
+        <ph name="CATEGORY">$1<ex>Best Match</ex></ph> , search result category
       </message>
       <message name="IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_BEST_MATCH" desc="Category title for the list of search result shown in launcher search that are a best match for the query in the search box.">
         Best Match
@@ -4543,6 +4547,15 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_ASH_LAUNCHER_UNDO_SORT_TOAST_ACTION_BUTTON" desc="The label for the action button for a toast shown within the launcher UI that appears after the user sorts their apps, either aplhabetically or by icon color. The action button reverts the order of apps in the launcher to the one from before the user requested sort.">
        Undo
+      </message>
+      <message name="IDS_ASH_LAUNCHER_UNDO_NAME_SORT_TOAST_SPOKEN_TEXT" desc="Accessibility text read by chromevox when focusing on the undo button shown in a toast that gets shown in the launcher UI after the user sorts apps in the launcher by name. This undo button reverts the order of apps in launcher to the one before sort actions.">
+       Undo sort order by name
+      </message>
+      <message name="IDS_ASH_LAUNCHER_UNDO_COLOR_SORT_TOAST_SPOKEN_TEXT" desc="Accessibility text read by chromevox when focusing on the undo button shown in a toast that gets shown in the launcher UI after the user sorts apps in the launcher by color. This undo button reverts the order of apps in launcher to the one before sort actions.">
+       Undo sort order by color
+      </message>
+      <message name="IDS_ASH_LAUNCHER_UNDO_SORT_DONE_SPOKEN_TEXT" desc="Accessibility text read by chromevox after successfully undoing/reverting the sorting action on apps in launcher.">
+       Sort undo successful
       </message>
       <message name="IDS_ASH_LAUNCHER_APP_LIST_REORDER_NUDGE_TITLE" desc="Title of a nudge shown in the Chrome OS launcher UI above the list of apps that informs users that they can sort their apps by name or color.">
         Sort your apps by name or color

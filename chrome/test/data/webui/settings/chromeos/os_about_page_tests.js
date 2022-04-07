@@ -11,12 +11,12 @@ import {eventToPromise, flushTasks, waitAfterNextRender} from 'chrome://test/tes
 
 import {TestAboutPageBrowserProxyChromeOS} from './test_about_page_browser_proxy_chromeos.js';
 import {TestDeviceNameBrowserProxy} from './test_device_name_browser_proxy.js';
-import {TestLifetimeBrowserProxy} from './test_os_lifetime_browser_proxy.m.js';
+import {TestLifetimeBrowserProxy} from './test_os_lifetime_browser_proxy.js';
 
 suite('AboutPageTest', function() {
   let page = null;
 
-  /** @type {?settings.TestAboutPageBrowserProxyChromeOS} */
+  /** @type {?TestAboutPageBrowserProxyChromeOS} */
   let aboutBrowserProxy = null;
 
   /** @type {?TestLifetimeBrowserProxy} */

@@ -25,7 +25,7 @@ import '../controls/password_prompt_dialog.js';
 
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
 // <if expr="chromeos_ash or chromeos_lacros">
@@ -303,8 +303,9 @@ export class SettingsPasswordCheckElement extends
   override disconnectedCallback() {
     super.disconnectedCallback();
 
+    assert(this.setSavedPasswordsListener_);
     this.passwordManager!.removeSavedPasswordListChangedListener(
-        assert(this.setSavedPasswordsListener_!));
+        this.setSavedPasswordsListener_);
     this.setSavedPasswordsListener_ = null;
   }
 
@@ -425,9 +426,9 @@ export class SettingsPasswordCheckElement extends
   }
 
   private onEditPasswordClick_() {
+    assert(this.activePassword_);
     this.getPlaintextInsecurePassword(
-            assert(this.activePassword_!),
-            chrome.passwordsPrivate.PlaintextReason.EDIT)
+            this.activePassword_, chrome.passwordsPrivate.PlaintextReason.EDIT)
         .then(
             insecureCredential => {
               this.activePassword_ = insecureCredential;
@@ -451,26 +452,28 @@ export class SettingsPasswordCheckElement extends
     this.passwordManager!.recordPasswordCheckInteraction(
         PasswordCheckInteraction.MUTE_PASSWORD);
     this.$.moreActionsMenu.close();
-    this.passwordManager!.muteInsecureCredential(
-        assert(this.activeListItem_!.item));
+    this.passwordManager!.muteInsecureCredential(this.activeListItem_!.item);
   }
 
   private onMenuUnmuteMutedCompromisedPasswordClick_() {
     this.passwordManager!.recordPasswordCheckInteraction(
         PasswordCheckInteraction.UNMUTE_PASSWORD);
     this.$.moreActionsMenu.close();
-    this.passwordManager!.unmuteInsecureCredential(
-        assert(this.activeListItem_!.item));
+    this.passwordManager!.unmuteInsecureCredential(this.activeListItem_!.item);
   }
 
   private onPasswordRemoveDialogClosed_() {
     this.showPasswordRemoveDialog_ = false;
-    focusWithoutInk(assert(this.activeDialogAnchorStack_!.pop()!));
+    const toFocus = this.activeDialogAnchorStack_!.pop();
+    assert(toFocus);
+    focusWithoutInk(toFocus);
   }
 
   private onPasswordEditDialogClosed_() {
     this.showPasswordEditDialog_ = false;
-    focusWithoutInk(assert(this.activeDialogAnchorStack_!.pop()!));
+    const toFocus = this.activeDialogAnchorStack_!.pop();
+    assert(toFocus);
+    focusWithoutInk(toFocus);
   }
 
   private onAlreadyChangedClick_(event: CustomEvent<HTMLElement>) {
@@ -485,7 +488,9 @@ export class SettingsPasswordCheckElement extends
 
   private onEditDisclaimerClosed_() {
     this.showPasswordEditDisclaimer_ = false;
-    focusWithoutInk(assert(this.activeDialogAnchorStack_!.pop()!));
+    const toFocus = this.activeDialogAnchorStack_!.pop();
+    assert(toFocus);
+    focusWithoutInk(toFocus);
   }
 
   private computeShowHideMenuTitle(): string {
@@ -559,8 +564,9 @@ export class SettingsPasswordCheckElement extends
             this.i18n('checkPasswordsErrorQuota');
       case CheckState.OTHER_ERROR:
         return this.i18n('checkPasswordsErrorGeneric');
+      default:
+        assertNotReached('Can\'t find a title for state: ' + this.status.state);
     }
-    assertNotReached('Can\'t find a title for state: ' + this.status.state);
   }
 
   /**
@@ -645,9 +651,10 @@ export class SettingsPasswordCheckElement extends
         return this.i18n('checkPasswordsAgain');
       case CheckState.QUOTA_LIMIT:
         return '';  // Undefined behavior. Don't show any misleading text.
+      default:
+        assertNotReached(
+            'Can\'t find a button text for state: ' + this.status.state);
     }
-    assertNotReached(
-        'Can\'t find a button text for state: ' + this.status.state);
   }
 
   /**
@@ -673,10 +680,11 @@ export class SettingsPasswordCheckElement extends
       case CheckState.NO_PASSWORDS:
       case CheckState.QUOTA_LIMIT:
         return true;
+      default:
+        assertNotReached(
+            'Can\'t determine button visibility for state: ' +
+            this.status.state);
     }
-    assertNotReached(
-        'Can\'t determine button visibility for state: ' + this.status.state);
-    return true;
   }
 
   /**
@@ -721,9 +729,10 @@ export class SettingsPasswordCheckElement extends
       case CheckState.QUOTA_LIMIT:
       case CheckState.OTHER_ERROR:
         return true;
+      default:
+        assertNotReached(
+            'Not specified whether to state is an error: ' + this.status.state);
     }
-    assertNotReached(
-        'Not specified whether to state is an error: ' + this.status.state);
   }
 
   /**
@@ -748,10 +757,11 @@ export class SettingsPasswordCheckElement extends
         // Shows "No security issues found" if user is signed out and doesn't
         // have insecure credentials.
         return true;
+      default:
+        assertNotReached(
+            'Not specified whether to show passwords for state: ' +
+            this.status.state);
     }
-    assertNotReached(
-        'Not specified whether to show passwords for state: ' +
-        this.status.state);
   }
 
   /**
@@ -862,7 +872,9 @@ export class SettingsPasswordCheckElement extends
 
   private onPasswordPromptClosed_() {
     this.showPasswordPromptDialog_ = false;
-    focusWithoutInk(assert(this.activeDialogAnchorStack_!.pop()!));
+    const toFocus = this.activeDialogAnchorStack_!.pop();
+    assert(toFocus);
+    focusWithoutInk(toFocus);
   }
 
   private openPasswordPromptDialog_() {

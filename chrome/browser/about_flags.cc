@@ -73,7 +73,6 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill_assistant/browser/features.h"
-#include "components/bookmarks/browser/features.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browsing_data/core/features.h"
 #include "components/certificate_transparency/ct_features.h"
@@ -926,7 +925,6 @@ const FeatureEntry::Choice kMemlogSamplingRateChoices[] = {
      heap_profiling::kMemlogSamplingRate,
      heap_profiling::kMemlogSamplingRate5MB},
 };
-
 const FeatureEntry::FeatureParam kPageContentAnnotationsContentParams[] = {
     {"annotate_title_instead_of_page_content", "false"},
     {"extract_related_searches", "true"},
@@ -947,18 +945,35 @@ const FeatureEntry::FeatureVariation kPageContentAnnotationsVariations[] = {
      std::size(kPageContentAnnotationsTitleParams), nullptr},
 };
 const FeatureEntry::FeatureParam
+    kPageEntitiesPageContentAnnotationsAllLocalesParams[] = {
+        {"supported_locales", "*"},
+};
+const FeatureEntry::FeatureVariation
+    kPageEntitiesPageContentAnnotationsVariations[] = {
+        {"All Supported Locales",
+         kPageEntitiesPageContentAnnotationsAllLocalesParams,
+         std::size(kPageEntitiesPageContentAnnotationsAllLocalesParams),
+         nullptr},
+};
+const FeatureEntry::FeatureParam
     kJourneysSortClustersWithinBatchForQueryParams[] = {
+        {"JourneysLocaleOrLanguageAllowlist", "*"},
         {"JourneysSortClustersWithinBatchForQuery", "true"},
 };
 const FeatureEntry::FeatureParam kJourneysDropHiddenVisitsParams[] = {
+    {"JourneysLocaleOrLanguageAllowlist", "*"},
     {"drop_hidden_visits", "true"},
 };
 const FeatureEntry::FeatureParam kJourneysShowAllVisitsParams[] = {
+    {"JourneysLocaleOrLanguageAllowlist", "*"},
     // To show all visits, set the number of visits above the fold to a very
     // high number. We drop the rest above this very high number because we
     // definitely don't want to surface a Show More UI after that number.
     {"JourneysNumVisitsToAlwaysShowAboveTheFold", "200"},
     {"drop_hidden_visits", "true"},
+};
+const FeatureEntry::FeatureParam kJourneysAllLocalesParams[] = {
+    {"JourneysLocaleOrLanguageAllowlist", "*"},
 };
 const FeatureEntry::FeatureVariation kJourneysVariations[] = {
     {"Sort Clusters Within Batch for Query",
@@ -968,6 +983,8 @@ const FeatureEntry::FeatureVariation kJourneysVariations[] = {
      std::size(kJourneysDropHiddenVisitsParams), nullptr},
     {"No 'Show More' - Show all visits", kJourneysShowAllVisitsParams,
      std::size(kJourneysShowAllVisitsParams), nullptr},
+    {"All Supported Locales", kJourneysAllLocalesParams,
+     std::size(kJourneysAllLocalesParams), nullptr},
 };
 const FeatureEntry::FeatureParam
     kJourneysOnDeviceClusteringLabelingNoContentClusteringParams[] = {
@@ -2771,8 +2788,8 @@ const FeatureEntry::FeatureVariation kSnoopingProtectionVariations[] = {
     {"Comprehensive", kSnoopingProtectionRecall,
      std::size(kSnoopingProtectionRecall), nullptr}};
 
-const FeatureEntry::FeatureParam kQuickDim6s[] = {
-    {"QuickDim_quick_dim_ms", "6000"},
+const FeatureEntry::FeatureParam kQuickDim10s[] = {
+    {"QuickDim_quick_dim_ms", "10000"},
     {"QuickDim_filter_config_case", "2"},
     {"QuickDim_positive_count_threshold", "1"},
     {"QuickDim_negative_count_threshold", "2"},
@@ -2781,9 +2798,9 @@ const FeatureEntry::FeatureParam kQuickDim6s[] = {
     {"QuickDim_negative_score_threshold", "0"},
 };
 
-const FeatureEntry::FeatureParam kQuickDim6sQuickLock66s[] = {
-    {"QuickDim_quick_dim_ms", "6000"},
-    {"QuickDim_quick_lock_ms", "66000"},
+const FeatureEntry::FeatureParam kQuickDim10sQuickLock70s[] = {
+    {"QuickDim_quick_dim_ms", "10000"},
+    {"QuickDim_quick_lock_ms", "70000"},
     {"QuickDim_filter_config_case", "2"},
     {"QuickDim_positive_count_threshold", "1"},
     {"QuickDim_negative_count_threshold", "2"},
@@ -2792,9 +2809,9 @@ const FeatureEntry::FeatureParam kQuickDim6sQuickLock66s[] = {
     {"QuickDim_negative_score_threshold", "0"},
 };
 
-const FeatureEntry::FeatureParam kQuickDim6sQuickLock126s[] = {
-    {"QuickDim_quick_dim_ms", "6000"},
-    {"QuickDim_quick_lock_ms", "126000"},
+const FeatureEntry::FeatureParam kQuickDim10sQuickLock130s[] = {
+    {"QuickDim_quick_dim_ms", "10000"},
+    {"QuickDim_quick_lock_ms", "130000"},
     {"QuickDim_filter_config_case", "2"},
     {"QuickDim_positive_count_threshold", "1"},
     {"QuickDim_negative_count_threshold", "2"},
@@ -2837,17 +2854,17 @@ const FeatureEntry::FeatureParam kQuickDim120sQuickLock240s[] = {
 };
 
 const FeatureEntry::FeatureVariation kQuickDimVariations[] = {
-    {"Dim6sLock66s", kQuickDim6sQuickLock66s,
-     std::size(kQuickDim6sQuickLock66s), nullptr},
-    {"Dim6sLock126s", kQuickDim6sQuickLock126s,
-     std::size(kQuickDim6sQuickLock126s), nullptr},
+    {"Dim10sLock70s", kQuickDim10sQuickLock70s,
+     std::size(kQuickDim10sQuickLock70s), nullptr},
+    {"Dim10sLock130s", kQuickDim10sQuickLock130s,
+     std::size(kQuickDim10sQuickLock130s), nullptr},
     {"Dim45sLock105s", kQuickDim45sQuickLock105s,
      std::size(kQuickDim45sQuickLock105s), nullptr},
     {"Dim45sLock165s", kQuickDim45sQuickLock165s,
      std::size(kQuickDim45sQuickLock165s), nullptr},
     {"Dim120sLock240s", kQuickDim120sQuickLock240s,
      std::size(kQuickDim120sQuickLock240s), nullptr},
-    {"Dim6sNoLock", kQuickDim6s, std::size(kQuickDim6s), nullptr},
+    {"Dim10sNoLock", kQuickDim10s, std::size(kQuickDim10s), nullptr},
 };
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -2904,6 +2921,9 @@ const FeatureEntry::FeatureParam kUpmAndroidShadowSyncingUsers[] = {
 const FeatureEntry::FeatureParam kUpmAndroidEnableWithLegacyUi[] = {
     {password_manager::features::kUpmExperimentVariationParam.name,
      password_manager::features::kUpmExperimentVariationOption[2].name}};
+const FeatureEntry::FeatureParam kUpmAndroidEnableForAllUsers[] = {
+    {password_manager::features::kUpmExperimentVariationParam.name,
+     password_manager::features::kUpmExperimentVariationOption[3].name}};
 
 const FeatureEntry::FeatureVariation
     kUnifiedPasswordManagerAndroidVariations[] = {
@@ -2912,6 +2932,8 @@ const FeatureEntry::FeatureVariation
          std::size(kUpmAndroidShadowSyncingUsers), nullptr},
         {"With Legacy UI", kUpmAndroidEnableWithLegacyUi,
          std::size(kUpmAndroidEnableWithLegacyUi), nullptr},
+        {"For All Users", kUpmAndroidEnableForAllUsers,
+         std::size(kUpmAndroidEnableForAllUsers), nullptr},
 };
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -5069,8 +5091,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPageEntitiesPageContentAnnotationsName,
      flag_descriptions::kPageEntitiesPageContentAnnotationsDescription,
      kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         optimization_guide::features::kPageEntitiesPageContentAnnotations)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         optimization_guide::features::kPageEntitiesPageContentAnnotations,
+         kPageEntitiesPageContentAnnotationsVariations,
+         "PageEntitiesPageContentAnnotations")},
 
     {"page-visibility-page-content-annotations",
      flag_descriptions::kPageVisibilityPageContentAnnotationsName,
@@ -5167,11 +5191,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBookmarkBottomSheetDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kBookmarkBottomSheet)},
 #endif
-
-    {"apps-shortcut-default-off",
-     flag_descriptions::kAppsShortcutDefaultOffName,
-     flag_descriptions::kAppsShortcutDefaultOffDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(bookmarks::features::kAppsShortcutDefaultOff)},
 
     {"tab-groups-new-badge-promo",
      flag_descriptions::kTabGroupsNewBadgePromoName,
@@ -5369,7 +5388,8 @@ const FeatureEntry kFeatureEntries[] = {
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
     {"chrome-wide-echo-cancellation",
      flag_descriptions::kChromeWideEchoCancellationName,
-     flag_descriptions::kChromeWideEchoCancellationDescription, kOsWin | kOsMac,
+     flag_descriptions::kChromeWideEchoCancellationDescription,
+     kOsMac | kOsWin | kOsLinux,
      FEATURE_VALUE_TYPE(media::kChromeWideEchoCancellation)},
 #endif  // BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
 
@@ -5981,7 +6001,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kChromeOSDirectVideoDecoderDescription,
      kOsCrOS | kOsLinux,
      FEATURE_VALUE_TYPE(media::kUseChromeOSDirectVideoDecoder)},
-#endif
+#if defined(ARCH_CPU_ARM_FAMILY)
+    {"prefer-libyuv-image-processor",
+     flag_descriptions::kPreferLibYuvImageProcessorName,
+     flag_descriptions::kPreferLibYuvImageProcessorDescription,
+     kOsCrOS | kOsLinux,
+     FEATURE_VALUE_TYPE(media::kPreferLibYuvImageProcessor)},
+#endif  // defined(ARCH_CPU_ARM_FAMILY)
+#endif  // BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
 #if BUILDFLAG(IS_ANDROID)
     {"force-startup-signin-promo",
@@ -6055,6 +6082,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNeuralPalmAdaptiveHoldName,
      flag_descriptions::kEnableNeuralPalmAdaptiveHoldDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ui::kEnableNeuralPalmAdaptiveHold)},
+
+    {"enable-neural-palm-rejection-beta-model",
+     flag_descriptions::kEnableNeuralPalmRejectionBetaModelName,
+     flag_descriptions::kEnableNeuralPalmRejectionBetaModelDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ui::kEnableNeuralPalmRejectionBetaModel)},
 
     {"enable-neural-palm-rejection-model-v2",
      flag_descriptions::kEnableNeuralPalmRejectionModelV2Name,
@@ -8470,15 +8502,6 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
             channel != version_info::Channel::UNKNOWN) ||
            !ash::features::IsWallpaperWebUIEnabled();
   }
-
-  // Features that are only available for Unknown/Canary/Dev channels.
-  if (!strcmp(kPersonalizationHubInternalName, entry.internal_name) &&
-      channel != version_info::Channel::DEV &&
-      channel != version_info::Channel::CANARY &&
-      channel != version_info::Channel::UNKNOWN) {
-    return true;
-  }
-
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

@@ -503,6 +503,7 @@ namespace {
   if (_webState == webState) {
     return;
   }
+  self.contentSuggestionsCoordinator.webState = webState;
   self.ntpMediator.webState = webState;
   _webState = webState;
 }
@@ -587,6 +588,12 @@ namespace {
 
 - (void)handleFeedSelected:(FeedType)feedType {
   DCHECK(IsWebChannelsEnabled());
+  if (feedType == FeedTypeFollowing) {
+    // Clears dot and notifies service that the Following feed content has been
+    // seen.
+    self.feedHeaderViewController.followingSegmentDotVisible = NO;
+    self.discoverFeedService->SetFollowingFeedContentSeen();
+  }
   self.selectedFeed = feedType;
   [self updateNTPForFeed];
 }
@@ -1074,9 +1081,6 @@ namespace {
   ntpMediator.browser = self.browser;
   ntpMediator.ntpViewController = self.ntpViewController;
   ntpMediator.headerCollectionInteractionHandler = self.headerSynchronizer;
-  ntpMediator.NTPMetrics = [[NTPHomeMetrics alloc]
-      initWithBrowserState:self.browser->GetBrowserState()];
-  ntpMediator.NTPMetrics.webState = self.webState;
   return ntpMediator;
 }
 
@@ -1147,10 +1151,12 @@ namespace {
   DCHECK(!self.browser->GetBrowserState()->IsOffTheRecord());
   if (!_feedHeaderViewController) {
     _feedHeaderViewController = [[FeedHeaderViewController alloc]
-         initWithSelectedFeed:self.selectedFeed
-        followingFeedSortType:(FollowingFeedSortType)
-                                  self.prefService->GetInteger(
-                                      prefs::kNTPFollowingFeedSortType)];
+              initWithSelectedFeed:self.selectedFeed
+             followingFeedSortType:(FollowingFeedSortType)
+                                       self.prefService->GetInteger(
+                                           prefs::kNTPFollowingFeedSortType)
+        followingSegmentDotVisible:self.discoverFeedService
+                                       ->GetFollowingFeedHasUnseenContent()];
     _feedHeaderViewController.feedControlDelegate = self;
     [_feedHeaderViewController.menuButton
                addTarget:self

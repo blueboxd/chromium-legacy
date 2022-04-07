@@ -63,9 +63,6 @@ tast_disabled_tests_from_chrome_all = [
   # crbug.com/1239838
   "graphics.FPS",
 
-  # crbug.com/1186991
-  "launcher.SearchBuiltInApps",
-
   # crbug.com/1263233
   "security.SharedFilesystemState",
 
@@ -181,9 +178,6 @@ tast_disabled_tests_from_chrome_all = [
   # https://crbug.com/1307671
   "policy.SafeBrowsingProtectionLevel",
 
-  # https://crbug.com/1310750
-  "launcher.SearchBuiltInApps.productivity_launcher_clamshell_mode",
-
   # https://crbug.com/1309331
   "policy.CookiesAllowedForUrls",
 
@@ -243,6 +237,9 @@ tast_disabled_tests_from_chrome_all = [
   "crostini.SecureCopyPaste.paste_wayland_bullseye_stable",
   "crostini.UninstallInvalidApp.buster_stable",
   "crostini.Xattrs.buster_stable",
+  "crostini.NoSharedFolder.bullseye_stable",
+  "crostini.Notify.bullseye_stable",
+  "crostini.PackageInfo.bullseye_stable",
 
   # https://crbug.com/1312908
   "policy.DefaultNotificationsSetting",

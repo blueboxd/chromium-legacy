@@ -2468,10 +2468,6 @@ const char kTabToGTSAnimationAndroidDescription[] =
     "Allows users to see an animation when entering or leaving the "
     "Grid Tab Switcher on phones.";
 
-const char kAppsShortcutDefaultOffName[] = "Apps Shortcut Default Off";
-const char kAppsShortcutDefaultOffDescription[] =
-    "Changes the apps shortcut on the bookmarks bar to default to off.";
-
 const char kTabGroupsNewBadgePromoName[] = "Tab Groups 'New' Badge Promo";
 const char kTabGroupsNewBadgePromoDescription[] =
     "Causes a 'New' badge to appear on the entry point for creating a tab "
@@ -4576,6 +4572,11 @@ const char kEnableNeuralPalmAdaptiveHoldName[] = "Palm Rejection Adaptive Hold";
 const char kEnableNeuralPalmAdaptiveHoldDescription[] =
     "Enable adaptive hold in palm rejection.  Not compatible with all devices.";
 
+const char kEnableNeuralPalmRejectionBetaModelName[] =
+    "Palm Rejection Beta Model";
+const char kEnableNeuralPalmRejectionBetaModelDescription[] =
+    "Enable NN palm rejection on devices registered with beta model.";
+
 const char kEnableNeuralPalmRejectionModelV2Name[] = "Palm Rejection Model V2";
 const char kEnableNeuralPalmRejectionModelV2Description[] =
     "Uses an updated model for palm rejection.  Not compatible with all "
@@ -5563,6 +5564,12 @@ const char kChromeOSDirectVideoDecoderDescription[] =
     "which is added for platforms where said direct VideoDecoder does not work "
     "or is not well tested (see the disable_cros_video_decoder USE flag in "
     "Chrome OS)";
+#if defined(ARCH_CPU_ARM_FAMILY)
+const char kPreferLibYuvImageProcessorName[] = "Prefer libYUV image processor";
+const char kPreferLibYuvImageProcessorDescription[] =
+    "Prefers the libYUV image processor for format conversion of video frames "
+    "over the hardware implementation";
+#endif  // defined(ARCH_CPU_ARM_FAMILY)
 #endif  // BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)

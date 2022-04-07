@@ -272,7 +272,7 @@ class ChromePasswordProtectionServiceTest
         /*store_last_modified=*/false, /*restore_session=*/false);
 
     cache_manager_ = std::make_unique<VerdictCacheManager>(
-        nullptr, content_setting_map_.get(), &test_pref_service_);
+        nullptr, content_setting_map_.get(), &test_pref_service_, nullptr);
 
     service_ = NewMockPasswordProtectionService();
     fake_user_event_service_ = static_cast<syncer::FakeUserEventService*>(
@@ -1443,6 +1443,17 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetPingNotSentReason) {
               service_->GetPingNotSentReason(
                   LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
                   GURL("about:blank"), reused_password_type));
+    profile()->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
+                                      PASSWORD_PROTECTION_OFF);
+  }
+  {
+    // Internal URL
+    ReusedPasswordAccountType reused_password_type;
+    service_->ConfigService(false /*incognito*/, true /*SBER*/);
+    EXPECT_EQ(RequestOutcome::URL_NOT_VALID_FOR_REPUTATION_COMPUTING,
+              service_->GetPingNotSentReason(
+                  LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
+                  GURL("http://192.168.1.1/"), reused_password_type));
   }
 }
 

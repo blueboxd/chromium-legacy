@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
@@ -27,8 +28,8 @@ namespace {
 // http://blogs.msdn.com/b/oldnewthing/archive/2004/03/29/101121.aspx
 const AcceleratorMapping kAcceleratorMap[] = {
 // To add an accelerator to macOS that uses modifier keys, either:
-//   1) Update MainMenu.xib to include a new menu item with the appropriate
-//      modifier.
+//   1) Update the main menu built in main_menu_builder.mm to include a new menu
+//      item with the appropriate modifier.
 //   2) Update GetShortcutsNotPresentInMainMenu() in
 //      global_keyboard_shortcuts_mac.mm.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -64,10 +65,13 @@ const AcceleratorMapping kAcceleratorMap[] = {
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
     {ui::VKEY_9, ui::EF_ALT_DOWN, IDC_SELECT_LAST_TAB},
     {ui::VKEY_NUMPAD9, ui::EF_ALT_DOWN, IDC_SELECT_LAST_TAB},
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_WIN)
     {ui::VKEY_NEXT, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN, IDC_MOVE_TAB_NEXT},
     {ui::VKEY_PRIOR, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
      IDC_MOVE_TAB_PREVIOUS},
-#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS) ||
+        // BUILDFLAG(IS_WIN)
     // Control modifier is rarely used on Mac, so we allow it only in several
     // specific cases.
     {ui::VKEY_TAB, ui::EF_CONTROL_DOWN, IDC_SELECT_NEXT_TAB},
@@ -261,16 +265,10 @@ constexpr AcceleratorMapping kUIDebugAcceleratorMap[] = {
 };
 
 const int kRepeatableCommandIds[] = {
-  IDC_FIND_NEXT,
-  IDC_FIND_PREVIOUS,
-  IDC_FOCUS_NEXT_PANE,
-  IDC_FOCUS_PREVIOUS_PANE,
-  IDC_MOVE_TAB_NEXT,
-  IDC_MOVE_TAB_PREVIOUS,
-  IDC_SELECT_NEXT_TAB,
-  IDC_SELECT_PREVIOUS_TAB,
+    IDC_FIND_NEXT,           IDC_FIND_PREVIOUS,       IDC_FOCUS_NEXT_PANE,
+    IDC_FOCUS_PREVIOUS_PANE, IDC_MOVE_TAB_NEXT,       IDC_MOVE_TAB_PREVIOUS,
+    IDC_SELECT_NEXT_TAB,     IDC_SELECT_PREVIOUS_TAB,
 };
-const size_t kRepeatableCommandIdsLength = std::size(kRepeatableCommandIds);
 
 } // namespace
 
@@ -306,9 +304,9 @@ std::vector<AcceleratorMapping> GetAcceleratorList() {
 bool GetStandardAcceleratorForCommandId(int command_id,
                                         ui::Accelerator* accelerator) {
 #if BUILDFLAG(IS_MAC)
-  // On macOS, the cut/copy/paste accelerators are defined in MainMenu.xib and
-  // the accelerator is user configurable. All of this is handled by
-  // CommandDispatcher.
+  // On macOS, the cut/copy/paste accelerators are defined in the main menu
+  // built in main_menu_builder.mm and the accelerator is user configurable. All
+  // of this is handled by CommandDispatcher.
   NOTREACHED();
   return false;
 #else
@@ -330,9 +328,5 @@ bool GetStandardAcceleratorForCommandId(int command_id,
 }
 
 bool IsCommandRepeatable(int command_id) {
-  for (size_t i = 0; i < kRepeatableCommandIdsLength; ++i) {
-    if (kRepeatableCommandIds[i] == command_id)
-      return true;
-  }
-  return false;
+  return base::Contains(kRepeatableCommandIds, command_id);
 }

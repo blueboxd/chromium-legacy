@@ -757,6 +757,21 @@
             ]
         }
     ],
+    "AutofillEnableManualFallbackForVirtualCards": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillEnableManualFallbackForVirtualCards"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillEnableProfileDeduplication": [
         {
             "platforms": [
@@ -1372,8 +1387,7 @@
                         "enable_same_site": "true",
                         "extension_message_supported": "true",
                         "foreground_cache_size": "2",
-                        "max_buffered_bytes_per_process": "1024000",
-                        "unload_support": "opt_in_header_required"
+                        "max_buffered_bytes_per_process": "1024000"
                     },
                     "enable_features": [
                         "BFCachePerformanceManagerPolicy",
@@ -2942,21 +2956,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "DownloadRange"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DownloadVcardFile": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DownloadVcardFile"
                     ]
                 }
             ]
@@ -4612,6 +4611,31 @@
             ]
         }
     ],
+    "NeuralPalmRejectionModelV2AndAdaptiveHold": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "NeuralPalmRejectionAdaptiveHold_20220207",
+                    "enable_features": [
+                        "EnableNeuralPalmAdaptiveHold",
+                        "EnableNeuralPalmRejectionModelV2"
+                    ]
+                },
+                {
+                    "name": "NeuralPalmRejectionModelV2_20220207",
+                    "enable_features": [
+                        "EnableNeuralPalmRejectionModelV2"
+                    ],
+                    "disable_features": [
+                        "EnableNeuralPalmAdaptiveHold"
+                    ]
+                }
+            ]
+        }
+    ],
     "NoWakeUpsForCanceledTasks": [
         {
             "platforms": [
@@ -5259,31 +5283,6 @@
                     },
                     "enable_features": [
                         "PaintPreviewShowOnStartup"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PalmRejectionAdaptiveHold": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "NeuralPalmRejectionAdaptiveHold_20220207",
-                    "enable_features": [
-                        "EnableNeuralPalmAdaptiveHold",
-                        "EnableNeuralPalmRejectionModelV2"
-                    ]
-                },
-                {
-                    "name": "NeuralPalmRejectionModelV2_20220207",
-                    "enable_features": [
-                        "EnableNeuralPalmRejectionModelV2"
-                    ],
-                    "disable_features": [
-                        "EnableNeuralPalmAdaptiveHold"
                     ]
                 }
             ]
@@ -5972,24 +5971,6 @@
             ]
         }
     ],
-    "ReadingListMessages": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "javascript_only": "true"
-                    },
-                    "enable_features": [
-                        "ReadingListMessages"
-                    ]
-                }
-            ]
-        }
-    ],
     "ReduceOpsTaskSplitting": [
         {
             "platforms": [
@@ -6008,6 +5989,27 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ReduceOpsTaskSplitting"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ReduceUserAgentMinorVersionStudy": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ReduceUserAgentMinorVersion"
                     ]
                 }
             ]
@@ -6272,6 +6274,25 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ScreenTime"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ScrollUnification": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ScrollUnification"
                     ]
                 }
             ]
@@ -6624,7 +6645,7 @@
             ]
         }
     ],
-    "SingleNTPRemoveExcessNTPs": [
+    "SingleNTPRemoveExtraNTPs": [
         {
             "platforms": [
                 "ios"

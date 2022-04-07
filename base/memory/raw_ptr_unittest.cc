@@ -96,6 +96,9 @@ static void ClearCounters() {
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
 using CountingSuperClass =
     base::internal::BackupRefPtrImpl</*AllowDangling=*/false>;
+#elif defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+using CountingSuperClass = base::internal::MTECheckedPtrImpl<
+    base::internal::MTECheckedPtrImplPartitionAllocSupport>;
 #else
 using CountingSuperClass = base::internal::RawPtrNoOpImpl;
 #endif
@@ -288,7 +291,12 @@ TEST_F(RawPtrTest, ClearAndDelete) {
   EXPECT_EQ(g_wrap_raw_ptr_cnt, 1);
   EXPECT_EQ(g_release_wrapped_ptr_cnt, 1);
   EXPECT_EQ(g_get_for_dereference_cnt, 0);
+#if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+  // When `MTECheckedPtr` is active, we must unwrap to delete.
+  EXPECT_EQ(g_get_for_extraction_cnt, 1);
+#else
   EXPECT_EQ(g_get_for_extraction_cnt, 0);
+#endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
   EXPECT_EQ(g_wrapped_ptr_swap_cnt, 0);
   EXPECT_EQ(ptr.get(), nullptr);
 }
@@ -299,7 +307,12 @@ TEST_F(RawPtrTest, ClearAndDeleteArray) {
   EXPECT_EQ(g_wrap_raw_ptr_cnt, 1);
   EXPECT_EQ(g_release_wrapped_ptr_cnt, 1);
   EXPECT_EQ(g_get_for_dereference_cnt, 0);
+#if defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
+  // When `MTECheckedPtr` is active, we must unwrap to delete.
+  EXPECT_EQ(g_get_for_extraction_cnt, 1);
+#else
   EXPECT_EQ(g_get_for_extraction_cnt, 0);
+#endif  // defined(PA_USE_MTE_CHECKED_PTR_WITH_64_BITS_POINTERS)
   EXPECT_EQ(g_wrapped_ptr_swap_cnt, 0);
   EXPECT_EQ(ptr.get(), nullptr);
 }
@@ -1508,18 +1521,26 @@ TEST(MTECheckedPtrImpl, CrashOnUseAfterFree_WithOffset) {
 
 TEST(MTECheckedPtrImpl, AdvancedPointerShiftedAppropriately) {
   uint64_t* unwrapped_ptr = new uint64_t[6];
-  raw_ptr<uint64_t> ptr = unwrapped_ptr;
+  CountingRawPtr<uint64_t> ptr = unwrapped_ptr;
 
   // This is unwrapped, but still useful for ensuring that the
   // shift is sized in `uint64_t`s.
   auto original_addr = reinterpret_cast<uintptr_t>(ptr.get());
+  EXPECT_EQ(g_get_for_extraction_cnt, 1);
+  EXPECT_EQ(g_get_for_dereference_cnt, 0);
 
   ptr += 5;
   EXPECT_EQ(reinterpret_cast<uintptr_t>(ptr.get()) - original_addr,
             5 * sizeof(uint64_t));
+  EXPECT_EQ(g_get_for_extraction_cnt, 2);
+  EXPECT_EQ(g_get_for_dereference_cnt, 0);
   delete[] unwrapped_ptr;
 
   EXPECT_DEATH_IF_SUPPORTED(*ptr, "");
+
+  // We assert that no visible extraction actually took place.
+  EXPECT_EQ(g_get_for_extraction_cnt, 2);
+  EXPECT_EQ(g_get_for_dereference_cnt, 0);
 }
 
 #endif  // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR) &&

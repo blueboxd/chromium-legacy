@@ -9,12 +9,12 @@
 #include <ostream>
 
 #include "base/allocator/partition_allocator/address_pool_manager.h"
+#include "base/allocator/partition_allocator/base/bits.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/tagging.h"
-#include "base/bits.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "build/build_config.h"
@@ -43,7 +43,7 @@ NOINLINE void HandleGigaCageAllocFailureOutOfCommitCharge() {
 
 NOINLINE void HandleGigaCageAllocFailure() {
   NO_CODE_FOLDING();
-  uint32_t alloc_page_error_code = base::GetAllocPageErrorCode();
+  uint32_t alloc_page_error_code = GetAllocPageErrorCode();
   PA_DEBUG_DATA_ON_STACK("error", static_cast<size_t>(alloc_page_error_code));
   // It's important to easily differentiate these two failures on Windows, so
   // crash with different stacks.

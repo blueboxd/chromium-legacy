@@ -1376,11 +1376,6 @@
     "expiry_milestone": 98
   },
   {
-    "name": "download-vcard",
-    "owners": [ "ewannpv", "gambard" ],
-    "expiry_milestone": 100
-  },
-  {
     "name": "draw-predicted-ink-point",
     "owners": [ "joalmei@microsoft.com" ],
     "expiry_milestone": 98
@@ -1723,7 +1718,7 @@
   {
     "name": "enable-cros-ime-system-emoji-picker-clipboard",
     "owners": [ "jopalmer", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "enable-cros-ime-system-emoji-picker-extension",
@@ -1748,7 +1743,7 @@
   {
     "name": "enable-cros-multilingual-typing",
     "owners": [ "tranbaoduy", "essential-inputs-team@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 105
   },
   {
     "name": "enable-cros-on-device-grammar-check",
@@ -1875,7 +1870,7 @@
   {
     "name": "enable-desktop-pwas-launch-handler",
     "owners": [ "alancutter@chromium.org", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
   },
   {
     "name": "enable-desktop-pwas-link-capturing",
@@ -2384,6 +2379,11 @@
     "expiry_milestone": 130
   },
   {
+    "name": "enable-neural-palm-rejection-beta-model",
+    "owners": [ "robsc", "jiwan" ],
+    "expiry_milestone": 130
+  },
+  {
     "name": "enable-neural-palm-rejection-model-v2",
     "owners": [ "robsc", "napper", "alanlxl" ],
     "expiry_milestone": 130
@@ -2730,7 +2730,7 @@
   {
     "name": "enable-tab-grid-layout",
     "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 101
+    "expiry_milestone": 105
   },
   {
     "name": "enable-tab-groups",
@@ -2740,7 +2740,7 @@
   {
     "name": "enable-tab-groups-continuation",
     "owners": [ "memex-team@google.com" ],
-    "expiry_milestone": 101
+    "expiry_milestone": 105
   },
   {
     "name": "enable-tab-groups-for-tablets",
@@ -3265,7 +3265,7 @@
   {
     "name": "filling-across-affiliated-websites",
     "owners": [ "vsemeniuk", "vasilii" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 102
   },
   {
     "name": "focus-follows-cursor",
@@ -5007,16 +5007,6 @@
     // This flag is a utility for testing Reader Mode heuristics or force
     // enabling the feature on every page.
     "expiry_milestone": -1
-  },
-  {
-    "name": "reading-list-messages",
-    "owners": [ "thegreenfrog@google.com", "bling-flags@google.com" ],
-    "expiry_milestone": 99
-  },
-  {
-    "name": "reading-list-time-to-read",
-    "owners": [ "thegreenfrog@google.com", "bling-flags@google.com" ],
-    "expiry_milestone": 100
   },
   {
     "name": "record-snapshot-size",

@@ -3072,13 +3072,14 @@ def CheckSetNoParent(input_api, output_api):
         # Check that every set noparent line has a corresponding file:// line
         # listed in build/OWNERS.setnoparent. An exception is made for top level
         # directories since src/OWNERS shouldn't review them.
-        if (f.LocalPath().count('/') != 1
-                and (not f.LocalPath() in _EXCLUDED_SET_NO_PARENT_PATHS)):
+        linux_path = f.LocalPath().replace(input_api.os_path.sep, '/')
+        if (linux_path.count('/') != 1
+                and (not linux_path in _EXCLUDED_SET_NO_PARENT_PATHS)):
             for set_noparent_line in found_set_noparent_lines:
                 if set_noparent_line in found_owners_files:
                     continue
                 errors.append('  %s:%d' %
-                              (f.LocalPath(),
+                              (linux_path,
                                found_set_noparent_lines[set_noparent_line]))
 
     results = []
@@ -5703,10 +5704,14 @@ def CheckMPArchApiUsage(input_api, output_api):
         'GetMainFrame',
         'GetFrameTreeNodeId',
     ]
+    concerning_ftn_methods = [
+        'IsMainFrame',
+    ]
     concerning_method_pattern = input_api.re.compile(r'(' + r'|'.join(
         item for sublist in [
             concerning_wco_methods, concerning_nav_handle_methods,
-            concerning_web_contents_methods, concerning_rfh_methods
+            concerning_web_contents_methods, concerning_rfh_methods,
+            concerning_ftn_methods,
         ] for item in sublist) + r')\(')
 
     used_apis = set()

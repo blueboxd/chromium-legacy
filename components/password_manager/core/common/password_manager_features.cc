@@ -141,12 +141,6 @@ const base::Feature kPasswordScriptsFetching = {
 const base::Feature kRecoverFromNeverSaveAndroid = {
     "RecoverFromNeverSaveAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables reparsing server predictions once the password form manager notices a
-// dynamic form change.
-const base::Feature kReparseServerPredictionsFollowingFormChange = {
-    "ReparseServerPredictionsFollowingFormChange",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables considering secondary server field predictions during form parsing.
 const base::Feature kSecondaryServerFieldPredictions = {
     "SecondaryServerFieldPredictions", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -276,6 +270,7 @@ bool UsesUnifiedPasswordManagerUi() {
   UpmExperimentVariation variation = kUpmExperimentVariationParam.Get();
   switch (variation) {
     case UpmExperimentVariation::kEnableForSyncingUsers:
+    case UpmExperimentVariation::kEnableForAllUsers:
       return true;
     case UpmExperimentVariation::kShadowSyncingUsers:
     case UpmExperimentVariation::kEnableOnlyBackendForSyncingUsers:
@@ -294,6 +289,7 @@ bool RequiresInitialMigrationForUnifiedPasswordManager() {
   switch (variation) {
     case UpmExperimentVariation::kEnableForSyncingUsers:
     case UpmExperimentVariation::kEnableOnlyBackendForSyncingUsers:
+    case UpmExperimentVariation::kEnableForAllUsers:
       return true;
     case UpmExperimentVariation::kShadowSyncingUsers:
       return false;
@@ -313,6 +309,8 @@ bool ManagesLocalPasswordsInUnifiedPasswordManager() {
     case UpmExperimentVariation::kShadowSyncingUsers:
     case UpmExperimentVariation::kEnableOnlyBackendForSyncingUsers:
       return false;
+    case UpmExperimentVariation::kEnableForAllUsers:
+      return true;
   }
   NOTREACHED()
       << "Define explicitly whether local password management is supported!";

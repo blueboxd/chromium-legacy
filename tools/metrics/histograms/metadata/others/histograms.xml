@@ -153,6 +153,16 @@ chromium-metrics-reviews@google.com.
   <variant name="TitleWasSet"/>
 </variants>
 
+<histogram name="AccessCodeCast.Ui.DialogOpenLocation"
+    enum="AccessCodeCastDialogOpenLocation" expires_after="2023-01-01">
+  <owner>bzielinski@google.com</owner>
+  <owner>cros-edu-team@google.com</owner>
+  <summary>
+    The location from which the AccessCodeCast dialog is opened. Recorded after
+    the dialog opens. Only logged on desktop platforms.
+  </summary>
+</histogram>
+
 <histogram name="ActivityTracker.Collect.AnalyzerCreationError"
     enum="ActivityTrackerAnalyzerCreationError" expires_after="M90">
   <owner>siggi@chromium.org</owner>
@@ -3170,8 +3180,8 @@ chromium-metrics-reviews@google.com.
   <summary>
     Measures how often aggregatable reports are stored successfully or rejected
     and why. Recorded once for each trigger event processed by the attribution
-    storage layer. `kNoHistograms` will be logged if the trigger doesn't declare
-    aggregatable trigger data.
+    storage layer. `kNotRegistered` will be logged if the source or trigger
+    doesn't declare aggregatable data.
   </summary>
 </histogram>
 
@@ -10622,6 +10632,19 @@ chromium-metrics-reviews@google.com.
   <summary>
     Time to perform RenderTextHarfBuzz::ShapeRuns with retrieved the fallback
     fonts. This metric is known to be quite slow on bad cases.
+  </summary>
+</histogram>
+
+<histogram name="RenderViewContextMenu.OpenLinkAsProfile" enum="OpenLinkAs"
+    expires_after="2023-03-23">
+  <owner>gabolvr@google.com</owner>
+  <owner>droger@chromium.org</owner>
+  <summary>
+    Count the clicks and displays of renderer view context menu item Open Link
+    as Profile, as well as Open Link in Incognito Window for comparison. If Open
+    Link as Profile is a submenu, it is counted as displayed even if the submenu
+    is not open, and only counted one time regardless the amount of items in the
+    submenu.
   </summary>
 </histogram>
 

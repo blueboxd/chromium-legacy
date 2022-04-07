@@ -199,9 +199,6 @@ extern const char kPromptForDownload[];
 extern const char kQuicAllowed[];
 extern const char kNetworkQualities[];
 extern const char kNetworkEasterEggHighScore[];
-#if BUILDFLAG(IS_ANDROID)
-extern const char kLastPolicyCheckTime[];
-#endif
 extern const char kNetworkPredictionOptions[];
 extern const char kPreinstalledAppsInstallState[];
 extern const char kHideWebStoreIcon[];
@@ -365,6 +362,7 @@ extern const char kRestrictedManagedGuestSessionExtensionCleanupExemptList[];
 extern const char kExternalStorageDisabled[];
 extern const char kExternalStorageReadOnly[];
 extern const char kForceMaximizeOnFirstRun[];
+extern const char kInsightsExtensionEnabled[];
 extern const char kSettingsShowOSBanner[];
 extern const char kUsedPolicyCertificates[];
 #endif  // BUILDFLAG(IS_CHROMEOS)
@@ -653,9 +651,7 @@ extern const char kNtpModulesOrder[];
 extern const char kNtpModulesVisible[];
 extern const char kNtpModulesShownCount[];
 extern const char kNtpModulesFirstShownTime[];
-extern const char kNtpModulesFreFirstShownTime[];
 extern const char kNtpModulesFreVisible[];
-extern const char kNtpModulesFreShownCount[];
 extern const char kNtpPromoBlocklist[];
 extern const char kNtpPromoVisible[];
 extern const char kNtpSearchSuggestionsBlocklist[];

@@ -663,6 +663,11 @@ BLINK_COMMON_EXPORT extern const base::Feature
 // Gates the non-standard API Event.path to help its deprecation and removal.
 BLINK_COMMON_EXPORT extern const base::Feature kEventPath;
 
+// Removes a paint invalidation of viewport constrained objects (sticky or
+// fixed) after scrolling.
+BLINK_COMMON_EXPORT extern const base::Feature
+    kOptimizeViewportConstrainedPaintInvalidation;
+
 // If enabled, the minor version of the User-Agent string will be reduced.
 BLINK_COMMON_EXPORT extern const base::Feature kReduceUserAgentMinorVersion;
 
@@ -684,6 +689,17 @@ BLINK_COMMON_EXPORT extern const base::Feature kUserAgentOverrideExperiment;
 BLINK_COMMON_EXPORT extern const base::Feature kWebSQLAccess;
 
 BLINK_COMMON_EXPORT extern const base::Feature kUACHOverrideBlank;
+
+#if BUILDFLAG(IS_WIN)
+// Enables prewarming the default font families.
+BLINK_COMMON_EXPORT extern const base::Feature kPrewarmDefaultFontFamilies;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool> kPrewarmStandard;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool> kPrewarmFixed;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool> kPrewarmSerif;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool> kPrewarmSansSerif;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool> kPrewarmCursive;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool> kPrewarmFantasy;
+#endif
 
 }  // namespace features
 }  // namespace blink

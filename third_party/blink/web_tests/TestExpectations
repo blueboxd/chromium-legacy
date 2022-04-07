@@ -48,7 +48,7 @@ crbug.com/1300509 http/tests/devtools/sources/sourcemap-hot-reload.js [ Skip ]
 crbug.com/1300509 http/tests/devtools/sources/debugger-ui/monitor-console-command.js [ Skip ]
 # This is also mentioned as flaky here: crbug.com/1272380.
 crbug.com/1300509 http/tests/devtools/bindings/bindings-multiple-frames.js [ Skip ]
-
+crbug.com/1300509 http/tests/devtools/text-source-map.js [ Skip ]
 
 # Need updates to the testing infrastructure and v8 breakpoint setting after landing crbug.com/1229541.
 # The following test is also mentioned as flaky here: crbug.com/1263709.
@@ -1644,7 +1644,6 @@ crbug.com/1121942 virtual/layout_ng_printing/printing/fixed-positioned-overflow-
 crbug.com/1121942 virtual/layout_ng_printing/printing/flexbox-with-overflow-in-bottom-aligned-fixedpos.html [ Crash Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/forced-break-tree-dump-only.html [ Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/multi-page-background.html [ Failure ]
-crbug.com/1121942 virtual/layout_ng_printing/printing/multicol-2-pages.html [ Crash ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/named-page-breaks.html [ Failure ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/overflow-auto.html [ Crash ]
 crbug.com/1121942 virtual/layout_ng_printing/printing/page-break-avoid.html [ Failure ]
@@ -3148,8 +3147,7 @@ crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/
 crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-cascade-002.html [ Pass ]
 crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-paired-cascade-003.html [ Pass ]
 crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-paired-cascade-006.html [ Pass ]
-crbug.com/1295264 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-pseudos-currentcolor-computed-001.html [ Failure ]
-crbug.com/1295264 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-pseudos-currentcolor-inheritance-computed-001.html [ Failure ]
+crbug.com/1295264 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-pseudos-currentcolor-inheritance-computed-001.html [ Pass ]
 crbug.com/1295264 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-pseudos-currentcolor-visited-computed-001.html [ Failure ]
 crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-styling-002.html [ Pass ]
 crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-styling-004.html [ Pass ]
@@ -3329,6 +3327,18 @@ crbug.com/626703 [ Win ] virtual/prerender/external/wpt/speculation-rules/preren
 crbug.com/626703 [ Win ] virtual/partitioned-cookies/http/tests/inspector-protocol/network/disabled-cache-navigation.js [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.12 ] external/wpt/content-security-policy/inheritance/history-iframe.sub.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] virtual/fenced-frame-shadow-dom/wpt_internal/fenced_frame/unfenced-top.https.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] virtual/portals/external/wpt/portals/history/history-manipulation-inside-portal.html [ Timeout ]
+crbug.com/626703 [ Mac10.12 ] virtual/v8-off-thread-finalization/external/wpt/html/semantics/scripting-1/the-script-element/script-text-modifications.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-contain/content-visibility/content-visibility-canvas.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-contain/content-visibility/content-visibility-video.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/html/canvas/element/drawing-text-to-the-canvas/direction-inherit-rtl.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/html/canvas/element/drawing-text-to-the-canvas/direction-rtl.html [ Failure ]
+crbug.com/626703 [ Mac ] virtual/no-alloc-direct-call/external/wpt/html/canvas/element/drawing-text-to-the-canvas/direction-inherit-rtl.html [ Failure ]
+crbug.com/626703 [ Mac ] virtual/no-alloc-direct-call/external/wpt/html/canvas/element/drawing-text-to-the-canvas/direction-rtl.html [ Failure ]
+crbug.com/626703 virtual/offsetparent-old-behavior/external/wpt/css/css-contain/content-visibility/content-visibility-canvas.html [ Failure ]
+crbug.com/626703 virtual/offsetparent-old-behavior/external/wpt/css/css-contain/content-visibility/content-visibility-video.html [ Failure ]
 crbug.com/626703 external/wpt/css/motion/offset-path-shape.html [ Failure ]
 crbug.com/626703 external/wpt/css/motion/offset-path-url.html [ Failure ]
 crbug.com/626703 [ Mac11-arm64 ] external/wpt/fetch/private-network-access/nested-worker.https.window.html [ Timeout ]
@@ -6697,7 +6707,6 @@ crbug.com/1218667 [ Win ] virtual/portals/wpt_internal/portals/portals-dangling-
 crbug.com/1218714 [ Win ] virtual/scroll-unification/fast/forms/select-popup/popup-menu-scrollbar-button-scrolls.html [ Pass Timeout ]
 
 # Green Mac11 Test
-crbug.com/1201406 [ Mac11 ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Failure ]
 crbug.com/1201406 [ Mac11 ] http/tests/credentialmanagement/credentialscontainer-create-from-nested-frame.html [ Crash Timeout ]
 crbug.com/1201406 [ Mac11 ] http/tests/credentialmanagement/credentialscontainer-create-origins.html [ Crash Timeout ]
 crbug.com/1201406 http/tests/credentialmanagement/publickeycredential-same-origin-with-ancestors.html [ Crash Pass Timeout ]
@@ -7734,3 +7743,4 @@ crbug.com/1244896 fast/mediacapturefromelement/CanvasCaptureMediaStream-set-size
 # Sheriff 2022-04-06
 crbug.com/1290670 [ Mac10.14 ] external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Failure Pass ]
 crbug.com/1313894 [ Mac10.14 ] rootscroller/root-scroller-paint-order.html [ Failure Pass ]
+crbug.com/1314130 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Failure Pass ]

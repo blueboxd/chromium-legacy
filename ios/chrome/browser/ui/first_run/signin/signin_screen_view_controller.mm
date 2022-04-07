@@ -64,7 +64,7 @@ void AddNewLineToFooterString(
   if (footer_attributed_string.length > 0) {
     NSDictionary* attributes = FooterTextAttributes();
     NSAttributedString* end_of_line =
-        [[NSAttributedString alloc] initWithString:@"\n" attributes:attributes];
+        [[NSAttributedString alloc] initWithString:@" " attributes:attributes];
     [footer_attributed_string appendAttributedString:end_of_line];
   }
   [footer_attributed_string appendAttributedString:attributed_string];
@@ -302,7 +302,7 @@ NSAttributedString* FooterAttributedStringWithMessageIDAndURL(
     case SigninScreenConsumerScreenIntentWelcomeAndSignin: {
       NSAttributedString* footerLine =
           FooterAttributedStringWithMessageIDAndURL(
-              IDS_IOS_FIRST_RUN_WELCOME_SCREEN_MICE_TERMS_OF_SERVICE,
+              IDS_IOS_FIRST_RUN_WELCOME_SCREEN_TERMS_OF_SERVICE,
               kTermsOfServiceURL);
       AddNewLineToFooterString(footerLine, footerAttributedString);
       footerLine = FooterAttributedStringWithMessageIDAndURL(
@@ -314,7 +314,7 @@ NSAttributedString* FooterAttributedStringWithMessageIDAndURL(
     case SigninScreenConsumerScreenIntentWelcomeWithoutUMAAndSignin: {
       NSAttributedString* footerLine =
           FooterAttributedStringWithMessageIDAndURL(
-              IDS_IOS_FIRST_RUN_WELCOME_SCREEN_MICE_TERMS_OF_SERVICE,
+              IDS_IOS_FIRST_RUN_WELCOME_SCREEN_TERMS_OF_SERVICE,
               kTermsOfServiceURL);
       AddNewLineToFooterString(footerLine, footerAttributedString);
       break;

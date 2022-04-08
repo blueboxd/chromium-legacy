@@ -469,7 +469,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.WelcomeScreen.AcceptChromeVoxHint" enum="BooleanEnabled"
-    expires_after="2022-07-01">
+    expires_after="2022-10-04">
   <owner>akihiroota@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -479,12 +479,23 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OOBE.WelcomeScreen.ChromeVoxHintSpokenSuccess"
-    enum="BooleanEnabled" expires_after="2022-07-01">
+    enum="BooleanEnabled" expires_after="2022-10-04">
   <owner>akihiroota@google.com</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
     Whether or not the ChromeVox hint was successfully spoken. Recorded when the
     ChromeVox hint dialog is shown.
+  </summary>
+</histogram>
+
+<histogram name="OOBE.WelcomeScreen.UserChangedLocale" enum="Boolean"
+    expires_after="2022-10-01">
+  <owner>bohdanty@google.com</owner>
+  <owner>cros-oobe@google.com</owner>
+  <summary>
+    Whether or not the user changed the language on the Welcome Screen. Records
+    when the user leaves the Welcome Screen if they have changed the locale in
+    the UI.
   </summary>
 </histogram>
 

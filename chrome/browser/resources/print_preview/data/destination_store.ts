@@ -6,7 +6,7 @@ import {assert} from 'chrome://resources/js/assert_ts.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
-import {DestinationSearchBucket, MetricsContext, PrintPreviewInitializationEvents} from '../metrics.js';
+import {MetricsContext, PrintPreviewInitializationEvents} from '../metrics.js';
 import {CapabilitiesResponse, NativeLayer, NativeLayerImpl} from '../native_layer.js';
 // <if expr="chromeos_ash or chromeos_lacros">
 import {NativeLayerCros, NativeLayerCrosImpl, PrinterSetupResponse} from '../native_layer_cros.js';
@@ -38,8 +38,7 @@ enum DestinationStorePrinterSearchStatus {
  */
 export enum DestinationErrorType {
   INVALID = 0,
-  UNSUPPORTED = 1,
-  NO_DESTINATIONS = 2,
+  NO_DESTINATIONS = 1,
 }
 
 /**
@@ -161,11 +160,6 @@ export enum DestinationStoreEventType {
 
 export class DestinationStore extends EventTarget {
   /**
-   * Currently active user.
-   */
-  private activeUser_: string = '';
-
-  /**
    * Whether the destination store will auto select the destination that
    * matches this set of parameters.
    */
@@ -282,15 +276,10 @@ export class DestinationStore extends EventTarget {
   }
 
   /**
-   * @param account Account to filter destinations by. When
-   *     null or omitted, all destinations are returned.
-   * @return List of destinations accessible by the {@code account}.
+   * @return List of destinations
    */
-  destinations(account?: string|null): Destination[] {
-    return this.destinations_.filter(function(destination) {
-      return !destination.account ||
-          (!!account && destination.account === account);
-    });
+  destinations(): Destination[] {
+    return this.destinations_.slice();
   }
 
   /**
@@ -343,8 +332,8 @@ export class DestinationStore extends EventTarget {
           this.isDestinationLocal_(systemDefaultDestinationId) ?
           DestinationOrigin.LOCAL :
           this.platformOrigin_;
-      this.systemDefaultDestinationKey_ = createDestinationKey(
-          systemDefaultDestinationId, systemDefaultOrigin, '');
+      this.systemDefaultDestinationKey_ =
+          createDestinationKey(systemDefaultDestinationId, systemDefaultOrigin);
       this.typesToSearch_.add(originToType(systemDefaultOrigin));
     }
 
@@ -375,14 +364,6 @@ export class DestinationStore extends EventTarget {
     if (this.typesToSearch_.size === 0) {
       this.tryToSelectInitialDestination_();
       return;
-    }
-
-    // Check for Cloud Print printers and remove them. Cloud Print is no longer
-    // supported.
-    // TODO(rbpotter): Remove cloud printers from the sticky settings/auto
-    // select, similar to current handling for privet, and remove this.
-    if (this.typesToSearch_.has(PrinterType.CLOUD_PRINTER)) {
-      this.typesToSearch_.delete(PrinterType.CLOUD_PRINTER);
     }
 
     for (const printerType of this.typesToSearch_) {
@@ -597,13 +578,6 @@ export class DestinationStore extends EventTarget {
         origins, idRegExp, displayNameRegExp, true /*skipVirtualDestinations*/);
   }
 
-  /**
-   * Updates the current active user account.
-   */
-  setActiveUser(activeUser: string) {
-    this.activeUser_ = activeUser;
-  }
-
   /** @param Key identifying the destination to select */
   selectDestinationByKey(key: string) {
     assert(this.tryToSelectDestinationByKey_(key));
@@ -628,14 +602,6 @@ export class DestinationStore extends EventTarget {
 
     // Update and persist selected destination.
     this.selectedDestination_ = destination;
-    // Adjust metrics.
-    if (destination.cloudID &&
-        this.destinations_.some(function(otherDestination) {
-          return otherDestination.cloudID === destination.cloudID &&
-              otherDestination !== destination;
-        })) {
-      this.metrics_.record(DestinationSearchBucket.CLOUD_DUPLICATE_SELECTED);
-    }
     // Notify about selected destination change.
     this.dispatchEvent(
         new CustomEvent(DestinationStoreEventType.DESTINATION_SELECT));
@@ -710,7 +676,7 @@ export class DestinationStore extends EventTarget {
     // Save as PDF should always exist if it is enabled.
     if (this.pdfPrinterEnabled_) {
       const saveToPdfKey = createDestinationKey(
-          GooglePromotedDestinationId.SAVE_AS_PDF, DestinationOrigin.LOCAL, '');
+          GooglePromotedDestinationId.SAVE_AS_PDF, DestinationOrigin.LOCAL);
       const destination = this.destinationMap_.get(saveToPdfKey);
       assert(destination);
       this.selectDestination(destination);
@@ -825,14 +791,8 @@ export class DestinationStore extends EventTarget {
    * is supported, or ERROR otherwise of with error type UNSUPPORTED.
    */
   private sendSelectedDestinationUpdateEvent_() {
-    if (this.selectedDestination_!.shouldShowInvalidCertificateError) {
-      this.dispatchEvent(new CustomEvent(
-          DestinationStoreEventType.ERROR,
-          {detail: DestinationErrorType.UNSUPPORTED}));
-    } else {
-      this.dispatchEvent(new CustomEvent(
-          DestinationStoreEventType.SELECTED_DESTINATION_CAPABILITIES_READY));
-    }
+    this.dispatchEvent(new CustomEvent(
+        DestinationStoreEventType.SELECTED_DESTINATION_CAPABILITIES_READY));
   }
 
   /**
@@ -944,7 +904,7 @@ export class DestinationStore extends EventTarget {
     MetricsContext.getPrinterCapabilities().record(
         PrintPreviewInitializationEvents.FUNCTION_SUCCESSFUL);
     let dest = null;
-    const key = createDestinationKey(id, origin, '');
+    const key = createDestinationKey(id, origin);
     dest = this.destinationMap_.get(key);
     if (!dest) {
       // Ignore unrecognized extension printers

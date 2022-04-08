@@ -51,7 +51,7 @@ suite('GooglePhotosPhotosTest', function() {
       GooglePhotosPhotosSection[] {
     const sections: GooglePhotosPhotosSection[] = [];
 
-    photos.forEach(photo => {
+    photos.forEach((photo, i) => {
       const title = toString(photo.date);
 
       // Find/create the appropriate |section| in which to insert |photo|.
@@ -68,7 +68,7 @@ suite('GooglePhotosPhotosTest', function() {
         section.rows.push(row);
       }
 
-      row!.push(photo);
+      row!.push({...photo, index: i});
     });
 
     return sections;
@@ -108,19 +108,22 @@ suite('GooglePhotosPhotosTest', function() {
         id: '9bd1d7a3-f995-4445-be47-53c5b58ce1cb',
         name: 'foo',
         date: toString16('Wednesday, February 16, 2022'),
-        url: {url: 'foo.com'}
+        url: {url: 'foo.com'},
+        location: 'home1'
       },
       {
         id: '0ec40478-9712-42e1-b5bf-3e75870ca042',
         name: 'bar',
         date: toString16('Friday, November 12, 2021'),
-        url: {url: 'bar.com'}
+        url: {url: 'bar.com'},
+        location: 'home2'
       },
       {
         id: '0a268a37-877a-4936-81d4-38cc84b0f596',
         name: 'baz',
         date: toString16('Friday, November 12, 2021'),
-        url: {url: 'baz.com'}
+        url: {url: 'baz.com'},
+        location: 'home3'
       }
     ];
 
@@ -140,7 +143,8 @@ suite('GooglePhotosPhotosTest', function() {
     // should be rendered initially.
     const titleSelector = '.title:not([hidden])';
     assertEquals(querySelectorAll(titleSelector)!.length, 0);
-    const photoSelector = 'wallpaper-grid-item:not([hidden]).photo';
+    const photoSelector =
+        'wallpaper-grid-item:not([hidden]).photo:not([placeholder])';
     assertEquals(querySelectorAll(photoSelector)!.length, 0);
 
     // Initialize Google Photos data in the |personalizationStore|.
@@ -193,14 +197,16 @@ suite('GooglePhotosPhotosTest', function() {
       id: '9bd1d7a3-f995-4445-be47-53c5b58ce1cb',
       name: 'foo',
       date: {data: []},
-      url: {url: 'foo.com'}
+      url: {url: 'foo.com'},
+      location: 'home1'
     };
 
     const anotherPhoto: GooglePhotosPhoto = {
       id: '0ec40478-9712-42e1-b5bf-3e75870ca042',
       name: 'bar',
       date: {data: []},
-      url: {url: 'bar.com'}
+      url: {url: 'bar.com'},
+      location: 'home2'
     };
 
     // Set values returned by |wallpaperProvider|.
@@ -304,6 +310,52 @@ suite('GooglePhotosPhotosTest', function() {
     assertEquals(photoEls[1]!.selected, false);
   });
 
+  test('displays placeholders until photos are present', async () => {
+    // Prepare Google Photos data.
+    const photosCount = 5;
+    const photos: GooglePhotosPhoto[] =
+        Array.from({length: photosCount}, (_, i) => ({
+                                            id: `id-${i}`,
+                                            name: `name-${i}`,
+                                            date: {data: []},
+                                            url: {url: `url-${i}`},
+                                          }));
+
+    // Initialize |googlePhotosPhotosElement|.
+    googlePhotosPhotosElement =
+        initElement(GooglePhotosPhotos, {hidden: false});
+    await waitAfterNextRender(googlePhotosPhotosElement);
+
+    // Initially only placeholders should be present.
+    const selector =
+        '.row:not([hidden]) wallpaper-grid-item:not([hidden]).photo';
+    const photoSelector = `${selector}:not([placeholder])`;
+    const placeholderSelector = `${selector}[placeholder]`;
+    assertEquals(querySelectorAll(photoSelector)!.length, 0);
+    assertNotEquals(querySelectorAll(placeholderSelector)!.length, 0);
+
+    // Clicking a placeholder should do nothing.
+    const clickHandler = 'selectGooglePhotosPhoto';
+    (querySelector(placeholderSelector) as HTMLElement).click();
+    await new Promise<void>(resolve => setTimeout(resolve));
+    assertEquals(wallpaperProvider.getCallCount(clickHandler), 0);
+
+    // Provide Google Photos data.
+    personalizationStore.data.wallpaper.googlePhotos.count = photosCount;
+    personalizationStore.data.wallpaper.googlePhotos.photos = photos;
+    personalizationStore.notifyObservers();
+
+    // Only photos should be present.
+    await waitAfterNextRender(googlePhotosPhotosElement);
+    assertNotEquals(querySelectorAll(photoSelector)!.length, 0);
+    assertEquals(querySelectorAll(placeholderSelector)!.length, 0);
+
+    // Clicking a photo should do something.
+    (querySelector(photoSelector) as HTMLElement).click();
+    assertEquals(
+        await wallpaperProvider.whenCalled(clickHandler), photos[0]!.id);
+  });
+
   test('incrementally loads photos', async () => {
     // Set photos count returned by |wallpaperProvider|.
     const photosCount = 200;
@@ -317,7 +369,8 @@ suite('GooglePhotosPhotosTest', function() {
             id: `id-${nextPhotoId}`,
             name: `name-${nextPhotoId}`,
             date: {data: []},
-            url: {url: `url-${nextPhotoId++}`},
+            url: {url: `url-${nextPhotoId}`},
+            location: `location-${nextPhotoId++}`,
           };
         }));
 
@@ -342,7 +395,8 @@ suite('GooglePhotosPhotosTest', function() {
             id: `id-${nextPhotoId}`,
             name: `name-${nextPhotoId}`,
             date: {data: []},
-            url: {url: `url-${nextPhotoId++}`},
+            url: {url: `url-${nextPhotoId}`},
+            location: `location-${nextPhotoId++}`,
           };
         }));
 
@@ -392,7 +446,8 @@ suite('GooglePhotosPhotosTest', function() {
       id: '9bd1d7a3-f995-4445-be47-53c5b58ce1cb',
       name: 'foo',
       date: {data: []},
-      url: {url: 'foo.com'}
+      url: {url: 'foo.com'},
+      location: 'home'
     };
 
     // Set values returned by |wallpaperProvider|.
@@ -423,7 +478,8 @@ suite('GooglePhotosPhotosTest', function() {
     assertEquals(personalizationStore.data.wallpaper.loading.setImage, 1);
     assertEquals(personalizationStore.data.wallpaper.loading.selected, true);
     assertDeepEquals(
-        personalizationStore.data.wallpaper.pendingSelected, photo);
+        personalizationStore.data.wallpaper.pendingSelected,
+        {...photo, index: 0});
 
     // Wait for and verify hard-coded selection failure.
     const methodName = 'selectGooglePhotosPhoto';

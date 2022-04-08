@@ -470,8 +470,18 @@
     "expiry_milestone": 105
   },
   {
+    "name": "autofill-enable-virtual-card-metadata",
+    "owners": [ "siyua", "siashah"],
+    "expiry_milestone": 110
+  },
+  {
     "name": "autofill-enable-virtual-cards-risk-based-authentication",
     "owners": [ "siyua", "jsaul@google.com" ],
+    "expiry_milestone": 105
+  },
+  {
+    "name": "autofill-enforce-delays-in-strike-database",
+    "owners": [ "siyua"],
     "expiry_milestone": 105
   },
   {
@@ -1873,11 +1883,6 @@
     "expiry_milestone": 110
   },
   {
-    "name": "enable-desktop-pwas-link-capturing",
-    "owners": [ "alancutter@chromium.org", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 100
-  },
-  {
     "name": "enable-desktop-pwas-manifest-id",
     "owners": [ "phillis@chromium.org", "desktop-pwas-team@google.com" ],
     "expiry_milestone": 98
@@ -2048,6 +2053,11 @@
     // This flag is used by web developers to test upcoming WebAssembly
     // features.
     "expiry_milestone": -1
+  },
+  {
+    "name": "enable-external-keyboards-in-diagnostics-app",
+    "owners": [ "//ash/webui/diagnostics_ui/OWNERS" ],
+    "expiry_milestone": 110
   },
   {
       "name": "enable-favicon-passwords",
@@ -2621,6 +2631,11 @@
     "expiry_milestone": 102
   },
   {
+    "name": "enable-service-workers-for-chrome-untrusted",
+    "owners": [ "ortuno", "dominicschulz" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "enable-sharesheet-copy-to-clipboard",
     "owners": [ "melzhang", "chromeos-apps-foundation-team" ],
     "expiry_milestone": 105
@@ -2701,11 +2716,6 @@
     "name": "enable-surface-control",
     "owners": [ "vikassoni", "vasilyt" ],
     "expiry_milestone": 110
-  },
-  {
-    "name": "enable-sync-requires-policies-loaded",
-    "owners": ["ydago"],
-    "expiry_milestone": 95
   },
   {
     "name": "enable-system-notifications",
@@ -2793,11 +2803,21 @@
     "expiry_milestone": 93
   },
   {
+    "name": "enable-touchpads-in-diagnostics-app",
+    "owners": [ "//ash/webui/diagnostics_ui/OWNERS" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "enable-touchscreen-calibration",
     "owners": [ "malaykeshav" ],
     // This flag is used for testing new touchscreen ChromeOS hardware, both by
     // dev and QA.
     "expiry_milestone": -1
+  },
+  {
+    "name": "enable-touchscreens-in-diagnostics-app",
+    "owners": [ "//ash/webui/diagnostics_ui/OWNERS" ],
+    "expiry_milestone": 110
   },
   {
     "name": "enable-translate-sub-frames",
@@ -2824,7 +2844,7 @@
   {
     "name": "enable-universal-links",
     "owners": [ "avi", "olivierli" ],
-    "expiry_milestone": 101
+    "expiry_milestone": 105
   },
   {
     "name": "enable-unsafe-webgpu",

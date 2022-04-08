@@ -340,10 +340,6 @@
       status: "experimental",
     },
     {
-      name: "Canvas2dStaysGPUOnReadback",
-      status: "experimental",
-    },
-    {
       name: "CanvasColorManagement",
       status: "stable",
     },
@@ -1322,10 +1318,6 @@
     {
       name: "LangAttributeAwareFormControlUI",
       settable_from_internals: true,
-    },
-    {
-      name: "LateFormNewlineNormalization",
-      status: "stable"
     },
     {
       // LayoutNG has been enabled in M76, but we still keep this flag for
@@ -2506,9 +2498,6 @@
       // required for using the "implied_by" behaviour.
       origin_trial_feature_name: "WebAppLaunchQueue",
       implied_by: ["WebAppLaunchHandler", "FileHandling"],
-    },
-    {
-      name: "WebAppLinkCapturing",
     },
     {
       // This flag enables the Manifest parser to handle id field.

@@ -98,10 +98,6 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
     return visible_on_all_desks_windows_;
   }
 
-  bool disable_app_id_check_for_desk_templates() {
-    return disable_app_id_check_for_desk_templates_;
-  }
-
   DeskAnimationBase* animation() const { return animation_.get(); }
 
   // Returns the current |active_desk()| or the soon-to-be active desk if a desk
@@ -148,11 +144,15 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
   // Creates a new desk. CanCreateDesks() must be checked before calling this.
   void NewDesk(DesksCreationRemovalSource source);
 
-  // Removes and deletes the given |desk|. |desk| must already exist, and
+  // Removes and deletes the given `desk`. `desk` must already exist, and
   // CanRemoveDesks() must be checked before this.
   // This will trigger the `DeskRemovalAnimation` if the active desk is being
   // removed outside of overview.
-  void RemoveDesk(const Desk* desk, DesksCreationRemovalSource source);
+  // If `close_windows` is true, the function will close all of the `desk`'s
+  // windows as well. Otherwise, it will move `desk`'s windows to another desk.
+  void RemoveDesk(const Desk* desk,
+                  DesksCreationRemovalSource source,
+                  bool close_windows);
 
   // Reorder the desk at |old_index| to |new_index|.
   void ReorderDesk(int old_index, int new_index);
@@ -309,13 +309,6 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
   friend class DeskAnimationBase;
   friend class DeskActivationAnimation;
   friend class DeskRemovalAnimation;
-  friend class DesksTemplatesTest;
-
-  void set_disable_app_id_check_for_desk_templates(
-      bool disable_app_id_check_for_desk_templates) {
-    disable_app_id_check_for_desk_templates_ =
-        disable_app_id_check_for_desk_templates;
-  }
 
   void OnAnimationFinished(DeskAnimationBase* animation);
 
@@ -335,7 +328,11 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
   void ActivateDeskInternal(const Desk* desk, bool update_window_activation);
 
   // Removes `desk` without animation.
-  void RemoveDeskInternal(const Desk* desk, DesksCreationRemovalSource source);
+  // If `close_windows` is true, the removed `desk`'s windows are closed along
+  // with the desk. Otherwise, they are moved to another desk.
+  void RemoveDeskInternal(const Desk* desk,
+                          DesksCreationRemovalSource source,
+                          bool close_windows);
 
   // Moves all the windows that are visible on all desks that currently
   // reside on |active_desk_| to |new_desk|.
@@ -387,14 +384,6 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
   // This can be checked when overview mode is active to avoid exiting overview
   // mode as a result of desks modifications.
   bool are_desks_being_modified_ = false;
-
-  // In ash unittests, the FullRestoreSaveHandler isn't hooked up so initialized
-  // windows lack an app id. If a window doesn't have a valid app id, then it
-  // won't be tracked by Desk as a supported window and those windows will be
-  // deemed unsupported for Desk Templates. If
-  // `disable_app_id_check_for_desk_templates_` is true, then this check is
-  // omitted so we can test Desk Templates.
-  bool disable_app_id_check_for_desk_templates_ = false;
 
   // Not null if there is an on-going desks animation.
   std::unique_ptr<DeskAnimationBase> animation_;

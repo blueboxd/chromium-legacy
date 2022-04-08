@@ -114,7 +114,6 @@
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: Reintentar</translation>
 <translation id="2161394479394250669">Cancelar trabajo de impresión</translation>
 <translation id="2180197493692062006">Algo ha fallado. Prueba a abrir de nuevo la aplicación.</translation>
-<translation id="2201770616342964496">Identidad local</translation>
 <translation id="2209788852729124853">Restablecer contadores de tráfico</translation>
 <translation id="2212733584906323460">Resolución de nombres</translation>
 <translation id="2217935453350629363">Velocidad actual</translation>
@@ -217,6 +216,7 @@
 <translation id="3595596368722241419">Batería al máximo</translation>
 <translation id="3600339377155080675">Proyectar pantalla</translation>
 <translation id="3603829704940252505">Avatar</translation>
+<translation id="3604713164406837697">Cambiar fondo de pantalla</translation>
 <translation id="360565022852130722">La red Wi-Fi está protegida con un protocolo poco seguro WEP 802.1x</translation>
 <translation id="3606583719724308068">Latencia alta a sitios web HTTPS</translation>
 <translation id="3632579075709132555">Activar o desactivar Pantalla de privacidad</translation>
@@ -262,6 +262,7 @@
 <translation id="4170180284036919717">Hacer foto</translation>
 <translation id="4170700058716978431">ERROR</translation>
 <translation id="4176463684765177261">Inhabilitado</translation>
+<translation id="4176659219503619100">Panel de control</translation>
 <translation id="4213104098953699324">Teclado USB</translation>
 <translation id="4227825898293920515">La contraseña caducará dentro de <ph name="TIME" /></translation>
 <translation id="4238516577297848345">No hay ningún trabajo de impresión en curso</translation>
@@ -305,7 +306,6 @@
 <translation id="4593212453765072419">Se requiere autenticación de proxy</translation>
 <translation id="4609350030397390689">Reducir el brillo del teclado</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> de <ph name="TOTAL_PAGE_NUMBER" />. Pulsa Intro para cancelar el trabajo de impresión.</translation>
-<translation id="4627645661474370390">Identidad remota</translation>
 <translation id="463791356324567266">Cancelando escaneado...</translation>
 <translation id="4646949265910132906">Conexión Wi‑Fi segura</translation>
 <translation id="4650608062294027130">Mayús derecha</translation>
@@ -431,6 +431,7 @@
 <translation id="5866840822086176774">Óptima</translation>
 <translation id="588258955323874662">Pantalla completa</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
+<translation id="5903200662178656908">El dispositivo es una combinación de teclado y ratón.</translation>
 <translation id="5916084858004523819">Prohibida</translation>
 <translation id="5916664084637901428">Activado</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Tu archivo se ha escaneado correctamente y se ha guardado en <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Tus archivos se han escaneado correctamente y se han guardado en <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
@@ -451,6 +452,7 @@
 <translation id="6104112872696127344">Se ha cancelado el análisis</translation>
 <translation id="6106186594183574873">Para finalizar, introduce tu contraseña anterior</translation>
 <translation id="6108689792487843350">No se puede acceder a la puerta de enlace</translation>
+<translation id="6112878310391905610">Este ajuste lo gestionan tus administradores</translation>
 <translation id="6113701710518389813">Flecha hacia arriba</translation>
 <translation id="6117895505466548728"><ph name="TITLE" />, +<ph name="NUMBER" /> álbumes</translation>
 <translation id="6122191549521593678">Online</translation>

@@ -61,7 +61,6 @@
 #include "components/services/app_service/public/cpp/run_on_os_login_types.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/clear_site_data_utils.h"
-#include "third_party/blink/public/mojom/manifest/capture_links.mojom.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/display/types/display_constants.h"
 #include "url/gurl.h"
@@ -157,9 +156,9 @@ apps::mojom::PermissionType GetPermissionType(
 
 apps::mojom::InstallReason GetHighestPriorityInstallReason(
     const WebApp* web_app) {
-  // TODO(crbug.com/1189949): Introduce kOem as a new Source::Type value
-  // immediately below web_app::Source::kSystem, so that this custom behavior
-  // isn't needed.
+  // TODO(crbug.com/1189949): Introduce kOem as a new WebAppManagement::Type
+  // value immediately below web_app::WebAppManagement::kSystem, so that this
+  // custom behavior isn't needed.
   if (web_app->chromeos_data().has_value()) {
     auto& chromeos_data = web_app->chromeos_data().value();
     if (chromeos_data.oem_installed) {
@@ -169,17 +168,17 @@ apps::mojom::InstallReason GetHighestPriorityInstallReason(
   }
 
   switch (web_app->GetHighestPrioritySource()) {
-    case Source::kSystem:
+    case WebAppManagement::kSystem:
       return apps::mojom::InstallReason::kSystem;
-    case Source::kPolicy:
+    case WebAppManagement::kPolicy:
       return apps::mojom::InstallReason::kPolicy;
-    case Source::kSubApp:
+    case WebAppManagement::kSubApp:
       return apps::mojom::InstallReason::kSubApp;
-    case Source::kWebAppStore:
+    case WebAppManagement::kWebAppStore:
       return apps::mojom::InstallReason::kUser;
-    case Source::kSync:
+    case WebAppManagement::kSync:
       return apps::mojom::InstallReason::kSync;
-    case Source::kDefault:
+    case WebAppManagement::kDefault:
       return apps::mojom::InstallReason::kDefault;
   }
 }
@@ -1573,22 +1572,6 @@ const WebApp* WebAppPublisherHelper::GetWebApp(const AppId& app_id) const {
   return registrar().GetAppById(app_id);
 }
 
-content::WebContents* WebAppPublisherHelper::MaybeNavigateExistingWindow(
-    const std::string& app_id,
-    absl::optional<GURL> url) {
-  content::WebContents* web_contents = nullptr;
-  const WebApp* web_app = GetWebApp(app_id);
-  if (!web_app) {
-    return web_contents;
-  }
-  if (web_app->capture_links() ==
-      blink::mojom::CaptureLinks::kExistingClientNavigate) {
-    web_contents = provider_->ui_manager().NavigateExistingWindow(
-        app_id, url ? url.value() : registrar().GetAppLaunchUrl(app_id));
-  }
-  return web_contents;
-}
-
 void WebAppPublisherHelper::LaunchAppWithIntentImpl(
     const std::string& app_id,
     int32_t event_flags,
@@ -1597,13 +1580,6 @@ void WebAppPublisherHelper::LaunchAppWithIntentImpl(
     int64_t display_id,
     base::OnceCallback<void(const std::vector<content::WebContents*>&)>
         callback) {
-  content::WebContents* web_contents =
-      MaybeNavigateExistingWindow(app_id, intent->url);
-  if (web_contents) {
-    std::move(callback).Run({web_contents});
-    return;
-  }
-
   bool is_file_handling_launch = intent->files && !intent->files->empty() &&
                                  !apps_util::IsShareIntent(intent);
   auto params = apps::CreateAppLaunchParamsForIntent(

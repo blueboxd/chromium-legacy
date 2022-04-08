@@ -174,6 +174,7 @@
 <translation id="4600710005438004015">Не вдалось оновити Chrome до останньої версії. Ви не зможете скористатися новими функціями та застосувати виправлення системи безпеки.</translation>
 <translation id="4627412468266359539">Необов’язково: допоможіть нам покращувати функції та підвищувати продуктивність ОС Chrome Flex, автоматично надсилаючи компанії Google дані про використання й діагностику.</translation>
 <translation id="4633000520311261472">Щоб зробити Chrome безпечнішим, ми вимкнули деякі розширення, установлені не із сайту <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> і, можливо, додані без вашого відома.</translation>
+<translation id="469553575393225953">Розширення, додатки й теми з невідомих джерел можуть зашкодити вашому пристрою. Рекомендовано встановлювати файли лише з Веб-магазину Chrome.</translation>
 <translation id="4728575227883772061">Не вдалося здійснити встановлення через невизначену помилку. Якщо наразі Google Chrome запущено, закрийте його та повторіть спробу.</translation>
 <translation id="4747730611090640388">Chrome оцінює ваші інтереси.  Коли ви пізніше відвідаєте якийсь сайт, він може запитати в Chrome про ваші інтереси, щоб персоналізувати для вас оголошення.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
@@ -213,6 +214,7 @@
 <translation id="5736850870166430177">Якщо сайт намагається викрасти ваш пароль або ви завантажуєте шкідливий файл, Chrome також може надсилати в Безпечний перегляд URL-адреси, зокрема уривки контенту сторінки</translation>
 <translation id="573759479754913123">Про ОС Chrome</translation>
 <translation id="5756509061973259733">Профіль Chrome із цим обліковим записом уже існує на цьому пристрої</translation>
+<translation id="5763280521700030406">Веб-переглядач Chrome заблокував цей файл, оскільки він завеликий для перевірки безпеки. Така перевірка можлива для файлів розміром не більше ніж 50 МБ.</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
 <translation id="5804318322022881572">Не вдалося запустити Chrome. Повторіть спробу.</translation>
 <translation id="5867197326698922595">Google Chrome намагається змінити паролі.</translation>
@@ -236,6 +238,7 @@
 <translation id="6506909944137591434">Веб-переглядачу Chrome потрібен доступ до камери, щоб створити 3D-карту вашого оточення</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Версія Google Chrome для розробників</translation>
 <translation id="6568793831116033768">ОС Chrome</translation>
+<translation id="659498884637196217">У Менеджері паролів Google на цьому пристрої</translation>
 <translation id="6632473616050862500">ОС Chrome Flex працює завдяки додатковому <ph name="BEGIN_LINK_CROS_OSS" />програмному забезпеченню з відкритим кодом<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6676384891291319759">Доступ до Інтернету</translation>
 <translation id="6679975945624592337">Дозволити Google Chrome працювати у фоновому режимі</translation>
@@ -305,6 +308,7 @@
 <translation id="7951272445806340501">Щоб застосувати це оновлення, потрібно перезапустити ОС Chrome Flex.</translation>
 <translation id="7962410387636238736">На цей комп’ютер не надходитимуть оновлення Google Chrome, оскільки Windows XP та Windows Vista більше не підтримуються</translation>
 <translation id="79947657522496226">ОС Chrome і <ph name="BEGIN_LINK_LINUX_OSS" />середовище для розробки Linux<ph name="END_LINK_LINUX_OSS" /> працюють завдяки додатковому <ph name="BEGIN_LINK_CROS_OSS" />програмному забезпеченню з відкритим кодом<ph name="END_LINK_CROS_OSS" />.</translation>
+<translation id="8005666035647241369">У Менеджері паролів Google на цьому пристрої</translation>
 <translation id="8008534537613507642">Перевстановити Chrome</translation>
 <translation id="8013993649590906847">Якщо зображення не має корисного опису, Chrome спробує додати його. Для цього зображення надсилаються в Google.</translation>
 <translation id="8064015586118426197">ОС Chrome Flex</translation>
@@ -321,8 +325,10 @@
 <translation id="8394720698884623075">Перевіряє URL-адреси за списком шкідливих сайтів, що зберігаються в Chrome</translation>
 <translation id="840084489713044809">Google Chrome хоче експортувати ваші паролі.</translation>
 <translation id="8416347857511542594">Докладніше про персоналізацію реклами в Chrome</translation>
+<translation id="8421734018304082652">Веб-переглядач Chrome заблокував цей файл, оскільки він зашифрований. Попросіть власника дешифрувати цей файл.</translation>
 <translation id="8433638294851456451">Щоб надіслати номер на телефон Android, увійдіть у Chrome на обох пристроях.</translation>
 <translation id="8498858610309223613">Щойно було застосовано спеціальне оновлення для захисту Google Chrome. Перезапустіть веб-переглядач, і ваші вкладки буде відновлено.</translation>
+<translation id="8504220326736535258">Веб-переглядач Chrome заблокував цей файл, оскільки він містить зловмисне програмне забезпечення</translation>
 <translation id="8516431725144212809">Ваші інтереси (за оцінкою Chrome)</translation>
 <translation id="8521348052903287641">Вхідне правило для Google Chrome для розробників дозволяє трафік mDNS.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

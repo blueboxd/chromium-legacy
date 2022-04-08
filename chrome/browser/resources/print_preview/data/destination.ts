@@ -46,16 +46,6 @@ export enum DestinationOrigin {
 }
 
 /**
- * Cloud Print origins.
- */
-export const CloudOrigins: DestinationOrigin[] = [
-  DestinationOrigin.COOKIES,
-  // <if expr="chromeos_ash or chromeos_lacros">
-  DestinationOrigin.DEVICE,
-  // </if>
-];
-
-/**
  * Enumeration of the connection statuses of printer destinations.
  */
 export enum DestinationConnectionStatus {
@@ -105,7 +95,6 @@ export enum ColorMode {
 export type RecentDestination = {
   id: string,
   origin: DestinationOrigin,
-  account: string,
   capabilities: Cdd|null,
   displayName: string,
   extensionId: string,
@@ -122,7 +111,6 @@ export function makeRecentDestination(destination: Destination):
   return {
     id: destination.id,
     origin: destination.origin,
-    account: destination.account || '',
     capabilities: destination.capabilities,
     displayName: destination.displayName || '',
     extensionId: destination.extensionId || '',
@@ -132,12 +120,11 @@ export function makeRecentDestination(destination: Destination):
 }
 
 /**
- * @return key that maps to a destination with the selected |id|,
- *     |origin|, and |account|.
+ * @return key that maps to a destination with the selected |id| and |origin|.
  */
 export function createDestinationKey(
-    id: string, origin: DestinationOrigin, account: string): string {
-  return `${id}/${origin}/${account}`;
+    id: string, origin: DestinationOrigin): string {
+  return `${id}/${origin}/`;
 }
 
 /**
@@ -146,16 +133,14 @@ export function createDestinationKey(
  */
 export function createRecentDestinationKey(
     recentDestination: RecentDestination): string {
-  return createDestinationKey(
-      recentDestination.id, recentDestination.origin,
-      recentDestination.account);
+  return createDestinationKey(recentDestination.id, recentDestination.origin);
 }
 
 export type DestinationOptionalParams = {
+  account?: string,
   tags?: string[],
   isOwned?: boolean,
   isEnterprisePrinter?: boolean,
-  account?: string,
   lastAccessTime?: number,
   cloudID?: string,
   provisionalType?: DestinationProvisionalType,
@@ -211,11 +196,6 @@ export class Destination {
   private isEnterprisePrinter_: boolean;
 
   /**
-   * Account this destination is registered for, if known.
-   */
-  private account_: string;
-
-  /**
    * Cache of destination location fetched from tags.
    */
   private location_: string|null = null;
@@ -237,11 +217,6 @@ export class Destination {
   private lastAccessTime_: number;
 
   /**
-   * Cloud ID for Privet printers.
-   */
-  private cloudID_: string;
-
-  /**
    * Extension ID for extension managed printers.
    */
   private extensionId_: string;
@@ -261,11 +236,6 @@ export class Destination {
    * search UI.
    */
   private provisionalType_: DestinationProvisionalType;
-
-  /**
-   * Printer 2018 certificate status
-   */
-  private certificateStatus_: DestinationCertificateStatus;
 
   // <if expr="chromeos_ash or chromeos_lacros">
   /**
@@ -316,17 +286,13 @@ export class Destination {
     this.tags_ = (params && params.tags) || [];
     this.isOwned_ = (params && params.isOwned) || false;
     this.isEnterprisePrinter_ = (params && params.isEnterprisePrinter) || false;
-    this.account_ = (params && params.account) || '';
     this.description_ = (params && params.description) || '';
     this.connectionStatus_ = connectionStatus;
     this.lastAccessTime_ = (params && params.lastAccessTime) || Date.now();
-    this.cloudID_ = (params && params.cloudID) || '';
     this.extensionId_ = (params && params.extensionId) || '';
     this.extensionName_ = (params && params.extensionName) || '';
     this.provisionalType_ =
         (params && params.provisionalType) || DestinationProvisionalType.NONE;
-    this.certificateStatus_ =
-        params && params.certificateStatus || DestinationCertificateStatus.NONE;
 
     assert(
         this.provisionalType_ !==
@@ -357,13 +323,6 @@ export class Destination {
    */
   get isOwned(): boolean {
     return this.isOwned_;
-  }
-
-  /**
-   * @return Account this destination is registered for, if known.
-   */
-  get account(): string {
-    return this.account_;
   }
 
   /** @return Whether the destination is local (vs cloud-based). */
@@ -414,18 +373,11 @@ export class Destination {
    *     destination.
    */
   get hint(): string {
-    if (this.id_ === GooglePromotedDestinationId.DOCS) {
-      return this.account_;
-    }
     return this.location || this.extensionName || this.description;
   }
 
   get tags(): string[] {
     return this.tags_.slice(0);
-  }
-
-  get cloudID(): string {
-    return this.cloudID_;
   }
 
   /**
@@ -559,23 +511,6 @@ export class Destination {
     this.connectionStatus_ = status;
   }
 
-  /**
-   * @return Whether the destination has an invalid 2018 certificate.
-   */
-  get hasInvalidCertificate(): boolean {
-    return this.certificateStatus_ === DestinationCertificateStatus.NO;
-  }
-
-  /**
-   * @return Whether the destination should display an invalid
-   *     certificate UI warning in the selection dialog and cause a UI
-   *     warning to appear in the preview area when selected.
-   */
-  get shouldShowInvalidCertificateError(): boolean {
-    return this.certificateStatus_ === DestinationCertificateStatus.NO &&
-        !loadTimeData.getBoolean('isEnterpriseManaged');
-  }
-
   /** @return Whether the destination is considered offline. */
   get isOffline(): boolean {
     return [
@@ -587,7 +522,7 @@ export class Destination {
    * @return Whether the destination is offline or has an invalid certificate.
    */
   get isOfflineOrInvalid(): boolean {
-    return this.isOffline || this.shouldShowInvalidCertificateError;
+    return this.isOffline;
   }
 
   /** @return Whether the destination is ready to be selected. */
@@ -608,9 +543,7 @@ export class Destination {
     }
     const offlineDurationMs = Date.now() - this.lastAccessTime_;
     let statusMessageId;
-    if (this.shouldShowInvalidCertificateError) {
-      statusMessageId = 'noLongerSupported';
-    } else if (offlineDurationMs > 31622400000.0) {  // One year.
+    if (offlineDurationMs > 31622400000.0) {  // One year.
       statusMessageId = 'offlineForYear';
     } else if (offlineDurationMs > 2678400000.0) {  // One month.
       statusMessageId = 'offlineForMonth';
@@ -678,10 +611,6 @@ export class Destination {
 
   get provisionalType(): DestinationProvisionalType {
     return this.provisionalType_;
-  }
-
-  get certificateStatus(): DestinationCertificateStatus {
-    return this.certificateStatus_;
   }
 
   get isProvisional(): boolean {
@@ -794,7 +723,7 @@ export class Destination {
 
   /** @return A unique identifier for this destination. */
   get key(): string {
-    return `${this.id_}/${this.origin_}/${this.account_}`;
+    return `${this.id_}/${this.origin_}/`;
   }
 }
 

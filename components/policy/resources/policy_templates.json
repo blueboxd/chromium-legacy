@@ -509,8 +509,6 @@
       ],
     },
     {
-      # TODO(joaodasilva): Flag these policies with 'can_be_recommended'
-      # after fixing https://crbug.com/106683
       'name': 'DefaultSearchProvider',
       'type': 'group',
       'caption': '''Default search provider''',
@@ -10412,11 +10410,12 @@
       'owners': ['file://printing/OWNERS', 'weili@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:17-'],
+      'supported_on': ['chrome.*:17-101'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'deprecated': True,
       'example_value': True,
       'id': 109,
       'caption': '''Enable submission of documents to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph>''',
@@ -26177,7 +26176,8 @@
         {
           'name': 'cloud',
           'value': 'cloud',
-          'caption': '''<ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> and 'Save to Google Drive' destinations''',
+          'caption': '''<ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> and 'Save to Google Drive' destinations (Deprecated)''',
+          'supported_on': ['chrome_os:80-101', 'chrome.*:80-101']
         },
       ],
       'supported_on': ['chrome_os:80-', 'chrome.*:80-'],
@@ -26193,7 +26193,7 @@
 
       Placing all printer types on the deny list effectively disables printing, as there would be no available destinations to send a document for printing.
 
-      Including <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD">cloud</ph> on the deny list has the same effect as setting the <ph name="POLICY_CLOUDPRINTSUBMITENABLED">CloudPrintSubmitEnabled</ph> policy to false. In order to keep <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> destinations discoverable, the <ph name="POLICY_CLOUDPRINTSUBMITENABLED">CloudPrintSubmitEnabled</ph> policy must be set to true and <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD">cloud</ph> must not be on the deny list.
+      In versions before 102, including <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD">cloud</ph> on the deny list has the same effect as setting the <ph name="POLICY_CLOUDPRINTSUBMITENABLED">CloudPrintSubmitEnabled</ph> policy to false. In order to keep <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> destinations discoverable, the <ph name="POLICY_CLOUDPRINTSUBMITENABLED">CloudPrintSubmitEnabled</ph> policy must be set to true and <ph name="POLICY_ENUM_PRINTERTYPEDENYLIST_CLOUD">cloud</ph> must not be on the deny list. Beginning in version 102, <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> destinations are not supported and will not appear regardless of policy values.
 
       If the policy is not set, or is set to an empty list, all printer types will be available for discovery.
 
@@ -28507,7 +28507,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
       'supported_on': ['chrome.*:102-'],
       'features': {
         'dynamic_refresh': True,
-        'per_profile': False,
+        'per_profile': True,
       },
       'example_value': [
         {
@@ -30713,6 +30713,44 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
       If the policy is not set or set to disabled, then the insights extension will not be installed and will not report metrics.''',
       'arc_support': 'This policy has no effect on the reporting done by Android.',
     },
+    {
+      'name': 'EnterpriseAuthenticationAppLinkPolicy',
+      'owners': ['ayushsha@google.com','afw-security-team@google.com'],
+      'type': 'dict',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'properties': {
+            'url': {
+              'type': 'string'
+            },
+          },
+        },
+      },
+      'future_on': ['webview_android'],
+      'features': { 'dynamic_refresh': True, 'per_profile': False,},
+      'example_value': [
+        {
+          'url':'https://www.abc.com'
+        }
+      ],
+      'id': 976,
+      'caption': '''External authentication app launch URLs''',
+      'tags': [],
+      'desc' : '''Allows you to specify configs for authentication urls in <ph name="WEBVIEW_PRODUCT_NAME">Android WebView</ph>.
+
+      These Authentication urls would be treated special by <ph name="WEBVIEW_PRODUCT_NAME">Android WebView</ph>, such that during authentication when webpage in <ph name="WEBVIEW_PRODUCT_NAME">Android WebView</ph>
+      is navigated to authentication urls, corresponding Identity providers authenticator app that can handle this authentication URL would be launched.
+
+      This flow of launching the Idenity providers authenticator app would be used by the Identity providers to enable
+      use cases like providing SSO across apps or provide better security by collecting zero trust device signals to understand device posture during authentication.
+
+      If there is no valid app installed to handle authentication url on the the device, navigation will continue in <ph name="WEBVIEW_PRODUCT_NAME">Android WebView</ph>.
+
+      Valid authentication url should have the scheme <ph name="HTTP_PROTOCOL">http</ph>/<ph name="HTTPS_PROTOCOL">https</ph> and should not contain wildcards.
+      '''
+    }
   ],
   'messages': {
     # Messages that are not associated to any policies.
@@ -31709,6 +31747,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 341, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 975,
+  'highest_id_currently_used': 976,
   'highest_atomic_group_id_currently_used': 42
 }

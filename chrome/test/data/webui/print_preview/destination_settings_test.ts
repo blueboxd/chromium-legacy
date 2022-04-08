@@ -25,8 +25,8 @@ const destination_settings_test = {
     RecentDestinations: 'recent destinations',
     RecentDestinationsMissing: 'recent destinations missing',
     SaveAsPdfRecent: 'save as pdf recent',
-    GoogleDriveRecent: 'google drive recent',
     // <if expr="chromeos_ash or chromeos_lacros">
+    GoogleDriveRecent: 'google drive recent',
     GoogleDriveAutoselect: 'google drive autoselect',
     // </if>
     SelectSaveAsPdf: 'select save as pdf',
@@ -67,8 +67,6 @@ suite(destination_settings_test.suiteName, function() {
   let pdfPrinterDisabled: boolean = false;
 
   let isDriveMounted: boolean = true;
-
-  const defaultUser: string = 'foo@chromium.org';
 
   // <if expr="chromeos_ash or chromeos_lacros">
   const driveDestinationKey: string = 'Save to Drive CrOS/local/';
@@ -360,6 +358,7 @@ suite(destination_settings_test.suiteName, function() {
         });
   });
 
+  // <if expr="chromeos_ash or chromeos_lacros">
   // Tests that the dropdown contains the appropriate destinations when
   // Google Drive is in the recent destinations.
   test(
@@ -367,16 +366,7 @@ suite(destination_settings_test.suiteName, function() {
       function() {
         recentDestinations = destinations.slice(0, 5).map(
             destination => makeRecentDestination(destination));
-        const driveDestination =
-            // <if expr="chromeos_ash or chromeos_lacros">
-            getGoogleDriveDestination(defaultUser);
-        // </if>
-        // <if expr="not chromeos_ash and not chromeos_lacros">
-        new Destination(
-            GooglePromotedDestinationId.DOCS, DestinationType.GOOGLE,
-            DestinationOrigin.COOKIES, GooglePromotedDestinationId.DOCS,
-            DestinationConnectionStatus.ONLINE, {account: defaultUser});
-        // </if>
+        const driveDestination = getGoogleDriveDestination();
 
         recentDestinations.splice(1, 1, driveDestination);
         const whenCapabilitiesDone =
@@ -393,7 +383,6 @@ suite(destination_settings_test.suiteName, function() {
               assertEquals('ID1', destinationSettings.destination.id);
               assertFalse(destinationSettings.$.destinationSelect.disabled);
 
-              // <if expr="chromeos_ash or chromeos_lacros">
               const dropdownItems = [
                 makeLocalDestinationKey('ID1'),
                 makeLocalDestinationKey('ID3'),
@@ -401,20 +390,10 @@ suite(destination_settings_test.suiteName, function() {
                 'Save as PDF/local/',
                 driveDestinationKey,
               ];
-              // </if>
-              // <if expr="not chromeos_ash and not chromeos_lacros">
-              // No drive at all in this case as it is deprecated.
-              const dropdownItems = [
-                makeLocalDestinationKey('ID1'),
-                makeLocalDestinationKey('ID3'),
-                'Save as PDF/local/',
-              ];
-              // </if>
               assertDropdownItems(dropdownItems);
             });
       });
 
-  // <if expr="chromeos_ash or chromeos_lacros">
   // Tests that the dropdown contains the appropriate destinations and loads
   // correctly when Google Drive is the most recent destination. Regression test
   // for https://crbug.com/1038645.
@@ -424,8 +403,7 @@ suite(destination_settings_test.suiteName, function() {
         recentDestinations = destinations.slice(0, 5).map(
             destination => makeRecentDestination(destination));
         recentDestinations.splice(
-            0, 1,
-            makeRecentDestination(getGoogleDriveDestination(defaultUser)));
+            0, 1, makeRecentDestination(getGoogleDriveDestination()));
         const whenSelected = eventToPromise(
             DestinationStoreEventType.DESTINATION_SELECT,
             destinationSettings.getDestinationStoreForTest());
@@ -515,8 +493,7 @@ suite(destination_settings_test.suiteName, function() {
         recentDestinations = destinations.slice(0, 5).map(
             destination => makeRecentDestination(destination));
         recentDestinations.splice(
-            1, 1,
-            makeRecentDestination(getGoogleDriveDestination(defaultUser)));
+            1, 1, makeRecentDestination(getGoogleDriveDestination()));
         const whenCapabilitiesDone =
             nativeLayer.whenCalled('getPrinterCapabilities');
         initialize();

@@ -347,6 +347,12 @@ struct ALIGNAS(64) BASE_EXPORT PartitionRoot {
   explicit PartitionRoot(PartitionOptions opts) { Init(opts); }
   ~PartitionRoot();
 
+  // This will unreserve any space in the GigaCage that the PartitionRoot is
+  // using. This is needed because many tests create and destroy many
+  // PartitionRoots over the lifetime of a process, which can exhaust the
+  // GigaCage and cause tests to fail.
+  void DestructForTesting();
+
   // Public API
   //
   // Allocates out of the given bucket. Properly, this function should probably
@@ -1995,6 +2001,12 @@ namespace internal {
 // TODO(https://crbug.com/1288247): Remove these 'using' declarations once
 // the migration to the new namespaces gets done.
 using ::base::internal::ScopedSyscallTimer;
+
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
+using ::base::internal::PartitionAllocFreeForRefCounting;
+using ::base::internal::PartitionAllocGetSlotStartInBRPPool;
+using ::base::internal::PartitionAllocIsValidPtrDelta;
+#endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 
 }  // namespace internal
 

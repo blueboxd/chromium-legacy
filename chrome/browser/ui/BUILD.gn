@@ -436,6 +436,7 @@ static_library("ui") {
     "//components/accuracy_tips",
     "//components/autofill/content/browser:risk_proto",
     "//components/autofill/core/browser",
+    "//components/autofill_assistant/browser",
     "//components/autofill_assistant/browser/public:public",
     "//components/blocked_content",
     "//components/bookmarks/browser",
@@ -1305,6 +1306,8 @@ static_library("ui") {
       "tabs/saved_tab_groups/saved_tab_group.h",
       "tabs/saved_tab_groups/saved_tab_group_keyed_service.cc",
       "tabs/saved_tab_groups/saved_tab_group_keyed_service.h",
+      "tabs/saved_tab_groups/saved_tab_group_menu.cc",
+      "tabs/saved_tab_groups/saved_tab_group_menu.h",
       "tabs/saved_tab_groups/saved_tab_group_model.cc",
       "tabs/saved_tab_groups/saved_tab_group_model.h",
       "tabs/saved_tab_groups/saved_tab_group_model_listener.cc",
@@ -1591,6 +1594,8 @@ static_library("ui") {
       "webui/read_later/side_panel/read_anything/read_anything_constants.h",
       "webui/read_later/side_panel/read_anything/read_anything_container_view.cc",
       "webui/read_later/side_panel/read_anything/read_anything_container_view.h",
+      "webui/read_later/side_panel/read_anything/read_anything_font_model.cc",
+      "webui/read_later/side_panel/read_anything/read_anything_font_model.h",
       "webui/read_later/side_panel/read_anything/read_anything_page_handler.cc",
       "webui/read_later/side_panel/read_anything/read_anything_page_handler.h",
       "webui/read_later/side_panel/read_anything/read_anything_toolbar_view.cc",
@@ -5339,8 +5344,6 @@ static_library("ui") {
   }
   if (enable_print_preview) {
     sources += [
-      "webui/print_preview/cloud_print_signin.cc",
-      "webui/print_preview/cloud_print_signin.h",
       "webui/print_preview/data_request_filter.cc",
       "webui/print_preview/data_request_filter.h",
       "webui/print_preview/extension_printer_handler.cc",

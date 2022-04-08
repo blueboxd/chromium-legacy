@@ -168,6 +168,7 @@
 <translation id="2421044535038393232">Продължаване на редактирането</translation>
 <translation id="2434405374328098816">Вече запазихте парола за <ph name="USERNAME" /> за <ph name="WEBSITE" /></translation>
 <translation id="2435457462613246316">Показване на паролата</translation>
+<translation id="2469960372084740698">Да се изключи ли „Безопасно сърфиране“?</translation>
 <translation id="2473876017985765807">Вече запазихте парола за <ph name="WEBSITE" /></translation>
 <translation id="2476359652512522418">Не е избрано</translation>
 <translation id="2497852260688568942">Синхронизирането е деактивирано от администратора ви</translation>
@@ -213,11 +214,13 @@
 <translation id="2848086008667475748">Задаване като браузър по подразбиране в настройките…</translation>
 <translation id="2858204748079866344">За да защити поверителността ви, Chrome няма да попълни автоматично паролата ви в това поле.</translation>
 <translation id="285960592395650245">Нов опит за изтегляне</translation>
+<translation id="2866378026651742652">Когато отворите нов раздел, вече ще виждате материали от този сайт.</translation>
 <translation id="2870560284913253234">Сайт</translation>
 <translation id="2871695793448672541">Скрита парола</translation>
 <translation id="2876369937070532032">Когато сигурността ви е застрашена, изпраща до Google URL адресите на някои от страниците, които посещавате.</translation>
 <translation id="2883151425485251736">Преглеждайте и редактирайте темите, които сте скрили от профила си</translation>
 <translation id="288655811176831528">Затваряне на раздела</translation>
+<translation id="2890171748217283516">Сайтовете, които следвате, се запазват в профила ви в Google. Можете да ги управлявате от настройките за Discover.</translation>
 <translation id="2893180576842394309">Възможно е да използваме историята ви, за да персонализираме търсенето и други услуги на Google</translation>
 <translation id="2898963176829412617">Нова папка…</translation>
 <translation id="2916171785467530738">Автоматично довършване на заявки за търсене и URL адреси</translation>
@@ -313,6 +316,7 @@
 <translation id="3691593122358196899">Отметката бе запазена в/ъв „<ph name="FOLDER_TITLE" />“</translation>
 <translation id="369349502275246497">Показване на предложение за запазване на паролите</translation>
 <translation id="3709582977625132201">Означав. като непрочетено</translation>
+<translation id="371230970611282515">Предвижда и ви предупреждава за опасни събития, преди да се случат.</translation>
 <translation id="3740397331642243698">Въведените URL адреси се отварят в режим „инкогнито“ в Google Chrome.</translation>
 <translation id="3762232513783804601">Създаден за вашия iPad</translation>
 <translation id="3771033907050503522">Раздели „инкогнито“</translation>
@@ -346,8 +350,8 @@
 <translation id="4038354071007134711">Няма приложение, което може да отвори файла.</translation>
 <translation id="4042870976416480368">Търсене в страницата</translation>
 <translation id="4049507953662678203">Уверете се, че сте свързани с мрежа, и опитайте отново.</translation>
+<translation id="4063300985191096908">Към емисията</translation>
 <translation id="408404951701638773">До лентата за търсене вече се стига по-лесно</translation>
-<translation id="4108314971463891922">Следване</translation>
 <translation id="411254640334432676">Изтеглянето не бе успешно.</translation>
 <translation id="4112644173421521737">Търсене</translation>
 <translation id="4113030288477039509">Управлява се от администратора ви</translation>
@@ -528,6 +532,7 @@
 <translation id="5737974891429562743">Данните за вход в профила не са актуални. Актуализирайте ги, за да започне синхронизирането.</translation>
 <translation id="5738887413654608789">Това ви позволява да откривате подходящи уеб страници въз основа на заобикалящата ви среда.</translation>
 <translation id="5758631781033351321">Тук ще се показва списъкът ви за четене</translation>
+<translation id="5765456154762864099">Меню → Настройки → Браузър по подразбиране</translation>
 <translation id="5782227691023083829">Превежда се...</translation>
 <translation id="5791632441210678828">Бутон за сортиране на емисията „Следено“.</translation>
 <translation id="5802829331520313983">Настройване…</translation>
@@ -582,6 +587,7 @@
 <translation id="6144589619057374135">Отваряне на ${url} в режим „инкогнито“</translation>
 <translation id="6149061208933997199">Ползване на паролата</translation>
 <translation id="6159839020698489198">незадължително</translation>
+<translation id="6173386249456979368">По-бърза, изпреварваща защита срещу опасни уебсайтове, изтеглени файлове и разширения. Предупреждава ви за разкрити пароли. За да действа, до Google трябва да се изпращат данни за сърфирането</translation>
 <translation id="6177442314419606057">Търсене в Chrome</translation>
 <translation id="6184086493125982861">Показване на разделите</translation>
 <translation id="6187302354554850004">Последно синхр.: <ph name="LAST_USED_TIME" /></translation>
@@ -649,6 +655,7 @@
 <translation id="6603393121510733479">Организацията ви е изключила режима за частно сърфиране.
 <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="6610002944194042868">Опции за превод</translation>
+<translation id="661266467055912436">Подобрява сигурността за вас и всички потребители в мрежата.</translation>
 <translation id="6620279676667515405">Отказ</translation>
 <translation id="6624219055418309072">Блокирани в режим „инкогнито“</translation>
 <translation id="6628106477656132239">Невалидна дата на валидност</translation>
@@ -708,6 +715,7 @@
 <translation id="7029809446516969842">Пароли</translation>
 <translation id="7053983685419859001">Блокиране</translation>
 <translation id="7062545763355031412">Приемане и превключване на профилите</translation>
+<translation id="7080806333218412752">Изпраща URL адресите до „Безопасно сърфиране“ за проверка. Също така изпраща малка извадка от страници, изтеглени файлове, активност на разширенията и системна информация, за да помага за откриването на нови заплахи. Временно свързва тези данни с профила ви в Google, докато сте в него, за да ви защитава в приложенията на Google.</translation>
 <translation id="7099761977003084116">Скорошни раздели</translation>
 <translation id="7102005569666697658">Изтегля се… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Скриване</translation>
@@ -768,6 +776,7 @@
 <translation id="7658239707568436148">Отказ</translation>
 <translation id="7671141431838911305">INSTALL</translation>
 <translation id="7701040980221191251">Няма</translation>
+<translation id="7726702057919861819">Меню → История → Изчистване на данните за сърфирането</translation>
 <translation id="7741325291586284254">Страница за нови раздели в режим „инкогнито“</translation>
 <translation id="7765158879357617694">Преместване</translation>
 <translation id="7772032839648071052">Потвърдете пропуска</translation>
@@ -784,6 +793,7 @@
 <translation id="7884694604461143138">История на търсенията (намерени: <ph name="COUNT" />)</translation>
 <translation id="7887198238286927132">За да защити поверителността ви, Chrome няма да попълни автоматично това поле.</translation>
 <translation id="7911190106180361398">Организацията ви не разрешава синхронизирането на всичко.</translation>
+<translation id="7930998711684428189">Предупреждава ви, ако пароли са разкрити при нарушение на сигурността на данните.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Експортиране на паролите...</translation>
 <translation id="794799177247607889">Спиране на регистрирането</translation>
@@ -840,6 +850,7 @@
 <translation id="8386068868580335421">Нулиране</translation>
 <translation id="8407669440184693619">Няма намерени пароли за този сайт</translation>
 <translation id="842017693807136194">Влезли сте със:</translation>
+<translation id="8427613705947111202">Меню → Настройки → Пароли</translation>
 <translation id="8428045167754449968">Град/селище</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8428634594422941299">Разбрах</translation>
@@ -930,6 +941,7 @@
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Сигналите за сривове са изпратени.</translation>
 <translation id="952704832371081537">Отказ</translation>
+<translation id="959066944189734975">Следвате <ph name="CHANNEL_NAME" /></translation>
 <translation id="981498610235328462">Организацията ви разрешава да влизате само с определени профили. Неразрешените профили са скрити.</translation>
 <translation id="984509647832111802">Синхронизирането не работи.</translation>
 <translation id="988141524645182168">Други устройства</translation>

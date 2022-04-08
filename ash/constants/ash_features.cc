@@ -492,6 +492,11 @@ const base::Feature kEnableDesksTrackpadSwipeImprovements{
 const base::Feature kEnableDnsProxy{"EnableDnsProxy",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables external keyboard testers in the diagnostics app.
+const base::Feature kEnableExternalKeyboardsInDiagnostics{
+    "EnableExternalKeyboardsInDiagnosticsApp",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables displaying additional OpenVPN configuration values on the network
 // details page.
 const base::Feature kExtendedOpenVpnSettings{"ExtendedOpenVpnSettings",
@@ -569,6 +574,16 @@ const base::Feature kEnableSamlReauthenticationOnLockscreen{
 
 const base::Feature kEnableSavedDesks{"EnableSavedDesks",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, touchpad cards will be shown in the diagnostics app's input
+// section.
+const base::Feature kEnableTouchpadsInDiagnosticsApp{
+    "EnableTouchpadsInDiagnosticsApp", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, touchscreen cards will be shown in the diagnostics app's input
+// section.
+const base::Feature kEnableTouchscreensInDiagnosticsApp{
+    "EnableTouchscreensInDiagnosticsApp", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables WireGuard VPN, if running a compatible kernel.
 const base::Feature kEnableWireGuard{"EnableWireGuard",
@@ -883,6 +898,12 @@ const base::Feature kLauncherAppSort{"LauncherAppSort",
 const base::Feature kLauncherFolderRenameKeepsSortOrder{
     "LauncherFolderRenameKeepsSortOrder", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When enabled, the app list sort nudge and toast will have additional
+// buttons for dismissal.
+const base::Feature kLauncherDismissButtonsOnSortNudgeAndToast{
+    "LauncherDismissButtonsOnSortNudgeAndToast",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Uses short intervals for launcher nudge for testing if enabled.
 const base::Feature kLauncherNudgeShortInterval{
     "LauncherNudgeShortInterval", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1006,7 +1027,7 @@ const base::Feature kOnDeviceSpeechRecognition{
 // If enabled, EULA and ARC Terms of Service screens are skipped and merged
 // into Consolidated Consent Screen.
 const base::Feature kOobeConsolidatedConsent{"OobeConsolidatedConsent",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the Chrome OS OOBE HID Detection Revamp, which updates
 // the OOBE HID detection screen UI and related infrastructure. See
@@ -1621,6 +1642,10 @@ bool IsExtendedOpenVpnSettingsEnabled() {
   return base::FeatureList::IsEnabled(kExtendedOpenVpnSettings);
 }
 
+bool IsExternalKeyboardInDiagnosticsAppEnabled() {
+  return base::FeatureList::IsEnabled(kEnableExternalKeyboardsInDiagnostics);
+}
+
 bool IsFamilyLinkOnSchoolDeviceEnabled() {
   return base::FeatureList::IsEnabled(kFamilyLinkOnSchoolDevice);
 }
@@ -1750,6 +1775,12 @@ bool IsLauncherAppSortEnabled() {
 bool IsLauncherFolderRenameKeepsSortOrderEnabled() {
   return IsLauncherAppSortEnabled() &&
          base::FeatureList::IsEnabled(kLauncherFolderRenameKeepsSortOrder);
+}
+
+bool IsLauncherDismissButtonsOnSortNudgeAndToastEnabled() {
+  return IsLauncherAppSortEnabled() &&
+         base::FeatureList::IsEnabled(
+             kLauncherDismissButtonsOnSortNudgeAndToast);
 }
 
 bool IsLauncherNudgeShortIntervalEnabled() {
@@ -2024,6 +2055,14 @@ bool IsStylusBatteryStatusEnabled() {
 
 bool IsTabClusterUIEnabled() {
   return base::FeatureList::IsEnabled(kTabClusterUI);
+}
+
+bool IsTouchpadInDiagnosticsAppEnabled() {
+  return base::FeatureList::IsEnabled(kEnableTouchpadsInDiagnosticsApp);
+}
+
+bool IsTouchscreenInDiagnosticsAppEnabled() {
+  return base::FeatureList::IsEnabled(kEnableTouchscreensInDiagnosticsApp);
 }
 
 bool IsTrafficCountersHandlerEnabled() {

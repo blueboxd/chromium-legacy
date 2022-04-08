@@ -120,11 +120,21 @@ const base::Feature kAutofillEnableVirtualCardManagementInDesktopSettingsPage{
     "AutofillEnableVirtualCardManagementInDesktopSettingsPage",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When enabled, Chrome will show metadata along with other card information
+// when the virtual card is presented to users.
+const base::Feature kAutofillEnableVirtualCardMetadata{
+    "AutofillEnableVirtualCardMetadata", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, virtual card retrieval will pass an optional
 // authentication based on risk level.
 const base::Feature kAutofillEnableVirtualCardsRiskBasedAuthentication{
     "AutofillEnableVirtualCardsRiskBasedAuthentication",
     base::FEATURE_ENABLED_BY_DEFAULT};
+
+// When enabled, if the previous feature offer was declined, a delay will be
+// added before Chrome attempts to show offer again.
+const base::Feature kAutofillEnforceDelaysInStrikeDatabase{
+    "AutofillEnforceDelaysInStrikeDatabase", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, Autofill will attempt to fill merchant promo/coupon/gift code
 // fields when data is available.

@@ -390,11 +390,24 @@ const char
         "enroll in virtual card if the card is eligible and to unenroll if the "
         "card has been enrolled.";
 
+const char kAutofillEnableVirtualCardMetadataName[] =
+    "Enable showing metadata for virtual cards";
+const char kAutofillEnableVirtualCardMetadataDescription[] =
+    "When enabled, Chrome will show metadata together with other card "
+    "information when the virtual card is presented to users.";
+
 const char kAutofillEnableVirtualCardsRiskBasedAuthenticationName[] =
     "Enable risk based authentication for Autofill Virtual Card Numbers";
 const char kAutofillEnableVirtualCardsRiskBasedAuthenticationDescription[] =
     "When enabled, risk based authentication is used before autofilling "
     "Virtual Card information into forms.";
+
+const char kAutofillEnforceDelaysInStrikeDatabaseName[] =
+    "Enforce delay between offering Autofill opportunities in the strike "
+    "database";
+const char kAutofillEnforceDelaysInStrikeDatabaseDescription[] =
+    "When enabled, if previous Autofill feature offer was declined, "
+    "Chrome will wait for some time before showing the offer again.";
 
 const char kAutofillFillMerchantPromoCodeFieldsName[] =
     "Enable Autofill of promo code fields in forms";
@@ -911,12 +924,6 @@ const char kEnablePreinstalledWebAppDuplicationFixerDescription[] =
     "when it rolled out. This code path will attempt to re-migrate instances "
     "of app duplication where the old app failed to stay removed. See "
     "https://crbug.com/1290716.";
-
-const char kEnableSyncRequiresPoliciesLoadedName[] =
-    "Sync waits for all policies to load before starting";
-const char kEnableSyncRequiresPoliciesLoadedDescription[] =
-    "Enables behaviour for Sync to wait for all policies to load before "
-    "starting";
 
 const char kEnableTLS13EarlyDataName[] = "TLS 1.3 Early Data";
 const char kEnableTLS13EarlyDataDescription[] =
@@ -4019,11 +4026,6 @@ const char kAcceleratedMjpegDecodeDescription[] =
     "Enable hardware-accelerated mjpeg decode for captured frame where "
     "available.";
 
-const char kAllowDisableMouseAccelerationName[] =
-    "Allow disabling mouse acceleration";
-const char kAllowDisableMouseAccelerationDescription[] =
-    "Shows a setting to disable mouse acceleration.";
-
 const char kAllowDisableTouchpadHapticFeedbackName[] =
     "Allow disabling touchpad haptic feedback";
 const char kAllowDisableTouchpadHapticFeedbackDescription[] =
@@ -4304,6 +4306,11 @@ const char kSystemExtensionsName[] = "Chrome OS System Extensions";
 const char kSystemExtensionsDescription[] =
     "Enable the Chrome OS System Extension platform.";
 
+const char kEnableServiceWorkersForChromeUntrustedName[] =
+    "Enable chrome-untrusted:// Service Workers";
+const char kEnableServiceWorkersForChromeUntrustedDescription[] =
+    "When enabled, allows chrome-untrusted:// WebUIs to use service workers.";
+
 const char kCrostiniBullseyeUpgradeName[] = "Upgrade Crostini to Bullseye";
 const char kCrostiniBullseyeUpgradeDescription[] =
     "Offer to upgrade Crostini containers on older versions to bullseye.";
@@ -4501,6 +4508,12 @@ const char kDnsProxyEnableDOHDescription[] =
     "When enabled, the DNS proxy will perform DNS-over-HTTPS in accordance "
     "with the Chrome OS SecureDNS settings.";
 
+const char kEnableExternalKeyboardsInDiagnosticsAppName[] =
+    "Enable external keyboards in the Diagnostics App";
+const char kEnableExternalKeyboardsInDiagnosticsAppDescription[] =
+    "Shows external keyboards in the Diagnostics App's input section. Requires "
+    "#enable-input-in-diagnostics-app to be enabled.";
+
 const char kEnableHostnameSettingName[] = "Enable setting the device hostname";
 const char kEnableHostnameSettingDescription[] =
     "Enables the ability to set the Chrome OS hostname, the name of the device "
@@ -4613,6 +4626,18 @@ const char kEnablePalmSuppressionName[] =
     "Enable Palm Suppression with Stylus.";
 const char kEnablePalmSuppressionDescription[] =
     "If enabled, suppresses touch when a stylus is on a touchscreen.";
+
+const char kEnableTouchpadsInDiagnosticsAppName[] =
+    "Enable touchpad cards in the Diagnostics App";
+const char kEnableTouchpadsInDiagnosticsAppDescription[] =
+    "Shows touchpad cards in the Diagnostics App's input section. Requires "
+    "#enable-input-in-diagnostics-app to be enabled.";
+
+const char kEnableTouchscreensInDiagnosticsAppName[] =
+    "Enable touchscreen cards in the Diagnostics App";
+const char kEnableTouchscreensInDiagnosticsAppDescription[] =
+    "Shows touchscreen cards in the Diagnostics App's input section. Requires "
+    "#enable-input-in-diagnostics-app to be enabled.";
 
 const char kEnableVariableRefreshRateName[] = "Enable Variable Refresh Rate";
 const char kEnableVariableRefreshRateDescription[] =

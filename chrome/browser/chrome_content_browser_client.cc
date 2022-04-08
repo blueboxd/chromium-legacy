@@ -768,10 +768,16 @@ bool HandleNewTabPageLocationOverride(
     GURL* url,
     content::BrowserContext* browser_context) {
   if (!url->SchemeIs(content::kChromeUIScheme) ||
-      url->host() != chrome::kChromeUINewTabHost)
+      url->host() != chrome::kChromeUINewTabHost) {
     return false;
+  }
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
+
+  // Don't change the URL when incognito mode.
+  if (profile->IsOffTheRecord())
+    return false;
+
   std::string ntp_location =
       profile->GetPrefs()->GetString(prefs::kNewTabPageLocationOverride);
   if (ntp_location.empty())
@@ -3461,10 +3467,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNaCl);
 
   web_prefs->data_saver_enabled = IsDataSaverEnabled(profile);
-
-  web_prefs->data_saver_holdback_web_api_enabled =
-      base::GetFieldTrialParamByFeatureAsBool(features::kDataSaverHoldback,
-                                              "holdback_web", false);
 
   if (web_contents) {
 #if BUILDFLAG(IS_ANDROID)

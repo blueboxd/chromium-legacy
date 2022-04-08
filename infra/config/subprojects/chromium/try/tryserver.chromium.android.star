@@ -39,6 +39,10 @@ try_.builder(
 
 try_.builder(
     name = "android-12-x64-dbg",
+    mirrors = [
+        "ci/Android x64 Builder (dbg)",
+        "ci/android-12-x64-dbg-tests",
+    ],
 )
 
 try_.orchestrator_builder(
@@ -196,7 +200,9 @@ try_.builder(
 
 try_.orchestrator_builder(
     name = "android-marshmallow-arm64-rel",
-    check_for_flakiness = True,
+    # TODO(crbug.com/1313712): Re-enable check_for_flakiness when ResultDB RPCs
+    # no longer timeout.
+    #check_for_flakiness = True,
     compilator = "android-marshmallow-arm64-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
@@ -208,7 +214,9 @@ try_.orchestrator_builder(
 try_.compilator_builder(
     name = "android-marshmallow-arm64-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
-    check_for_flakiness = True,
+    # TODO(crbug.com/1313712): Re-enable check_for_flakiness when ResultDB RPCs
+    # no longer timeout.
+    #check_for_flakiness = True,
     cores = 64 if settings.is_main else 32,
     main_list_view = "try",
 )
@@ -355,6 +363,10 @@ try_.builder(
 
 try_.builder(
     name = "android-webview-12-x64-dbg",
+    mirrors = [
+        "ci/Android x64 Builder (dbg)",
+        "ci/android-webview-12-x64-dbg-tests",
+    ],
 )
 
 try_.builder(
@@ -413,6 +425,13 @@ try_.builder(
 try_.builder(
     name = "android_compile_x64_dbg",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/Android x64 Builder (dbg)",
+    ],
+    try_settings = builder_config.try_settings(
+        include_all_triggered_testers = True,
+        is_compile_only = True,
+    ),
     cores = 16,
     ssd = True,
     main_list_view = "try",

@@ -4557,8 +4557,14 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_LAUNCHER_UNDO_SORT_DONE_SPOKEN_TEXT" desc="Accessibility text read by chromevox after successfully undoing/reverting the sorting action on apps in launcher.">
        Sort undo successful
       </message>
+      <message name="IDS_ASH_LAUNCHER_CLOSE_SORT_TOAST_BUTTON_SPOKEN_TEXT" desc="Accessibility text read by chromevox when focusing on the close button shown in a toast that gets shown in the launcher UI after user sorts apps in the launcher.">
+        Close sort toast
+      </message>
       <message name="IDS_ASH_LAUNCHER_APP_LIST_REORDER_NUDGE_TITLE" desc="Title of a nudge shown in the Chrome OS launcher UI above the list of apps that informs users that they can sort their apps by name or color.">
         Sort your apps by name or color
+      </message>
+      <message name="IDS_ASH_LAUNCHER_APP_LIST_REORDER_NUDGE_DISMISS_BUTTON" desc="Text for the button used to dismiss a nudge shown in the Chrome OS launcher UI. The nudge is located above the list of apps and informs users that they can sort their apps by name or color.">
+        OK
       </message>
       <message name="IDS_ASH_LAUNCHER_APP_LIST_REORDER_NUDGE_CLAMSHELL_MODE_SUBTITLE" desc="Subtitle of a nudge shown in the Chrome OS launcher UI in clamshell mode. The nudge locates above the list of apps that informs users that they can sort their apps by name or color.">
         Right-click anywhere to reorder your apps
@@ -4652,16 +4658,18 @@ New install
           Displaying 1 result for <ph name="query">$1<ex>search query</ex></ph>
       </message>
       <message name="IDS_REMOVE_ZERO_STATE_SUGGESTION_TITLE" desc="Titlebar of removing zero state suggestion confirmation dialog">
-        Delete this search from your history?
+        Remove this suggestion?
       </message>
-      <message name="IDS_REMOVE_ZERO_STATE_SUGGESTION_DETAILS" desc="Detailed explanation message for removing removing an omnibox search result from launcher search results UI. This is a text in the dialog shown to the user when they try to remove a suggested omnibox search result from list of results shown in the launcher search - the omnibox search result may appear if the search query in launcher search matches a previous user search. The dialog asks the user to confirm the result removal.">
-        You searched for this query before. Deleting this search from your history will permanently remove it from your Google Account across all of your devices.
+      <message name="IDS_REMOVE_ZERO_STATE_SUGGESTION_DETAILS" desc="Detailed explanation message for removing removing an omnibox search result from launcher search results UI. This is a text in the dialog shown to the user when they try to remove a suggested omnibox search result from list of results shown in the launcher search - the omnibox search result may appear if the search query in launcher search matches a previous user search. The dialog asks the user to confirm the result removal. The query being removed is showing one linebreak after the message. The linebreak should NOT be removed from the string.">
+        The following suggestion will be permanently removed from your account’s suggestion history:
+
+<ph name="query">$1<ex>suggestion</ex></ph>
       </message>
       <message name="IDS_REMOVE_SUGGESTION_ANNOUNCEMENT" desc="Announcement confirming the removal of an omnibox suggestion from the launcher search results UI.">
-        Search history result deleted
+        Search history result removed
       </message>
       <message name="IDS_REMOVE_SUGGESTION_BUTTON_LABEL" desc="Remove suggestion button label">
-        Delete
+        Remove
       </message>
       <message name="IDS_APP_LIST_KEYBOARD_SHORTCUT_OR" desc="Joiner text for several keyboard shortcuts that all do the same thing. Eg: 'Ctrl-A or Ctrl-B or Ctrl-C'">
         Or
@@ -4761,6 +4769,26 @@ New install
       </message>
       <message name="IDS_ASH_LAUNCHER_APPS_GRID_A11Y_NAME" desc="Accessible name of the apps grid that contains all apps in launcher UI.">
         All Apps, navigate with left or down arrow to access all apps
+      </message>
+
+      <message name="IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE" desc="The template for rotating placeholder text for the search box shown within the Chrome OS launcher. Placeholders always list files and apps provider as well as a rotating first item.">
+        Search your <ph name="CATEGORY">$1<ex>shortcuts</ex></ph>, files, apps, and more...
+      </message>
+      <message name="IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE_ACCESSIBILITY_NAME_TABLET" desc="A11Y text for placeholder texts for the search box shown within the Chrome OS launcher. Placeholders always list files and apps providers as well as a rotating first item.">
+        Search your <ph name="CATEGORY">$1<ex>shortcuts</ex></ph>, files, apps, and more.
+      </message>
+      <message name="IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE_ACCESSIBILITY_NAME_CLAMSHELL" desc="A11Y text for placeholder texts for the search box shown within the Chrome OS launcher. Placeholders always list files and apps providers as well as a rotating first item.">
+        Search your <ph name="CATEGORY">$1<ex>shortcuts</ex></ph>, files, apps, and more. Use the arrow keys to navigate your apps.
+      </message>
+
+      <message name="IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_SHORTCUTS" desc="One of possible rotating providers listed in the placeholder text for the search box shown within the Chrome OS launcher. The provider is injected into string 'Search your $1, files, apps, and more...'">
+        shortcuts
+      </message>
+      <message name="IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TABS" desc="One of possible rotating providers listed in the placeholder text for the search box shown within the Chrome OS launcher. The provider is injected into string 'Search your $1, files, apps, and more...'">
+        tabs
+      </message>
+      <message name="IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_SETTINGS" desc="One of possible rotating providers listed in the placeholder text for the search box shown within the Chrome OS launcher. The provider is injected into string 'Search your $1, files, apps, and more...'">
+        settings
       </message>
 
       <!-- WM -->

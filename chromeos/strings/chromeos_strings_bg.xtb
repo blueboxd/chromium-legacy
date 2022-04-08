@@ -114,7 +114,6 @@
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: Нов опит</translation>
 <translation id="2161394479394250669">Анулиране на заданието за отпечатване</translation>
 <translation id="2180197493692062006">Нещо се обърка. Опитайте да отворите приложението отново.</translation>
-<translation id="2201770616342964496">Локална самоличност</translation>
 <translation id="2209788852729124853">Нулиране на броячите за трафика</translation>
 <translation id="2212733584906323460">Преобразуване на името</translation>
 <translation id="2217935453350629363">Текуща скорост</translation>
@@ -217,6 +216,7 @@
 <translation id="3595596368722241419">Батерията е заредена</translation>
 <translation id="3600339377155080675">Дублиране на екрана</translation>
 <translation id="3603829704940252505">Аватар</translation>
+<translation id="3604713164406837697">Промяна на тапета</translation>
 <translation id="360565022852130722">Wi-Fi мрежата е защитена със слабия протокол WEP 802.1x</translation>
 <translation id="3606583719724308068">Голямо закъснение на уебсайтове, работещи с HTTPS</translation>
 <translation id="3632579075709132555">Превключване на екрана за поверителност</translation>
@@ -262,6 +262,7 @@
 <translation id="4170180284036919717">Правене на снимка</translation>
 <translation id="4170700058716978431">НЕУСПЕХ</translation>
 <translation id="4176463684765177261">Деактивирано</translation>
+<translation id="4176659219503619100">Контролен панел</translation>
 <translation id="4213104098953699324">Клавиатура с USB</translation>
 <translation id="4227825898293920515">Паролата изтича след <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Няма активни задания за отпечатване</translation>
@@ -305,7 +306,6 @@
 <translation id="4593212453765072419">Изисква се удостоверяване в прокси сървъра</translation>
 <translation id="4609350030397390689">Намаляване на яркостта на клавиатурата</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> от <ph name="TOTAL_PAGE_NUMBER" />. Натиснете Enter, за да откажете заданието за отпечатване</translation>
-<translation id="4627645661474370390">Отдалечена самоличност</translation>
 <translation id="463791356324567266">Сканирането се отменя...</translation>
 <translation id="4646949265910132906">Сигурна Wi-Fi връзка</translation>
 <translation id="4650608062294027130">Клавиш „shift“ вдясно</translation>
@@ -432,6 +432,7 @@
 <translation id="5866840822086176774">Много силен</translation>
 <translation id="588258955323874662">Цял екран</translation>
 <translation id="5895138241574237353">Рестартиране</translation>
+<translation id="5903200662178656908">Устройството е комбинирана клавиатура и мишка.</translation>
 <translation id="5916084858004523819">Забранено</translation>
 <translation id="5916664084637901428">Включено</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Файлът ви бе сканиран успешно и запазен в папката <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Файловете ви бяха сканирани успешно и запазени в папката <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
@@ -452,6 +453,7 @@
 <translation id="6104112872696127344">Сканирането бе отменено</translation>
 <translation id="6106186594183574873">За да завършите процеса, въведете старата си парола</translation>
 <translation id="6108689792487843350">Шлюзът е недостъпен</translation>
+<translation id="6112878310391905610">Тази настройка се управлява от администраторите ви</translation>
 <translation id="6113701710518389813">Стрелка за нагоре</translation>
 <translation id="6117895505466548728">„<ph name="TITLE" />“ и още <ph name="NUMBER" /> албума</translation>
 <translation id="6122191549521593678">Онлайн</translation>

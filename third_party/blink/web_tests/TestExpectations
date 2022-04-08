@@ -1812,6 +1812,7 @@ crbug.com/1035708 wpt_internal/css/css-pseudo/grammar-error-color-dynamic-003.ht
 crbug.com/1035708 wpt_internal/css/css-pseudo/grammar-error-color-dynamic-004.html [ Failure ]
 crbug.com/1147859 external/wpt/css/css-pseudo/target-text-004.html [ Failure ]
 crbug.com/1179938 external/wpt/css/css-pseudo/target-text-006.html [ Failure ]
+crbug.com/1314629 crbug.com/1024156 external/wpt/css/css-pseudo/target-text-008.html [ Failure ]
 crbug.com/1035708 external/wpt/css/css-pseudo/target-text-dynamic-001.html [ Failure ]
 crbug.com/1035708 external/wpt/css/css-pseudo/target-text-dynamic-002.html [ Failure ]
 crbug.com/1035708 external/wpt/css/css-pseudo/target-text-dynamic-003.html [ Failure ]
@@ -3148,7 +3149,7 @@ crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/
 crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-paired-cascade-003.html [ Pass ]
 crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-paired-cascade-006.html [ Pass ]
 crbug.com/1295264 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-pseudos-currentcolor-inheritance-computed-001.html [ Pass ]
-crbug.com/1295264 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-pseudos-currentcolor-visited-computed-001.html [ Failure ]
+crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-pseudos-currentcolor-visited-computed-001.html [ Failure ]
 crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-styling-002.html [ Pass ]
 crbug.com/1024156 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-styling-004.html [ Pass ]
 crbug.com/1309822 virtual/css-highlight-inheritance/external/wpt/css/css-pseudo/highlight-pseudos-inheritance-computed-001.html [ Pass ]
@@ -3327,6 +3328,15 @@ crbug.com/626703 [ Win ] virtual/prerender/external/wpt/speculation-rules/preren
 crbug.com/626703 [ Win ] virtual/partitioned-cookies/http/tests/inspector-protocol/network/disabled-cache-navigation.js [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.15 ] virtual/document-transition/wpt_internal/document-transition/content-with-transform-old-image.html [ Failure ]
+crbug.com/626703 [ Linux ] virtual/document-transition/wpt_internal/document-transition/content-with-transform-old-image.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] virtual/document-transition/wpt_internal/document-transition/content-with-transform-old-image.html [ Failure ]
+crbug.com/626703 [ Mac10.14 ] virtual/document-transition/wpt_internal/document-transition/content-with-transform-old-image.html [ Failure ]
+crbug.com/626703 [ Mac11 ] virtual/document-transition/wpt_internal/document-transition/content-with-transform-old-image.html [ Failure ]
+crbug.com/626703 [ Mac11-arm64 ] virtual/document-transition/wpt_internal/document-transition/content-with-transform-old-image.html [ Failure ]
+crbug.com/626703 [ Win7 ] virtual/document-transition/wpt_internal/document-transition/content-with-transform-old-image.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-grid/subgrid/independent-formatting-context.html [ Failure ]
+crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/phrasing-content-0/br-wbr-content/content-property.tentative.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/content-security-policy/inheritance/history-iframe.sub.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] virtual/fenced-frame-shadow-dom/wpt_internal/fenced_frame/unfenced-top.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] virtual/portals/external/wpt/portals/history/history-manipulation-inside-portal.html [ Timeout ]
@@ -4500,8 +4510,6 @@ crbug.com/764235 external/wpt/css/css-grid/alignment/grid-baseline-justify-001.h
 
 # [css-subgrid]
 crbug.com/618969 external/wpt/css/css-grid/subgrid/abs-pos-002.html [ Crash Failure Timeout ]
-crbug.com/618969 external/wpt/css/css-grid/subgrid/abs-pos-003.html [ Failure ]
-crbug.com/618969 external/wpt/css/css-grid/subgrid/abs-pos-004.html [ Failure ]
 crbug.com/618969 external/wpt/css/css-grid/subgrid/auto-track-sizing-001.html [ Failure ]
 crbug.com/618969 external/wpt/css/css-grid/subgrid/auto-track-sizing-002.html [ Failure ]
 crbug.com/618969 external/wpt/css/css-grid/subgrid/baseline-001.html [ Failure ]
@@ -4598,9 +4606,6 @@ crbug.com/664858 virtual/threaded-prefer-compositing/fast/scroll-behavior/smooth
 crbug.com/664858 virtual/threaded-prefer-compositing/fast/scroll-behavior/smooth-scroll/main-thread-scrolling-reason-added.html [ Skip ]
 crbug.com/664858 virtual/threaded-prefer-compositing/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
 crbug.com/664858 virtual/threaded-prefer-compositing/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-vertical-rl-anchors.html [ Skip ]
-
-crbug.com/900431 [ Mac ] css3/blending/mix-blend-mode-isolated-group-1.html [ Failure Pass ]
-crbug.com/900431 [ Mac ] css3/blending/mix-blend-mode-isolated-group-3.html [ Failure Pass ]
 
 # ====== Random order flaky tests end here ======
 
@@ -7730,7 +7735,7 @@ crbug.com/1312484 [ Mac11 ] external/wpt/navigation-api/ordering-and-transition/
 # Sheriff 2022-04-05
 crbug.com/1203491 [ Linux ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Failure Pass ]
 crbug.com/1203491 [ Win ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Failure Pass ]
-crbug.com/1313282 inspector-protocol/input/dispatchMouseEvent.js [ Failure Pass ]
+crbug.com/1313282 inspector-protocol/input/dispatchMouseEvent.js [ Skip ]
 crbug.com/1313331 [ Mac10.13 ] virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/subpixel-overflow-mouse-drag.html [ Failure Pass ]
 crbug.com/1313331 [ Debug Linux ] virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/subpixel-overflow-mouse-drag.html [ Failure Pass ]
 crbug.com/1095540 [ Mac11-arm64 ] virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/resize-corner-tracking-touch.html [ Skip ]
@@ -7744,3 +7749,21 @@ crbug.com/1244896 fast/mediacapturefromelement/CanvasCaptureMediaStream-set-size
 crbug.com/1290670 [ Mac10.14 ] external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Failure Pass ]
 crbug.com/1313894 [ Mac10.14 ] rootscroller/root-scroller-paint-order.html [ Failure Pass ]
 crbug.com/1314130 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-listbox.html [ Failure Pass ]
+
+# Sheriff 2022-04-07
+crbug.com/1314314 virtual/percent-based-scrolling/fast/scrolling/scrollbars/mouse-autoscrolling-on-deleted-scrollbar.html [ Skip ]
+crbug.com/1314323 [ Win ] virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Skip ]
+crbug.com/1095540 [ Mac10.14 ] virtual/threaded-prefer-compositing/fast/scrolling/resize-corner-tracking-touch.html [ Skip ]
+
+# Sheriff 2022-04-08
+crbug.com/1314514 [ Mac ] css3/blending/mix-blend-mode-isolated-group-1.html [ Failure Pass ]
+crbug.com/1314514 [ Mac ] css3/blending/mix-blend-mode-isolated-group-3.html [ Failure Pass ]
+crbug.com/1314514 [ Win ] css3/blending/background-blend-mode-gradient-image.html [ Failure Pass ]
+crbug.com/1314514 [ Win ] css3/blending/background-blend-mode-image-image.html [ Failure Pass ]
+crbug.com/1314514 [ Win ] css3/blending/background-blend-mode-tiled-gradient.html [ Failure Pass ]
+crbug.com/1314514 [ Win ] css3/blending/effect-background-blend-mode.html [ Failure Pass ]
+crbug.com/1314514 [ Win ] css3/blending/effect-background-blend-mode-tiled.html [ Failure Pass ]
+crbug.com/1314514 [ Win ] css3/blending/mix-blend-mode-isolated-group-1.html [ Failure Pass ]
+crbug.com/1314514 [ Win ] css3/blending/mix-blend-mode-isolated-group-2.html [ Failure Pass ]
+crbug.com/1314514 [ Win ] css3/blending/mix-blend-mode-isolated-group-3.html [ Failure Pass ]
+crbug.com/1314514 [ Win ] css3/blending/background-blend-mode-gradient-gradient.html [ Failure Pass ]

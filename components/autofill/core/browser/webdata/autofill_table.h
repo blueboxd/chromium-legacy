@@ -204,6 +204,16 @@ struct PaymentsCustomerData;
 //                      phone number belongs.
 //   number
 //
+// autofill_profile_birthdates
+//                      This table contains the multi-valued birthdate fields
+//                      associated with a profile.
+//
+//   guid               The guid string that identifies the profile to which the
+//                      birthdate number belongs.
+//   day                As an integer between 1 and 31 inclusive, or 0 if unset.
+//   month              As an integer between 1 and 12 inclusive, or 0 if unset.
+//   year               As a 4 digit integer, or 0 if unset.
+//
 // credit_cards         This table contains credit card data added by the user
 //                      with the Autofill dialog.  Most of the columns are
 //                      standard entries in a credit card form.
@@ -416,14 +426,6 @@ struct PaymentsCustomerData;
 //                      offer_id in the offer_data table.
 //   merchant_domain    List of full origins for merchant websites on which
 //                      this offer would apply.
-// TODO(crbug.com/1196021): Remove unused table.
-// credit_card_art_images
-//                      Contains the card art image for the server credit card.
-//
-//   id                 The server id of the credit card.
-//   instrument_id      The non-legacy server instrument id of the card.
-//   card_art_image     The customized card art image. Stored in the form of
-//                      BLOB.
 
 class AutofillTable : public WebDatabaseTable,
                       public syncer::SyncMetadataStore {
@@ -712,6 +714,8 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion98RemoveStatusColumnMaskedCreditCards();
   bool MigrateToVersion99RemoveAutofillProfilesTrashTable();
   bool MigrateToVersion100RemoveProfileValidityBitfieldColumn();
+  bool MigrateToVersion101RemoveCreditCardArtImageTable();
+  bool MigrateToVersion102AddAutofillBirthdatesTable();
 
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.
@@ -804,6 +808,7 @@ class AutofillTable : public WebDatabaseTable,
   bool InitProfileNamesTable();
   bool InitProfileEmailsTable();
   bool InitProfilePhonesTable();
+  bool InitProfileBirthdatesTable();
   bool InitMaskedCreditCardsTable();
   bool InitUnmaskedCreditCardsTable();
   bool InitServerCardMetadataTable();
@@ -817,7 +822,6 @@ class AutofillTable : public WebDatabaseTable,
   bool InitOfferDataTable();
   bool InitOfferEligibleInstrumentTable();
   bool InitOfferMerchantDomainTable();
-  bool InitCreditCardArtImagesTable();
 
   std::unique_ptr<AutofillTableEncryptor> autofill_table_encryptor_;
 };

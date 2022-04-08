@@ -234,6 +234,10 @@ VISIT_PROTO_FIELDS(const sync_pb::AutofillProfileSpecifics& proto) {
   VISIT_REP(phone_home_whole_number);
   VISIT(validity_state_bitfield);
   VISIT(disallow_settings_visible_updates);
+
+  VISIT(birthdate_day);
+  VISIT(birthdate_month);
+  VISIT(birthdate_year);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::AutofillSpecifics& proto) {
@@ -283,6 +287,9 @@ VISIT_PROTO_FIELDS(const sync_pb::ClientCommand& proto) {
   VISIT(client_invalidation_hint_buffer_size);
   VISIT(gu_retry_delay_seconds);
   VISIT_REP(custom_nudge_delays);
+  VISIT(extension_types_max_tokens);
+  VISIT(extension_types_refill_interval_seconds);
+  VISIT(extension_types_depleted_quota_nudge_delay_seconds);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::ClientConfigParams& proto) {

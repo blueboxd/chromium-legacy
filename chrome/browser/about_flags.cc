@@ -986,6 +986,13 @@ const FeatureEntry::FeatureVariation kJourneysVariations[] = {
     {"All Supported Locales", kJourneysAllLocalesParams,
      std::size(kJourneysAllLocalesParams), nullptr},
 };
+const FeatureEntry::FeatureParam kJourneysOmniboxActionOnURLsParams[] = {
+    {"omnibox_action_on_urls", "true"},
+};
+const FeatureEntry::FeatureVariation kJourneysOmniboxActionVariations[] = {
+    {"Action Chips on URLs", kJourneysOmniboxActionOnURLsParams,
+     std::size(kJourneysOmniboxActionOnURLsParams), nullptr},
+};
 const FeatureEntry::FeatureParam
     kJourneysOnDeviceClusteringLabelingNoContentClusteringParams[] = {
         {"should_label_clusters", "true"},
@@ -3903,6 +3910,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"system-extensions", flag_descriptions::kSystemExtensionsName,
      flag_descriptions::kSystemExtensionsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kSystemExtensions)},
+    {"enable-service-workers-for-chrome-untrusted",
+     flag_descriptions::kEnableServiceWorkersForChromeUntrustedName,
+     flag_descriptions::kEnableServiceWorkersForChromeUntrustedDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kEnableServiceWorkersForChromeUntrusted)},
     {"crostini-bullseye-upgrade",
      flag_descriptions::kCrostiniBullseyeUpgradeName,
      flag_descriptions::kCrostiniBullseyeUpgradeDescription, kOsCrOS,
@@ -4043,10 +4055,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsLaunchHandlerName,
      flag_descriptions::kDesktopPWAsLaunchHandlerDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(blink::features::kWebAppEnableLaunchHandler)},
-    {"enable-desktop-pwas-link-capturing",
-     flag_descriptions::kDesktopPWAsLinkCapturingName,
-     flag_descriptions::kDesktopPWAsLinkCapturingDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(blink::features::kWebAppEnableLinkCapturing)},
     {"enable-desktop-pwas-manifest-id",
      flag_descriptions::kDesktopPWAsManifestIdName,
      flag_descriptions::kDesktopPWAsManifestIdDescription, kOsDesktop,
@@ -4480,6 +4488,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kImeAssistPersonalInfoName,
      flag_descriptions::kImeAssistPersonalInfoDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kAssistPersonalInfo)},
+    {"enable-cros-virtual-keyboard-new-header",
+     flag_descriptions::kVirtualKeyboardNewHeaderName,
+     flag_descriptions::kVirtualKeyboardNewHeaderDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardNewHeader)},
     {"enable-cros-ime-system-emoji-picker-clipboard",
      flag_descriptions::kImeSystemEmojiPickerClipboardName,
      flag_descriptions::kImeSystemEmojiPickerClipboardDescription, kOsCrOS,
@@ -5068,7 +5080,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kJourneysOmniboxActionName,
      flag_descriptions::kJourneysOmniboxActionDescription,
      kOsDesktop | kOsAndroid,
-     FEATURE_VALUE_TYPE(history_clusters::internal::kOmniboxAction)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(history_clusters::internal::kOmniboxAction,
+                                    kJourneysOmniboxActionVariations,
+                                    "HistoryJourneysOmniboxAction")},
 
     {"history-journeys-on-device-clustering",
      flag_descriptions::kJourneysOnDeviceClusteringBackendName,
@@ -5090,7 +5104,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"page-entities-page-content-annotations",
      flag_descriptions::kPageEntitiesPageContentAnnotationsName,
      flag_descriptions::kPageEntitiesPageContentAnnotationsDescription,
-     kOsDesktop,
+     kOsDesktop | kOsAndroid,
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          optimization_guide::features::kPageEntitiesPageContentAnnotations,
          kPageEntitiesPageContentAnnotationsVariations,
@@ -6055,11 +6069,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"allow-disable-mouse-acceleration",
-     flag_descriptions::kAllowDisableMouseAccelerationName,
-     flag_descriptions::kAllowDisableMouseAccelerationDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kAllowDisableMouseAcceleration)},
-
     {"allow-disable-touchpad-haptic-feedback",
      flag_descriptions::kAllowDisableTouchpadHapticFeedbackName,
      flag_descriptions::kAllowDisableTouchpadHapticFeedbackDescription, kOsCrOS,
@@ -6244,11 +6253,6 @@ const FeatureEntry kFeatureEntries[] = {
          kAutofillUseMobileLabelDisambiguationVariations,
          "AutofillUseMobileLabelDisambiguation")},
 #endif  // BUILDFLAG(IS_ANDROID)
-
-    {"enable-sync-requires-policies-loaded",
-     flag_descriptions::kEnableSyncRequiresPoliciesLoadedName,
-     flag_descriptions::kEnableSyncRequiresPoliciesLoadedDescription, kOsAll,
-     FEATURE_VALUE_TYPE(syncer::kSyncRequiresPoliciesLoaded)},
 
     {"enable-policy-blocklist-throttle-requires-policies-loaded",
      flag_descriptions::
@@ -8375,7 +8379,35 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-desks-close-all", flag_descriptions::kDesksCloseAllName,
      flag_descriptions::kDesksCloseAllDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDesksCloseAll)},
-#endif
+    {"enable-touchpads-in-diagnostics-app",
+     flag_descriptions::kEnableTouchpadsInDiagnosticsAppName,
+     flag_descriptions::kEnableTouchpadsInDiagnosticsAppDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kEnableTouchpadsInDiagnosticsApp)},
+    {"enable-touchscreens-in-diagnostics-app",
+     flag_descriptions::kEnableTouchscreensInDiagnosticsAppName,
+     flag_descriptions::kEnableTouchscreensInDiagnosticsAppDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         chromeos::features::kEnableTouchscreensInDiagnosticsApp)},
+    {"enable-external-keyboards-in-diagnostics-app",
+     flag_descriptions::kEnableExternalKeyboardsInDiagnosticsAppName,
+     flag_descriptions::kEnableExternalKeyboardsInDiagnosticsAppDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         chromeos::features::kEnableExternalKeyboardsInDiagnostics)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+    {"autofill-enforce-delays-in-strike-database",
+     flag_descriptions::kAutofillEnforceDelaysInStrikeDatabaseName,
+     flag_descriptions::kAutofillEnforceDelaysInStrikeDatabaseDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnforceDelaysInStrikeDatabase)},
+
+    {"autofill-enable-virtual-card-metadata",
+     flag_descriptions::kAutofillEnableVirtualCardMetadataName,
+     flag_descriptions::kAutofillEnableVirtualCardMetadataDescription, kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableVirtualCardMetadata)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

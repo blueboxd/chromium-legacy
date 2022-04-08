@@ -221,9 +221,15 @@ extern const char
 extern const char
     kAutofillEnableVirtualCardManagementInDesktopSettingsPageDescription[];
 
+extern const char kAutofillEnableVirtualCardMetadataName[];
+extern const char kAutofillEnableVirtualCardMetadataDescription[];
+
 extern const char kAutofillEnableVirtualCardsRiskBasedAuthenticationName[];
 extern const char
     kAutofillEnableVirtualCardsRiskBasedAuthenticationDescription[];
+
+extern const char kAutofillEnforceDelaysInStrikeDatabaseName[];
+extern const char kAutofillEnforceDelaysInStrikeDatabaseDescription[];
 
 extern const char kAutofillFillMerchantPromoCodeFieldsName[];
 extern const char kAutofillFillMerchantPromoCodeFieldsDescription[];
@@ -527,9 +533,6 @@ extern const char kEnableMigrateDefaultChromeAppToWebAppsNonGSuiteDescription[];
 
 extern const char kEnablePreinstalledWebAppDuplicationFixerName[];
 extern const char kEnablePreinstalledWebAppDuplicationFixerDescription[];
-
-extern const char kEnableSyncRequiresPoliciesLoadedName[];
-extern const char kEnableSyncRequiresPoliciesLoadedDescription[];
 
 extern const char kEnableTLS13EarlyDataName[];
 extern const char kEnableTLS13EarlyDataDescription[];
@@ -2304,9 +2307,6 @@ extern const char kUseAngleGL[];
 extern const char kAcceleratedMjpegDecodeName[];
 extern const char kAcceleratedMjpegDecodeDescription[];
 
-extern const char kAllowDisableMouseAccelerationName[];
-extern const char kAllowDisableMouseAccelerationDescription[];
-
 extern const char kAllowDisableTouchpadHapticFeedbackName[];
 extern const char kAllowDisableTouchpadHapticFeedbackDescription[];
 
@@ -2466,6 +2466,9 @@ extern const char kCrosOnDeviceGrammarCheckDescription[];
 extern const char kSystemExtensionsName[];
 extern const char kSystemExtensionsDescription[];
 
+extern const char kEnableServiceWorkersForChromeUntrustedName[];
+extern const char kEnableServiceWorkersForChromeUntrustedDescription[];
+
 extern const char kCrostiniBullseyeUpgradeName[];
 extern const char kCrostiniBullseyeUpgradeDescription[];
 
@@ -2574,6 +2577,9 @@ extern const char kEnableDnsProxyDescription[];
 extern const char kDnsProxyEnableDOHName[];
 extern const char kDnsProxyEnableDOHDescription[];
 
+extern const char kEnableExternalKeyboardsInDiagnosticsAppName[];
+extern const char kEnableExternalKeyboardsInDiagnosticsAppDescription[];
+
 extern const char kEnableHostnameSettingName[];
 extern const char kEnableHostnameSettingDescription[];
 
@@ -2636,6 +2642,12 @@ extern const char kEnablePalmOnToolTypePalmDescription[];
 
 extern const char kEnablePalmSuppressionName[];
 extern const char kEnablePalmSuppressionDescription[];
+
+extern const char kEnableTouchpadsInDiagnosticsAppName[];
+extern const char kEnableTouchpadsInDiagnosticsAppDescription[];
+
+extern const char kEnableTouchscreensInDiagnosticsAppName[];
+extern const char kEnableTouchscreensInDiagnosticsAppDescription[];
 
 extern const char kDisableQuickAnswersV2TranslationName[];
 extern const char kDisableQuickAnswersV2TranslationDescription[];

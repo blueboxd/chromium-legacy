@@ -114,7 +114,6 @@
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: Opnieuw proberen</translation>
 <translation id="2161394479394250669">Afdruktaak annuleren</translation>
 <translation id="2180197493692062006">Er is iets misgegaan. Open de app opnieuw.</translation>
-<translation id="2201770616342964496">Lokale identiteit</translation>
 <translation id="2209788852729124853">Verkeerstellers resetten</translation>
 <translation id="2212733584906323460">Naamresolutie</translation>
 <translation id="2217935453350629363">Huidige snelheid</translation>
@@ -210,6 +209,7 @@
 <translation id="3488065109653206955">Gedeeltelijk geactiveerd</translation>
 <translation id="3527036260304016759">Mislukt - Onbekende fout</translation>
 <translation id="3532980081107202182">Nog ongeveer <ph name="MIN_REMAINING" /> minuten</translation>
+<translation id="3557205324756024651">Lokale identiteit (optioneel)</translation>
 <translation id="3565064564551103223">Toegestane IP's</translation>
 <translation id="3577473026931028326">Er is iets misgegaan. Probeer het opnieuw.</translation>
 <translation id="357889014807611375">wifi met datalimiet</translation>
@@ -217,6 +217,7 @@
 <translation id="3595596368722241419">Batterij is vol</translation>
 <translation id="3600339377155080675">Scherm spiegelen</translation>
 <translation id="3603829704940252505">Avatar</translation>
+<translation id="3604713164406837697">Achtergrond wijzigen</translation>
 <translation id="360565022852130722">Wifi-netwerk is beveiligd met het zwakke protocol WEP 802.1x</translation>
 <translation id="3606583719724308068">Lange vertraging voor HTTPS-websites</translation>
 <translation id="3632579075709132555">Privacyscherm schakelen</translation>
@@ -262,6 +263,7 @@
 <translation id="4170180284036919717">Foto maken</translation>
 <translation id="4170700058716978431">MISLUKT</translation>
 <translation id="4176463684765177261">Uitgezet</translation>
+<translation id="4176659219503619100">Dashboard</translation>
 <translation id="4213104098953699324">USB-toetsenbord</translation>
 <translation id="4227825898293920515">Wachtwoord verloopt over <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Er worden geen afdruktaken uitgevoerd</translation>
@@ -305,7 +307,6 @@
 <translation id="4593212453765072419">Proxyverificatie vereist</translation>
 <translation id="4609350030397390689">Helderheid van toetsenbord verlagen</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> van <ph name="TOTAL_PAGE_NUMBER" />. Druk op Enter om de afdruktaak te annuleren.</translation>
-<translation id="4627645661474370390">Externe identiteit</translation>
 <translation id="463791356324567266">Scannen annuleren…</translation>
 <translation id="4646949265910132906">Beveiligde wifi-verbinding</translation>
 <translation id="4650608062294027130">Shift rechts</translation>
@@ -432,6 +433,7 @@ Tik op de microfoon om me iets te vragen.</translation>
 <translation id="5866840822086176774">Zeer sterk</translation>
 <translation id="588258955323874662">Volledig scherm</translation>
 <translation id="5895138241574237353">Opnieuw starten</translation>
+<translation id="5903200662178656908">Apparaat is een combinatie van toetsenbord en muis.</translation>
 <translation id="5916084858004523819">Verboden</translation>
 <translation id="5916664084637901428">Aan</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Je bestand is gescand en opgeslagen in <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Je bestanden zijn gescand en opgeslagen in <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
@@ -452,6 +454,7 @@ Tik op de microfoon om me iets te vragen.</translation>
 <translation id="6104112872696127344">Scannen is geannuleerd</translation>
 <translation id="6106186594183574873">Geef je oude wachtwoord op om te voltooien</translation>
 <translation id="6108689792487843350">Gateway is onbereikbaar</translation>
+<translation id="6112878310391905610">Deze instelling wordt beheerd door je beheerders</translation>
 <translation id="6113701710518389813">Pijl-omhoog</translation>
 <translation id="6117895505466548728"><ph name="TITLE" />, + nog <ph name="NUMBER" /> albums</translation>
 <translation id="6122191549521593678">Online</translation>
@@ -525,6 +528,7 @@ Tik op de microfoon om me iets te vragen.</translation>
 <translation id="6910312834584889076">De klep van de scanner staat open. Sluit de klep en probeer het opnieuw.</translation>
 <translation id="6911383237894364323">Kan geen verbinding maken met mediaservers</translation>
 <translation id="6935486296377631201">Screensaver</translation>
+<translation id="6943893908656559156">Externe identiteit (optioneel)</translation>
 <translation id="6957231940976260713">Servicenaam</translation>
 <translation id="6961170852793647506">Leg je document op de scanner om aan de slag te gaan</translation>
 <translation id="6965382102122355670">OK</translation>

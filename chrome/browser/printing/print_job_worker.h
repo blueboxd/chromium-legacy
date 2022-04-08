@@ -55,12 +55,10 @@ class PrintJobWorker {
   // Initializes the print settings. A Print... dialog box will be shown to ask
   // the user their preference.
   // `is_scripted` should be true for calls coming straight from window.print().
-  // `is_modifiable` implies HTML and not other formats like PDF.
   void GetSettingsFromUser(uint32_t document_page_count,
                            bool has_selection,
                            mojom::MarginType margin_type,
                            bool is_scripted,
-                           bool is_modifiable,
                            SettingsCallback callback);
 
   // Set the new print settings from a dictionary value.
@@ -123,6 +121,9 @@ class PrintJobWorker {
   virtual void SpoolPage(PrintedPage* page);
 #endif
 
+  // Renders the document to the printer.
+  virtual void SpoolJob();
+
   // Internal state verification that spooling of the document is complete.
   void CheckDocumentSpoolingComplete();
 
@@ -172,9 +173,6 @@ class PrintJobWorker {
   // Windows print GDI-specific handling for OnNewPage().
   bool OnNewPageHelperGdi();
 #endif  // BUILDFLAG(IS_WIN)
-
-  // Renders the document to the printer.
-  void SpoolJob();
 
   // Asks the user for print settings. Must be called on the UI thread.
   // Required on Mac and Linux. Windows can display UI from non-main threads,

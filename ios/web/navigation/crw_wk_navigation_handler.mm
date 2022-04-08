@@ -1356,20 +1356,6 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
     return NO;
   }
 
-  // TODO(crbug.com/1308875): Remove this when |canShowMIMEType| is fixed.
-  // On iOS 15 |canShowMIMEType| returns true for AR files although WebKit is
-  // not capable of displaying them natively.
-  if (@available(iOS 15, *)) {
-    NSString* MIMEType = WKResponse.response.MIMEType;
-    if ([MIMEType isEqual:@"model/vnd.pixar.usd"] ||
-        [MIMEType isEqual:@"model/usd"] ||
-        [MIMEType isEqual:@"model/vnd.usdz+zip"] ||
-        [MIMEType isEqual:@"model/vnd.pixar.usd"] ||
-        [MIMEType isEqual:@"model/vnd.reality"]) {
-      return NO;
-    }
-  }
-
   GURL responseURL = net::GURLWithNSURL(WKResponse.response.URL);
   if (responseURL.SchemeIs(url::kDataScheme) && WKResponse.forMainFrame) {
     // Block rendering data URLs for renderer-initiated navigations in main
@@ -1782,6 +1768,11 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
     if (itemURL != failingURL)
       item->SetVirtualURL(failingURL);
 
+    // Saves original context before, as the original context can be deleted
+    // before the callback is called.
+    __block std::unique_ptr<web::NavigationContextImpl> originalContext =
+        [self.navigationStates removeNavigation:navigation];
+
     web::GetWebClient()->PrepareErrorPage(
         self.webStateImpl, failingURL, contextError,
         navigationContext->IsPost(),
@@ -1812,8 +1803,6 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
                                            responseHTMLString:@""];
             }
 
-            std::unique_ptr<web::NavigationContextImpl> originalContext =
-                [self.navigationStates removeNavigation:navigation];
             originalContext->SetLoadingErrorPage(true);
             [self.navigationStates setContext:std::move(originalContext)
                                 forNavigation:errorNavigation];

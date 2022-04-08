@@ -468,7 +468,7 @@ bool WebAppRegistrar::IsIsolated(const AppId& app_id) const {
 
 bool WebAppRegistrar::WasInstalledByDefaultOnly(const AppId& app_id) const {
   const WebApp* web_app = GetAppById(app_id);
-  return web_app && web_app->HasOnlySource(Source::Type::kDefault);
+  return web_app && web_app->HasOnlySource(WebAppManagement::Type::kDefault);
 }
 
 bool WebAppRegistrar::WasInstalledByUser(const AppId& app_id) const {
@@ -606,13 +606,6 @@ const apps::ShareTarget* WebAppRegistrar::GetAppShareTarget(
   return (web_app && web_app->share_target().has_value())
              ? &web_app->share_target().value()
              : nullptr;
-}
-
-blink::mojom::CaptureLinks WebAppRegistrar::GetAppCaptureLinks(
-    const AppId& app_id) const {
-  auto* web_app = GetAppById(app_id);
-  return web_app ? web_app->capture_links()
-                 : blink::mojom::CaptureLinks::kUndefined;
 }
 
 blink::mojom::HandleLinks WebAppRegistrar::GetAppHandleLinks(

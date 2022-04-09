@@ -84,13 +84,7 @@ bool IsWebGLEnabled(content::WebContents* contents) {
 
 }  // namespace
 
-// This test is flaky on Windows 10: https://crbug.com/1069558
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_Disable3DAPIs DISABLED_Disable3DAPIs
-#else
-#define MAYBE_Disable3DAPIs Disable3DAPIs
-#endif
-IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_Disable3DAPIs) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {
   // This test assumes Gpu access.
   if (!content::GpuDataManager::GetInstance()->HardwareAccelerationEnabled())
     return;
@@ -123,14 +117,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_Disable3DAPIs) {
   EXPECT_TRUE(IsWebGLEnabled(contents));
 }
 
-#if BUILDFLAG(IS_MAC) && !defined(NDEBUG)
-// Times out on mac-debug.
-// TODO(crbug.com/1159423): Re-enable
-#define MAYBE_HomepageLocation DISABLED_HomepageLocation
-#else
-#define MAYBE_HomepageLocation HomepageLocation
-#endif
-IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_HomepageLocation) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {
   // Verifies that the homepage can be configured with policies.
   // Set a default, and check that the home button navigates there.
   browser()->profile()->GetPrefs()->SetString(prefs::kHomePage,

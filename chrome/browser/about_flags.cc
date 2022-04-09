@@ -4397,6 +4397,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(feed::kWebFeed,
                                     kWebFeedVariations,
                                     "WebFeed")},
+    {"web-feed-awareness", flag_descriptions::kWebFeedAwarenessName,
+     flag_descriptions::kWebFeedAwarenessDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(feed::kWebFeedAwareness)},
     {"web-feed-onboarding", flag_descriptions::kWebFeedOnboardingName,
      flag_descriptions::kWebFeedOnboardingDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kWebFeedOnboarding)},
@@ -6253,15 +6256,6 @@ const FeatureEntry kFeatureEntries[] = {
          kAutofillUseMobileLabelDisambiguationVariations,
          "AutofillUseMobileLabelDisambiguation")},
 #endif  // BUILDFLAG(IS_ANDROID)
-
-    {"enable-policy-blocklist-throttle-requires-policies-loaded",
-     flag_descriptions::
-         kEnablePolicyBlocklistThrottleRequiresPoliciesLoadedName,
-     flag_descriptions::
-         kEnablePolicyBlocklistThrottleRequiresPoliciesLoadedDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         policy::features::kPolicyBlocklistThrottleRequiresPoliciesLoaded)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"auto-screen-brightness", flag_descriptions::kAutoScreenBrightnessName,

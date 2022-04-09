@@ -5145,6 +5145,10 @@ net::Error NavigationRequest::CheckContentSecurityPolicy(
 
   // upgrade-insecure-requests is handled in the network code for redirects,
   // only do the upgrade here if this is not a redirect.
+  // Note that `FrameTreeNode::IsMainFrame()` returns true for fenced frames
+  // based on MPArch, but it's fine to skip the logic below as
+  // `network::UpgradeInsecureRequest()` does not apply to fenced frame
+  // navigation requests. (See https://github.com/WICG/fenced-frame/issues/23)
   if (!has_followed_redirect && !frame_tree_node()->IsMainFrame()) {
     DCHECK(parent_policies);
     if (parent_policies && network::ShouldUpgradeInsecureRequest(
@@ -5614,7 +5618,6 @@ void NavigationRequest::CancelDeferredNavigationInternal(
   DCHECK(result.action() == NavigationThrottle::CANCEL_AND_IGNORE ||
          result.action() == NavigationThrottle::CANCEL ||
          result.action() == NavigationThrottle::BLOCK_RESPONSE ||
-         result.action() == NavigationThrottle::BLOCK_REQUEST ||
          result.action() == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE);
   DCHECK(result.action() != NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE ||
          state_ == WILL_START_REQUEST || state_ == WILL_REDIRECT_REQUEST);

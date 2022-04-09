@@ -60,6 +60,9 @@ chromium-metrics-reviews@google.com.
   <variant name="FastHostHints"
       summary="Provides information about hosts that historically provide a
                fast and responsive user experience"/>
+  <variant name="HistoryClusters"
+      summary="This optimization provides information for whether a page
+               should be included in a history cluster."/>
   <variant name="LinkPerformance"
       summary="Provides aggregated performance information for links on the
                page"/>
@@ -733,6 +736,17 @@ chromium-metrics-reviews@google.com.
     Records whether the page entities model executor was created successfully
     from a model file. Recorded each time it was attempted, which can be
     multiple times a session if a model update was received during the session.
+  </summary>
+</histogram>
+
+<histogram name="OptimizationGuide.PageEntitiesModelExecutor.CreationStatus"
+    enum="OptimizationGuideEntityAnnotatorCreationStatus" expires_after="M106">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>chrome-intelligence-core@google.com</owner>
+  <summary>
+    Records the status for the page entities model executor's creation. Recorded
+    each time it was attempted, which can be multiple times a session if a model
+    update was received during the session.
   </summary>
 </histogram>
 

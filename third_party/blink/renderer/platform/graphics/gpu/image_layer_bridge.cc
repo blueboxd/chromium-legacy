@@ -34,17 +34,28 @@ scoped_refptr<StaticBitmapImage> MakeAccelerated(
     const scoped_refptr<StaticBitmapImage>& source,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper>
         context_provider_wrapper) {
-  if (source->IsTextureBacked())
+#if BUILDFLAG(IS_MAC)
+  // On MacOS, if |source| is not an overlay candidate, it is worth copying it
+  // to a new buffer that is an overlay candidate, even when |source| is
+  // already on the GPU.
+  if (source->IsOverlayCandidate()) {
+#else
+  if (source->IsTextureBacked()) {
+#endif
     return source;
+  }
 
   auto paint_image = source->PaintImageForCurrentFrame();
   auto image_info = paint_image.GetSkImageInfo().makeWH(
       source->Size().width(), source->Size().height());
+  // Always request gpu::SHARED_IMAGE_USAGE_SCANOUT when using gpu compositing,
+  // if possible. This is safe because the prerequisite capabilities are checked
+  // downstream in CanvasResourceProvider::CreateSharedImageProvider.
   auto provider = CanvasResourceProvider::CreateSharedImageProvider(
       image_info, cc::PaintFlags::FilterQuality::kLow,
       CanvasResourceProvider::ShouldInitialize::kNo, context_provider_wrapper,
       RasterMode::kGPU, source->IsOriginTopLeft(),
-      gpu::SHARED_IMAGE_USAGE_DISPLAY);
+      gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT);
   if (!provider || !provider->IsAccelerated())
     return nullptr;
 
@@ -85,6 +96,7 @@ void ImageLayerBridge::SetImage(scoped_refptr<StaticBitmapImage> image) {
 
   image_ = std::move(image);
   if (image_) {
+    LOG(ERROR) << "Image Is texture-backed:" << image_->IsTextureBacked();
     if (opacity_mode_ == kNonOpaque) {
       layer_->SetContentsOpaque(image_->CurrentFrameKnownToBeOpaque());
       layer_->SetBlendBackgroundColor(!image_->CurrentFrameKnownToBeOpaque());

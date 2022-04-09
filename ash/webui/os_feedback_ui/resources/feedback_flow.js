@@ -8,6 +8,8 @@ import './search_page.js';
 import './share_data_page.js';
 
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {FeedbackContext, FeedbackServiceProviderInterface} from './feedback_types.js';
+import {getFeedbackServiceProvider} from './mojo_interface_provider.js';
 
 /**
  * Enum for feedback flow states.
@@ -35,6 +37,7 @@ export class FeedbackFlowElement extends PolymerElement {
   static get properties() {
     return {
       currentState_: {type: FeedbackFlowState},
+      feedbackContext_: {type: FeedbackContext, readonly: false, notify: true},
     };
   }
 
@@ -43,9 +46,27 @@ export class FeedbackFlowElement extends PolymerElement {
 
     /**
      * The id of an element on the page that is currently shown.
-     * @type {FeedbackFlowState}
+     * @protected {FeedbackFlowState}
      */
     this.currentState_ = FeedbackFlowState.SEARCH;
+
+    /**
+     * The feedback context.
+     * @type {?FeedbackContext}
+     * @protected
+     */
+    this.feedbackContext_ = null;
+
+    /** @private {!FeedbackServiceProviderInterface} */
+    this.feedbackServiceProvider_ = getFeedbackServiceProvider();
+  }
+
+  ready() {
+    super.ready();
+
+    this.feedbackServiceProvider_.getFeedbackContext().then((response) => {
+      this.feedbackContext_ = response.feedbackContext;
+    });
   }
 
   /**
@@ -74,6 +95,13 @@ export class FeedbackFlowElement extends PolymerElement {
       default:
         console.warn('unexpected state: ', event.detail.currentState);
     }
+  }
+
+  /**
+   * @param {!FeedbackFlowState} newState
+   */
+  setCurrentStateForTesting(newState) {
+    this.currentState_ = newState;
   }
 }
 

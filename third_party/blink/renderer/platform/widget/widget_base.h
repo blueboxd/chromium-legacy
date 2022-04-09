@@ -221,7 +221,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   void ForceTextInputStateUpdate();
   void RequestCompositionUpdates(bool immediate_request, bool monitor_updates);
   void UpdateCompositionInfo(bool immediate_request);
-  void SetFocus(bool enable);
+  void SetFocus(mojom::blink::FocusState focus_state);
   bool has_focus() const { return has_focus_; }
   void MouseCaptureLost();
   void CursorVisibilityChange(bool is_visible);
@@ -439,8 +439,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
 
   // Stores the current control and selection bounds of |webwidget_|
   // that are used to position the candidate window during IME composition.
-  // These are stored in DIPs if use-zoom-for-dsf is disabled and are relative
-  // to the root frame.
+  // These are stored physical pixels and are relative to the root frame.
   gfx::Rect frame_control_bounds_;
   gfx::Rect frame_selection_bounds_;
 

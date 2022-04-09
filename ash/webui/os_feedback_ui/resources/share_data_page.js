@@ -8,6 +8,7 @@ import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {FeedbackFlowState} from './feedback_flow.js';
+import {FeedbackContext} from './feedback_types.js';
 
 /**
  * @fileoverview
@@ -18,8 +19,32 @@ export class ShareDataPageElement extends PolymerElement {
   static get is() {
     return 'share-data-page';
   }
+
   static get template() {
     return html`{__html_template__}`;
+  }
+
+  static get properties() {
+    return {
+      feedbackContext: {type: FeedbackContext, readOnly: false, notify: true},
+    };
+  }
+
+  constructor() {
+    super();
+
+    /**
+     * @type {!FeedbackContext}
+     */
+    this.feedbackContext;
+  }
+
+  /**
+   * @return {boolean}
+   * @protected
+   */
+  hasEmail_() {
+    return (this.feedbackContext !== null && !!this.feedbackContext.email);
   }
 
   /**

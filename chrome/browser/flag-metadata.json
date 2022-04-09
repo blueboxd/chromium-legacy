@@ -1493,7 +1493,7 @@
   {
     "name": "enable-aria-element-reflection",
     "owners": [ "aleventhal", "//third_party/blink/renderer/modules/accessibility/OWNERS" ],
-    "expiry_milestone": 98
+    "expiry_milestone": 105
   },
   {
     "name": "enable-assistant-aec",
@@ -2516,11 +2516,6 @@
     "expiry_milestone": 92
   },
   {
-    "name": "enable-policy-blocklist-throttle-requires-policies-loaded",
-    "owners": ["ydago"],
-    "expiry_milestone": 96
-  },
-  {
     "name": "enable-portals",
     "owners": [ "jbroman", "//third_party/blink/renderer/core/html/portal/OWNERS" ],
     "expiry_milestone": 110
@@ -2850,11 +2845,6 @@
     "name": "enable-unsafe-webgpu",
     "owners": [ "//third_party/blink/renderer/modules/webgpu/OWNERS" ],
     "expiry_milestone": 105
-  },
-  {
-    "name": "enable-use-zoom-for-dsf",
-    "owners": [ "ccameron" ],
-    "expiry_milestone": 80
   },
   {
     "name": "enable-user-cloud-signin-restriction-policy",
@@ -6019,6 +6009,11 @@
   },
   {
     "name": "web-feed",
+    "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org" ],
+    "expiry_milestone": 110
+  },
+  {
+    "name": "web-feed-awareness",
     "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org" ],
     "expiry_milestone": 110
   },

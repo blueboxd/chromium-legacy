@@ -1221,21 +1221,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                     Image* image,
                     WebGLImageConversion::ImageHtmlDomSource,
                     bool image_has_flip_y);
-  void TexImageImpl(TexImageFunctionID,
-                    GLenum target,
-                    GLint level,
-                    GLint internalformat,
-                    GLint xoffset,
-                    GLint yoffset,
-                    GLint zoffset,
-                    GLenum format,
-                    GLenum type,
-                    Image*,
-                    WebGLImageConversion::ImageHtmlDomSource,
-                    bool source_has_flip_y,
-                    const absl::optional<gfx::Rect>&,
-                    GLsizei depth,
-                    GLint unpack_image_height);
   template <typename T>
   gfx::Rect GetTextureSourceSize(T* texture_source) {
     return gfx::Rect(0, 0, texture_source->width(), texture_source->height());
@@ -1499,14 +1484,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Helper function to validate that the given ArrayBufferView
   // is of the correct type and contains enough data for the texImage call.
   // Generates GL error and returns false if parameters are invalid.
-  bool ValidateTexFuncData(const char* function_name,
-                           TexImageDimension,
-                           GLint level,
-                           GLsizei width,
-                           GLsizei height,
-                           GLsizei depth,
-                           GLenum format,
-                           GLenum type,
+  bool ValidateTexFuncData(const TexImageParams& params,
                            DOMArrayBufferView* pixels,
                            NullDisposition,
                            GLuint src_offset);
@@ -1776,19 +1754,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   ImageBitmap* TransferToImageBitmapBase(ScriptState*);
 
   // Helper functions for tex(Sub)Image2D && texSubImage3D
-  void TexImageHelperDOMArrayBufferView(TexImageFunctionID,
-                                        GLenum,
-                                        GLint,
-                                        GLint,
-                                        GLsizei,
-                                        GLsizei,
-                                        GLsizei,
-                                        GLint,
-                                        GLenum,
-                                        GLenum,
-                                        GLint,
-                                        GLint,
-                                        GLint,
+  void TexImageHelperDOMArrayBufferView(TexImageParams params,
                                         DOMArrayBufferView*,
                                         NullDisposition,
                                         GLuint src_offset);
@@ -1800,19 +1766,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                                       ExceptionState&);
 
   void TexImageHelperCanvasRenderingContextHost(const SecurityOrigin*,
-                                                TexImageFunctionID,
-                                                GLenum,
-                                                GLint,
-                                                GLint,
-                                                GLenum,
-                                                GLenum,
-                                                GLint,
-                                                GLint,
-                                                GLint,
+                                                TexImageParams params,
                                                 CanvasRenderingContextHost*,
-                                                const gfx::Rect&,
-                                                GLsizei,
-                                                GLint,
                                                 ExceptionState&);
 
   void TexImageHelperHTMLVideoElement(const SecurityOrigin*,

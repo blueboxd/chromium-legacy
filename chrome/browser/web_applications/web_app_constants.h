@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_CONSTANTS_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_CONSTANTS_H_
 
+#include <stddef.h>
+
 #include <iosfwd>
 #include <vector>
 
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
@@ -140,6 +143,9 @@ enum class ExternalInstallSource {
 // Small icons are used in confirmation dialogs and app windows.
 constexpr int kWebAppIconSmall = 32;
 
+// Limit on the number of jump list entries per web app.
+constexpr size_t kMaxApplicationDockMenuItems = 10;
+
 using DisplayMode = blink::mojom::DisplayMode;
 
 // When user_display_mode indicates a user preference for opening in
@@ -154,7 +160,7 @@ using DisplayMode = blink::mojom::DisplayMode;
 DisplayMode ResolveEffectiveDisplayMode(
     DisplayMode app_display_mode,
     const std::vector<DisplayMode>& app_display_mode_overrides,
-    DisplayMode user_display_mode,
+    UserDisplayMode user_display_mode,
     bool is_isolated);
 
 apps::mojom::LaunchContainer ConvertDisplayModeToAppLaunchContainer(

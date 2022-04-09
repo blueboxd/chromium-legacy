@@ -123,10 +123,6 @@ extern const char kWebBluetoothBondOnDemandDescription[];
 extern const char kEnableDrDcName[];
 extern const char kEnableDrDcDescription[];
 
-extern const char kEnablePolicyBlocklistThrottleRequiresPoliciesLoadedName[];
-extern const char
-    kEnablePolicyBlocklistThrottleRequiresPoliciesLoadedDescription[];
-
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 extern const char kWebFilterInterstitialRefreshName[];
 extern const char kWebFilterInterstitialRefreshDescription[];
@@ -2052,6 +2048,9 @@ extern const char kVoiceButtonInTopToolbarDescription[];
 
 extern const char kWebFeedName[];
 extern const char kWebFeedDescription[];
+
+extern const char kWebFeedAwarenessName[];
+extern const char kWebFeedAwarenessDescription[];
 
 extern const char kWebFeedOnboardingName[];
 extern const char kWebFeedOnboardingDescription[];

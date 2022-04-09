@@ -131,6 +131,31 @@
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #include "ui/gfx/geometry/size.h"
 
+// Populates parameters from texImage2D except for border, width, height, and
+// depth (which are not present for all texImage2D functions).
+#define POPULATE_TEX_IMAGE_2D_PARAMS(params) \
+  params = {                                 \
+      .function_id = kTexImage2D,            \
+      .target = target,                      \
+      .level = level,                        \
+      .internalformat = internalformat,      \
+      .format = format,                      \
+      .type = type,                          \
+  };                                         \
+  GetCurrentUnpackState(params)
+
+#define POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params) \
+  params = {                                     \
+      .function_id = kTexSubImage2D,             \
+      .target = target,                          \
+      .level = level,                            \
+      .xoffset = xoffset,                        \
+      .yoffset = yoffset,                        \
+      .format = format,                          \
+      .type = type,                              \
+  };                                             \
+  GetCurrentUnpackState(params)
+
 namespace blink {
 
 bool WebGLRenderingContextBase::webgl_context_limits_initialized_ = false;
@@ -5117,43 +5142,6 @@ void WebGLRenderingContextBase::TexImage2DBase(GLenum target,
 
 // Software-based upload of Image* to WebGL texture.
 void WebGLRenderingContextBase::TexImageImpl(
-    TexImageFunctionID function_id,
-    GLenum target,
-    GLint level,
-    GLint internalformat,
-    GLint xoffset,
-    GLint yoffset,
-    GLint zoffset,
-    GLenum format,
-    GLenum type,
-    Image* image,
-    WebGLImageConversion::ImageHtmlDomSource dom_source,
-    bool source_has_flip_y,
-    const absl::optional<gfx::Rect>& source_image_rect,
-    GLsizei depth,
-    GLint unpack_image_height) {
-  TexImageParams params = {
-      .function_id = function_id,
-      .target = target,
-      .level = level,
-      .internalformat = internalformat,
-      .xoffset = xoffset,
-      .yoffset = yoffset,
-      .zoffset = zoffset,
-      .depth = depth,
-      .format = format,
-      .type = type,
-  };
-  if (source_image_rect) {
-    params.width = source_image_rect->width();
-    params.height = source_image_rect->height();
-    params.depth = depth;
-  }
-  GetCurrentUnpackState(params);
-  TexImageImpl(params, image, dom_source, source_has_flip_y);
-}
-
-void WebGLRenderingContextBase::TexImageImpl(
     TexImageParams params,
     Image* image,
     WebGLImageConversion::ImageHtmlDomSource dom_source,
@@ -5347,43 +5335,28 @@ gfx::Rect WebGLRenderingContextBase::GetImageDataSize(ImageData* pixels) {
 }
 
 void WebGLRenderingContextBase::TexImageHelperDOMArrayBufferView(
-    TexImageFunctionID function_id,
-    GLenum target,
-    GLint level,
-    GLint internalformat,
-    GLsizei width,
-    GLsizei height,
-    GLsizei depth,
-    GLint border,
-    GLenum format,
-    GLenum type,
-    GLint xoffset,
-    GLint yoffset,
-    GLint zoffset,
+    TexImageParams params,
     DOMArrayBufferView* pixels,
     NullDisposition null_disposition,
     GLuint src_offset) {
-  const char* func_name = GetTexImageFunctionName(function_id);
+  const char* func_name = GetTexImageFunctionName(params.function_id);
   if (isContextLost())
     return;
-  if (!ValidateTexImageBinding(func_name, function_id, target))
+  if (!ValidateTexImageBinding(func_name, params.function_id, params.target))
     return;
   TexImageFunctionType function_type;
-  if (function_id == kTexImage2D || function_id == kTexImage3D)
+  if (params.function_id == kTexImage2D || params.function_id == kTexImage3D)
     function_type = kTexImage;
   else
     function_type = kTexSubImage;
-  if (!ValidateTexFunc(func_name, function_type, kSourceArrayBufferView, target,
-                       level, internalformat, width, height, depth, border,
-                       format, type, xoffset, yoffset, zoffset))
+  if (!ValidateTexFunc(func_name, function_type, kSourceArrayBufferView,
+                       params.target, params.level, params.internalformat,
+                       *params.width, *params.height, *params.depth,
+                       params.border, params.format, params.type,
+                       params.xoffset, params.yoffset, params.zoffset)) {
     return;
-  TexImageDimension source_type;
-  if (function_id == kTexImage2D || function_id == kTexSubImage2D)
-    source_type = kTex2D;
-  else
-    source_type = kTex3D;
-  if (!ValidateTexFuncData(func_name, source_type, level, width, height, depth,
-                           format, type, pixels, null_disposition, src_offset))
+  }
+  if (!ValidateTexFuncData(params, pixels, null_disposition, src_offset))
     return;
   uint8_t* data = reinterpret_cast<uint8_t*>(
       pixels ? pixels->BaseAddressMaybeShared() : nullptr);
@@ -5394,50 +5367,60 @@ void WebGLRenderingContextBase::TexImageHelperDOMArrayBufferView(
   }
   Vector<uint8_t> temp_data;
   bool change_unpack_params = false;
-  if (data && width && height &&
+  if (data && *params.width && *params.height &&
       (unpack_flip_y_ || unpack_premultiply_alpha_)) {
-    DCHECK_EQ(kTex2D, source_type);
-    // Only enter here if width or height is non-zero. Otherwise, call to the
-    // underlying driver to generate appropriate GL errors if needed.
+    DCHECK(params.function_id == kTexImage2D ||
+           params.function_id == kTexSubImage2D);
+    // Only enter here if *params.width or *params.height is non-zero.
+    // Otherwise, call to the underlying driver to generate appropriate GL
+    // errors if needed.
     WebGLImageConversion::PixelStoreParams unpack_params =
         GetUnpackPixelStoreParams(kTex2D);
     GLint data_store_width =
-        unpack_params.row_length ? unpack_params.row_length : width;
-    if (unpack_params.skip_pixels + width > data_store_width) {
+        unpack_params.row_length ? unpack_params.row_length : *params.width;
+    if (unpack_params.skip_pixels + *params.width > data_store_width) {
       SynthesizeGLError(GL_INVALID_OPERATION, func_name,
                         "Invalid unpack params combination.");
       return;
     }
     if (!WebGLImageConversion::ExtractTextureData(
-            width, height, format, type, unpack_params, unpack_flip_y_,
-            unpack_premultiply_alpha_, data, temp_data)) {
+            *params.width, *params.height, params.format, params.type,
+            unpack_params, unpack_flip_y_, unpack_premultiply_alpha_, data,
+            temp_data)) {
       SynthesizeGLError(GL_INVALID_OPERATION, func_name,
-                        "Invalid format/type combination.");
+                        "Invalid params.format/params.type combination.");
       return;
     }
     data = temp_data.data();
     change_unpack_params = true;
   }
-  if (function_id == kTexImage3D) {
-    ContextGL()->TexImage3D(target, level,
-                            ConvertTexInternalFormat(internalformat, type),
-                            width, height, depth, border, format, type, data);
+  if (params.function_id == kTexImage3D) {
+    ContextGL()->TexImage3D(
+        params.target, params.level,
+        ConvertTexInternalFormat(params.internalformat, params.type),
+        *params.width, *params.height, *params.depth, params.border,
+        params.format, params.type, data);
     return;
   }
-  if (function_id == kTexSubImage3D) {
-    ContextGL()->TexSubImage3D(target, level, xoffset, yoffset, zoffset, width,
-                               height, depth, format, type, data);
+  if (params.function_id == kTexSubImage3D) {
+    ContextGL()->TexSubImage3D(params.target, params.level, params.xoffset,
+                               params.yoffset, params.zoffset, *params.width,
+                               *params.height, *params.depth, params.format,
+                               params.type, data);
     return;
   }
 
   ScopedUnpackParametersResetRestore temporary_reset_unpack(
       this, change_unpack_params);
-  if (function_id == kTexImage2D)
-    TexImage2DBase(target, level, internalformat, width, height, border, format,
-                   type, data);
-  else if (function_id == kTexSubImage2D)
-    ContextGL()->TexSubImage2D(target, level, xoffset, yoffset, width, height,
-                               format, type, data);
+  if (params.function_id == kTexImage2D) {
+    TexImage2DBase(params.target, params.level, params.internalformat,
+                   *params.width, *params.height, params.border, params.format,
+                   params.type, data);
+  } else if (params.function_id == kTexSubImage2D) {
+    ContextGL()->TexSubImage2D(params.target, params.level, params.xoffset,
+                               params.yoffset, *params.width, *params.height,
+                               params.format, params.type, data);
+  }
 }
 
 void WebGLRenderingContextBase::texImage2D(
@@ -5450,9 +5433,13 @@ void WebGLRenderingContextBase::texImage2D(
     GLenum format,
     GLenum type,
     MaybeShared<DOMArrayBufferView> pixels) {
-  TexImageHelperDOMArrayBufferView(kTexImage2D, target, level, internalformat,
-                                   width, height, 1, border, format, type, 0, 0,
-                                   0, pixels.Get(), kNullAllowed, 0);
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_2D_PARAMS(params);
+  params.width = width;
+  params.height = height;
+  params.depth = 1;
+  params.border = border;
+  TexImageHelperDOMArrayBufferView(params, pixels.Get(), kNullAllowed, 0);
 }
 
 void WebGLRenderingContextBase::TexImageHelperImageData(TexImageParams params,
@@ -5498,15 +5485,8 @@ void WebGLRenderingContextBase::texImage2D(GLenum target,
                                            GLenum format,
                                            GLenum type,
                                            ImageData* pixels) {
-  TexImageParams params = {
-      .function_id = kTexImage2D,
-      .target = target,
-      .level = level,
-      .internalformat = internalformat,
-      .format = format,
-      .type = type,
-  };
-  GetCurrentUnpackState(params);
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_2D_PARAMS(params);
   TexImageHelperImageData(params, pixels);
 }
 
@@ -5568,14 +5548,8 @@ void WebGLRenderingContextBase::texImage2D(ExecutionContext* execution_context,
                                            GLenum type,
                                            HTMLImageElement* image,
                                            ExceptionState& exception_state) {
-  TexImageParams params = {
-      .function_id = kTexImage2D,
-      .target = target,
-      .level = level,
-      .internalformat = internalformat,
-      .format = format,
-      .type = type,
-  };
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_2D_PARAMS(params);
   GetCurrentUnpackState(params);
   TexImageHelperHTMLImageElement(execution_context->GetSecurityOrigin(), params,
                                  image, exception_state);
@@ -5718,23 +5692,16 @@ void WebGLRenderingContextBase::TexImageViaGPU(
 
 void WebGLRenderingContextBase::TexImageHelperCanvasRenderingContextHost(
     const SecurityOrigin* security_origin,
-    TexImageFunctionID function_id,
-    GLenum target,
-    GLint level,
-    GLint internalformat,
-    GLenum format,
-    GLenum type,
-    GLint xoffset,
-    GLint yoffset,
-    GLint zoffset,
+    TexImageParams params,
     CanvasRenderingContextHost* context_host,
-    const gfx::Rect& source_sub_rectangle,
-    GLsizei depth,
-    GLint unpack_image_height,
     ExceptionState& exception_state) {
-  const char* func_name = GetTexImageFunctionName(function_id);
+  const char* func_name = GetTexImageFunctionName(params.function_id);
   if (isContextLost())
     return;
+  const gfx::Rect source_sub_rectangle(
+      params.unpack_skip_pixels, params.unpack_skip_rows,
+      params.width.value_or(context_host->width()),
+      params.height.value_or(context_host->height()));
 
   // TODO(crbug.com/1210718): It may be possible to simplify this code
   // by consolidating on CanvasImageSource::GetSourceImageForCanvas().
@@ -5743,19 +5710,20 @@ void WebGLRenderingContextBase::TexImageHelperCanvasRenderingContextHost(
                                           context_host, exception_state))
     return;
   WebGLTexture* texture =
-      ValidateTexImageBinding(func_name, function_id, target);
+      ValidateTexImageBinding(func_name, params.function_id, params.target);
   if (!texture)
     return;
   TexImageFunctionType function_type;
-  if (function_id == kTexImage2D)
+  if (params.function_id == kTexImage2D)
     function_type = kTexImage;
   else
     function_type = kTexSubImage;
   if (!ValidateTexFunc(func_name, function_type, kSourceHTMLCanvasElement,
-                       target, level, internalformat,
+                       params.target, params.level, params.internalformat,
                        source_sub_rectangle.width(),
-                       source_sub_rectangle.height(), depth, 0, format, type,
-                       xoffset, yoffset, zoffset))
+                       source_sub_rectangle.height(), params.depth.value_or(1),
+                       0, params.format, params.type, params.xoffset,
+                       params.yoffset, params.zoffset))
     return;
 
   // Note that the sub-rectangle validation is needed for the GPU-GPU
@@ -5763,8 +5731,9 @@ void WebGLRenderingContextBase::TexImageHelperCanvasRenderingContextHost(
   // (texImageImpl).
   bool selecting_sub_rectangle = false;
   if (!ValidateTexImageSubRectangle(
-          func_name, function_id, context_host, source_sub_rectangle, depth,
-          unpack_image_height, &selecting_sub_rectangle)) {
+          func_name, params.function_id, context_host, source_sub_rectangle,
+          params.depth.value_or(1), params.unpack_image_height,
+          &selecting_sub_rectangle)) {
     return;
   }
 
@@ -5773,9 +5742,9 @@ void WebGLRenderingContextBase::TexImageHelperCanvasRenderingContextHost(
   SourceImageStatus source_image_status = kInvalidSourceImageStatus;
   scoped_refptr<Image> image;
 
-  bool upload_via_gpu =
-      (function_id == kTexImage2D || function_id == kTexSubImage2D) &&
-      CanUseTexImageViaGPU(format, type);
+  bool upload_via_gpu = (params.function_id == kTexImage2D ||
+                         params.function_id == kTexSubImage2D) &&
+                        CanUseTexImageViaGPU(params.format, params.type);
 
   // The Image-based upload path may still be used for WebGL-rendered
   // canvases in the case of driver bug workarounds
@@ -5817,34 +5786,29 @@ void WebGLRenderingContextBase::TexImageHelperCanvasRenderingContextHost(
           adjusted_source_sub_rectangle.bottom());
     }
 
-    if (function_id == kTexImage2D) {
-      TexImage2DBase(target, level, internalformat,
+    if (params.function_id == kTexImage2D) {
+      TexImage2DBase(params.target, params.level, params.internalformat,
                      source_sub_rectangle.width(),
-                     source_sub_rectangle.height(), 0, format, type, nullptr);
-      TexImageViaGPU(function_id, texture, target, level, 0, 0, 0, accel_image,
-                     source_canvas_webgl_context, adjusted_source_sub_rectangle,
-                     unpack_premultiply_alpha_, unpack_flip_y_);
-    } else {
-      TexImageViaGPU(function_id, texture, target, level, xoffset, yoffset, 0,
-                     accel_image, source_canvas_webgl_context,
+                     source_sub_rectangle.height(), 0, params.format,
+                     params.type, nullptr);
+      TexImageViaGPU(params.function_id, texture, params.target, params.level,
+                     0, 0, 0, accel_image, source_canvas_webgl_context,
                      adjusted_source_sub_rectangle, unpack_premultiply_alpha_,
                      unpack_flip_y_);
+    } else {
+      TexImageViaGPU(params.function_id, texture, params.target, params.level,
+                     params.xoffset, params.yoffset, 0, accel_image,
+                     source_canvas_webgl_context, adjusted_source_sub_rectangle,
+                     unpack_premultiply_alpha_, unpack_flip_y_);
     }
   } else {
-    // If these are the 2D functions, the caller must have passed in 1
-    // for the depth and 0 for the unpack_image_height.
-    DCHECK(!(function_id == kTexSubImage2D || function_id == kTexSubImage2D) ||
-           (depth == 1 && unpack_image_height == 0));
-    // We expect an Image at this point, not a WebGL-rendered canvas.
     DCHECK(image);
     // TODO(crbug.com/612542): Implement GPU-to-GPU copy path for more
     // cases, like copying to layers of 3D textures, and elements of
     // 2D texture arrays.
     const bool source_has_flip_y = is_origin_top_left_ && is_webgl_canvas;
-    TexImageImpl(function_id, target, level, internalformat, xoffset, yoffset,
-                 zoffset, format, type, image.get(),
-                 WebGLImageConversion::kHtmlDomCanvas, source_has_flip_y,
-                 source_sub_rectangle, depth, unpack_image_height);
+    TexImageImpl(params, image.get(), WebGLImageConversion::kHtmlDomCanvas,
+                 source_has_flip_y);
   }
 }
 
@@ -5857,10 +5821,11 @@ void WebGLRenderingContextBase::texImage2D(
     GLenum type,
     CanvasRenderingContextHost* context_host,
     ExceptionState& exception_state) {
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_2D_PARAMS(params);
   TexImageHelperCanvasRenderingContextHost(
-      execution_context->GetSecurityOrigin(), kTexImage2D, target, level,
-      internalformat, format, type, 0, 0, 0, context_host,
-      GetTextureSourceSize(context_host), 1, 0, exception_state);
+      execution_context->GetSecurityOrigin(), params, context_host,
+      exception_state);
 }
 
 void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
@@ -6213,15 +6178,8 @@ void WebGLRenderingContextBase::texImage2D(ExecutionContext* execution_context,
                                            GLenum type,
                                            HTMLVideoElement* video,
                                            ExceptionState& exception_state) {
-  TexImageParams params = {
-      .function_id = kTexImage2D,
-      .target = target,
-      .level = level,
-      .internalformat = internalformat,
-      .format = format,
-      .type = type,
-  };
-  GetCurrentUnpackState(params);
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_2D_PARAMS(params);
   TexImageHelperHTMLVideoElement(execution_context->GetSecurityOrigin(), params,
                                  video, exception_state);
 }
@@ -6234,15 +6192,8 @@ void WebGLRenderingContextBase::texImage2D(ExecutionContext* execution_context,
                                            GLenum type,
                                            VideoFrame* frame,
                                            ExceptionState& exception_state) {
-  TexImageParams params = {
-      .function_id = kTexImage2D,
-      .target = target,
-      .level = level,
-      .internalformat = internalformat,
-      .format = format,
-      .type = type,
-  };
-  GetCurrentUnpackState(params);
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_2D_PARAMS(params);
   TexImageHelperVideoFrame(execution_context->GetSecurityOrigin(), params,
                            frame, exception_state);
 }
@@ -6389,15 +6340,8 @@ void WebGLRenderingContextBase::texImage2D(GLenum target,
                                            GLenum type,
                                            ImageBitmap* bitmap,
                                            ExceptionState& exception_state) {
-  TexImageParams params = {
-      .function_id = kTexImage2D,
-      .target = target,
-      .level = level,
-      .internalformat = internalformat,
-      .format = format,
-      .type = type,
-  };
-  GetCurrentUnpackState(params);
+  TexImageParams params;
+  POPULATE_TEX_IMAGE_2D_PARAMS(params);
   TexImageHelperImageBitmap(params, bitmap, exception_state);
 }
 
@@ -6503,9 +6447,12 @@ void WebGLRenderingContextBase::texSubImage2D(
     GLenum format,
     GLenum type,
     MaybeShared<DOMArrayBufferView> pixels) {
-  TexImageHelperDOMArrayBufferView(kTexSubImage2D, target, level, 0, width,
-                                   height, 1, 0, format, type, xoffset, yoffset,
-                                   0, pixels.Get(), kNullNotAllowed, 0);
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
+  params.width = width;
+  params.height = height;
+  params.depth = 1;
+  TexImageHelperDOMArrayBufferView(params, pixels.Get(), kNullNotAllowed, 0);
 }
 
 void WebGLRenderingContextBase::texSubImage2D(GLenum target,
@@ -6515,16 +6462,8 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target,
                                               GLenum format,
                                               GLenum type,
                                               ImageData* pixels) {
-  TexImageParams params = {
-      .function_id = kTexSubImage2D,
-      .target = target,
-      .level = level,
-      .xoffset = xoffset,
-      .yoffset = yoffset,
-      .format = format,
-      .type = type,
-  };
-  GetCurrentUnpackState(params);
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
   TexImageHelperImageData(params, pixels);
 }
 
@@ -6538,16 +6477,8 @@ void WebGLRenderingContextBase::texSubImage2D(
     GLenum type,
     HTMLImageElement* image,
     ExceptionState& exception_state) {
-  TexImageParams params = {
-      .function_id = kTexSubImage2D,
-      .target = target,
-      .level = level,
-      .xoffset = xoffset,
-      .yoffset = yoffset,
-      .format = format,
-      .type = type,
-  };
-  GetCurrentUnpackState(params);
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
   TexImageHelperHTMLImageElement(execution_context->GetSecurityOrigin(), params,
                                  image, exception_state);
 }
@@ -6562,10 +6493,11 @@ void WebGLRenderingContextBase::texSubImage2D(
     GLenum type,
     CanvasRenderingContextHost* context_host,
     ExceptionState& exception_state) {
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
   TexImageHelperCanvasRenderingContextHost(
-      execution_context->GetSecurityOrigin(), kTexSubImage2D, target, level, 0,
-      format, type, xoffset, yoffset, 0, context_host,
-      GetTextureSourceSize(context_host), 1, 0, exception_state);
+      execution_context->GetSecurityOrigin(), params, context_host,
+      exception_state);
 }
 
 void WebGLRenderingContextBase::texSubImage2D(
@@ -6578,16 +6510,8 @@ void WebGLRenderingContextBase::texSubImage2D(
     GLenum type,
     HTMLVideoElement* video,
     ExceptionState& exception_state) {
-  TexImageParams params = {
-      .function_id = kTexSubImage2D,
-      .target = target,
-      .level = level,
-      .xoffset = xoffset,
-      .yoffset = yoffset,
-      .format = format,
-      .type = type,
-  };
-  GetCurrentUnpackState(params);
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
   TexImageHelperHTMLVideoElement(execution_context->GetSecurityOrigin(), params,
                                  video, exception_state);
 }
@@ -6602,16 +6526,8 @@ void WebGLRenderingContextBase::texSubImage2D(
     GLenum type,
     VideoFrame* frame,
     ExceptionState& exception_state) {
-  TexImageParams params = {
-      .function_id = kTexSubImage2D,
-      .target = target,
-      .level = level,
-      .xoffset = xoffset,
-      .yoffset = yoffset,
-      .format = format,
-      .type = type,
-  };
-  GetCurrentUnpackState(params);
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
   TexImageHelperVideoFrame(execution_context->GetSecurityOrigin(), params,
                            frame, exception_state);
 }
@@ -6624,16 +6540,8 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target,
                                               GLenum type,
                                               ImageBitmap* bitmap,
                                               ExceptionState& exception_state) {
-  TexImageParams params = {
-      .function_id = kTexSubImage2D,
-      .target = target,
-      .level = level,
-      .xoffset = xoffset,
-      .yoffset = yoffset,
-      .format = format,
-      .type = type,
-  };
-  GetCurrentUnpackState(params);
+  TexImageParams params;
+  POPULATE_TEX_SUB_IMAGE_2D_PARAMS(params);
   TexImageHelperImageBitmap(params, bitmap, exception_state);
 }
 
@@ -8059,17 +7967,17 @@ bool WebGLRenderingContextBase::ValidateTexFuncParameters(
 }
 
 bool WebGLRenderingContextBase::ValidateTexFuncData(
-    const char* function_name,
-    TexImageDimension tex_dimension,
-    GLint level,
-    GLsizei width,
-    GLsizei height,
-    GLsizei depth,
-    GLenum format,
-    GLenum type,
+    const TexImageParams& params,
     DOMArrayBufferView* pixels,
     NullDisposition disposition,
     GLuint src_offset) {
+  const char* function_name = GetTexImageFunctionName(params.function_id);
+  TexImageDimension tex_dimension;
+  if (params.function_id == kTexImage2D || params.function_id == kTexSubImage2D)
+    tex_dimension = kTex2D;
+  else
+    tex_dimension = kTex3D;
+
   // All calling functions check isContextLost, so a duplicate check is not
   // needed here.
   if (!pixels) {
@@ -8080,12 +7988,12 @@ bool WebGLRenderingContextBase::ValidateTexFuncData(
     return false;
   }
 
-  if (!ValidateSettableTexFormat(function_name, format))
+  if (!ValidateSettableTexFormat(function_name, params.format))
     return false;
 
   auto pixelType = pixels->GetType();
 
-  switch (type) {
+  switch (params.type) {
     case GL_BYTE:
       if (pixelType != DOMArrayBufferView::kTypeInt8) {
         SynthesizeGLError(GL_INVALID_OPERATION, function_name,
@@ -8169,7 +8077,7 @@ bool WebGLRenderingContextBase::ValidateTexFuncData(
 
   unsigned total_bytes_required, skip_bytes;
   GLenum error = WebGLImageConversion::ComputeImageSizeInBytes(
-      format, type, width, height, depth,
+      params.format, params.type, *params.width, *params.height, *params.depth,
       GetUnpackPixelStoreParams(tex_dimension), &total_bytes_required, nullptr,
       &skip_bytes);
   if (error != GL_NO_ERROR) {

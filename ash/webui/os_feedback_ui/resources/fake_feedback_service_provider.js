@@ -4,7 +4,7 @@
 
 import {FakeMethodResolver} from 'chrome://resources/ash/common/fake_method_resolver.js';
 
-import {FeedbackServiceProviderInterface} from './feedback_types.js';
+import {FeedbackContext, FeedbackServiceProviderInterface} from './feedback_types.js';
 
 /**
  * @fileoverview
@@ -17,21 +17,38 @@ export class FakeFeedbackServiceProvider {
     this.methods_ = new FakeMethodResolver();
 
     // Setup method resolvers.
-    this.methods_.register('getUserEmail');
+    this.methods_.register('getFeedbackContext');
+
+    /**
+     * Use to track how many times getFeedbackContext has been called.
+     * @private {number}
+     */
+    this.getFeedbackContextCallCount_ = 0;
   }
 
   /**
-   * @return {!Promise<{email: !string}>}
+   * @returns {number}
    */
-  getUserEmail() {
-    return this.methods_.resolveMethod('getUserEmail');
+  getFeedbackContextCallCount() {
+    return this.getFeedbackContextCallCount_;
   }
 
   /**
-   * Sets the value that will be returned when calling getUserEmail().
-   * @param {!string} email
+   * @return {!Promise<{
+   *    feedbackContext: !FeedbackContext,
+   *  }>}
    */
-  setFakeEmail(email) {
-    this.methods_.setResult('getUserEmail', {email: email});
+  getFeedbackContext() {
+    this.getFeedbackContextCallCount_++;
+    return this.methods_.resolveMethod('getFeedbackContext');
+  }
+
+  /**
+   * Sets the value that will be returned when calling getFeedbackContext().
+   * @param {!FeedbackContext} feedbackContext
+   */
+  setFakeFeedbackContext(feedbackContext) {
+    this.methods_.setResult(
+        'getFeedbackContext', {feedbackContext: feedbackContext});
   }
 }

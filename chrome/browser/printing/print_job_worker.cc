@@ -410,7 +410,7 @@ void PrintJobWorker::OnNewPage() {
   if (!document_)
     return;
 
-  bool do_spool_job = true;
+  bool do_spool_document = true;
 #if BUILDFLAG(IS_WIN)
   const bool source_is_pdf =
       !print_job_->document()->settings().is_modifiable();
@@ -419,16 +419,16 @@ void PrintJobWorker::OnNewPage() {
     if (!OnNewPageHelperGdi())
       return;
 
-    do_spool_job = false;
+    do_spool_document = false;
   }
 #endif  // BUILDFLAG(IS_WIN)
 
-  if (do_spool_job) {
+  if (do_spool_document) {
     if (!document_->GetMetafile()) {
       PostWaitForPage();
       return;
     }
-    SpoolJob();
+    SpoolDocument();
   }
 
   OnDocumentDone();
@@ -497,7 +497,6 @@ bool PrintJobWorker::Start() {
 void PrintJobWorker::CheckDocumentSpoolingComplete() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(page_number_, PageNumber::npos());
-  DCHECK(document_);
   // PrintJob must own this, because only PrintJob can send notifications.
   DCHECK(print_job_);
 }
@@ -515,6 +514,7 @@ void PrintJobWorker::OnDocumentDone() {
 }
 
 void PrintJobWorker::FinishDocumentDone(int job_id) {
+  DCHECK(document_);
   print_job_->PostTask(
       FROM_HERE, base::BindOnce(&DocDoneNotificationCallback,
                                 base::RetainedRef(print_job_.get()), job_id,
@@ -545,7 +545,7 @@ void PrintJobWorker::SpoolPage(PrintedPage* page) {
 }
 #endif  // BUILDFLAG(IS_WIN)
 
-void PrintJobWorker::SpoolJob() {
+void PrintJobWorker::SpoolDocument() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   mojom::ResultCode result =
       document_->RenderPrintedDocument(printing_context_.get());

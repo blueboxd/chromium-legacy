@@ -1530,19 +1530,21 @@ NGFlexLayoutAlgorithm::GiveItemsFinalPositionAndSizeForFragmentation(
       if (!is_column_) {
         has_container_separation =
             offset.block_offset > row_block_offset &&
-            (!item_break_token || (broke_before_row && flex_item_idx == 0 &&
+            (!item_break_token || (*broke_before_row && flex_item_idx == 0 &&
                                    item_break_token->IsBreakBefore()));
         // Don't attempt to break before a row if the fist item is resuming
         // layout. In which case, the row should be resuming layout, as well.
         if (flex_item_idx == 0 &&
-            (!item_break_token || !IsResumingLayout(item_break_token))) {
+            (!item_break_token ||
+             (item_break_token->IsBreakBefore() && *broke_before_row))) {
           // Rows have no layout result, so if the row breaks before, we
           // will break before the first item in the row instead.
           bool row_container_separation = has_processed_first_line_;
+          bool is_first_for_row = !item_break_token || *broke_before_row;
           NGBreakStatus row_break_status = BreakBeforeRowIfNeeded(
               line_output, (*row_break_between_outputs)[flex_line_idx],
-              flex_line_idx, flex_item->ng_input_node, *layout_result,
-              row_container_separation);
+              flex_line_idx, flex_item->ng_input_node, row_container_separation,
+              is_first_for_row);
           if (row_break_status == NGBreakStatus::kBrokeBefore) {
             ConsumeRemainingFragmentainerSpace(previously_consumed_block_size,
                                                &line_output);
@@ -2264,8 +2266,8 @@ NGBreakStatus NGFlexLayoutAlgorithm::BreakBeforeRowIfNeeded(
     EBreakBetween row_break_between,
     wtf_size_t row_index,
     NGLayoutInputNode child,
-    const NGLayoutResult& layout_result,
-    bool has_container_separation) {
+    bool has_container_separation,
+    bool is_first_for_row) {
   DCHECK(!is_column_);
   DCHECK(InvolvedInBlockFragmentation(container_builder_));
 
@@ -2284,12 +2286,8 @@ NGBreakStatus NGFlexLayoutAlgorithm::BreakBeforeRowIfNeeded(
     }
   }
 
-  // TODO(almaher): We won't be able to rely solely on checking if the first
-  // child is the first for node once we allow more than one break before for
-  // alignment.
   bool breakable_at_start_of_container = IsBreakableAtStartOfResumedContainer(
-      ConstraintSpace(), layout_result, container_builder_);
-
+      ConstraintSpace(), container_builder_, is_first_for_row);
   NGBreakAppeal appeal_before = CalculateBreakAppealBefore(
       ConstraintSpace(), NGLayoutResult::EStatus::kSuccess, row_break_between,
       has_container_separation, breakable_at_start_of_container);

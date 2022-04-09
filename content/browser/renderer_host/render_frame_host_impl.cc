@@ -2444,16 +2444,15 @@ void RenderFrameHostImpl::AddMessageToConsole(
 void RenderFrameHostImpl::ExecuteJavaScriptMethod(
     const std::u16string& object_name,
     const std::u16string& method_name,
-    base::Value arguments,
+    base::Value::List arguments,
     JavaScriptResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(arguments.is_list());
   CHECK(CanExecuteJavaScript());
   AssertNonSpeculativeFrame();
 
   const bool wants_result = !callback.is_null();
   GetAssociatedLocalFrame()->JavaScriptMethodExecuteRequest(
-      object_name, method_name, std::move(arguments.GetList()), wants_result,
+      object_name, method_name, std::move(arguments), wants_result,
       std::move(callback));
 }
 
@@ -2673,14 +2672,9 @@ void RenderFrameHostImpl::RunScreenAIAnnotator() {
   if (!features::IsScreenAIEnabled())
     return;
   if (!ax_screen_ai_annotator_) {
-    mojo::AssociatedRemote<screen_ai::mojom::ScreenAIAnnotator>
-        screen_ai_annotator;
-    GetRemoteAssociatedInterfaces()->GetInterface(&screen_ai_annotator);
-
-    ax_screen_ai_annotator_ = std::make_unique<AXScreenAIAnnotator>(
-        this, std::move(screen_ai_annotator));
+    ax_screen_ai_annotator_ =
+        std::make_unique<AXScreenAIAnnotator>(this, GetBrowserContext());
   }
-
   ax_screen_ai_annotator_->Run();
 }
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -5043,9 +5037,14 @@ void RenderFrameHostImpl::UpdateFaviconURL(
   delegate_->UpdateFaviconURL(this, GetPage().favicon_urls());
 }
 
+float RenderFrameHostImpl::GetPageScaleFactor() const {
+  DCHECK(!GetParent());
+  return page_scale_factor_;
+}
+
 void RenderFrameHostImpl::ScaleFactorChanged(float scale) {
   DCHECK(!GetParent());
-  GetPage().set_page_scale_factor(scale);
+  page_scale_factor_ = scale;
   delegate_->OnPageScaleFactorChanged(GetPage());
 }
 

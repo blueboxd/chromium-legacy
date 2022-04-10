@@ -253,7 +253,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'ab4d4ae9e2679ce94a443cdd1eb8eff00b8a1256',
+  'skia_revision': '1a668363fdf0d663c6df3f124e7c10796bc842f0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -364,7 +364,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '6f1c275c015146e3e9974d33dbcbb6e34001ecd8',
+  'dawn_revision': '668d739adf873ef7b352cd01c07ab92f0a669e02',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -412,7 +412,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'libunwind_revision':    '6e7aaea9031170e21432fd425b7ffcab01ef80e9',
+  'libunwind_revision':    'c39fea88739be63a2d5590a938ce19d762b915fc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -825,7 +825,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'LIfbqHGMMWmZNux8ogKGwXraHx7dYnCSTnGZ5_8V3TEC',
+          'version': '6MPXuiHeCvdaKElycwcxhGy6KU9_LcYh5QEzszhCSkoC',
         },
       ],
       'dep_type': 'cipd',
@@ -836,7 +836,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': 'g46NG_kKl7dg44ubHsGES0252OccIhmp2UcP1R1sRQQC',
+          'version': 'fqXLBr4ihBCcmHvoQDlDvGlooQKWmTwjesFGjNN5--kC',
         },
       ],
       'dep_type': 'cipd',
@@ -847,7 +847,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'TWotmdLSAZceA36noh264cpO5-1L1sl9RvjlgrdWKpUC',
+          'version': 'iTQoIYXnOGbadZqVp0d0I-qTuSbbuybNBUR9UChfUeIC',
         },
       ],
       'dep_type': 'cipd',
@@ -1601,7 +1601,7 @@ deps = {
   },
 
   'src/third_party/re2/src':
-    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + 'b84f2fe6777710af43e8af4fb56cc91b58e03575',
+    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + 'f093268f0cbcee6776d1e3f712ba8484f190ce9a',
 
   'src/third_party/r8': {
       'packages': [
@@ -1694,7 +1694,7 @@ deps = {
       'condition': 'checkout_android',
   },
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@d4572ee122d485b05b927c792bcdffb62b1032fe',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@f7e54bbfd85eb31a4f5a2d1f9ce5cf38f8e88911',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'ebe84bec02c041d28f902da0214bf442743fc907',
@@ -1803,7 +1803,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@70a3a7be582e6d79ddea2d1d441865382073df2e',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f8239b644ad0aba71015a57a25c309daef7c7f1b',
     'condition': 'checkout_src_internal',
   },
 
@@ -1833,7 +1833,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'XZ9jTJZ3TU6vebZZZnp2GXyJFkciLF3BIctSCbqGzngC',
+        'version': 'vSun6Ct10hCIZp8jXjiPGYXQMPpDlVODmC66p2p5mawC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1844,7 +1844,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'op_yaL8BdVm4E3RWxgPqHZu5SDlYipGaJwKciprhK_8C',
+        'version': '_8aWmG3aBRmJFeihswX7hm25cf7tB0ub6i84QeiK9uIC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

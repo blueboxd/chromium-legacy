@@ -364,9 +364,6 @@ extern const char kDiscountConsentV2Description[];
 extern const char kDoubleBufferCompositingName[];
 extern const char kDoubleBufferCompositingDescription[];
 
-extern const char kDnsOverHttpsName[];
-extern const char kDnsOverHttpsDescription[];
-
 extern const char kDnsHttpssvcName[];
 extern const char kDnsHttpssvcDescription[];
 
@@ -485,17 +482,11 @@ extern const char kDesktopPWAsNotificationIconAndTitleDescription[];
 extern const char kDesktopPWAsLaunchHandlerName[];
 extern const char kDesktopPWAsLaunchHandlerDescription[];
 
-extern const char kDesktopPWAsLinkCapturingName[];
-extern const char kDesktopPWAsLinkCapturingDescription[];
-
 extern const char kDesktopPWAsManifestIdName[];
 extern const char kDesktopPWAsManifestIdDescription[];
 
 extern const char kDesktopPWAsTabStripName[];
 extern const char kDesktopPWAsTabStripDescription[];
-
-extern const char kDesktopPWAsTabStripLinkCapturingName[];
-extern const char kDesktopPWAsTabStripLinkCapturingDescription[];
 
 extern const char kDesktopPWAsTabStripSettingsName[];
 extern const char kDesktopPWAsTabStripSettingsDescription[];
@@ -2767,6 +2758,9 @@ extern const char kFilesWebDriveOfficeDescription[];
 
 extern const char kFiltersInRecentsName[];
 extern const char kFiltersInRecentsDescription[];
+
+extern const char kFiltersInRecentsV2Name[];
+extern const char kFiltersInRecentsV2Description[];
 
 extern const char kFloatWindow[];
 extern const char kFloatWindowDescription[];

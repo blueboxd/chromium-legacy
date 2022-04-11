@@ -1326,11 +1326,6 @@
     "expiry_milestone": 93
   },
   {
-    "name": "dns-over-https",
-    "owners": [ "ericorth", "doh-core@google.com" ],
-    "expiry_milestone": 88
-  },
-  {
     "name": "dns-proxy-enable-doh",
     "owners": [ "garrick", "jasongustaman" ],
     "expiry_milestone": 104
@@ -1364,6 +1359,11 @@
     "name": "download-bubble",
     "owners": [ "bhatiarohit", "chrome-safebrowsing-alerts@google.com"],
     "expiry_milestone": 103
+  },
+  {
+    "name": "download-calendar",
+    "owners": [ "ewannpv", "gambard" ],
+    "expiry_milestone": 107
   },
   {
     "name": "download-later",
@@ -1909,11 +1909,6 @@
   },
   {
     "name": "enable-desktop-pwas-tab-strip",
-    "owners": [ "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 104
-  },
-  {
-    "name": "enable-desktop-pwas-tab-strip-link-capturing",
     "owners": [ "desktop-pwas-team@google.com" ],
     "expiry_milestone": 104
   },
@@ -3246,6 +3241,11 @@
     "name": "files-filters-in-recents",
     "owners": [ "simmonsjosh@google.com", "benhartney@google.com", "wenbojie" ],
     "expiry_milestone": 103
+  },
+  {
+    "name": "files-filters-in-recents-v2",
+    "owners": [ "simmonsjosh@google.com", "benhartney@google.com", "wenbojie" ],
+    "expiry_milestone": 110
   },
   {
     "name": "files-single-partition-format",

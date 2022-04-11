@@ -4042,11 +4042,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsTabStripName,
      flag_descriptions::kDesktopPWAsTabStripDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDesktopPWAsTabStrip)},
-    {"enable-desktop-pwas-tab-strip-link-capturing",
-     flag_descriptions::kDesktopPWAsTabStripLinkCapturingName,
-     flag_descriptions::kDesktopPWAsTabStripLinkCapturingDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kDesktopPWAsTabStripLinkCapturing)},
     {"enable-desktop-pwas-tab-strip-settings",
      flag_descriptions::kDesktopPWAsTabStripSettingsName,
      flag_descriptions::kDesktopPWAsTabStripSettingsDescription, kOsDesktop,
@@ -4768,6 +4763,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"files-filters-in-recents", flag_descriptions::kFiltersInRecentsName,
      flag_descriptions::kFiltersInRecentsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFiltersInRecents)},
+    {"files-filters-in-recents-v2", flag_descriptions::kFiltersInRecentsV2Name,
+     flag_descriptions::kFiltersInRecentsV2Description, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kFiltersInRecentsV2)},
     {"files-single-partition-format",
      flag_descriptions::kFilesSinglePartitionFormatName,
      flag_descriptions::kFilesSinglePartitionFormatDescription, kOsCrOS,
@@ -6383,11 +6381,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDnsHttpssvcDescription,
      kOsMac | kOsWin | kOsCrOS | kOsAndroid,
      FEATURE_VALUE_TYPE(net::features::kDnsHttpssvc)},
-
-    {"dns-over-https", flag_descriptions::kDnsOverHttpsName,
-     flag_descriptions::kDnsOverHttpsDescription,
-     kOsMac | kOsWin | kOsCrOS | kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kDnsOverHttps)},
 
     {"web-bundles", flag_descriptions::kWebBundlesName,
      flag_descriptions::kWebBundlesDescription, kOsAll,
@@ -8552,14 +8545,6 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
     return true;
   }
 #endif  // BUILDFLAG(IS_WIN)
-
-  if (!strcmp("dns-over-https", entry.internal_name) &&
-      SystemNetworkContextManager::GetInstance() &&
-      (SystemNetworkContextManager::GetStubResolverConfigReader()
-           ->ShouldDisableDohForManaged() ||
-       features::kDnsOverHttpsShowUiParam.Get())) {
-    return true;
-  }
 
   if (flags::IsFlagExpired(storage, entry.internal_name))
     return true;

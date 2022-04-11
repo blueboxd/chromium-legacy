@@ -159,6 +159,10 @@ const char kDiscoverFeedInNtpDescription[] =
     "When enabled, replaces articles feed with new content Suggestion Feed in "
     "the NTP.";
 
+const char kDownloadCalendarName[] = "Download Calendar";
+const char kDownloadCalendarDescription[] =
+    "Allows user to download & save Calendar";
+
 const char kEditPasswordsInSettingsName[] = "Edit passwords in settings";
 const char kEditPasswordsInSettingsDescription[] =
     "Enables password editing in settings.";
@@ -528,6 +532,12 @@ const char kToolbarContainerName[] = "Use Toolbar Containers";
 const char kToolbarContainerDescription[] =
     "When enabled, the toolbars and their fullscreen animations will be "
     "managed by the toolbar container coordinator rather than BVC.";
+
+const char kUpdateHistoryEntryPointsInIncognitoName[] =
+    "Update history entry points in Incognito.";
+const char kUpdateHistoryEntryPointsInIncognitoDescription[] =
+    "When enabled, the entry points to history UI from Incognito mode will be "
+    "removed.";
 
 const char kUseLensToSearchForImageName[] =
     "Use Google Lens to Search for images";

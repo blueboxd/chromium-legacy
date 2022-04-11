@@ -40,7 +40,6 @@ extern const base::Feature kPasswordNotes;
 extern const base::Feature kSendPasswords;
 extern const base::Feature kLeakDetectionUnauthenticated;
 extern const base::Feature kPasswordChange;
-extern const base::Feature kPasswordChangeOnlyRecentCredentials;
 extern const base::Feature kPasswordChangeInSettings;
 extern const base::Feature kPasswordDomainCapabilitiesFetching;
 extern const base::Feature kPasswordImport;
@@ -128,9 +127,9 @@ bool UsesUnifiedPasswordManagerUi();
 
 #if BUILDFLAG(IS_ANDROID)
 // Returns true if the unified password manager feature is active and in a stage
-// that requires migrating existing credentials initially. Independent of
+// that requires migrating existing credentials. Independent of
 // whether only non-syncable data needs to be migrated or full credentials.
-bool RequiresInitialMigrationForUnifiedPasswordManager();
+bool RequiresMigrationForUnifiedPasswordManager();
 #endif  // IS_ANDROID
 
 #if BUILDFLAG(IS_ANDROID)

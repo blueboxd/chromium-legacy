@@ -2280,6 +2280,19 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PasswordManager.PasswordSyncState" enum="PasswordSyncState"
     expires_after="2022-08-14">
+  <obsolete>
+    Removed in M102. Replaced with PasswordManager.PasswordSyncState2.
+  </obsolete>
+  <owner>kazinova@google.com</owner>
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    Whether the passwords are syncing and, if not, then what's causing sync
+    failures. Recorded after the first sync attempt either succeeds or fails.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.PasswordSyncState2" enum="PasswordSyncState"
+    expires_after="2022-08-14">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -2697,6 +2710,22 @@ chromium-metrics-reviews@google.com.
     only two fields and they both are filled by Chrome) that indicates whether
     the form is ready for submission. Recorded when a Touch To Fill sheet is
     shown for that form.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.TouchToFill.TimeToSuccessfulLogin" units="ms"
+    expires_after="2022-08-21">
+  <owner>ioanap@chromium.org</owner>
+  <owner>fhorschig@chromium.org</owner>
+  <owner>kolos@chromium.org</owner>
+  <summary>
+    The time in milliseconds between filling by the Touch To Fill and a
+    successful submission (To ensure filling and submitting correspond to each
+    other, the usernames should coincide and the timestamps should be within one
+    minute. A successful login after a failed submission or manual typing is not
+    reported). Used to compare the times when automated submission is enabled
+    and disabled. Thus, we measure the time saved for a user. Recorded when the
+    password manager detects that the login was successful.
   </summary>
 </histogram>
 

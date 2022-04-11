@@ -104,12 +104,6 @@ const base::Feature kLeakDetectionUnauthenticated = {
 const base::Feature kPasswordChange = {"PasswordChange",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables offering automated password change only for compromised credentials
-// that are recently used. Only has an effect if PasswordChangeInSettings is
-// also enabled.
-const base::Feature kPasswordChangeOnlyRecentCredentials = {
-    "PasswordChangeOnlyRecentCredentials", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables password change flow from bulk leak check in settings.
 const base::Feature kPasswordChangeInSettings = {
     "PasswordChangeInSettings", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -277,7 +271,7 @@ bool UsesUnifiedPasswordManagerUi() {
 #endif  // IS_ANDROID
 
 #if BUILDFLAG(IS_ANDROID)
-bool RequiresInitialMigrationForUnifiedPasswordManager() {
+bool RequiresMigrationForUnifiedPasswordManager() {
   if (!base::FeatureList::IsEnabled(kUnifiedPasswordManagerAndroid))
     return false;
   UpmExperimentVariation variation = kUpmExperimentVariationParam.Get();

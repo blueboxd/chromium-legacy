@@ -15,6 +15,7 @@
 #include "ash/system/palette/palette_tool.h"
 #include "ash/system/palette/tools/metalayer_mode.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/events/test/event_generator.h"
@@ -227,7 +228,12 @@ TEST_F(HighlighterControllerTest, HighlighterPrediction) {
 }
 
 // Test that stylus gestures are correctly recognized by HighlighterController.
-TEST_F(HighlighterControllerTest, HighlighterGestures) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#define MAYBE_HighlighterGestures DISABLED_HighlighterGestures
+#else
+#define MAYBE_HighlighterGestures HighlighterGestures
+#endif
+TEST_F(HighlighterControllerTest, MAYBE_HighlighterGestures) {
   controller_test_api_->SetEnabled(true);
   ui::test::EventGenerator* event_generator = GetEventGenerator();
   event_generator->EnterPenPointerMode();
@@ -378,9 +384,16 @@ TEST_F(HighlighterControllerTest, HighlighterGesturesRotated) {
   EXPECT_EQ("600,200 300x400", controller_test_api_->selection().ToString());
 }
 
+// Flaky on Linux Chromium OS ASan LSan. https://crbug.com/1315061
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_InterruptedStroke DISABLED_InterruptedStroke
+#else
+#define MAYBE_InterruptedStroke InterruptedStroke
+#endif
+
 // Test that a stroke interrupted close to the screen edge is treated as
 // contiguous.
-TEST_F(HighlighterControllerTest, InterruptedStroke) {
+TEST_F(HighlighterControllerTest, MAYBE_InterruptedStroke) {
   controller_test_api_->SetEnabled(true);
   ui::test::EventGenerator* event_generator = GetEventGenerator();
   event_generator->EnterPenPointerMode();

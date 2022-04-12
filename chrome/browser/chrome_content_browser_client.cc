@@ -26,6 +26,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
@@ -176,7 +177,6 @@
 #include "components/blocked_content/popup_blocker.h"
 #include "components/browsing_topics/browsing_topics_service.h"
 #include "components/captive_portal/core/buildflags.h"
-#include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -2424,7 +2424,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif
       switches::kAllowInsecureLocalhost,
       switches::kAppsGalleryURL,
-      switches::kCloudPrintURL,
       switches::kDisableJavaScriptHarmonyShipping,
       variations::switches::kEnableBenchmarking,
       switches::kEnableDistillabilityService,
@@ -6459,6 +6458,26 @@ bool ChromeContentBrowserClient::IsFirstPartySetsEnabled() {
     return true;
   }
   return local_state->GetBoolean(first_party_sets::kFirstPartySetsEnabled);
+}
+
+base::Value::Dict ChromeContentBrowserClient::GetFirstPartySetsOverrides() {
+  if (!g_browser_process) {
+    // If browser process doesn't exist (e.g. in minimal mode on Android),
+    // we can't provide any overrides.
+    return base::Value::Dict();
+  }
+  PrefService* local_state = g_browser_process->local_state();
+  if (!local_state || !local_state->FindPreference(
+                          first_party_sets::kFirstPartySetsOverrides)) {
+    return base::Value::Dict();
+  }
+  const base::Value* maybe_dict =
+      local_state->GetDictionary(first_party_sets::kFirstPartySetsOverrides);
+
+  if (!maybe_dict)
+    return base::Value::Dict();
+
+  return maybe_dict->GetDict().Clone();
 }
 
 content::mojom::AlternativeErrorPageOverrideInfoPtr

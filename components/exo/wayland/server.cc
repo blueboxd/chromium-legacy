@@ -38,6 +38,7 @@
 #include <xdg-shell-server-protocol.h>
 #include <xdg-shell-unstable-v6-server-protocol.h>
 
+#include <linux-dmabuf-unstable-v1-server-protocol.h>
 #include <memory>
 #include <string>
 #include <utility>
@@ -51,6 +52,7 @@
 #include "build/chromeos_buildflags.h"
 #include "components/exo/buildflags.h"
 #include "components/exo/capabilities.h"
+#include "components/exo/common_utils.h"
 #include "components/exo/display.h"
 #include "components/exo/wayland/overlay_prioritizer.h"
 #include "components/exo/wayland/serial_tracker.h"
@@ -71,9 +73,11 @@
 #include "components/exo/wayland/zcr_secure_output.h"
 #include "components/exo/wayland/zcr_stylus.h"
 #include "components/exo/wayland/zcr_vsync_feedback.h"
+#include "components/exo/wayland/zwp_linux_dmabuf.h"
 #include "components/exo/wayland/zwp_linux_explicit_synchronization.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/ozone/public/ozone_platform.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include <idle-inhibit-unstable-v1-server-protocol.h>
@@ -109,12 +113,6 @@
 
 #endif
 
-#if defined(USE_OZONE)
-#include <linux-dmabuf-unstable-v1-server-protocol.h>
-#include "components/exo/wayland/zwp_linux_dmabuf.h"
-#include "ui/ozone/public/ozone_platform.h"
-#endif
-
 #if defined(USE_FULLSCREEN_SHELL)
 #include <fullscreen-shell-unstable-v1-server-protocol.h>
 #include "components/exo/wayland/zwp_fullscreen_shell.h"
@@ -142,18 +140,6 @@ const char kWaylandSocketGroup[] = "wayland";
 // Directory name where all custom wayland sockets will live.
 constexpr base::FilePath::CharType kCustomServerDir[] =
     FILE_PATH_LITERAL("wayland");
-
-bool IsDrmAtomicAvailable() {
-#if defined(USE_OZONE)
-  auto& host_properties =
-      ui::OzonePlatform::GetInstance()->GetPlatformRuntimeProperties();
-  return host_properties.supports_overlays;
-#else
-  LOG(WARNING) << "Ozone disabled, cannot determine whether DrmAtomic is "
-                  "present. Assuming it is not";
-  return false;
-#endif
-}
 
 void wayland_log(const char* fmt, va_list argp) {
   LOG(WARNING) << "libwayland: " << base::StringPrintV(fmt, argp);
@@ -287,10 +273,8 @@ void Server::Initialize() {
   wl_global_create(wl_display_.get(), &wl_compositor_interface,
                    kWlCompositorVersion, this, bind_compositor);
   wl_global_create(wl_display_.get(), &wl_shm_interface, 1, display_, bind_shm);
-#if defined(USE_OZONE)
   wl_global_create(wl_display_.get(), &zwp_linux_dmabuf_v1_interface,
                    kZwpLinuxDmabufVersion, display_, bind_linux_dmabuf);
-#endif
   wl_global_create(wl_display_.get(), &wl_subcompositor_interface, 1, display_,
                    bind_subcompositor);
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays())

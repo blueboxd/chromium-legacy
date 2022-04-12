@@ -171,6 +171,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAppToWebAttribution,
     &kBackgroundThreadPool,
     &kBookmarkBottomSheet,
+    &kBulkTabRestore,
     &kCastDeviceFilter,
     &kCloseAllTabsModalDialog,
     &kCloseTabSuggestions,
@@ -295,6 +296,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kShowExtendedPreloadingSetting,
     &kStartSurfaceAndroid,
     &kUmaBackgroundSessions,
+    &kUpdateHistoryEntryPointsInIncognito,
     &kUpdateNotificationScheduleServiceImmediateShowOption,
     &kVoiceSearchAudioCapturePolicy,
     &kVoiceButtonInTopToolbar,
@@ -303,6 +305,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &content_creation::kWebNotesDynamicTemplates,
     &content_creation::kWebNotesStylizeEnabled,
     &kWebApkInstallCompleteNotification,
+    &kWebApkInstallService,
     &kWebApkTrampolineOnInitialIntent,
     &features::kDnsOverHttps,
     &notifications::features::kUseChimeAndroidSdk,
@@ -359,6 +362,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &switches::kAllowSyncOffForChildAccounts,
     &switches::kForceStartupSigninPromo,
     &switches::kForceDisableExtendedSyncPromos,
+    &syncer::kEnableSyncImmediatelyInFRE,
     &syncer::kSyncTrustedVaultPassphraseRecovery,
     &syncer::kSyncAndroidPromosWithSingleButton,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
@@ -433,6 +437,9 @@ const base::Feature kBackgroundThreadPool{"BackgroundThreadPool",
 const base::Feature kBookmarkBottomSheet{"BookmarkBottomSheet",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kBulkTabRestore{"BulkTabRestore",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kConditionalTabStripAndroid{
     "ConditionalTabStripAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -441,7 +448,7 @@ const base::Feature kCastDeviceFilter{"CastDeviceFilter",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCloseAllTabsModalDialog{"CloseAllTabsModalDialog",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCloseTabSuggestions{"CloseTabSuggestions",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
@@ -810,6 +817,9 @@ const base::Feature kStartSurfaceAndroid{"StartSurfaceAndroid",
 const base::Feature kUmaBackgroundSessions{"UMABackgroundSessions",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kUpdateHistoryEntryPointsInIncognito{
+    "UpdateHistoryEntryPointsInIncognito", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kUpdateNotificationScheduleServiceImmediateShowOption{
     "UpdateNotificationScheduleServiceImmediateShowOption",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -833,6 +843,10 @@ const base::Feature kWebOtpCrossDeviceSimpleString{
 
 const base::Feature kWebApkInstallCompleteNotification{
     "WebApkInstallCompleteNotification", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables the Chrome Android WebAPK-install service.
+const base::Feature kWebApkInstallService{"WebApkInstallService",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kWebApkTrampolineOnInitialIntent{
     "WebApkTrampolineOnInitialIntent", base::FEATURE_ENABLED_BY_DEFAULT};

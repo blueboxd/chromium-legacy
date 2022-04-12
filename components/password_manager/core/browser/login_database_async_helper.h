@@ -57,13 +57,16 @@ class LoginDatabaseAsyncHelper : private PasswordStoreSync {
   PasswordStoreChangeList RemoveLogin(
       const PasswordForm& form,
       PasswordStoreBackendMetricsRecorder metrics_recorder);
-  PasswordStoreChangeList RemoveLoginsCreatedBetween(base::Time delete_begin,
-                                                     base::Time delete_end);
+  PasswordStoreChangeList RemoveLoginsCreatedBetween(
+      base::Time delete_begin,
+      base::Time delete_end,
+      PasswordStoreBackendMetricsRecorder metrics_recorder);
   PasswordStoreChangeList RemoveLoginsByURLAndTime(
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time delete_begin,
       base::Time delete_end,
-      base::OnceCallback<void(bool)> sync_completion);
+      base::OnceCallback<void(bool)> sync_completion,
+      PasswordStoreBackendMetricsRecorder metrics_recorder);
   PasswordStoreChangeList DisableAutoSignInForOrigins(
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter);
 

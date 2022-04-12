@@ -154,7 +154,7 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
       AggregationService::AssemblyStatus status);
   void MarkReportCompleted(AttributionReport::Id report_id);
 
-  void OnReportStored(CreateReportResult result);
+  void OnReportStored(AttributionTrigger trigger, CreateReportResult result);
 
   void MaybeSendDebugReport(AttributionReport&&);
 
@@ -202,7 +202,7 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
 
   base::ObserverList<AttributionObserver> observers_;
 
-  base::WeakPtrFactory<AttributionManagerImpl> weak_factory_;
+  base::WeakPtrFactory<AttributionManagerImpl> weak_factory_{this};
 };
 
 // Gets the delay for a report that has failed to be sent

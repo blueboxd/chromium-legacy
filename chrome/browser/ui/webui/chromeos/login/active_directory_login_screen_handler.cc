@@ -18,18 +18,11 @@
 
 namespace chromeos {
 
-constexpr StaticOobeScreenId ActiveDirectoryLoginView::kScreenId;
-
 ActiveDirectoryLoginScreenHandler::ActiveDirectoryLoginScreenHandler()
-    : BaseScreenHandler(kScreenId) {
-  set_user_acted_method_path_deprecated(
-      "login.ActiveDirectoryLoginScreen.userActed");
-}
+    : BaseScreenHandler(kScreenId) {}
 
-ActiveDirectoryLoginScreenHandler::~ActiveDirectoryLoginScreenHandler() {
-  if (screen_)
-    screen_->OnViewDestroyed(this);
-}
+ActiveDirectoryLoginScreenHandler::~ActiveDirectoryLoginScreenHandler() =
+    default;
 
 void ActiveDirectoryLoginScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
@@ -40,19 +33,7 @@ void ActiveDirectoryLoginScreenHandler::DeclareLocalizedValues(
                 ui::GetChromeOSDeviceTypeResourceId());
 }
 
-void ActiveDirectoryLoginScreenHandler::InitializeDeprecated() {
-  if (show_on_init_) {
-    show_on_init_ = false;
-    Show();
-  }
-}
-
 void ActiveDirectoryLoginScreenHandler::Show() {
-  if (!IsJavascriptAllowed()) {
-    show_on_init_ = true;
-    return;
-  }
-
   base::Value::Dict screen_data;
   screen_data.Set("realm", g_browser_process->platform_part()
                                ->browser_policy_connector_ash()
@@ -67,26 +48,14 @@ void ActiveDirectoryLoginScreenHandler::Show() {
   ShowInWebUI(std::move(screen_data));
 }
 
-void ActiveDirectoryLoginScreenHandler::Bind(
-    ActiveDirectoryLoginScreen* screen) {
-  screen_ = screen;
-  BaseScreenHandler::SetBaseScreenDeprecated(screen_);
-}
-
-void ActiveDirectoryLoginScreenHandler::Unbind() {
-  screen_ = nullptr;
-  BaseScreenHandler::SetBaseScreenDeprecated(nullptr);
-}
-
 void ActiveDirectoryLoginScreenHandler::Reset() {
-  CallJS("login.ActiveDirectoryLoginScreen.reset");
+  CallExternalAPI("reset");
 }
 
 void ActiveDirectoryLoginScreenHandler::SetErrorState(
     const std::string& username,
     int errorState) {
-  CallJS("login.ActiveDirectoryLoginScreen.setErrorState", username,
-         errorState);
+  CallExternalAPI("setErrorState", username, errorState);
 }
 
 }  // namespace chromeos

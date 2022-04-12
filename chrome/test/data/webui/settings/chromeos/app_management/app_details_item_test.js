@@ -105,8 +105,7 @@ suite('<app-management-app-details-item>', () => {
         'Chrome App');
   });
 
-  // Skipping as open store link not yet implemented for Web Store.
-  test.skip('Chrome App from web store', async function() {
+  test('Chrome App from web store', async function() {
     const options = {
       type: apps.mojom.AppType.kChromeApp,
       installSource: apps.mojom.InstallSource.kChromeWebStore,
@@ -131,7 +130,7 @@ suite('<app-management-app-details-item>', () => {
     expectEquals(
         appDetailsItem.shadowRoot.querySelector('#type-and-source')
             .textContent.trim(),
-        'Chrome App installed from Chrome Web Store');
+        'Chrome App installed from <a href="#">Chrome Web Store</a>');
   });
 
   test('Android App from play store', async function() {

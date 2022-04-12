@@ -41,6 +41,7 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "mojo/public/cpp/system/wait.h"
+#include "net/base/completion_repeating_callback.h"
 #include "net/base/escape.h"
 #include "net/base/features.h"
 #include "net/base/io_buffer.h"
@@ -126,6 +127,7 @@ namespace {
 
 using ::net::test::IsError;
 using ::net::test::IsOk;
+using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::Optional;
 using ::testing::Pointee;
@@ -421,13 +423,41 @@ class SimulatedCacheInterceptor : public net::URLRequestInterceptor {
   bool use_text_plain_;
 };
 
-// Fakes the TransportInfo passed to URLRequest::Delegate::OnConnected().
+// Observes net error results. Thread-compatible.
+class ResultObserver {
+ public:
+  ResultObserver() = default;
+
+  ResultObserver(const ResultObserver&) = delete;
+  ResultObserver& operator=(const ResultObserver&) = delete;
+
+  void Observe(int result) { results_.push_back(result); }
+
+  const std::vector<int>& results() { return results_; }
+
+ private:
+  std::vector<int> results_;
+};
+
+// Fakes the TransportInfo passed to `URLRequest::Delegate::OnConnected()`.
 class URLRequestFakeTransportInfoJob : public net::URLRequestJob {
  public:
-  // |transport_info| is subsequently passed to the OnConnected() callback.
-  URLRequestFakeTransportInfoJob(net::URLRequest* request,
-                                 const net::TransportInfo& transport_info)
-      : URLRequestJob(request), transport_info_(transport_info) {}
+  // `transport_info` is subsequently passed to the `OnConnected()` callback
+  // during `Start()`.
+  // `second_transport_info`, if non-nullopt, is passed to the `OnConnected()`
+  // callback during `ReadRawData()`.
+  // `connected_callback_result_observer`, if non-nullptr, is notified of all
+  // the results of calling `OnConnected()`.
+  URLRequestFakeTransportInfoJob(
+      net::URLRequest* request,
+      net::TransportInfo transport_info,
+      absl::optional<net::TransportInfo> second_transport_info,
+      ResultObserver* connected_callback_result_observer)
+      : URLRequestJob(request),
+        transport_info_(std::move(transport_info)),
+        second_transport_info_(std::move(second_transport_info)),
+        connected_callback_result_observer_(
+            connected_callback_result_observer) {}
 
   URLRequestFakeTransportInfoJob(const URLRequestFakeTransportInfoJob&) =
       delete;
@@ -443,7 +473,18 @@ class URLRequestFakeTransportInfoJob : public net::URLRequestJob {
                                   weak_factory_.GetWeakPtr()));
   }
 
-  int ReadRawData(net::IOBuffer* buf, int buf_size) override { return 0; }
+  int ReadRawData(net::IOBuffer* buf, int buf_size) override {
+    if (!second_transport_info_) {
+      return 0;
+    }
+
+    int result = NotifyConnected(
+        *second_transport_info_, base::BindLambdaForTesting([](int result) {
+          ADD_FAILURE() << "NotifyConnected() callback called with " << result;
+        }));
+    ObserveResult(result);
+    return result;
+  }
 
  private:
   void StartAsync() {
@@ -453,20 +494,19 @@ class URLRequestFakeTransportInfoJob : public net::URLRequestJob {
     const int result = NotifyConnected(
         transport_info_,
         base::BindOnce(
-            [](URLRequestFakeTransportInfoJob* job, int result) {
-              if (result != net::OK) {
-                job->NotifyStartError(result);
-                return;
-              }
-              job->NotifyHeadersComplete();
-            },
+            &URLRequestFakeTransportInfoJob::ConnectedCallbackComplete,
             base::Unretained(this)));
 
     // Wait for callback to be invoked in async case.
     if (result == net::ERR_IO_PENDING)
       return;
 
-    // Fail request on synchronous error.
+    ConnectedCallbackComplete(result);
+  }
+
+  void ConnectedCallbackComplete(int result) {
+    ObserveResult(result);
+
     if (result != net::OK) {
       NotifyStartError(result);
       return;
@@ -475,8 +515,23 @@ class URLRequestFakeTransportInfoJob : public net::URLRequestJob {
     NotifyHeadersComplete();
   }
 
-  // The fake transport info we pass to OnConnected().
+  void ObserveResult(int result) {
+    if (!connected_callback_result_observer_) {
+      return;
+    }
+
+    connected_callback_result_observer_->Observe(result);
+  }
+
+  // The fake transport info we pass to `NotifyConnected()` during `Start()`.
   const net::TransportInfo transport_info_;
+
+  // An optional fake transport info we pass to `NotifyConnected()` during
+  // `ReadRawData()`.
+  const absl::optional<net::TransportInfo> second_transport_info_;
+
+  // An observer to be called with each result of calling `NotifyConnected()`.
+  raw_ptr<ResultObserver> connected_callback_result_observer_;
 
   base::WeakPtrFactory<URLRequestFakeTransportInfoJob> weak_factory_{this};
 };
@@ -490,6 +545,20 @@ class FakeTransportInfoInterceptor : public net::URLRequestInterceptor {
       const net::TransportInfo& transport_info)
       : transport_info_(transport_info) {}
 
+  // Sets a second transport info that will be passed to `OnConnected()` when
+  // the response data is read.
+  void SetSecondTransportInfo(const net::TransportInfo& transport_info) {
+    second_transport_info_ = transport_info;
+  }
+
+  // Sets up `observer` to be notified of the result of all future calls to
+  // `NotifyConnected` from within `URLRequestFakeTransportInfoJob`.
+  //
+  // `observer` must outlive this instance.
+  void SetConnectedCallbackResultObserver(ResultObserver* observer) {
+    connected_callback_result_observer_ = observer;
+  }
+
   ~FakeTransportInfoInterceptor() override = default;
 
   FakeTransportInfoInterceptor(const FakeTransportInfoInterceptor&) = delete;
@@ -499,12 +568,16 @@ class FakeTransportInfoInterceptor : public net::URLRequestInterceptor {
   // URLRequestInterceptor implementation:
   std::unique_ptr<net::URLRequestJob> MaybeInterceptRequest(
       net::URLRequest* request) const override {
-    return std::make_unique<URLRequestFakeTransportInfoJob>(request,
-                                                            transport_info_);
+    return std::make_unique<URLRequestFakeTransportInfoJob>(
+        request, transport_info_, second_transport_info_,
+        connected_callback_result_observer_);
   }
 
  private:
   const net::TransportInfo transport_info_;
+  absl::optional<net::TransportInfo> second_transport_info_;
+
+  raw_ptr<ResultObserver> connected_callback_result_observer_ = nullptr;
 };
 
 // Returns a maximally-restrictive security state for use in tests.
@@ -639,7 +712,8 @@ class URLLoaderTest : public testing::Test {
     url_request_context_ = context_builder.Build();
     context().set_url_request_context(url_request_context_.get());
     resource_scheduler_client_ = base::MakeRefCounted<ResourceSchedulerClient>(
-        kProcessId, kRouteId, &resource_scheduler_,
+        kResourceSchedulerClientId, IsBrowserInitiated(false),
+        &resource_scheduler_,
         url_request_context_->network_quality_estimator());
     context().set_resource_scheduler_client(resource_scheduler_client_.get());
 
@@ -1019,6 +1093,7 @@ class URLLoaderTest : public testing::Test {
 
   static constexpr int kProcessId = 4;
   static constexpr int kRouteId = 8;
+  static constexpr ResourceScheduler::ClientId kResourceSchedulerClientId{99};
 
   // |OnServerReceivedRequest| allows subclasses to register additional logic to
   // execute once a request reaches the test server.
@@ -1178,6 +1253,114 @@ TEST_F(URLLoaderTest, MismatchingTargetIPAddressSpaceIsBlocked) {
       Optional(CorsErrorStatus(mojom::CorsError::kInvalidPrivateNetworkAccess,
                                mojom::IPAddressSpace::kPrivate,
                                mojom::IPAddressSpace::kLocal)));
+}
+
+// This test verifies that when the request's `target_ip_address_space` does not
+// match the resource's IP address space, and the policy is `kPreflightBlock`,
+// then `URLLoader::OnConnected()` returns the right error code. This error code
+// causes any cache entry in use to be invalidated.
+TEST_F(URLLoaderTest, MismatchingTargetIPAddressSpaceErrorCode) {
+  auto client_security_state = NewSecurityState();
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kPublic;
+  client_security_state->private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kPreflightBlock;
+  set_factory_client_security_state(std::move(client_security_state));
+
+  set_target_ip_address_space(mojom::IPAddressSpace::kPrivate);
+
+  ResultObserver connected_callback_result_observer;
+
+  net::TransportInfo info = net::DefaultTransportInfo();
+  info.endpoint = net::IPEndPoint(net::IPAddress(127, 0, 0, 1), 80);
+  auto interceptor = std::make_unique<FakeTransportInfoInterceptor>(info);
+
+  interceptor->SetConnectedCallbackResultObserver(
+      &connected_callback_result_observer);
+
+  const GURL url("http://fake-endpoint");
+
+  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
+      url, std::move(interceptor));
+
+  EXPECT_THAT(Load(url), IsError(net::ERR_FAILED));
+  EXPECT_THAT(
+      client()->completion_status().cors_error_status,
+      Optional(CorsErrorStatus(mojom::CorsError::kInvalidPrivateNetworkAccess,
+                               mojom::IPAddressSpace::kPrivate,
+                               mojom::IPAddressSpace::kLocal)));
+
+  EXPECT_THAT(connected_callback_result_observer.results(),
+              ElementsAre(IsError(net::ERR_INCONSISTENT_IP_ADDRESS_SPACE)));
+}
+
+// This test verifies that when the request calls `URLLoader::OnConnected()`
+// twice with endpoints belonging to different IP address spaces, but the
+// private network request policy is `kPreflightWarn`, then the request is not
+// blocked.
+TEST_F(URLLoaderTest, InconsistentIPAddressSpaceWarnIsNotBlocked) {
+  auto client_security_state = NewSecurityState();
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kPublic;
+  client_security_state->is_web_secure_context = true;
+  client_security_state->private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kPreflightWarn;
+  set_factory_client_security_state(std::move(client_security_state));
+
+  net::TransportInfo info = net::DefaultTransportInfo();
+  info.endpoint = net::IPEndPoint(net::IPAddress(1, 2, 3, 4), 80);
+  auto interceptor = std::make_unique<FakeTransportInfoInterceptor>(info);
+
+  info.endpoint = net::IPEndPoint(net::IPAddress(127, 0, 0, 1), 80);
+  interceptor->SetSecondTransportInfo(info);
+
+  const GURL url("http://fake-endpoint");
+
+  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
+      url, std::move(interceptor));
+
+  EXPECT_THAT(Load(url), IsOk());
+}
+
+// This test verifies that when the request calls `URLLoader::OnConnected()`
+// twice with endpoints belonging to different IP address spaces, the request
+// fails. In that case `URLLoader::OnConnected()` returns the right error code,
+// which causes any cache entry in use to be invalidated.
+TEST_F(URLLoaderTest, InconsistentIPAddressSpaceIsBlocked) {
+  auto client_security_state = NewSecurityState();
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kPublic;
+  client_security_state->is_web_secure_context = true;
+  client_security_state->private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kPreflightBlock;
+  set_factory_client_security_state(std::move(client_security_state));
+
+  ResultObserver connected_callback_result_observer;
+
+  net::TransportInfo info = net::DefaultTransportInfo();
+  info.endpoint = net::IPEndPoint(net::IPAddress(1, 2, 3, 4), 80);
+  auto interceptor = std::make_unique<FakeTransportInfoInterceptor>(info);
+
+  info.endpoint = net::IPEndPoint(net::IPAddress(127, 0, 0, 1), 80);
+  interceptor->SetSecondTransportInfo(info);
+  interceptor->SetConnectedCallbackResultObserver(
+      &connected_callback_result_observer);
+
+  const GURL url("http://fake-endpoint");
+
+  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
+      url, std::move(interceptor));
+
+  EXPECT_THAT(Load(url), IsError(net::ERR_FAILED));
+  EXPECT_THAT(
+      client()->completion_status().cors_error_status,
+      Optional(CorsErrorStatus(mojom::CorsError::kInvalidPrivateNetworkAccess,
+                               // TODO(https://crbug.com/1279376): Expect
+                               // `kPublic` here instead, for better debugging.
+                               mojom::IPAddressSpace::kUnknown,
+                               mojom::IPAddressSpace::kLocal)));
+
+  // The first connection was fine, but the second was inconsistent.
+  EXPECT_THAT(connected_callback_result_observer.results(),
+              ElementsAre(IsError(net::OK),
+                          IsError(net::ERR_INCONSISTENT_IP_ADDRESS_SPACE)));
 }
 
 // These tests verify that requests from both secure and non-secure contexts to
@@ -1776,6 +1959,7 @@ mojom::IPAddressSpace ResponseAddressSpace(
     const URLLoaderFakeTransportInfoTestParams& params) {
   switch (params.transport_type) {
     case net::TransportType::kDirect:
+    case net::TransportType::kCached:
       return params.endpoint_address_space;
     case net::TransportType::kProxied:
       return mojom::IPAddressSpace::kUnknown;
@@ -1973,6 +2157,31 @@ constexpr URLLoaderFakeTransportInfoTestParams
             mojom::IPAddressSpace::kPrivate,
             mojom::IPAddressSpace::kLocal,
             net::TransportType::kProxied,
+            net::OK,
+        },
+        // TransportType: kCached. We only test a local target for brevity.
+        {
+            mojom::IPAddressSpace::kUnknown,
+            mojom::IPAddressSpace::kLocal,
+            net::TransportType::kCached,
+            net::ERR_FAILED,
+        },
+        {
+            mojom::IPAddressSpace::kPublic,
+            mojom::IPAddressSpace::kLocal,
+            net::TransportType::kCached,
+            net::ERR_FAILED,
+        },
+        {
+            mojom::IPAddressSpace::kPrivate,
+            mojom::IPAddressSpace::kLocal,
+            net::TransportType::kCached,
+            net::ERR_FAILED,
+        },
+        {
+            mojom::IPAddressSpace::kLocal,
+            mojom::IPAddressSpace::kLocal,
+            net::TransportType::kCached,
             net::OK,
         },
 };

@@ -125,8 +125,15 @@ MEDIA_EXPORT extern const base::Feature kBackgroundVideoPauseOptimization;
 MEDIA_EXPORT extern const base::Feature kBresenhamCadence;
 MEDIA_EXPORT extern const base::Feature kCdmHostVerification;
 MEDIA_EXPORT extern const base::Feature kCdmProcessSiteIsolation;
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
 MEDIA_EXPORT extern const base::Feature kChromeWideEchoCancellation;
+MEDIA_EXPORT extern const base::FeatureParam<int>
+    kChromeWideEchoCancellationProcessingFifoSize;
+MEDIA_EXPORT extern const base::FeatureParam<bool>
+    kChromeWideEchoCancellationMinimizeResampling;
+#endif
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoderUseSharedHandle;
+MEDIA_EXPORT extern const base::Feature kDisplayAudioUseLocalAudioSource;
 MEDIA_EXPORT extern const base::Feature kEnableTabMuting;
 MEDIA_EXPORT extern const base::Feature kExposeSwDecodersToWebRTC;
 MEDIA_EXPORT extern const base::Feature kExternalClearKeyForTesting;
@@ -177,6 +184,8 @@ MEDIA_EXPORT extern const base::Feature kReuseMediaPlayer;
 MEDIA_EXPORT extern const base::Feature kRevokeMediaSourceObjectURLOnAttach;
 MEDIA_EXPORT extern const base::Feature
     kShareThisTabInsteadButtonGetDisplayMedia;
+MEDIA_EXPORT extern const base::Feature
+    kShareThisTabInsteadButtonGetDisplayMediaAudio;
 MEDIA_EXPORT extern const base::Feature kSpeakerChangeDetection;
 MEDIA_EXPORT extern const base::Feature kSpecCompliantCanPlayThrough;
 MEDIA_EXPORT extern const base::Feature kSurfaceLayerForMediaStreams;

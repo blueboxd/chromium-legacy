@@ -29,6 +29,7 @@ extern const base::Feature kAppMenuMobileSiteOption;
 extern const base::Feature kAppToWebAttribution;
 extern const base::Feature kBackgroundThreadPool;
 extern const base::Feature kBookmarkBottomSheet;
+extern const base::Feature kBulkTabRestore;
 extern const base::Feature kCloseAllTabsModalDialog;
 extern const base::Feature kCloseTabSuggestions;
 extern const base::Feature kCriticalPersistedTabData;
@@ -160,6 +161,7 @@ extern const base::Feature kTrustedWebActivityQualityEnforcementWarning;
 extern const base::Feature kShowExtendedPreloadingSetting;
 extern const base::Feature kStartSurfaceAndroid;
 extern const base::Feature kUmaBackgroundSessions;
+extern const base::Feature kUpdateHistoryEntryPointsInIncognito;
 extern const base::Feature
     kUpdateNotificationScheduleServiceImmediateShowOption;
 extern const base::Feature kUserMediaScreenCapturing;
@@ -168,6 +170,7 @@ extern const base::Feature kVoiceButtonInTopToolbar;
 extern const base::Feature kVrBrowsingFeedback;
 extern const base::Feature kWebOtpCrossDeviceSimpleString;
 extern const base::Feature kWebApkInstallCompleteNotification;
+extern const base::Feature kWebApkInstallService;
 extern const base::Feature kWebApkTrampolineOnInitialIntent;
 
 }  // namespace android

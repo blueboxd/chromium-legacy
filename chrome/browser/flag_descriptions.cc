@@ -3710,10 +3710,6 @@ const char kNtpRecipeTasksModuleName[] = "NTP Recipe Tasks Module";
 const char kNtpRecipeTasksModuleDescription[] =
     "Shows the recipe tasks module on the New Tab Page.";
 
-const char kNtpShoppingTasksModuleName[] = "NTP Shopping Tasks Module";
-const char kNtpShoppingTasksModuleDescription[] =
-    "Shows the shopping tasks module on the New Tab Page.";
-
 const char kNtpChromeCartModuleName[] = "NTP Chrome Cart Module";
 const char kNtpChromeCartModuleDescription[] =
     "Shows the chrome cart module on the New Tab Page.";
@@ -4562,11 +4558,6 @@ const char kEnableNeuralPalmAdaptiveHoldName[] = "Palm Rejection Adaptive Hold";
 const char kEnableNeuralPalmAdaptiveHoldDescription[] =
     "Enable adaptive hold in palm rejection.  Not compatible with all devices.";
 
-const char kEnableNeuralPalmRejectionBetaModelName[] =
-    "Palm Rejection Beta Model";
-const char kEnableNeuralPalmRejectionBetaModelDescription[] =
-    "Enable NN palm rejection on devices registered with beta model.";
-
 const char kEnableNeuralPalmRejectionModelV2Name[] = "Palm Rejection Model V2";
 const char kEnableNeuralPalmRejectionModelV2Description[] =
     "Uses an updated model for palm rejection.  Not compatible with all "
@@ -5183,6 +5174,12 @@ const char kSharesheetCopyToClipboardDescription[] =
 
 const char kShimlessRMAFlowName[] = "Enable shimless RMA flow";
 const char kShimlessRMAFlowDescription[] = "Enable shimless RMA flow";
+
+const char kShimlessRMAEnableStandaloneName[] =
+    "Enable the Shimless RMA standalone app";
+const char kShimlessRMAEnableStandaloneDescription[] =
+    "Allows Shimless RMA to be launched as a standalone app while logged in. "
+    "Will only be used to assist with development";
 
 const char kSchedulerConfigurationName[] = "Scheduler Configuration";
 const char kSchedulerConfigurationDescription[] =

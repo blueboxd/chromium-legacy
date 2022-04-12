@@ -4886,8 +4886,7 @@ def CheckForIncludeGuards(input_api, output_api):
         if guard_name is None:
             errors.append(
                 output_api.PresubmitPromptWarning(
-                    'Missing include guard %s' % expected_guard,
-                    [f.LocalPath()], 'Missing include guard in %s\n'
+                    'Missing include guard in %s\n'
                     'Recommended name: %s\n'
                     'This check can be disabled by having the string\n'
                     '"no-include-guard-because-multiply-included" or\n'
@@ -4901,7 +4900,7 @@ def CheckForWindowsLineEndings(input_api, output_api):
     """Check source code and known ascii text files for Windows style line
     endings.
     """
-    known_text_files = r'.*\.(txt|html|htm|mhtml|py|gyp|gypi|gn|isolate|icon)$'
+    known_text_files = r'.*\.(txt|html|htm|py|gyp|gypi|gn|isolate|icon)$'
 
     file_inclusion_pattern = (known_text_files,
                               r'.+%s' % _IMPLEMENTATION_EXTENSIONS,
@@ -4911,6 +4910,9 @@ def CheckForWindowsLineEndings(input_api, output_api):
     source_file_filter = lambda f: input_api.FilterSourceFile(
         f, files_to_check=file_inclusion_pattern, files_to_skip=None)
     for f in input_api.AffectedSourceFiles(source_file_filter):
+        # Ignore test files that contain crlf intentionally.
+        if f.LocalPath().endswith('crlf.txt'):
+          continue
         include_file = False
         for line in input_api.ReadFile(f, 'r').splitlines(True):
             if line.endswith('\r\n'):

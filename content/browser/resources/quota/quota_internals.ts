@@ -102,6 +102,19 @@ async function renderDiskAvailability() {
   tableBody.append(listenerRow);
 }
 
+async function renderGlobalUsage() {
+  const globalUsageStorageTypes: string[] =
+      ['temporary', 'persistent', 'syncable'];
+
+  for (const storageType of globalUsageStorageTypes) {
+    const result = await getProxy().getGlobalUsage(storageType);
+    const formattedResultString: string = `${Number(result.usage)} B (${
+        result.unlimitedUsage} B for unlimited origins)`;
+    document.body.querySelector(`.${storageType}-global-and-unlimited-usage`)!
+        .textContent = formattedResultString;
+  }
+}
+
 async function renderEvictionStats() {
   const result = await getProxy().getStatistics();
 
@@ -160,8 +173,10 @@ async function renderUsageAndQuotaStats() {
       storageKey: entry.storageKey,
       name: entry.name,
       useCount: entry.useCount.toString(),
-      lastAccessed: convertMojoTimeToJS(entry.lastAccessed).toTimeString(),
-      lastModified: convertMojoTimeToJS(entry.lastModified).toTimeString()
+      lastAccessed: convertMojoTimeToJS(entry.lastAccessed)
+                        .toLocaleString('en-US', {timeZoneName: 'short'}),
+      lastModified: convertMojoTimeToJS(entry.lastModified)
+                        .toLocaleString('en-US', {timeZoneName: 'short'}),
     };
 
     if (!(entry.host in bucketTableEntriesByHost)) {
@@ -269,6 +284,7 @@ async function renderUsageAndQuotaStats() {
 document.addEventListener('DOMContentLoaded', () => {
   renderDiskAvailability();
   renderEvictionStats();
+  renderGlobalUsage();
   renderUsageAndQuotaStats();
   document.body.querySelector('#trigger-notification')!.addEventListener(
       'click', () => getProxy().simulateStoragePressure());

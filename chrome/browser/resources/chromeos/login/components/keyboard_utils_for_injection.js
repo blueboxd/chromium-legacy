@@ -8,10 +8,10 @@
  * Code which is embedded inside of the enterprise enrollment webview.
  * See /screens/oobe/enterprise_enrollment.js for details.
  */
-const INJECTED_WEBVIEW_SCRIPT = String.raw`
+const KEYBOARD_UTILS_FOR_INJECTION = String.raw`
                     (function() {
                        // <include src="../../keyboard/keyboard_utils.js">
                        keyboard.initializeKeyboardFlow(true);
                      })();`;
 
-window.INJECTED_WEBVIEW_SCRIPT = INJECTED_WEBVIEW_SCRIPT;
+window.KEYBOARD_UTILS_FOR_INJECTION = KEYBOARD_UTILS_FOR_INJECTION;

@@ -93,6 +93,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/testapi/oobe_test_api_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/theme_selection_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/tpm_error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
@@ -157,13 +158,14 @@ constexpr char kArcPlaystoreJSPath[] = "playstore.js";
 constexpr char kArcPlaystoreLogoPath[] = "playstore.svg";
 constexpr char kArcSupervisionIconPath[] = "supervision_icon.png";
 constexpr char kCustomElementsHTMLPath[] = "custom_elements.html";
-constexpr char kCustomElementsJSPath[] = "custom_elements.js";
 constexpr char kDebuggerJSPath[] = "debug/debug.js";
 constexpr char kDebuggerMJSPath[] = "debug/debug.m.js";
 constexpr char kDebuggerUtilJSPath[] = "debug/debug_util.js";
 constexpr char kKeyboardUtilsJSPath[] = "keyboard_utils.js";
 constexpr char kKeyboardUtilsForInjectionPath[] =
     "components/keyboard_utils_for_injection.js";
+constexpr char kKeyboardUtilsForInjectionModulePath[] =
+    "components/keyboard_utils_for_injection.m.js";
 
 constexpr char kLoginJSPath[] = "login.js";
 constexpr char kOobeJSPath[] = "oobe.js";
@@ -308,7 +310,6 @@ void AddOobeDisplayTypeDefaultResources(content::WebUIDataSource* source) {
       source->AddResourcePath(kCustomElementsHTMLPath,
                               IDR_CUSTOM_ELEMENTS_OOBE_HTML);
     }
-    source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_OOBE_JS);
   }
   source->AddResourcePath(kOobeJSPath, IDR_OOBE_JS);
 }
@@ -329,8 +330,6 @@ void AddLoginDisplayTypeDefaultResources(content::WebUIDataSource* source) {
       source->AddResourcePath(kCustomElementsHTMLPath,
                               IDR_CUSTOM_ELEMENTS_LOGIN_HTML);
     }
-    source->AddResourcePath(kCustomElementsJSPath,
-                            IDR_CUSTOM_ELEMENTS_LOGIN_JS);
   }
 
   source->AddResourcePath(kLoginJSPath, IDR_OOBE_JS);
@@ -376,6 +375,8 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
   source->AddResourcePath(kKeyboardUtilsForInjectionPath,
                           IDR_KEYBOARD_UTILS_FOR_INJECTION_JS);
+  source->AddResourcePath(kKeyboardUtilsForInjectionModulePath,
+                          IDR_KEYBOARD_UTILS_FOR_INJECTION_M_JS);
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ObjectSrc, "object-src chrome:;");
   source->DisableTrustedTypesCSP();
@@ -537,6 +538,8 @@ void OobeUI::ConfigureOobeDisplay() {
   AddScreenHandler(std::make_unique<GuestTosScreenHandler>());
 
   AddScreenHandler(std::make_unique<SmartPrivacyProtectionScreenHandler>());
+
+  AddScreenHandler(std::make_unique<ThemeSelectionScreenHandler>());
 
   Profile* profile = Profile::FromWebUI(web_ui());
   // Set up the chrome://theme/ source, for Chrome logo.

@@ -1432,7 +1432,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
               : FencedFrameStatus::kNotNestedInFencedFrame) {
   TRACE_EVENT_BEGIN("navigation", "RenderFrameHostImpl",
                     perfetto::Track::FromPointer(this),
-                    "render_frame_host_when_created", this);
+                    "render_frame_host_when_created", GetGlobalId());
   DCHECK(delegate_);
   DCHECK(lifecycle_state_ == LifecycleStateImpl::kSpeculative ||
          lifecycle_state_ == LifecycleStateImpl::kPrerendering ||
@@ -2497,6 +2497,7 @@ void RenderFrameHostImpl::ExecuteJavaScriptForTests(
 
 void RenderFrameHostImpl::ExecuteJavaScriptWithUserGestureForTests(
     const std::u16string& javascript,
+    JavaScriptResultCallback callback,
     int32_t world_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AssertNonSpeculativeFrame();
@@ -2509,8 +2510,10 @@ void RenderFrameHostImpl::ExecuteJavaScriptWithUserGestureForTests(
       blink::mojom::UserActivationNotificationType::kTest);
 
   const bool has_user_gesture = true;
+  const bool wants_result = !callback.is_null();
   GetAssociatedLocalFrame()->JavaScriptExecuteRequestForTests(  // IN-TEST
-      javascript, false, has_user_gesture, world_id, base::NullCallback());
+      javascript, wants_result, has_user_gesture, world_id,
+      std::move(callback));
 }
 
 void RenderFrameHostImpl::ExecutePluginActionAtLocalLocation(
@@ -3365,7 +3368,8 @@ RenderFrameProxyHost* RenderFrameHostImpl::GetProxyToOuterDelegate() {
   }
 
   return browsing_context_state_->GetRenderFrameProxyHost(
-      outer_contents_frame_tree_node->parent()->GetSiteInstance()->group());
+      outer_contents_frame_tree_node->parent()->GetSiteInstance()->group(),
+      BrowsingContextState::ProxyAccessMode::kAllowOuterDelegate);
 }
 
 void RenderFrameHostImpl::DidChangeReferrerPolicy(
@@ -9750,12 +9754,12 @@ void RenderFrameHostImpl::RequestAXTreeSnapshotCallback(
 void RenderFrameHostImpl::RequestDistilledAXTreeCallback(
     AXTreeDistillerCallback callback,
     const ui::AXTreeUpdate& snapshot,
-    const std::vector<ui::AXNodeID>& text_nodes) {
+    const std::vector<ui::AXNodeID>& content_node_ids) {
   // Since |snapshot| is const, we need to make a copy in order to modify the
   // tree data.
   ui::AXTreeUpdate dst_snapshot;
   CopyAXTreeUpdate(snapshot, &dst_snapshot);
-  std::move(callback).Run(dst_snapshot, text_nodes);
+  std::move(callback).Run(dst_snapshot, content_node_ids);
 }
 
 void RenderFrameHostImpl::CopyAXTreeUpdate(const ui::AXTreeUpdate& snapshot,
@@ -11294,6 +11298,9 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
   // this frame embeds a subframe when that subframe navigates).
   required_csp_ = navigation_request->TakeRequiredCSP();
   anonymous_ = navigation_request->anonymous();
+
+  is_fenced_frame_opaque_url_ =
+      navigation_request->is_fenced_frame_opaque_url();
 
   // TODO(https://crbug.com/888079): Once we are able to compute the origin to
   // commit in the browser, `navigation_request->commit_params().storage_key`

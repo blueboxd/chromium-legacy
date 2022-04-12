@@ -183,6 +183,19 @@ std::string GetFlowString(EnrollmentScreenView::FlowType type) {
   }
 }
 
+// String constants should be in sync with `OobeTypes.GaiaDialogButtonsType`.
+std::string GetGaiaButtonsTypeString(
+    EnrollmentScreenView::GaiaButtonsType type) {
+  switch (type) {
+    case EnrollmentScreenView::GaiaButtonsType::kDefault:
+      return "default";
+    case EnrollmentScreenView::GaiaButtonsType::kEnterprisePreffered:
+      return "enterprise-preferred";
+    case EnrollmentScreenView::GaiaButtonsType::kKioskPreffered:
+      return "kiosk-preferred";
+  }
+}
+
 }  // namespace
 
 // EnrollmentScreenHandler, public ------------------------------
@@ -412,6 +425,10 @@ void EnrollmentScreenHandler::SetEnterpriseDomainInfo(
 
 void EnrollmentScreenHandler::SetFlowType(FlowType flow_type) {
   flow_type_ = flow_type;
+}
+
+void EnrollmentScreenHandler::SetGaiaButtonsType(GaiaButtonsType buttons_type) {
+  gaia_buttons_type_ = buttons_type;
 }
 
 void EnrollmentScreenHandler::ShowEnrollmentSuccessScreen() {
@@ -889,7 +906,8 @@ void EnrollmentScreenHandler::HandleClose(const std::string& reason) {
   }
 }
 
-void EnrollmentScreenHandler::HandleCompleteLogin(const std::string& user) {
+void EnrollmentScreenHandler::HandleCompleteLogin(const std::string& user,
+                                                  int license_type) {
   // TODO(crbug.com/1271134): Logging as "WARNING" to make sure it's preserved
   // in the logs.
   LOG(WARNING) << "HandleCompleteLogin";
@@ -916,16 +934,17 @@ void EnrollmentScreenHandler::HandleCompleteLogin(const std::string& user) {
         cookie_manager, kOAUTHCodeCookie,
         base::BindRepeating(&EnrollmentScreenHandler::
                                 ContinueAuthenticationWhenCookiesAvailable,
-                            weak_ptr_factory_.GetWeakPtr(), user),
+                            weak_ptr_factory_.GetWeakPtr(), user, license_type),
         base::BindOnce(&EnrollmentScreenHandler::OnCookieWaitTimeout,
                        weak_ptr_factory_.GetWeakPtr()));
   }
 
-  ContinueAuthenticationWhenCookiesAvailable(user);
+  ContinueAuthenticationWhenCookiesAvailable(user, license_type);
 }
 
 void EnrollmentScreenHandler::ContinueAuthenticationWhenCookiesAvailable(
-    const std::string& user) {
+    const std::string& user,
+    int license_type) {
   login::SigninPartitionManager* signin_partition_manager =
       login::SigninPartitionManager::Factory::GetForBrowserContext(
           Profile::FromWebUI(web_ui()));
@@ -943,11 +962,12 @@ void EnrollmentScreenHandler::ContinueAuthenticationWhenCookiesAvailable(
       net::CookieOptions::MakeAllInclusive(),
       net::CookiePartitionKeyCollection::Todo(),
       base::BindOnce(&EnrollmentScreenHandler::OnGetCookiesForCompleteLogin,
-                     weak_ptr_factory_.GetWeakPtr(), user));
+                     weak_ptr_factory_.GetWeakPtr(), user, license_type));
 }
 
 void EnrollmentScreenHandler::OnGetCookiesForCompleteLogin(
     const std::string& user,
+    int license_type,
     const net::CookieAccessResultList& cookies,
     const net::CookieAccessResultList& excluded_cookies) {
   std::string auth_code;
@@ -970,7 +990,7 @@ void EnrollmentScreenHandler::OnGetCookiesForCompleteLogin(
 
   oauth_code_waiter_.reset();
   DCHECK(controller_);
-  controller_->OnLoginDone(gaia::SanitizeEmail(user), auth_code);
+  controller_->OnLoginDone(gaia::SanitizeEmail(user), license_type, auth_code);
 }
 
 void EnrollmentScreenHandler::OnCookieWaitTimeout() {
@@ -1095,6 +1115,8 @@ void EnrollmentScreenHandler::DoShowWithPartition(
   screen_data.Set("attestationBased", config_.is_mode_attestation());
   screen_data.Set("management_domain", config_.management_domain);
   screen_data.Set("flow", GetFlowString(flow_type_));
+  screen_data.Set("gaia_buttons_type",
+                  GetGaiaButtonsTypeString(gaia_buttons_type_));
   const std::string app_locale = g_browser_process->GetApplicationLocale();
   if (!app_locale.empty())
     screen_data.Set("hl", app_locale);

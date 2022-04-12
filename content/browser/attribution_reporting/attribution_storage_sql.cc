@@ -367,8 +367,7 @@ AttributionStorageSql::AttributionStorageSql(
                             ? base::FilePath(kInMemoryPath)
                             : path_to_database.Append(kDatabasePath)),
       rate_limit_table_(delegate.get()),
-      delegate_(std::move(delegate)),
-      weak_factory_(this) {
+      delegate_(std::move(delegate)) {
   DCHECK(delegate_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -711,32 +710,27 @@ bool IsSuccessResult(absl::optional<AggregatableResult> result) {
 }
 
 CreateReportResult AssembleReportResult(
+    base::Time trigger_time,
     EventLevelResult event_level_status,
     AggregatableResult aggregatable_status,
     absl::optional<AttributionReport> new_event_level_report,
     absl::optional<AttributionReport> new_aggregatable_report,
     absl::optional<AttributionReport> replaced_event_level_report) {
-  std::vector<AttributionReport> dropped_reports;
   std::vector<AttributionReport> new_reports;
 
   if (IsSuccessResult(event_level_status)) {
     DCHECK(new_event_level_report.has_value());
     new_reports.push_back(std::move(*new_event_level_report));
-    if (replaced_event_level_report.has_value())
-      dropped_reports.push_back(std::move(*replaced_event_level_report));
-  } else if (new_event_level_report.has_value()) {
-    dropped_reports.push_back(std::move(*new_event_level_report));
   }
 
   if (IsSuccessResult(aggregatable_status)) {
     DCHECK(new_aggregatable_report.has_value());
     new_reports.push_back(std::move(*new_aggregatable_report));
-  } else if (new_aggregatable_report.has_value()) {
-    dropped_reports.push_back(std::move(*new_aggregatable_report));
   }
 
-  return CreateReportResult(event_level_status, aggregatable_status,
-                            std::move(dropped_reports), std::move(new_reports));
+  return CreateReportResult(
+      trigger_time, event_level_status, aggregatable_status,
+      std::move(replaced_event_level_report), std::move(new_reports));
 }
 
 }  // namespace
@@ -744,6 +738,8 @@ CreateReportResult AssembleReportResult(
 CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
     const AttributionTrigger& trigger) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  const base::Time trigger_time = base::Time::Now();
 
   // Declarations for all of the various pieces of information which may be
   // collected and/or returned as a result of computing new reports in order to
@@ -769,7 +765,8 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
                                   : new_aggregatable_status;
         DCHECK(aggregatable_status.has_value());
 
-        return AssembleReportResult(*event_level_status, *aggregatable_status,
+        return AssembleReportResult(trigger_time, *event_level_status,
+                                    *aggregatable_status,
                                     std::move(new_event_level_report),
                                     std::move(new_aggregatable_report),
                                     std::move(replaced_event_level_report));
@@ -818,8 +815,7 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
       /*trigger_not_filters=*/AttributionFilterData());
 
   AttributionInfo attribution_info(std::move(source_to_attribute->source),
-                                   /*time=*/base::Time::Now(),
-                                   trigger.debug_key());
+                                   trigger_time, trigger.debug_key());
 
   absl::optional<uint64_t> dedup_key;
   if (EventLevelResult create_event_level_status = MaybeCreateEventLevelReport(
@@ -1003,7 +999,7 @@ bool AttributionStorageSql::FindMatchingSourceForTrigger(
 }
 
 EventLevelResult AttributionStorageSql::MaybeCreateEventLevelReport(
-    AttributionInfo attribution_info,
+    const AttributionInfo& attribution_info,
     const AttributionTrigger& trigger,
     const bool top_level_filters_match,
     absl::optional<AttributionReport>& report,
@@ -1012,6 +1008,9 @@ EventLevelResult AttributionStorageSql::MaybeCreateEventLevelReport(
       StoredSource::ActiveState::kReachedEventLevelAttributionLimit) {
     return EventLevelResult::kNoMatchingImpressions;
   }
+
+  if (!top_level_filters_match)
+    return EventLevelResult::kNoMatchingSourceFilterData;
 
   const CommonSourceInfo& common_info = attribution_info.source.common_info();
 
@@ -1032,12 +1031,18 @@ EventLevelResult AttributionStorageSql::MaybeCreateEventLevelReport(
   // returning an error so that a report is still sent.
   // TODO(apaseltiner): Consider recording a metric for no match.
   if (event_trigger != trigger.event_triggers().end()) {
-    // TODO(apaseltiner): Consider informing the manager if the trigger
-    // data was out of range for DevTools issue reporting.
-    trigger_data =
-        delegate_->SanitizeTriggerData(event_trigger->data, source_type);
+    trigger_data = event_trigger->data;
     priority = event_trigger->priority;
     dedup_key = event_trigger->dedup_key;
+  }
+
+  switch (ReportAlreadyStored(attribution_info.source.source_id(), dedup_key)) {
+    case ReportAlreadyStoredStatus::kNotStored:
+      break;
+    case ReportAlreadyStoredStatus::kStored:
+      return EventLevelResult::kDeduplicated;
+    case ReportAlreadyStoredStatus::kError:
+      return EventLevelResult::kInternalError;
   }
 
   const base::Time report_time =
@@ -1056,26 +1061,14 @@ EventLevelResult AttributionStorageSql::MaybeCreateEventLevelReport(
   const double randomized_response_rate =
       delegate_->GetRandomizedResponseRate(source_type);
 
-  report =
-      AttributionReport(std::move(attribution_info),
-                        /*report_time=*/report_time,
-                        /*external_report_id=*/delegate_->NewReportID(),
-                        AttributionReport::EventLevelData(
-                            trigger_data, priority, randomized_response_rate,
-                            /*id=*/absl::nullopt));
-
-  if (!top_level_filters_match)
-    return EventLevelResult::kNoMatchingSourceFilterData;
-
-  switch (ReportAlreadyStored(report->attribution_info().source.source_id(),
-                              dedup_key)) {
-    case ReportAlreadyStoredStatus::kNotStored:
-      break;
-    case ReportAlreadyStoredStatus::kStored:
-      return EventLevelResult::kDeduplicated;
-    case ReportAlreadyStoredStatus::kError:
-      return EventLevelResult::kInternalError;
-  }
+  // TODO(apaseltiner): Consider informing the manager if the trigger
+  // data was out of range for DevTools issue reporting.
+  report = AttributionReport(
+      attribution_info, report_time, delegate_->NewReportID(),
+      AttributionReport::EventLevelData(
+          delegate_->SanitizeTriggerData(trigger_data, source_type), priority,
+          randomized_response_rate,
+          /*id=*/absl::nullopt));
 
   return EventLevelResult::kSuccess;
 }
@@ -2625,7 +2618,7 @@ AttributionStorageSql::AdjustOfflineAggregatableAttributionReportTimes(
 
 AggregatableResult
 AttributionStorageSql::MaybeCreateAggregatableAttributionReport(
-    AttributionInfo attribution_info,
+    const AttributionInfo& attribution_info,
     const AttributionTrigger& trigger,
     bool top_level_filters_match,
     absl::optional<AttributionReport>& report) {
@@ -2637,17 +2630,17 @@ AttributionStorageSql::MaybeCreateAggregatableAttributionReport(
   if (contributions.empty())
     return AggregatableResult::kNoHistograms;
 
+  if (!top_level_filters_match)
+    return AggregatableResult::kNoMatchingSourceFilterData;
+
   base::Time report_time =
       delegate_->GetAggregatableReportTime(attribution_info.time);
 
-  report = AttributionReport(
-      std::move(attribution_info), report_time, delegate_->NewReportID(),
-      AttributionReport::AggregatableAttributionData(std::move(contributions),
-                                                     /*id=*/absl::nullopt,
-                                                     report_time));
-
-  if (!top_level_filters_match)
-    return AggregatableResult::kNoMatchingSourceFilterData;
+  report =
+      AttributionReport(attribution_info, report_time, delegate_->NewReportID(),
+                        AttributionReport::AggregatableAttributionData(
+                            std::move(contributions),
+                            /*id=*/absl::nullopt, report_time));
 
   return AggregatableResult::kSuccess;
 }

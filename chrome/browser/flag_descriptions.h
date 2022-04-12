@@ -2121,9 +2121,6 @@ extern const char kNtpPhotosModuleSoftOptOutDescription[];
 extern const char kNtpRecipeTasksModuleName[];
 extern const char kNtpRecipeTasksModuleDescription[];
 
-extern const char kNtpShoppingTasksModuleName[];
-extern const char kNtpShoppingTasksModuleDescription[];
-
 extern const char kNtpChromeCartModuleName[];
 extern const char kNtpChromeCartModuleDescription[];
 
@@ -2609,9 +2606,6 @@ extern const char kEnableLogControllerForDiagnosticsAppDescription[];
 extern const char kEnableNeuralPalmAdaptiveHoldName[];
 extern const char kEnableNeuralPalmAdaptiveHoldDescription[];
 
-extern const char kEnableNeuralPalmRejectionBetaModelName[];
-extern const char kEnableNeuralPalmRejectionBetaModelDescription[];
-
 extern const char kEnableNeuralPalmRejectionModelV2Name[];
 extern const char kEnableNeuralPalmRejectionModelV2Description[];
 
@@ -2980,6 +2974,9 @@ extern const char kSharesheetCopyToClipboardDescription[];
 
 extern const char kShimlessRMAFlowName[];
 extern const char kShimlessRMAFlowDescription[];
+
+extern const char kShimlessRMAEnableStandaloneName[];
+extern const char kShimlessRMAEnableStandaloneDescription[];
 
 extern const char kSchedulerConfigurationName[];
 extern const char kSchedulerConfigurationDescription[];

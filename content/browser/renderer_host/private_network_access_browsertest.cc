@@ -9,6 +9,7 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "base/test/scoped_feature_list.h"
@@ -30,15 +31,23 @@
 #include "content/test/resource_load_observer.h"
 #include "content/test/test_content_browser_client.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_byte_range.h"
+#include "net/http/http_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
+#include "net/test/embedded_test_server/http_request.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace content {
 namespace {
+
+using ::net::test_server::METHOD_GET;
+using ::net::test_server::METHOD_OPTIONS;
+using ::testing::ElementsAre;
 
 // These domains are mapped to the IP addresses above using the
 // `--host-resolver-rules` command-line switch. The exact values come from the
@@ -66,6 +75,19 @@ constexpr char kPnaPath[] =
 
 // Path to a cacheable response.
 constexpr char kCacheablePath[] = "/cachetime";
+
+// Path to a cacheable variant of `kCorsPath`.
+constexpr char kCacheableCorsPath[] =
+    "/set-header?"
+    "Cache-Control: max-age%3D60&"
+    "Access-Control-Allow-Origin: *";
+
+// Path to a cacheable variant of `kPnaPath`.
+constexpr char kCacheablePnaPath[] =
+    "/set-header?"
+    "Cache-Control: max-age%3D60&"
+    "Access-Control-Allow-Origin: *&"
+    "Access-Control-Allow-Private-Network: true";
 
 // Returns a snippet of Javascript that fetch()es the given URL.
 //
@@ -165,6 +187,146 @@ class ConnectionCounter
   int count_ GUARDED_BY(lock_) = 0;
 };
 
+class RequestObserver {
+ public:
+  RequestObserver() = default;
+
+  // The returned callback must not outlive this instance.
+  net::test_server::EmbeddedTestServer::MonitorRequestCallback BindCallback() {
+    return base::BindRepeating(&RequestObserver::Observe,
+                               base::Unretained(this));
+  }
+
+  // The origin of the URL is not checked for equality.
+  std::vector<net::test_server::HttpMethod> RequestMethodsForUrl(
+      const GURL& url) const {
+    std::string path = url.PathForRequest();
+    std::vector<net::test_server::HttpMethod> methods;
+    {
+      base::AutoLock guard(lock_);
+      for (const auto& request : requests_) {
+        if (request.GetURL().PathForRequest() == path) {
+          methods.push_back(request.method);
+        }
+      }
+    }
+    return methods;
+  }
+
+ private:
+  void Observe(const net::test_server::HttpRequest& request) {
+    base::AutoLock guard(lock_);
+    requests_.push_back(request);
+  }
+
+  // `requests_` is mutated on the embedded test server thread and read on the
+  // test thread, so we synchronize accesses with a lock.
+  mutable base::Lock lock_;
+  std::vector<net::test_server::HttpRequest> requests_ GUARDED_BY(lock_);
+};
+
+// Removes `prefix` from the start of `str`, if present.
+// Returns nullopt otherwise.
+absl::optional<base::StringPiece> StripPrefix(base::StringPiece str,
+                                              base::StringPiece prefix) {
+  if (!base::StartsWith(str, prefix)) {
+    return absl::nullopt;
+  }
+
+  return str.substr(prefix.size());
+}
+
+// Returns a pointer to the value of the `header` header in `request`, if any.
+// Returns nullptr otherwise.
+const std::string* FindRequestHeader(
+    const net::test_server::HttpRequest& request,
+    base::StringPiece header) {
+  const auto it = request.headers.find(header);
+  if (it == request.headers.end()) {
+    return nullptr;
+  }
+
+  return &it->second;
+}
+
+// Returns the `Content-Range` header value for a given `range` of bytes out of
+// the given `total_size` number of bytes.
+std::string GetContentRangeHeader(const net::HttpByteRange& range,
+                                  size_t total_size) {
+  std::string first = base::NumberToString(range.first_byte_position());
+  std::string last = base::NumberToString(range.last_byte_position());
+  std::string total = base::NumberToString(total_size);
+  return base::StrCat({"bytes ", first, "-", last, "/", total});
+}
+
+// An `EmbeddedTestServer` request handler function.
+//
+// Knows how to respond to CORS and PNA preflight requests, as well as regular
+// and range requests.
+//
+// Route: /echorange?<body>
+std::unique_ptr<net::test_server::HttpResponse> HandleRangeRequest(
+    const net::test_server::HttpRequest& request) {
+  absl::optional<base::StringPiece> query =
+      StripPrefix(request.relative_url, "/echorange?");
+  if (!query) {
+    return nullptr;
+  }
+
+  auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+
+  constexpr std::pair<base::StringPiece, base::StringPiece> kCopiedHeaders[] = {
+      {"Origin", "Access-Control-Allow-Origin"},
+      {"Access-Control-Request-Private-Network",
+       "Access-Control-Allow-Private-Network"},
+      {"Access-Control-Request-Headers", "Access-Control-Allow-Headers"},
+  };
+  for (const auto& pair : kCopiedHeaders) {
+    const std::string* value = FindRequestHeader(request, pair.first);
+    if (value) {
+      response->AddCustomHeader(pair.second, *value);
+    }
+  }
+
+  // No body for a preflight response.
+  if (request.method == net::test_server::METHOD_OPTIONS) {
+    response->AddCustomHeader("Access-Control-Max-Age", "60");
+    return response;
+  }
+
+  // Cache-Control: max-age=X does not work for range request caching. Use a
+  // strong ETag instead, along with a last modified date. Both are required.
+  response->AddCustomHeader("ETag", "foo");
+  response->AddCustomHeader("Last-Modified", "Fri, 1 Apr 2022 12:34:56 UTC");
+
+  const std::string* range_header = FindRequestHeader(request, "Range");
+  if (!range_header) {
+    // Not a range request. Respond with 200 and the whole query as the body.
+    response->set_content(*query);
+    return response;
+  }
+
+  std::vector<net::HttpByteRange> ranges;
+  if (!net::HttpUtil::ParseRangeHeader(*range_header, &ranges) ||
+      ranges.size() != 1) {
+    response->set_code(net::HTTP_BAD_REQUEST);
+    return response;
+  }
+
+  net::HttpByteRange& range = ranges[0];
+  if (!range.ComputeBounds(query->size())) {
+    response->set_code(net::HTTP_REQUESTED_RANGE_NOT_SATISFIABLE);
+    return response;
+  }
+
+  response->set_code(net::HTTP_PARTIAL_CONTENT);
+  response->AddCustomHeader("Content-Range",
+                            GetContentRangeHeader(range, query->size()));
+  response->set_content(query->substr(range.first_byte_position(),
+                                      range.last_byte_position() + 1));
+  return response;
+}
+
 // A `net::EmbeddedTestServer` that pretends to be in a given IP address space.
 //
 // NOTE(titouan): The IP address space overrides CLI switch is copied to utility
@@ -184,7 +346,8 @@ class FakeAddressSpaceServer {
     server_.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
 
     server_.SetConnectionListener(&connection_counter_);
-
+    server_.RegisterRequestMonitor(request_observer_.BindCallback());
+    server_.RegisterRequestHandler(base::BindRepeating(&HandleRangeRequest));
     server_.AddDefaultHandlers(test_data_path);
     StartServer(server_);
 
@@ -215,6 +378,8 @@ class FakeAddressSpaceServer {
   // Returns the total number of sockets accepted by this server.
   int ConnectionCount() const { return connection_counter_.count(); }
 
+  const RequestObserver& request_observer() const { return request_observer_; }
+
  private:
   // Constructor helper.
   // ASSERT macros can only be used in functions returning void.
@@ -238,6 +403,7 @@ class FakeAddressSpaceServer {
   }
 
   ConnectionCounter connection_counter_;
+  RequestObserver request_observer_;
   net::EmbeddedTestServer server_;
 };
 
@@ -2903,15 +3069,8 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestRespectPreflightResults,
                          FetchSubresourceScript(SecureLocalURL(kPnaPath))));
 }
 
-// Failing on Mac11. https://crbug.com/1315068
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_PreflightConnectionReusedHttp1 \
-  DISABLED_PreflightConnectionReusedHttp1
-#else
-#define MAYBE_PreflightConnectionReusedHttp1 PreflightConnectionReusedHttp1
-#endif
 IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestRespectPreflightResults,
-                       MAYBE_PreflightConnectionReusedHttp1) {
+                       PreflightConnectionReusedHttp1) {
   EXPECT_TRUE(NavigateToURL(shell(), SecurePublicURL(kDefaultPath)));
 
   EXPECT_EQ(true, EvalJs(root_frame_host(),
@@ -2931,7 +3090,17 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestRespectPreflightResults,
   // request might not reuse the initial connection and opens its own. In those
   // cases, it is extremely likely that the final request will reuse the first
   // socket.
+  //
+  // TODO(https://crbug.com/1315068): Find out why the connection is not re-used
+  // on Mac 11. Likely culprit is some kind of race condition, since the socket
+  // closure during 1) above is not synchronized with 2) and 3).
+#if BUILDFLAG(IS_MAC)
+  int connection_count = SecureLocalServer().ConnectionCount();
+  EXPECT_GE(connection_count, 2);  // At least 2 connections.
+  EXPECT_LE(connection_count, 3);  // No more than 3 connections.
+#else
   EXPECT_EQ(SecureLocalServer().ConnectionCount(), 2);
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestRespectPreflightResults,
@@ -3095,41 +3264,166 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // This test verifies that even when the right feature is enabled, requests:
+//  - from a non-secure context in the `local` IP address space
+//  - to a subresource cached from a `local` IP address
+// are not blocked.
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
+                       FromInsecureLocalToCachedLocalIsNotBlocked) {
+  GURL target = InsecureLocalURL(kCacheablePath);
+
+  // Cache the resource first. The server receives a GET request.
+  EXPECT_TRUE(NavigateToURL(shell(), InsecureLocalURL(kDefaultPath)));
+  EXPECT_EQ(true, EvalJs(root_frame_host(), FetchSubresourceScript(target)));
+  EXPECT_THAT(
+      InsecureLocalServer().request_observer().RequestMethodsForUrl(target),
+      ElementsAre(METHOD_GET));
+
+  // Check that the page can still load the subresource from cache. The server
+  // does not receive any new request.
+  EXPECT_EQ(true, EvalJs(root_frame_host(), FetchSubresourceScript(target)));
+  EXPECT_THAT(
+      InsecureLocalServer().request_observer().RequestMethodsForUrl(target),
+      ElementsAre(METHOD_GET));
+}
+
+// This test verifies that when the right feature is enabled, requests:
 //  - from a non-secure context in the `public` IP address space
 //  - to a subresource cached from a `local` IP address
-//  are not blocked.
-//
-// TODO(https://crbug.com/1124340): Decide whether this is bad and either change
-// this test or delete this todo.
+// are blocked.
 IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
-                       FromInsecurePublicToCachedLocalIsNotBlocked) {
-  GURL cached_url = SecureLocalURL(kCacheablePath);
+                       FromInsecurePublicToCachedLocalIsBlocked) {
+  GURL target = InsecureLocalURL(kCacheablePath);
 
   // Cache the resource first, by fetching it from a document in the same IP
-  // address space.
-  EXPECT_TRUE(NavigateToURL(shell(), SecureLocalURL(kDefaultPath)));
-  EXPECT_EQ(true,
-            EvalJs(root_frame_host(), FetchSubresourceScript(cached_url)));
+  // address space. The server receives a GET request.
+  EXPECT_TRUE(NavigateToURL(shell(), InsecureLocalURL(kDefaultPath)));
+  EXPECT_EQ(true, EvalJs(root_frame_host(), FetchSubresourceScript(target)));
+  EXPECT_THAT(
+      InsecureLocalServer().request_observer().RequestMethodsForUrl(target),
+      ElementsAre(METHOD_GET));
 
   // Now navigate to a document in the `public` address space belonging to the
   // same site as the previous document (this will use the same cache key).
   EXPECT_TRUE(
+      NavigateToURL(shell(), InsecureLocalURL(kTreatAsPublicAddressPath)));
+
+  // Check that the page cannot load the resource, even from cache. The server
+  // does not receive any new request.
+  EXPECT_EQ(false, EvalJs(root_frame_host(), FetchSubresourceScript(target)));
+  EXPECT_THAT(
+      InsecureLocalServer().request_observer().RequestMethodsForUrl(target),
+      ElementsAre(METHOD_GET));
+}
+
+// This test verifies that when preflights are sent and enforced, requests:
+//  - from a secure context in the `local` IP address space
+//  - to a subresource cached from a `local` IP address
+//  - for which the target server does not respond OK to the preflight request
+// are not blocked.
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestRespectPreflightResults,
+                       FromSecureLocalToCachedLocalIsNotBlocked) {
+  GURL target = SecureLocalURL(kCacheablePath);
+
+  // Cache the resource first. The server receives a GET request.
+  EXPECT_TRUE(NavigateToURL(shell(), SecureLocalURL(kDefaultPath)));
+  EXPECT_EQ(true, EvalJs(root_frame_host(), FetchSubresourceScript(target)));
+  EXPECT_THAT(
+      SecureLocalServer().request_observer().RequestMethodsForUrl(target),
+      ElementsAre(METHOD_GET));
+
+  // Check that the page can still load the subresource from cache. The server
+  // does not receive any new request.
+  EXPECT_EQ(true, EvalJs(root_frame_host(), FetchSubresourceScript(target)));
+  EXPECT_THAT(
+      SecureLocalServer().request_observer().RequestMethodsForUrl(target),
+      ElementsAre(METHOD_GET));
+}
+
+// This test verifies that when preflights are sent but not enforced, requests:
+//  - from a secure page served in the `public` IP address space
+//  - to a subresource cached from a `local` IP address
+//  - for which the target server does not respond OK to the preflight request
+// are not blocked.
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest,
+                       FromSecurePublicToCachedLocalIsNotBlocked) {
+  GURL target = SecureLocalURL(kCacheablePath);
+
+  // Cache the resource first.
+  EXPECT_TRUE(NavigateToURL(shell(), SecureLocalURL(kDefaultPath)));
+  EXPECT_EQ(true, EvalJs(root_frame_host(), FetchSubresourceScript(target)));
+  EXPECT_THAT(
+      SecureLocalServer().request_observer().RequestMethodsForUrl(target),
+      ElementsAre(METHOD_GET));
+
+  EXPECT_TRUE(
       NavigateToURL(shell(), SecureLocalURL(kTreatAsPublicAddressPath)));
 
-  ResourceLoadObserver observer(shell());
+  // Check that the page can still load the subresource from cache.
+  EXPECT_EQ(true, EvalJs(root_frame_host(), FetchSubresourceScript(target)));
 
-  // Check that the page can still load the subresource. This fetch would fail
-  // were the subresource not cached.
-  EXPECT_EQ(true,
-            EvalJs(root_frame_host(), FetchSubresourceScript(cached_url)));
+  // The server receives a preflight request because the preflight response is
+  // not cached, but no second GET request.
+  EXPECT_THAT(
+      SecureLocalServer().request_observer().RequestMethodsForUrl(target),
+      ElementsAre(METHOD_GET, METHOD_OPTIONS));
+}
 
-  observer.WaitForResourceCompletion(cached_url);
+// This test verifies that when preflights are sent and enforced, requests:
+//  - from a secure page served in the `public` IP address space
+//  - to a subresource cached from a `local` IP address
+//  - for which the target server does not respond OK to the preflight request
+// are blocked.
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestRespectPreflightResults,
+                       FromSecurePublicToCachedLocalIsBlocked) {
+  GURL target = SecureLocalURL(kCacheableCorsPath);
 
-  // And that the resource was loaded from the cache.
-  blink::mojom::ResourceLoadInfoPtr* info = observer.GetResource(cached_url);
-  ASSERT_TRUE(info);
-  ASSERT_TRUE(*info);
-  EXPECT_TRUE((*info)->was_cached);
+  // Cache the resource first.
+  EXPECT_TRUE(NavigateToURL(shell(), SecureLocalURL(kDefaultPath)));
+  EXPECT_EQ(true, EvalJs(root_frame_host(), FetchSubresourceScript(target)));
+  EXPECT_THAT(
+      SecureLocalServer().request_observer().RequestMethodsForUrl(target),
+      ElementsAre(METHOD_GET));
+
+  EXPECT_TRUE(
+      NavigateToURL(shell(), SecureLocalURL(kTreatAsPublicAddressPath)));
+
+  // Check that the page cannot load the subresource from cache.
+  EXPECT_EQ(false, EvalJs(root_frame_host(), FetchSubresourceScript(target)));
+
+  // The server receives a preflight request because the preflight response is
+  // not cached, but no second GET request.
+  EXPECT_THAT(
+      SecureLocalServer().request_observer().RequestMethodsForUrl(target),
+      ElementsAre(METHOD_GET, METHOD_OPTIONS));
+}
+
+// This test verifies that when preflights are sent and enforced, requests:
+//  - from a secure page served in the `public` IP address space
+//  - to a subresource cached from a `local` IP address
+//  - for which the target server responds OK to the preflight request
+//  are not blocked.
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTestRespectPreflightResults,
+                       FromSecurePublicToCachedLocalIsNotBlocked) {
+  GURL target = SecureLocalURL(kCacheablePnaPath);
+
+  // Cache the resource first.
+  EXPECT_TRUE(NavigateToURL(shell(), SecureLocalURL(kDefaultPath)));
+  EXPECT_EQ(true, EvalJs(root_frame_host(), FetchSubresourceScript(target)));
+  EXPECT_THAT(
+      SecureLocalServer().request_observer().RequestMethodsForUrl(target),
+      ElementsAre(METHOD_GET));
+
+  EXPECT_TRUE(
+      NavigateToURL(shell(), SecureLocalURL(kTreatAsPublicAddressPath)));
+
+  // Check that the page can still load the subresource from cache.
+  EXPECT_EQ(true, EvalJs(root_frame_host(), FetchSubresourceScript(target)));
+
+  // The server receives a preflight request because the preflight response is
+  // not cached, but no second GET request.
+  EXPECT_THAT(
+      SecureLocalServer().request_observer().RequestMethodsForUrl(target),
+      ElementsAre(METHOD_GET, METHOD_OPTIONS));
 }
 
 // This test verifies that even with the blocking feature disabled, an insecure
@@ -3171,6 +3465,53 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest, Redirect) {
       SecureLocalURL("/server-redirect?" + SecurePrivateURL(kCorsPath).spec());
 
   EXPECT_EQ(true, EvalJs(root_frame_host(), FetchSubresourceScript(target)));
+}
+
+// This test verifies that if a request is made for a resource of which a
+// partial prefix range of bytes was cached, a preflight is correctly sent for
+// the non-cached portion, and the renderer does not crash.
+// Regression test for https://crbug.com/1279376.
+IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessBrowserTest, PrefixRangePreflight) {
+  EXPECT_TRUE(NavigateToURL(shell(), SecurePublicURL(kDefaultPath)));
+
+  const GURL url = SecureLocalURL("/echorange?this-is-a-test");
+
+  constexpr base::StringPiece kFetchRangeScript = R"(
+    (async () => {
+      const url = $1;
+      const range = $2;
+
+      const headers = {};
+      if (range) {
+        headers["Range"] = range;
+      }
+
+      const response = await fetch(url, { headers });
+      const body = await response.text();
+      return body;
+    })()
+  )";
+
+  // Cache a portion of the target resource.
+  EXPECT_EQ("this", EvalJs(root_frame_host(),
+                           JsReplace(kFetchRangeScript, url, "bytes=0-3")));
+
+  // The server received a preflight request, followed by a GET request.
+  EXPECT_THAT(SecureLocalServer().request_observer().RequestMethodsForUrl(url),
+              ElementsAre(net::test_server::METHOD_OPTIONS,
+                          net::test_server::METHOD_GET));
+
+  // Fetch the whole resource.
+  EXPECT_EQ(
+      "this-is-a-test",
+      EvalJs(root_frame_host(), JsReplace(kFetchRangeScript, url, "bytes=0-")));
+
+  // The server received a single GET request for the non-cached suffix. The
+  // preflight response was previously cached, so there is no second preflight.
+  EXPECT_THAT(
+      SecureLocalServer().request_observer().RequestMethodsForUrl(url),
+      ElementsAre(net::test_server::METHOD_OPTIONS,
+                  net::test_server::METHOD_GET, net::test_server::METHOD_GET));
 }
 
 // =========================

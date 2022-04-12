@@ -409,12 +409,7 @@ RenderFrameProxyHost* RenderFrameHostManager::GetProxyToParent() {
 RenderFrameProxyHost* RenderFrameHostManager::GetProxyToOuterDelegate() {
   // Only the main frame should be able to reach the outer WebContents.
   DCHECK(frame_tree_node_->IsMainFrame());
-  int outer_contents_frame_tree_node_id =
-      frame_tree_node_->frame_tree()
-          ->delegate()
-          ->GetOuterDelegateFrameTreeNodeId();
-  FrameTreeNode* outer_contents_frame_tree_node =
-      FrameTreeNode::GloballyFindByID(outer_contents_frame_tree_node_id);
+  FrameTreeNode* outer_contents_frame_tree_node = GetOuterDelegateNode();
   if (!outer_contents_frame_tree_node ||
       !outer_contents_frame_tree_node->parent()) {
     return nullptr;
@@ -422,10 +417,9 @@ RenderFrameProxyHost* RenderFrameHostManager::GetProxyToOuterDelegate() {
 
   // We will create an outer delegate proxy in each BrowsingContextState in this
   // frame so it doesn't matter which BCS is used here.
-  // TODO(crbug.com/1270671): implement outer delegate proxy storage in all
-  // BrowsingContextStates.
   return render_frame_host_->browsing_context_state()->GetRenderFrameProxyHost(
-      outer_contents_frame_tree_node->parent()->GetSiteInstance()->group());
+      outer_contents_frame_tree_node->parent()->GetSiteInstance()->group(),
+      BrowsingContextState::ProxyAccessMode::kAllowOuterDelegate);
 }
 
 RenderFrameProxyHost*
@@ -438,10 +432,7 @@ void RenderFrameHostManager::RemoveOuterDelegateFrame() {
   // Removing the outer delegate frame will destroy the inner WebContents. This
   // should only be called on the main frame.
   DCHECK(frame_tree_node_->IsMainFrame());
-  FrameTreeNode* outer_delegate_frame_tree_node =
-      FrameTreeNode::GloballyFindByID(frame_tree_node_->frame_tree()
-                                          ->delegate()
-                                          ->GetOuterDelegateFrameTreeNodeId());
+  FrameTreeNode* outer_delegate_frame_tree_node = GetOuterDelegateNode();
   DCHECK(outer_delegate_frame_tree_node->parent());
   outer_delegate_frame_tree_node->frame_tree()->RemoveFrame(
       outer_delegate_frame_tree_node);
@@ -2772,6 +2763,16 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
                 ->current_replication_state()
                 .Clone(),
             frame_tree_node_->parent(), new_instance->GetBrowsingInstanceId());
+
+        // Add a proxy to the outer delegate if one exists, as this is not
+        // copied over to the new BrowsingContextState otherwise.
+        FrameTreeNode* outer_contents_frame_tree_node = GetOuterDelegateNode();
+        if (outer_contents_frame_tree_node) {
+          DCHECK(outer_contents_frame_tree_node->parent());
+          browsing_context_state->CreateOuterDelegateProxy(
+              outer_contents_frame_tree_node->parent()->GetSiteInstance(),
+              frame_tree_node_);
+        }
       }
     }
   }
@@ -3012,20 +3013,6 @@ void RenderFrameHostManager::EnsureRenderViewInitialized(
     return;
 
   InitRenderView(group, render_view_host, proxy);
-}
-
-RenderFrameProxyHost* RenderFrameHostManager::CreateOuterDelegateProxy(
-    SiteInstance* outer_contents_site_instance) {
-  // We only get here when Delegate for this manager is an inner delegate.
-  return render_frame_host_->browsing_context_state()
-      ->CreateRenderFrameProxyHost(outer_contents_site_instance, nullptr,
-                                   frame_tree_node_);
-}
-
-void RenderFrameHostManager::DeleteOuterDelegateProxy(
-    SiteInstanceGroup* outer_contents_site_instance_group) {
-  render_frame_host_->browsing_context_state()->DeleteRenderFrameProxyHost(
-      outer_contents_site_instance_group);
 }
 
 void RenderFrameHostManager::SwapOuterDelegateFrame(
@@ -3332,6 +3319,17 @@ int RenderFrameHostManager::GetRoutingIdForSiteInstanceGroup(
 absl::optional<blink::FrameToken>
 RenderFrameHostManager::GetFrameTokenForSiteInstanceGroup(
     SiteInstanceGroup* site_instance_group) {
+  // We want to ensure that we don't create proxies for the new speculative site
+  // instance after a browsing instance swap, and we want to ensure that this
+  // doesn't break anything, so we tie it to the GetBrowsingContextMode which
+  // needs it and is disabled-by-default)
+  if (features::GetBrowsingContextMode() ==
+          features::BrowsingContextStateImplementationType::
+              kSwapForCrossBrowsingInstanceNavigations &&
+      render_frame_host_->GetSiteInstance()->group()->browsing_instance_id() !=
+          site_instance_group->browsing_instance_id()) {
+    return absl::nullopt;
+  }
   if (render_frame_host_->GetSiteInstance()->group() == site_instance_group)
     return render_frame_host_->GetFrameToken();
 

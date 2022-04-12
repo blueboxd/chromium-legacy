@@ -378,6 +378,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       int32_t world_id = ISOLATED_WORLD_ID_GLOBAL) override;
   void ExecuteJavaScriptWithUserGestureForTests(
       const std::u16string& javascript,
+      JavaScriptResultCallback callback,
       int32_t world_id = ISOLATED_WORLD_ID_GLOBAL) override;
   void ExecutePluginActionAtLocalLocation(
       const gfx::Point& local_location,
@@ -1879,6 +1880,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   bool anonymous() const { return anonymous_; }
 
+  bool is_fenced_frame_opaque_url() const {
+    return is_fenced_frame_opaque_url_;
+  }
+
   PolicyContainerHost* policy_container_host() {
     return policy_container_host_.get();
   }
@@ -2922,12 +2927,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Callback that will be called as a response to the call to the method
   // content::mojom::RenderAccessibility::DistillAXTree(). The |callback| passed
-  // will be invoked after the renderer has responded with a list of text node
-  // ID's as |text_nodes|.
+  // will be invoked after the renderer has responded with a list of
+  // |content_node_ids|.
   void RequestDistilledAXTreeCallback(
       AXTreeDistillerCallback callback,
       const ui::AXTreeUpdate& snapshot,
-      const std::vector<ui::AXNodeID>& text_node_ids);
+      const std::vector<ui::AXNodeID>& content_node_ids);
 
   // Makes a copy of an AXTreeUpdate to send to the destination.
   void CopyAXTreeUpdate(const ui::AXTreeUpdate& snapshot,
@@ -4120,6 +4125,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Whether the current document is loaded inside an anonymous iframe. Updated
   // on every cross-document navigation.
   bool anonymous_ = false;
+
+  // Indicates whether the fenced frame is navigated to an opaque url. This flag
+  // can only change when the embedder navigates the fenced frame. Any
+  // subsequent navigation from within the fenced frame tree will keep the same
+  // flag. Note that this flag is only relevant for fenced frames based on
+  // MPArch.
+  bool is_fenced_frame_opaque_url_ = false;
 
   // The PolicyContainerHost for the current document, containing security
   // policies that apply to it. It should never be null if the RenderFrameHost

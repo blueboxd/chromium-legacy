@@ -11,7 +11,9 @@
 #include "ash/public/cpp/system/toast_manager.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_bar_view.h"
+#include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/expanded_desks_bar_button.h"
 #include "ash/wm/desks/templates/desks_templates_grid_view.h"
@@ -44,33 +46,6 @@ desks_storage::DeskModel* GetDeskModel() {
   auto* desk_model = Shell::Get()->desks_templates_delegate()->GetDeskModel();
   DCHECK(desk_model);
   return desk_model;
-}
-
-// Callback ran after creating and activating a new desk for launching a
-// template. Launches apps into the active desk.
-void OnNewDeskCreatedForTemplate(std::unique_ptr<DeskTemplate> desk_template,
-                                 base::Time time_launch_started,
-                                 base::TimeDelta delay,
-                                 aura::Window* root_window,
-                                 const Desk* new_desk) {
-  // Desk creation failed.
-  if (!new_desk)
-    return;
-
-  // Copy the index of the newly created desk to the template. This ensures that
-  // apps appear on the right desk even if the user switches to another.
-  const int desk_index = DesksController::Get()->GetDeskIndex(new_desk);
-  desk_template->SetDeskIndex(desk_index);
-
-  Shell::Get()->desks_templates_delegate()->LaunchAppsFromTemplate(
-      std::move(desk_template), time_launch_started, delay);
-
-  OverviewSession* overview_session =
-      Shell::Get()->overview_controller()->overview_session();
-  DCHECK(overview_session);
-  DesksBarView* desks_bar_view = const_cast<DesksBarView*>(
-      overview_session->GetGridWithRootWindow(root_window)->desks_bar_view());
-  desks_bar_view->NudgeDeskName(desk_index);
 }
 
 }  // namespace
@@ -287,21 +262,50 @@ void DesksTemplatesPresenter::OnGetTemplateForDeskLaunch(
   base::OnceClosure on_update_ui_closure_for_testing =
       std::move(on_update_ui_closure_for_testing_);
 
-  // Launch the windows as specified in the template to a new desk. We do this
-  // in a non-member function so that we don't depend on overview mode still
-  // being active at launch (exiting overview mode means that `this` is going to
-  // be destroyed).
   const auto template_name = entry->template_name();
   const bool activate_desk = entry->type() == DeskTemplateType::kTemplate;
   DesksController::Get()->CreateNewDeskForTemplate(
       template_name, activate_desk,
-      base::BindOnce(&OnNewDeskCreatedForTemplate, std::move(entry),
+      base::BindOnce(&DesksTemplatesPresenter::OnNewDeskCreatedForTemplate,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(entry),
                      time_launch_started, delay, root_window));
 
   if (on_update_ui_closure_for_testing)
     std::move(on_update_ui_closure_for_testing).Run();
 
   RecordLaunchTemplateHistogram();
+}
+
+void DesksTemplatesPresenter::OnNewDeskCreatedForTemplate(
+    std::unique_ptr<DeskTemplate> desk_template,
+    base::Time time_launch_started,
+    base::TimeDelta delay,
+    aura::Window* root_window,
+    const Desk* new_desk) {
+  // Desk creation failed.
+  if (!new_desk)
+    return;
+
+  // For Save & Recall, the underlying desk definition is deleted on launch. We
+  // store the template ID here since we're about to move the desk template.
+  const bool delete_template_on_launch =
+      desk_template->type() == DeskTemplateType::kSaveAndRecall;
+  const std::string template_uuid = desk_template->uuid().AsLowercaseString();
+
+  // Copy the index of the newly created desk to the template. This ensures that
+  // apps appear on the right desk even if the user switches to another.
+  const int desk_index = DesksController::Get()->GetDeskIndex(new_desk);
+  desk_template->SetDeskIndex(desk_index);
+
+  Shell::Get()->desks_templates_delegate()->LaunchAppsFromTemplate(
+      std::move(desk_template), time_launch_started, delay);
+
+  DesksBarView* desks_bar_view = const_cast<DesksBarView*>(
+      overview_session_->GetGridWithRootWindow(root_window)->desks_bar_view());
+  desks_bar_view->NudgeDeskName(desk_index);
+
+  if (delete_template_on_launch)
+    DeleteEntry(template_uuid);
 }
 
 void DesksTemplatesPresenter::OnAddOrUpdateEntry(
@@ -361,6 +365,23 @@ void DesksTemplatesPresenter::OnAddOrUpdateEntry(
       is_zero_state, desk_template->uuid(), root_window);
 
   if (!was_update) {
+    if (desk_template->type() == DeskTemplateType::kSaveAndRecall) {
+      // We have successfully created a *new* desk template for Save & Recall,
+      // so we are now going to close all the windows on the active desk and
+      // also remove the desk.
+      auto* desks_controller = DesksController::Get();
+      auto* active_desk = desks_controller->active_desk();
+
+      // If this is the only desk, we have to create a new desk before we can
+      // remove the current one.
+      if (!desks_controller->CanRemoveDesks())
+        desks_controller->NewDesk(DesksCreationRemovalSource::kSaveAndRecall);
+
+      desks_controller->RemoveDesk(active_desk,
+                                   DesksCreationRemovalSource::kSaveAndRecall,
+                                   /*close_windows=*/true);
+    }
+
     RecordNewTemplateHistogram();
     RecordUserTemplateCountHistogram(GetEntryCount(), GetMaxEntryCount());
   }

@@ -76,7 +76,6 @@
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browsing_data/core/features.h"
 #include "components/certificate_transparency/ct_features.h"
-#include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/flag_descriptions.h"
 #include "components/component_updater/component_updater_command_line_config_policy.h"
@@ -1542,13 +1541,6 @@ const FeatureEntry::FeatureParam kNtpRecipeTasksModuleFakeData[] = {
 const FeatureEntry::FeatureVariation kNtpRecipeTasksModuleVariations[] = {
     {"- Fake Data", kNtpRecipeTasksModuleFakeData,
      std::size(kNtpRecipeTasksModuleFakeData), nullptr},
-};
-
-const FeatureEntry::FeatureParam kNtpShoppingTasksModuleFakeData[] = {
-    {ntp_features::kNtpShoppingTasksModuleDataParam, "fake"}};
-const FeatureEntry::FeatureVariation kNtpShoppingTasksModuleVariations[] = {
-    {"- Fake Data", kNtpShoppingTasksModuleFakeData,
-     std::size(kNtpShoppingTasksModuleFakeData), nullptr},
 };
 
 const FeatureEntry::FeatureParam kNtpDriveModuleFakeData[] = {
@@ -5326,13 +5318,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     kNtpRecipeTasksModuleVariations,
                                     "DesktopNtpModules")},
 
-    {"ntp-shopping-tasks-module",
-     flag_descriptions::kNtpShoppingTasksModuleName,
-     flag_descriptions::kNtpShoppingTasksModuleDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpShoppingTasksModule,
-                                    kNtpShoppingTasksModuleVariations,
-                                    "DesktopNtpModules")},
-
     {"ntp-chrome-cart-module", flag_descriptions::kNtpChromeCartModuleName,
      flag_descriptions::kNtpChromeCartModuleDescription, kOsDesktop,
      FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpChromeCartModule,
@@ -5957,7 +5942,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(ash::features::kPipRoundedCorners)},
     {"cros-labs-float-window", flag_descriptions::kFloatWindow,
      flag_descriptions::kFloatWindowDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kFloatWindow)},
+     FEATURE_VALUE_TYPE(chromeos::wm::features::kFloatWindow)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -6092,11 +6077,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNeuralPalmAdaptiveHoldName,
      flag_descriptions::kEnableNeuralPalmAdaptiveHoldDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ui::kEnableNeuralPalmAdaptiveHold)},
-
-    {"enable-neural-palm-rejection-beta-model",
-     flag_descriptions::kEnableNeuralPalmRejectionBetaModelName,
-     flag_descriptions::kEnableNeuralPalmRejectionBetaModelDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ui::kEnableNeuralPalmRejectionBetaModel)},
 
     {"enable-neural-palm-rejection-model-v2",
      flag_descriptions::kEnableNeuralPalmRejectionModelV2Name,
@@ -6840,6 +6820,10 @@ const FeatureEntry kFeatureEntries[] = {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"shimless-rma-flow", flag_descriptions::kShimlessRMAFlowName,
      flag_descriptions::kShimlessRMAFlowDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kShimlessRMAFlow)},
+    {"shimless-rma-enable-standalone",
+     flag_descriptions::kShimlessRMAEnableStandaloneName,
+     flag_descriptions::kShimlessRMAEnableStandaloneDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kShimlessRMAFlow)},
     {"nearby-sharing-arc", flag_descriptions::kNearbySharingArcName,
      flag_descriptions::kNearbySharingArcDescription, kOsCrOS,

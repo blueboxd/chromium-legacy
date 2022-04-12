@@ -65,6 +65,7 @@
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/flex_layout.h"
@@ -177,6 +178,17 @@ views::Builder<views::BoxLayoutView> CreateCollapsedSummaryBuilder(
                     .SetText(notification.message())
                     .SetTextContext(views::style::CONTEXT_DIALOG_BODY_TEXT)
                     .SetTextStyle(views::style::STYLE_SECONDARY));
+}
+
+views::Builder<ash::AshNotificationView::GroupedNotificationsContainer>
+CreateGroupedNotificationsContainerBuilder(
+    ash::AshNotificationView* parent_notification_view) {
+  return views::Builder<
+             ash::AshNotificationView::GroupedNotificationsContainer>()
+      .SetParentNotificationView(parent_notification_view)
+      .SetOrientation(views::BoxLayout::Orientation::kVertical)
+      .SetInsideBorderInsets(ash::kGroupedNotificationContainerCollapsedInsets)
+      .SetBetweenChildSpacing(ash::kGroupedNotificationsCollapsedSpacing);
 }
 
 // Perform a scale and translate animation by scale from (scale_value_x,
@@ -451,21 +463,25 @@ AshNotificationView::AshNotificationView(
                    .CopyAddressTo(&collapsed_summary_view_)
                    .Build());
 
-  AddChildView(
-      views::Builder<views::ScrollView>()
-          .CopyAddressTo(&grouped_notifications_scroll_view_)
-          .SetBackgroundColor(absl::nullopt)
-          .SetDrawOverflowIndicator(false)
-          .ClipHeightTo(0, std::numeric_limits<int>::max())
-          .SetContents(views::Builder<GroupedNotificationsContainer>()
-                           .CopyAddressTo(&grouped_notifications_container_)
-                           .SetParentNotificationView(this)
-                           .SetOrientation(Orientation::kVertical)
-                           .SetInsideBorderInsets(
-                               kGroupedNotificationContainerCollapsedInsets)
-                           .SetBetweenChildSpacing(
-                               kGroupedNotificationsCollapsedSpacing))
-          .Build());
+  // We only need a scroll view if the notification is being shown in its own
+  // popup. Scrolling is handled by `UnifiedMessageCenterView` otherwise. Having
+  // a nested scroll view results in crbug/1302756.
+  if (shown_in_popup) {
+    AddChildView(
+        views::Builder<views::ScrollView>()
+            .CopyAddressTo(&grouped_notifications_scroll_view_)
+            .SetBackgroundColor(absl::nullopt)
+            .SetDrawOverflowIndicator(false)
+            .ClipHeightTo(0, std::numeric_limits<int>::max())
+            .SetContents(
+                CreateGroupedNotificationsContainerBuilder(this).CopyAddressTo(
+                    &grouped_notifications_container_))
+            .Build());
+  } else {
+    AddChildView(CreateGroupedNotificationsContainerBuilder(this)
+                     .CopyAddressTo(&grouped_notifications_container_)
+                     .Build());
+  }
 
   AddChildView(CreateActionsRow(std::make_unique<views::FlexLayout>()));
 
@@ -737,10 +753,6 @@ void AshNotificationView::UpdateViewForExpandedState(bool expanded) {
 
   if (message_label()) {
     // `message_label()` is shown only in collapsed mode.
-    if (!expanded) {
-      ConfigureLabelStyle(message_label(), kMessageLabelSize, false);
-      message_center_utils::InitLayerForAnimations(message_label());
-    }
     message_label()->SetVisible(!expanded);
     message_label_in_expanded_state_->SetVisible(expanded &&
                                                  !is_grouped_parent_view_);
@@ -758,7 +770,7 @@ void AshNotificationView::UpdateViewForExpandedState(bool expanded) {
   expand_button_->SetExpanded(expanded);
 
   if (is_grouped_parent_view_) {
-    if (shown_in_popup_) {
+    if (grouped_notifications_scroll_view_) {
       grouped_notifications_scroll_view_->ClipHeightTo(
           0, CalculateMaxHeightForGroupedNotifications());
     }
@@ -793,7 +805,9 @@ void AshNotificationView::UpdateWithNotification(
   is_grouped_child_view_ = notification.group_child();
   is_grouped_parent_view_ = notification.group_parent();
 
-  grouped_notifications_scroll_view_->SetVisible(is_grouped_parent_view_);
+  if (grouped_notifications_scroll_view_)
+    grouped_notifications_scroll_view_->SetVisible(is_grouped_parent_view_);
+  grouped_notifications_container_->SetVisible(is_grouped_parent_view_);
 
   if (is_grouped_child_view_ && !is_nested())
     SetIsNested();
@@ -804,7 +818,17 @@ void AshNotificationView::UpdateWithNotification(
   NotificationViewBase::UpdateWithNotification(notification);
 
   CreateOrUpdateSnoozeButton(notification);
+
+  // Configure views style.
   UpdateIconAndButtonsColor(&notification);
+  if (message_label())
+    ConfigureLabelStyle(message_label(), kMessageLabelSize, false);
+  if (inline_reply()) {
+    SkColor text_color = ash::AshColorProvider::Get()->GetContentLayerColor(
+        ash::AshColorProvider::ContentLayerType::kTextColorSecondary);
+    inline_reply()->textfield()->SetTextColor(text_color);
+    inline_reply()->textfield()->set_placeholder_text_color(text_color);
+  }
 }
 
 void AshNotificationView::CreateOrUpdateHeaderView(
@@ -980,6 +1004,13 @@ void AshNotificationView::OnThemeChanged() {
   UpdateIconAndButtonsColor(
       message_center::MessageCenter::Get()->FindVisibleNotificationById(
           notification_id()));
+
+  if (inline_reply()) {
+    SkColor text_color = ash::AshColorProvider::Get()->GetContentLayerColor(
+        ash::AshColorProvider::ContentLayerType::kTextColorSecondary);
+    inline_reply()->textfield()->SetTextColor(text_color);
+    inline_reply()->textfield()->set_placeholder_text_color(text_color);
+  }
 }
 
 std::unique_ptr<message_center::NotificationInputContainer>
@@ -1277,6 +1308,7 @@ void AshNotificationView::PerformExpandCollapseAnimation() {
   // when `message_label()` is truncated).
   if (message_label() && message_label()->GetVisible() &&
       IsMessageLabelTruncated()) {
+    message_center_utils::InitLayerForAnimations(message_label());
     message_center_utils::FadeInView(
         message_label(), kMessageLabelFadeInAnimationDelayMs,
         kMessageLabelFadeInAnimationDurationMs, gfx::Tween::LINEAR,

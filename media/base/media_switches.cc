@@ -257,6 +257,11 @@ const base::Feature kFFmpegDecodeOpaqueVP8{"FFmpegDecodeOpaqueVP8",
 const base::Feature kOverlayFullscreenVideo{"overlay-fullscreen-video",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Use a LocalMediaStreamAudioSource for getDisplayMedia captures with audio.
+// TODO(crbug.com/1313841): Remove this after M107 branch point.
+const base::Feature kDisplayAudioUseLocalAudioSource{
+    "DisplayAudioUseLocalAudioSource", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables user control over muting tab audio from the tab strip.
 const base::Feature kEnableTabMuting{"EnableTabMuting",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
@@ -345,11 +350,25 @@ const base::Feature kCdmHostVerification{"CdmHostVerification",
 const base::Feature kCdmProcessSiteIsolation{"CdmProcessSiteIsolation",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
 // If echo cancellation for a mic signal is requested, mix and cancel all audio
 // playback going to a specific output device in the audio service.
-#if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
 const base::Feature kChromeWideEchoCancellation{
     "ChromeWideEchoCancellation", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If non-zero, audio processing is done on a dedicated processing thread which
+// receives audio from the audio capture thread via a fifo of a specified size.
+// Zero fifo size means the usage of such processing thread is disabled and
+// processing is done on the audio capture thread itself.
+const base::FeatureParam<int> kChromeWideEchoCancellationProcessingFifoSize{
+    &kChromeWideEchoCancellation, "processing_fifo_size", 0};
+
+// When audio processing is done in the audio process, at the renderer side IPC
+// is set up to receive audio at the processing sample rate. This is a
+// kill-switch to fallback to receiving audio at the default sample rate of the
+// audio capture device.
+const base::FeatureParam<bool> kChromeWideEchoCancellationMinimizeResampling{
+    &kChromeWideEchoCancellation, "minimize_resampling", true};
 #endif
 
 // Make MSE garbage collection algorithm more aggressive when we are under
@@ -579,6 +598,17 @@ const base::Feature kLiveCaption{"LiveCaption",
 // tab instead" button is shown for chrome.desktopCapture captures.
 const base::Feature kShareThisTabInsteadButtonGetDisplayMedia{
     "ShareThisTabInsteadButtonGetDisplayMedia",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If kShareThisTabInsteadButtonGetDisplayMedia is ENABLED, this flag controls
+// whether a "Share this tab instead" button should be enabled for
+// getDisplayMedia captures with audio.
+// If kShareThisTabInsteadButtonGetDisplayMedia is DISABLED, this flag has no
+// effect.
+// Note: This flag does not control if the "Share this tab instead" button is
+// shown for chrome.desktopCapture captures.
+const base::Feature kShareThisTabInsteadButtonGetDisplayMediaAudio{
+    "ShareThisTabInsteadButtonGetDisplayMediaAudio",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable the Speaker Change Detection feature, which inserts a line break when

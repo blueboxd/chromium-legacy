@@ -370,6 +370,7 @@ static_library("test_support") {
       "../browser/renderer_context_menu/render_view_context_menu_test_util.h",
       "../browser/themes/test/theme_service_changed_waiter.cc",
       "../browser/themes/test/theme_service_changed_waiter.h",
+      "../browser/ui/profile_ui_test_utils.h",
       "../browser/ui/tabs/pinned_tab_test_utils.cc",
       "../browser/ui/tabs/pinned_tab_test_utils.h",
       "../test/base/browser_with_test_window_test.cc",
@@ -605,6 +606,7 @@ static_library("test_support") {
       "../browser/ui/views/desktop_capture/desktop_media_picker_views_test_api.h",
       "../browser/ui/views/media_router/app_menu_test_api.h",
       "../browser/ui/views/media_router/app_menu_test_api_views.cc",
+      "../browser/ui/views/profiles/profile_picker_view_test_utils.cc",
       "../browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_test_helper.cc",
       "../browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_test_helper.h",
       "base/test_theme_provider.cc",
@@ -1225,6 +1227,7 @@ if (!is_android) {
       "//components/cast_channel",
       "//components/cbor",
       "//components/certificate_transparency",
+      "//components/certificate_transparency:proto",
       "//components/commerce/core:commerce_heuristics_data",
       "//components/commerce/core:feature_list",
       "//components/constrained_window",
@@ -1649,6 +1652,7 @@ if (!is_android) {
       "../browser/chrome_worker_browsertest.cc",
       "../browser/client_hints/client_hints_browsertest.cc",
       "../browser/component_updater/component_patcher_operation_browsertest.cc",
+      "../browser/component_updater/pki_metadata_component_installer_browsertest.cc",
       "../browser/content_index/content_index_browsertest.cc",
       "../browser/content_language/content_language_browsertest.cc",
       "../browser/content_settings/mixed_content_settings_tab_helper_browsertest.cc",
@@ -3081,10 +3085,10 @@ if (!is_android) {
         "//google_apis/common:test_support",
         "//google_apis/drive",
 
-        # TODO(rockot) bug 505926: The chrome_extensions_browsertests target
-        # should be deleted and this line removed. See the
-        # chrome_extensions_browsertests target for more.
-        "//extensions:chrome_extensions_browsertests",
+        # TODO(rockot) bug 505926: The chrome_extensions_browsertests_sources
+        # target should be deleted and this line removed. See the
+        # chrome_extensions_browsertests_sources target for more.
+        "//extensions:chrome_extensions_browsertests_sources",
         "//extensions/browser:test_support",
         "//extensions/common:mojom",
         "//extensions/common/api",
@@ -3550,6 +3554,7 @@ if (!is_android) {
         "../browser/ash/login/screens/smart_privacy_protection_screen_browsertest.cc",
         "../browser/ash/login/screens/sync_consent_browsertest.cc",
         "../browser/ash/login/screens/terms_of_service_screen_browsertest.cc",
+        "../browser/ash/login/screens/theme_selection_screen_browsertest.cc",
         "../browser/ash/login/screens/update_required_screen_browsertest.cc",
         "../browser/ash/login/screens/update_screen_browsertest.cc",
         "../browser/ash/login/screens/user_creation_screen_browsertest.cc",
@@ -5490,6 +5495,7 @@ test("unit_tests") {
       "../browser/ui/hats/hats_helper_unittest.cc",
       "../browser/ui/hats/trust_safety_sentiment_service_factory_unittest.cc",
       "../browser/ui/hats/trust_safety_sentiment_service_unittest.cc",
+      "../browser/ui/intent_picker_tab_helper_unittest.cc",
       "../browser/ui/passwords/well_known_change_password_navigation_throttle_unittest.cc",
       "../browser/ui/sync/sync_promo_ui_unittest.cc",
       "../browser/ui/toolbar/app_menu_icon_controller_unittest.cc",
@@ -7991,6 +7997,7 @@ test("unit_tests") {
       "../browser/enterprise/connectors/device_trust/signals/decorators/common:unit_tests",
       "../browser/enterprise/connectors/device_trust/signals/decorators/content",
       "../browser/enterprise/connectors/device_trust/signals/decorators/content:unit_tests",
+      "//services/data_decoder/public/cpp:test_support",
     ]
   }
 

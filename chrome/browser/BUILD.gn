@@ -1078,8 +1078,6 @@ static_library("browser") {
     "performance_manager/policies/working_set_trimmer_policy.h",
     "performance_monitor/chrome_browser_main_extra_parts_performance_monitor.cc",
     "performance_monitor/chrome_browser_main_extra_parts_performance_monitor.h",
-    "performance_monitor/process_metrics_history.cc",
-    "performance_monitor/process_metrics_history.h",
     "performance_monitor/process_metrics_recorder.cc",
     "performance_monitor/process_metrics_recorder.h",
     "performance_monitor/process_metrics_recorder_util.cc",
@@ -2981,6 +2979,8 @@ static_library("browser") {
       "android/webapk/webapk_handler_delegate.h",
       "android/webapk/webapk_info.cc",
       "android/webapk/webapk_info.h",
+      "android/webapk/webapk_install_coordinator_bridge.cc",
+      "android/webapk/webapk_install_coordinator_bridge.h",
       "android/webapk/webapk_install_service.cc",
       "android/webapk/webapk_install_service.h",
       "android/webapk/webapk_install_service_factory.cc",
@@ -5717,8 +5717,6 @@ static_library("browser") {
       "mac/auth_session_request.mm",
       "mac/bluetooth_utility.h",
       "mac/bluetooth_utility.mm",
-      "mac/developer_id_certificate_reauthorize.h",
-      "mac/developer_id_certificate_reauthorize.mm",
       "mac/dock.h",
       "mac/dock.mm",
       "mac/exception_processor.h",
@@ -5737,8 +5735,6 @@ static_library("browser") {
       "mac/mac_startup_profiler.h",
       "mac/nsprocessinfo_additions.h",
       "mac/nsprocessinfo_additions.mm",
-      "mac/purge_stale_screen_capture_permission.h",
-      "mac/purge_stale_screen_capture_permission.mm",
       "mac/relauncher.h",
       "mac/relauncher.mm",
       "media/webrtc/media_authorization_wrapper_mac.h",
@@ -5874,6 +5870,7 @@ static_library("browser") {
       "//chrome/browser/enterprise/connectors/device_trust/signals/decorators/content",
       "//components/enterprise/common/proto:device_trust_report_event_proto",
       "//components/policy/proto:proto",
+      "//services/data_decoder/public/cpp",
     ]
   }
 

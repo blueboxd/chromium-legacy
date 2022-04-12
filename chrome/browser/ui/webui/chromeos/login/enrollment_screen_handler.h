@@ -78,6 +78,7 @@ class EnrollmentScreenHandler
   void SetEnterpriseDomainInfo(const std::string& manager,
                                const std::u16string& device_type) override;
   void SetFlowType(FlowType flow_type) override;
+  void SetGaiaButtonsType(GaiaButtonsType buttons_type) override;
   void Show() override;
   void Hide() override;
   void Bind(ash::EnrollmentScreen* screen) override;
@@ -110,16 +111,18 @@ class EnrollmentScreenHandler
   // Implements NetworkStateInformer::NetworkStateInformerObserver
   void UpdateState(NetworkError::ErrorReason reason) override;
 
-  void ContinueAuthenticationWhenCookiesAvailable(const std::string& user);
+  void ContinueAuthenticationWhenCookiesAvailable(const std::string& user,
+                                                  int license_type);
   void OnCookieWaitTimeout();
 
  private:
   // Handlers for WebUI messages.
   void HandleToggleFakeEnrollment();
   void HandleClose(const std::string& reason);
-  void HandleCompleteLogin(const std::string& user);
+  void HandleCompleteLogin(const std::string& user, int license_type);
   void OnGetCookiesForCompleteLogin(
       const std::string& user,
+      int license_type,
       const net::CookieAccessResultList& cookies,
       const net::CookieAccessResultList& excluded_cookies);
   void HandleAdCompleteLogin(const std::string& machine_name,
@@ -182,6 +185,8 @@ class EnrollmentScreenHandler
 
   // GAIA flow type parameter that is set to authenticator.
   FlowType flow_type_;
+
+  GaiaButtonsType gaia_buttons_type_;
 
   // Active Directory configuration in the form of encrypted binary data.
   std::string active_directory_domain_join_config_;

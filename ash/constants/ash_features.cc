@@ -558,9 +558,17 @@ const base::Feature kEnableOobeChromeVoxHint{"EnableOobeChromeVoxHint",
 const base::Feature kEnableOobePolymer3{"EnableOobePolymer3",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables Kiosk enrollment option in OOBE.
+const base::Feature kEnableKioskEnrollmentInOobe{
+    "EnableKioskEnrollmentInOobe", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables skipping of network screen.
 const base::Feature kEnableOobeNetworkScreenSkip{
     "EnableOobeNetworkScreenSkip", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables skipping of network screen.
+const base::Feature kEnableOobeThemeSelection{
+    "EnableOobeThemeSelection", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables showing notification after the password change for SAML users.
 const base::Feature kEnableSamlNotificationOnPasswordChangeSuccess{
@@ -682,7 +690,7 @@ const base::Feature kFilesWebDriveOffice{"FilesWebDriveOffice",
 
 // Enables filters in Files app Recents view.
 const base::Feature kFiltersInRecents{"FiltersInRecents",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables filters in Files app Recents view V2.
 const base::Feature kFiltersInRecentsV2{"FiltersInRecentsV2",
@@ -695,11 +703,6 @@ const base::Feature kFirmwareUpdaterApp = {"FirmwareUpdaterApp",
 // Enables or disables Floating Workspace feature on Chrome OS
 const base::Feature kFloatingWorkspace{"FloatingWorkspace",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables a window to float.
-// https://crbug.com/1240411
-const base::Feature kFloatWindow{"CrOSLabsFloatWindow",
-                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether to allow keeping full screen mode after unlock.
 const base::Feature kFullscreenAfterUnlockAllowed = {
@@ -1144,6 +1147,10 @@ const base::Feature kProjectorTutorialVideoView(
     "ProjectorTutorialVideoView",
     base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Controls whether Projector use custom thumbnail in gallery page.
+const base::Feature kProjectorCustomThumbnail("kProjectorCustomThumbnail",
+                                              base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Controls whether the quick dim prototype is enabled.
 const base::Feature kQuickDim{"QuickDim", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -1238,6 +1245,10 @@ const base::Feature kShelfParty{"ShelfParty",
 // Enables or disables the new shimless rma flow.
 const base::Feature kShimlessRMAFlow{"ShimlessRMAFlow",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables launching Shimless RMA as a standalone app.
+const base::Feature kShimlessRMAEnableStandalone{
+    "ShimlessRMAEnableStandalone", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables a toggle to enable Bluetooth debug logs.
 const base::Feature kShowBluetoothDebugLogToggle{
@@ -1465,7 +1476,7 @@ const base::FeatureParam<int> kDeviceForceScheduledRebootMaxDelay{
 // Enables or disables whether to store UMA logs per-user and whether metrics
 // consent is per-user.
 const base::Feature kPerUserMetrics{"PerUserMetricsConsent",
-                                    base::FEATURE_ENABLED_BY_DEFAULT};
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 ////////////////////////////////////////////////////////////////////////////////
 
 bool AreContextualNudgesEnabled() {
@@ -1894,6 +1905,10 @@ bool IsOobePolymer3Enabled() {
   return base::FeatureList::IsEnabled(kEnableOobePolymer3);
 }
 
+bool IsKioskEnrollmentInOobeEnabled() {
+  return base::FeatureList::IsEnabled(kEnableKioskEnrollmentInOobe);
+}
+
 bool IsOobeNetworkScreenSkipEnabled() {
   return base::FeatureList::IsEnabled(kEnableOobeNetworkScreenSkip);
 }
@@ -1908,6 +1923,10 @@ bool IsOobeQuickStartEnabled() {
 
 bool IsOobeNewRecommendAppsEnabled() {
   return base::FeatureList::IsEnabled(kOobeNewRecommendApps);
+}
+
+bool IsOobeThemeSelectionEnabled() {
+  return base::FeatureList::IsEnabled(kEnableOobeThemeSelection);
 }
 
 bool IsPcieBillboardNotificationEnabled() {
@@ -1989,6 +2008,10 @@ bool IsProjectorExcludeTranscriptEnabled() {
 
 bool IsProjectorTutorialVideoViewEnabled() {
   return base::FeatureList::IsEnabled(kProjectorTutorialVideoView);
+}
+
+bool IsProjectorCustomThumbnailEnabled() {
+  return base::FeatureList::IsEnabled(kProjectorCustomThumbnail);
 }
 
 bool IsQuickDimEnabled() {
@@ -2107,10 +2130,6 @@ bool IsWebUITabStripTabDragIntegrationEnabled() {
 
 bool IsWifiSyncAndroidEnabled() {
   return base::FeatureList::IsEnabled(kWifiSyncAndroid);
-}
-
-bool IsFloatWindowEnabled() {
-  return base::FeatureList::IsEnabled(kFloatWindow);
 }
 
 bool ShouldShowPlayStoreInDemoMode() {

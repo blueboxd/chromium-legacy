@@ -688,7 +688,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppList.PersistentProto.ReadStatus"
-    enum="PersistentProtoReadStatus" expires_after="2022-08-07">
+    enum="PersistentProtoReadStatus" expires_after="2022-10-09">
   <owner>wrong@chromium.org</owner>
   <owner>tby@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
@@ -727,6 +727,18 @@ chromium-metrics-reviews@google.com.
     <variant name="Local" summary="Count of local file results"/>
     <variant name="Total" summary="Count of all results"/>
   </token>
+</histogram>
+
+<histogram name="Apps.AppList.Search.ContinueResultRemovalReason"
+    enum="LauncherContinueSectionRemoveFeedbackType" expires_after="2023-04-08">
+  <owner>anasalazar@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <summary>
+    The user response to the feedback dialog shown to users when they attempt to
+    remove a file suggestion shown in ChromeOS launcher UI. The dialog lets the
+    user provide feedback about why they removed the suggestion,and will not be
+    shown again after the user responds.
+  </summary>
 </histogram>
 
 <histogram name="Apps.AppList.Search.ContinueResultRemoved"
@@ -1774,7 +1786,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.CreateShortcuts.Linux.Result"
-    enum="WebAppCreateShortcutLinuxResult" expires_after="2022-08-07">
+    enum="WebAppCreateShortcutLinuxResult" expires_after="2022-10-09">
   <owner>phillis@chromium.org</owner>
   <owner>cmumford@chromium.org</owner>
   <summary>

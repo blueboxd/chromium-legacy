@@ -290,8 +290,7 @@ AttributionManagerImpl::AttributionManagerImpl(
       data_host_manager_(std::move(data_host_manager)),
       special_storage_policy_(std::move(special_storage_policy)),
       cookie_checker_(std::move(cookie_checker)),
-      report_sender_(std::move(report_sender)),
-      weak_factory_(this) {
+      report_sender_(std::move(report_sender)) {
   DCHECK(storage_partition_);
   DCHECK(cookie_checker_);
   DCHECK(report_sender_);
@@ -367,9 +366,9 @@ void AttributionManagerImpl::HandleTrigger(AttributionTrigger trigger) {
 
 void AttributionManagerImpl::StoreTrigger(AttributionTrigger trigger) {
   attribution_storage_.AsyncCall(&AttributionStorage::MaybeCreateAndStoreReport)
-      .WithArgs(std::move(trigger))
+      .WithArgs(trigger)
       .Then(base::BindOnce(&AttributionManagerImpl::OnReportStored,
-                           weak_factory_.GetWeakPtr()));
+                           weak_factory_.GetWeakPtr(), std::move(trigger)));
 }
 
 void AttributionManagerImpl::MaybeEnqueueEvent(SourceOrTrigger event) {
@@ -450,6 +449,7 @@ void AttributionManagerImpl::ProcessNextEvent(bool is_debug_cookie_set) {
           &common_info.impression_origin(),
           /*destination_origin=*/nullptr, &common_info.reporting_origin());
       RecordRegisterImpressionAllowed(allowed);
+      // TODO(apaseltiner): Notify observers when the source is prohibited.
       if (!allowed)
         return;
 
@@ -466,6 +466,7 @@ void AttributionManagerImpl::ProcessNextEvent(bool is_debug_cookie_set) {
           /*source_origin=*/nullptr, &trigger.destination_origin(),
           &trigger.reporting_origin());
       RecordRegisterConversionAllowed(allowed);
+      // TODO(apaseltiner): Notify observers when the trigger is prohibited.
       if (!allowed)
         return;
 
@@ -484,7 +485,8 @@ void AttributionManagerImpl::ProcessNextEvent(bool is_debug_cookie_set) {
       std::move(event));
 }
 
-void AttributionManagerImpl::OnReportStored(CreateReportResult result) {
+void AttributionManagerImpl::OnReportStored(const AttributionTrigger trigger,
+                                            CreateReportResult result) {
   RecordCreateReportStatus(result);
 
   if (std::vector<AttributionReport>& new_reports = result.new_reports();
@@ -514,7 +516,7 @@ void AttributionManagerImpl::OnReportStored(CreateReportResult result) {
   }
 
   for (auto& observer : observers_)
-    observer.OnTriggerHandled(result);
+    observer.OnTriggerHandled(trigger, result);
 }
 
 void AttributionManagerImpl::MaybeSendDebugReport(AttributionReport&& report) {

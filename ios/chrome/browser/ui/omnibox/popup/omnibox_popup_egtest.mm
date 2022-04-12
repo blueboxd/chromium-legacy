@@ -269,6 +269,11 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
     EARL_GREY_TEST_SKIPPED(@"This test doesn't pass on iPad.");
   }
 
+  // TODO(crbug.com/1315304): Reenable.
+  if ([ChromeEarlGrey isNewOmniboxPopupEnabled]) {
+    EARL_GREY_TEST_DISABLED(@"Disabled for new popup");
+  }
+
   // Open the first page.
   GURL URL1 = self.testServer->GetURL(kPage1URL);
   [ChromeEarlGrey loadURL:URL1];
@@ -299,15 +304,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [ChromeEarlGrey waitForMainTabCount:1];
 }
 
-// TODO(crbug.com/1128463): Test is flaky on simulators.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testDontCloseNTPWhenSwitchingWithForwardHistory \
-  DISABLED_testDontCloseNTPWhenSwitchingWithForwardHistory
-#else
-#define MAYBE_testDontCloseNTPWhenSwitchingWithForwardHistory \
-  testDontCloseNTPWhenSwitchingWithForwardHistory
-#endif
-- (void)MAYBE_testDontCloseNTPWhenSwitchingWithForwardHistory {
+// TODO(crbug.com/1128463): Test is flaky on simulators and device.
+- (void)DISABLED_testDontCloseNTPWhenSwitchingWithForwardHistory {
 // TODO(crbug.com/1067817): Test won't pass on iPad devices.
 #if !TARGET_IPHONE_SIMULATOR
   if ([ChromeEarlGrey isIPadIdiom]) {
@@ -440,6 +438,11 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 // Test that on iPhones, when the popup is scrolled, the keyboard is dismissed
 // but the omnibox is still expanded and the suggestions are visible.
 - (void)testScrollingDismissesKeyboardOnPhones {
+  // TODO(crbug.com/1315304): Reenable.
+  if ([ChromeEarlGrey isNewOmniboxPopupEnabled]) {
+    EARL_GREY_TEST_DISABLED(@"Disabled for new popup");
+  }
+
   [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
       performAction:grey_tap()];
   [ChromeEarlGrey

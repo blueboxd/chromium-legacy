@@ -105,7 +105,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.IppAttributesSuccess" enum="BooleanSuccess"
-    expires_after="2022-08-07">
+    expires_after="2022-10-09">
   <owner>bmgordon@chromium.org</owner>
   <owner>cros-printing-dev@chromium.org</owner>
   <summary>
@@ -162,7 +162,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.MigratedMakeAndModel" enum="BooleanMigrated"
-    expires_after="2022-04-10">
+    expires_after="2022-10-10">
   <owner>luum@chromium.org</owner>
   <owner>cros-printing-dev@chromium.org</owner>
   <summary>

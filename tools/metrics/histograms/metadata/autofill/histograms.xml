@@ -928,6 +928,32 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram
+    name="Autofill.CreditCardSaveFlowResult.{SaveDestination}{SaveSituation}"
+    enum="AutofillCreditCardSaveFlowResult" expires_after="M110">
+  <owner>lazzzis@google.com</owner>
+  <owner>jsaul@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    The relative frequency with which users accept, deny, or ignore the Autofill
+    credit card prompt when card is saved to for a {SaveDestination} save,
+    {SaveSituation}. Note that this metric concerns the result of final save,
+    rather than the CTR of the prompt, and this metric should record when a
+    decision of whether card will be saved or not is made.
+  </summary>
+  <token key="SaveDestination">
+    <variant name="Local" summary="local"/>
+    <variant name="Server" summary="server"/>
+  </token>
+  <token key="SaveSituation">
+    <variant name="" summary="aggregated across all situations"/>
+    <variant name=".RequestingCardholderName"
+        summary="explicitly requesting cardholder name"/>
+    <variant name=".RequestingExpirationDate"
+        summary="explicitly requesting expiration date"/>
+  </token>
+</histogram>
+
 <histogram name="Autofill.CreditCardsDeletedForDisuse" units="units"
     expires_after="2022-12-12">
   <owner>battre@chromium.org</owner>
@@ -1041,7 +1067,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.ErrorDialogShown" enum="AutofillErrorDialogType"
-    expires_after="2022-05-15">
+    expires_after="2023-04-01">
+  <owner>siyua@chromium.org</owner>
   <owner>siashah@chromium.org</owner>
   <owner>jsaul@google.com</owner>
   <summary>
@@ -1073,10 +1100,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Autofill.ExtractNewForms.ShallowEqualityDiffersFromDeepEquality"
-    enum="FormDataEquality" expires_after="M102">
-  <obsolete>
-    The experiment has been launched in 04/2022.
-  </obsolete>
+    enum="FormDataEquality" expires_after="2022-09-30">
   <owner>evih@google.com</owner>
   <owner>schwering@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
@@ -1236,10 +1260,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Autofill.FormCacheSize" units="forms" expires_after="M102">
-  <obsolete>
-    The experiment has been launched in 04/2022.
-  </obsolete>
+<histogram name="Autofill.FormCacheSize" units="forms"
+    expires_after="2022-07-31">
   <owner>evih@google.com</owner>
   <owner>schwering@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>

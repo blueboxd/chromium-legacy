@@ -253,7 +253,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '19e05da5851a8e8bd84a317860b0e22ec7932d6e',
+  'skia_revision': '9fe0e3d4e7372de4b571fc36b3761c8b9d57aa6d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -261,7 +261,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '5e48e5b8d4496a5d3ccd16fde5be8012cd4c4931',
+  'angle_revision': 'd18e9e84afc09fac3b7ab98cc4289de863a506a1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -328,7 +328,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '46a28a3c5dadb2a79680c35a61000e908aee74dc',
+  'devtools_frontend_revision': '0ef56dd222aec8fc302a43cf58e2a468514e3385',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -364,7 +364,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'f13679dbc49318a3d0c8c98fbc73ecaec177acef',
+  'dawn_revision': 'e6d4598d36157639606a780164c425c6bffb93f6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -431,7 +431,7 @@ vars = {
   'libcxx_revision':       '79a2e924d96e2fc1e4b937c42efd08898fa472d7',
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:fd9f2036f26d83f9fcfe93042fb952e5a7fe2167',
+  'gn_version': 'git_revision:df20104ca020c0c4b72030742abb1b13d9f2a391',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -744,7 +744,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '04424d224ee9e98c7e5a31e140e31105f07e73f1',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '6ab378ddc497eb436e4c99f055e8f94daceed34a',
       'condition': 'checkout_ios',
   },
 
@@ -1692,7 +1692,7 @@ deps = {
       'condition': 'checkout_android',
   },
 
-  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@1681fa4499cb6b8a667c588fa14d775e63beebfa',
+  'src/third_party/vulkan-deps': '{chromium_git}/vulkan-deps@aca87272862c12899b7dfcbc0f569ea2b530cae4',
 
   'src/third_party/vulkan_memory_allocator':
     Var('chromium_git') + '/external/github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git' + '@' + 'ebe84bec02c041d28f902da0214bf442743fc907',
@@ -1728,7 +1728,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'cf04aebdf9b53bb2853f22a81465688daf879ec6',
 
   'src/third_party/webgpu-cts/src':
-    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '2fa0b2073cd906504f8f7668907bf46b91f3cfa6',
+    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '549d7c2f1637321a9247f0a3ab022f919e5ca5da',
 
   'src/third_party/webrtc':
     Var('webrtc_git') + '/src.git' + '@' + '740d7040796ae259ae55cb3ba1b9d423535cfac3',
@@ -1801,7 +1801,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@00d99d2d0c520c41f64867293a803d0f1e572aef',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@f9bea8ab3555ef13510cc7a5d6451788f8762c55',
     'condition': 'checkout_src_internal',
   },
 
@@ -1853,7 +1853,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/projector_app/app',
-        'version': 'zvssMRGkrSKVTUnN3dSa_d3_xPuVJ2aPSmegU-rHbMQC',
+        'version': 'yi1FmtSpra-K3yNvPf-Xi57Wsi3BwDJr9TG6WhODdJgC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

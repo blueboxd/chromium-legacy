@@ -17,13 +17,16 @@
 
 namespace base {
 
+class FilePath;
 class LapTimer;
 class PlatformThread;
 class PlatformThreadHandle;
 class PlatformThreadRef;
 class TimeDelta;
 class TimeTicks;
-class CPU;
+struct NativeLibraryLoadError;
+
+struct NativeLibraryLoadError;
 
 template <typename Type, typename Traits>
 class LazyInstance;
@@ -41,14 +44,17 @@ constexpr TimeDelta Microseconds(T n);
 BASE_EXPORT uint64_t RandGenerator(uint64_t range);
 BASE_EXPORT std::string StringPrintf(const char* format, ...);
 
+#if BUILDFLAG(IS_ANDROID)
+template <typename CharT, typename Traits>
+class BasicStringPiece;
+using StringPiece = BasicStringPiece<char, std::char_traits<char>>;
+using NativeLibrary = void*;
+BASE_EXPORT void* GetFunctionPointerFromNativeLibrary(NativeLibrary library,
+                                                      StringPiece name);
+#endif
+
 template <typename T, typename O>
 class NoDestructor;
-
-namespace debug {
-
-void BASE_EXPORT Alias(const void* var);
-
-}  // namespace debug
 
 namespace internal {
 
@@ -88,12 +94,13 @@ namespace partition_alloc::internal::base {
 
 // TODO(https://crbug.com/1288247): Remove these 'using' declarations once
 // the migration to the new namespaces gets done.
-using ::base::CPU;
+using ::base::FilePath;
 using ::base::LapTimer;
 using ::base::LazyInstance;
 using ::base::LazyInstanceTraitsBase;
 using ::base::Microseconds;
 using ::base::Milliseconds;
+using ::base::NativeLibraryLoadError;
 using ::base::NoDestructor;
 using ::base::PlatformThread;
 using ::base::PlatformThreadHandle;
@@ -105,17 +112,16 @@ using ::base::TimeDelta;
 using ::base::TimeTicks;
 using ::base::internal::CheckedNumeric;
 
+#if BUILDFLAG(IS_ANDROID)
+using ::base::GetFunctionPointerFromNativeLibrary;
+using ::base::NativeLibrary;
+#endif
+
 #if BUILDFLAG(IS_MAC)
 template <typename CFT>
 using ScopedCFTypeRef =
     ::base::ScopedTypeRef<CFT, ::base::internal::ScopedCFTypeRefTraits<CFT>>;
 #endif
-
-namespace debug {
-
-using ::base::debug::Alias;
-
-}  // namespace debug
 
 #if BUILDFLAG(IS_MAC)
 namespace mac {

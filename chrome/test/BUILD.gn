@@ -341,7 +341,6 @@ static_library("test_support") {
       # target.
       ":test_support_ui",
       "//chrome/app:test_support",
-      "//chrome/browser:test_support",
       "//chrome/browser/web_applications",
       "//components/crx_file",
       "//components/keep_alive_registry",
@@ -2156,7 +2155,6 @@ if (!is_android) {
       "../browser/ui/web_applications/web_app_link_capturing_browsertest.cc",
       "../browser/ui/web_applications/web_app_metrics_browsertest.cc",
       "../browser/ui/web_applications/web_app_navigate_browsertest.cc",
-      "../browser/ui/web_applications/web_app_profile_deletion_browsertest.cc",
       "../browser/ui/web_applications/web_app_protocol_handling_browsertest.cc",
       "../browser/ui/web_applications/web_app_ui_manager_impl_browsertest.cc",
       "../browser/ui/web_applications/web_app_uninstall_browsertest.cc",
@@ -2288,6 +2286,10 @@ if (!is_android) {
 
         # This test is run as part of lacros_chrome_browsertests below.
         "../browser/ui/views/location_bar/intent_chip_button_browsertest.cc",
+
+        # Test not valid on Lacros as WebApps is only enabled in the main
+        # profile which can never be deleted.
+        "../browser/ui/web_applications/web_app_profile_deletion_browsertest.cc",
       ]
     }
 
@@ -4006,6 +4008,7 @@ if (!is_android) {
         "//chromeos/ash/components/dbus/authpolicy",
         "//chromeos/ash/components/dbus/biod",
         "//chromeos/ash/components/dbus/biod:biod_proto",
+        "//chromeos/ash/components/dbus/cros_healthd",
         "//chromeos/ash/components/dbus/upstart",
         "//chromeos/assistant:buildflags",
         "//chromeos/components/onc:test_support",
@@ -4016,7 +4019,6 @@ if (!is_android) {
         "//chromeos/dbus/attestation:attestation_proto",
         "//chromeos/dbus/cros_disks",
         "//chromeos/dbus/cros_disks",
-        "//chromeos/dbus/cros_healthd",
         "//chromeos/dbus/cryptohome",
         "//chromeos/dbus/cryptohome:cryptohome_proto",
         "//chromeos/dbus/dlp",
@@ -8926,7 +8928,6 @@ if (!is_android) {
       "../browser/ui/views/extensions/extensions_menu_view_interactive_uitest.cc",
       "../browser/ui/views/extensions/extensions_tabbed_menu_view_interactive_uitest.cc",
       "../browser/ui/views/page_info/page_info_bubble_view_interactive_uitest.cc",
-      "../browser/ui/views/privacy_sandbox/privacy_sandbox_dialog_view_interactive_ui_test.cc",
       "../browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_interactive_uitest.cc",
       "../browser/ui/views/web_dialog_view_browsertest.cc",
       "../browser/webauth_interactive_uitest.cc",

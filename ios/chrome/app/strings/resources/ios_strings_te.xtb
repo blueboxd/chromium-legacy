@@ -133,13 +133,13 @@
 <translation id="212623074644302906">చదవాల్సిన లిస్ట్‌కు జోడించమని అడగాలి</translation>
 <translation id="2139867232736819575">మీరు కాపీ చేసిన వచనం కోసం వెతకండి</translation>
 <translation id="214201757571129614">సైన్ ఇన్ చేయండి…</translation>
-<translation id="2149973817440762519">బుక్‌మార్క్‌ను సవరించు</translation>
+<translation id="2149973817440762519">బుక్‌మార్క్‌ను ఎడిట్ చేయండి</translation>
 <translation id="2175927920773552910">QR కోడ్</translation>
 <translation id="2218443599109088993">దూరంగా జూమ్ చేయి</translation>
 <translation id="2230173723195178503">వెబ్‌పేజీ లోడ్ అయ్యింది</translation>
 <translation id="2239626343334228536">బ్రౌజింగ్ డేటాను తీసివేస్తోంది...</translation>
 <translation id="2256933947031277845">మీ సంస్థ మిమ్మల్ని కొన్ని ఖాతాలతో మాత్రమే సైన్ ఇన్ చేయడానికి అనుమతిస్తుంది.</translation>
-<translation id="225943865679747347">లోపం కోడ్: <ph name="ERROR_CODE" /></translation>
+<translation id="225943865679747347">ఎర్రర్ కోడ్: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">ఖాతాను జోడించు</translation>
 <translation id="2268044343513325586">మరింత మెరుగుపరచండి</translation>
 <translation id="2271351792809375263">మీరు మీ పరికరంలోని ఇతర యాప్‌లలో Chromeలో సేవ్ చేసిన పాస్‌వర్డ్‌లను ఉపయోగించండి</translation>
@@ -278,7 +278,7 @@
 <translation id="345565170154308620">పాస్‌వర్డ్‌లను నిర్వహించు...</translation>
 <translation id="3469166899695866866">డౌన్‌లోడ్‌ను ఆపివేయాలా?</translation>
 <translation id="3470502288861289375">కాపీ చేస్తోంది...</translation>
-<translation id="3474624961160222204"><ph name="NAME" /> వలె కొనసాగించు</translation>
+<translation id="3474624961160222204"><ph name="NAME" /> లాగా కొనసాగించు</translation>
 <translation id="3478058380795961209">గడువు ముగింపు నెల</translation>
 <translation id="3482959374254649722">మీ ట్యాబ్‌లను సింక్ చేస్తోంది...</translation>
 <translation id="3484946776651937681">డౌన్‌లోడ్‌లలో తెరవండి</translation>
@@ -583,7 +583,7 @@
 <translation id="6232329973559504466">అజ్ఞాత సెర్చ్</translation>
 <translation id="6232736989810857397">Google Lensను ఉపయోగించి సులభంగా క్యాలెండర్ ఈవెంట్‌లను క్రియేట్ చేయడానికి ఇది మిమ్మల్ని అనుమతిస్తుంది.</translation>
 <translation id="6254066287920239840">లింక్‌లను బ్రౌజర్‌కు బదులుగా యాప్‌లో తెరవండి.</translation>
-<translation id="6255097610484507482">క్రెడిట్ కార్డ్‌ను సవరించు</translation>
+<translation id="6255097610484507482">క్రెడిట్ కార్డ్‌ను ఎడిట్ చేయండి</translation>
 <translation id="6284652193729350524"><ph name="LANGUAGE" />లోకి అనువాదం అందించే సూచన</translation>
 <translation id="6293101329759844770">సురక్షిత బ్రౌజింగ్ ఆన్ చేయడానికి, <ph name="BEGIN_LINK" />Google సర్వీస్‌ల<ph name="END_LINK" />ను తెరిచి, 'సురక్షిత బ్రౌజింగ్'ను ట్యాప్ చేయండి.</translation>
 <translation id="6321526113093607004">బుక్‌మార్క్‌లకు జోడించు</translation>
@@ -646,7 +646,7 @@
 <translation id="6645899968535965230">QR కోడ్: <ph name="PAGE_TITLE" /></translation>
 <translation id="6656103420185847513">ఫోల్డర్‌ను ఎడిట్ చేయండి</translation>
 <translation id="6657585470893396449">పాస్‌వర్డ్</translation>
-<translation id="6668619169535738264">బుక్‌మార్క్‌ను సవరించు</translation>
+<translation id="6668619169535738264">బుక్‌మార్క్‌ను ఎడిట్ చేయండి</translation>
 <translation id="6672241253012342409">సైట్‌లు మీ బ్రౌజింగ్ అనుభవాన్ని మెరుగుపరచడానికి కుక్కీలను ఉపయోగిస్తాయి, ఉదాహరణకు, మిమ్మల్ని సైన్ ఇన్ చేసి ఉంచడం లేదా మీ షాపింగ్ కార్ట్‌లోని ఐటెమ్‌లను గుర్తు చేయడం లాంటివి.
 
 అజ్ఞాతంలో ఉండగా, వివిధ సైట్‌లలో మీ బ్రౌజింగ్ యాక్టివిటీని చూడటానికి సైట్‌లు మీ కుక్కీలను ఉపయోగించలేవు, ఉదాహరణకు, యాడ్‌లను వ్యక్తిగతీకరించడం.</translation>
@@ -730,7 +730,7 @@
 <translation id="7409985198648820906"><ph name="UNREAD_COUNT" /> చదవని కథనాలు ఉన్నాయి.</translation>
 <translation id="7412027924265291969">కొనసాగించు</translation>
 <translation id="7425346204213733349">మీ బుక్‌మార్క్‌లు, చరిత్ర, పాస్‌వర్డ్‌లు, ఇతర సెట్టింగ్‌లకు చేసే మార్పులు ఇకపై మీ Google ఖాతాకు సింక్ చేయ‌బడవు. అయితే, ఇప్పటికే ఉన్న మీ డేటా మీ Google ఖాతాలో అలాగే నిల్వ చేయబడి ఉంటుంది.</translation>
-<translation id="7431991332293347422">సెర్చ్‌లు మరియు మరిన్నింటిని వ్యక్తిగతీకరించడానికి మీ బ్రౌజింగ్ చరిత్ర ఎలా ఉపయోగించబడుతుందో నియంత్రించండి</translation>
+<translation id="7431991332293347422">సెర్చ్‌లు మరియు మరిన్నింటిని వ్యక్తిగతీకరించడానికి మీ బ్రౌజింగ్ హిస్టరీ ఎలా ఉపయోగించబడుతుందో నియంత్రించండి</translation>
 <translation id="7435356471928173109">మీ అడ్మినిస్ట్రేటర్ ఆఫ్ చేశారు</translation>
 <translation id="7454057999980797137">రాష్ట్రం / దేశం</translation>
 <translation id="7456847797759667638">స్థానాన్ని తెరువు...</translation>
@@ -865,7 +865,7 @@
 <translation id="8721297211384281569">సాధనాల మెనూ</translation>
 <translation id="8725066075913043281">మళ్ళీ ప్రయత్నించండి</translation>
 <translation id="8730621377337864115">పూర్తయింది</translation>
-<translation id="8741995161408053644"><ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />వద్ద మీ Google ఖాతాలో ఇతర బ్రౌజింగ్ చరిత్ర రకాలు ఉండవచ్చు.</translation>
+<translation id="8741995161408053644"><ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />వద్ద మీ Google ఖాతాలో ఇతర బ్రౌజింగ్ హిస్టరీ రకాలు ఉండవచ్చు.</translation>
 <translation id="8750037785291841318">మీరు మీ ట్యాబ్‌లను ఇక్కడ చూడగలరు</translation>
 <translation id="8756969031206844760">పాస్‌వర్డ్‌ను అప్‌డేట్ చేయాలా?</translation>
 <translation id="8775144690796719618">URL చెల్లదు</translation>
@@ -891,7 +891,7 @@
 <translation id="8981454092730389528">Google కార్య‌క‌లాపాల నియంత్రణలు</translation>
 <translation id="8985320356172329008">Googleకి ఇలా సైన్ ఇన్ చేశారు</translation>
 <translation id="9000089900434778519">మీ సెర్చ్ ఇంజిన్ <ph name="DSE_NAME" />. వర్తిస్తే, మీ సెర్చ్ హిస్టరీని తొలగించడానికి దాని సూచనలను చూడండి.</translation>
-<translation id="9034759925968272072">మీరు మీ Google ఖాతా నుండి సైన్ అవుట్ చేయబడరు. <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />లో మీ Google ఖాతా ఇతర రకాల బ్రౌజింగ్ చరిత్రను కలిగి ఉండవచ్చు.</translation>
+<translation id="9034759925968272072">మీరు మీ Google ఖాతా నుండి సైన్ అవుట్ చేయబడరు. <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />లో మీ Google ఖాతా ఇతర రకాల బ్రౌజింగ్ హిస్టరీని కలిగి ఉండవచ్చు.</translation>
 <translation id="9037965129289936994">అసలైనది చూపు</translation>
 <translation id="9039373489628511875">బ్యాండ్‌విడ్త్</translation>
 <translation id="9055772144595778347">సైన్ ఇన్ చేయలేరు</translation>
@@ -918,6 +918,6 @@
 <translation id="981498610235328462">మీ సంస్థ మిమ్మల్ని కొన్ని ఖాతాలతో మాత్రమే సైన్ ఇన్ చేయడానికి అనుమతిస్తుంది. అనుమతించబడని ఖాతాలు దాచబడతాయి.</translation>
 <translation id="984509647832111802">సింక్ పని చేయడం లేదు.</translation>
 <translation id="988141524645182168">ఇతర పరికరాలు</translation>
-<translation id="989988560359834682">అడ్రస్‌ను సవరించు</translation>
+<translation id="989988560359834682">అడ్రస్‌ను ఎడిట్ చేయండి</translation>
 <translation id="994757059139821576">కథనం సూచనలు</translation>
 </translationbundle>

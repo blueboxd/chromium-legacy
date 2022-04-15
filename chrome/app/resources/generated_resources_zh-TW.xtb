@@ -1502,7 +1502,7 @@
 <translation id="2454524890947537054">要核准網頁要求嗎？</translation>
 <translation id="245650153866130664">如果要自動重新整理票證，請勾選「記住密碼」。你的密碼只會儲存在你的裝置上。</translation>
 <translation id="2457246892030921239">「<ph name="APP_NAME" />」要求複製 <ph name="VOLUME_NAME" /> 中的檔案。</translation>
-<translation id="2457842160081795172">目前為<ph name="CHANNEL_NAME" />版</translation>
+<translation id="2457842160081795172">目前為<ph name="CHANNEL_NAME" /></translation>
 <translation id="2458379781610688953">更新帳戶 (<ph name="EMAIL" />)</translation>
 <translation id="2458591546854598341">裝置管理憑證無效。</translation>
 <translation id="2459703812219683497">已偵測到啟用代碼</translation>
@@ -7577,7 +7577,7 @@
 <translation id="8651585100578802546">強制重新載入此網頁</translation>
 <translation id="8652400352452647993">封裝擴充功能錯誤</translation>
 <translation id="8654151524613148204">很抱歉，檔案過大，你的電腦無法處理。</translation>
-<translation id="8655295600908251630">頻道</translation>
+<translation id="8655295600908251630">版本</translation>
 <translation id="8655972064210167941">無法驗證您的密碼，導致登入失敗。請與您的管理員聯絡或再試一次。</translation>
 <translation id="8657393004602556571">你要捨棄這則意見嗎？</translation>
 <translation id="8661290697478713397">在無痕式視窗中開啟連結(&amp;G)</translation>
@@ -7905,7 +7905,7 @@
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">請與網路管理員聯絡，確認防火牆並未封鎖從 Google 伺服器下載的內容。</translation>
 <translation id="8973557916016709913">重設為預設縮放比例</translation>
-<translation id="8973596347849323817">你可以根據個人需求自訂這個裝置，日後也可前往 [設定] 變更這些無障礙功能。</translation>
+<translation id="8973596347849323817">你可以根據個人需求自訂這個裝置，日後也可前往「設定」變更這些無障礙功能。</translation>
 <translation id="897414447285476047">發生連線問題，因此目標檔案並未下載完成。</translation>
 <translation id="897525204902889653">隔離服務</translation>
 <translation id="8975396729541388937">你隨時可以取消訂閱，只要在收到的電子郵件中按一下相關連結即可。</translation>

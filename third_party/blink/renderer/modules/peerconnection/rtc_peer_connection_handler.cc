@@ -57,6 +57,7 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_std.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
@@ -183,12 +184,6 @@ void CopyConstraintsIntoRtcConfiguration(
   } else {
     // Note: IPv6 WebRTC value is "disable" while Blink is "enable".
     configuration->disable_ipv6 = false;
-  }
-
-  if (GetConstraintValueAsBoolean(constraints,
-                                  &MediaTrackConstraintSetPlatform::enable_dscp,
-                                  &the_value)) {
-    configuration->set_dscp(the_value);
   }
 
   if (GetConstraintValueAsBoolean(

@@ -192,8 +192,8 @@ class PLATFORM_EXPORT Path {
   const SkPath& GetSkPath() const { return path_; }
 
   void Apply(void* info, PathApplierFunction) const;
-  void Transform(const AffineTransform&);
-  void Transform(const TransformationMatrix&);
+  Path& Transform(const AffineTransform&);
+  Path& Transform(const TransformationMatrix&);
 
   bool SubtractPath(const Path&);
 
@@ -210,15 +210,6 @@ class PLATFORM_EXPORT Path {
   SkPath StrokePath(const StrokeData&, float stroke_precision) const;
 
   SkPath path_;
-};
-
-class PLATFORM_EXPORT RefCountedPath : public blink::Path,
-                                       public RefCounted<RefCountedPath> {
-  USING_FAST_MALLOC(RefCountedPath);
-
- public:
-  template <typename... Args>
-  RefCountedPath(Args&&... args) : blink::Path(std::forward<Args>(args)...) {}
 };
 
 // Only used for DCHECKs

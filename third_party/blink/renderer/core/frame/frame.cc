@@ -33,6 +33,7 @@
 #include <memory>
 
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_remote_frame_client.h"
@@ -364,6 +365,29 @@ bool Frame::IsInFencedFrameTree() const {
   }
 }
 
+absl::optional<mojom::blink::FencedFrameMode> Frame::GetFencedFrameMode()
+    const {
+  DCHECK(!IsDetached());
+
+  if (!blink::features::IsFencedFramesEnabled())
+    return absl::nullopt;
+
+  if (!IsInFencedFrameTree())
+    return absl::nullopt;
+
+  switch (blink::features::kFencedFramesImplementationTypeParam.Get()) {
+    case blink::features::FencedFramesImplementationType::kMPArch:
+      return GetPage()->FencedFrameMode();
+    case blink::features::FencedFramesImplementationType::kShadowDOM:
+      DCHECK(Tree().Top(FrameTreeBoundary::kFenced).Owner());
+      return Tree()
+          .Top(FrameTreeBoundary::kFenced)
+          .Owner()
+          ->GetFramePolicy()
+          .fenced_frame_mode;
+  }
+}
+
 bool Frame::IsInShadowDOMOpaqueAdsFencedFrameTree() const {
   if (!blink::features::IsFencedFramesEnabled())
     return false;
@@ -377,9 +401,22 @@ bool Frame::IsInShadowDOMOpaqueAdsFencedFrameTree() const {
              top->Owner()->GetFramePolicy().fenced_frame_mode ==
                  mojom::blink::FencedFrameMode::kOpaqueAds;
     }
-    default:
+  }
+  return false;
+}
+
+bool Frame::IsInMPArchOpaqueAdsFencedFrameTree() const {
+  if (!blink::features::IsFencedFramesEnabled())
+    return false;
+
+  switch (blink::features::kFencedFramesImplementationTypeParam.Get()) {
+    case blink::features::FencedFramesImplementationType::kMPArch:
+      return GetPage() && GetPage()->FencedFrameMode() ==
+                              mojom::blink::FencedFrameMode::kOpaqueAds;
+    case blink::features::FencedFramesImplementationType::kShadowDOM:
       return false;
   }
+  return false;
 }
 
 void Frame::SetOwner(FrameOwner* owner) {
@@ -641,6 +678,37 @@ Frame* Frame::NextSibling(FrameTreeBoundary frame_tree_boundary) const {
   }
 
   return sibling;
+}
+
+bool Frame::FocusCrossesFencedBoundary() {
+  DCHECK(blink::features::IsFencedFramesShadowDOMBased());
+
+  if (Frame* focused_frame = GetPage()->GetFocusController().FocusedFrame()) {
+    if (!focused_frame->IsInFencedFrameTree() && !IsInFencedFrameTree())
+      return false;
+
+    return Tree().Top(FrameTreeBoundary::kFenced) !=
+           focused_frame->Tree().Top(FrameTreeBoundary::kFenced);
+  }
+
+  return false;
+}
+
+bool Frame::ShouldAllowScriptFocus() {
+  if (!features::IsFencedFramesEnabled())
+    return true;
+
+  switch (blink::features::kFencedFramesImplementationTypeParam.Get()) {
+    case blink::features::FencedFramesImplementationType::kMPArch:
+      // For a newly-loaded page, no page will have focus. We allow a non-fenced
+      // frame to get the first focus before enforcing if a page already has
+      // focus.
+      return (!GetPage()->GetFocusController().IsActive() &&
+              !IsInFencedFrameTree()) ||
+             GetPage()->GetFocusController().IsFocused();
+    case blink::features::FencedFramesImplementationType::kShadowDOM:
+      return !FocusCrossesFencedBoundary();
+  }
 }
 
 bool Frame::Swap(WebFrame* new_web_frame) {

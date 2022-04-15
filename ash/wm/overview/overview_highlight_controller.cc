@@ -31,23 +31,6 @@
 
 namespace ash {
 
-// -----------------------------------------------------------------------------
-// OverviewHighlightController::TestApi
-
-OverviewHighlightController::TestApi::TestApi(
-    OverviewHighlightController* highlight_controller)
-    : highlight_controller_(highlight_controller) {}
-
-OverviewHighlightController::TestApi::~TestApi() = default;
-
-OverviewHighlightableView*
-OverviewHighlightController::TestApi::GetHighlightView() const {
-  return highlight_controller_->highlighted_view_;
-}
-
-// -----------------------------------------------------------------------------
-// OverviewHighlightController
-
 OverviewHighlightController::OverviewHighlightController(
     OverviewSession* overview_session)
     : overview_session_(overview_session),
@@ -70,7 +53,7 @@ void OverviewHighlightController::MoveHighlight(bool reverse) {
   if (!highlighted_view_) {
     // Pick up where we left off if |deleted_index_| has a value.
     if (deleted_index_) {
-      index = *deleted_index_ >= count ? count - 1 : *deleted_index_;
+      index = *deleted_index_ >= count ? 0 : *deleted_index_;
       deleted_index_.reset();
     } else if (reverse) {
       index = count - 1;

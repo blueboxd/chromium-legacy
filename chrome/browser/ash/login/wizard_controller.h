@@ -51,6 +51,7 @@
 #include "chrome/browser/ash/login/screens/pin_setup_screen.h"
 #include "chrome/browser/ash/login/screens/quick_start_screen.h"
 #include "chrome/browser/ash/login/screens/recommend_apps_screen.h"
+#include "chrome/browser/ash/login/screens/saml_confirm_password_screen.h"
 #include "chrome/browser/ash/login/screens/signin_fatal_error_screen.h"
 #include "chrome/browser/ash/login/screens/smart_privacy_protection_screen.h"
 #include "chrome/browser/ash/login/screens/sync_consent_screen.h"
@@ -142,7 +143,7 @@ class WizardController : public OobeUI::Observer {
 
   // Advances to screen defined by `screen` and shows it. Might show HID
   // detection screen in case HID connection is needed and screen_id ==
-  // OobeScreen::SCREEN_UNKNOWN.
+  // ash::OOBE_SCREEN_UNKNOWN.
   void AdvanceToScreen(OobeScreenId screen_id);
 
   // Advances to screen defined by `screen` and shows it.
@@ -350,6 +351,8 @@ class WizardController : public OobeUI::Observer {
   void OnFamilyLinkNoticeScreenExit(FamilyLinkNoticeScreen::Result result);
   void OnUserCreationScreenExit(UserCreationScreen::Result result);
   void OnGaiaScreenExit(GaiaScreen::Result result);
+  void OnSamlConfirmPasswordScreenExit(
+      SamlConfirmPasswordScreen::Result result);
   void OnPasswordChangeScreenExit(GaiaPasswordChangedScreen::Result result);
   void OnActiveDirectoryLoginScreenExit();
   void OnSignInFatalErrorScreenExit();
@@ -471,7 +474,7 @@ class WizardController : public OobeUI::Observer {
   bool is_out_of_box_ = false;
 
   // Value of the screen name that WizardController was started with.
-  OobeScreenId first_screen_for_testing_ = OobeScreen::SCREEN_UNKNOWN;
+  OobeScreenId first_screen_for_testing_ = ash::OOBE_SCREEN_UNKNOWN;
 
   // The prescribed enrollment configuration for the device.
   policy::EnrollmentConfig prescribed_enrollment_config_;

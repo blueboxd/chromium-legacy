@@ -62,12 +62,14 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/referrer.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
@@ -1275,24 +1277,27 @@ class AutomaticLazyLoadFrameBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_P(AutomaticLazyLoadFrameBrowserTest, UKM) {
+  // Ensure that the previous page won't be stored in the back/forward cache, so
+  // that the histogram will be recorded when the previous page is unloaded.
+  DisableBackForwardCacheForTesting(
+      web_contents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   base::RunLoop ukm_loop;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
+  ukm_recorder.SetOnAddEntryCallback(
+      ukm::builders::Blink_AutomaticLazyLoadFrame::kEntryName,
+      ukm_loop.QuitClosure());
 
-  const base::StringPiece kUkmEntryName = "Blink.AutomaticLazyLoadFrame";
-  ukm_recorder.SetOnAddEntryCallback(kUkmEntryName, ukm_loop.QuitClosure());
-
-  const GURL kMainFrameUrl1(embedded_test_server()->GetURL(
-      "a.com", "/ads_observer/blank_with_adiframe_writer.html"));
+  const GURL kMainFrameUrl(embedded_test_server()->GetURL(
+      "a_main_frame.com", "/ads_observer/blank_with_adiframe_writer.html"));
   const GURL kAdUrl(embedded_test_server()->GetURL("ad.com", "/title1.html"));
   const GURL kEmbedUrl(
       embedded_test_server()->GetURL("embed.com", "/title1.html"));
   const GURL kNonAdNonEmbed(
       embedded_test_server()->GetURL("non_ad_non_embed.com", "/title1.html"));
-  const GURL kMainFrameUrl2(
-      embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   content::RenderFrameHost* render_frame_host =
-      ui_test_utils::NavigateToURL(browser(), kMainFrameUrl1);
+      ui_test_utils::NavigateToURL(browser(), kMainFrameUrl);
   ASSERT_TRUE(render_frame_host);
 
   for (int i = 0; i < GetParam().number_of_ads; i++)
@@ -1312,21 +1317,21 @@ IN_PROC_BROWSER_TEST_P(AutomaticLazyLoadFrameBrowserTest, UKM) {
   // Add iframe that is not detected as an ad-frame nor an embed.
   AddIframe(render_frame_host, kNonAdNonEmbed);
 
-  // Navigates to kMainFrameUrl2 so that the previous document
-  // (kMainFrameUrl1) is navigated away.
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), kMainFrameUrl2));
+  // Navigating away from the test page (kMainFrameUrl) causes the document to
+  // be unloaded. That will cause any buffered metrics to be flushed.
+  content::NavigateToURLBlockUntilNavigationsComplete(web_contents(),
+                                                      GURL("about:blank"), 1);
 
-  // Flush back/forward cache so that UKM data is recorded.
-  web_contents()->GetController().GetBackForwardCache().Flush();
   // Waits until UKM data is recorded.
   ukm_loop.Run();
 
   // Checks merged metrics by singular="True".
-  auto merged_entries = ukm_recorder.GetMergedEntriesByName(kUkmEntryName);
+  auto merged_entries = ukm_recorder.GetMergedEntriesByName(
+      ukm::builders::Blink_AutomaticLazyLoadFrame::kEntryName);
   EXPECT_EQ(1u, merged_entries.size());
   for (auto& entry : merged_entries) {
     const ukm::mojom::UkmEntry* ukm_entry = entry.second.get();
-    ukm_recorder.ExpectEntrySourceHasUrl(ukm_entry, kMainFrameUrl1);
+    ukm_recorder.ExpectEntrySourceHasUrl(ukm_entry, kMainFrameUrl);
     ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(
         ukm_entry, "LazyAdsFrameCount", GetParam().number_of_ads);
     ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(

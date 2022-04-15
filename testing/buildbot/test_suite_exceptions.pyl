@@ -2871,15 +2871,6 @@
       },
     },
   },
-  'swiftshader_unittests': {
-    'remove_from': [
-      # Save capacity on the hardware where we have only a few machines.
-      'Mac FYI Experimental Release (Intel)',
-      'Mac FYI Experimental Retina Release (AMD)',
-      'Mac FYI Experimental Retina Release (NVIDIA)',
-      'Mac Pro FYI Release (AMD)',
-    ],
-  },
   'sync_integration_tests': {
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
@@ -3603,6 +3594,9 @@
     },
   },
   'webview_64_cts_tests': {
+    'remove_from': [
+      'android-12-x64-rel', # crbug.com/1260194
+    ],
     'modifications': {
       'android-pie-arm64-rel': {
         # TODO(crbug.com/1111436): Move this back to walleye if/when additional

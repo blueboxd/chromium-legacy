@@ -512,6 +512,9 @@ chromium-metrics-reviews@google.com.
     <variant name="PreMigrationCleanUpDeleteTmpDirFailed"/>
     <variant name="PreMigrationCleanUpDeleteTmpSplitDirFailed"/>
     <variant name="PreMigrationCleanUpNotEnoughSpace"/>
+    <variant name="SetupAshDirCopyExtensionsFailed"/>
+    <variant name="SetupAshDirCopyIndexedDBFailed"/>
+    <variant name="SetupAshDirCreateDirFailed"/>
     <variant name="SetupAshDirCreateSplitDirFailed"/>
     <variant name="SetupAshDirMigrateLevelDBForLocalStateFailed"/>
     <variant name="SetupAshDirMigrateLevelDBForStateFailed"/>
@@ -645,6 +648,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.Calendar.FetchEvents.MaxDistanceBrowsed" units="months"
+    expires_after="2023-04-10">
+  <owner>rtinkoff@google.com</owner>
+  <owner>jiamingc@google.com</owner>
+  <summary>
+    Recorded when the calendar is closed. The furthest 'distance' (in months)
+    from today's date to which the user browsed while the calendar was open.
+  </summary>
+</histogram>
+
 <histogram name="Ash.Calendar.FetchEvents.NoCalendarClient" units="instances"
     expires_after="2022-11-10">
   <obsolete>
@@ -678,6 +691,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.Calendar.FetchEvents.SingleMonthSize" units="bytes"
+    expires_after="2023-04-14">
+  <owner>rtinkoff@google.com</owner>
+  <owner>jiamingc@google.com</owner>
+  <summary>
+    Recorded when a calendar fetch returns. The total size of the month's
+    events.
+  </summary>
+</histogram>
+
 <histogram name="Ash.Calendar.FetchEvents.Timeout" enum="Boolean"
     expires_after="2022-11-10">
   <owner>rtinkoff@google.com</owner>
@@ -685,6 +708,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     Recorded whenever calendar events are requested, and the request went too
     long without a response.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Calendar.FetchEvents.TotalCacheSizeMonths" units="months"
+    expires_after="2023-04-13">
+  <owner>rtinkoff@google.com</owner>
+  <owner>jiamingc@google.com</owner>
+  <summary>
+    Recorded when the calendar is closed. The total number of months cached for
+    calendar events while it was open.
   </summary>
 </histogram>
 
@@ -819,6 +852,30 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
+    name="Ash.CaptureModeController.CameraDisconnectionsDuringRecordings.{TabletOrClamshell}"
+    units="camera disconnections" expires_after="2022-09-29">
+  <owner>michelefan@chromium.org</owner>
+  <owner>gzadina@google.com</owner>
+  <summary>
+    Records the number of camera disconnections in {TabletOrClamshell} during
+    recording.
+  </summary>
+  <token key="TabletOrClamshell" variants="DisplayModes"/>
+</histogram>
+
+<histogram
+    name="Ash.CaptureModeController.CameraReconnectDuration.{TabletOrClamshell}"
+    units="seconds" expires_after="2022-09-29">
+  <owner>michelefan@chromium.org</owner>
+  <owner>gzadina@google.com</owner>
+  <summary>
+    Records how many seconds it takes a camera that got disconnected to get
+    reconnected again within the grace period in {TabletOrClamshell}.
+  </summary>
+  <token key="TabletOrClamshell" variants="DisplayModes"/>
+</histogram>
+
+<histogram
     name="Ash.CaptureModeController.CaptureAudioOnMetric.{TabletOrClamshell}"
     enum="BooleanEnabled" expires_after="2022-09-09">
   <owner>michelefan@chromium.org</owner>
@@ -923,6 +980,18 @@ chromium-metrics-reviews@google.com.
   <token key="TabletOrClamshell" variants="DisplayModes"/>
 </histogram>
 
+<histogram
+    name="Ash.CaptureModeController.Projector.RecordingStartsWithCamera.{TabletOrClamshell}"
+    enum="BooleanEnabled" expires_after="2022-09-09">
+  <owner>michelefan@chromium.org</owner>
+  <owner>gzadina@google.com</owner>
+  <summary>
+    Records whether a Projector-initiated recording starts with camera on or not
+    in {TabletOrClamshell}.
+  </summary>
+  <token key="TabletOrClamshell" variants="DisplayModes"/>
+</histogram>
+
 <histogram name="Ash.CaptureModeController.Projector.ScreenRecordingLength"
     units="seconds" expires_after="2022-09-09">
   <owner>afakhry@chromium.org</owner>
@@ -942,6 +1011,42 @@ chromium-metrics-reviews@google.com.
     Track all quick actions on screenshot notification. Including: Edit in
     backlight, Go to Files, Delete File.
   </summary>
+</histogram>
+
+<histogram
+    name="Ash.CaptureModeController.RecordingCameraPositionOnStart.{TabletOrClamshell}"
+    enum="CameraPreviewSnapPosition" expires_after="2022-09-09">
+  <owner>michelefan@chromium.org</owner>
+  <owner>gzadina@google.com</owner>
+  <summary>
+    Records the camera preview position when the recording is started in
+    {TabletOrClamshell}.
+  </summary>
+  <token key="TabletOrClamshell" variants="DisplayModes"/>
+</histogram>
+
+<histogram
+    name="Ash.CaptureModeController.RecordingCameraSizeOnStart.{TabletOrClamshell}"
+    enum="CaptureModeCameraSize" expires_after="2022-09-09">
+  <owner>michelefan@chromium.org</owner>
+  <owner>gzadina@google.com</owner>
+  <summary>
+    Records the camera size when the recording is started in
+    {TabletOrClamshell}.
+  </summary>
+  <token key="TabletOrClamshell" variants="DisplayModes"/>
+</histogram>
+
+<histogram
+    name="Ash.CaptureModeController.RecordingStartsWithCamera.{TabletOrClamshell}"
+    enum="BooleanEnabled" expires_after="2022-09-09">
+  <owner>michelefan@chromium.org</owner>
+  <owner>gzadina@google.com</owner>
+  <summary>
+    Records whether a capture session starts with camera or not in
+    {TabletOrClamshell}.
+  </summary>
+  <token key="TabletOrClamshell" variants="DisplayModes"/>
 </histogram>
 
 <histogram name="Ash.CaptureModeController.SaveLocation.{TabletOrClamshell}"
@@ -1367,7 +1472,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Desks.BentoBarEnabled" enum="Boolean"
-    expires_after="2022-05-19">
+    expires_after="2023-05-19">
   <owner>minch@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1378,7 +1483,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Desks.BentoBarIsVisible" enum="Boolean"
-    expires_after="2022-05-19">
+    expires_after="2023-05-19">
   <owner>minch@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -1610,7 +1715,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Desks.UserHasUsedDesksRecently" enum="Boolean"
-    expires_after="2022-05-19">
+    expires_after="2023-05-19">
   <owner>minch@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -2750,7 +2855,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Overview.EndAction" enum="OverviewEndAction"
-    expires_after="2022-05-19">
+    expires_after="2023-05-19">
   <owner>minch@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>
@@ -2823,7 +2928,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Overview.StartAction" enum="OverviewStartAction"
-    expires_after="2022-05-19">
+    expires_after="2023-05-19">
   <owner>minch@chromium.org</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>

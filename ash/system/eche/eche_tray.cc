@@ -61,7 +61,7 @@ namespace {
 
 // The icon size should be smaller than the tray item size to avoid the icon
 // padding becoming negative.
-constexpr int kIconSize = 22;
+constexpr int kIconSize = 24;
 
 // This is how much the icon shrinks to give space for the spinner to go
 // around it.
@@ -90,8 +90,10 @@ std::unique_ptr<views::Button> CreateButton(
     int message_id) {
   SkColor color = AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kIconColorPrimary);
+  SkColor disabled_color = SkColorSetA(color, gfx::kDisabledControlAlpha);
   auto button = views::CreateVectorImageButton(std::move(callback));
-  views::SetImageFromVectorIconWithColor(button.get(), icon, color);
+  views::SetImageFromVectorIconWithColor(button.get(), icon, color,
+                                         disabled_color);
   button->SetTooltipText(l10n_util::GetStringUTF16(message_id));
   button->SizeToPreferredSize();
 

@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
@@ -128,7 +129,7 @@ bool DisplayLinkMac::GetVSyncParameters(base::TimeTicks* timebase,
   // second). If too much time has elapsed since the last time the vsync
   // parameters were calculated, re-calculate them (but still return the old
   // parameters -- the update will be asynchronous).
-  if (base::TimeTicks::Now() >= recalculate_time_)
+  if (IsVSyncPotentiallyStale())
     StartOrContinueDisplayLink();
 
   *timebase = timebase_;
@@ -147,10 +148,23 @@ double DisplayLinkMac::GetRefreshRate() {
   return refresh_rate;
 }
 
+void DisplayLinkMac::RegisterCallbackForNextVSyncUpdate(
+    VSyncUpdatedCallback callback) {
+  vsync_updated_callbacks_.push_back(std::move(callback));
+}
+
+bool DisplayLinkMac::IsVSyncPotentiallyStale() const {
+  return !timebase_and_interval_valid_ ||
+         base::TimeTicks::Now() >= recalculate_time_;
+}
+
 DisplayLinkMac::DisplayLinkMac(
     CGDirectDisplayID display_id,
     base::ScopedTypeRef<CVDisplayLinkRef> display_link)
-    : display_id_(display_id), display_link_(display_link) {
+    : display_id_(display_id),
+      display_link_(display_link),
+      force_60hz_(
+          base::CommandLine::ForCurrentProcess()->HasSwitch("force-60hz")) {
   DisplayLinkMap& all_display_links = GetAllDisplayLinks();
   DCHECK(all_display_links.find(display_id) == all_display_links.end());
   if (all_display_links.empty()) {
@@ -222,11 +236,18 @@ void DisplayLinkMac::UpdateVSyncParameters(const CVTimeStamp& cv_time) {
 
   timebase_ = base::TimeTicks::FromMachAbsoluteTime(cv_time.hostTime);
   interval_ = base::Microseconds(int64_t{interval_us.ValueOrDie()});
+  if (force_60hz_)
+    interval_ = std::max(base::Hertz(60), interval_);
   timebase_and_interval_valid_ = true;
 
   // Don't restart the display link for 10 seconds.
   recalculate_time_ = base::TimeTicks::Now() + base::Seconds(10);
   StopDisplayLink();
+
+  std::vector<VSyncUpdatedCallback> vsync_updated_callbacks;
+  std::swap(vsync_updated_callbacks_, vsync_updated_callbacks);
+  for (auto& callback : vsync_updated_callbacks)
+    std::move(callback).Run(timebase_, interval_);
 }
 
 void DisplayLinkMac::StartOrContinueDisplayLink() {

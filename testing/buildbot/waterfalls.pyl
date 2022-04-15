@@ -1135,6 +1135,20 @@
         },
         'use_swarming': True,
       },
+      'android-11-x86-fyi-rel': {
+        'mixins': [
+          '11-x86-emulator',
+          'emulator-4-cores',
+          'has_native_resultdb_integration',
+          'linux-xenial-or-bionic',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'webview_cts_tests_gtest',
+        },
+        'use_swarming': True,
+      },
       'android-12-x64-dbg-tests': {
         'mixins': [
           '12-x64-emulator',
@@ -2357,7 +2371,7 @@
           'win10_intel_hd_630_stable_dimension_set',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_tests',
+          'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_asan_tests',
           'gtest_tests': 'gpu_dawn_integration_asan_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_asan_isolated_scripts',
         },
@@ -2383,7 +2397,7 @@
           'win10_nvidia_gtx_1660_stable',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_regular_and_partial_validation',
+          'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_regular_and_validation',
           'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_isolated_scripts_win',
         },
@@ -2407,7 +2421,7 @@
           'win10_nvidia_gtx_1660_stable',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_regular_and_partial_validation',
+          'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_regular_and_validation',
           'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_isolated_scripts_win',
         },
@@ -2433,7 +2447,7 @@
           'win10_nvidia_gtx_1660_stable',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_regular_and_partial_validation',
+          'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_regular_and_validation',
           'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_isolated_scripts_win',
         },
@@ -2457,7 +2471,7 @@
           'win10_nvidia_gtx_1660_stable',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_regular_and_partial_validation',
+          'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_regular_and_validation',
           'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_isolated_scripts_win',
         },

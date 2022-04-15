@@ -3208,11 +3208,31 @@
         "prefs": {
           "download.default_directory": {
             "check_for_mandatory": false,
-            "check_for_recommended": true
+            "check_for_recommended": true,
+            "value": "${user_home}/test-downloads"
           },
           "savefile.default_directory": {
             "check_for_mandatory": false,
-            "check_for_recommended": true
+            "check_for_recommended": true,
+            "value": "${user_home}/test-downloads"
+          }
+        }
+      },
+      {
+        "policies": {
+          "DefaultDownloadDirectory": "${user_home}/test-downloads",
+          "DownloadDirectory": "${user_home}/test-downloads-1"
+        },
+        "prefs": {
+          "download.default_directory": {
+            "check_for_mandatory": true,
+            "check_for_recommended": false,
+            "value": "${user_home}/test-downloads-1"
+          },
+          "savefile.default_directory": {
+            "check_for_mandatory": false,
+            "check_for_recommended": true,
+            "value": "${user_home}/test-downloads"
           }
         }
       }
@@ -15773,6 +15793,34 @@
         "prefs": {
           "policy.user_agent_client_hints_grease_update_enabled": {
             "location": "local_state",
+            "value": false
+          }
+        }
+      }
+    ]
+  },
+  "UrlParamFilterEnabled": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_lacros",
+      "chromeos_ash",
+      "android"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "policy.url_param_filter_enabled": {
+            "default_value": true
+          }
+        }
+      },
+      {
+        "policies": { "UrlParamFilterEnabled": false },
+        "prefs": {
+          "policy.url_param_filter_enabled": {
             "value": false
           }
         }

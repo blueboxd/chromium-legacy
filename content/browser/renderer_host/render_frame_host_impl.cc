@@ -6612,9 +6612,11 @@ void RenderFrameHostImpl::ShowContextMenu(
   ContextMenuParams validated_params(params);
   // Freshly constructed ContextMenuParams have empty `page_url` and `frame_url`
   // - populate them based on trustworthy, browser-side data.
-  validated_params.page_url = GetMainFrame()->GetLastCommittedURL();
-  if (GetParent())  // Only populate |frame_url| for subframes.
+  validated_params.page_url = GetOutermostMainFrame()->GetLastCommittedURL();
+  if (GetParentOrOuterDocument()) {
+    // Only populate |frame_url| for subframes and fencedframes.
     validated_params.frame_url = GetLastCommittedURL();
+  }
 
   // We don't validate |unfiltered_link_url| so that this field can be used
   // when users want to copy the original link URL.
@@ -6825,9 +6827,9 @@ void RenderFrameHostImpl::OpenURL(blink::mojom::OpenURLParamsPtr params) {
       GetProcess()->GetID(), params->initiator_origin, params->post_body,
       params->extra_headers, params->referrer.To<content::Referrer>(),
       params->disposition, params->should_replace_current_entry,
-      params->user_gesture, params->triggering_event_info,
-      params->href_translate, std::move(blob_url_loader_factory),
-      params->impression);
+      params->user_gesture, params->is_unfenced_top_navigation,
+      params->triggering_event_info, params->href_translate,
+      std::move(blob_url_loader_factory), params->impression);
 }
 
 void RenderFrameHostImpl::DidStopLoading() {
@@ -12879,6 +12881,10 @@ void RenderFrameHostImpl::EnableMojoJsBindingsWithBroker(
   // called before the WebUI object is created.
   DCHECK(GetWebUI());
   GetFrameBindingsControl()->EnableMojoJsBindingsWithBroker(std::move(broker));
+}
+
+bool RenderFrameHostImpl::IsOutermostMainFrame() const {
+  return !GetParentOrOuterDocument();
 }
 
 BackForwardCacheMetrics* RenderFrameHostImpl::GetBackForwardCacheMetrics() {

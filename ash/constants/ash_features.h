@@ -451,6 +451,8 @@ extern const base::Feature kProjectorTutorialVideoView;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kProjectorCustomThumbnail;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kProjectorManagedUserIgnorePolicy;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kQuickDim;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kQuickSettingsNetworkRevamp;
@@ -498,6 +500,8 @@ extern const base::Feature kShutdownConfirmationBubble;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kSimLockPolicy;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kSmartDimExperimentalComponent;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kSmartLockSignInRemoved;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kSmartLockUIRevamp;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -705,6 +709,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsProjectorAppDebugMode();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsProjectorExcludeTranscriptEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsProjectorTutorialVideoViewEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsProjectorCustomThumbnailEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool IsProjectorManagedUserIgnorePolicyEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsQuickDimEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsQuickSettingsNetworkRevampEnabled();
@@ -724,6 +730,7 @@ bool IsSettingsAppThemeChangeAnimationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShelfLauncherNudgeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSimLockPolicyEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShimlessRMAFlowEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShimlessRMAStandaloneAppEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSnoopingProtectionEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSyncSettingsCategorizationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsStylusBatteryStatusEnabled();

@@ -71,6 +71,11 @@ void PhoneNumber::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
   supported_types->insert(PHONE_HOME_CITY_CODE);
   supported_types->insert(PHONE_HOME_CITY_AND_NUMBER);
   supported_types->insert(PHONE_HOME_COUNTRY_CODE);
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableSupportForPhoneNumberTrunkTypes)) {
+    supported_types->insert(PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX);
+    supported_types->insert(PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX);
+  }
 }
 
 std::u16string PhoneNumber::GetRawInfo(ServerFieldType type) const {
@@ -89,8 +94,10 @@ void PhoneNumber::SetRawInfoWithVerificationStatus(ServerFieldType type,
                                                    VerificationStatus status) {
   DCHECK_EQ(FieldTypeGroup::kPhoneHome, AutofillType(type).group());
   if (type != PHONE_HOME_CITY_AND_NUMBER && type != PHONE_HOME_WHOLE_NUMBER) {
-    // Only full phone numbers should be set directly.  The remaining field
-    // field types are read-only.
+    // Only full phone numbers should be set directly. The remaining field types
+    // are read-only. As PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX
+    // generally doesn't represent a dialable number, it is not accessible
+    // either.
     return;
   }
 
@@ -130,7 +137,7 @@ void PhoneNumber::GetMatchingTypes(const std::u16string& text,
   // example, the France number "33 2 49 19 70 70" would be normalized to
   // "+33249197070" whereas the US number "+1 (234) 567-8901" would be
   // normalized to "12345678901".
-  if (matching_types->find(PHONE_HOME_WHOLE_NUMBER) == matching_types->end()) {
+  if (!matching_types->contains(PHONE_HOME_WHOLE_NUMBER)) {
     std::u16string whole_number =
         GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), app_locale);
     if (!whole_number.empty()) {
@@ -151,6 +158,27 @@ void PhoneNumber::GetMatchingTypes(const std::u16string& text,
         GetInfo(AutofillType(PHONE_HOME_COUNTRY_CODE), app_locale);
     if (candidate.size() > 0 && candidate == country_code)
       matching_types->insert(PHONE_HOME_COUNTRY_CODE);
+  }
+
+  // The following pairs of types coincide in countries without trunk prefixes:
+  // - PHONE_HOME_CITY_CODE, PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX
+  // - PHONE_HOME_CITY_AND_NUMBER,
+  //   PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX
+  // We explicitly keep both matches, as the type prediction doesn't make a
+  // difference for these countries. Votes from other countries can then tip
+  // the counts to the right type.
+  // This is only applicable when
+  // `kAutofillEnableSupportForPhoneNumberTrunkTypes` is enabled.
+  //
+  // When the phone number is stored without a country code,
+  // PHONE_HOME_WHOLE_NUMBER and PHONE_HOME_CITY_AND_NUMBER coincide (and
+  // potentially PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX too, as
+  // indicated above).
+  // Since PHONE_HOME_WHOLE_NUMBER is meant to represent an international
+  // number, it is not voted in this case.
+  if (matching_types->contains(PHONE_HOME_WHOLE_NUMBER) &&
+      matching_types->contains(PHONE_HOME_CITY_AND_NUMBER)) {
+    matching_types->erase(PHONE_HOME_WHOLE_NUMBER);
   }
 }
 
@@ -174,12 +202,23 @@ std::u16string PhoneNumber::GetInfoImpl(const AutofillType& type,
     return std::u16string();
   }
 
+  auto GetTrunkPrefix = [&] {
+    const std::u16string national_number =
+        GetInfo(PHONE_HOME_CITY_AND_NUMBER, app_locale);
+    // Everything before the city code in the nationally formatted number.
+    return national_number.substr(
+        0, national_number.find(cached_parsed_phone_.city_code()));
+  };
+
   switch (storable_type) {
     case PHONE_HOME_WHOLE_NUMBER:
       return cached_parsed_phone_.GetWholeNumber();
 
     case PHONE_HOME_NUMBER:
       return cached_parsed_phone_.number();
+
+    case PHONE_HOME_CITY_CODE_WITH_TRUNK_PREFIX:
+      return GetTrunkPrefix() + cached_parsed_phone_.city_code();
 
     case PHONE_HOME_CITY_CODE:
       return cached_parsed_phone_.city_code();
@@ -201,6 +240,15 @@ std::u16string PhoneNumber::GetInfoImpl(const AutofillType& type,
                          [](auto c) { return !std::isdigit(c); }),
           national_number.end());
       return national_number;
+    }
+
+    case PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX: {
+      // Strip the trunk prefix from the nationally formatted number.
+      const std::u16string national_number =
+          GetInfo(PHONE_HOME_CITY_AND_NUMBER, app_locale);
+      const std::size_t trunk_prefix_len = GetTrunkPrefix().length();
+      DCHECK(trunk_prefix_len <= national_number.length());
+      return national_number.substr(trunk_prefix_len);
     }
 
     case PHONE_HOME_EXTENSION:

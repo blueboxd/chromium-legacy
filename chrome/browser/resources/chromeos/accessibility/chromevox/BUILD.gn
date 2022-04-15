@@ -25,16 +25,13 @@ chromevox_modules = [
   "../common/cursors/cursor.js",
   "../common/cursors/range.js",
   "../common/cursors/recovery_strategy.js",
-  "../common/event_generator.js",
   "../common/key_code.js",
   "../common/string_util.js",
   "../common/tree_walker.js",
   "background/automation_object_constructor_installer.js",
   "background/braille/bluetooth_braille_display_manager.js",
   "background/braille/braille_key_types.js",
-  "background/braille/braille_table.js",
   "background/braille/cursor_dots.js",
-  "background/braille/expanding_braille_translator.js",
   "background/braille/liblouis.js",
   "background/braille/nav_braille.js",
   "background/braille/pan_strategy.js",
@@ -53,7 +50,6 @@ chromevox_modules = [
   "background/output/output_logger.js",
   "background/output/output_role_info.js",
   "background/output/output_types.js",
-  "background/phonetic_data.js",
   "background/user_action_monitor.js",
   "common/abstract_earcons.js",
   "common/braille_interface.js",
@@ -62,6 +58,7 @@ chromevox_modules = [
   "common/log_types.js",
   "common/msgs.js",
   "common/panel_command.js",
+  "common/phonetic_data.js",
   "common/spannable.js",
   "common/tree_dumper.js",
   "common/tts_interface.js",
@@ -74,6 +71,7 @@ chromevox_modules = [
 
 # ES6 modules.
 chromevox_es6_modules = [
+  "../common/event_generator.js",
   "../common/instance_checker.js",
   "background/auto_scroll_handler.js",
   "background/background.js",
@@ -85,8 +83,10 @@ chromevox_es6_modules = [
   "background/braille/braille_display_manager.js",
   "background/braille/braille_input_handler.js",
   "background/braille/braille_key_event_rewriter.js",
+  "background/braille/braille_table.js",
   "background/braille/braille_translator_manager.js",
   "background/braille/cursor_dots.js",
+  "background/braille/expanding_braille_translator.js",
   "background/braille/pan_strategy.js",
   "background/color.js",
   "background/classic_background.js",
@@ -347,8 +347,7 @@ if (is_chromeos_ash) {
            ] + rebase_path(sources, root_build_dir)
   }
 
-  chromevox_test_modules = [ "testing/test_msgs.js" ] +
-                           get_target_outputs(":chromevox_test_messages_js")
+  chromevox_test_modules = get_target_outputs(":chromevox_test_messages_js")
 
   generate_deps_js("chromevox_test_deps_js") {
     sources =
@@ -367,9 +366,9 @@ if (is_chromeos_ash) {
     sources = [
       "background/braille/expanding_braille_translator_test.js",
       "background/braille/pan_strategy_test.js",
-      "background/phonetic_data_test.js",
       "common/editable_text_base_test.js",
       "common/key_sequence_test.js",
+      "common/phonetic_data_test.js",
       "common/spannable_test.js",
       "testing/mock_feedback_test.js",
     ]
@@ -381,7 +380,6 @@ if (is_chromeos_ash) {
       "../common/closure_shim.js",
       "../common/key_code.js",
       "background/chromevox.js",
-      "background/phonetic_data.js",
       "background/braille/expanding_braille_translator.js",
       "background/braille/nav_braille.js",
       "background/braille/pan_strategy.js",
@@ -392,6 +390,7 @@ if (is_chromeos_ash) {
       "common/editable_text_base.js",
       "common/key_sequence.js",
       "common/msgs.js",
+      "common/phonetic_data.js",
       "common/spannable.js",
       "common/tts_interface.js",
       "testing/fake_dom.js",

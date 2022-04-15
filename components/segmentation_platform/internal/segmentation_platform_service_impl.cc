@@ -10,6 +10,8 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/system/sys_info.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -56,7 +58,8 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
     history::HistoryService* history_service,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     base::Clock* clock,
-    std::vector<std::unique_ptr<Config>> configs)
+    std::vector<std::unique_ptr<Config>> configs,
+    PrefService* local_state)
     : SegmentationPlatformServiceImpl(
           std::make_unique<StorageService>(storage_dir,
                                            db_provider,
@@ -70,7 +73,8 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
           history_service,
           task_runner,
           clock,
-          std::move(configs)) {}
+          std::move(configs),
+          local_state) {}
 
 SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
     std::unique_ptr<StorageService> storage_service,
@@ -79,13 +83,19 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
     history::HistoryService* history_service,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     base::Clock* clock,
-    std::vector<std::unique_ptr<Config>> configs)
+    std::vector<std::unique_ptr<Config>> configs,
+    PrefService* local_state)
     : model_provider_factory_(std::move(model_provider)),
       task_runner_(task_runner),
       clock_(clock),
       platform_options_(PlatformOptions::CreateDefault()),
       configs_(std::move(configs)),
-      storage_service_(std::move(storage_service)) {
+      storage_service_(std::move(storage_service)),
+      local_state_(local_state),
+      creation_time_(clock_->Now()) {
+  base::UmaHistogramMediumTimes(
+      "SegmentationPlatform.Init.ProcessCreationToServiceCreationLatency",
+      base::SysInfo::Uptime());
   all_segment_ids_ = GetAllSegmentIds(configs_);
   std::vector<OptimizationTarget> segment_id_vec(all_segment_ids_.begin(),
                                                  all_segment_ids_.end());
@@ -176,13 +186,18 @@ void SegmentationPlatformServiceImpl::OnDatabaseInitialized(bool success) {
           &SegmentationPlatformServiceImpl::OnSegmentationModelUpdated,
           weak_ptr_factory_.GetWeakPtr()),
       task_runner_, all_segment_ids_, model_provider_factory_.get(),
-      std::move(observers), platform_options_);
+      std::move(observers), platform_options_, local_state_);
 
   proxy_->SetExecutionService(&execution_service_);
 
   for (auto& selector : segment_selectors_) {
     selector.second->OnPlatformInitialized(&execution_service_);
   }
+
+  init_time_ = clock_->Now();
+  base::UmaHistogramMediumTimes(
+      "SegmentationPlatform.Init.CreationToInitializationLatency",
+      init_time_ - creation_time_);
 }
 
 void SegmentationPlatformServiceImpl::OnSegmentationModelUpdated(
@@ -214,10 +229,12 @@ void SegmentationPlatformService::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(kSegmentationResultPref);
 }
 
+// static
 void SegmentationPlatformService::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterTimePref(kSegmentationUkmMostRecentAllowedTimeKey,
                              base::Time());
+  registry->RegisterTimePref(kSegmentationLastCollectionTimePref, base::Time());
 }
 
 }  // namespace segmentation_platform

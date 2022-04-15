@@ -28,6 +28,7 @@
 
 #include <memory>
 
+#include "base/auto_reset.h"
 #include "base/callback_forward.h"
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
@@ -719,6 +720,11 @@ class CORE_EXPORT LocalFrameView final
   // scrolling should continue in the parent process.
   void ScrollRectToVisibleInRemoteParent(const PhysicalRect&,
                                          mojom::blink::ScrollIntoViewParamsPtr);
+
+  // Returns true if a scroll into view can continue to cause scrolling in the
+  // parent frame.
+  bool AllowedToPropagateScrollIntoView(
+      const mojom::blink::ScrollIntoViewParamsPtr&);
 
   PaintArtifactCompositor* GetPaintArtifactCompositor() const;
 

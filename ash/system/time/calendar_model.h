@@ -33,6 +33,8 @@ using SingleDayEventList = std::list<google_apis::calendar::CalendarEvent>;
 // Controller of the `CalendarView`.
 class ASH_EXPORT CalendarModel : public SessionObserver {
  public:
+  enum FetchingStatus { kNever, kFetching, kSuccess, kError };
+
   CalendarModel();
   CalendarModel(const CalendarModel& other) = delete;
   CalendarModel& operator=(const CalendarModel& other) = delete;
@@ -54,6 +56,8 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
    public:
     // Invoked when a set of events has been fetched.
     virtual void OnEventsFetched(
+        const FetchingStatus status,
+        const base::Time start_time,
         const google_apis::calendar::EventList* events) {}
   };
 
@@ -66,6 +70,15 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
 
   // Clears out all events that start in a non-prunable month.
   void ClearAllPrunableEvents();
+
+  // Resets to defaults the values of all event fetch metrics recorded over the
+  // lifetime of a calendar session, i.e. between a single open and close of the
+  // calendar.
+  void ResetLifetimeMetrics(const base::Time& currently_shown_date);
+
+  // Logs to UMA all event fetch metrics recorded over the lifetime of a
+  // calendar session.
+  void UploadLifetimeMetrics();
 
   // Adds `month` to the set of non-prunable months.
   void AddNonPrunableMonth(const base::Time& month);
@@ -91,6 +104,9 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
   // likely to be pruned if we need to trim down to stay within storage limits.
   SingleDayEventList FindEvents(base::Time day) const;
 
+  // Checks the `FetchingStatus` of a given start time.
+  FetchingStatus FindFetchingStaus(base::Time start_time) const;
+
   // Redistributes all the fetched events to the date map with the
   // `time_difference_minutes_`. This only happens once per calendar view's life
   // cycle.
@@ -111,6 +127,7 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
   friend class CalendarModelTest;
   friend class CalendarViewEventListViewTest;
   friend class CalendarMonthViewTest;
+  friend class CalendarModelFunctionTest;
 
   // Inserts a single `event` in the EventCache.
   void InsertEvent(const google_apis::calendar::CalendarEvent* event);
@@ -157,6 +174,11 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
       base::Time start_of_month,
       CalendarEventFetchInternalErrorCode error);
 
+  // Checks whether `start_of_month` is further than we've gone, so far, from
+  // the on-screen month with which the calendar was opened and, if it has, then
+  // update our max distance.
+  void UpdateMaxDistanceBrowsed(const base::Time& start_of_month);
+
   // Internal storage for fetched events, with each fetched month having a
   // map of days to events.
   MonthToEventsMap event_months_;
@@ -175,6 +197,15 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
 
   // Time difference between the UTC time and the local time in minutes.
   absl::optional<int> time_difference_minutes_;
+
+  // The first on-screen month to have been displayed when the calendar was
+  // opened.
+  base::Time first_on_screen_month_;
+
+  // Maximum distance, in months, from the on-screen month first displayed in
+  // the calendar when it was opened. This is logged as a metric when the
+  // calendar is closed.
+  size_t max_distance_browsed_;
 
   ScopedSessionObserver session_observer_;
 

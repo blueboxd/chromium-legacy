@@ -6,9 +6,11 @@
 
 #include <memory>
 
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/url_param_filter/cross_otr_observer.h"
 #include "chrome/browser/url_param_filter/url_param_filterer.h"
+#include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -25,29 +27,42 @@ void WriteMetrics(FilterResult result) {
 }  // anonymous namespace
 
 void UrlParamFilterThrottle::MaybeCreateThrottle(
+    bool enabled_by_policy,
     content::WebContents* web_contents,
     const network::ResourceRequest& request,
     std::vector<std::unique_ptr<blink::URLLoaderThrottle>>* throttle_list) {
+  // If the enterprise escape hatch policy has been set, do not create the
+  // throttle.
+  if (!enabled_by_policy) {
+    return;
+  }
+  // If we lack a web_contents, do not create the throttle.
   if (!web_contents) {
     return;
   }
-  // Only main frame navigations are in scope. We do not modify other
+  // Only outermost main frame navigations are in scope. We do not modify other
   // navigations.
-  if (!request.is_main_frame) {
+  if (!request.is_outermost_main_frame) {
     return;
   }
   CrossOtrObserver* observer = CrossOtrObserver::FromWebContents(web_contents);
   if (observer && observer->IsCrossOtrState()) {
-    throttle_list->push_back(
-        std::make_unique<UrlParamFilterThrottle>(request.request_initiator));
+    throttle_list->push_back(std::make_unique<UrlParamFilterThrottle>(
+        request.request_initiator, observer->GetWeakPtr()));
   }
 }
 
 UrlParamFilterThrottle::UrlParamFilterThrottle(
-    const absl::optional<url::Origin>& request_initiator_origin) {
+    const absl::optional<url::Origin>& request_initiator_origin,
+    base::WeakPtr<CrossOtrObserver> observer)
+    : should_filter_(base::GetFieldTrialParamByFeatureAsBool(
+          features::kIncognitoParamFilterEnabled,
+          "should_filter",
+          false)) {
   last_hop_initiator_ = request_initiator_origin.has_value()
                             ? request_initiator_origin->GetURL()
                             : GURL();
+  observer_ = observer;
 }
 UrlParamFilterThrottle::~UrlParamFilterThrottle() = default;
 
@@ -58,9 +73,16 @@ void UrlParamFilterThrottle::WillStartRequest(network::ResourceRequest* request,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   FilterResult result = FilterUrl(last_hop_initiator_, request->url);
-  request->url = result.filtered_url;
+
+  if (should_filter_) {
+    request->url = result.filtered_url;
+    WriteMetrics(result);
+  }
+
+  if (observer_ && result.filtered_param_count) {
+    observer_->SetDidFilterParams(true);
+  }
   last_hop_initiator_ = request->url;
-  WriteMetrics(result);
 }
 
 void UrlParamFilterThrottle::WillRedirectRequest(
@@ -72,10 +94,19 @@ void UrlParamFilterThrottle::WillRedirectRequest(
     net::HttpRequestHeaders* modified_cors_exempt_request_headers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   FilterResult result = FilterUrl(last_hop_initiator_, redirect_info->new_url);
-  redirect_info->new_url = result.filtered_url;
-  // Future redirects should use the redirect's domain as the navigation source.
+
+  if (should_filter_) {
+    redirect_info->new_url = result.filtered_url;
+    WriteMetrics(result);
+  }
+
+  if (observer_ && result.filtered_param_count) {
+    observer_->SetDidFilterParams(true);
+  }
+
+  // Future redirects should use the redirect's domain as the navigation
+  // source.
   last_hop_initiator_ = redirect_info->new_url;
-  WriteMetrics(result);
 }
 
 bool UrlParamFilterThrottle::makes_unsafe_redirect() {

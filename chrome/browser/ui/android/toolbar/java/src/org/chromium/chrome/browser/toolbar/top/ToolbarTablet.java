@@ -18,6 +18,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewStub;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
@@ -303,7 +304,7 @@ public class ToolbarTablet extends ToolbarLayout
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
 
-        mToolbarShadow = (ImageView) getRootView().findViewById(R.id.toolbar_shadow);
+        mToolbarShadow = (ImageView) getRootView().findViewById(R.id.toolbar_hairline);
     }
 
     @Override
@@ -505,9 +506,17 @@ public class ToolbarTablet extends ToolbarLayout
             MenuButtonCoordinator menuButtonCoordinator) {
         boolean isInTabSwitcherMode = mShowTabStack && inTabSwitcherMode;
         mIsInTabSwitcherMode = isInTabSwitcherMode;
+
         if (isTabletGridTabSwitcherPolishEnabled()) {
-            // No impact to tablet toolbar.
-            return;
+            int importantForAccessibility = inTabSwitcherMode
+                    ? View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+                    : View.IMPORTANT_FOR_ACCESSIBILITY_AUTO;
+
+            mLocationBar.setUrlBarFocusable(!mIsInTabSwitcherMode);
+            if (getImportantForAccessibility() != importantForAccessibility) {
+                setImportantForAccessibility(importantForAccessibility);
+                sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
+            }
         } else if (isGridTabSwitcherEnabled()) {
             setTabSwitcherModeWithAnimation(delayAnimation);
         } else {

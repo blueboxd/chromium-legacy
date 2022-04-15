@@ -993,23 +993,35 @@ bool LayoutObject::IsFixedPositionObjectInPagedMedia() const {
 }
 
 PhysicalRect LayoutObject::ScrollRectToVisible(
-    const PhysicalRect& rect,
+    const PhysicalRect& absolute_rect,
     mojom::blink::ScrollIntoViewParamsPtr params) {
   NOT_DESTROYED();
   LayoutBox* enclosing_box = EnclosingBox();
   if (!enclosing_box)
-    return rect;
+    return absolute_rect;
 
-  GetDocument().GetFrame()->GetSmoothScrollSequencer().AbortAnimations();
-  GetDocument().GetFrame()->GetSmoothScrollSequencer().SetScrollType(
-      params->type);
+  GetFrame()->GetSmoothScrollSequencer().AbortAnimations();
+  GetFrame()->GetSmoothScrollSequencer().SetScrollType(params->type);
   params->is_for_scroll_sequence |=
       params->type == mojom::blink::ScrollType::kProgrammatic;
-  PhysicalRect new_location =
-      enclosing_box->ScrollRectToVisibleRecursive(rect, std::move(params));
-  GetDocument().GetFrame()->GetSmoothScrollSequencer().RunQueuedAnimations();
+  PhysicalRect updated_absolute_rect =
+      enclosing_box->ScrollRectToVisibleLocally(absolute_rect, params);
 
-  return new_location;
+  // Continue the scroll via IPC if there's a remote ancestor.
+  // TODO(bokan): This probably needs to happen fenced frames in at least some
+  // cases. crbug.com/1314858.
+  LocalFrame& local_root = GetFrame()->LocalFrameRoot();
+  if (!local_root.IsMainFrame()) {
+    LocalFrameView* view = local_root.View();
+    if (view->AllowedToPropagateScrollIntoView(params)) {
+      view->ScrollRectToVisibleInRemoteParent(updated_absolute_rect,
+                                              std::move(params));
+    }
+  }
+
+  GetFrame()->GetSmoothScrollSequencer().RunQueuedAnimations();
+
+  return updated_absolute_rect;
 }
 
 LayoutBox* LayoutObject::EnclosingBox() const {
@@ -2638,7 +2650,7 @@ void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
 
   if (diff.NeedsPaintInvalidation() && old_style &&
       !old_style->ClipPathDataEquivalent(*style_)) {
-    InvalidateClipPathCache();
+    SetNeedsPaintPropertyUpdate();
     PaintingLayer()->SetNeedsCompositingInputsUpdate();
   }
 
@@ -4613,11 +4625,9 @@ bool LayoutObject::CanUpdateSelectionOnRootLineBoxes() const {
 void LayoutObject::SetNeedsBoundariesUpdate() {
   NOT_DESTROYED();
   if (IsSVGChild()) {
-    // The boundaries affect mask clip.
-    if (StyleRef().MaskerResource())
+    // The boundaries affect mask clip and clip path mask/clip.
+    if (StyleRef().MaskerResource() || StyleRef().HasClipPath())
       SetNeedsPaintPropertyUpdate();
-    if (StyleRef().HasClipPath())
-      InvalidateClipPathCache();
   }
   if (LayoutObject* layout_object = Parent())
     layout_object->SetNeedsBoundariesUpdate();
@@ -5006,14 +5016,6 @@ bool LayoutObject::CanBeSelectionLeaf() const {
     return false;
   }
   return CanBeSelectionLeafInternal();
-}
-
-void LayoutObject::InvalidateClipPathCache() {
-  NOT_DESTROYED();
-  SetNeedsPaintPropertyUpdate();
-  for (FragmentData* fragment = fragment_; fragment;
-       fragment = fragment->NextFragment())
-    fragment->InvalidateClipPathCache();
 }
 
 Vector<PhysicalRect> LayoutObject::CollectOutlineRectsAndAdvance(

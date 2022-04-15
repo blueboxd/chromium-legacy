@@ -6,12 +6,17 @@
 import difflib
 import logging
 import os
+import shlex
 import subprocess
 
 import dex_disassembly
 import models
 import path_util
 import readelf
+
+
+# Don't disassemble more than this many bytes to guard against giant functions.
+_MAX_DISASSEMBLY_BYTES = 2 * 1024
 
 
 def _DisassembleFunc(symbol, output_directory, elf_path):
@@ -25,6 +30,11 @@ def _DisassembleFunc(symbol, output_directory, elf_path):
   Returns:
     Array with the lines of disassembly for symbol.
   """
+  # Shouldn't happen.
+  if symbol.size_without_padding < 1:
+    logging.info('Skipping due to zero size: %r', symbol)
+    return None
+
   # Running objdump from an output directory means that objdump can
   # interleave source file lines in the disassembly.
   objdump_cwd = output_directory or '.'
@@ -35,24 +45,33 @@ def _DisassembleFunc(symbol, output_directory, elf_path):
     logging.warning('llvm-readelf failed on: %s', elf_path)
     return None
   objdump_path = path_util.GetDisassembleObjDumpPath(arch)
+  # E.g. "** thunk" symbols tend to be very large.
+  end_address = min(symbol.end_address, symbol.address + _MAX_DISASSEMBLY_BYTES)
   args = [
       os.path.relpath(objdump_path, objdump_cwd),
       '--disassemble',
       '--line-numbers',
       '--demangle',
       '--start-address=0x%x' % symbol.address,
-      '--stop-address=0x%x' % symbol.end_address,
+      '--stop-address=0x%x' % end_address,
       os.path.relpath(elf_path, objdump_cwd),
   ]
   if output_directory:
     args.append('--source')
 
+  cmd_str = shlex.join(args)
+  logging.info('Disassembling symbol: %r', symbol)
+  logging.info('Running: %s  # cwd=%s', cmd_str, objdump_cwd)
   try:
-    return subprocess.check_output(args, cwd=objdump_cwd,
-                                   encoding='utf-8').splitlines(keepends=True)
+    stdout = subprocess.check_output(args, cwd=objdump_cwd, encoding='utf-8')
   except Exception:
-    logging.warning('objdump failed: %s\ncwd=%s', ' '.join(args), objdump_cwd)
+    logging.warning('objdump failed: %s  # cwd=%s', cmd_str, objdump_cwd)
     return None
+
+  truncated_str = '' if symbol.end_address == end_address else ' (truncated)'
+  ret = ['Captured via: {}{}\n'.format(cmd_str, truncated_str), '\n', '\n']
+  ret += stdout.splitlines(keepends=True)
+  return ret
 
 
 def _CreateUnifiedDiff(name, before, after):
@@ -110,12 +129,12 @@ def _AddUnifiedDiff(top_changed_symbols, before_path_resolver,
       elf_name = symbol.before_symbol.container.metadata['elf_file_name']
       elf_path = _ResolveElfPath(before_path_resolver(elf_name))
       if elf_path:
-        # The output directory will have changed due to building "after", so
+        # The source tree will have changed due to building "after", so it's
         # better to not include source lines than to include incorrect ones.
         out_directory = None
         before = _DisassembleFunc(symbol.before_symbol, out_directory, elf_path)
 
-    logging.info('Adding disassembly for symbol: %s', symbol.full_name)
+    logging.info('Creating unified diff')
     symbol.after_symbol.disassembly = _CreateUnifiedDiff(
         symbol.full_name, before or [], after)
     counter -= 1
@@ -134,7 +153,10 @@ def _GetTopChangedSymbols(delta_size_info):
     if not symbol.section_name.endswith('.text'):
       return False
     # Symbols which have changed under 10 bytes do not add much value.
-    if abs(symbol.pss) < 10:
+    if abs(symbol.pss_without_padding) < 10:
+      return False
+    if not symbol.address:
+      # "aggregate padding" symbols.
       return False
     return True
 

@@ -805,7 +805,7 @@ See your search engine’s instructions for deleting your search history, if app
           This website is trying to download a calendar file.
       </message>
       <message name="IDS_IOS_DOWNLOAD_CALENDAR_FILE_WARNING_TITLE" desc="Title of the alert displaying a warning message before downloading a calendar file.[iOS only]">
-          Calendar file Available
+          Calendar File Available
       </message>
       <message name="IDS_IOS_DOWNLOAD_MANAGER_CANNOT_DETERMINE_FILE_SIZE" desc="Message displayed when the size of the file to be downloaded is unknown. [Length: 30em] [iOS only]">
         Cannot determine file size.
@@ -3095,7 +3095,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
         Follow <ph name="DOMAIN_NAME">$1<ex>google.com</ex></ph>
       </message>
       <message name="IDS_IOS_TOOLS_MENU_UNFOLLOW" desc="The iOS menu item for unfollowing web content. [iOS only]">
-        Unfollow
+        Unfollow <ph name="DOMAIN_NAME">$1<ex>google.com</ex></ph>
       </message>
       <message name="IDS_IOS_TOOLS_MENU_TRANSLATE" desc="The iOS menu item for translating the current page [iOS only]" meaning="Open the translate infobar [Length: unlimited]">
         Translate
@@ -3419,6 +3419,9 @@ New Search
       </message>
       <message name="IDS_IOS_IPH_BUBBLE_SNOOZE" desc="Label of a button that appears in an in-product help Tip. Pressing this button will dismiss the Tip, the user will be reminded of the same Tip later on. Title-cased.">
         Remind Me Later
+      </message>
+      <message name="IDS_IOS_PASSWORD_SUGGESTIONS_TIP_TITLE" desc="The title of the tip explaining to the user they can tap on Autofill password suggestions">
+        Autofill Passwords
       </message>
     </messages>
   </release>

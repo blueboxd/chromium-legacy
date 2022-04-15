@@ -89,6 +89,12 @@ struct StorageInterestGroupDescByPriority {
                   const StorageInterestGroup& b) {
     return a.interest_group.priority > b.interest_group.priority;
   }
+  bool operator()(const StorageInterestGroup& a, double b_priority) {
+    return a.interest_group.priority > b_priority;
+  }
+  bool operator()(double a_priority, const StorageInterestGroup& b) {
+    return a_priority > b.interest_group.priority;
+  }
 };
 
 }  // namespace
@@ -565,8 +571,18 @@ void AuctionRunner::Auction::OnInterestGroupRead(
                           ->per_buyer_group_limits.cend()) {
       size_limit = static_cast<size_t>(limit_iter->second);
     }
-    std::sort(interest_groups.begin(), interest_groups.end(),
-              StorageInterestGroupDescByPriority());
+    StorageInterestGroupDescByPriority cmp;
+    std::sort(interest_groups.begin(), interest_groups.end(), cmp);
+    // Randomize order of interest groups with lowest allowed priority. This
+    // effectively performs a random sample among interest groups with the same
+    // priority.
+    double min_priority =
+        interest_groups.back().interest_group.priority.value();
+    auto rand_begin = std::lower_bound(
+        interest_groups.begin(), interest_groups.end(), min_priority, cmp);
+    auto rand_end =
+        std::upper_bound(rand_begin, interest_groups.end(), min_priority, cmp);
+    base::RandomShuffle(rand_begin, rand_end);
     interest_groups.resize(std::min(interest_groups.size(), size_limit));
 
     for (auto bidder = std::make_move_iterator(interest_groups.begin());
@@ -632,17 +648,27 @@ void AuctionRunner::Auction::OnOneLoadCompleted() {
     // theoretically participate in the auction.
     if (num_owners_loaded_ > 0) {
       int num_interest_groups = bid_states_.size();
+      size_t num_sellers_with_bidders = 0;
       for (auto& component_auction : component_auctions_) {
         // This double-counts interest groups that are participating in multiple
         // auctions.
         num_interest_groups += component_auction->bid_states_.size();
+        ++num_sellers_with_bidders;
       }
+      // If the top-level seller either has interest groups itself, or any of
+      // the component auctions do, then the top-level seller also has bidders.
+      if (num_interest_groups)
+        ++num_sellers_with_bidders;
 
       UMA_HISTOGRAM_COUNTS_1000("Ads.InterestGroup.Auction.NumInterestGroups",
                                 num_interest_groups);
       UMA_HISTOGRAM_COUNTS_100(
           "Ads.InterestGroup.Auction.NumOwnersWithInterestGroups",
           num_owners_with_interest_groups_);
+
+      UMA_HISTOGRAM_COUNTS_100(
+          "Ads.InterestGroup.Auction.NumSellersWithBidders",
+          num_sellers_with_bidders);
     }
   }
 

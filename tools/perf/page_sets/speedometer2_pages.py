@@ -34,11 +34,11 @@ class Speedometer2Story(press_story.PressStory):
   NAME = 'Speedometer2'
 
   def __init__(self,
-               ps,
+               page_set,
                should_filter_suites,
                filtered_suite_names=None,
                iterations=None):
-    super(Speedometer2Story, self).__init__(ps)
+    super(Speedometer2Story, self).__init__(page_set)
     self._should_filter_suites = should_filter_suites
     self._filtered_suite_names = filtered_suite_names
     self._iterations = iterations
@@ -59,7 +59,7 @@ class Speedometer2Story(press_story.PressStory):
   def ExecuteTest(self, action_runner):
     action_runner.tab.WaitForDocumentReadyStateToBeComplete()
     if not self._iterations:
-      iterationCount = 20
+      iterationCount = 10
       # A single iteration on android takes ~75 seconds, the benchmark times out
       # when running for 10 iterations.
       if action_runner.tab.browser.platform.GetOSName() == 'android':

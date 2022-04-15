@@ -23,6 +23,7 @@
 #include "third_party/skia/modules/skottie/include/Skottie.h"
 #include "third_party/skia/modules/skottie/include/SkottieProperty.h"
 #include "third_party/skia/modules/skresources/include/SkResources.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 
 namespace cc {
 namespace {
@@ -84,6 +85,10 @@ class PropertyHandler final : public skottie::PropertyObserver {
     return current_text_values_;
   }
 
+  const SkottieTransformPropertyValueMap current_transform_values() const {
+    return current_transform_values_;
+  }
+
   const base::flat_set<std::string>& text_node_names() const {
     return text_node_names_;
   }
@@ -110,17 +115,37 @@ class PropertyHandler final : public skottie::PropertyObserver {
     text_handles_[node_name_hash].push_back(std::move(text_handle));
   }
 
+  void onTransformProperty(
+      const char node_name[],
+      const LazyHandle<skottie::TransformPropertyHandle>& lh) override {
+    if (!node_name)
+      return;
+
+    current_transform_values_.emplace(
+        HashSkottieResourceId(node_name),
+        ConvertTransformValueToChromium(lh()->get()));
+  }
+
  private:
   static SkottieTextPropertyValue ConvertTextValueToChromium(
       const skottie::TextPropertyValue& value_in) {
     std::string text(value_in.fText.c_str());
-    return SkottieTextPropertyValue(std::move(text));
+    return SkottieTextPropertyValue(std::move(text),
+                                    gfx::SkRectToRectF(value_in.fBox));
   }
 
   static void ConvertTextValueToSkottie(
       const SkottieTextPropertyValue& value_in,
       skottie::TextPropertyValue& value_out) {
     value_out.fText.set(value_in.text().c_str());
+    value_out.fBox = gfx::RectFToSkRect(value_in.box());
+  }
+
+  static SkottieTransformPropertyValue ConvertTransformValueToChromium(
+      const skottie::TransformPropertyValue& value_in) {
+    SkottieTransformPropertyValue output = {
+        /*position*/ gfx::SkPointToPointF(value_in.fPosition)};
+    return output;
   }
 
   base::flat_map<SkottieResourceIdHash,
@@ -131,6 +156,7 @@ class PropertyHandler final : public skottie::PropertyObserver {
       text_handles_;
   base::flat_set<std::string> text_node_names_;
   SkottieTextPropertyValueMap current_text_values_;
+  SkottieTransformPropertyValueMap current_transform_values_;
 };
 
 class MarkerStore : public skottie::MarkerObserver {
@@ -193,6 +219,12 @@ class SkottieWrapperImpl : public SkottieWrapper {
       LOCKS_EXCLUDED(lock_) {
     base::AutoLock lock(lock_);
     return property_handler_->current_text_values();
+  }
+
+  SkottieTransformPropertyValueMap GetCurrentTransformPropertyValues()
+      const override LOCKS_EXCLUDED(lock_) {
+    base::AutoLock lock(lock_);
+    return property_handler_->current_transform_values();
   }
 
   const std::vector<SkottieMarker>& GetAllMarkers() const override {

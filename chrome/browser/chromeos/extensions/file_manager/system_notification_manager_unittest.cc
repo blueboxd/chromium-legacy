@@ -166,10 +166,10 @@ class SystemNotificationManagerTest
 
     VolumeManagerFactory::GetInstance()->SetTestingFactory(
         profile_,
-        base::BindLambdaForTesting([](content::BrowserContext* context) {
+        base::BindLambdaForTesting([this](content::BrowserContext* context) {
           return std::unique_ptr<KeyedService>(std::make_unique<VolumeManager>(
               Profile::FromBrowserContext(context), nullptr, nullptr,
-              new FakeDiskMountManager, nullptr,
+              &disk_mount_manager_, nullptr,
               VolumeManager::GetMtpStorageInfoCallback()));
         }));
     auto* volume_manager = VolumeManager::Get(profile_);
@@ -274,6 +274,7 @@ class SystemNotificationManagerTest
 
  private:
   content::BrowserTaskEnvironment task_environment_;
+  file_manager::FakeDiskMountManager disk_mount_manager_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   // Externally owned raw pointers:
   // profile_ is owned by TestingProfileManager.

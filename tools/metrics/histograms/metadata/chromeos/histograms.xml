@@ -947,7 +947,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Intents.IntentPickerAction"
-    enum="IntentPickerDialogAction" expires_after="2022-10-04">
+    enum="IntentPickerDialogAction" expires_after="2022-10-09">
   <owner>tsergeant@chromium.org</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -1383,6 +1383,9 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ChromeOS.SAML.Scraping.VerificationResult"
     enum="BooleanSuccess" expires_after="M78">
+  <obsolete>
+    Removed in M102
+  </obsolete>
   <owner>bartfab@chromium.org</owner>
   <summary>
     Whether one of the scraped passwords was successfully verified as the user's
@@ -1730,6 +1733,16 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     This value represents the type of a USB Type-C peripheral (the Partner)
     which is connected to a device. It is recorded every time a new peripheral
     is connected.
+  </summary>
+</histogram>
+
+<histogram name="ChromeOS.TypeC.UsbDeviceSpeed" enum="UsbDeviceSpeedMetric"
+    expires_after="2022-09-30">
+  <owner>wonchung@google.com</owner>
+  <owner>chromeos-usb@google.com</owner>
+  <summary>
+    This value represents the speed (USB standard) of USB device connected. It
+    is recorded every time a new USB device is connected.
   </summary>
 </histogram>
 

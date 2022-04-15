@@ -23,24 +23,44 @@ constexpr base::TimeDelta kDialogDelay = base::Minutes(5);
 constexpr base::TimeDelta kGraceTime = base::Hours(1);
 }  // namespace
 
+RebootNotificationsScheduler* RebootNotificationsScheduler::instance = nullptr;
+
 RebootNotificationsScheduler::RebootNotificationsScheduler()
     : RebootNotificationsScheduler(base::DefaultClock::GetInstance(),
-                                   base::DefaultTickClock::GetInstance()) {
-  if (session_manager::SessionManager::Get())
-    observation_.Observe(session_manager::SessionManager::Get());
-}
+                                   base::DefaultTickClock::GetInstance()) {}
 
 RebootNotificationsScheduler::RebootNotificationsScheduler(
     const base::Clock* clock,
     const base::TickClock* tick_clock)
-    : notification_timer_(clock, tick_clock),
-      dialog_timer_(clock, tick_clock) {}
+    : notification_timer_(clock, tick_clock), dialog_timer_(clock, tick_clock) {
+  DCHECK(!RebootNotificationsScheduler::Get());
+  RebootNotificationsScheduler::SetInstance(this);
+  if (session_manager::SessionManager::Get())
+    observation_.Observe(session_manager::SessionManager::Get());
+}
 
-RebootNotificationsScheduler::~RebootNotificationsScheduler() = default;
+RebootNotificationsScheduler::~RebootNotificationsScheduler() {
+  DCHECK_EQ(instance, this);
+  RebootNotificationsScheduler::SetInstance(nullptr);
+}
 
+// static
+RebootNotificationsScheduler* RebootNotificationsScheduler::Get() {
+  return RebootNotificationsScheduler::instance;
+}
+
+// static
 void RebootNotificationsScheduler::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(ash::prefs::kShowPostRebootNotification, false);
+}
+
+// static
+bool RebootNotificationsScheduler::ShouldShowPostRebootNotification(
+    Profile* profile) {
+  DCHECK(profile);
+  PrefService* prefs = user_prefs::UserPrefs::Get(profile);
+  return IsPostRebootPrefSet(prefs);
 }
 
 void RebootNotificationsScheduler::SchedulePendingRebootNotifications(
@@ -97,7 +117,7 @@ void RebootNotificationsScheduler::MaybeShowPostRebootNotification(
     bool show_simple_notification) {
   PrefService* prefs = GetPrefsForActiveProfile();
   // Return if the pref is not set for the profile.
-  if (!prefs->GetBoolean(ash::prefs::kShowPostRebootNotification))
+  if (!IsPostRebootPrefSet(prefs))
     return;
 
   if (show_simple_notification) {
@@ -150,6 +170,11 @@ void RebootNotificationsScheduler::OnRebootButtonClicked() {
   std::move(reboot_callback_).Run();
 }
 
+void RebootNotificationsScheduler::SetInstance(
+    RebootNotificationsScheduler* reboot_notifications_scheduler) {
+  RebootNotificationsScheduler::instance = reboot_notifications_scheduler;
+}
+
 const base::Time RebootNotificationsScheduler::GetCurrentTime() const {
   return base::Time::Now();
 }
@@ -172,6 +197,12 @@ bool RebootNotificationsScheduler::ShouldWaitFullRestoreInit() const {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   return ash::full_restore::FullRestoreServiceFactory::
       IsFullRestoreAvailableForProfile(profile);
+}
+
+bool RebootNotificationsScheduler::IsPostRebootPrefSet(PrefService* prefs) {
+  if (!prefs)
+    return false;
+  return prefs->GetBoolean(ash::prefs::kShowPostRebootNotification);
 }
 
 }  // namespace policy

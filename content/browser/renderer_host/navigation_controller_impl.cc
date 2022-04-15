@@ -2063,7 +2063,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingEntry(
       }
     }
   } else {
-    // This is renderer-initiated. The only kinds of renderer-initated
+    // This is renderer-initiated. The only kinds of renderer-initiated
     // navigations that are EXISTING_ENTRY are same-document navigations that
     // result in replacement (e.g. history.replaceState(), location.replace(),
     // forced replacements for trivial session history contexts). For these
@@ -4416,7 +4416,8 @@ NavigationControllerImpl::GetNavigationApiHistoryEntryVectors(
   bool will_create_new_entry = false;
   if (!request ||
       NavigationTypeUtils::IsReload(request->common_params().navigation_type) ||
-      request->common_params().should_replace_current_entry) {
+      request->common_params().should_replace_current_entry ||
+      request->common_params().is_history_navigation_in_new_child_frame) {
     entry_index = GetLastCommittedEntryIndex();
   } else if (entry_index == -1) {
     will_create_new_entry = true;

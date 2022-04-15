@@ -138,18 +138,15 @@ crbug.com/887140 virtual/hdr/video-canvas-alpha.html [ Failure ]
 external/wpt/css/compositing/root-element-background-transparency.html [ Failure ]
 
 # ====== Synchronous, budgeted HTML parser tests from here ========================
-
-# See crbug.com/1254921 for details!
-#
-# These tests either fail outright, or become flaky, when these two flags/parameters are enabled:
-#   --enable-features=ForceSynchronousHTMLParsing,LoaderDataPipeTuning:allocation_size_bytes/2097152/loader_chunk_size/1048576
+# See crbug.com/1254921 for details.
+# These tests either started failing outright, or became flaky, when the new HTML
+# parser was enabled. All of these are bugs/issues with the test itself.
 
 # Extra line info appears in the output in some cases.
 crbug.com/1254932 http/tests/preload/meta-csp.html [ Failure ]
 
 # Extra box in the output:
 crbug.com/1254933 css3/filters/filterRegions.html [ Failure ]
-
 
 # Script preloaded: No
 crbug.com/1254940 http/tests/security/contentSecurityPolicy/nonces/scriptnonce-redirect.html [ Failure ]
@@ -450,6 +447,9 @@ crbug.com/841567 virtual/threaded-prefer-compositing/fast/scrolling/same-page-na
 crbug.com/915926 fast/events/touch/multi-touch-user-gesture.html [ Failure Pass ]
 
 crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure Pass ]
+crbug.com/1303091 [ Linux ] compositing/overflow/paint-neg-z-order-descendants-into-scrolling-contents-layer.html [ Failure Pass ]
+
+crbug.com/1303030 [ Linux ] paint/invalidation/forms/range-focus-by-mouse-then-keydown.html [ Failure Pass ]
 
 # New OffscreenCanvas Tests that are breaking LayoutTest
 
@@ -3303,6 +3303,7 @@ crbug.com/626703 external/wpt/service-workers/service-worker/worker-interception
 crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/service-workers/service-worker/worker-interception.https.html [ Pass ]
 
 # ====== Test expectations added to unblock wpt-importer ======
+crbug.com/626703 virtual/threaded/external/wpt/requestidlecallback/deadline-max-timeout-dynamic.html [ Failure ]
 crbug.com/626703 external/wpt/service-workers/service-worker/navigation-timing-extended.https.html [ Failure ]
 crbug.com/626703 fast/animation/scroll-animations/scroll-animation-lifetime.html [ Failure ]
 crbug.com/626703 fast/animation/scroll-animations/scroll-timeline-snapshotting.html [ Failure ]
@@ -4400,6 +4401,10 @@ crbug.com/1133806 external/wpt/css/css-text-decor/text-decoration-skip-ink-uprig
 crbug.com/1133806 external/wpt/css/css-text-decor/text-decoration-skip-ink-upright-001.html [ Failure ]
 
 crbug.com/912362 external/wpt/web-animations/timing-model/timelines/timelines.html [ Failure ]
+
+# crbug.com/1315717: Deprecating <object><param>
+crbug.com/1315717 external/wpt/html/semantics/embedded-content/the-object-element/object-param-url.html [ Failure ]
+crbug.com/1315717 virtual/object-param-url/external/wpt/html/semantics/embedded-content/the-object-element/object-param-url.html [ Pass ]
 
 # Unclear if XHR events should still be fired after its frame is discarded.
 crbug.com/881180 external/wpt/xhr/open-url-multi-window-4.htm [ Timeout ]
@@ -7161,9 +7166,6 @@ crbug.com/1259652 [ Mac10.13 ] external/wpt/streams/readable-streams/tee.any.sha
 # Data URL navigation within Fenced Frames currently crashed in the MPArch implementation.
 crbug.com/1243568 virtual/fenced-frame-mparch/wpt_internal/fenced_frame/window-data-url-navigation.https.html [ Timeout ]
 
-# Navigating _unfencedTop is not yet supported in MPArch.
-crbug.com/1123606 virtual/fenced-frame-mparch/wpt_internal/fenced_frame/unfenced-top.https.html [ Failure ]
-
 # Sheriff 2021-10-15, 2021-12-07
 crbug.com/1256763 [ Win ] virtual/gpu-rasterization/images/color-profile-image-pseudo-content.html [ Failure Pass ]
 crbug.com/1256763 [ Mac ] virtual/gpu-rasterization/images/color-profile-image-pseudo-content.html [ Failure Pass ]
@@ -7676,7 +7678,7 @@ crbug.com/1312266 [ Mac10.13 ] external/wpt/css/css-ui/compute-kind-widget-gener
 crbug.com/1312469 [ Mac10.12 ] external/wpt/hr-time/clamped-time-origin-isolated.https.html [ Skip ]
 crbug.com/1312469 [ Mac10.12 ] fast/forms/calendar-picker/date-picker-select-value-with-keyboard.html [ Skip ]
 crbug.com/1312469 [ Mac10.12 ] virtual/scroll-unification-prefer_compositing_to_lcd_text/fast/scroll-behavior/smooth-scroll/mousewheel-scroll.html [ Skip ]
-crbug.com/1312469 [ Mac10.12 ] virtual/threaded-no-composited-antialiasing/animations/interpolation/svg-d-interpolation-001.html [ Skip ]
+crbug.com/1313476 [ Mac10.12 ] virtual/threaded-no-composited-antialiasing/animations/interpolation/svg-d-interpolation-001.html [ Failure Pass ]
 crbug.com/1312469 [ Mac10.12 ] virtual/fledge/http/tests/inspector-protocol/storage/interest-groups.js [ Skip ]
 crbug.com/1312469 [ Mac10.12 ] virtual/partitioned-cookies-first-party-sets/http/tests/inspector-protocol/network/blocked-setcookie-same-site-lax.js [ Skip ]
 crbug.com/1312469 [ Mac10.12 ] virtual/partitioned-cookies/http/tests/inspector-protocol/network/blocked-cookie-same-site-strict.js [ Skip ]
@@ -7703,7 +7705,9 @@ crbug.com/1314130 [ Mac ] fast/events/touch/gesture/touch-gesture-scroll-listbox
 # Sheriff 2022-04-07
 crbug.com/1314314 virtual/percent-based-scrolling/fast/scrolling/scrollbars/mouse-autoscrolling-on-deleted-scrollbar.html [ Skip ]
 crbug.com/1314323 [ Win ] virtual/compositor-threaded-percent-based-scrolling/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Skip ]
-crbug.com/1095540 [ Mac10.14 ] virtual/threaded-prefer-compositing/fast/scrolling/resize-corner-tracking-touch.html [ Skip ]
+
+# Sheriff 2022-04-14
+crbug.com/1095540 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/resize-corner-tracking-touch.html [ Skip ]
 
 # FedCM API test failures
 crbug.com/1314987 external/wpt/credential-management/fedcm-logout.sub.https.html [ Skip ]
@@ -7733,3 +7737,12 @@ crbug.com/1314514 [ Win ] css3/blending/background-blend-mode-gradient-color.htm
 crbug.com/1315300 [ Linux ] http/tests/devtools/elements/styles-3/styles-disable-inherited.js [ Failure Pass ]
 
 crbug.com/1315753 virtual/selectmenu-new-popup/the-selectmenu-element/selectmenu-parts-structure.tentative.html [ Skip ]
+
+# HighlightOverlayPainting: decoration painting hasn’t landed yet.
+crbug.com/1147859 virtual/css-highlight-overlay-painting/wpt_internal/css/css-pseudo/target-text-001.html [ Failure ]
+
+crbug.com/1295980 [ Mac ] virtual/fenced-frame-mparch/wpt_internal/fenced_frame/script-focus.https.html [ Pass Timeout ]
+crbug.com/1295980 [ Mac ] virtual/fenced-frame-shadow-dom/wpt_internal/fenced_frame/script-focus.https.html [ Pass Timeout ]
+
+# Sheriff 2022-04-15
+crbug.com/1316559 [ Mac11-arm64 ] inspector-protocol/page/set-font-families-generic-names.js [ Failure Pass ]

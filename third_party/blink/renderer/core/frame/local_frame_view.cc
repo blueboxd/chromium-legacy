@@ -25,12 +25,12 @@
  */
 
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 
 #include <algorithm>
 #include <memory>
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
@@ -49,6 +49,7 @@
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_into_view_options.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
@@ -3851,6 +3852,26 @@ void LocalFrameView::ScrollRectToVisibleInRemoteParent(
       gfx::Rect(new_rect.X().ToInt(), new_rect.Y().ToInt(),
                 new_rect.Width().ToInt(), new_rect.Height().ToInt()),
       std::move(params));
+}
+
+bool LocalFrameView::AllowedToPropagateScrollIntoView(
+    const mojom::blink::ScrollIntoViewParamsPtr& params) {
+  if (!params->cross_origin_boundaries) {
+    Frame* parent_frame = GetFrame().Tree().Parent();
+    if (parent_frame &&
+        !parent_frame->GetSecurityContext()->GetSecurityOrigin()->CanAccess(
+            GetFrame().GetSecurityContext()->GetSecurityOrigin())) {
+      return false;
+    }
+  }
+
+  if (params->type != mojom::blink::ScrollType::kProgrammatic)
+    return true;
+
+  if (!GetFrame().GetDocument())
+    return true;
+
+  return !GetFrame().GetDocument()->IsVerticalScrollEnforced();
 }
 
 void LocalFrameView::NotifyFrameRectsChangedIfNeeded() {

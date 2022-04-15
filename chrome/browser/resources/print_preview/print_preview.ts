@@ -8,11 +8,10 @@ export {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button
 export {PluralStringProxyImpl as PrintPreviewPluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 export {IronMeta} from 'chrome://resources/polymer/v3_0/iron-meta/iron-meta.js';
 export {Cdd, MediaSizeCapability, MediaSizeOption, VendorCapabilityValueType} from './data/cdd.js';
-export {ColorMode, createDestinationKey, Destination, DestinationOrigin, GooglePromotedDestinationId, makeRecentDestination, PDF_DESTINATION_KEY, RecentDestination} from './data/destination.js';
+export {ColorMode, createDestinationKey, Destination, DestinationOrigin, GooglePromotedDestinationId, makeRecentDestination, PDF_DESTINATION_KEY, PrinterType, RecentDestination} from './data/destination.js';
 // <if expr="chromeos_ash or chromeos_lacros">
 export {SAVE_TO_DRIVE_CROS_DESTINATION_KEY} from './data/destination.js';
 // </if>
-export {PrinterType} from './data/destination_match.js';
 export {DestinationErrorType, DestinationStore, DestinationStoreEventType} from './data/destination_store.js';
 export {PageLayoutInfo} from './data/document_info.js';
 export {ExtensionDestinationInfo, LocalDestinationInfo} from './data/local_parsers.js';
@@ -48,7 +47,12 @@ export {PrintPreviewDestinationDialogCrosElement} from './ui/destination_dialog_
 export {PrintPreviewDestinationDropdownCrosElement} from './ui/destination_dropdown_cros.js';
 // </if>
 export {PrintPreviewDestinationListElement} from './ui/destination_list.js';
+// <if expr="not chromeos_ash and not chromeos_lacros">
 export {PrintPreviewDestinationListItemElement} from './ui/destination_list_item.js';
+// </if>
+// <if expr="chromeos_ash or chromeos_lacros">
+export {PrintPreviewDestinationListItemElement} from './ui/destination_list_item_cros.js';
+// </if>
 // <if expr="not chromeos_ash and not chromeos_lacros">
 export {PrintPreviewDestinationSelectElement} from './ui/destination_select.js';
 // </if>

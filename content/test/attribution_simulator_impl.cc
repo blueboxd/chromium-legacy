@@ -4,6 +4,8 @@
 
 #include "content/public/test/attribution_simulator.h"
 
+#include <stddef.h>
+#include <limits>
 #include <memory>
 #include <ostream>
 #include <sstream>
@@ -252,6 +254,7 @@ class AttributionEventHandler : public AttributionObserver {
       case StorableSource::Result::kInsufficientSourceCapacity:
       case StorableSource::Result::kInsufficientUniqueDestinationCapacity:
       case StorableSource::Result::kExcessiveReportingOrigins:
+      case StorableSource::Result::kProhibitedByBrowserPolicy:
         reason << result;
         break;
     }
@@ -288,6 +291,7 @@ class AttributionEventHandler : public AttributionObserver {
       case AttributionTrigger::EventLevelResult::kDroppedForNoise:
       case AttributionTrigger::EventLevelResult::kExcessiveReportingOrigins:
       case AttributionTrigger::EventLevelResult::kNoMatchingSourceFilterData:
+      case AttributionTrigger::EventLevelResult::kProhibitedByBrowserPolicy:
         event_level_reason << result.event_level_status();
         break;
     }
@@ -306,6 +310,7 @@ class AttributionEventHandler : public AttributionObserver {
       case AttributionTrigger::AggregatableResult::kInsufficientBudget:
       case AttributionTrigger::AggregatableResult::kNoMatchingSourceFilterData:
       case AttributionTrigger::AggregatableResult::kNoHistograms:
+      case AttributionTrigger::AggregatableResult::kProhibitedByBrowserPolicy:
         aggregatable_reason << result.aggregatable_status();
         break;
     }
@@ -386,6 +391,7 @@ base::Value RunAttributionSimulation(
 
   auto manager = AttributionManagerImpl::CreateForTesting(
       user_data_directory,
+      /*max_pending_events=*/std::numeric_limits<size_t>::max(),
       /*special_storage_policy=*/nullptr,
       AttributionStorageDelegateImpl::CreateForTesting(
           options.noise_mode, options.delay_mode, std::move(rng),

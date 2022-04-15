@@ -10,6 +10,7 @@
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "base/timer/wall_clock_timer.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/device_scheduled_reboot/reboot_notification_controller.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -33,8 +34,16 @@ class RebootNotificationsScheduler
       delete;
   ~RebootNotificationsScheduler() override;
 
+  // Returns current RebootNotificationsScheduler instance or NULL if it hasn't
+  // been initialized yet.
+  static RebootNotificationsScheduler* Get();
+
   // Registers boolean pref for showing post reboot notification.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+  // Returns true if the pref for showing the post reboot notification is set
+  // for the |profile|.
+  static bool ShouldShowPostRebootNotification(Profile* profile);
 
   // Schedules timers for showing pending reboot notification and dialog or
   // shows them right away if the scheduled reboot time is soon. Notifications
@@ -67,6 +76,10 @@ class RebootNotificationsScheduler
   // dialog or notification.
   void OnRebootButtonClicked();
 
+  // Sets RebootNotificationsScheduler instance.
+  static void SetInstance(
+      RebootNotificationsScheduler* reboot_notifications_scheduler);
+
  private:
   virtual void MaybeShowPendingRebootNotification();
   virtual void MaybeShowPendingRebootDialog();
@@ -89,6 +102,14 @@ class RebootNotificationsScheduler
   // Returns true if the full restore service is available for the profile and
   // we need to wait for full restore service initialization.
   virtual bool ShouldWaitFullRestoreInit() const;
+
+  // Returns true if the pref for showing the post reboot notification is set in
+  // |prefs|.
+  static bool IsPostRebootPrefSet(PrefService* prefs);
+
+  // Pointer to the existing RebootNotificationsScheduler instance (if any). Not
+  // owned.
+  static RebootNotificationsScheduler* instance;
 
   // Timers for scheduling notification or dialog displaying.
   base::WallClockTimer notification_timer_, dialog_timer_;

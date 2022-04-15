@@ -325,7 +325,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.JavaCachingRecorder.DroppedHistogramSampleCount"
-    units="samples" expires_after="2022-08-07">
+    units="samples" expires_after="2022-10-09">
   <owner>bttk@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -336,7 +336,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.JavaCachingRecorder.DroppedUserActionCount"
-    units="samples" expires_after="2022-08-07">
+    units="samples" expires_after="2022-10-09">
   <owner>bttk@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -706,6 +706,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="UMA.StructuredMetrics.EventsRecordedBeforeInit" units="count"
+    expires_after="2022-10-04">
+  <owner>jongahn@chromium.org</owner>
+  <owner>tby@chromium.org</owner>
+  <summary>
+    Number of events recorded before private keys are initialized to hash
+    events. This metric should be recorded once per session.
+  </summary>
+</histogram>
+
 <histogram name="UMA.StructuredMetrics.EventsRecordedUsingMojo" enum="Boolean"
     expires_after="2022-03-27">
   <owner>jongahn@chromium.org</owner>
@@ -761,7 +771,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.TruncatedEvents.UserAction" units="events"
-    expires_after="2022-10-04">
+    expires_after="2022-10-09">
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>

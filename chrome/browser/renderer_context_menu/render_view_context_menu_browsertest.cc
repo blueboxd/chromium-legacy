@@ -77,6 +77,8 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/fenced_frame_test_util.h"
+#include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -85,6 +87,7 @@
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/base/load_flags.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/http/http_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -123,6 +126,7 @@
 #endif
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include "chrome/browser/ui/lens/lens_side_panel_helper.h"
 #include "ui/events/test/event_generator.h"
 #endif
 
@@ -525,7 +529,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
                        ContextMenuEntriesAreDisabledInLockedFullscreen) {
   int entries_to_test[] = {
-      IDC_VIEW_SOURCE, IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
+      IDC_VIEW_SOURCE,
+      IDC_CONTENT_CONTEXT_OPENLINKNEWTAB,
       IDC_CONTENT_CONTEXT_INSPECTELEMENT,
   };
   std::unique_ptr<TestRenderViewContextMenu> menu =
@@ -1351,7 +1356,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenImageInNewTab) {
 // TODO(https://crbug.com/1246393): delete this test when
 // `features::kDisplayOpenLinkAsProfile` is launched, as it is superseded by
 // `ContextMenuWithProfileLinksBrowserTest`.
-IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, DISABLED_OpenLinkInProfileEntryPresent) {
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
+                       DISABLED_OpenLinkInProfileEntryPresent) {
   {
     std::unique_ptr<TestRenderViewContextMenu> menu(
         CreateContextMenuMediaTypeNone(GURL("http://www.google.com/"),
@@ -1578,6 +1584,70 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenProfileNoneReferrer) {
 
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
+class ContextMenuFencedFrameTest : public ContextMenuBrowserTest {
+ public:
+  ContextMenuFencedFrameTest() = default;
+  ~ContextMenuFencedFrameTest() override = default;
+  ContextMenuFencedFrameTest(const ContextMenuFencedFrameTest&) = delete;
+  ContextMenuFencedFrameTest& operator=(const ContextMenuFencedFrameTest&) =
+      delete;
+
+  content::RenderFrameHost* primary_main_frame_host() {
+    return browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+  }
+
+  content::test::FencedFrameTestHelper& fenced_frame_test_helper() {
+    return fenced_frame_test_helper_;
+  }
+
+ private:
+  content::test::FencedFrameTestHelper fenced_frame_test_helper_;
+};
+
+// Check which commands are present after opening the context menu for a
+// fencedframe.
+IN_PROC_BROWSER_TEST_F(ContextMenuFencedFrameTest,
+                       MenuContentsVerification_Fencedframe) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto initial_url = embedded_test_server()->GetURL("/empty.html");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
+
+  // Load a fenced frame.
+  GURL fenced_frame_url(
+      embedded_test_server()->GetURL("/fenced_frames/title1.html"));
+  auto* fenced_frame_rfh = fenced_frame_test_helper().CreateFencedFrame(
+      primary_main_frame_host(), fenced_frame_url);
+
+  // To avoid a flakiness and ensure fenced_frame_rfh is ready for hit testing.
+  content::WaitForHitTestData(fenced_frame_rfh);
+
+  // Open a context menu.
+  ContextMenuWaiter menu_observer;
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::Type::kMouseDown,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  mouse_event.button = blink::WebMouseEvent::Button::kRight;
+  // These coordinates are relative to the fenced frame's widget since we're
+  // forwarding this event directly to the widget.
+  mouse_event.SetPositionInWidget(50, 50);
+
+  auto* fenced_frame_widget = fenced_frame_rfh->GetRenderWidgetHost();
+  fenced_frame_widget->ForwardMouseEvent(mouse_event);
+  mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
+  fenced_frame_widget->ForwardMouseEvent(mouse_event);
+
+  // Wait for context menu to be visible.
+  menu_observer.WaitForMenuOpenAndClose();
+  EXPECT_THAT(
+      menu_observer.GetCapturedCommandIds(),
+      testing::IsSupersetOf({IDC_BACK, IDC_FORWARD, IDC_RELOAD, IDC_VIEW_SOURCE,
+                             IDC_SAVE_PAGE, IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE,
+                             IDC_CONTENT_CONTEXT_RELOADFRAME,
+                             IDC_CONTENT_CONTEXT_INSPECTELEMENT}));
+}
+
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Maintains region search test state. In particular, note that |menu_observer_|
 // must live until the right-click completes asynchronously.
@@ -1795,12 +1865,93 @@ IN_PROC_BROWSER_TEST_F(SearchByRegionBrowserTest,
   std::string new_tab_content = new_tab->GetLastCommittedURL().GetContent();
   EXPECT_EQ(expected_content, new_tab_content);
 }
+
+class SearchByRegionWithSidePanelBrowserTest
+    : public SearchByRegionBrowserTest {
+ protected:
+  void SetUp() override {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeatureWithParameters(
+        lens::features::kLensStandalone,
+        std::map<std::string, std::string>{
+            {lens::features::kEnableSidePanelForLens.name, "true"}});
+
+    // This does not use SearchByRegionBrowserTest::SetUp because that function
+    // does its own conflicting initialization of a FeatureList.
+    InProcessBrowserTest::SetUp();
+  }
+
+  void SimulateDragAndVerifyLensUrl() {
+    // Create the Lens side panel controller if it does not exist. This allows
+    // us to get the side panel web contents without waiting for it to be
+    // created post-drag on a first time start up.
+    lens::CreateLensSidePanelControllerForTesting(browser());
+    SearchByRegionBrowserTest::SimulateDrag();
+
+    // We need to verify the contents after the drag is finished.
+    content::WebContents* contents =
+        lens::GetLensSidePanelWebContentsForTesting(browser());
+    EXPECT_TRUE(contents);
+
+    // Wait for the drag to commence a navigation upon the side panel web
+    // contents.
+    content::TestNavigationObserver nav_observer(contents);
+    nav_observer.Wait();
+
+    std::string expected_content = GetLensRegionSearchURL().GetContent();
+    std::string side_panel_content =
+        contents->GetLastCommittedURL().GetContent();
+
+    // Match strings up to the query.
+    std::size_t query_start_pos = side_panel_content.find("?");
+    // Match the query parameters, without the value of start_time.
+    EXPECT_THAT(
+        side_panel_content,
+        testing::MatchesRegex(expected_content.substr(0, query_start_pos) +
+                              ".*ep=crs&s=csp&st=\\d+"));
+    quit_closure_.Run();
+  }
+
+  void AttemptLensRegionSearchWithSidePanel() {
+    // |menu_observer_| will cause the search lens for image menu item to be
+    // clicked. Sets a callback to simulate dragging a region on the screen once
+    // the region search UI has been set up.
+    menu_observer_ = std::make_unique<ContextMenuNotificationObserver>(
+        IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH, ui::EF_MOUSE_BUTTON,
+        base::BindOnce(&SearchByRegionWithSidePanelBrowserTest::
+                           SimulateDragAndVerifyLensUrl,
+                       base::Unretained(this)));
+    RightClickToOpenContextMenu();
+  }
+
+  base::RepeatingClosure quit_closure_;
+};
+
+IN_PROC_BROWSER_TEST_F(SearchByRegionWithSidePanelBrowserTest,
+                       LensRegionSearchWithValidRegionSidePanel) {
+  SetupAndLoadPage("/empty.html");
+  // We need a base::RunLoop to ensure that our test does not finish until the
+  // side panel has opened and we have verified the URL.
+  base::RunLoop loop;
+  quit_closure_ = base::BindRepeating(loop.QuitClosure());
+  // The browser should open a draggable UI for a region search.
+  AttemptLensRegionSearchWithSidePanel();
+  loop.Run();
+}
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 // Maintains image search test state. In particular, note that |menu_observer_|
 // must live until the right-click completes asynchronously.
 class SearchByImageBrowserTest : public InProcessBrowserTest {
  protected:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        lens::features::kLensStandalone,
+        std::map<std::string, std::string>{
+            {lens::features::kEnableSidePanelForLens.name, "false"}});
+    InProcessBrowserTest::SetUp();
+  }
+
   void SetupAndLoadImagePage(const std::string& image_path) {
     // The test server must start first, so that we know the port that the test
     // server is using.
@@ -1877,6 +2028,7 @@ class SearchByImageBrowserTest : public InProcessBrowserTest {
   }
 
   std::unique_ptr<ContextMenuNotificationObserver> menu_observer_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithValidImage) {

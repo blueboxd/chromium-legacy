@@ -25,15 +25,24 @@ namespace {
 
 // Methods for debugging and gathering of metrics.
 
-[[maybe_unused]] int GetEventMapSize(
+[[maybe_unused]] size_t GetEventMapSize(
     const ash::CalendarModel::SingleMonthEventMap& event_map) {
-  int total_bytes = 0;
+  size_t total_bytes = 0;
   for (auto& event_list : event_map) {
     total_bytes += sizeof(event_list);
     for (auto& event : event_list.second) {
       total_bytes += event.GetApproximateSizeInBytes();
     }
   }
+
+  return total_bytes;
+}
+
+[[maybe_unused]] size_t GetTotalCacheSize(
+    const ash::CalendarModel::MonthToEventsMap& event_map) {
+  size_t total_bytes = 0;
+  for (auto& month : event_map)
+    total_bytes += sizeof(month) + GetEventMapSize(month.second);
 
   return total_bytes;
 }
@@ -165,6 +174,20 @@ void CalendarModel::ClearAllPrunableEvents() {
   mru_months_.clear();
 }
 
+void CalendarModel::ResetLifetimeMetrics(
+    const base::Time& currently_shown_date) {
+  max_distance_browsed_ = 0;
+  first_on_screen_month_ =
+      calendar_utils::GetFirstDayOfMonth(currently_shown_date);
+}
+
+void CalendarModel::UploadLifetimeMetrics() {
+  base::UmaHistogramCounts100000("Ash.Calendar.FetchEvents.MaxDistanceBrowsed",
+                                 max_distance_browsed_);
+  base::UmaHistogramCounts100000(
+      "Ash.Calendar.FetchEvents.TotalCacheSizeMonths", event_months_.size());
+}
+
 void CalendarModel::FetchEvents(const std::set<base::Time>& months) {
   for (auto& month : months)
     MaybeFetchMonth(month.UTCMidnight());
@@ -213,6 +236,8 @@ void CalendarModel::OnEventsFetched(
     // TODO: https://crbug.com/1298187 We need to respond further based on the
     // specific error code, retry in some cases, etc.
     pending_fetches_.erase(start_of_month);
+    // TODO: https://crbug.com/1298187 maybe notify observers.
+    // e.g. observer.OnEventsFetched(kError, start_of_month, events);
     return;
   }
 
@@ -222,18 +247,32 @@ void CalendarModel::OnEventsFetched(
   // Clear out this month's events, we're about replace them.
   event_months_.erase(start_of_month);
 
-  // Store the incoming events.
-  InsertEvents(events);
+  if (!events || events->items().empty()) {
+    SingleMonthEventMap empty_event_list;
+    event_months_.emplace(start_of_month, empty_event_list);
+    PromoteMonth(start_of_month);
+  } else {
+    // Store the incoming events.
+    InsertEvents(events);
+  }
 
   // Notify observers.
   for (auto& observer : observers_)
-    observer.OnEventsFetched(events);
+    observer.OnEventsFetched(kSuccess, start_of_month, events);
 
   // Month has officially been fetched.
   months_fetched_.emplace(start_of_month);
 
   // Request is no longer outstanding, so it can be destroyed.
   pending_fetches_.erase(start_of_month);
+
+  // Record the size of the month, and the total number of months.
+  base::UmaHistogramCounts1M("Ash.Calendar.FetchEvents.SingleMonthSize",
+                             GetEventMapSize(event_months_[start_of_month]));
+
+  // If `start_of_month` is further, in months, from the on-screen month when
+  // the calendar first opened, then update our max distance.
+  UpdateMaxDistanceBrowsed(start_of_month);
 }
 
 void CalendarModel::OnEventFetchFailedInternalError(
@@ -246,6 +285,13 @@ void CalendarModel::OnEventFetchFailedInternalError(
   // TODO: https://crbug.com/1298187 We need to respond further based on the
   // specific error code, retry in some cases, etc.
   pending_fetches_.erase(start_of_month);
+}
+
+void CalendarModel::UpdateMaxDistanceBrowsed(const base::Time& start_of_month) {
+  max_distance_browsed_ =
+      std::max(max_distance_browsed_,
+               static_cast<size_t>(abs(calendar_utils::GetMonthsBetween(
+                   first_on_screen_month_, start_of_month))));
 }
 
 void CalendarModel::InsertEvent(
@@ -348,6 +394,17 @@ SingleDayEventList CalendarModel::FindEvents(base::Time day) const {
     return event_list;
 
   return it2->second;
+}
+
+CalendarModel::FetchingStatus CalendarModel::FindFetchingStaus(
+    base::Time start_time) const {
+  if (pending_fetches_.count(start_time))
+    return kFetching;
+
+  if (event_months_.count(start_time))
+    return kSuccess;
+
+  return kNever;
 }
 
 void CalendarModel::RedistributeEvents(int time_difference_minutes) {

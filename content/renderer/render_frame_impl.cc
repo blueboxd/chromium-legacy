@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/flat_map.h"
 #include "base/debug/alias.h"
 #include "base/debug/asan_invalid_access.h"
 #include "base/debug/crash_logging.h"
@@ -1071,6 +1072,20 @@ void FillMiscNavigationParams(
       // `ad_auction_components` must be a list of URNs, to avoid leaking data.
       DCHECK(urn.SchemeIs(url::kUrnScheme));
       navigation_params->ad_auction_components->push_back(blink::WebURL(urn));
+    }
+  }
+
+  if (commit_params.fenced_frame_reporting_metadata) {
+    navigation_params->fenced_frame_reporting.emplace();
+    for (const auto& [destination, metadata] :
+         commit_params.fenced_frame_reporting_metadata->metadata) {
+      base::flat_map<blink::WebString, blink::WebURL> data;
+      for (const auto& [event_type, url] : metadata) {
+        data.emplace(blink::WebString::FromUTF8(event_type),
+                     blink::WebURL(url));
+      }
+      navigation_params->fenced_frame_reporting->metadata.emplace(
+          destination, std::move(data));
     }
   }
 }
@@ -4315,7 +4330,10 @@ void RenderFrameImpl::WillSendRequestInternal(
   auto* url_request_extra_data = static_cast<blink::WebURLRequestExtraData*>(
       request.GetURLRequestExtraData().get());
   url_request_extra_data->set_custom_user_agent(custom_user_agent);
-  url_request_extra_data->set_is_main_frame(IsMainFrame());
+  // TODO(bokan): This will need to be reevaluated for portals.
+  // https://crbug.com/1254770.
+  url_request_extra_data->set_is_outermost_main_frame(IsMainFrame() &&
+                                                      !IsInFencedFrameTree());
   url_request_extra_data->set_transition_type(transition_type);
   bool is_for_no_state_prefetch =
       GetContentClient()->renderer()->IsPrefetchOnly(this);
@@ -5172,6 +5190,12 @@ void RenderFrameImpl::BeginNavigation(
   }
 #endif
 
+  // TODO(crbug.com/1315802): Refactor _unfencedTop handling.
+  if (info->is_unfenced_top_navigation) {
+    OpenURL(std::move(info));
+    return;
+  }
+
   // If the browser is interested, then give it a chance to look at the request.
   if (IsTopLevelNavigation(frame_) &&
       GetWebView()
@@ -5495,6 +5519,7 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
       GetWebView()->HistoryBackListCount() +
           GetWebView()->HistoryForwardListCount() + 1;
   params->user_gesture = info->has_transient_user_activation;
+  params->is_unfenced_top_navigation = info->is_unfenced_top_navigation;
   params->initiator_policy_container_keep_alive_handle =
       std::move(info->initiator_policy_container_keep_alive_handle);
 

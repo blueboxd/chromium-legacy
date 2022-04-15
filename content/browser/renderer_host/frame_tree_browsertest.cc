@@ -40,6 +40,7 @@
 #include "content/test/test_content_browser_client.h"
 #include "net/base/features.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -142,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeAfterCrash) {
   // Ensure the view and frame are live.
   RenderFrameHostImpl* rfh1 = static_cast<RenderFrameHostImpl*>(
       shell()->web_contents()->GetMainFrame());
-  RenderViewHost* rvh = rfh1->GetRenderViewHost();
+  RenderViewHostImpl* rvh = rfh1->render_view_host();
   EXPECT_TRUE(rvh->IsRenderViewLive());
   EXPECT_TRUE(rfh1->IsRenderFrameLive());
 
@@ -1049,6 +1050,7 @@ IN_PROC_BROWSER_TEST_P(FencedFrameTreeBrowserTest,
   {
     EXPECT_TRUE(ExecJs(root,
                        "var f = document.createElement('fencedframe');"
+                       "f.mode = 'opaque-ads';"
                        "document.body.appendChild(f);"));
   }
   EXPECT_EQ(1U, root->child_count());
@@ -1089,64 +1091,6 @@ IN_PROC_BROWSER_TEST_P(FencedFrameTreeBrowserTest,
   EXPECT_EQ(0, EvalJs(root, "window.frames.length"));
 }
 
-// Tests that the fenced frame with a urn:uuid commits the navigation with the
-// associated reporting metadata.
-IN_PROC_BROWSER_TEST_P(FencedFrameTreeBrowserTest,
-                       FencedFrameReportingMetadata) {
-  GURL main_url = https_server()->GetURL("b.test", "/hello.html");
-  EXPECT_TRUE(NavigateToURL(shell(), main_url));
-  // It is safe to obtain the root frame tree node here, as it doesn't change.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetPrimaryFrameTree()
-                            .root();
-
-  {
-    EXPECT_TRUE(ExecJs(root,
-                       "var f = document.createElement('fencedframe');"
-                       "document.body.appendChild(f);"));
-  }
-  EXPECT_EQ(1U, root->child_count());
-  FrameTreeNode* fenced_frame_root_node =
-      GetFencedFrameRootNode(root->child_at(0));
-
-  EXPECT_TRUE(fenced_frame_root_node->IsFencedFrameRoot());
-  EXPECT_TRUE(fenced_frame_root_node->IsInFencedFrameTree());
-
-  // Add reporting metadata.
-  ReportingMetadata fenced_frame_reporting;
-  GURL reporting_url(https_server()->GetURL("c.test", "/hello.html"));
-  fenced_frame_reporting.metadata[blink::mojom::ReportingDestination::kBuyer]
-                                 ["mouse interaction"] = reporting_url;
-
-  GURL https_url(
-      https_server()->GetURL("a.test", "/fenced_frames/title1.html"));
-  FencedFrameURLMapping& url_mapping =
-      root->current_frame_host()->GetPage().fenced_frame_urls_map();
-  GURL urn_uuid =
-      url_mapping.AddFencedFrameURL(https_url, fenced_frame_reporting);
-  EXPECT_TRUE(urn_uuid.is_valid());
-
-  std::string navigate_urn_script = JsReplace("f.src = $1;", urn_uuid.spec());
-
-  TestFencedFrameURLMappingResultObserver mapping_observer;
-  url_mapping.ConvertFencedFrameURNToURL(urn_uuid, &mapping_observer);
-  TestFrameNavigationObserver observer(fenced_frame_root_node);
-  EXPECT_EQ(urn_uuid.spec(), EvalJs(root, navigate_urn_script));
-  observer.WaitForCommit();
-  EXPECT_TRUE(mapping_observer.mapping_complete_observed());
-  EXPECT_EQ(reporting_url,
-            mapping_observer.reporting_metadata()
-                .metadata[blink::mojom::ReportingDestination::kBuyer]
-                         ["mouse interaction"]);
-
-  EXPECT_EQ(
-      https_url,
-      fenced_frame_root_node->current_frame_host()->GetLastCommittedURL());
-  EXPECT_EQ(
-      url::Origin::Create(https_url),
-      fenced_frame_root_node->current_frame_host()->GetLastCommittedOrigin());
-}
-
 // Test the scenario where the FF navigation is deferred and then resumed, and
 // the mapped url is a valid one. The navigation is expected to succeed.
 IN_PROC_BROWSER_TEST_P(
@@ -1162,6 +1106,7 @@ IN_PROC_BROWSER_TEST_P(
   {
     EXPECT_TRUE(ExecJs(root,
                        "var f = document.createElement('fencedframe');"
+                       "f.mode = 'opaque-ads';"
                        "document.body.appendChild(f);"));
   }
   EXPECT_EQ(1U, root->child_count());
@@ -1229,6 +1174,7 @@ IN_PROC_BROWSER_TEST_P(
   {
     EXPECT_TRUE(ExecJs(root,
                        "var f = document.createElement('fencedframe');"
+                       "f.mode = 'opaque-ads';"
                        "document.body.appendChild(f);"));
   }
   EXPECT_EQ(1U, root->child_count());
@@ -1293,6 +1239,7 @@ IN_PROC_BROWSER_TEST_P(
   {
     EXPECT_TRUE(ExecJs(root,
                        "var f = document.createElement('fencedframe');"
+                       "f.mode = 'opaque-ads';"
                        "document.body.appendChild(f);"));
   }
   EXPECT_EQ(1U, root->child_count());
@@ -1369,6 +1316,7 @@ IN_PROC_BROWSER_TEST_P(FencedFrameTreeBrowserTest,
   // Test the fenced frame.
   EXPECT_TRUE(ExecJs(root_rfh,
                      "var f = document.createElement('fencedframe');"
+                     "f.mode = 'opaque-ads';"
                      "document.body.appendChild(f);"));
   EXPECT_EQ(1U, root_rfh->child_count());
 
@@ -1452,6 +1400,7 @@ IN_PROC_BROWSER_TEST_P(FencedFrameTreeBrowserTest,
   // Add and navigate a fenced frame.
   EXPECT_TRUE(ExecJs(root_rfh,
                      "var f = document.createElement('fencedframe');"
+                     "f.mode = 'opaque-ads';"
                      "document.body.appendChild(f);"));
   EXPECT_EQ(1U, root_rfh->child_count());
   FrameTreeNode* fenced_frame_root_node =
@@ -1792,6 +1741,7 @@ IN_PROC_BROWSER_TEST_P(FencedFrameTreeBrowserTest,
   {
     EXPECT_TRUE(ExecJs(root,
                        "var f = document.createElement('fencedframe');"
+                       "f.mode = 'opaque-ads';"
                        "document.body.appendChild(f);"));
   }
   EXPECT_EQ(1U, root->child_count());
@@ -2478,6 +2428,7 @@ IN_PROC_BROWSER_TEST_P(FencedFrameTreeBrowserTest, CheckInvalidUrnError) {
   {
     EXPECT_TRUE(ExecJs(root,
                        "var f = document.createElement('fencedframe');"
+                       "f.mode = 'opaque-ads';"
                        "document.body.appendChild(f);"));
   }
   EXPECT_EQ(1U, root->child_count());
@@ -2794,6 +2745,213 @@ IN_PROC_BROWSER_TEST_P(FencedFrameTreeBrowserTest, FenceUserActivation) {
                     true /*G*/});
 }
 
+IN_PROC_BROWSER_TEST_P(FencedFrameTreeBrowserTest, FencedAdSizes) {
+  // This test exercises restrictions on fenced frame sizes in opaque-ads mode.
+  // See the design document for more details on intended semantics:
+  // https://docs.google.com/document/d/1MVqxc2nzde3cJYIRC8vnXH-a4A6J4GQE-1vBuXhQsPE/edit#
+
+  enum class TestType {
+    kFixed,
+    kScaleWidthConstantHeightExact,
+    kScaleWidthConstantHeightApproximate,
+    kScaleWidthConstantAspectRatioExact,
+    kScaleWidthConstantAspectRatioApproximate,
+  };
+
+  // Test that an opaque-ads mode fenced frame created with size
+  // `input_width` by `input_height` gets snapped to size
+  // `output_width` by `output_height` on desktop.
+  auto TestAdSize = [&](int input_width, int input_height, TestType test_type,
+                        int output_width, int output_height) {
+    // Navigate the top-level page.
+    const GURL kUrl =
+        https_server()->GetURL("a.test", "/fenced_frames/empty.html");
+    EXPECT_TRUE(NavigateToURL(shell(), kUrl));
+    // It is safe to obtain the root frame tree node here, as it doesn't change.
+    auto* nodeA = static_cast<WebContentsImpl*>(shell()->web_contents())
+                      ->GetPrimaryFrameTree()
+                      .root();
+    ASSERT_NE(nullptr, nodeA);
+
+    if (test_type != TestType::kFixed) {
+#if !BUILDFLAG(IS_ANDROID)
+      // Ignore mobile-only tests on platforms other than Android.
+      return;
+#else
+      // Set up tests that scale with screen width.
+      int screen_width = EvalJs(nodeA, "screen.width").ExtractInt();
+
+      // Scale the height to match the aspect ratio, if relevant.
+      if (test_type == TestType::kScaleWidthConstantAspectRatioExact ||
+          test_type == TestType::kScaleWidthConstantAspectRatioApproximate) {
+        output_height = (input_height * screen_width) / input_width;
+        input_height = output_height;
+      }
+
+      // Make the width match the screen width.
+      input_width = screen_width;
+      output_width = screen_width;
+
+      // If we want to test coercion to sizes that scale with constant height,
+      // make the requested width a little wrong.
+      if (test_type == TestType::kScaleWidthConstantHeightApproximate ||
+          test_type == TestType::kScaleWidthConstantAspectRatioApproximate) {
+        input_width++;
+      }
+#endif
+    }
+
+    // Create an opaque-ads fenced frame nodeB with size
+    // `input_width` by `input_height`.
+    EXPECT_TRUE(ExecJs(
+        nodeA,
+        JsReplace(
+            "var nested_fenced_frame = document.createElement('fencedframe');"
+            "nested_fenced_frame.mode = 'opaque-ads';"
+            "nested_fenced_frame.width = $1;"
+            "nested_fenced_frame.height = $2;"
+            "document.body.appendChild(nested_fenced_frame);",
+            input_width, input_height)));
+    EXPECT_EQ(1UL, nodeA->child_count());
+    auto* nodeB = GetFencedFrameRootNode(nodeA->child_at(0));
+    EXPECT_TRUE(nodeB->IsFencedFrameRoot());
+    EXPECT_TRUE(nodeB->IsInFencedFrameTree());
+    ASSERT_NE(nullptr, nodeB);
+
+    // Check the size of the frame before navigating.
+    auto frame_width =
+        EvalJs(nodeA, "getComputedStyle(nested_fenced_frame).width")
+            .ExtractString();
+    auto frame_height =
+        EvalJs(nodeA, "getComputedStyle(nested_fenced_frame).height")
+            .ExtractString();
+
+    // Wait for 2 rAFs to make things deterministic.
+    ASSERT_TRUE(EvalJsAfterLifecycleUpdate(nodeA, "", "").error.empty());
+    ASSERT_TRUE(EvalJsAfterLifecycleUpdate(nodeA, "", "").error.empty());
+
+    // Navigate the fenced frame, which should force its inner size to the
+    // nearest allowed one.
+    NavigateNestedFencedFrame(nodeB, kUrl);
+
+    // Check that the outer container size hasn't changed.
+    EXPECT_EQ(EvalJs(nodeA, "getComputedStyle(nested_fenced_frame).width")
+                  .ExtractString(),
+              frame_width);
+    EXPECT_EQ(EvalJs(nodeA, "getComputedStyle(nested_fenced_frame).height")
+                  .ExtractString(),
+              frame_height);
+
+    // Wait for 2 rAFs to make things deterministic.
+    ASSERT_TRUE(EvalJsAfterLifecycleUpdate(nodeA, "", "").error.empty());
+    ASSERT_TRUE(EvalJsAfterLifecycleUpdate(nodeA, "", "").error.empty());
+
+    // Check that the inner size is what we expect.
+    // TODO(kojii|gtanzer): There is a known bug with the size 0,0,
+    // where the fenced frame can be resized once.
+    int inner_width = EvalJs(nodeB, "innerWidth").ExtractInt();
+    int inner_height = EvalJs(nodeB, "innerHeight").ExtractInt();
+    if (input_width == 0 && input_height == 0) {
+      output_width = 0;
+      output_height = 0;
+    }
+    EXPECT_EQ(inner_width, output_width);
+    EXPECT_EQ(inner_height, output_height);
+
+    // Attempt to change the size of the fenced frame from the embedder.
+    const int new_width = 970;
+    const int new_height = 90;
+    EXPECT_TRUE(ExecJs(nodeA, JsReplace("nested_fenced_frame.width = $1;"
+                                        "nested_fenced_frame.height = $2;",
+                                        new_width, new_height)));
+    NavigateNestedFencedFrame(nodeB, kUrl);
+
+    // Force a style recomputation.
+    ASSERT_TRUE(EvalJs(nodeA, "getComputedStyle(nested_fenced_frame).width")
+                    .error.empty());
+
+    // Wait for 2 rAFs to make things deterministic.
+    ASSERT_TRUE(EvalJsAfterLifecycleUpdate(nodeA, "", "").error.empty());
+    ASSERT_TRUE(EvalJsAfterLifecycleUpdate(nodeA, "", "").error.empty());
+
+    // Check that the inner size hasn't changed.
+    // TODO(kojii|gtanzer): There is still a known bug with the size 0,0.
+    inner_width = EvalJs(nodeB, "innerWidth").ExtractInt();
+    inner_height = EvalJs(nodeB, "innerHeight").ExtractInt();
+    if (input_width == 0 && input_height == 0) {
+      output_width = new_width;
+      output_height = new_height;
+    }
+    EXPECT_EQ(inner_width, output_width);
+    EXPECT_EQ(inner_height, output_height);
+  };
+
+  // Run all the individual test cases we want.
+  // {input_width, input_height, test_type, output_width, output_height}
+  std::vector<std::tuple<int, int, TestType, int, int>> test_cases = {
+
+      // Exact match between requested size and fixed allowed size.
+      {320, 50, TestType::kFixed, 320, 50},
+      {728, 90, TestType::kFixed, 728, 90},
+      {970, 90, TestType::kFixed, 970, 90},
+      {320, 100, TestType::kFixed, 320, 100},
+      {160, 600, TestType::kFixed, 160, 600},
+      {300, 250, TestType::kFixed, 300, 250},
+      {970, 250, TestType::kFixed, 970, 250},
+      {336, 280, TestType::kFixed, 336, 280},
+      {320, 480, TestType::kFixed, 320, 480},
+      {300, 600, TestType::kFixed, 300, 600},
+      {300, 1050, TestType::kFixed, 300, 1050},
+
+      // Approximate match between requested size and fixed allowed size.
+      {320, 49, TestType::kFixed, 320, 50},
+      {319, 50, TestType::kFixed, 320, 50},
+
+      // Edge cases for requested size.
+      {0, 0, TestType::kFixed, 320, 50},
+      {0, 100, TestType::kFixed, 320, 50},
+      {100, 0, TestType::kFixed, 320, 50},
+
+      // Exact match between requested size and allowed size that scales with
+      // constant height.
+      {0, 50, TestType::kScaleWidthConstantHeightExact, 0, 50},
+      {0, 100, TestType::kScaleWidthConstantHeightExact, 0, 100},
+      {0, 250, TestType::kScaleWidthConstantHeightExact, 0, 250},
+
+      // Approximate match between requested size and allowed size that scales
+      // with constant height.
+      {0, 50, TestType::kScaleWidthConstantHeightApproximate, 0, 50},
+      {0, 100, TestType::kScaleWidthConstantHeightApproximate, 0, 100},
+      {0, 250, TestType::kScaleWidthConstantHeightApproximate, 0, 250},
+
+      // Constant height scaling is only supported on sizes where it is
+      // declared (e.g. not 728x90).
+      {0, 90, TestType::kScaleWidthConstantHeightExact, 0, 100},
+
+      // Exact match between requested size and allowed size that scales with
+      // constant aspect ratio.
+      {32, 5, TestType::kScaleWidthConstantAspectRatioExact, 0, 0},
+      {16, 5, TestType::kScaleWidthConstantAspectRatioExact, 0, 0},
+      {6, 5, TestType::kScaleWidthConstantAspectRatioExact, 0, 0},
+      {2, 3, TestType::kScaleWidthConstantAspectRatioExact, 0, 0},
+      {1, 2, TestType::kScaleWidthConstantAspectRatioExact, 0, 0},
+
+      // Approximate match between requested size and allowed size that scales
+      // with constant aspect ratio.
+      {32, 5, TestType::kScaleWidthConstantAspectRatioApproximate, 0, 0},
+      {16, 5, TestType::kScaleWidthConstantAspectRatioApproximate, 0, 0},
+      {6, 5, TestType::kScaleWidthConstantAspectRatioApproximate, 0, 0},
+      {2, 3, TestType::kScaleWidthConstantAspectRatioApproximate, 0, 0},
+      {1, 2, TestType::kScaleWidthConstantAspectRatioApproximate, 0, 0},
+  };
+
+  for (auto& test_case : test_cases) {
+    TestAdSize(std::get<0>(test_case), std::get<1>(test_case),
+               std::get<2>(test_case), std::get<3>(test_case),
+               std::get<4>(test_case));
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(
     All,
     FencedFrameTreeBrowserTest,
@@ -2805,6 +2963,171 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(
     All,
     FencedFrameIgnoreCertErrors,
+    ::testing::Values(
+        blink::features::FencedFramesImplementationType::kShadowDOM,
+        blink::features::FencedFramesImplementationType::kMPArch),
+    &FencedFrameTreeBrowserTest::DescribeParams);
+
+class FencedFrameReportEventBrowserTest : public FencedFrameTreeBrowserTest {
+ public:
+  void SetUpOnMainThread() override {
+    // Set up the host resolver to allow serving separate sites, so we can
+    // perform cross-process navigation.
+    host_resolver()->AddRule("*", "127.0.0.1");
+
+    // Fenced frames require potentially trustworthy URLs so creating an https
+    // server.
+    https_server()->RegisterRequestMonitor(
+        base::BindRepeating(&FencedFrameTreeBrowserTest::ObserveRequestHeaders,
+                            base::Unretained(this)));
+    https_server()->ServeFilesFromSourceDirectory(GetTestDataFilePath());
+    https_server()->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+  }
+};
+
+// Tests that the fenced frame with a urn:uuid commits the navigation with the
+// associated reporting metadata and `fence.reportEvent` sends the beacon to
+// the registered reporting url.
+IN_PROC_BROWSER_TEST_P(FencedFrameReportEventBrowserTest,
+                       FencedFrameReportingMetadata) {
+  net::test_server::ControllableHttpResponse response(https_server(),
+                                                      "/title2.html");
+  ASSERT_TRUE(https_server()->Start());
+
+  GURL main_url = https_server()->GetURL("b.test", "/hello.html");
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetPrimaryFrameTree()
+                            .root();
+
+  EXPECT_TRUE(ExecJs(root,
+                     "var f = document.createElement('fencedframe');"
+                     "f.mode = 'opaque-ads';"
+                     "document.body.appendChild(f);"));
+  EXPECT_EQ(1U, root->child_count());
+  FrameTreeNode* fenced_frame_root_node =
+      GetFencedFrameRootNode(root->child_at(0));
+
+  EXPECT_TRUE(fenced_frame_root_node->IsFencedFrameRoot());
+  EXPECT_TRUE(fenced_frame_root_node->IsInFencedFrameTree());
+
+  // Add reporting metadata.
+  ReportingMetadata fenced_frame_reporting;
+  GURL reporting_url(https_server()->GetURL("c.test", "/title2.html"));
+  fenced_frame_reporting.metadata[blink::mojom::ReportingDestination::kBuyer]
+                                 ["mouse interaction"] = reporting_url;
+  fenced_frame_reporting
+      .metadata[blink::mojom::ReportingDestination::kBuyer]["click"] =
+      https_server()->GetURL("c.test", "/title1.html");
+
+  GURL https_url(
+      https_server()->GetURL("a.test", "/fenced_frames/title1.html"));
+  FencedFrameURLMapping& url_mapping =
+      root->current_frame_host()->GetPage().fenced_frame_urls_map();
+  GURL urn_uuid =
+      url_mapping.AddFencedFrameURL(https_url, fenced_frame_reporting);
+  EXPECT_TRUE(urn_uuid.is_valid());
+
+  std::string navigate_urn_script = JsReplace("f.src = $1;", urn_uuid.spec());
+
+  TestFencedFrameURLMappingResultObserver mapping_observer;
+  url_mapping.ConvertFencedFrameURNToURL(urn_uuid, &mapping_observer);
+  TestFrameNavigationObserver observer(fenced_frame_root_node);
+  EXPECT_EQ(urn_uuid.spec(), EvalJs(root, navigate_urn_script));
+  observer.WaitForCommit();
+  EXPECT_TRUE(mapping_observer.mapping_complete_observed());
+  EXPECT_EQ(reporting_url,
+            mapping_observer.reporting_metadata()
+                .metadata[blink::mojom::ReportingDestination::kBuyer]
+                         ["mouse interaction"]);
+
+  EXPECT_EQ(
+      https_url,
+      fenced_frame_root_node->current_frame_host()->GetLastCommittedURL());
+  EXPECT_EQ(
+      url::Origin::Create(https_url),
+      fenced_frame_root_node->current_frame_host()->GetLastCommittedOrigin());
+
+  std::string event_data = "this is a click";
+  EXPECT_TRUE(ExecJs(fenced_frame_root_node,
+                     JsReplace("window.fence.reportEvent({"
+                               "  eventType: 'mouse interaction',"
+                               "  eventData: $1,"
+                               "  destination: ['buyer']});",
+                               event_data)));
+
+  response.WaitForRequest();
+  EXPECT_EQ(response.http_request()->content, event_data);
+}
+
+IN_PROC_BROWSER_TEST_P(FencedFrameReportEventBrowserTest,
+                       NestedIframeReportEvent) {
+  net::test_server::ControllableHttpResponse response(https_server(),
+                                                      "/title2.html");
+  ASSERT_TRUE(https_server()->Start());
+
+  GURL main_url = https_server()->GetURL("b.test", "/hello.html");
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetPrimaryFrameTree()
+                            .root();
+
+  EXPECT_TRUE(ExecJs(root,
+                     "var f = document.createElement('fencedframe');"
+                     "f.mode = 'opaque-ads';"
+                     "document.body.appendChild(f);"));
+  EXPECT_EQ(1U, root->child_count());
+  FrameTreeNode* fenced_frame_root_node =
+      GetFencedFrameRootNode(root->child_at(0));
+
+  EXPECT_TRUE(fenced_frame_root_node->IsFencedFrameRoot());
+  EXPECT_TRUE(fenced_frame_root_node->IsInFencedFrameTree());
+
+  // Add reporting metadata.
+  ReportingMetadata fenced_frame_reporting;
+  GURL reporting_url(https_server()->GetURL("c.test", "/title2.html"));
+  fenced_frame_reporting.metadata[blink::mojom::ReportingDestination::kBuyer]
+                                 ["mouse interaction"] = reporting_url;
+
+  GURL https_url(
+      https_server()->GetURL("a.test", "/fenced_frames/title1.html"));
+  FencedFrameURLMapping& url_mapping =
+      root->current_frame_host()->GetPage().fenced_frame_urls_map();
+  GURL urn_uuid =
+      url_mapping.AddFencedFrameURL(https_url, fenced_frame_reporting);
+  EXPECT_TRUE(urn_uuid.is_valid());
+
+  // Navigate the fenced frame.
+  std::string navigate_urn_script = JsReplace("f.src = $1;", urn_uuid.spec());
+  NavigateFrameInsideFencedFrameTreeAndWaitForFinishedLoad(
+      fenced_frame_root_node, urn_uuid, navigate_urn_script);
+
+  // Add a nested iframe inside the fenced frame and navigate.
+  AddIframeInFencedFrame(fenced_frame_root_node, 0);
+  EXPECT_EQ(1U, fenced_frame_root_node->child_count());
+  FrameTreeNode* nested_iframe_node = fenced_frame_root_node->child_at(0);
+
+  GURL iframe_url(
+      https_server()->GetURL("a.test", "/fenced_frames/title0.html"));
+  NavigateIframeInFencedFrame(nested_iframe_node, iframe_url);
+
+  std::string event_data = "this is a click";
+  EXPECT_TRUE(
+      ExecJs(nested_iframe_node, JsReplace("window.fence.reportEvent({"
+                                           "  eventType: 'mouse interaction',"
+                                           "  eventData: $1,"
+                                           "  destination: ['buyer']});",
+                                           event_data)));
+
+  response.WaitForRequest();
+  EXPECT_EQ(response.http_request()->content, event_data);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    FencedFrameReportEventBrowserTest,
     ::testing::Values(
         blink::features::FencedFramesImplementationType::kShadowDOM,
         blink::features::FencedFramesImplementationType::kMPArch),

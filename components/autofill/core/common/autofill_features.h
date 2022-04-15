@@ -92,13 +92,13 @@ extern const base::Feature kAutofillEnableSupportForHonorificPrefixes;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillExtractAllDatalists;
 COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillEnableSupportForPhoneNumberTrunkTypes;
+COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillTypeSpecificPopupWidth;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillFixFillableFieldTypes;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillFixServerQueriesIfPasswordManagerIsEnabled;
-COMPONENT_EXPORT(AUTOFILL)
-extern const base::Feature kAutofillIgnoreAutocompleteForImport;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillIgnoreEarlyClicksOnPopup;
 COMPONENT_EXPORT(AUTOFILL)

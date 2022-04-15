@@ -11,6 +11,7 @@
 #include "ash/capture_mode/capture_mode_camera_preview_view.h"
 #include "ash/capture_mode/capture_mode_constants.h"
 #include "ash/capture_mode/capture_mode_controller.h"
+#include "ash/capture_mode/capture_mode_metrics.h"
 #include "ash/capture_mode/capture_mode_session.h"
 #include "ash/capture_mode/capture_mode_util.h"
 #include "ash/public/cpp/capture_mode/capture_mode_delegate.h"
@@ -57,6 +58,13 @@ constexpr base::TimeDelta kDisconnectionGracePeriod = base::Seconds(10);
 
 // The animation duration for the bounds change operation on the camera preview.
 constexpr base::TimeDelta kCameraBoundsChangeAnimationDuration =
+    base::Milliseconds(150);
+
+// The duration for the camera preview fading out process.
+constexpr base::TimeDelta kCameraPreviewFadeOutDuration =
+    base::Milliseconds(50);
+// The duration for the camera preview fading in process.
+constexpr base::TimeDelta kCameraPreviewFadeInDuration =
     base::Milliseconds(150);
 
 // Defines a map type to map a camera model ID (or display name) to the number
@@ -481,7 +489,7 @@ void CaptureModeCameraController::MaybeUpdatePreviewWidgetBounds(bool animate) {
       builder.Once()
           .SetDuration(kCameraBoundsChangeAnimationDuration)
           .SetBounds(preview_window, target_bounds_in_parent,
-                     gfx::Tween::FAST_OUT_SLOW_IN_3);
+                     gfx::Tween::ACCEL_20_DECEL_100);
     }
   } else {
     camera_preview_widget_->SetBounds(target_bounds);
@@ -498,6 +506,8 @@ void CaptureModeCameraController::StartDraggingPreview(
     const gfx::PointF& screen_location) {
   is_drag_in_progress_ = true;
   previous_location_in_screen_ = screen_location;
+
+  camera_preview_view_->RefreshResizeButtonVisibility();
 
   auto* controller = CaptureModeController::Get();
   if (controller->IsActive())
@@ -530,6 +540,8 @@ void CaptureModeCameraController::EndDraggingPreview(
   MaybeUpdatePreviewWidgetBounds(/*animate=*/true);
 
   is_drag_in_progress_ = false;
+  camera_preview_view_->RefreshResizeButtonVisibility();
+
   // Disable cursor compositing at the end of the drag.
   Shell::Get()->UpdateCursorCompositingEnabled();
 
@@ -553,6 +565,71 @@ void CaptureModeCameraController::ToggleCameraPreviewSize() {
   camera_preview_view_->SetPreferredSize(preferred_size);
 
   MaybeUpdatePreviewWidgetBounds(/*animate=*/true);
+}
+
+void CaptureModeCameraController::FadeInCameraPreview() {
+  DCHECK(camera_preview_widget_);
+  DCHECK(!camera_preview_widget_->GetNativeWindow()->TargetVisibility());
+
+  camera_preview_widget_->Show();
+  auto* layer = camera_preview_widget_->GetLayer();
+  layer->SetOpacity(0.f);
+
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .Once()
+      .SetDuration(kCameraPreviewFadeInDuration)
+      .SetOpacity(layer, 1.f, gfx::Tween::LINEAR);
+}
+
+void CaptureModeCameraController::FadeOutCameraPreview() {
+  DCHECK(camera_preview_widget_);
+  DCHECK(camera_preview_widget_->GetNativeWindow()->TargetVisibility());
+
+  auto* layer = camera_preview_widget_->GetLayer();
+  DCHECK_EQ(layer->GetTargetOpacity(), 1.f);
+
+  views::AnimationBuilder()
+      .OnEnded(base::BindOnce(
+          [](base::WeakPtr<CaptureModeCameraController> controller) {
+            if (!controller || !controller->camera_preview_widget_)
+              return;
+            controller->camera_preview_widget_->Hide();
+            controller->camera_preview_widget_->GetLayer()->SetOpacity(1.f);
+          },
+          weak_ptr_factory_.GetWeakPtr()))
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .Once()
+      .SetDuration(kCameraPreviewFadeOutDuration)
+      .SetOpacity(layer, 0.f, gfx::Tween::LINEAR);
+}
+
+void CaptureModeCameraController::OnRecordingStarted(
+    bool is_in_projector_mode) {
+  // Check if there's a camera disconnection that happened before recording
+  // starts. In this case, we don't want the camera preview to show, even if the
+  // camera reconnects within the allowed grace period.
+  if (selected_camera_.is_valid() && !camera_preview_widget_)
+    SetShouldShowPreview(false);
+
+  in_recording_camera_disconnections_ = 0;
+
+  const bool starts_with_camera = camera_preview_widget();
+  RecordRecordingStartsWithCamera(starts_with_camera, is_in_projector_mode);
+  RecordCameraSizeOnStart(is_camera_preview_collapsed_
+                              ? CaptureModeCameraSize::kCollapsed
+                              : CaptureModeCameraSize::kExpanded);
+  RecordCameraPositionOnStart(camera_preview_snap_position_);
+}
+
+void CaptureModeCameraController::OnRecordingEnded() {
+  DCHECK(in_recording_camera_disconnections_);
+  SetShouldShowPreview(false);
+  RecordCameraDisconnectionsDuringRecordings(
+      *in_recording_camera_disconnections_);
+  in_recording_camera_disconnections_.reset();
 }
 
 void CaptureModeCameraController::OnDevicesChanged(
@@ -642,6 +719,14 @@ void CaptureModeCameraController::RefreshCameraPreview() {
   if (selected_camera_.is_valid()) {
     if (camera_info = GetCameraInfoById(selected_camera_, available_cameras_);
         camera_info) {
+      if (camera_reconnect_timer_.IsRunning()) {
+        const base::TimeDelta remaining_time =
+            camera_reconnect_timer_.desired_run_time() - base::TimeTicks::Now();
+        const int reconnect_duration_in_seconds =
+            (kDisconnectionGracePeriod - remaining_time).InSeconds();
+        RecordCameraReconnectDuration(reconnect_duration_in_seconds,
+                                      kDisconnectionGracePeriod.InSeconds());
+      }
       // When a selected camera becomes available, we stop any grace period
       // timer (if any), and decide whether to show or hide the preview widget
       // based on the current value of `should_show_preview_`.
@@ -655,6 +740,9 @@ void CaptureModeCameraController::RefreshCameraPreview() {
       camera_reconnect_timer_.Start(
           FROM_HERE, kDisconnectionGracePeriod, this,
           &CaptureModeCameraController::OnSelectedCameraDisconnected);
+
+      if (in_recording_camera_disconnections_)
+        ++(*in_recording_camera_disconnections_);
     }
   }
 

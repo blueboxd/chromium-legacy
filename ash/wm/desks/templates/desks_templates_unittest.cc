@@ -332,9 +332,7 @@ class DesksTemplatesTest : public OverviewTestBase {
   }
 
   OverviewHighlightableView* GetHighlightedView() {
-    return OverviewHighlightController::TestApi(
-               GetOverviewSession()->highlight_controller())
-        .GetHighlightView();
+    return GetOverviewSession()->highlight_controller()->highlighted_view();
   }
 
   // Opens overview mode and then clicks the save template button. This should
@@ -352,6 +350,26 @@ class DesksTemplatesTest : public OverviewTestBase {
     WaitForDesksTemplatesUI();
     // Clicking the save template button selects the newly created template's
     // name field. We can press enter or escape or click to select out of it.
+    SendKey(ui::VKEY_RETURN);
+    for (auto& overview_grid : GetOverviewGridList())
+      ASSERT_TRUE(overview_grid->IsShowingDesksTemplatesGrid());
+  }
+
+  // Opens overview mode and then clicks the "save desk for later" button. This
+  // should create a new saved desk and open the library page.
+  void OpenOverviewAndSaveDeskForLater(aura::Window* root) {
+    if (!GetOverviewSession()) {
+      ToggleOverview();
+      WaitForDesksTemplatesUI();
+    }
+
+    auto* save_desk_button = GetSaveDeskForLaterButtonForRoot(root);
+    ASSERT_TRUE(
+        GetOverviewGridForRoot(root)->IsSaveDeskForLaterButtonVisible());
+    ClickOnView(save_desk_button);
+    WaitForDesksTemplatesUI();
+    // Clicking the save desk button selects the newly saved desk's name
+    // field. We can press enter or escape or click to select out of it.
     SendKey(ui::VKEY_RETURN);
     for (auto& overview_grid : GetOverviewGridList())
       ASSERT_TRUE(overview_grid->IsShowingDesksTemplatesGrid());
@@ -3571,6 +3589,107 @@ TEST_F(DesksTemplatesTest, AdminTemplate) {
   EXPECT_EQ(item_view, GetHighlightedView());
   SendKey(ui::VKEY_TAB);
   EXPECT_NE(name_view, GetHighlightedView());
+}
+
+using DeskSaveAndRecallTest = DesksTemplatesTest;
+
+TEST_F(DeskSaveAndRecallTest, SaveDeskForLater) {
+  UpdateDisplay("800x600,800x600");
+
+  constexpr char16_t kDeskName[] = u"Save for later";
+
+  // Create and activate a new desk.
+  DesksController* desks_controller = DesksController::Get();
+  desks_controller->NewDesk(DesksCreationRemovalSource::kKeyboard);
+  Desk* desk = desks_controller->desks().back().get();
+  desk->SetName(kDeskName, /*set_by_user=*/true);
+  ActivateDesk(desk);
+
+  // Verify that we have two desks (saving will later remove one of them).
+  EXPECT_EQ(2ul, desks_controller->desks().size());
+
+  // Create a couple of test windows.
+  auto test_window1 = CreateAppWindow();
+  auto test_window2 = CreateAppWindow();
+  // When saving the desk, the windows will be closed automatically. To verify
+  // that this happens we create a WindowTracker. The unique_ptrs have to be
+  // released since they would otherwise end up with dangling pointers.
+  aura::WindowTracker tracker({test_window1.release(), test_window2.release()});
+
+  // Open overview and save the desk.
+  OpenOverviewAndSaveDeskForLater(Shell::Get()->GetPrimaryRootWindow());
+  std::vector<DeskTemplate*> entries = GetAllEntries();
+  ASSERT_EQ(1ul, entries.size());
+
+  const DeskTemplate& saved_desk = *entries[0];
+  EXPECT_EQ(DeskTemplateType::kSaveAndRecall, saved_desk.type());
+  EXPECT_EQ(kDeskName, saved_desk.template_name());
+
+  // Verify that saving the desk has closed the test windows.
+  EXPECT_TRUE(tracker.windows().empty());
+
+  // Verify that the desk has been removed.
+  EXPECT_EQ(1ul, desks_controller->desks().size());
+}
+
+TEST_F(DeskSaveAndRecallTest, SaveDeskForLaterWithSingleDesk) {
+  UpdateDisplay("800x600");
+
+  constexpr char16_t kDeskName[] = u"Save for later";
+
+  // Verify that we have one desk. If there is only a single desk when saving, a
+  // new desk will be created.
+  DesksController* desks_controller = DesksController::Get();
+  EXPECT_EQ(1ul, desks_controller->desks().size());
+
+  // Rename the current desk so that we can later verify that we have a new
+  // desk.
+  const_cast<Desk*>(desks_controller->active_desk())
+      ->SetName(kDeskName, /*set_by_user=*/true);
+
+  // Create a test window that we release immediately as it will be closed
+  // automatically by the code under test.
+  CreateAppWindow().release();
+
+  // Open overview and save the desk.
+  OpenOverviewAndSaveDeskForLater(Shell::Get()->GetPrimaryRootWindow());
+
+  // We should still only have one desk, but it should be a new one (name is
+  // different from before).
+  EXPECT_EQ(1ul, desks_controller->desks().size());
+  EXPECT_NE(kDeskName, desks_controller->active_desk()->name());
+}
+
+TEST_F(DeskSaveAndRecallTest, RecallSavedDesk) {
+  UpdateDisplay("800x600");
+
+  constexpr char16_t kDeskName[] = u"Save for later";
+
+  DesksController* desks_controller = DesksController::Get();
+  const_cast<Desk*>(desks_controller->active_desk())
+      ->SetName(kDeskName, /*set_by_user=*/true);
+
+  // Create a test window that we release immediately as it will be closed
+  // automatically by the code under test.
+  CreateAppWindow().release();
+
+  // Open overview and save the desk.
+  OpenOverviewAndSaveDeskForLater(Shell::Get()->GetPrimaryRootWindow());
+
+  // Recall the desk.
+  DesksTemplatesItemView* template_item =
+      GetItemViewFromTemplatesGrid(/*grid_item_index=*/0);
+  ASSERT_TRUE(template_item);
+  ClickOnView(template_item);
+  WaitForDesksTemplatesUI();
+
+  // Verify that a new desk has been created and that it has the name of the
+  // saved desk.
+  EXPECT_EQ(2ul, desks_controller->desks().size());
+  EXPECT_EQ(kDeskName, desks_controller->desks()[1]->name());
+
+  // Verify that the saved desk has been deleted.
+  EXPECT_TRUE(GetAllEntries().empty());
 }
 
 }  // namespace ash

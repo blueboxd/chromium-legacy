@@ -34,6 +34,12 @@ class StatusController {
   const ModelTypeSet get_updates_request_types() const;
   void set_get_updates_request_types(ModelTypeSet value);
 
+  // The types which had non-deletion updates in the GetUpdates during the
+  // last sync cycle.
+  ModelTypeSet get_updated_types() const;
+  void add_updated_type(ModelType type);
+  void clear_updated_types();
+
   // Various conflict counters.
   int num_encryption_conflicts() const;
   int num_hierarchy_conflicts() const;
@@ -41,9 +47,6 @@ class StatusController {
 
   // Aggregate sum of all conflicting items over all conflict types.
   int TotalNumConflictingItems() const;
-
-  // Number of successfully applied updates.
-  int num_updates_applied() const;
 
   int num_server_overwrites() const;
   int num_local_overwrites() const;
@@ -67,7 +70,6 @@ class StatusController {
   void increment_num_reflected_updates_downloaded_by(int value);
 
   // Update application and conflict resolution counters.
-  void increment_num_updates_applied_by(int value);
   void increment_num_encryption_conflicts_by(int value);
   void increment_num_hierarchy_conflicts_by(int value);
   void increment_num_server_conflicts();

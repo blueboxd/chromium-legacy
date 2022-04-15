@@ -33,6 +33,18 @@ export enum DestinationOrigin {
   CROS = 'chrome_os',
 }
 
+/**
+ * Printer types for capabilities and printer list requests.
+ * Must match PrinterType in printing/mojom/print.mojom
+ */
+export enum PrinterType {
+  PRIVET_PRINTER_DEPRECATED = 0,
+  EXTENSION_PRINTER = 1,
+  PDF_PRINTER = 2,
+  LOCAL_PRINTER = 3,
+  CLOUD_PRINTER_DEPRECATED = 4
+}
+
 // <if expr="chromeos_ash or chromeos_lacros">
 /**
  * Enumeration specifying whether a destination is provisional and the reason
@@ -64,6 +76,16 @@ export type RecentDestination = {
   extensionName: string,
   icon?: string,
 };
+
+export function isPdfPrinter(id: string): boolean {
+  // <if expr="chromeos_ash or chromeos_lacros">
+  if (id === GooglePromotedDestinationId.SAVE_TO_DRIVE_CROS) {
+    return true;
+  }
+  // </if>
+
+  return id === GooglePromotedDestinationId.SAVE_AS_PDF;
+}
 
 /**
  * Creates a |RecentDestination| to represent |destination| in the app
@@ -197,6 +219,8 @@ export class Destination {
   private printerStatusRetryTimerMs_: number = 3000;
   // </if>
 
+  private type_: PrinterType;
+
   /**
    * List of capability types considered color.
    */
@@ -219,6 +243,7 @@ export class Destination {
     this.extensionId_ = (params && params.extensionId) || '';
     this.extensionName_ = (params && params.extensionName) || '';
     this.location_ = (params && params.location) || '';
+    this.type_ = this.computeType_(id, origin);
     // <if expr="chromeos_ash or chromeos_lacros">
     this.provisionalType_ =
         (params && params.provisionalType) || DestinationProvisionalType.NONE;
@@ -229,6 +254,20 @@ export class Destination {
             this.isExtension,
         'Provisional USB destination only supprted with extension origin.');
     // </if>
+  }
+
+  private computeType_(id: string, origin: DestinationOrigin): PrinterType {
+    if (isPdfPrinter(id)) {
+      return PrinterType.PDF_PRINTER;
+    }
+
+    return origin === DestinationOrigin.EXTENSION ?
+        PrinterType.EXTENSION_PRINTER :
+        PrinterType.LOCAL_PRINTER;
+  }
+
+  get type(): PrinterType {
+    return this.type_;
   }
 
   get id(): string {

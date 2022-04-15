@@ -84,7 +84,7 @@ inline constexpr base::Feature kSyncSettingsShowLacrosSideBySideWarning{
 
 // Whether explicit passphrase sharing between Ash and Lacros is enabled.
 inline constexpr base::Feature kSyncChromeOSExplicitPassphraseSharing{
-    "SyncChromeOSExplicitPassphraseSharing", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SyncChromeOSExplicitPassphraseSharing", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_IOS)
@@ -125,6 +125,14 @@ inline constexpr base::Feature kUseSyncInvalidations = {
 // UseSyncInvalidations must be enabled for this to take effect.
 inline constexpr base::Feature kUseSyncInvalidationsForWalletAndOffer = {
     "UseSyncInvalidationsForWalletAndOffer", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, optimization flags (single client and a list of FCM
+// registration tokens) will be disabled if during the current sync cycle
+// DeviceInfo has been updated.
+inline constexpr base::Feature
+    kSkipInvalidationOptimizationsWhenDeviceInfoUpdated = {
+        "SkipInvalidationOptimizationsWhenDeviceInfoUpdated",
+        base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_IOS)
 // Returns whether RPC is enabled.

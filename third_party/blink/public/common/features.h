@@ -47,7 +47,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kFrequencyCappingForLargeStickyAdDetection;
 BLINK_COMMON_EXPORT extern const base::Feature kDisplayLocking;
 BLINK_COMMON_EXPORT extern const base::Feature kJSONModules;
-BLINK_COMMON_EXPORT extern const base::Feature kForceSynchronousHTMLParsing;
 BLINK_COMMON_EXPORT extern const base::Feature kDeferredFontShaping;
 BLINK_COMMON_EXPORT extern const base::Feature kEditingNG;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
@@ -542,6 +541,11 @@ BLINK_COMMON_EXPORT extern const base::Feature kIncludeBackgroundSVGInLCP;
 // Number of the requests that can be handled in the tight mode.
 BLINK_COMMON_EXPORT
 extern const base::FeatureParam<int> kMaxNumOfThrottleableRequestsInTightMode;
+
+// TODO(crbug.com/1315717): This flag is being used to deprecate support for
+// <param> urls within <object> elements. This feature is controlled by
+// blink::features::kHTMLParamElementUrlSupport.
+BLINK_COMMON_EXPORT extern const base::Feature kHTMLParamElementUrlSupport;
 
 // The HTTP RTT threshold: decide whether the
 // `kDelayLowPriorityRequestsAccordingToNetworkState` feature can take effect

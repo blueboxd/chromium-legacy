@@ -29,6 +29,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -455,6 +456,7 @@ bool IsHwDataUsageDeviceSettingSet() {
 // Updates local_state kOobeRevenUpdatedToFlex pref to true if OS was updated.
 // Returns value of the kOobeRevenUpdatedToFlex pref.
 bool IsRevenUpdatedToFlex() {
+  CHECK(switches::IsRevenBranding());
   PrefService* local_state = g_browser_process->local_state();
   if (local_state->GetBoolean(prefs::kOobeRevenUpdatedToFlex))
     return true;
@@ -466,8 +468,7 @@ bool IsRevenUpdatedToFlex() {
   // If this field isn't set it means that the device was updated to Flex
   // and owner hasn't logged in yet. Set a boolean flag to control if the
   // new terms should be shown for existing users on the device.
-  if (!is_hw_data_usage_enabled_already_set &&
-      features::IsOobeConsolidatedConsentEnabled()) {
+  if (!is_hw_data_usage_enabled_already_set) {
     local_state->SetBoolean(prefs::kOobeRevenUpdatedToFlex, true);
   }
   return local_state->GetBoolean(prefs::kOobeRevenUpdatedToFlex);
@@ -1857,6 +1858,9 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
 
       return false;
     }
+    if (MaybeShowNewTermsAfterUpdateToFlex(profile)) {
+      return false;
+    }
     if (!user_manager->IsCurrentUserNew() && !pending_screen.empty()) {
       LoginDisplayHost::default_host()->GetSigninUI()->ResumeUserOnboarding(
           OobeScreenId(pending_screen));
@@ -1868,9 +1872,6 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
       LoginDisplayHost::default_host()
           ->GetSigninUI()
           ->StartManagementTransition();
-      return false;
-    }
-    if (MaybeShowNewTermsAfterUpdateToFlex(profile)) {
       return false;
     }
     if (features::IsManagedTermsOfServiceEnabled() &&
@@ -2310,9 +2311,15 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   // Mark login host for deletion after browser starts.  This
   // guarantees that the message loop will be referenced by the
   // browser before it is dereferenced by the login host.
+  // TODO(crbug.com/1267769): `login_host` Finalize called twice, but it
+  // shouldn't. Remove DumpWithoutCrashing when we know the root cause.
   if (LoginDisplayHost::default_host()) {
-    LoginDisplayHost::default_host()->Finalize(
-        std::move(login_host_finalized_callback));
+    if (!LoginDisplayHost::default_host()->IsFinalizing()) {
+      LoginDisplayHost::default_host()->Finalize(
+          std::move(login_host_finalized_callback));
+    } else {
+      base::debug::DumpWithoutCrashing();
+    }
   } else {
     std::move(login_host_finalized_callback).Run();
   }

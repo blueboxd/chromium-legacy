@@ -26,7 +26,7 @@
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "components/services/storage/indexed_db/scopes/scope_lock.h"
+#include "components/services/storage/indexed_db/locks/leveled_lock.h"
 #include "components/services/storage/public/cpp/filesystem/filesystem_proxy.h"
 #include "components/services/storage/public/mojom/blob_storage_context.mojom-forward.h"
 #include "components/services/storage/public/mojom/file_system_access_context.mojom-forward.h"
@@ -54,6 +54,7 @@ struct IndexedDBDatabaseMetadata;
 
 namespace content {
 class AutoDidCommitTransaction;
+class IndexedDBBucketState;
 class IndexedDBActiveBlobRegistry;
 class LevelDBWriteBatch;
 class TransactionalLevelDBDatabase;
@@ -132,7 +133,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
 
     virtual ~Transaction();
 
-    virtual void Begin(std::vector<ScopeLock> locks);
+    virtual void Begin(std::vector<LeveledLock> locks);
 
     // CommitPhaseOne determines what blobs (if any) need to be written to disk
     // and updates the primary blob journal, and kicks off the async writing
@@ -244,7 +245,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     // has been bumped, and journal cleaning should be deferred.
     bool committing_ GUARDED_BY_CONTEXT(sequence_checker_) = false;
 
-    // This flag is passed to LevelDBScopes as |sync_on_commit|, converted
+    // This flag is passed to LevelDBScopes as `sync_on_commit`, converted
     // via ShouldSyncOnCommit.
     const blink::mojom::IDBTransactionDurability durability_;
     const blink::mojom::IDBTransactionMode mode_;
@@ -586,7 +587,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
       blink::mojom::IDBTransactionDurability durability);
 
  protected:
-  friend class IndexedDBStorageKeyState;
+  friend class IndexedDBBucketState;
 
   leveldb::Status AnyDatabaseContainsBlobs(
       TransactionalLevelDBDatabase* database,

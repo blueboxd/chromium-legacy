@@ -154,9 +154,7 @@ source_set("unit_tests") {
     ":delegate",
     ":page_placeholder",
     ":tab_helper_delegates",
-    ":test_support",
     ":web",
-    ":web_internal",
     "//base",
     "//base/test:test_support",
     "//components/search_engines",
@@ -280,26 +278,6 @@ source_set("web_internal") {
   ]
 }
 
-source_set("test_support") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "chrome_test.h",
-    "chrome_test.mm",
-    "chrome_web_test.h",
-    "chrome_web_test.mm",
-  ]
-  deps = [
-    "//components/password_manager/core/browser:test_support",
-    "//ios/chrome/browser/browser_state:test_support",
-    "//ios/chrome/browser/passwords",
-    "//ios/chrome/browser/web",
-    "//ios/web",
-    "//ios/web/public/test",
-    "//ios/web/public/test:test_fixture",
-  ]
-}
-
 source_set("unit_tests_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
@@ -309,7 +287,6 @@ source_set("unit_tests_internal") {
   ]
   deps = [
     ":feature_flags",
-    ":test_support",
     ":web_internal",
     "//base",
     "//base/test:test_support",
@@ -369,6 +346,8 @@ source_set("eg_test_support+eg2") {
   testonly = true
 
   sources = [
+    "https_only_mode_app_interface.h",
+    "https_only_mode_app_interface_stub.mm",
     "lookalike_url_app_interface.h",
     "lookalike_url_app_interface_stub.mm",
     "progress_indicator_app_interface.h",
@@ -389,6 +368,8 @@ source_set("eg_app_support+eg2") {
   testonly = true
 
   sources = [
+    "https_only_mode_app_interface.h",
+    "https_only_mode_app_interface.mm",
     "lookalike_url_app_interface.h",
     "lookalike_url_app_interface.mm",
     "progress_indicator_app_interface.h",
@@ -400,6 +381,7 @@ source_set("eg_app_support+eg2") {
     "//base",
     "//components/lookalikes/core",
     "//ios/chrome/test/app:test_support",
+    "//ios/components/security_interstitials/https_only_mode",
     "//ios/components/security_interstitials/lookalikes",
     "//ios/testing/earl_grey:eg_app_support+eg2",
     "//ios/third_party/earl_grey2:app_framework+link",
@@ -425,6 +407,7 @@ source_set("eg2_tests") {
     "error_page_egtest.mm",
     "forms_egtest.mm",
     "http_auth_egtest.mm",
+    "https_only_mode_egtest.mm",
     "js_print_egtest.mm",
     "lookalike_url_egtest.mm",
     "navigation_egtest.mm",
@@ -444,11 +427,13 @@ source_set("eg2_tests") {
     ":eg_test_support+eg2",
     "//components/content_settings/core/common",
     "//components/omnibox/common",
+    "//components/security_interstitials/core",
     "//components/strings",
     "//components/url_formatter",
     "//components/version_info:version_info",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser:chrome_url_constants",
+    "//ios/chrome/browser/metrics:eg_test_support+eg2",
     "//ios/chrome/browser/ui/infobars/banners:public",
     "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/browser/ui/start_surface:feature_flags",
@@ -456,6 +441,7 @@ source_set("eg2_tests") {
     "//ios/chrome/browser/web:feature_flags",
     "//ios/chrome/test:eg_test_support+eg2",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
+    "//ios/components/security_interstitials/https_only_mode:feature",
     "//ios/net:test_support",
     "//ios/testing:embedded_test_server_support",
     "//ios/testing/earl_grey:eg_test_support+eg2",

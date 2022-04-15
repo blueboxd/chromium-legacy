@@ -88,7 +88,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SegmentationPlatform.AdaptiveToolbar.SegmentSelection.Computed"
-    enum="AdaptiveToolbarButtonVariant" expires_after="2022-10-04">
+    enum="AdaptiveToolbarButtonVariant" expires_after="2022-10-09">
   <owner>shaktisahu@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -105,6 +105,27 @@ chromium-metrics-reviews@google.com.
     Records the segment selection switch from an old value to a new segment
     after a model evaluation completes. Recorded only if the selected segment
     switches to a new value.
+  </summary>
+</histogram>
+
+<histogram name="SegmentationPlatform.Init.CreationToInitializationLatency"
+    units="ms" expires_after="M104">
+  <owner>ssid@chromium.org</owner>
+  <owner>chrome-segmentation-platform@google.com</owner>
+  <summary>
+    Time taken from the platform getting created till the platform finishes
+    initialization. Recorded when initialization is done.
+  </summary>
+</histogram>
+
+<histogram
+    name="SegmentationPlatform.Init.ProcessCreationToServiceCreationLatency"
+    units="ms" expires_after="M104">
+  <owner>ssid@chromium.org</owner>
+  <owner>chrome-segmentation-platform@google.com</owner>
+  <summary>
+    Time taken from process creation till the time segmentation platform was
+    created. Recorded once when the platform is created.
   </summary>
 </histogram>
 

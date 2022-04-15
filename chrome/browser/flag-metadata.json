@@ -465,6 +465,11 @@
     "expiry_milestone": 105
   },
     {
+    "name": "autofill-enable-virtual-card-fido-enrollment",
+    "owners": [ "vinnypersky@google.com", "siyua", "jsaul@google.com"],
+    "expiry_milestone": 110
+  },
+    {
     "name": "autofill-enable-virtual-card-management-in-desktop-settings-page",
     "owners": [ "siyua", "jsaul@google.com"],
     "expiry_milestone": 105
@@ -852,6 +857,11 @@
     "name": "colr-v1-fonts",
     "owners": [ "drott", "layout-dev@chromium.org" ],
     "expiry_milestone": 100
+  },
+  {
+    "name": "compact-bubble-launcher",
+    "owners": ["tbarzic@chromium.org"],
+    "expiry_milestone": 105
   },
   {
     "name": "compositor-threaded-scrollbar-scrolling",
@@ -3316,7 +3326,7 @@
   {
     "name": "force-show-continue-section",
     "owners":["anasalazar@chromium.org", "gzadina@google.com"],
-    "expiry_milestone": 101
+    "expiry_milestone": 104
   },
   {
     "name": "force-show-update-menu-badge",
@@ -4675,6 +4685,11 @@
     "expiry_milestone": 105
   },
   {
+    "name": "password-edit-dialog-with-details",
+    "owners": ["atsvirchkova"],
+    "expiry_milestone": 106
+  },
+  {
     "name": "password-import",
     "owners": [ "//components/password_manager/OWNERS" ],
     // The feature is already extensively used externally.
@@ -5174,16 +5189,6 @@
     "expiry_milestone": 92
   },
   {
-    "name": "search-history-link-ios",
-    "owners": [
-      "andzaytsev",
-      "harrisonsean",
-      "msramek",
-      "chrome-friendly-settings@google.com"
-    ],
-    "expiry_milestone": 99
-  },
-  {
     "name": "search-result-inline-icon",
     "owners": ["yulunwu"],
     "expiry_milestone": 103
@@ -5422,6 +5427,11 @@
     "name": "skip-undecryptable-passwords",
     "owners": [ "derinel@google.com", "mamir" ],
     "expiry_milestone": 102
+  },
+  {
+    "name": "smart-lock-sign-in-removed",
+    "owners": [ "bhartmire", "better-together-dev@google.com" ],
+    "expiry_milestone": 105
   },
   {
     "name": "smart-lock-ui-revamp",
@@ -6065,23 +6075,35 @@
   },
   {
     "name": "webui-tab-strip",
-    "owners": [ "tluk", "collinbaker", "johntlee" ],
-    "expiry_milestone": 102
+    "owners": [
+      "yuhengh",
+      "tluk"
+    ],
+    "expiry_milestone": 106
   },
   {
     "name" : "webui-tab-strip-context-menu-after-tap",
-    "owners": [ "romanarora", "tluk", "yuhengh" ],
-    "expiry_milestone" : 102
+    "owners": [
+      "yuhengh",
+      "tluk"
+    ],
+    "expiry_milestone": 106
   },
   {
     "name": "webui-tab-strip-ntb-in-tab-strip",
-    "owners": [ "yuhengh", "tluk", "romanarora" ],
-    "expiry_milestone": 102
+    "owners": [
+      "yuhengh",
+      "tluk"
+    ],
+    "expiry_milestone": 106
   },
   {
     "name": "webui-tab-strip-tab-drag-integration",
-    "owners": [ "tluk", "collinbaker", "johntlee" ],
-    "expiry_milestone": 102
+    "owners": [
+      "yuhengh",
+      "tluk"
+    ],
+    "expiry_milestone": 106
   },
   {
     "name": "webxr-incubations",

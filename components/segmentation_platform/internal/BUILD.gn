@@ -18,6 +18,8 @@ static_library("internal") {
   sources = [
     "constants.cc",
     "constants.h",
+    "data_collection/data_collection_scheduler.cc",
+    "data_collection/data_collection_scheduler.h",
     "data_collection/dummy_training_data_collector.cc",
     "data_collection/dummy_training_data_collector.h",
     "data_collection/training_data_collector.cc",
@@ -182,6 +184,7 @@ source_set("unit_tests") {
   # IMPORTANT NOTE: When adding new tests, also remember to update the list of
   # tests in //components/segmentation_platform/components_unittests.filter
   sources = [
+    "data_collection/data_collection_scheduler_unittest.cc",
     "data_collection/training_data_collector_impl_unittest.cc",
     "database/database_maintenance_impl_unittest.cc",
     "database/metadata_utils_unittest.cc",
@@ -217,6 +220,7 @@ source_set("unit_tests") {
     "execution/model_execution_manager_impl_unittest.cc",
     "execution/model_executor_impl_unittest.cc",
     "execution/query_processor.h",
+    "execution/sql_feature_processor_unittest.cc",
     "mock_ukm_data_manager.cc",
     "mock_ukm_data_manager.h",
     "scheduler/model_execution_scheduler_unittest.cc",

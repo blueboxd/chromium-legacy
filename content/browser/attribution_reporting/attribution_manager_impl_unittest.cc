@@ -77,6 +77,8 @@ using ::testing::UnorderedElementsAre;
 
 using Checkpoint = ::testing::MockFunction<void(int step)>;
 
+constexpr size_t kMaxPendingEvents = 5;
+
 constexpr AttributionStorageDelegate::OfflineReportDelayConfig
     kDefaultOfflineReportDelay{
         .min = base::Minutes(0),
@@ -273,8 +275,9 @@ class AttributionManagerImplTest : public testing::Test {
     report_sender_ = report_sender.get();
 
     attribution_manager_ = AttributionManagerImpl::CreateForTesting(
-        dir_.GetPath(), mock_storage_policy_, std::move(storage_delegate),
-        std::move(cookie_checker), std::move(report_sender),
+        dir_.GetPath(), kMaxPendingEvents, mock_storage_policy_,
+        std::move(storage_delegate), std::move(cookie_checker),
+        std::move(report_sender),
         static_cast<StoragePartitionImpl*>(
             browser_context_->GetDefaultStoragePartition()));
   }
@@ -1043,7 +1046,7 @@ TEST_F(AttributionManagerImplTest, HandleTrigger_RecordsMetric) {
   attribution_manager_->HandleTrigger(DefaultTrigger());
   EXPECT_THAT(StoredReports(), IsEmpty());
   histograms.ExpectUniqueSample(
-      "Conversions.CreateReportStatus",
+      "Conversions.CreateReportStatus2",
       AttributionTrigger::EventLevelResult::kNoMatchingImpressions, 1);
   histograms.ExpectUniqueSample(
       "Conversions.AggregatableReport.CreateReportStatus2",
@@ -1226,6 +1229,17 @@ TEST_F(AttributionManagerImplTest,
        EmbedderDisallowsImpressions_SourceNotStored) {
   base::HistogramTester histograms;
 
+  MockAttributionObserver observer;
+  base::ScopedObservation<AttributionManager, AttributionObserver> observation(
+      &observer);
+  observation.Observe(attribution_manager_.get());
+
+  const auto source = SourceBuilder().SetExpiry(kImpressionExpiry).Build();
+
+  EXPECT_CALL(observer,
+              OnSourceHandled(
+                  source, StorableSource::Result::kProhibitedByBrowserPolicy));
+
   MockAttributionReportingContentBrowserClient browser_client;
   EXPECT_CALL(
       browser_client,
@@ -1236,8 +1250,7 @@ TEST_F(AttributionManagerImplTest,
       .WillOnce(Return(false));
   ScopedContentBrowserClientSetting setting(&browser_client);
 
-  attribution_manager_->HandleSource(
-      SourceBuilder().SetExpiry(kImpressionExpiry).Build());
+  attribution_manager_->HandleSource(source);
   EXPECT_THAT(StoredSources(), IsEmpty());
 
   histograms.ExpectUniqueSample("Conversions.RegisterImpressionAllowed", false,
@@ -1247,6 +1260,23 @@ TEST_F(AttributionManagerImplTest,
 TEST_F(AttributionManagerImplTest,
        EmbedderDisallowsConversions_ReportNotStored) {
   base::HistogramTester histograms;
+
+  MockAttributionObserver observer;
+  base::ScopedObservation<AttributionManager, AttributionObserver> observation(
+      &observer);
+  observation.Observe(attribution_manager_.get());
+
+  const auto trigger = DefaultTrigger();
+
+  EXPECT_CALL(observer,
+              OnTriggerHandled(
+                  trigger, AllOf(_,
+                                 CreateReportEventLevelStatusIs(
+                                     AttributionTrigger::EventLevelResult::
+                                         kProhibitedByBrowserPolicy),
+                                 CreateReportAggregatableStatusIs(
+                                     AttributionTrigger::AggregatableResult::
+                                         kProhibitedByBrowserPolicy))));
 
   MockAttributionReportingContentBrowserClient browser_client;
   EXPECT_CALL(
@@ -1269,7 +1299,7 @@ TEST_F(AttributionManagerImplTest,
       SourceBuilder().SetExpiry(kImpressionExpiry).Build());
   EXPECT_THAT(StoredSources(), SizeIs(1));
 
-  attribution_manager_->HandleTrigger(DefaultTrigger());
+  attribution_manager_->HandleTrigger(trigger);
   EXPECT_THAT(StoredReports(), IsEmpty());
 
   histograms.ExpectUniqueSample("Conversions.RegisterConversionAllowed", false,
@@ -1923,6 +1953,34 @@ TEST_F(AttributionManagerImplTest, GetFailedReportDelay) {
     EXPECT_EQ(test_case.expected,
               GetFailedReportDelay(test_case.failed_send_attempts))
         << "failed_send_attempts=" << test_case.failed_send_attempts;
+  }
+}
+
+TEST_F(AttributionManagerImplTest, TooManyEventsInQueue) {
+  base::HistogramTester histograms;
+
+  // Prevent sources from being removed from the queue.
+  cookie_checker_->DeferCallbacks();
+
+  for (size_t i = 0; i <= kMaxPendingEvents; i++) {
+    attribution_manager_->HandleSource(
+        SourceBuilder().SetDebugKey(i).SetExpiry(kImpressionExpiry).Build());
+  }
+
+  histograms.ExpectBucketCount("Conversions.EnqueueEventAllowed", true,
+                               kMaxPendingEvents);
+  histograms.ExpectBucketCount("Conversions.EnqueueEventAllowed", false, 1);
+
+  // Unblock the cookie checks. Only the first `kMaxPendingEvents` sources
+  // should be stored.
+  for (size_t i = 0; i <= kMaxPendingEvents; i++) {
+    cookie_checker_->RunNextDeferredCallback(/*is_debug_cookie_set=*/true);
+  }
+
+  std::vector<StoredSource> sources = StoredSources();
+  ASSERT_THAT(sources, SizeIs(kMaxPendingEvents));
+  for (size_t i = 0; i < kMaxPendingEvents; i++) {
+    EXPECT_THAT(sources[i], SourceDebugKeyIs(i));
   }
 }
 

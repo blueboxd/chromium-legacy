@@ -39,6 +39,7 @@
 #include "third_party/blink/public/common/permissions_policy/document_policy_features.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy_features.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
+#include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/input/scroll_direction.mojom-blink-forward.h"
@@ -198,6 +199,10 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // blink, you probably want Document::loadEventFinished() instead.
   void SetIsLoading(bool is_loading) { is_loading_ = is_loading; }
   bool IsLoading() const { return is_loading_; }
+
+  // Determines if the frame should be allowed to pull focus from a JavaScript
+  // call.
+  bool ShouldAllowScriptFocus();
 
   // Tells the frame to check whether its load has completed, based on the state
   // of its subframes, etc.
@@ -401,20 +406,33 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   }
 
   // Returns false if fenced frames are disabled. Returns true if the
-  // feature is enabled and if |this| or any of its ancestor nodes is a
+  // feature is enabled and if `this` or any of its ancestor nodes is a
   // fenced frame. For MPArch based fenced frames returns the value of
   // Page::IsMainFrameFencedFrameRoot and for shadowDOM based fenced frames
   // returns true, if the FrameTree that this frame is in is not the outermost
   // FrameTree.
   bool IsInFencedFrameTree() const;
 
+  // Returns the mode set on the fenced frame if the frame is inside a fenced
+  // frame tree. Otherwise returns `absl::nullopt`. This should not be called
+  // on a detached frame.
+  absl::optional<mojom::blink::FencedFrameMode> GetFencedFrameMode() const;
+
   // Returns false if fenced frames are disabled. Returns true if the feature
-  // is enabled with the shadowDOM implementation and if |this| is in a fenced
+  // is enabled with the shadowDOM implementation and if `this` is in a fenced
   // frame tree whose root is in opaque-ads mode.
   // TODO(crbug.com/1262022): Remove this when we remove the shadowDOM
   // implementation for fenced frames, or even earlier when we refactor mode
   // checks to be based on capabilities instead.
   bool IsInShadowDOMOpaqueAdsFencedFrameTree() const;
+
+  // Returns false if fenced frames are disabled. Returns true if the feature
+  // is enabled with the MPArch implementation and if `this` is in a fenced
+  // frame tree whose root is in opaque-ads mode.
+  // TODO(crbug.com/1262022): Simplify this when we remove the shadowDOM
+  // implementation for fenced frames, or even earlier when we refactor mode
+  // checks to be based on capabilities instead.
+  bool IsInMPArchOpaqueAdsFencedFrameTree() const;
 
  protected:
   // |inheriting_agent_factory| should basically be set to the parent frame or
@@ -480,6 +498,12 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // child after |previous_sibling|, or first child if |previous_sibling| is
   // null. The child frame's parent must be set in the constructor.
   void InsertAfter(Frame* new_child, Frame* previous_sibling);
+
+  // Returns true if this frame pulling focus will cause focus to traverse
+  // across a fenced frame boundary. This handles checking for focus entering
+  // a fenced frame, as well as focus leaving a fenced frames.
+  // Note: This is only called if fenced frames are enabled with ShadowDOM
+  bool FocusCrossesFencedBoundary();
 
   Member<FrameClient> client_;
   const Member<WindowProxyManager> window_proxy_manager_;

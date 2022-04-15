@@ -72,13 +72,24 @@ class FileManagerPathUtilTest : public testing::Test {
   ~FileManagerPathUtilTest() override = default;
 
   void SetUp() override {
+    ash::disks::DiskMountManager::InitializeForTesting(
+        new FakeDiskMountManager);
     profile_ = std::make_unique<TestingProfile>(
         base::FilePath("/home/chronos/u-0123456789abcdef"));
+    VolumeManagerFactory::GetInstance()->SetTestingFactory(
+        profile_.get(),
+        base::BindLambdaForTesting([](content::BrowserContext* context) {
+          return std::unique_ptr<KeyedService>(std::make_unique<VolumeManager>(
+              Profile::FromBrowserContext(context), nullptr, nullptr,
+              ash::disks::DiskMountManager::GetInstance(), nullptr,
+              VolumeManager::GetMtpStorageInfoCallback()));
+        }));
   }
 
   void TearDown() override {
     storage::ExternalMountPoints::GetSystemInstance()->RevokeAllFileSystems();
     profile_.reset();
+    ash::disks::DiskMountManager::Shutdown();
   }
 
  protected:
@@ -159,7 +170,6 @@ TEST_F(FileManagerPathUtilTest, GetPathDisplayTextForSettings) {
   EXPECT_EQ("foo", GetPathDisplayTextForSettings(profile_.get(),
                                                  "/media/archive/foo"));
 
-  ash::disks::DiskMountManager::InitializeForTesting(new FakeDiskMountManager);
   TestingProfile profile2(base::FilePath("/home/chronos/u-0123456789abcdef"));
   ash::FakeChromeUserManager user_manager;
   user_manager.AddUser(
@@ -210,8 +220,6 @@ TEST_F(FileManagerPathUtilTest, GetPathDisplayTextForSettings) {
   // Test that a passthrough path doesn't crash on requesting the Drive mount
   // path for a guest profile.
   EXPECT_EQ("foo", GetPathDisplayTextForSettings(&guest_profile, "foo"));
-
-  ash::disks::DiskMountManager::Shutdown();
 }
 
 TEST_F(FileManagerPathUtilTest, MultiProfileDownloadsFolderMigration) {
@@ -1102,15 +1110,6 @@ TEST_F(FileManagerPathUtilConvertUrlTest, ConvertToContentUrls_MultipleUrls) {
 }
 
 TEST_F(FileManagerPathUtilTest, GetDisplayablePathTest) {
-  VolumeManagerFactory::GetInstance()->SetTestingFactory(
-      profile_.get(),
-      base::BindLambdaForTesting([](content::BrowserContext* context) {
-        return std::unique_ptr<KeyedService>(std::make_unique<VolumeManager>(
-            Profile::FromBrowserContext(context), nullptr, nullptr,
-            new FakeDiskMountManager, nullptr,
-            VolumeManager::GetMtpStorageInfoCallback()));
-      }));
-
   auto* volume_manager = VolumeManager::Get(profile_.get());
   volume_manager->RegisterDownloadsDirectoryForTesting(
       base::FilePath("/mount_path/my_files"));

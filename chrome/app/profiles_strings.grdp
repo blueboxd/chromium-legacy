@@ -464,7 +464,7 @@
       </message>
     </if>
     <if expr="chromeos_ash">
-      <message name="IDS_LAUNCH_APP_BUTTON" desc="Text shown on the button that launches kiosk app from Chrome OS login UI">
+      <message name="IDS_LAUNCH_APP_BUTTON" desc="Text shown on the button that launches kiosk app from ChromeOS login UI">
         Launch app
       </message>
       <message name="IDS_PIN_KEYBOARD_HINT_TEXT_PIN" desc="Text to display in the pin field for user pod when no pin has been entered.">
@@ -529,7 +529,7 @@
       Create
     </message>
     <message name="IDS_ENTERPRISE_PROFILE_WELCOME_LINK_DATA_CHECKBOX" desc="Label of the checkbox on the enterprise profile welcome screen that allows a user to link existing data to the new profile. The label informs the user that a profile will be created.">
-      Add existing browsing data (bookmarks, passwords, history) to profile
+      Keep local browsing data (bookmarks, passwords, history, etc.)
     </message>
 
     <!-- Profile Picker -->

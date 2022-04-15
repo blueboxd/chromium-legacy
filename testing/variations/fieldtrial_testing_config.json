@@ -307,7 +307,7 @@
                 {
                     "name": "TextVariant2",
                     "params": {
-                        "always_show_rationale_before_requesting_permission": "false",
+                        "always_show_rationale_before_requesting_permission": "true",
                         "notification_permission_dialog_text_variant_2": "true",
                         "permission_request_interval_days": "7"
                     },
@@ -2472,22 +2472,13 @@
             ],
             "experiments": [
                 {
-                    "name": "ContentSuggestionsHeaderMigration",
+                    "name": "Enabled_Header_Control_UIViewController_20220412",
                     "enable_features": [
                         "ContentSuggestionsHeaderMigration"
                     ]
-                }
-            ]
-        }
-    ],
-    "ContentSuggestionsUIViewControllerMigration": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
+                },
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_Header_UIViewController_20220412",
                     "enable_features": [
                         "ContentSuggestionsHeaderMigration",
                         "ContentSuggestionsUIViewControllerMigration"
@@ -3364,41 +3355,6 @@
             ]
         }
     ],
-    "ForceSynchronousHTMLParsing": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Mojo-2MB-Loader-1MB-Synchronous_20211024",
-                    "params": {
-                        "allocation_size_bytes": "2097152",
-                        "loader_chunk_size": "1048576"
-                    },
-                    "enable_features": [
-                        "ForceSynchronousHTMLParsing",
-                        "LoaderDataPipeTuning"
-                    ]
-                },
-                {
-                    "name": "Mojo-2MB-Loader-1MB-BackgroundParser_20211024",
-                    "params": {
-                        "allocation_size_bytes": "2097152",
-                        "loader_chunk_size": "1048576"
-                    },
-                    "enable_features": [
-                        "LoaderDataPipeTuning"
-                    ]
-                }
-            ]
-        }
-    ],
     "GMSCoreEmoji": [
         {
             "platforms": [
@@ -4104,7 +4060,7 @@
             ]
         }
     ],
-    "IncognitoParamFilterExperiment": [
+    "IncognitoParamFilterExperimentv2": [
         {
             "platforms": [
                 "android",
@@ -4118,7 +4074,8 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "classifications": "H4sIAEkgDGIC%2F+NS4uJKz89Pz0nVS87PFWCS4uXizk0sKSlPLM5ILUqVYuZiLAQAaThOnyQAAAA="
+                        "classifications": "H4sIAEkgDGIC/+NS4uJKz89Pz0nVS87PFWCS4uXizk0sKSlPLM5ILUqVYuZiLAQAaThOnyQAAAA=",
+                        "should_filter": "true"
                     },
                     "enable_features": [
                         "IncognitoParamFilterEnabled"
@@ -4918,6 +4875,25 @@
             ]
         }
     ],
+    "OmniboxDisableHistoryQuickProviderCacheFileMobile": [
+        {
+            "platforms": [
+                "android",
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_MaxIndex200",
+                    "params": {
+                        "MaxNumHQPUrlsIndexedAtStartupOnNonLowEndDevices": "200"
+                    },
+                    "enable_features": [
+                        "OmniboxHistoryQuickProviderAblateInMemoryURLIndexCacheFile"
+                    ]
+                }
+            ]
+        }
+    ],
     "OmniboxLocalHistoryZPSoniOS": [
         {
             "platforms": [
@@ -4937,6 +4913,27 @@
             ]
         }
     ],
+    "OmniboxLoggingMigration": [
+        {
+            "platforms": [
+                "android",
+                "chromeos_lacros",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OmniboxReportSearchboxStats"
+                    ]
+                }
+            ]
+        }
+    ],
     "OmniboxPedalsBatch1Android": [
         {
             "platforms": [
@@ -4946,26 +4943,7 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "OmniboxPedalsAndroidBatch1",
-                        "OmniboxPedalsBatch3NonEnglish"
-                    ]
-                }
-            ]
-        }
-    ],
-    "OmniboxPedalsBatch3NonEnglish": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OmniboxPedalsBatch3NonEnglish"
+                        "OmniboxPedalsAndroidBatch1"
                     ]
                 }
             ]
@@ -6804,12 +6782,6 @@
             "experiments": [
                 {
                     "name": "SideSearchDesktop",
-                    "params": {
-                        "availability": "any",
-                        "event_trigger": "name:side_search_iph_tgr;comparator:==0;window:90;storage:360",
-                        "event_used": "name:side_search_opened;comparator:==0;window:90;storage:360",
-                        "session_rate": "<3"
-                    },
                     "enable_features": [
                         "SidePanelImprovedClobbering",
                         "SideSearch",
@@ -7086,6 +7058,27 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SurfaceSyncThrottling"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SyncTrustedVaultPassphraseOptInUI": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SyncTrustedVaultPassphrasePromo"
                     ]
                 }
             ]

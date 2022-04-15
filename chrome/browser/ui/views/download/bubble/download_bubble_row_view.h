@@ -72,10 +72,14 @@ class DownloadBubbleRowView : public HoverButton,
   int GetHeightForWidth(int w) const override;
 
  private:
+  raw_ptr<views::MdTextButton> AddMainPageButton(
+      DownloadCommands::Command command,
+      const std::u16string& button_string);
+
   // If there is any change in state, update UI info.
   void UpdateBubbleUIInfo();
-  void UpdateUIForInProgressItems();
-  void UpdateUIForWarnings();
+  void UpdateButtonsForItems();
+  void UpdateProgressBar();
   void UpdateLabels();
 
   // Load the icon, from the cache or from IconManager::LoadIcon.
@@ -100,11 +104,11 @@ class DownloadBubbleRowView : public HoverButton,
   // The secondary label.
   raw_ptr<views::Label> secondary_label_ = nullptr;
 
-  // The cancel button for in-progress downloads.
+  // Buttons on the main page.
   raw_ptr<views::MdTextButton> cancel_button_ = nullptr;
-
-  // The primary button for dangerous downloads.
-  raw_ptr<views::MdTextButton> primary_button_ = nullptr;
+  raw_ptr<views::MdTextButton> discard_button_ = nullptr;
+  raw_ptr<views::MdTextButton> scan_button_ = nullptr;
+  raw_ptr<views::MdTextButton> open_now_button_ = nullptr;
 
   // Main row of the download row, everything above the progress bar.
   raw_ptr<views::View> main_row_ = nullptr;
@@ -137,7 +141,6 @@ class DownloadBubbleRowView : public HoverButton,
   DownloadUIModel::BubbleUIInfo ui_info_;
 
   const gfx::VectorIcon* last_overriden_icon_ = nullptr;
-  base::FilePath last_used_file_path_;
   bool already_set_default_icon_ = false;
 
   base::WeakPtrFactory<DownloadBubbleRowView> weak_factory_{this};

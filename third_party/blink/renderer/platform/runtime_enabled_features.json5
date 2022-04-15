@@ -889,9 +889,14 @@
     },
     {
       name: "DigitalGoodsV2_1",
-      // crbug.com/1143079: Web tests cannot differentiate ChromeOS and Linux,
-      // so enable the API on all platforms for testing.
-      status: "test",
+      status: {
+        "Android": "stable",
+        "ChromeOS_Ash": "stable",
+        "ChromeOS_Lacros": "stable",
+        // crbug.com/1143079: Web tests cannot differentiate ChromeOS and Linux,
+        // so enable the API on all platforms for testing.
+        "default": "test"
+      },
     },
     {
       name: "DirectSockets",
@@ -1182,9 +1187,6 @@
       name: "ForceReduceMotion",
     },
     {
-      name: "ForceSynchronousHTMLParsing",
-    },
-    {
       name: "ForceTallerSelectPopup",
       status: {"ChromeOS_Ash": "stable", "ChromeOS_Lacros": "stable"},
     },
@@ -1263,6 +1265,11 @@
     },
     {
       name: "HTMLInputElementShowPicker",
+      status: "stable",
+    },
+    {
+      // TODO(crbug.com/1315717): This flag is being used to deprecate support for <param> urls within <object> elements. This feature is controlled by blink::features::kHTMLParamElementUrlSupport.
+      name: "HTMLParamElementUrlSupport",
       status: "stable",
     },
     {
@@ -1574,7 +1581,7 @@
     },
     {
       name: "NavigationApi",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "NavigationId",
@@ -2578,6 +2585,9 @@
     {
       name: "WebAuthenticationLargeBlobExtension",
       status: "experimental",
+    },
+    {
+      name: "WebAuthenticationRemoteDesktopSupport",
     },
     // WebBluetooth is enabled by default on Android, ChromeOS and Mac.
     // It is also supported in Windows 10 which is handled in runtime_features.cc

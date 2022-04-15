@@ -11,8 +11,10 @@
 
 #include "base/atomic_ref_count.h"
 #include "base/base_export.h"
+#include "base/check.h"
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
+#include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"

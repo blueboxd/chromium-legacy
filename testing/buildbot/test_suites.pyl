@@ -2742,6 +2742,24 @@
       },
     },
 
+    'gpu_dawn_telemetry_cts_asan_tests': {
+      'webgpu_cts': {
+        'args': [
+          '--extra-browser-args=--force_high_performance_gpu',
+          '--retry-limit=3',
+        ],
+        'linux_args': [
+          '--extra-browser-args=--enable-features=UseSkiaRenderer,Vulkan',
+        ],
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'swarming': {
+          'shards': 8,
+        },
+      },
+    },
+
     'gpu_dawn_telemetry_cts_tests': {
       'webgpu_cts': {
         'args': [
@@ -2755,29 +2773,8 @@
           'has_native_resultdb_integration',
         ],
         'swarming': {
-          'shards': 4,
+          'shards': 14,
         },
-      },
-    },
-
-    'gpu_dawn_telemetry_cts_tests_with_partial_validation': {
-      'webgpu_cts_with_validation': {
-        'args': [
-          '--extra-browser-args=--force_high_performance_gpu',
-          '--enable-dawn-backend-validation',
-          '--override-timeout=30',
-          '--retry-limit=3',
-        ],
-        'linux_args': [
-          '--extra-browser-args=--enable-features=UseSkiaRenderer,Vulkan',
-        ],
-        'mixins': [
-          'has_native_resultdb_integration',
-        ],
-        'swarming': {
-          'shards': 4,
-        },
-        'telemetry_test_name': 'webgpu_cts',
       },
     },
 
@@ -2786,7 +2783,6 @@
         'args': [
           '--extra-browser-args=--force_high_performance_gpu',
           '--enable-dawn-backend-validation',
-          '--override-timeout=30',
           '--retry-limit=3',
         ],
         'linux_args': [
@@ -2796,7 +2792,7 @@
           'has_native_resultdb_integration',
         ],
         'swarming': {
-          'shards': 4,
+          'shards': 14,
         },
         'telemetry_test_name': 'webgpu_cts',
       },
@@ -3243,11 +3239,6 @@
           'has_native_resultdb_integration',
         ],
         'telemetry_test_name': 'pixel',
-      },
-    },
-
-    'gpu_swiftshader_gtests': {
-      'swiftshader_unittests': {
       },
     },
 
@@ -3812,9 +3803,6 @@
           'webgpu_cts',
           'skia_gold_test',
         ],
-        'swarming': {
-          'shards': 4,
-        },
       },
     },
 
@@ -3838,9 +3826,6 @@
           'webgpu_cts',
           'skia_gold_test',
         ],
-        'swarming': {
-          'shards': 4,
-        },
       },
     },
 
@@ -3859,9 +3844,6 @@
           'webgpu_cts',
           'skia_gold_test',
         ],
-        'swarming': {
-          'shards': 4,
-        },
       },
     },
 
@@ -4245,9 +4227,34 @@
       'sandbox_linux_unittests': {},
     },
 
+    'linux_lacros_chrome_browsertests_non_version_skew': {
+      'lacros_chrome_browsertests on ToT ash': {
+        'name': 'lacros_chrome_browsertests',
+        'test': 'lacros_chrome_browsertests',
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter',
+        ],
+      },
+      'lacros_chrome_browsertests_run_in_series on ToT ash': {
+        'name': 'lacros_chrome_browsertests_run_in_series',
+        'test': 'lacros_chrome_browsertests_run_in_series',
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter',
+        ],
+      },
+    },
+
     'linux_lacros_chrome_browsertests_version_skew': {
-      'lacros_chrome_browsertests': { },
-      'lacros_chrome_browsertests_run_in_series': { },
+      'lacros_chrome_browsertests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter',
+        ],
+      },
+      'lacros_chrome_browsertests_run_in_series': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter',
+        ],
+      },
     },
 
     'linux_lacros_specific_gtests': {
@@ -6294,11 +6301,6 @@
       'gpu_dawn_telemetry_cts_tests',
     ],
 
-    'gpu_dawn_telemetry_cts_regular_and_partial_validation': [
-      'gpu_dawn_telemetry_cts_tests',
-      'gpu_dawn_telemetry_cts_tests_with_partial_validation',
-    ],
-
     'gpu_dawn_telemetry_cts_regular_and_validation': [
       'gpu_dawn_telemetry_cts_tests',
       'gpu_dawn_telemetry_cts_tests_with_validation',
@@ -6359,10 +6361,6 @@
       # TODO(crbug.com/1087563): Enable once tab_capture_end2end_tests passes
       # on CrOS.
       # 'gpu_desktop_specific_gtests',
-      # CrOS should always have GL, and thus not fall back to SwiftShader. It's
-      # currently unclear if we want to bother running any SwiftShader tests on
-      # CrOS since it should never actually get used.
-      # 'gpu_swiftshader_gtests',
     ],
 
     # TODO(crbug.com/1080424): Merge with an existing set of tests such as
@@ -6387,7 +6385,6 @@
     'gpu_fyi_linux_debug_gtests': [
       'gpu_common_gtests_passthrough',
       'gpu_gles2_conform_gtests',
-      'gpu_swiftshader_gtests',
     ],
 
     'gpu_fyi_linux_debug_telemetry_tests': [
@@ -6398,7 +6395,6 @@
 
     'gpu_fyi_linux_optional_gtests': [
       'gpu_gles2_conform_gtests',
-      'gpu_swiftshader_gtests',
     ],
 
     'gpu_fyi_linux_release_gtests': [
@@ -6406,7 +6402,6 @@
       'gpu_common_gtests_passthrough',
       'gpu_desktop_specific_gtests',
       'gpu_gles2_conform_gtests',
-      'gpu_swiftshader_gtests',
     ],
 
     'gpu_fyi_linux_release_telemetry_tests': [
@@ -6437,7 +6432,6 @@
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_mac_specific_gtests',
       'gpu_gles2_conform_gtests',
-      'gpu_swiftshader_gtests',
     ],
 
     'gpu_fyi_mac_debug_telemetry_tests': [
@@ -6452,7 +6446,6 @@
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_mac_specific_gtests',
       'gpu_gles2_conform_gtests',
-      'gpu_swiftshader_gtests',
     ],
 
     'gpu_fyi_mac_pro_release_telemetry_tests': [
@@ -6471,7 +6464,6 @@
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_mac_specific_gtests',
       'gpu_gles2_conform_gtests',
-      'gpu_swiftshader_gtests',
     ],
 
     'gpu_fyi_mac_release_telemetry_tests': [
@@ -6536,7 +6528,6 @@
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_and_optional_win_specific_gtests',
       'gpu_gles2_conform_gtests',
-      'gpu_swiftshader_gtests',
     ],
 
     'gpu_fyi_win7_gtests': [
@@ -6546,7 +6537,6 @@
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_and_optional_win_specific_gtests',
       'gpu_gles2_conform_gtests',
-      'gpu_swiftshader_gtests',
     ],
 
     'gpu_fyi_win7_nvidia_amd_release_telemetry_tests': [
@@ -6586,7 +6576,6 @@
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_and_optional_win_specific_gtests',
       'gpu_gles2_conform_gtests',
-      'gpu_swiftshader_gtests',
       'gpu_vulkan_gtests',
     ],
 
@@ -6613,7 +6602,6 @@
       'gpu_fyi_and_optional_non_linux_gtests',
       'gpu_fyi_and_optional_win_specific_gtests',
       'gpu_gles2_conform_gtests',
-      'gpu_swiftshader_gtests',
     ],
 
     'gpu_fyi_win_optional_isolated_scripts': [
@@ -7511,9 +7499,9 @@
       'linux_lacros_specific_gtests': {  },
       'non_android_chromium_gtests': {
       },
+      'linux_lacros_chrome_browsertests_non_version_skew': { },
       'linux_lacros_chrome_browsertests_version_skew': {
         'variants': [
-          'LACROS_TOT',
           'LACROS_VERSION_SKEW_CANARY',
           'LACROS_VERSION_SKEW_DEV',
           'LACROS_VERSION_SKEW_BETA',

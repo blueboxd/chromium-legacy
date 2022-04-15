@@ -2585,7 +2585,7 @@ def _GetIDLParseError(input_api, filename):
                                             'tools', 'json_schema_compiler',
                                             'idl_schema.py')
         process = input_api.subprocess.Popen(
-            [input_api.python_executable, idl_schema],
+            [input_api.python3_executable, idl_schema],
             stdin=input_api.subprocess.PIPE,
             stdout=input_api.subprocess.PIPE,
             stderr=input_api.subprocess.PIPE,
@@ -5490,8 +5490,6 @@ def CheckStableMojomChanges(input_api, output_api):
 
     delta = []
     for mojom in changed_mojoms:
-        old_contents = ''.join(mojom.OldContents()) or None
-        new_contents = ''.join(mojom.NewContents()) or None
         delta.append({
             'filename': mojom.LocalPath(),
             'old': '\n'.join(mojom.OldContents()) or None,

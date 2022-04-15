@@ -1151,11 +1151,17 @@ const base::Feature kProjectorExcludeTranscript{
 // Controls whether Projector's tutorial videos are displayed.
 const base::Feature kProjectorTutorialVideoView(
     "ProjectorTutorialVideoView",
-    base::FEATURE_DISABLED_BY_DEFAULT);
+    base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether Projector use custom thumbnail in gallery page.
 const base::Feature kProjectorCustomThumbnail("kProjectorCustomThumbnail",
                                               base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Controls whether to ignore policy setting for enabling Projector for managed
+// users.
+const base::Feature kProjectorManagedUserIgnorePolicy(
+    "ProjectorManagedUserIgnorePolicy",
+    base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether the quick dim prototype is enabled.
 const base::Feature kQuickDim{"QuickDim", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1275,6 +1281,12 @@ const base::Feature kSimLockPolicy{"SimLockPolicy",
 // Uses experimental component version for smart dim.
 const base::Feature kSmartDimExperimentalComponent{
     "SmartDimExperimentalComponent", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Deprecates Sign in with Smart Lock feature. Hides Smart Lock at the sign in
+// screen, removes the Smart Lock subpage in settings, and shows a one-time
+// notification for users who previously had this feature enabled.
+const base::Feature kSmartLockSignInRemoved{"SmartLockSignInRemoved",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Replaces Smart Lock UI in lock screen password box with new UI similar to
 // fingerprint auth. Adds Smart Lock to "Lock screen and sign-in" section of
@@ -2021,6 +2033,10 @@ bool IsProjectorCustomThumbnailEnabled() {
   return base::FeatureList::IsEnabled(kProjectorCustomThumbnail);
 }
 
+bool IsProjectorManagedUserIgnorePolicyEnabled() {
+  return base::FeatureList::IsEnabled(kProjectorManagedUserIgnorePolicy);
+}
+
 bool IsQuickDimEnabled() {
   return base::FeatureList::IsEnabled(kQuickDim) && ash::switches::HasHps();
 }
@@ -2073,6 +2089,11 @@ bool IsShelfLauncherNudgeEnabled() {
 
 bool IsShimlessRMAFlowEnabled() {
   return base::FeatureList::IsEnabled(kShimlessRMAFlow);
+}
+
+bool IsShimlessRMAStandaloneAppEnabled() {
+  return base::FeatureList::IsEnabled(kShimlessRMAEnableStandalone) &&
+         IsShimlessRMAFlowEnabled();
 }
 
 bool IsSimLockPolicyEnabled() {

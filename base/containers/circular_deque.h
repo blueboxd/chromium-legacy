@@ -12,8 +12,10 @@
 #include <utility>
 
 #include "base/as_const.h"
+#include "base/check.h"
 #include "base/check_op.h"
 #include "base/containers/vector_buffer.h"
+#include "base/dcheck_is_on.h"
 #include "base/ranges/algorithm.h"
 #include "base/template_util.h"
 

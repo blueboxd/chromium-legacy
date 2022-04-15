@@ -9,7 +9,7 @@ import {getTrustedHTML} from 'chrome://resources/js/static_types.js';
 import {$, getRequiredElement, queryRequiredElement} from 'chrome://resources/js/util.m.js';
 import {Origin} from 'chrome://resources/mojo/url/mojom/origin.mojom-webui.js';
 
-import {Handler as AttributionInternalsHandler, HandlerRemote as AttributionInternalsHandlerRemote, ObserverInterface, ObserverReceiver, ReportType, SourceType, WebUIReport, WebUIReport_Status, WebUISource, WebUISource_Attributability, WebUITrigger, WebUITrigger_Status} from './attribution_internals.mojom-webui.js';
+import {Handler as AttributionInternalsHandler, HandlerRemote as AttributionInternalsHandlerRemote, ObserverInterface, ObserverReceiver, ReportStatus, ReportType, SourceType, WebUIReport, WebUISource, WebUISource_Attributability, WebUITrigger, WebUITrigger_Status} from './attribution_internals.mojom-webui.js';
 
 /**
  * @template T
@@ -633,34 +633,28 @@ class Report extends Selectable {
     this.reportTime = new Date(mojo.reportTime);
 
     // Only pending reports are selectable.
-    if (this.id === null ||
-        mojo.status !== WebUIReport_Status.kPending) {
+    if (this.id === null || mojo.status.pending === undefined) {
       this.input.disabled = true;
     }
 
     this.isDebug = this.reportUrl.indexOf(
                        '/.well-known/attribution-reporting/debug/') >= 0;
 
-    switch (mojo.status) {
-      case WebUIReport_Status.kSent:
-        this.status = `Sent: HTTP ${mojo.httpResponseCode}`;
-        this.httpResponseCode = mojo.httpResponseCode;
-        break;
-      case WebUIReport_Status.kPending:
-        this.status = 'Pending';
-        break;
-      case WebUIReport_Status.kReplacedByHigherPriorityReport:
-        this.status = 'Replaced by higher-priority report';
-        break;
-      case WebUIReport_Status.kProhibitedByBrowserPolicy:
-        this.status = 'Prohibited by browser policy';
-        break;
-      case WebUIReport_Status.kNetworkError:
-        this.status = 'Network error';
-        break;
-      case WebUIReport_Status.kFailedToAssemble:
-        this.status = 'Dropped due to assembly failure';
-        break;
+    if (mojo.status.sent !== undefined) {
+      this.status = `Sent: HTTP ${mojo.status.sent}`;
+      this.httpResponseCode = mojo.status.sent;
+    } else if (mojo.status.pending !== undefined) {
+      this.status = 'Pending';
+    } else if (mojo.status.replacedByHigherPriorityReport !== undefined) {
+      this.status = 'Replaced by higher-priority report';
+    } else if (mojo.status.prohibitedByBrowserPolicy !== undefined) {
+      this.status = 'Prohibited by browser policy';
+    } else if (mojo.status.networkError !== undefined) {
+      this.status = `Network error: ${mojo.status.networkError}`;
+    } else if (mojo.status.failedToAssemble !== undefined) {
+      this.status = 'Dropped due to assembly failure';
+    } else {
+      throw new Error('invalid ReportStatus union');
     }
   }
 }
@@ -949,6 +943,8 @@ function AttributabilityToText(attributability) {
       return 'Rejected: insufficient unique destination capacity';
     case WebUISource_Attributability.kExcessiveReportingOrigins:
       return 'Rejected: excessive reporting origins';
+    case WebUISource_Attributability.kProhibitedByBrowserPolicy:
+      return 'Rejected: prohibited by browser policy';
     default:
       return attributability.toString();
   }
@@ -986,6 +982,8 @@ function TriggerStatusToText(status) {
       return 'Failure: Insufficient budget';
     case WebUITrigger_Status.kNotRegistered:
       return 'Failure: No aggregatable data present';
+    case WebUITrigger_Status.kProhibitedByBrowserPolicy:
+      return 'Failure: Prohibited by browser policy';
     default:
       return status.toString();
   }

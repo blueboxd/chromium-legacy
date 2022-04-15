@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/closewatcher/close_watcher.h"
 
+#include "base/auto_reset.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_close_watcher_options.h"
@@ -13,6 +14,7 @@
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 
@@ -42,8 +44,6 @@ CloseWatcher::WatcherStack::WatcherStack(LocalDOMWindow* window)
 
 void CloseWatcher::WatcherStack::Add(CloseWatcher* watcher) {
   if (watchers_.IsEmpty()) {
-    window_->addEventListener(event_type_names::kKeyup, this,
-                              /*use_capture=*/false);
     auto& host = window_->GetFrame()->GetLocalFrameHostRemote();
     host.SetCloseListener(receiver_.BindNewPipeAndPassRemote(
         window_->GetTaskRunner(TaskType::kMiscPlatformAPI)));
@@ -54,24 +54,21 @@ void CloseWatcher::WatcherStack::Add(CloseWatcher* watcher) {
 void CloseWatcher::WatcherStack::Remove(CloseWatcher* watcher) {
   watchers_.erase(watcher);
   if (watchers_.IsEmpty()) {
-    window_->removeEventListener(event_type_names::kKeyup, this,
-                                 /*use_capture=*/false);
     receiver_.reset();
   }
 }
 
 void CloseWatcher::WatcherStack::Trace(Visitor* visitor) const {
-  NativeEventListener::Trace(visitor);
   visitor->Trace(watchers_);
   visitor->Trace(receiver_);
   visitor->Trace(window_);
 }
 
-void CloseWatcher::WatcherStack::Invoke(ExecutionContext*, Event* e) {
-  DCHECK(!watchers_.IsEmpty());
-  KeyboardEvent* event = DynamicTo<KeyboardEvent>(e);
-  if (event && event->isTrusted() && event->keyCode() == VKEY_ESCAPE)
+void CloseWatcher::WatcherStack::EscapeKeyHandler(KeyboardEvent* event) {
+  if (!watchers_.IsEmpty() && !event->DefaultHandled() && event->isTrusted() &&
+      event->keyCode() == VKEY_ESCAPE) {
     Signal();
+  }
 }
 
 bool CloseWatcher::WatcherStack::CheckForCreation() {
@@ -84,6 +81,18 @@ bool CloseWatcher::WatcherStack::CheckForCreation() {
   return true;
 }
 
+// static
+CloseWatcher* CloseWatcher::Create(LocalDOMWindow* window,
+                                   CloseWatcherOptions* options) {
+  if (!window->GetFrame())
+    return nullptr;
+  WatcherStack* stack = window->closewatcher_stack();
+  if (!stack->CheckForCreation())
+    return nullptr;
+  return CreateInternal(window, *stack, options);
+}
+
+// static
 CloseWatcher* CloseWatcher::Create(ScriptState* script_state,
                                    CloseWatcherOptions* options,
                                    ExceptionState& exception_state) {
@@ -105,6 +114,13 @@ CloseWatcher* CloseWatcher::Create(ScriptState* script_state,
     return nullptr;
   }
 
+  return CreateInternal(window, stack, options);
+}
+
+// static
+CloseWatcher* CloseWatcher::CreateInternal(LocalDOMWindow* window,
+                                           WatcherStack& stack,
+                                           CloseWatcherOptions* options) {
   CloseWatcher* watcher = MakeGarbageCollected<CloseWatcher>(window);
 
   if (options && options->hasSignal()) {

@@ -83,7 +83,7 @@ CameraPreviewView::CameraPreviewView(
   // from 0 to 1.
   resize_button_->layer()->SetOpacity(0);
 
-  // The resize button should be hidden by default so that it doesn't hanld
+  // The resize button should be hidden by default so that it doesn't handle
   // events.
   resize_button_->SetVisible(false);
   UpdateResizeButtonTooltip();
@@ -116,6 +116,17 @@ bool CameraPreviewView::MaybeHandleKeyEvent(const ui::KeyEvent* event) {
 
   camera_controller_->SetCameraPreviewSnapPosition(new_snap_position);
   return true;
+}
+
+void CameraPreviewView::RefreshResizeButtonVisibility() {
+  const float target_opacity = CalculateResizeButtonTargetOpacity();
+  if (target_opacity == resize_button_->layer()->GetTargetOpacity())
+    return;
+
+  if (target_opacity == 1.f)
+    FadeInResizeButton();
+  else
+    FadeOutResizeButton();
 }
 
 void CameraPreviewView::AddedToWidget() {
@@ -184,12 +195,11 @@ void CameraPreviewView::OnGestureEvent(ui::GestureEvent* event) {
 
 void CameraPreviewView::OnMouseEntered(const ui::MouseEvent& event) {
   resize_button_hide_timer_.Stop();
-  FadeInResizeButton();
+  RefreshResizeButtonVisibility();
 }
 
 void CameraPreviewView::OnMouseExited(const ui::MouseEvent& event) {
-  if (!resize_button_->IsMouseHovered())
-    ScheduleRefreshResizeButtonVisibility();
+  ScheduleRefreshResizeButtonVisibility();
 }
 
 void CameraPreviewView::Layout() {
@@ -265,16 +275,6 @@ void CameraPreviewView::DisableEventHandlingInCameraVideoHostHierarchy() {
   }
 }
 
-void CameraPreviewView::RefreshResizeButtonVisibility() {
-  if (IsMouseHovered() || resize_button_->IsMouseHovered()) {
-    DCHECK(resize_button_->GetVisible());
-    DCHECK_EQ(1.0f, resize_button_->layer()->GetTargetOpacity());
-    return;
-  }
-
-  FadeOutResizeButton();
-}
-
 void CameraPreviewView::FadeInResizeButton() {
   resize_button_->SetVisible(true);
 
@@ -305,6 +305,16 @@ void CameraPreviewView::ScheduleRefreshResizeButtonVisibility() {
   resize_button_hide_timer_.Start(
       FROM_HERE, capture_mode::kResizeButtonShowDuration, this,
       &CameraPreviewView::RefreshResizeButtonVisibility);
+}
+
+float CameraPreviewView::CalculateResizeButtonTargetOpacity() {
+  if (camera_controller_->is_drag_in_progress())
+    return 0.f;
+
+  if (IsMouseHovered() || resize_button_->IsMouseHovered())
+    return 1.f;
+
+  return 0.f;
 }
 
 BEGIN_METADATA(CameraPreviewView, views::View)

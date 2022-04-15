@@ -36,8 +36,6 @@
 
 namespace autofill_assistant {
 
-using StartupMode = StartupUtil::StartupMode;
-
 namespace {
 
 // When starting trigger scripts, depending on incoming script parameters, we
@@ -449,6 +447,16 @@ void Starter::OnDependenciesInvalidated() {
   Init();
 }
 
+void Starter::CanStart(
+    std::unique_ptr<TriggerContext> trigger_context,
+    base::OnceCallback<void(bool success,
+                            absl::optional<GURL> url,
+                            std::unique_ptr<TriggerContext> trigger_contexts)>
+        preconditions_checked_callback) {
+  preconditions_checked_callback_ = std::move(preconditions_checked_callback);
+  Start(std::move(trigger_context));
+}
+
 void Starter::Start(std::unique_ptr<TriggerContext> trigger_context) {
   DCHECK(trigger_context);
   DCHECK(!trigger_context->GetDirectAction());
@@ -483,7 +491,6 @@ void Starter::Start(std::unique_ptr<TriggerContext> trigger_context) {
   Metrics::RecordStartRequest(ukm_recorder_, current_ukm_source_id_,
                               pending_trigger_context_->GetScriptParameters(),
                               startup_mode);
-
   // Trigger scripts may need to wait for navigation to the deeplink domain to
   // ensure that UKMs are recorded for the right source-id.
   auto startup_url =
@@ -495,7 +502,7 @@ void Starter::Start(std::unique_ptr<TriggerContext> trigger_context) {
     Metrics::RecordTriggerScriptStarted(
         ukm_recorder_, current_ukm_source_id_,
         Metrics::TriggerScriptStarted::NO_INITIAL_URL);
-    OnStartDone(/* start_regular_script = */ false);
+    OnStartDone(/* start_script = */ false);
     return;
   }
 
@@ -521,7 +528,7 @@ void Starter::Start(std::unique_ptr<TriggerContext> trigger_context) {
     case StartupMode::MANDATORY_PARAMETERS_MISSING:
     case StartupMode::SETTING_DISABLED:
     case StartupMode::NO_INITIAL_URL:
-      OnStartDone(/* start_regular_script = */ false);
+      OnStartDone(/* start_script = */ false);
       return;
     case StartupMode::START_BASE64_TRIGGER_SCRIPT:
     case StartupMode::START_RPC_TRIGGER_SCRIPT:
@@ -545,7 +552,7 @@ void Starter::CancelPendingStartup(
         ukm_recorder_, current_ukm_source_id_, Metrics::Onboarding::OB_SHOWN);
     waiting_for_onboarding_ = false;
   }
-  OnStartDone(/* start_regular_script = */ false);
+  OnStartDone(/* start_script = */ false);
   if (trigger_script_coordinator_ && state) {
     trigger_script_coordinator_->Stop(*state);
   }
@@ -578,7 +585,7 @@ void Starter::OnFeatureModuleInstalled(
         Metrics::DropOutReason::DFM_INSTALL_FAILED,
         pending_trigger_context_->GetScriptParameters().GetIntent().value_or(
             std::string()));
-    OnStartDone(/* start_regular_script = */ false);
+    OnStartDone(/* start_script = */ false);
     return;
   }
 
@@ -592,7 +599,7 @@ void Starter::OnFeatureModuleInstalled(
       return;
     default:
       DCHECK(false);
-      OnStartDone(/* start_regular_script = */ false);
+      OnStartDone(/* start_script = */ false);
       return;
   }
 }
@@ -628,7 +635,7 @@ void Starter::StartTriggerScript() {
     } else {
       // Should never happen.
       DCHECK(false);
-      OnStartDone(/* start_regular_script = */ false);
+      OnStartDone(/* start_script = */ false);
       return;
     }
   }
@@ -701,7 +708,7 @@ void Starter::OnTriggerScriptFinished(
                                 weak_ptr_factory_.GetWeakPtr()));
 
   if (state != Metrics::TriggerScriptFinishedState::PROMPT_SUCCEEDED) {
-    OnStartDone(/* start_regular_script = */ false);
+    OnStartDone(/* start_script = */ false);
     return;
   }
 
@@ -712,7 +719,7 @@ void Starter::OnTriggerScriptFinished(
   // different metric for the result. We need to be careful to only run the
   // regular onboarding if necessary to avoid logging metrics more than once.
   if (platform_delegate_->GetOnboardingAccepted()) {
-    OnStartDone(/* start_regular_script = */ true, trigger_script);
+    OnStartDone(/* start_script = */ true, trigger_script);
     return;
   } else {
     MaybeShowOnboarding(trigger_script);
@@ -792,19 +799,26 @@ void Starter::OnOnboardingFinished(
 
   if (result != OnboardingResult::ACCEPTED) {
     runtime_manager_->SetUIState(UIState::kNotShown);
-    OnStartDone(/* start_regular_script = */ false);
+    OnStartDone(/* start_script = */ false);
     return;
   }
 
   // Onboarding is the last step before regular startup.
   platform_delegate_->SetOnboardingAccepted(true);
   pending_trigger_context_->SetOnboardingShown(shown);
-  OnStartDone(/* start_regular_script = */ true, trigger_script);
+  OnStartDone(/* start_script = */ true, trigger_script);
 }
 
-void Starter::OnStartDone(bool start_regular_script,
+void Starter::OnStartDone(bool start_script,
                           absl::optional<TriggerScriptProto> trigger_script) {
-  if (!start_regular_script) {
+  // If a callback is present, we notify that the checks are done instead of
+  // directly starting the script with the default UI.
+  if (preconditions_checked_callback_) {
+    ReportPreconditionsChecked(start_script);
+    return;
+  }
+
+  if (!start_script) {
     // Catch-all to ensure that after a failed startup attempt we reset the
     // UI state.
     runtime_manager_->SetUIState(platform_delegate_->IsRegularScriptVisible()
@@ -817,8 +831,16 @@ void Starter::OnStartDone(bool start_regular_script,
   auto startup_url =
       StartupUtil().ChooseStartupUrlForIntent(*pending_trigger_context_);
   DCHECK(startup_url.has_value());
-  platform_delegate_->StartRegularScript(
+
+  platform_delegate_->StartScriptDefaultUi(
       *startup_url, std::move(pending_trigger_context_), trigger_script);
+}
+
+void Starter::ReportPreconditionsChecked(bool start_script) {
+  auto startup_url =
+      StartupUtil().ChooseStartupUrlForIntent(*pending_trigger_context_);
+  std::move(preconditions_checked_callback_)
+      .Run(start_script, startup_url, std::move(pending_trigger_context_));
 }
 
 void Starter::DeleteTriggerScriptCoordinator() {

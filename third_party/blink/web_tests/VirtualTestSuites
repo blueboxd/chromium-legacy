@@ -732,7 +732,7 @@
     "args": ["--enable-features=AllowClientHintsToThirdParty"]
   },
   {
-    "prefix": "disable-user-agent-client-hint-feature",
+    "prefix": "disable-ua-client-hint",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/client-hints", "wpt_internal/client-hints"],
     "args": ["--disable-features=UserAgentClientHint"]
@@ -778,12 +778,6 @@
       "external/wpt/document-policy/experimental-features/document-domain"
     ],
     "args": [ "--enable-features=DisableDocumentDomainByDefault" ]
-  },
-  {
-    "prefix": "subresource-web-bundles-disabled",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": [ "http/tests/loading/wbn/origin-trial/" ],
-    "args": [ "--disable-blink-features=SubresourceWebBundles" ]
   },
   {
     "prefix": "backface-visibility-interop",
@@ -1026,6 +1020,12 @@
     "args": ["--stable-release-mode"]
   },
   {
+    "prefix": "selectmenu-new-popup",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [],
+    "args": ["--enable-blink-features=HTMLSelectMenuElementUsesPopupAttribute"]
+  },
+  {
     "prefix": "dialogfocus-old-behavior",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
@@ -1034,7 +1034,7 @@
     "args": ["--disable-features=DialogFocusNewSpecBehavior"]
   },
   {
-    "prefix": "disable-ua-ch-platform-feature",
+    "prefix": "disable-ua-ch-platform",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/client-hints", "wpt_internal/client-hints"],
     "args": ["--disable-features=UACHPlatformEnabledByDefault"]
@@ -1068,7 +1068,7 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["wpt_internal/lazyembed"],
     "args": [
-      "--enable-features=AutomaticLazyFrameLoadingToEmbeds:allowed_websites/http%3A%2F%2Fbad3p.test%3A3001%7C%2Fembed",
+      "--enable-features=AutomaticLazyFrameLoadingToEmbeds,AutomaticLazyFrameLoadingToEmbedUrls:allowed_websites/http%3A%2F%2Fbad3p.test%3A3001%7C%2Fembed",
       "--disable-field-trial-config"
     ]
   },

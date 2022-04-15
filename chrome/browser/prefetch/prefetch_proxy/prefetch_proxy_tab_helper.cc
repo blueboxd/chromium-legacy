@@ -72,6 +72,7 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
@@ -885,6 +886,10 @@ void PrefetchProxyTabHelper::StartSinglePrefetch() {
       loader.get(), prefetch_container->GetUrl()));
   loader->SetAllowHttpErrorResults(true);
   loader->SetTimeoutDuration(PrefetchProxyTimeoutDuration());
+  loader->SetURLLoaderFactoryOptions(
+      network::mojom::kURLLoadOptionSendSSLInfoWithResponse |
+      network::mojom::kURLLoadOptionSniffMimeType |
+      network::mojom::kURLLoadOptionSendSSLInfoForCertificateError);
   loader->DownloadToString(
       GetURLLoaderFactory(prefetch_container->GetUrl()),
       base::BindOnce(&PrefetchProxyTabHelper::OnPrefetchComplete,
@@ -1067,7 +1072,7 @@ void PrefetchProxyTabHelper::HandlePrefetchResponse(
     return;
   }
 
-  if (head->mime_type != "text/html") {
+  if (PrefetchProxyHTMLOnly() && head->mime_type != "text/html") {
     prefetch_container->SetPrefetchStatus(
         PrefetchProxyPrefetchStatus::kPrefetchFailedNotHTML);
     return;

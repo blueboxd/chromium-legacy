@@ -25,6 +25,13 @@ const base::Feature kAutomaticLazyFrameLoadingToAds{
 const base::Feature kAutomaticLazyFrameLoadingToEmbeds{
     "AutomaticLazyFrameLoadingToEmbeds", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Define the allowed websites to use LazyEmbeds. The allowed websites need to
+// be defined separately from kAutomaticLazyFrameLoadingToEmbeds because we want
+// to gather Blink.AutomaticLazyLoadFrame.LazyEmbedFrameCount UKM data even when
+// kAutomaticLazyFrameLoadingToEmbeds is disabled.
+const base::Feature kAutomaticLazyFrameLoadingToEmbedUrls{
+    "AutomaticLazyFrameLoadingToEmbedUrls", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allows pages with DedicatedWorker to stay eligible for the back/forward
 // cache.
 const base::Feature kBackForwardCacheDedicatedWorker{
@@ -1412,6 +1419,9 @@ const base::FeatureParam<bool> kPrewarmFantasy = {&kPrewarmDefaultFontFamilies,
 // Enable `save-data` client hint.
 const base::Feature kClientHintsSaveData{"ClientHintsSaveData",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kEstablishGpuChannelAsync{
+    "EstablishGpuChannelAsync", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

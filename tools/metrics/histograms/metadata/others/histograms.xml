@@ -4210,6 +4210,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="DemoMode.UserClicksAndPresses" units="clicks"
+    expires_after="M109">
+  <owner>lbowen@google.com</owner>
+  <owner>cros-demo-mode-eng@google.com</owner>
+  <summary>
+    Records how many times the user clicks mouse and presses screen in the demo
+    session. During one demo session, if a mouse click or screen press happens,
+    increment this metric by one.
+  </summary>
+</histogram>
+
 <histogram name="Dialog.Create" enum="BooleanCreated" expires_after="M85">
   <owner>pdyson@chromium.org</owner>
   <summary>
@@ -4885,6 +4896,17 @@ chromium-metrics-reviews@google.com.
   <summary>
     Events logged after the user interacts with a PhoneHub notification by
     clicking it to launch app streaming window.
+  </summary>
+</histogram>
+
+<histogram name="Eche.StreamEvent" enum="StreamState"
+    expires_after="2022-09-30">
+  <owner>paulzchen@google.com</owner>
+  <owner>andychou@google.com</owner>
+  <summary>
+    Events logged in the Eche stream state. Records when a stream is started and
+    initialized after the user interacts with a PhoneHub notification or the
+    recent app by clicking it to launch the app streaming window.
   </summary>
 </histogram>
 
@@ -10353,7 +10375,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="RenderViewContextMenu.Shown" enum="RenderViewContextMenuItem"
-    expires_after="2022-04-17">
+    expires_after="2023-04-17">
   <owner>avi@chromium.org</owner>
   <owner>edwardjung@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>

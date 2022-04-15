@@ -560,7 +560,7 @@ const base::Feature kEnableOobePolymer3{"EnableOobePolymer3",
 
 // Enables Kiosk enrollment option in OOBE.
 const base::Feature kEnableKioskEnrollmentInOobe{
-    "EnableKioskEnrollmentInOobe", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableKioskEnrollmentInOobe", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables skipping of network screen.
 const base::Feature kEnableOobeNetworkScreenSkip{
@@ -1028,6 +1028,7 @@ const base::Feature kOnDeviceGrammarCheck{"OnDeviceGrammarCheck",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Whether the device supports on-device speech recognition.
+// Forwarded to LaCrOS as BrowserInitParams::is_ondevice_speech_supported.
 const base::Feature kOnDeviceSpeechRecognition{
     "OnDeviceSpeechRecognition", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -1049,6 +1050,11 @@ const base::Feature kOobeQuickStart{"OobeQuickStart",
 // If enabled, the new recommend apps screen is shown.
 const base::Feature kOobeNewRecommendApps{"OobeNewRecommendApps",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Removes "Shut down" button from OOBE, except first login screen and
+// successful enrollment step.
+const base::Feature kOobeRemoveShutdownButton{
+    "OobeRemoveShutdownButton", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the feedback tool new UX on Chrome OS.
 // This tool under development will be rolled out via Finch.
@@ -1331,13 +1337,10 @@ const base::Feature kTerminalSSH{"TerminalSSH",
 const base::Feature kTerminalTmuxIntegration{"TerminalTmuxIntegration",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the TrafficCountersHandler class to handle traffic counter resets.
-const base::Feature kTrafficCountersHandlerEnabled{
-    "TrafficCountersHandlerEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables the Settings UI to show data usage for cellular networks.
-const base::Feature kTrafficCountersSettingsUi{
-    "TrafficCountersSettingsUi", base::FEATURE_ENABLED_BY_DEFAULT};
+// Enables the TrafficCountersHandler class to auto-reset traffic counters
+// and shows Data Usage in the Celluar Settings UI.
+const base::Feature kTrafficCountersEnabled{"TrafficCountersEnabled",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables trilinear filtering.
 const base::Feature kTrilinearFiltering{"TrilinearFiltering",
@@ -1346,7 +1349,7 @@ const base::Feature kTrilinearFiltering{"TrilinearFiltering",
 // Unblock the UsbPeripheralNotificationController class in ash to display
 // USB related notifications from the type-c daemon in Chrome OS.
 const base::Feature kUsbNotificationController{
-    "UsbNotificationController", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UsbNotificationController", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Uses new  AuthSession-based API in cryptohome to authenticate users during
 // sign-in.
@@ -1925,6 +1928,10 @@ bool IsOobeNewRecommendAppsEnabled() {
   return base::FeatureList::IsEnabled(kOobeNewRecommendApps);
 }
 
+bool IsOobeRemoveShutdownButtonEnabled() {
+  return base::FeatureList::IsEnabled(kOobeRemoveShutdownButton);
+}
+
 bool IsOobeThemeSelectionEnabled() {
   return base::FeatureList::IsEnabled(kEnableOobeThemeSelection);
 }
@@ -2092,8 +2099,8 @@ bool IsTouchscreenInDiagnosticsAppEnabled() {
   return base::FeatureList::IsEnabled(kEnableTouchscreensInDiagnosticsApp);
 }
 
-bool IsTrafficCountersHandlerEnabled() {
-  return base::FeatureList::IsEnabled(kTrafficCountersHandlerEnabled);
+bool IsTrafficCountersEnabled() {
+  return base::FeatureList::IsEnabled(kTrafficCountersEnabled);
 }
 
 bool IsTrilinearFilteringEnabled() {

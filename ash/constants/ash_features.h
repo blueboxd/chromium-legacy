@@ -414,6 +414,8 @@ extern const base::Feature kOobeQuickStart;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kOobeNewRecommendApps;
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kOobeRemoveShutdownButton;
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kOsSettingsAppNotificationsPage;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kOverviewButton;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -519,9 +521,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kTerminalSSH;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kTerminalTmuxIntegration;
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kTrafficCountersHandlerEnabled;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::Feature kTrafficCountersSettingsUi;
+extern const base::Feature kTrafficCountersEnabled;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kTrilinearFiltering;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kUsbNotificationController;
@@ -680,6 +680,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOobeNetworkScreenSkipEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOobeConsolidatedConsentEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOobeQuickStartEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOobeNewRecommendAppsEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOobeRemoveShutdownButtonEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsOobeThemeSelectionEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPcieBillboardNotificationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsPciguardUiEnabled();
@@ -729,7 +730,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsStylusBatteryStatusEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsTabClusterUIEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsTouchpadInDiagnosticsAppEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsTouchscreenInDiagnosticsAppEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsTrafficCountersHandlerEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsTrafficCountersEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsTrilinearFilteringEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsUseStorkSmdsServerAddressEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsWallpaperWebUIEnabled();

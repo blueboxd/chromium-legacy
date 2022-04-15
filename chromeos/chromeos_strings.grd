@@ -1027,6 +1027,9 @@ Try tapping the mic to ask me anything.
       <message name="IDS_DIAGNOSTICS_CONNECTIVITY" desc="The label for the connectivity navigation panel item.">
         Connectivity
       </message>
+      <message name="IDS_DIAGNOSTICS_INPUT" desc="The label for the input navigation panel item, which when clicked shows a page offering testers for keyboards, touchpads, and touchscreens.">
+        Input
+      </message>
       <message name="IDS_DIAGNOSTICS_NAME_SERVERS"  desc="Name servers label.">
         {0, plural,
         =1 {Name server}
@@ -1267,11 +1270,17 @@ Try tapping the mic to ask me anything.
       <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_FULLSCREEN" desc="Describes the Fullscreen key on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Fullscreen key not pressed', 'Fullscreen key pressed', or 'Fullscreen key tested')">
         Fullscreen
       </message>
-      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_KEYBOARD_BACKLIGHT_DOWN" desc="Describes the key for decreasing keyboard backlight brightness on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Keyboard brightness up key not pressed', 'Keyboard brightness up key pressed', or 'Keyboard brightness up key tested')">
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_KEYBOARD_BACKLIGHT_DOWN" desc="Describes the key for decreasing keyboard backlight brightness on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Keyboard brightness down key not pressed', 'Keyboard brightness down key pressed', or 'Keyboard brightness down key tested')">
         Keyboard brightness down
       </message>
-      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_KEYBOARD_BACKLIGHT_UP" desc="Describes the key for increasing keyboard backlight brightness on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Keyboard brightness down key not pressed', 'Keyboard brightness down key pressed', or 'Keyboard brightness down key tested')">
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_KEYBOARD_BACKLIGHT_TOGGLE" desc="Describes the key for toggling the keyboard backlight on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Keyboard backlight toggle key not pressed', 'Keyboard backlight toggle key pressed', or 'Keyboard backlight toggle key tested')">
+        Keyboard backlight toggle
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_KEYBOARD_BACKLIGHT_UP" desc="Describes the key for increasing keyboard backlight brightness on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Keyboard brightness up key not pressed', 'Keyboard brightness up key pressed', or 'Keyboard brightness up key tested')">
         Keyboard brightness up
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_MICROPHONE_MUTE" desc="Describes the key on the top row of a ChromeOS keyboard for muting and unmuting the microphone. Used as part of an ARIA label on a keyboard testing UI (one of 'Microphone mute key not pressed', 'Microphone mute key pressed', or 'Microphone mute key tested')">
+        Microphone mute
       </message>
       <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_MUTE" desc="Describes the Mute key on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Mute key not pressed', 'Mute key pressed', or 'Mute key tested')">
         Mute
@@ -2300,6 +2309,15 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_PERSONALIZATION_APP_ARIA_LABEL_GO_TO_ACCOUNT_SETTINGS" desc="Aria label for the link to account settings.">
         Go to account settings
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AVATAR_GOOGLE_PROFILE_PHOTO" desc="Title for the Google profile photo option.">
+        Google profile photo
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AVATAR_CHOOSE_A_FILE" desc="Title for the select a custom file option.">
+        Choose a file
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AVATAR_LAST_EXTERNAL_IMAGE" desc="Title for the existing photo from camera or file option.">
+        Existing photo from camera or file
       </message>
 
       <!-- Traffic Counters UI -->

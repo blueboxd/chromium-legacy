@@ -1978,6 +1978,12 @@ const char kPasswordScriptsFetchingName[] = "Fetch password scripts";
 const char kPasswordScriptsFetchingDescription[] =
     "Fetches scripts for password change flows.";
 
+const char kForceEnablePasswordDomainCapabilitiesName[] =
+    "Force enable password change capabilities for domains";
+const char kForceEnablePasswordDomainCapabilitiesDescription[] =
+    "Force enables password change capabilities for every domain, regardless "
+    "of the server response.";
+
 const char kPdfOcrName[] = "Performs OCR on inaccessible PDFs";
 const char kPdfOcrDescription[] =
     "Enables a feature whereby inaccessible (i.e. untagged) PDFs are made "
@@ -2078,10 +2084,6 @@ const char kSupportSearchSuggestionForPrerender2Name[] =
 const char kSupportSearchSuggestionForPrerender2Description[] =
     "Allows Prerender2 to prerender search suggestions provided by the default "
     "search engine. Requires chrome://flags/#enable-prerender2 to be enabled";
-
-const char kPrivacyAdvisorName[] = "Privacy Advisor";
-const char kPrivacyAdvisorDescription[] =
-    "Provides contextual entry points for adjusting privacy settings";
 
 const char kPrivacyGuideName[] = "Privacy Guide";
 const char kPrivacyGuideDescription[] =
@@ -5278,15 +5280,10 @@ const char kTouchscreenCalibrationDescription[] =
     "If enabled, the user can calibrate the touch screen displays in "
     "chrome://settings/display.";
 
-const char kTrafficCountersHandlerEnabledName[] =
-    "Traffic counters handler enabled";
-const char kTrafficCountersHandlerEnabledDescription[] =
-    "If enabled, the TrafficCountersHandler class will handle traffic counter "
-    "resets.";
-
-const char kTrafficCountersSettingsUiName[] = "Traffic Counters Settings UI";
-const char kTrafficCountersSettingsUiDescription[] =
-    "If enabled, the SettingsUI will show data usage for cellular networks";
+const char kTrafficCountersEnabledName[] = "Traffic counters enabled";
+const char kTrafficCountersEnabledDescription[] =
+    "If enabled, data usage will be visible in the Cellular Settings UI and "
+    "traffic counters will be automatically reset if that setting is enabled.";
 
 const char kUseFakeDeviceForMediaStreamName[] = "Use fake video capture device";
 const char kUseFakeDeviceForMediaStreamDescription[] =

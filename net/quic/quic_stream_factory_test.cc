@@ -63,23 +63,23 @@
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/test_with_task_environment.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_client_config.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_client_promised_info.h"
-#include "net/third_party/quiche/src/quic/core/quic_constants.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_config_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_path_validator_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_session_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_spdy_session_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_test_utils.h"
+#include "net/third_party/quiche/src/quiche/quic/core/crypto/crypto_handshake.h"
+#include "net/third_party/quiche/src/quiche/quic/core/crypto/quic_crypto_client_config.h"
+#include "net/third_party/quiche/src/quiche/quic/core/crypto/quic_decrypter.h"
+#include "net/third_party/quiche/src/quiche/quic/core/crypto/quic_encrypter.h"
+#include "net/third_party/quiche/src/quiche/quic/core/http/quic_client_promised_info.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_constants.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_utils.h"
+#include "net/third_party/quiche/src/quiche/quic/platform/api/quic_test.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/mock_clock.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/mock_random.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/quic_config_peer.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/quic_connection_peer.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/quic_path_validator_peer.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/quic_session_peer.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/quic_spdy_session_peer.h"
+#include "net/third_party/quiche/src/quiche/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quiche/src/quiche/spdy/core/spdy_test_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -263,7 +263,6 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
   }
 
   void SetIetfConnectionMigrationFlagsAndConnectionOptions() {
-    FLAGS_quic_reloadable_flag_quic_pass_path_response_to_validator = true;
     FLAGS_quic_reloadable_flag_quic_server_reverse_validate_new_path3 = true;
     FLAGS_quic_reloadable_flag_quic_connection_migration_use_new_cid_v2 = true;
     quic_params_->connection_options.push_back(quic::kRVCM);
@@ -5061,17 +5060,8 @@ void QuicStreamFactoryTestBase::TestSimplePortMigrationOnPathDegrading() {
 
   EXPECT_EQ(1u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
 
-  base::TimeDelta next_task_delay;
-  if (!session->connection()->use_path_validator()) {
-    // Next connectivity probe is scheduled to be sent in 2 *
-    // kDefaultRTTMilliSecs.
-    EXPECT_EQ(1u, task_runner->GetPendingTaskCount());
-    next_task_delay = task_runner->NextPendingTaskDelay();
-    EXPECT_EQ(base::Milliseconds(2 * kDefaultRTTMilliSecs), next_task_delay);
-  } else {
-    // The retry mechanism is internal to path validator.
-    EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
-  }
+  // The retry mechanism is internal to path validator.
+  EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
 
   // The connection should still be alive, and not marked as going away.
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));

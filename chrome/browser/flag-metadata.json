@@ -1104,8 +1104,8 @@
   },
   {
     "name": "debug-packed-apps",
-    "owners": [ "benwells", "raymes" ],
-    "expiry_milestone": 100
+    "owners": [ "benwells", "ericwilligers" ],
+    "expiry_milestone": 120
   },
   {
     "name": "default-browser-fullscreen-promo-experiment",
@@ -3299,6 +3299,11 @@
     "expiry_milestone": 115
   },
   {
+    "name": "force-enable-password-domain-capabilities",
+    "owners": [ "vizcay", "treib", "brunobraga" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "force-major-version-to-minor",
     "owners": [ "brgoldstein", "potassium-katabolism@google.com" ],
     "expiry_milestone": 110
@@ -4797,15 +4802,6 @@
     "expiry_milestone": 112
   },
   {
-    "name": "privacy-advisor",
-    "owners": [
-      "harrisonsean",
-      "sauski",
-      "msramek",
-      "chrome-friendly-settings@google.com"],
-    "expiry_milestone": 94
-  },
-  {
     "name": "privacy-guide",
     "owners": [
       "rainhard",
@@ -5654,14 +5650,9 @@
     "expiry_milestone": 103
   },
   {
-    "name": "traffic-counters-handler-enabled",
-    "owners": ["khegde", "stevenjb"],
-    "expiry_milestone": 102
-  },
-  {
-    "name": "traffic-counters-settings-ui",
-    "owners": ["khegde", "stevenjb"],
-    "expiry_milestone": 101
+    "name": "traffic-counters",
+    "owners": ["khorimoto", "cros-connectivity@google.com"],
+    "expiry_milestone": 106
   },
   {
     "name": "translate-assist-content",
@@ -5787,7 +5778,7 @@
   {
     "name": "usb-notification-controller",
     "owners": [ "jthies", "bleung" ],
-    "expiry_milestone": 102
+    "expiry_milestone": 105
   },
   {
     "name": "use-angle",

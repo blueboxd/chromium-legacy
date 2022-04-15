@@ -6741,6 +6741,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(password_manager::features::kPasswordChange,
                                     kPasswordChangeFeatureVariations,
                                     "PasswordChangeFeatureVariations")},
+    {"force-enable-password-domain-capabilities",
+     flag_descriptions::kForceEnablePasswordDomainCapabilitiesName,
+     flag_descriptions::kForceEnablePasswordDomainCapabilitiesDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kForceEnablePasswordDomainCapabilities)},
 
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -7178,10 +7184,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableOopPrintDriversDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(printing::features::kEnableOopPrintDrivers)},
 #endif
-
-    {"privacy-advisor", flag_descriptions::kPrivacyAdvisorName,
-     flag_descriptions::kPrivacyAdvisorDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kPrivacyAdvisor)},
 
     {"privacy-sandbox-v3-desktop", flag_descriptions::kPrivacySandboxV3Name,
      flag_descriptions::kPrivacySandboxV3Description, kOsDesktop,
@@ -7848,10 +7850,9 @@ const FeatureEntry kFeatureEntries[] = {
          password_manager::features::kPasswordsAccountStorageRevisedOptInFlow)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"traffic-counters-settings-ui",
-     flag_descriptions::kTrafficCountersSettingsUiName,
-     flag_descriptions::kTrafficCountersSettingsUiDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kTrafficCountersSettingsUi)},
+    {"traffic-counters", flag_descriptions::kTrafficCountersEnabledName,
+     flag_descriptions::kTrafficCountersEnabledDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kTrafficCountersEnabled)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"extensions-menu-access-control",
@@ -8160,13 +8161,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCloseAllTabsModalDialogDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kCloseAllTabsModalDialog)},
 #endif  // BUILDFLAG(IS_ANDROID)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"traffic-counters-handler-enabled",
-     flag_descriptions::kTrafficCountersHandlerEnabledName,
-     flag_descriptions::kTrafficCountersHandlerEnabledDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kTrafficCountersHandlerEnabled)},
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"tailored-security-integration",
      flag_descriptions::kTailoredSecurityIntegrationName,
@@ -8494,16 +8488,11 @@ bool ShouldSkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
   if (!strcmp(kWallpaperFullScreenPreviewInternalName, entry.internal_name))
     return !ash::features::IsWallpaperWebUIEnabled();
 
-  // Only show Google Photos wallpaper integration flag if:
-  // * channel is one of Beta/Dev/Canary/Unknown, and
-  // * wallpaper Web UI flag is enabled.
+  // Only show Google Photos wallpaper integration flag if wallpaper flag is
+  // enabled.
   if (!strcmp(kWallpaperGooglePhotosIntegrationInternalName,
               entry.internal_name)) {
-    return (channel != version_info::Channel::BETA &&
-            channel != version_info::Channel::DEV &&
-            channel != version_info::Channel::CANARY &&
-            channel != version_info::Channel::UNKNOWN) ||
-           !ash::features::IsWallpaperWebUIEnabled();
+    return !ash::features::IsWallpaperWebUIEnabled();
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

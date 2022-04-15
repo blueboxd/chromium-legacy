@@ -20,6 +20,8 @@ namespace features {
 BLINK_COMMON_EXPORT extern const base::Feature kAutomaticLazyFrameLoadingToAds;
 BLINK_COMMON_EXPORT extern const base::Feature
     kAutomaticLazyFrameLoadingToEmbeds;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kAutomaticLazyFrameLoadingToEmbedUrls;
 BLINK_COMMON_EXPORT extern const base::Feature kBackForwardCacheDedicatedWorker;
 BLINK_COMMON_EXPORT extern const base::Feature
     kBlockingDownloadsInAdFrameWithoutUserActivation;
@@ -703,6 +705,10 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<bool> kPrewarmFantasy;
 #endif
 
 BLINK_COMMON_EXPORT extern const base::Feature kClientHintsSaveData;
+
+// Enables establishing the GPU channel asnchronously when requesting a new
+// layer tree frame sink.
+BLINK_COMMON_EXPORT extern const base::Feature kEstablishGpuChannelAsync;
 
 }  // namespace features
 }  // namespace blink

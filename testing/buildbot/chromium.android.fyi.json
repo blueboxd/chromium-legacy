@@ -33,7 +33,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "ai8Ig4HlO0vG6aP_JP2uhyruE2yPzze8PFP1g8Z4_hgC"
+              "revision": "rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -7112,7 +7112,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "ai8Ig4HlO0vG6aP_JP2uhyruE2yPzze8PFP1g8Z4_hgC"
+              "revision": "rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -8178,7 +8178,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M100",
-              "revision": "version:100.0.4896.93"
+              "revision": "version:100.0.4896.124"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -8262,7 +8262,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M101",
-              "revision": "version:101.0.4951.32"
+              "revision": "version:101.0.4951.34"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -8682,7 +8682,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M100",
-              "revision": "version:100.0.4896.93"
+              "revision": "version:100.0.4896.124"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -8766,7 +8766,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M101",
-              "revision": "version:101.0.4951.32"
+              "revision": "version:101.0.4951.34"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -9433,7 +9433,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "ai8Ig4HlO0vG6aP_JP2uhyruE2yPzze8PFP1g8Z4_hgC"
+              "revision": "rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -9507,7 +9507,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "ai8Ig4HlO0vG6aP_JP2uhyruE2yPzze8PFP1g8Z4_hgC"
+              "revision": "rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",

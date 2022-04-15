@@ -1527,12 +1527,22 @@
           'chromiumos_preflight',
         ],
       },
+      'chromeos-amd64-generic-asan-rel (reclient shadow)': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
       'chromeos-amd64-generic-cfi-thin-lto-rel': {
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
       },
       'chromeos-amd64-generic-dbg': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
+      'chromeos-amd64-generic-dbg (reclient shadow)': {
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
@@ -1563,6 +1573,11 @@
           'chromiumos_preflight',
         ],
       },
+      'chromeos-arm-generic-dbg (reclient shadow)': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
       'chromeos-arm-generic-rel': {
         'additional_compile_targets': [
           'chromiumos_preflight',
@@ -1574,6 +1589,20 @@
         ],
       },
       'chromeos-kevin-rel': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'mixins': [
+          'chromeos-kevin',
+          'has_native_resultdb_integration',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_device_gtests',
+          'isolated_scripts': 'chromeos_remote_device_isolated_tests',
+        },
+        'os_type': 'chromeos',
+      },
+      'chromeos-kevin-rel (reclient shadow)': {
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
@@ -2202,7 +2231,7 @@
           'linux_intel_hd_630_stable',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_regular_and_validation',
+          'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_regular',
           'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
@@ -2226,7 +2255,7 @@
           'linux_intel_hd_630_stable',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_regular_and_validation',
+          'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_regular',
           'gtest_tests': 'gpu_dawn_integration_gtests_passthrough',
           'isolated_scripts': 'gpu_dawn_isolated_scripts',
         },
@@ -2342,7 +2371,7 @@
           'win10_intel_hd_630_stable',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_regular_and_partial_validation',
+          'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_regular',
           'gtest_tests': 'gpu_dawn_integration_gtests_passthrough_win_intel',
           'isolated_scripts': 'gpu_dawn_isolated_scripts_win',
         },
@@ -2366,7 +2395,7 @@
           'win10_intel_hd_630_stable',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_regular_and_partial_validation',
+          'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_regular',
           'gtest_tests': 'gpu_dawn_integration_gtests_passthrough_win_intel',
           'isolated_scripts': 'gpu_dawn_isolated_scripts_win',
         },
@@ -2392,7 +2421,7 @@
           'win10_intel_hd_630_stable',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_regular_and_partial_validation',
+          'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_regular',
           'gtest_tests': 'gpu_dawn_integration_gtests_passthrough_win_intel',
           'isolated_scripts': 'gpu_dawn_isolated_scripts_win',
         },
@@ -2416,7 +2445,7 @@
           'win10_intel_hd_630_stable',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_regular_and_partial_validation',
+          'gpu_telemetry_tests': 'gpu_dawn_telemetry_cts_regular',
           'gtest_tests': 'gpu_dawn_integration_gtests_passthrough_win_intel',
           'isolated_scripts': 'gpu_dawn_isolated_scripts_win',
         },
@@ -2553,6 +2582,11 @@
         ],
       },
       'ChromiumOS ASAN Release': {
+        'additional_compile_targets': [
+          'chromium_builder_asan',
+        ],
+      },
+      'ChromiumOS ASAN Release (reclient shadow)': {
         'additional_compile_targets': [
           'chromium_builder_asan',
         ],
@@ -4330,6 +4364,21 @@
           'gpu_telemetry_tests': 'gpu_fyi_chromeos_release_telemetry_tests',
         },
       },
+      'ChromeOS FYI Release (amd64-generic) (reclient shadow)': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'browser_config': 'cros-chrome',
+        'os_type': 'chromeos',
+        'skip_merge_script': True,
+        'mixins': [
+          'chromeos-amd64-generic',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_fyi_chromeos_release_gtests',
+          'gpu_telemetry_tests': 'gpu_fyi_chromeos_release_telemetry_tests',
+        },
+      },
       'ChromeOS FYI Release (kevin)': {
         'additional_compile_targets': [
           'chromiumos_preflight',
@@ -4956,6 +5005,22 @@
           'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
         },
       },
+      'gpu-fyi-chromeos-octopus-exp (reclient shadow)': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'browser_config': 'cros-chrome',
+        'os_type': 'chromeos',
+        'skip_merge_script': True,
+        'mixins': [
+          'chromeos-octopus',
+          'gpu-exp-swarming-pool',
+          'limited_capacity_bot',
+        ],
+        'test_suites': {
+          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+        },
+      },
       'gpu-fyi-chromeos-zork-exp': {
         'additional_compile_targets': [
           'chromiumos_preflight',
@@ -5153,16 +5218,6 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
-      'linux-bionic-rel': {
-        'mixins': [
-          'linux-bionic',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_gtests',
-          'isolated_scripts': 'chromium_linux_rel_isolated_scripts',
-          'scripts': 'chromium_linux_scripts',
-        },
-      },
       'linux-extended-tracing-rel': {
         'additional_compile_targets': [
           'all',
@@ -5172,26 +5227,6 @@
         'additional_compile_targets': [
           'empty_main',
         ],
-      },
-      'linux-trusty-rel': {
-        'mixins': [
-          'linux-trusty',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_gtests',
-          'isolated_scripts': 'chromium_linux_rel_isolated_scripts',
-          'scripts': 'chromium_linux_scripts',
-        },
-      },
-      'linux-xenial-rel': {
-        'mixins': [
-          'linux-xenial',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_gtests',
-          'isolated_scripts': 'chromium_linux_rel_isolated_scripts',
-          'scripts': 'chromium_linux_scripts',
-        },
       },
     },
   },
@@ -5509,54 +5544,6 @@
             },
           ],
         },
-      },
-    },
-  },
-  {
-    'name': 'chromium.mojo',
-    'mixins': ['chromium-tester-service-account'],
-    'machines': {
-      'Mojo Android': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'MMB29Q',
-              'device_type': 'bullhead',
-              'os': 'Android',
-            },
-          ],
-          'hard_timeout': 3600,
-        },
-        'os_type': 'android',
-        'test_suites': {
-          'gtest_tests': 'mojo_android_gtests',
-        },
-      },
-      'Mojo ChromiumOS': {
-        'mixins': [
-          'linux-bionic',
-        ],
-        'test_suites': {
-          'gtest_tests': 'mojo_chromiumos_fyi_gtests',
-        },
-      },
-      'Mojo Linux': {
-        'mixins': [
-          'linux-bionic',
-        ],
-        'test_suites': {
-          'gtest_tests': 'mojo_linux_gtests',
-        },
-      },
-      'Mojo Windows': {
-        'test_suites': {
-          'gtest_tests': 'mojo_windows_gtests',
-        },
-      },
-      'mac-mojo-rel': {
-        'mixins': [
-          'mac_10.13',
-        ],
       },
     },
   },

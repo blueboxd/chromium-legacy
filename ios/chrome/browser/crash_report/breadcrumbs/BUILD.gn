@@ -48,6 +48,7 @@ source_set("application_breadcrumbs_logger") {
     "//components/breadcrumbs/core",
     "//ios/chrome/browser/crash_report:crash_report_internal",
     "//ios/chrome/browser/crash_report/breadcrumbs",
+    "//ios/chrome/browser/metrics:accessor",
   ]
 }
 
@@ -71,7 +72,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/overlays/test",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/infobars/test",
-    "//ios/chrome/browser/web:test_support",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/browser/web_state_list:test_support",
     "//ios/chrome/test:test_support",

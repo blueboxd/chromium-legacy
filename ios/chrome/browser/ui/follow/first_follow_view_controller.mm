@@ -5,9 +5,15 @@
 #import "ios/chrome/browser/ui/follow/first_follow_view_controller.h"
 
 #include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/favicon/favicon_loader.h"
+#import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/ui/follow/first_follow_view_delegate.h"
 #import "ios/chrome/browser/ui/follow/followed_web_channel.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/favicon/favicon_attributes.h"
+#import "ios/chrome/common/ui/favicon/favicon_constants.h"
+#import "ios/chrome/common/ui/favicon/favicon_container_view.h"
+#import "ios/chrome/common/ui/favicon/favicon_view.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
@@ -38,6 +44,8 @@ constexpr CGFloat kButtonCornerRadius = 8;
 - (void)viewDidLoad {
   [super viewDidLoad];
 
+  UIView* faviconView = [self faviconView];
+
   // TODO(crbug.com/1312124): Polish this UI and add favicon.
   UILabel* titleLabel = [self
       labelWithText:l10n_util::GetNSStringF(
@@ -53,13 +61,28 @@ constexpr CGFloat kButtonCornerRadius = 8;
   UIButton* goToFeedButton = [self filledGoToFeedButton];
   UIButton* gotItButton = [self plainGotItButton];
 
+  // Set colors.
+  self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
+  titleLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
+  subTitleLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
+  bodyLabel.textColor = [UIColor colorNamed:kTextTertiaryColor];
+  goToFeedButton.backgroundColor = [UIColor colorNamed:kBlueColor];
+  gotItButton.backgroundColor = [UIColor clearColor];
+  [goToFeedButton setTitleColor:[UIColor colorNamed:kSolidButtonTextColor]
+                       forState:UIControlStateNormal];
+  [gotItButton setTitleColor:[UIColor colorNamed:kBlueColor]
+                    forState:UIControlStateNormal];
+
   // Go To Feed button is only displayed if the web channel is available.
   NSArray* subviews = nil;
   if (self.followedWebChannel.available) {
-    subviews =
-        @[ titleLabel, subTitleLabel, bodyLabel, goToFeedButton, gotItButton ];
+    subviews = @[
+      faviconView, titleLabel, subTitleLabel, bodyLabel, goToFeedButton,
+      gotItButton
+    ];
   } else {
-    subviews = @[ titleLabel, subTitleLabel, bodyLabel, gotItButton ];
+    subviews =
+        @[ faviconView, titleLabel, subTitleLabel, bodyLabel, gotItButton ];
   }
   UIStackView* verticalStack =
       [[UIStackView alloc] initWithArrangedSubviews:subviews];
@@ -69,7 +92,6 @@ constexpr CGFloat kButtonCornerRadius = 8;
   verticalStack.spacing = kStackViewSubViewSpacing;
   verticalStack.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:verticalStack];
-  self.view.backgroundColor = [UIColor whiteColor];
 
   [NSLayoutConstraint activateConstraints:@[
     [verticalStack.leadingAnchor
@@ -83,6 +105,13 @@ constexpr CGFloat kButtonCornerRadius = 8;
 }
 
 #pragma mark - Helper
+
+// Calls delegate to go to feed and dismisses the sheet.
+- (void)handleGoToFeedTapped {
+  [self.delegate handleGoToFeedTapped];
+  [self.presentingViewController dismissViewControllerAnimated:YES
+                                                    completion:nil];
+}
 
 // Dismisses the sheet.
 - (void)handleGotItTapped {
@@ -102,10 +131,44 @@ constexpr CGFloat kButtonCornerRadius = 8;
   return label;
 }
 
+- (UIView*)faviconView {
+  FaviconContainerView* faviconContainerView =
+      [[FaviconContainerView alloc] init];
+  faviconContainerView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.faviconLoader->FaviconForPageUrl(
+      self.followedWebChannel.channelURL.gurl, kDesiredSmallFaviconSizePt,
+      kMinFaviconSizePt,
+      /*fallback_to_google_server=*/true, ^(FaviconAttributes* attributes) {
+        [faviconContainerView.faviconView configureWithAttributes:attributes];
+      });
+
+  UIImageView* faviconBadgeView = [[UIImageView alloc] init];
+  faviconBadgeView.translatesAutoresizingMaskIntoConstraints = NO;
+  faviconBadgeView.image = [UIImage imageNamed:@"table_view_cell_check_mark"];
+
+  UIView* view = [[UIView alloc] init];
+  [view addSubview:faviconContainerView];
+  [view addSubview:faviconBadgeView];
+
+  [NSLayoutConstraint activateConstraints:@[
+    [view.leadingAnchor
+        constraintEqualToAnchor:faviconContainerView.leadingAnchor],
+    [view.trailingAnchor
+        constraintEqualToAnchor:faviconBadgeView.trailingAnchor],
+    [view.topAnchor constraintEqualToAnchor:faviconBadgeView.topAnchor],
+    [view.bottomAnchor
+        constraintEqualToAnchor:faviconContainerView.bottomAnchor],
+    [faviconBadgeView.centerYAnchor
+        constraintEqualToAnchor:faviconContainerView.topAnchor],
+    [faviconBadgeView.centerXAnchor
+        constraintEqualToAnchor:faviconContainerView.trailingAnchor],
+  ]];
+  return view;
+}
+
 // Returns a filled button.
 - (UIButton*)filledGoToFeedButton {
   UIButton* button = [[UIButton alloc] init];
-  button.backgroundColor = [UIColor colorNamed:kBlueColor];
   button.titleLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
   button.titleLabel.adjustsFontForContentSizeCategory = YES;
@@ -118,7 +181,7 @@ constexpr CGFloat kButtonCornerRadius = 8;
   [button setTitle:l10n_util::GetNSString(IDS_IOS_FIRST_FOLLOW_GO_TO_FEED)
           forState:UIControlStateNormal];
   [button setAccessibilityIdentifier:kFirstFollowGoToFeedButtonIdentifier];
-  [button addTarget:self.delegate
+  [button addTarget:self
                 action:@selector(handleGoToFeedTapped)
       forControlEvents:UIControlEventTouchUpInside];
   return button;
@@ -128,8 +191,6 @@ constexpr CGFloat kButtonCornerRadius = 8;
 // TODO(crbug.com/1312124): Consolidate button creation code.
 - (UIButton*)plainGotItButton {
   UIButton* button = [[UIButton alloc] init];
-  [button setTitleColor:[UIColor colorNamed:kBlueColor]
-               forState:UIControlStateNormal];
   button.titleLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
   button.titleLabel.adjustsFontForContentSizeCategory = YES;

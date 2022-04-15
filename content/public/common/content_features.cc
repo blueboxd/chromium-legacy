@@ -351,6 +351,10 @@ const char kFedCmAutoSigninFieldTrialParamName[] = "AutoSignin";
 // is enabled.
 const char kFedCmIdpSignoutFieldTrialParamName[] = "IdpSignout";
 
+// Kill switch for FedCm manifest validation.
+const base::Feature kFedCmManifestValidation{"FedCmManifestValidation",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables usage of First Party Sets to determine cookie availability.
 constexpr base::Feature kFirstPartySets{"FirstPartySets",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -707,7 +711,7 @@ const base::Feature kPrivateNetworkAccessRespectPreflightResults = {
 // Enables sending CORS preflight requests ahead of private network requests.
 // See: https://wicg.github.io/private-network-access/#cors-preflight
 const base::Feature kPrivateNetworkAccessSendPreflights = {
-    "PrivateNetworkAccessSendPreflights", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PrivateNetworkAccessSendPreflights", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable the ProactivelySwapBrowsingInstance experiment. A browsing instance
 // represents a set of frames that can script each other. Currently, Chrome does

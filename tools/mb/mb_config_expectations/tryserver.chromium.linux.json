@@ -222,7 +222,6 @@
       "dcheck_always_on": true,
       "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
-      "internal_gles2_conform_tests": true,
       "is_component_build": false,
       "is_debug": false,
       "is_gpu_fyi_bot": true,
@@ -236,7 +235,6 @@
       "dcheck_always_on": true,
       "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
-      "internal_gles2_conform_tests": true,
       "is_component_build": false,
       "is_debug": false,
       "is_gpu_fyi_bot": true,
@@ -250,7 +248,6 @@
       "dcheck_always_on": true,
       "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
-      "internal_gles2_conform_tests": true,
       "is_component_build": false,
       "is_debug": false,
       "is_gpu_fyi_bot": true,
@@ -263,7 +260,6 @@
     "gn_args": {
       "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
-      "internal_gles2_conform_tests": true,
       "is_component_build": true,
       "is_debug": true,
       "is_gpu_fyi_bot": true,
@@ -277,7 +273,6 @@
       "dcheck_always_on": true,
       "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
-      "internal_gles2_conform_tests": true,
       "is_component_build": false,
       "is_debug": false,
       "is_gpu_fyi_bot": true,
@@ -291,7 +286,6 @@
       "dcheck_always_on": true,
       "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
-      "internal_gles2_conform_tests": true,
       "is_component_build": false,
       "is_debug": false,
       "is_gpu_fyi_bot": true,
@@ -305,7 +299,6 @@
       "dcheck_always_on": true,
       "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
-      "internal_gles2_conform_tests": true,
       "is_component_build": false,
       "is_debug": false,
       "is_gpu_fyi_bot": true,
@@ -389,18 +382,6 @@
       "is_component_build": false,
       "is_debug": false,
       "proprietary_codecs": true,
-      "use_goma": true
-    }
-  },
-  "linux-bionic-rel": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 0,
-      "use_dummy_lastchange": true,
       "use_goma": true
     }
   },
@@ -638,18 +619,6 @@
       "use_goma": true
     }
   },
-  "linux-trusty-rel": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 0,
-      "use_dummy_lastchange": true,
-      "use_goma": true
-    }
-  },
   "linux-viz-rel": {
     "gn_args": {
       "dcheck_always_on": true,
@@ -710,18 +679,6 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 0,
-      "use_goma": true
-    }
-  },
-  "linux-xenial-rel": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 0,
-      "use_dummy_lastchange": true,
       "use_goma": true
     }
   },
@@ -865,33 +822,11 @@
       "use_goma": true
     }
   },
-  "linux_mojo": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "symbol_level": 0,
-      "use_goma": true
-    }
-  },
-  "linux_mojo_chromeos": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "ffmpeg_branding": "ChromeOS",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 0,
-      "target_os": "chromeos",
-      "use_goma": true
-    }
-  },
   "linux_optional_gpu_tests_rel": {
     "gn_args": {
       "dcheck_always_on": true,
       "enable_nacl": false,
       "ffmpeg_branding": "Chrome",
-      "internal_gles2_conform_tests": true,
       "is_component_build": false,
       "is_debug": false,
       "is_gpu_fyi_bot": true,

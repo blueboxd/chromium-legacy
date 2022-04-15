@@ -13,12 +13,12 @@ import {NativeLayerCros, NativeLayerCrosImpl, PrinterSetupResponse} from '../nat
 
 // </if>
 import {Cdd, MediaSizeOption} from './cdd.js';
-import {createDestinationKey, createRecentDestinationKey, Destination, DestinationConnectionStatus, DestinationOrigin, GooglePromotedDestinationId, RecentDestination} from './destination.js';
+import {createDestinationKey, createRecentDestinationKey, Destination, DestinationOrigin, GooglePromotedDestinationId, RecentDestination} from './destination.js';
 // <if expr="chromeos_ash or chromeos_lacros">
 import {DestinationProvisionalType} from './destination.js';
 // </if>
 import {DestinationMatch, getPrinterTypeForDestination, originToType, PrinterType} from './destination_match.js';
-import {LocalDestinationInfo, parseDestination, ProvisionalDestinationInfo} from './local_parsers.js';
+import {ExtensionDestinationInfo, LocalDestinationInfo, parseDestination} from './local_parsers.js';
 // <if expr="chromeos_ash or chromeos_lacros">
 import {parseExtensionDestination} from './local_parsers.js';
 // </if>
@@ -250,7 +250,7 @@ export class DestinationStore extends EventTarget {
            listener:
                (t: PrinterType,
                 p: LocalDestinationInfo[]|
-                ProvisionalDestinationInfo[]) => void) => void) {
+                ExtensionDestinationInfo[]) => void) => void) {
     super();
 
     this.destinationSearchStatus_ = new Map([
@@ -271,7 +271,7 @@ export class DestinationStore extends EventTarget {
     addListenerCallback(
         'printers-added',
         (type: PrinterType,
-         printers: LocalDestinationInfo[]|ProvisionalDestinationInfo[]) =>
+         printers: LocalDestinationInfo[]|ExtensionDestinationInfo[]) =>
             this.onPrintersAdded_(type, printers));
   }
 
@@ -597,8 +597,10 @@ export class DestinationStore extends EventTarget {
       return;
     }
 
+    // <if expr="chromeos_ash or chromeos_lacros">
     assert(
         !destination.isProvisional, 'Unable to select provisonal destinations');
+    // </if>
 
     // Update and persist selected destination.
     this.selectedDestination_ = destination;
@@ -832,12 +834,6 @@ export class DestinationStore extends EventTarget {
       this.destinationMap_.set(key, destination);
       return true;
     }
-    if (existingDestination.connectionStatus ===
-            DestinationConnectionStatus.UNKNOWN &&
-        destination.connectionStatus !== DestinationConnectionStatus.UNKNOWN) {
-      existingDestination.connectionStatus = destination.connectionStatus;
-      return true;
-    }
     return false;
   }
 
@@ -848,8 +844,7 @@ export class DestinationStore extends EventTarget {
     if (this.pdfPrinterEnabled_) {
       this.insertDestination_(new Destination(
           GooglePromotedDestinationId.SAVE_AS_PDF, DestinationOrigin.LOCAL,
-          loadTimeData.getString('printToPDF'),
-          DestinationConnectionStatus.ONLINE));
+          loadTimeData.getString('printToPDF')));
     }
     if (this.typesToSearch_.has(PrinterType.PDF_PRINTER)) {
       this.typesToSearch_.delete(PrinterType.PDF_PRINTER);
@@ -863,8 +858,7 @@ export class DestinationStore extends EventTarget {
   private createLocalDrivePrintDestination_() {
     this.insertDestination_(new Destination(
         GooglePromotedDestinationId.SAVE_TO_DRIVE_CROS, DestinationOrigin.LOCAL,
-        loadTimeData.getString('printToGoogleDrive'),
-        DestinationConnectionStatus.ONLINE));
+        loadTimeData.getString('printToGoogleDrive')));
   }
   // </if>
 
@@ -962,9 +956,9 @@ export class DestinationStore extends EventTarget {
    */
   private onPrintersAdded_(
       type: PrinterType,
-      printers: LocalDestinationInfo[]|ProvisionalDestinationInfo[]) {
+      printers: LocalDestinationInfo[]|ExtensionDestinationInfo[]) {
     this.insertDestinations_(printers.map(
-        (printer: LocalDestinationInfo|ProvisionalDestinationInfo) =>
+        (printer: LocalDestinationInfo|ExtensionDestinationInfo) =>
             parseDestination(type, printer)));
   }
 }

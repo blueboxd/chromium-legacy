@@ -2764,7 +2764,7 @@
       'webgpu_cts_with_validation': {
         'args': [
           '--extra-browser-args=--force_high_performance_gpu',
-          '--is-backend-validation',
+          '--enable-dawn-backend-validation',
           '--override-timeout=30',
           '--retry-limit=3',
         ],
@@ -2785,7 +2785,7 @@
       'webgpu_cts_with_validation': {
         'args': [
           '--extra-browser-args=--force_high_performance_gpu',
-          '--is-backend-validation',
+          '--enable-dawn-backend-validation',
           '--override-timeout=30',
           '--retry-limit=3',
         ],
@@ -4326,20 +4326,12 @@
       'mac_signing_tests': {},
     },
 
-    'mojo_chromiumos_specific_gtests': {
-      'wayland_client_perftests': {},
-    },
-
     'mojo_python_unittests_isolated_scripts': {
       'mojo_python_unittests': {
         'resultdb': {
           'enable': True,
         },
       },
-    },
-
-    'mojo_windows_specific_gtests': {
-      'services_unittests': {},
     },
 
     'monochrome_public_apk_checker_isolated_script': {
@@ -5361,7 +5353,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'ai8Ig4HlO0vG6aP_JP2uhyruE2yPzze8PFP1g8Z4_hgC',
+              'revision': 'rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC',
             }
           ]
         },
@@ -5398,7 +5390,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'ai8Ig4HlO0vG6aP_JP2uhyruE2yPzze8PFP1g8Z4_hgC',
+              'revision': 'rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC',
             }
           ]
         },
@@ -5416,7 +5408,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'ai8Ig4HlO0vG6aP_JP2uhyruE2yPzze8PFP1g8Z4_hgC',
+              'revision': 'rzLrTykLB2J7ON1a9_5F7qmkjH3U246nHDPHiTruibUC',
             }
           ]
         },
@@ -6298,6 +6290,10 @@
       'gpu_webgpu_integration_partial_backend_validation_isolated_scripts',
     ],
 
+    'gpu_dawn_telemetry_cts_regular': [
+      'gpu_dawn_telemetry_cts_tests',
+    ],
+
     'gpu_dawn_telemetry_cts_regular_and_partial_validation': [
       'gpu_dawn_telemetry_cts_tests',
       'gpu_dawn_telemetry_cts_tests_with_partial_validation',
@@ -6794,22 +6790,6 @@
       'components_perftests_isolated_scripts',
       'telemetry_android_minidump_unittests_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts_android',
-    ],
-
-    'mojo_android_gtests': [
-    ],
-
-    'mojo_chromiumos_fyi_gtests': [
-      'aura_gtests',
-      'mojo_chromiumos_specific_gtests',
-    ],
-
-    'mojo_linux_gtests': [
-    ],
-
-    'mojo_windows_gtests': [
-      'mojo_windows_specific_gtests',
-      'network_service_fyi_gtests',
     ],
 
     'monochrome_public_apk_checker_isolated_script_and_sizes': [

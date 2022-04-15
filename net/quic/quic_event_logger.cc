@@ -8,7 +8,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/log/net_log_values.h"
 #include "net/quic/address_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_socket_address_coder.h"
+#include "net/third_party/quiche/src/quiche/quic/core/quic_socket_address_coder.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
 namespace net {
@@ -467,13 +467,13 @@ void QuicEventLogger::OnFrameAddedToPacket(const quic::QuicFrame& frame) {
     case quic::PATH_RESPONSE_FRAME:
       net_log_.AddEvent(
           NetLogEventType::QUIC_SESSION_PATH_RESPONSE_FRAME_SENT, [&] {
-            return NetLogQuicPathData(frame.path_response_frame->data_buffer);
+            return NetLogQuicPathData(frame.path_response_frame.data_buffer);
           });
       break;
     case quic::PATH_CHALLENGE_FRAME:
       net_log_.AddEvent(
           NetLogEventType::QUIC_SESSION_PATH_CHALLENGE_FRAME_SENT, [&] {
-            return NetLogQuicPathData(frame.path_challenge_frame->data_buffer);
+            return NetLogQuicPathData(frame.path_challenge_frame.data_buffer);
           });
       break;
     case quic::STOP_SENDING_FRAME:

@@ -4006,6 +4006,7 @@ if (!is_android) {
         "//chromeos/assistant:buildflags",
         "//chromeos/components/onc:test_support",
         "//chromeos/components/quick_answers/public/cpp:cpp",
+        "//chromeos/components/remote_apps/mojom:mojom",
         "//chromeos/dbus:test_support",
         "//chromeos/dbus/attestation",
         "//chromeos/dbus/attestation:attestation_proto",
@@ -5652,6 +5653,7 @@ test("unit_tests") {
     "//chrome/browser/media/router:media_router_feature",
     "//chrome/browser/media/router:unittests",
     "//chrome/browser/media/router/discovery/access_code:access_code_cast_feature",
+    "//chrome/browser/net:key_pinning_proto",
     "//chrome/browser/net:probe_message_proto",
     "//chrome/browser/new_tab_page/chrome_colors:generate_chrome_colors_info",
     "//chrome/browser/new_tab_page/chrome_colors:generate_colors_info",
@@ -5728,7 +5730,6 @@ test("unit_tests") {
     "//components/encrypted_messages",
     "//components/encrypted_messages:encrypted_message_proto",
     "//components/enterprise/common/proto:connectors_proto",
-    "//components/enterprise/common/proto:device_trust_report_event_proto",
     "//components/enterprise/common/proto:extensions_workflow_events_proto",
     "//components/favicon/core/test:test_support",
     "//components/feature_engagement/public",
@@ -9168,6 +9169,7 @@ if (!is_android) {
         "interaction/interaction_test_util_interactive_uitest.cc",
       ]
       deps += [
+        "//components/live_caption:utils",
         "//components/optimization_guide/core:test_support",
         "//components/optimization_guide/proto:optimization_guide_proto",
         "//ui/base/dragdrop:types",

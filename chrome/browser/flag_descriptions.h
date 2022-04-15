@@ -1112,6 +1112,9 @@ extern const char kPasswordDomainCapabilitiesFetchingDescription[];
 extern const char kPasswordScriptsFetchingName[];
 extern const char kPasswordScriptsFetchingDescription[];
 
+extern const char kForceEnablePasswordDomainCapabilitiesName[];
+extern const char kForceEnablePasswordDomainCapabilitiesDescription[];
+
 extern const char kPdfOcrName[];
 extern const char kPdfOcrDescription[];
 
@@ -1168,9 +1171,6 @@ extern const char kOmniboxTriggerForPrerender2Description[];
 
 extern const char kSupportSearchSuggestionForPrerender2Name[];
 extern const char kSupportSearchSuggestionForPrerender2Description[];
-
-extern const char kPrivacyAdvisorName[];
-extern const char kPrivacyAdvisorDescription[];
 
 extern const char kPrivacyGuideName[];
 extern const char kPrivacyGuideDescription[];
@@ -3034,11 +3034,8 @@ extern const char kTetherDescription[];
 extern const char kTouchscreenCalibrationName[];
 extern const char kTouchscreenCalibrationDescription[];
 
-extern const char kTrafficCountersHandlerEnabledName[];
-extern const char kTrafficCountersHandlerEnabledDescription[];
-
-extern const char kTrafficCountersSettingsUiName[];
-extern const char kTrafficCountersSettingsUiDescription[];
+extern const char kTrafficCountersEnabledName[];
+extern const char kTrafficCountersEnabledDescription[];
 
 extern const char kUiDevToolsName[];
 extern const char kUiDevToolsDescription[];

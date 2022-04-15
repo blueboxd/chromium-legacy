@@ -94,6 +94,11 @@ class QuadF;
 class RectF;
 }
 
+namespace mojo {
+template <typename Interface>
+class PendingRemote;
+}  // namespace mojo
+
 namespace ukm {
 class UkmRecorder;
 }  // namespace ukm
@@ -1789,6 +1794,9 @@ class CORE_EXPORT Document : public ContainerNode,
   void RenderBlockingResourceUnblocked();
 
   bool RenderingHasBegun() const { return rendering_has_begun_; }
+
+  void IncrementLazyAdsFrameCount();
+  void IncrementLazyEmbedsFrameCount();
 
   enum class DeclarativeShadowRootAllowState : uint8_t {
     kNotSet,

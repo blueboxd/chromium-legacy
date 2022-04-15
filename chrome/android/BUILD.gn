@@ -268,7 +268,6 @@ android_resources("chrome_app_java_resources") {
     "//third_party/android_deps:material_design_java",
     "//third_party/androidx:androidx_gridlayout_gridlayout_java",
     "//third_party/androidx:androidx_preference_preference_java",
-    "//third_party/androidx:androidx_recyclerview_recyclerview_java",
   ]
 }
 
@@ -626,17 +625,13 @@ android_library("chrome_java") {
     "//third_party/androidx:androidx_browser_browser_java",
     "//third_party/androidx:androidx_collection_collection_java",
     "//third_party/androidx:androidx_coordinatorlayout_coordinatorlayout_java",
-    "//third_party/androidx:androidx_core_core_java",
     "//third_party/androidx:androidx_customview_customview_java",
     "//third_party/androidx:androidx_gridlayout_gridlayout_java",
-    "//third_party/androidx:androidx_interpolator_interpolator_java",
-    "//third_party/androidx:androidx_lifecycle_lifecycle_common_java",
     "//third_party/androidx:androidx_lifecycle_lifecycle_common_java8_java",
     "//third_party/androidx:androidx_lifecycle_lifecycle_runtime_java",
     "//third_party/androidx:androidx_localbroadcastmanager_localbroadcastmanager_java",
     "//third_party/androidx:androidx_mediarouter_mediarouter_java",
     "//third_party/androidx:androidx_preference_preference_java",
-    "//third_party/androidx:androidx_recyclerview_recyclerview_java",
     "//third_party/androidx:androidx_viewpager2_viewpager2_java",
     "//third_party/androidx:androidx_viewpager_viewpager_java",
     "//third_party/blink/public:blink_headers_java",
@@ -992,6 +987,7 @@ junit_binary("chrome_junit_tests") {
     "//chrome/browser/flags:java",
     "//chrome/browser/fullscreen/android:java",
     "//chrome/browser/gsa:java",
+    "//chrome/browser/history_clusters:java",
     "//chrome/browser/image_descriptions:java",
     "//chrome/browser/image_editor/public:java",
     "//chrome/browser/incognito:incognito_junit_tests",
@@ -1157,10 +1153,8 @@ junit_binary("chrome_junit_tests") {
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_browser_browser_java",
     "//third_party/androidx:androidx_collection_collection_java",
-    "//third_party/androidx:androidx_lifecycle_lifecycle_common_java",
     "//third_party/androidx:androidx_lifecycle_lifecycle_runtime_java",
     "//third_party/androidx:androidx_mediarouter_mediarouter_java",
-    "//third_party/androidx:androidx_recyclerview_recyclerview_java",
     "//third_party/androidx:androidx_swiperefreshlayout_swiperefreshlayout_java",
     "//third_party/androidx:androidx_test_core_java",
     "//third_party/androidx:androidx_test_runner_java",
@@ -1258,7 +1252,6 @@ android_library("chrome_test_util_java") {
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
     "//net/android:net_java_test_support",
-    "//third_party/android_deps:android_support_v4_java",
     "//third_party/android_deps:espresso_java",
     "//third_party/android_media:android_media_resources",
     "//third_party/android_support_test_runner:runner_java",
@@ -1617,9 +1610,7 @@ android_library("chrome_test_java") {
     "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
     "//third_party/androidx:androidx_browser_browser_java",
     "//third_party/androidx:androidx_collection_collection_java",
-    "//third_party/androidx:androidx_lifecycle_lifecycle_common_java",
     "//third_party/androidx:androidx_preference_preference_java",
-    "//third_party/androidx:androidx_recyclerview_recyclerview_java",
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/androidx:androidx_viewpager2_viewpager2_java",
     "//third_party/androidx:androidx_viewpager_viewpager_java",
@@ -2613,7 +2604,6 @@ android_library("base_module_java") {
     "//third_party/android_deps:com_google_android_play_core_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_collection_collection_java",
-    "//third_party/androidx:androidx_fragment_fragment_java",
     "//ui/android:ui_no_recycler_view_java",
 
     # Deps needed for child processes.
@@ -3714,11 +3704,13 @@ if (android_64bit_target_cpu && skip_secondary_abi_for_cq) {
       # Save mapping files since they are needed by:
       # 1) Checking for ForTesting methods.
       # 2) SuperSize adding disassembly to symbols.
-      # Save apk files because they are needed for SuperSize disassembly.
+      # Save apk and unstripped library because they are needed for collecting
+      # disassembly of large symbols.
       archive_files = mapping_files + [
                         "apks/$_trichrome_library_basename",
                         "apks/$_trichrome_chrome_basename",
                         "apks/$_trichrome_webview_basename",
+                        "lib.unstripped/libmonochrome__combined.so",
                       ]
       to_resource_sizes_py = {
         apk_name = "apks/resource_size_config_trichrome"

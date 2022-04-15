@@ -15,6 +15,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/paint/paint_canvas.h"
@@ -40,10 +41,6 @@
 #else
 #define MAYBE_PrintRenderFrameHelperTest PrintRenderFrameHelperTest
 #endif  // BUILDFLAG(IS_ANDROID)
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace blink {
 class WebLocalFrame;
@@ -204,7 +201,7 @@ class PrintRenderFrameHelper
   // enum PrintPreviewFailureType in tools/metrics/histograms/enums.xml.
   enum PrintPreviewErrorBuckets {
     PREVIEW_ERROR_NONE = 0,  // Always first.
-    PREVIEW_ERROR_BAD_SETTING = 1,
+    PREVIEW_ERROR_BAD_SETTING_DEPRECATED = 1,
     PREVIEW_ERROR_METAFILE_COPY_FAILED = 2,
     PREVIEW_ERROR_METAFILE_INIT_FAILED_DEPRECATED = 3,
     PREVIEW_ERROR_ZERO_PAGES = 4,
@@ -282,7 +279,7 @@ class PrintRenderFrameHelper
       gfx::Rect* content_area);
 
   // Update |ignore_css_margins_| based on settings.
-  void UpdateFrameMarginsCssInfo(const base::DictionaryValue& settings);
+  void UpdateFrameMarginsCssInfo(const base::Value::Dict& settings);
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   // Prepare frame for creating preview document.
@@ -349,7 +346,7 @@ class PrintRenderFrameHelper
   // name, number of copies, page range, etc.
   bool UpdatePrintSettings(blink::WebLocalFrame* frame,
                            const blink::WebNode& node,
-                           const base::DictionaryValue& passed_job_settings);
+                           const base::Value::Dict& passed_job_settings);
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
   // Returns final print settings from the user.

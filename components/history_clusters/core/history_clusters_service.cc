@@ -30,12 +30,12 @@
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_types.h"
-#include "components/history/core/browser/visitsegment_database.h"
 #include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/features.h"
 #include "components/history_clusters/core/history_clusters_buildflags.h"
 #include "components/history_clusters/core/history_clusters_db_tasks.h"
 #include "components/history_clusters/core/history_clusters_types.h"
+#include "components/history_clusters/core/history_clusters_util.h"
 #include "components/optimization_guide/core/entity_metadata_provider.h"
 #include "components/site_engagement/core/site_engagement_score_provider.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -344,12 +344,12 @@ bool HistoryClustersService::DoesQueryMatchAnyCluster(
 
   auto query_lower = base::i18n::ToLower(base::UTF8ToUTF16(query));
 
-  return short_keyword_cache_.contains(query_lower) ||
-         all_keywords_cache_.contains(query_lower);
+  return short_keyword_cache_.find(query_lower) != short_keyword_cache_.end() ||
+         all_keywords_cache_.find(query_lower) != all_keywords_cache_.end();
 }
 
 bool HistoryClustersService::DoesURLMatchAnyCluster(
-    const std::string& stripped_url) {
+    const std::string& url_keyword) {
   if (!IsJourneysEnabled())
     return false;
 
@@ -359,8 +359,10 @@ bool HistoryClustersService::DoesURLMatchAnyCluster(
 
   StartKeywordCacheRefresh();
 
-  return short_url_keywords_cache_.contains(stripped_url) ||
-         all_url_keywords_cache_.contains(stripped_url);
+  return short_url_keywords_cache_.find(url_keyword) !=
+             short_url_keywords_cache_.end() ||
+         all_url_keywords_cache_.find(url_keyword) !=
+             all_url_keywords_cache_.end();
 }
 
 void HistoryClustersService::ClearKeywordCache() {
@@ -393,9 +395,9 @@ void HistoryClustersService::StartKeywordCacheRefresh() {
         base::BindOnce(&HistoryClustersService::PopulateClusterKeywordCache,
                        weak_ptr_factory_.GetWeakPtr(), base::ElapsedTimer(),
                        /*begin_time=*/base::Time(),
-                       std::make_unique<std::vector<std::u16string>>(),
-                       std::make_unique<std::vector<std::string>>(),
-                       &all_keywords_cache_, &all_url_keywords_cache_),
+                       std::make_unique<KeywordSet>(),
+                       std::make_unique<URLKeywordSet>(), &all_keywords_cache_,
+                       &all_url_keywords_cache_),
         &cache_query_task_tracker_);
   } else if (!cache_query_task_tracker_.HasTrackedTasks() &&
              (base::Time::Now() - all_keywords_cache_timestamp_).InSeconds() >
@@ -412,9 +414,9 @@ void HistoryClustersService::StartKeywordCacheRefresh() {
         base::BindOnce(&HistoryClustersService::PopulateClusterKeywordCache,
                        weak_ptr_factory_.GetWeakPtr(), base::ElapsedTimer(),
                        all_keywords_cache_timestamp_,
-                       std::make_unique<std::vector<std::u16string>>(),
-                       std::make_unique<std::vector<std::string>>(),
-                       &short_keyword_cache_, &short_url_keywords_cache_),
+                       std::make_unique<KeywordSet>(),
+                       std::make_unique<URLKeywordSet>(), &short_keyword_cache_,
+                       &short_url_keywords_cache_),
         &cache_query_task_tracker_);
   }
 }
@@ -422,8 +424,8 @@ void HistoryClustersService::StartKeywordCacheRefresh() {
 void HistoryClustersService::PopulateClusterKeywordCache(
     base::ElapsedTimer total_latency_timer,
     base::Time begin_time,
-    std::unique_ptr<std::vector<std::u16string>> keyword_accumulator,
-    std::unique_ptr<std::vector<std::string>> url_keyword_accumulator,
+    std::unique_ptr<KeywordSet> keyword_accumulator,
+    std::unique_ptr<URLKeywordSet> url_keyword_accumulator,
     KeywordSet* cache,
     URLKeywordSet* url_cache,
     std::vector<history::Cluster> clusters,
@@ -445,28 +447,21 @@ void HistoryClustersService::PopulateClusterKeywordCache(
     }
     // Lowercase the keywords for case insensitive matching while adding to the
     // accumulator.
-    for (auto& keyword : cluster.keywords) {
-      keyword_accumulator->push_back(base::i18n::ToLower(keyword));
+    if (keyword_accumulator->size() < max_keyword_phrases) {
+      for (auto& keyword : cluster.keywords) {
+        keyword_accumulator->insert(base::i18n::ToLower(keyword));
+      }
     }
 
     // Push a simplified form of the URL for each visit into the cache.
-    for (const auto& visit : cluster.visits) {
-      url_keyword_accumulator->push_back(
-          history::VisitSegmentDatabase::ComputeSegmentName(
-              visit.normalized_url));
-    }
-
-    // Limit the cache size. It's possible for the `cache.size()` to exceed
-    // `max_keyword_phrases` since:
-    // 1) We cache all of a particular cluster's keywords if we haven't yet
-    //    reached the cap, even if doing so will exceed the cap.
-    // 2) We have 2 caches which are capped separately.
-    // 3) We cap the # of phrase, each of which may contain multiple words,
-    //    whereas `cache` contains individual words.
-    // TODO(tommycli): Apply this limit to the URL keyword cache too.
-    if (max_keyword_phrases != 0 &&
-        keyword_accumulator->size() >= max_keyword_phrases) {
-      break;
+    if (url_keyword_accumulator->size() < max_keyword_phrases) {
+      for (const auto& visit : cluster.visits) {
+        url_keyword_accumulator->insert(
+            (!visit.annotated_visit.content_annotations.search_normalized_url
+                  .is_empty())
+                ? visit.normalized_url.spec()
+                : ComputeURLKeywordForLookup(visit.normalized_url));
+      }
     }
   }
 
@@ -476,8 +471,8 @@ void HistoryClustersService::PopulateClusterKeywordCache(
   constexpr char kKeywordCacheThreadTimeUmaName[] =
       "History.Clusters.KeywordCache.ThreadTime";
   if (!continuation_end_time.is_null() &&
-      (max_keyword_phrases == 0 ||
-       keyword_accumulator->size() < max_keyword_phrases)) {
+      (keyword_accumulator->size() < max_keyword_phrases ||
+       url_keyword_accumulator->size() < max_keyword_phrases)) {
     QueryClusters(
         ClusteringRequestSource::kKeywordCacheGeneration, begin_time,
         continuation_end_time,
@@ -497,8 +492,8 @@ void HistoryClustersService::PopulateClusterKeywordCache(
   // We've got all the keywords now. Move them all into the flat_set at once
   // via the constructor for efficiency (as recommended by the flat_set docs).
   // De-duplication is handled by the flat_set itself.
-  *cache = KeywordSet(*keyword_accumulator);
-  *url_cache = URLKeywordSet(*url_keyword_accumulator);
+  *cache = std::move(*keyword_accumulator);
+  *url_cache = std::move(*url_keyword_accumulator);
   if (ShouldNotifyDebugMessage()) {
     NotifyDebugMessage("Cache construction complete:");
     NotifyDebugMessage(GetDebugJSONForKeywordSet(*cache));

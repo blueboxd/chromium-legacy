@@ -447,10 +447,14 @@ void AddAdditionalRequestHeaders(
     }
   }
 
-  // Add the "Purpose: prefetch" header to prerender navigations including
-  // subframe navigations.
-  if (frame_tree_node->frame_tree()->is_prerendering())
+  // Add the "Sec-Purpose: prefetch;prerender" header to prerender navigations
+  // including subframe navigations. Add "Purpose: prefetch" as well for
+  // compatibility concerns (See
+  // https://github.com/WICG/nav-speculation/issues/133).
+  if (frame_tree_node->frame_tree()->is_prerendering()) {
+    headers->SetHeader("Sec-Purpose", "prefetch;prerender");
     headers->SetHeader("Purpose", "prefetch");
+  }
 }
 
 bool ShouldPropagateUserActivation(const url::Origin& previous_origin,
@@ -570,7 +574,8 @@ void RecordReadyToCommitMetrics(
     const blink::mojom::CommonNavigationParams& common_params,
     base::TimeTicks ready_to_commit_time,
     NavigationRequest::OriginAgentClusterEndResult
-        origin_agent_cluster_end_result) {
+        origin_agent_cluster_end_result,
+    bool did_receive_early_hints_before_cross_origin_redirect) {
   bool is_main_frame = !new_rfh->GetParent();
   bool is_same_process =
       old_rfh->GetProcess()->GetID() == new_rfh->GetProcess()->GetID();
@@ -665,6 +670,11 @@ void RecordReadyToCommitMetrics(
     } else {
       LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2.CrossProcess",
                                       transition, kIsBackground, delta);
+    }
+    if (did_receive_early_hints_before_cross_origin_redirect) {
+      LOG_NAVIGATION_TIMING_HISTOGRAM(
+          "TimeToReadyToCommit2.CrossOriginRedirectAfterEarlyHints", transition,
+          kIsBackground, delta);
     }
   }
 
@@ -1504,7 +1514,10 @@ NavigationRequest::NavigationRequest(
   common_params_->referrer = Referrer::SanitizeForRequest(
       common_params_->url, *common_params_->referrer);
 
-  if (frame_tree_node_->IsMainFrame()) {
+  // TODO(crbug.com/1314749): With MPArch there may be multiple main frames and
+  // so IsMainFrame should not be used to identify subframes. Follow up to
+  // confirm correctness.
+  if (frame_tree_node_->IsOutermostMainFrame()) {
     loading_mem_tracker_ =
         PeakGpuMemoryTracker::Create(PeakGpuMemoryTracker::Usage::PAGE_LOAD);
   }
@@ -1594,7 +1607,8 @@ NavigationRequest::NavigationRequest(
   if (entry) {
     // TODO(altimin, crbug.com/933147): Remove this logic after we are done
     // with implementing back-forward cache.
-    if (frame_tree_node->IsMainFrame() && entry->back_forward_cache_metrics()) {
+    if (frame_tree_node->IsOutermostMainFrame() &&
+        entry->back_forward_cache_metrics()) {
       entry->back_forward_cache_metrics()
           ->MainFrameDidStartNavigationToDocument();
     }
@@ -1662,8 +1676,11 @@ NavigationRequest::NavigationRequest(
 #if BUILDFLAG(IS_ANDROID)
   RenderWidgetHostImpl* host = RenderWidgetHostImpl::From(
       frame_tree_node_->current_frame_host()->GetRenderWidgetHost());
+  // TODO(crbug.com/1314749): With MPArch there may be multiple main frames and
+  // so IsMainFrame should not be used to identify subframes. Follow up to
+  // confirm correctness.
   if (base::FeatureList::IsEnabled(features::kOptimizeEarlyNavigation) &&
-      NeedsUrlLoader() && frame_tree_node_->IsMainFrame() && host &&
+      NeedsUrlLoader() && frame_tree_node_->IsOutermostMainFrame() && host &&
       !host->is_hidden() && host->GetView() &&
       host->GetView()->GetNativeView() &&
       host->GetView()->GetNativeView()->GetWindowAndroid()) {
@@ -1970,6 +1987,7 @@ void NavigationRequest::OnFencedFrameURLMappingComplete(
   if (mapped_url) {
     common_params_->url = mapped_url.value();
     commit_params_->original_url = mapped_url.value();
+    ad_auction_data_ = std::move(ad_auction_data);
     // TODO(crbug/1281643): move into commit_params_->ad_auction_components
     // directly.
     pending_ad_components_map_ = std::move(pending_ad_components_map);
@@ -2666,6 +2684,12 @@ void NavigationRequest::OnRequestRedirected(
   if (commit_params_->origin_to_commit)
     commit_params_->origin_to_commit.reset();
 
+  const bool is_same_origin_redirect =
+      url::Origin::Create(common_params_->url)
+          .IsSameOriginWith(redirect_info.new_url);
+  did_receive_early_hints_before_cross_origin_redirect_ |=
+      did_create_early_hints_manager_params_ && !is_same_origin_redirect;
+
   commit_params_->redirects.push_back(common_params_->url);
   common_params_->url = redirect_info.new_url;
   common_params_->method = redirect_info.new_method;
@@ -3237,6 +3261,8 @@ void NavigationRequest::OnResponseStarted(
   response_body_ = std::move(response_body);
   ssl_info_ = response_head_->ssl_info;
   auth_challenge_info_ = response_head_->auth_challenge_info;
+  // TODO(https://crbug.com/1305896): Store the whole EarlyHints struct instead
+  // of duplicating all of its fields.
   was_resource_hints_received_ = early_hints.was_resource_hints_received;
   early_hints_manager_ = std::move(early_hints.manager);
 
@@ -3494,7 +3520,7 @@ void NavigationRequest::OnResponseStarted(
     if (!frame_tree_node_->navigator()
              .GetDelegate()
              ->ShouldAllowRendererInitiatedCrossProcessNavigation(
-                 frame_tree_node_->IsMainFrame())) {
+                 frame_tree_node_->IsOutermostMainFrame())) {
       net_error_ = net::ERR_ABORTED;
       frame_tree_node_->ResetNavigationRequest(false);
       return;
@@ -3672,8 +3698,20 @@ NavigationRequest::CreateNavigationEarlyHintsManagerParams(
   CHECK(IsInMainFrame());
   DCHECK(!IsPageActivation());
 
+  // Getting a RenderProcessHost from a tentative RenderFrameHost during
+  // navigation is generally discouraged because it has potential performance
+  // impact (the RenderProcessHost could be discarded without actually being
+  // used after a cross origin redirect). However, Early Hints preloads require
+  // the RenderProcessHost for the tentative RenderFrameHost to set up
+  // URLLoaderFactoryParams accordingly. The performance implication should be
+  // negligible for Early Hints because these are rarely followed by cross
+  // origin redirects. Early Hints preloads before a cross origin redirect don't
+  // make sense since such preloads are not available for the redirected page.
+  // The CrossOriginRedirectAfterEarlyHints variant of
+  // Navigation.MainFrame.TimeToReadyToCommit2 histogram tracks the performance
+  // impacts.
   RenderProcessHost* process = frame_tree_node_->render_manager()
-                                   ->GetSiteInstanceForNavigationRequest(this)
+                                   ->GetFrameHostForNavigation(this)
                                    ->GetProcess();
 
   // The process is shutting down.
@@ -3706,6 +3744,7 @@ NavigationRequest::CreateNavigationEarlyHintsManagerParams(
   process->CreateURLLoaderFactory(loader_factory.BindNewPipeAndPassReceiver(),
                                   std::move(url_loader_factory_params));
 
+  did_create_early_hints_manager_params_ = true;
   return NavigationEarlyHintsManagerParams(
       tentative_origin, std::move(isolation_info), std::move(loader_factory));
 }
@@ -5193,7 +5232,7 @@ net::Error NavigationRequest::CheckContentSecurityPolicy(
 NavigationRequest::CredentialedSubresourceCheckResult
 NavigationRequest::CheckCredentialedSubresource() const {
   // It only applies to subframes.
-  if (frame_tree_node_->IsMainFrame())
+  if (frame_tree_node_->IsOutermostMainFrame())
     return CredentialedSubresourceCheckResult::ALLOW_REQUEST;
 
   // URLs with no embedded credentials should load correctly.
@@ -5203,7 +5242,7 @@ NavigationRequest::CheckCredentialedSubresource() const {
 
   // Relative URLs on top-level pages that were loaded with embedded credentials
   // should load correctly.
-  RenderFrameHostImpl* parent = frame_tree_node_->parent();
+  RenderFrameHostImpl* parent = frame_tree_node_->GetParentOrOuterDocument();
   DCHECK(parent);
   const GURL& parent_url = parent->GetLastCommittedURL();
   if (url::IsSameOriginWith(parent_url, common_params_->url) &&
@@ -5967,6 +6006,11 @@ void NavigationRequest::UpdatePrivateNetworkRequestPolicy() {
   DCHECK(!IsSameDocument());
   DCHECK(!IsPageActivation());
 
+  if (GetSocketAddress().address().IsZero()) {
+    web_features_to_log_.push_back(
+        blink::mojom::WebFeature::kPrivateNetworkAccessNullIpAddress);
+  }
+
   ContentBrowserClient* client = GetContentClient()->browser();
   BrowserContext* context =
       frame_tree_node_->navigator().controller().GetBrowserContext();
@@ -6068,9 +6112,10 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
     is_same_process_ = render_frame_host_->GetProcess()->GetID() ==
                        previous_render_frame_host->GetProcess()->GetID();
 
-    RecordReadyToCommitMetrics(previous_render_frame_host, render_frame_host_,
-                               *common_params_.get(), ready_to_commit_time_,
-                               origin_agent_cluster_end_result_);
+    RecordReadyToCommitMetrics(
+        previous_render_frame_host, render_frame_host_, *common_params_.get(),
+        ready_to_commit_time_, origin_agent_cluster_end_result_,
+        did_receive_early_hints_before_cross_origin_redirect_);
   }
 
   // TODO(https://crbug.com/888079) Take sandbox into account.
@@ -7465,9 +7510,11 @@ bool NavigationRequest::
   if (!blink::features::IsInitialNavigationEntryEnabled()) {
     // History replacement behaves a bit differently when we don't have initial
     // NavigationEntries.
-    if (IsInMainFrame()) {
-      // Currently we only handle subframe initial empty document replacements.
-      // TODO(https://crbug.com/1215096): Handle main frame navigations too.
+    if (!frame_tree_node_->GetParentOrOuterDocument()) {
+      // Currently we only handle subframe and non-outermost main frames (fenced
+      // frames and portals) initial empty document replacements.
+      // TODO(https://crbug.com/1215096): Handle the outermost main frame
+      // navigations too.
       return false;
     }
 
@@ -7498,13 +7545,14 @@ bool NavigationRequest::
   }
 
   // For non-initial NavigationEntries, the initial empty document should also
-  // be replaced in subframes. For main frames, the initial empty document will
-  // usually only exist when on the initial NavigationEntry, but it can also
-  // exist in a restored or cloned NavigationController before the first commit.
-  // It is important not to replace one of the restored entries in that case.
-  // See https://crbug.com/1284566 and https://crbug.com/1295723.
+  // be replaced in subframes and non-outermost main frames (fenced frames).
+  // For outermost main frames, the initial empty document will usually only
+  // exist when on the initial NavigationEntry, but it can also exist in a
+  // restored or cloned NavigationController before the first commit. It is
+  // important not to replace one of the restored entries in that case. See
+  // https://crbug.com/1284566 and https://crbug.com/1295723.
   return frame_tree_node_->is_on_initial_empty_document() &&
-         !frame_tree_node_->IsMainFrame();
+         frame_tree_node_->GetParentOrOuterDocument();
 }
 
 bool NavigationRequest::ShouldReplaceCurrentEntryForFailedNavigation() const {

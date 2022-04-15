@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier_base.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace WTF {
@@ -178,11 +179,6 @@ class WebMediaPlayerMS::FrameDeliverer {
       return;
 #endif  // BUILDFLAG(IS_ANDROID)
 
-#if BUILDFLAG(IS_FUCHSIA)
-    // Always create GMP to workaround https://crbug.com/1293616.
-    CreateGpuMemoryBufferPoolIfNecessary();
-#endif  // !BUILDFLAG(IS_FUCHSIA)
-
     if (!gpu_memory_buffer_pool_) {
       int original_frame_id = frame->unique_id();
       EnqueueFrame(original_frame_id, std::move(frame));
@@ -202,11 +198,6 @@ class WebMediaPlayerMS::FrameDeliverer {
         frame->visible_rect().height() <
             kUseGpuMemoryBufferVideoFramesMinResolution.height();
 #endif  // BUILDFLAG(IS_WIN)
-
-#if BUILDFLAG(IS_FUCHSIA)
-    // Always create GMP to workaround https://crbug.com/1293616.
-    skip_creating_gpu_memory_buffer = false;
-#endif  // BUILDFLAG(IS_FUCHSIA)
 
     if (skip_creating_gpu_memory_buffer) {
       int original_frame_id = frame->unique_id();

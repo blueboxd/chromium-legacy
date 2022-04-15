@@ -53,8 +53,11 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/signin/account_reconcilor_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/account_manager_core/account_manager_facade.h"
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
+#include "components/signin/core/browser/account_reconcilor.h"
 #endif
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -131,7 +134,7 @@ void CreateTurnSyncOnHelper(
                        signin_promo_action, signin_reason, account_id,
                        signin_aborted_mode);
 }
-#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 std::string GetReauthAccessPointHistogramSuffix(
     signin_metrics::ReauthAccessPoint access_point) {
@@ -169,6 +172,31 @@ GetAccountReauthSourceFromAccessPoint(
       return account_manager::AccountManagerFacade::AccountAdditionSource::
           kMaxValue;
   }
+}
+
+void OnExtensionSigninAccountAdded(
+    bool enable_sync,
+    signin_ui_util::internal::CreateTurnSyncOnHelperCallback
+        create_turn_sync_on_helper_callback,
+    const base::FilePath& profile_path,
+    const CoreAccountId& account_id) {
+  if (!enable_sync || account_id.empty())
+    return;
+
+  Profile* profile =
+      g_browser_process->profile_manager()->GetProfileByPath(profile_path);
+  if (!profile)
+    return;
+
+  chrome::ScopedTabbedBrowserDisplayer displayer(profile);
+  Browser* browser = displayer.browser();
+
+  std::move(create_turn_sync_on_helper_callback)
+      .Run(profile, browser,
+           signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS,
+           signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO,
+           signin_metrics::Reason::kSigninPrimaryAccount, account_id,
+           TurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT);
 }
 #endif
 
@@ -240,6 +268,16 @@ void ShowExtensionSigninPrompt(Profile* profile,
       profile,
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
       ::GetAccountManagerFacade(profile->GetPath().value()),
+      base::BindOnce(
+          &SigninManager::StartWebSigninFlow,
+          // base::Unretained() is fine because this callback is called
+          // synchronously
+          base::Unretained(SigninManagerFactory::GetForProfile(profile)),
+          profile->GetPath(),
+          g_browser_process->profile_manager()->GetAccountProfileMapper(),
+          AccountReconcilorFactory::GetForProfile(profile)
+              ->GetConsistencyCookieManager()),
+      base::BindOnce(&CreateTurnSyncOnHelper),
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
       enable_sync, email_hint);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -270,6 +308,8 @@ void ShowExtensionSigninPrompt(
     Profile* profile,
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     account_manager::AccountManagerFacade* account_manager_facade,
+    base::OnceCallback<void(OnAccountAddedCallback)> add_account_callback,
+    CreateTurnSyncOnHelperCallback create_turn_sync_on_helper_callback,
 #endif
     bool enable_sync,
     const std::string& email_hint) {
@@ -295,8 +335,10 @@ void ShowExtensionSigninPrompt(
 
   if (email_hint.empty()) {
     // Add a new account.
-    // TODO(https://crbug.com/1260291): add support for signed out profiles.
-    NOTREACHED() << "Lacros doesn't support signed-out profiles yet.";
+    std::move(add_account_callback)
+        .Run(base::BindOnce(&OnExtensionSigninAccountAdded, enable_sync,
+                            std::move(create_turn_sync_on_helper_callback),
+                            profile->GetPath()));
     return;
   }
 
@@ -388,15 +430,7 @@ void EnableSyncFromPromo(
     const AccountInfo& account,
     signin_metrics::AccessPoint access_point,
     bool is_default_promo_account,
-    base::OnceCallback<
-        void(Profile* profile,
-             Browser* browser,
-             signin_metrics::AccessPoint signin_access_point,
-             signin_metrics::PromoAction signin_promo_action,
-             signin_metrics::Reason signin_reason,
-             const CoreAccountId& account_id,
-             TurnSyncOnHelper::SigninAbortedMode signin_aborted_mode)>
-        create_turn_sync_on_helper_callback) {
+    CreateTurnSyncOnHelperCallback create_turn_sync_on_helper_callback) {
   DCHECK(browser);
   DCHECK_NE(signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN, access_point);
   Profile* profile = browser->profile();

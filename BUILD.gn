@@ -741,7 +741,7 @@ group("gn_all") {
     deps += [ "//third_party/sqlite:sqlite_shell" ]
   }
 
-  if ((is_linux || is_chromeos_lacros) && !is_chromecast) {
+  if ((is_linux && !is_chromecast) || is_chromeos_lacros) {
     # TODO(GYP): Figure out if any of these should be in gn_all
     # and figure out how cross-platform they are
     deps += [
@@ -1436,7 +1436,7 @@ if (!is_ios) {
     args += [
       "--webgpu-cts-expectations",
       "@WrappedPath(../../third_party/blink/web_tests/WebGPUExpectations)",
-      "--isolated-script-test-filter=wpt_internal/webgpu/*",
+      "--isolated-script-test-filter=wpt_internal/webgpu/web_platform/reftests",
     ]
 
     data_deps = [
@@ -1515,6 +1515,14 @@ if (!is_ios) {
     data_deps = [ "//ui/base:goldctl" ]
   }
 }
+
+# TODO(cassew): Add more OS's that don't support x86.
+is_valid_x86_target =
+    target_os != "ios" && target_os != "mac" &&
+    (target_os != "linux" || use_libfuzzer || !build_with_chromium)
+assert(
+    is_valid_x86_target || target_cpu != "x86",
+    "'target_cpu=x86' is not supported for 'target_os=$target_os'. Consider omitting 'target_cpu' (default) or using 'target_cpu=x64' instead.")
 
 group("chromium_builder_perf") {
   testonly = true

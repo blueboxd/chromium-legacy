@@ -1268,6 +1268,7 @@
     {
       name: "HTMLPopupAttribute",
       status: "experimental",
+      implied_by: ["HTMLSelectMenuElement","HTMLSelectMenuElementUsesPopupAttribute"],
     },
     {
       name: "HTMLPopupElement",
@@ -1277,6 +1278,10 @@
     {
       name: "HTMLSelectMenuElement",
       status: "experimental",
+      implied_by: ["HTMLSelectMenuElementUsesPopupAttribute"],
+    },
+    {
+      name: "HTMLSelectMenuElementUsesPopupAttribute",
     },
     {
       name: "IDBBatchGetAll",
@@ -2239,8 +2244,6 @@
     },
     {
       name: "SubresourceWebBundles",
-      origin_trial_feature_name: "SubresourceWebBundles",
-      origin_trial_allows_third_party: true,
       status: "experimental"
     },
     {

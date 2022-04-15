@@ -14,10 +14,6 @@
 #include "base/cpu.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/ash_features.h"
-#endif
-
 namespace switches {
 
 // Allow users to specify a custom buffer size for debugging purpose.
@@ -598,7 +594,7 @@ const base::Feature kLiveCaption{"LiveCaption",
 // tab instead" button is shown for chrome.desktopCapture captures.
 const base::Feature kShareThisTabInsteadButtonGetDisplayMedia{
     "ShareThisTabInsteadButtonGetDisplayMedia",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If kShareThisTabInsteadButtonGetDisplayMedia is ENABLED, this flag controls
 // whether a "Share this tab instead" button should be enabled for
@@ -1012,38 +1008,6 @@ bool IsChromeWideEchoCancellationEnabled() {
 bool IsHardwareSecureDecryptionEnabled() {
   return base::FeatureList::IsEnabled(kHardwareSecureDecryption) ||
          base::FeatureList::IsEnabled(kHardwareSecureDecryptionExperiment);
-}
-
-bool IsLiveCaptionFeatureEnabled() {
-  if (!base::FeatureList::IsEnabled(media::kLiveCaption))
-    return false;
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Some Chrome OS devices do not support on-device speech.
-  if (!base::FeatureList::IsEnabled(ash::features::kOnDeviceSpeechRecognition))
-    return false;
-#endif
-
-#if BUILDFLAG(IS_LINUX)
-  // Check if the CPU has the required instruction set to run the Speech
-  // On-Device API (SODA) library.
-  static bool has_sse41 = base::CPU().has_sse41();
-  if (!has_sse41)
-    return false;
-#endif
-
-#if BUILDFLAG(IS_WIN) && defined(ARCH_CPU_ARM64)
-  // The Speech On-Device API (SODA) component does not support Windows on
-  // arm64.
-  return false;
-#elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  // Disable Live Caption on LaCrOS. The feature has not been migrated there
-  // yet, and currently fails rather gracelessly (opening a non-existent .so).
-  // TODO(b/223493879): Remove this once it fails more gracefully.
-  return false;
-#else
-  return true;
-#endif
 }
 
 bool IsVideoCaptureAcceleratedJpegDecodingEnabled() {

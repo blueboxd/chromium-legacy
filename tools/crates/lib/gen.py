@@ -668,7 +668,13 @@ def _get_archs_of_interest(cargo_toml: dict, crate_usage_data: PerCrateData,
 
     # Whether the crate has arch-specific dependencies. That is to say,
     # outgoing edges are arch-dependent.
-    has_arch_specific_deps = "target" in cargo_toml
+    has_arch_specific_deps = False
+    if "target" in cargo_toml:
+        for target_data in cargo_toml["target"].values():
+            if "dependencies" in target_data:
+                has_arch_specific_deps = True
+                break
+
     # Whether the crate is an arch-specific dep from some other crate. That
     # is to say, incoming edges are arch-dependent.
     is_used_as_arch_specific_dep = crate_usage_data.arch_specific \
@@ -693,7 +699,8 @@ def _get_archs_of_interest(cargo_toml: dict, crate_usage_data: PerCrateData,
         # found under a "target" rule in the Cargo.toml.
         targetted_deps = []
         for (target_name, target_data) in cargo_toml["target"].items():
-            targetted_deps += list(target_data["dependencies"].items())
+            targetted_deps += list(
+                target_data.get("dependencies", dict()).items())
         # Convert the list of (crate name, dependency data) into a more useful
         # list of `cargo.CrateKey`s.
 
@@ -1025,6 +1032,8 @@ def _gen_build_rule(args: argparse.Namespace, build_data_set: BuildData,
     # environment variables in case the crates use 'crate_authors!' or similar.
     build_rule.cargo_pkg_authors = cargo_toml["package"].get("authors")
     build_rule.cargo_pkg_version = cargo_toml["package"].get("version")
+    build_rule.cargo_pkg_name = cargo_toml["package"].get("name")
+    build_rule.cargo_pkg_description = cargo_toml["package"].get("description")
 
     # Prefix from the BUILD.gn file to the crate's source files.
     path_prefix = ("/".join(consts.CRATE_INNER_DIR) +

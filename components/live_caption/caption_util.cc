@@ -7,13 +7,26 @@
 #include <stddef.h>
 
 #include "base/command_line.h"
+#include "base/cpu.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/live_caption/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "media/base/media_switches.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/native_theme/native_theme.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/lacros/lacros_service.h"
+#endif
 
 namespace {
 
@@ -112,6 +125,43 @@ absl::optional<ui::CaptionStyle> GetCaptionStyleFromUserSettings(
   }
 
   return style;
+}
+
+bool IsLiveCaptionFeatureSupported() {
+  if (!base::FeatureList::IsEnabled(media::kLiveCaption))
+    return false;
+
+// Some Chrome OS devices do not support on-device speech.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (!base::FeatureList::IsEnabled(ash::features::kOnDeviceSpeechRecognition))
+    return false;
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (!chromeos::LacrosService::Get()
+           ->init_params()
+           ->is_ondevice_speech_supported)
+    return false;
+#endif
+
+#if BUILDFLAG(IS_LINUX)
+  // Check if the CPU has the required instruction set to run the Speech
+  // On-Device API (SODA) library.
+  static bool has_sse41 = base::CPU().has_sse41();
+  if (!has_sse41)
+    return false;
+#endif
+
+#if BUILDFLAG(IS_WIN) && defined(ARCH_CPU_ARM64)
+  // The Speech On-Device API (SODA) component does not support Windows on
+  // arm64.
+  return false;
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Disable Live Caption on LaCrOS. The feature has not been migrated there
+  // yet, and currently fails rather gracelessly (opening a non-existent .so).
+  // TODO(b/223493879): Remove this once it fails more gracefully.
+  return false;
+#else
+  return true;
+#endif
 }
 
 }  // namespace captions

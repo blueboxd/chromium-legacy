@@ -63,15 +63,32 @@ using optimization_guide::proto::OptimizationTarget_Name;
 SegmentSelectorImpl::SegmentSelectorImpl(
     SegmentInfoDatabase* segment_database,
     SignalStorageConfig* signal_storage_config,
-    SegmentationResultPrefs* result_prefs,
+    PrefService* pref_service,
     const Config* config,
     base::Clock* clock,
     const PlatformOptions& platform_options,
     DefaultModelManager* default_model_manager)
-    : segment_database_(segment_database),
+    : SegmentSelectorImpl(
+          segment_database,
+          signal_storage_config,
+          std::make_unique<SegmentationResultPrefs>(pref_service),
+          config,
+          clock,
+          platform_options,
+          default_model_manager) {}
+
+SegmentSelectorImpl::SegmentSelectorImpl(
+    SegmentInfoDatabase* segment_database,
+    SignalStorageConfig* signal_storage_config,
+    std::unique_ptr<SegmentationResultPrefs> prefs,
+    const Config* config,
+    base::Clock* clock,
+    const PlatformOptions& platform_options,
+    DefaultModelManager* default_model_manager)
+    : result_prefs_(std::move(prefs)),
+      segment_database_(segment_database),
       signal_storage_config_(signal_storage_config),
       default_model_manager_(default_model_manager),
-      result_prefs_(result_prefs),
       config_(config),
       clock_(clock),
       platform_options_(platform_options) {
@@ -94,10 +111,10 @@ SegmentSelectorImpl::SegmentSelectorImpl(
 SegmentSelectorImpl::~SegmentSelectorImpl() = default;
 
 void SegmentSelectorImpl::OnPlatformInitialized(
-    ModelExecutionManager* execution_manager) {
+    ExecutionService* execution_service) {
   segment_result_provider_ = SegmentResultProvider::Create(
       segment_database_, signal_storage_config_, default_model_manager_,
-      execution_manager, clock_, platform_options_.force_refresh_results);
+      execution_service, clock_, platform_options_.force_refresh_results);
   if (CanComputeSegmentSelection()) {
     GetRankForNextSegment(std::make_unique<SegmentRanks>());
   }

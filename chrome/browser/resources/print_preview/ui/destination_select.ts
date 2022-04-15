@@ -64,12 +64,6 @@ export class PrintPreviewDestinationSelectElement extends
         type: String,
         value: PDF_DESTINATION_KEY,
       },
-
-      statusText_: {
-        type: String,
-        computed: 'computeStatusText_(destination)',
-        observer: 'onStatusTextSet_'
-      },
     };
   }
 
@@ -82,7 +76,6 @@ export class PrintPreviewDestinationSelectElement extends
   pdfPrinterDisabled: boolean;
   recentDestinationList: Destination[];
   private pdfDestinationKey_: string;
-  private statusText_: string;
   private meta_: IronMeta;
 
   constructor() {
@@ -119,9 +112,6 @@ export class PrintPreviewDestinationSelectElement extends
 
     // Check for the Docs or Save as PDF ids first.
     const keyParams = this.selectedValue.split('/');
-    if (keyParams[0] === GooglePromotedDestinationId.DOCS) {
-      return 'print-preview:save-to-drive';
-    }
     if (keyParams[0] === GooglePromotedDestinationId.SAVE_AS_PDF) {
       return 'cr:insert-drive-file';
     }
@@ -163,28 +153,6 @@ export class PrintPreviewDestinationSelectElement extends
     this.dispatchEvent(new CustomEvent(
         'selected-option-change',
         {bubbles: true, composed: true, detail: value}));
-  }
-
-  /**
-   * @return The connection status text to display.
-   */
-  private computeStatusText_(): string {
-    // |destination| can be either undefined, or null here.
-    if (!this.destination) {
-      return '';
-    }
-
-    // Give preference to connection status.
-    if (this.destination.connectionStatusText) {
-      return this.destination.connectionStatusText;
-    }
-
-    return '';
-  }
-
-  private onStatusTextSet_() {
-    this.shadowRoot!.querySelector('.destination-status')!.innerHTML =
-        this.statusText_;
   }
 
   /**

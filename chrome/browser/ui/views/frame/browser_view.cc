@@ -184,7 +184,6 @@
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_manager.h"
-#include "components/user_notes/user_notes_features.h"
 #include "components/version_info/channel.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/webapps/browser/banners/app_banner_manager.h"
@@ -896,15 +895,8 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
     right_aligned_side_panel_separator_ =
         AddChildView(std::make_unique<ContentsSeparator>());
     if (base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
-      global_side_panel_registry_ = std::make_unique<SidePanelRegistry>();
-      side_panel_coordinator_ = std::make_unique<SidePanelCoordinator>(
-          this, global_side_panel_registry_.get());
+      side_panel_coordinator_ = std::make_unique<SidePanelCoordinator>(this);
     }
-
-  if (user_notes::IsUserNotesEnabled()) {
-    user_note_ui_coordinator_ =
-        std::make_unique<UserNoteUICoordinator>(browser_.get());
-  }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (lens::features::IsLensSidePanelEnabled()) {
@@ -3101,25 +3093,29 @@ std::string BrowserView::GetWindowName() const {
   return chrome::GetWindowName(browser_.get());
 }
 
-void BrowserView::SaveWindowPlacement(const gfx::Rect& bounds,
-                                      ui::WindowShowState show_state) {
+bool BrowserView::ShouldSaveWindowPlacement() const {
   // If IsFullscreen() is true, we've just changed into fullscreen mode, and
   // we're catching the going-into-fullscreen sizing and positioning calls,
   // which we want to ignore.
-  if (!IsFullscreen() && frame_->ShouldSaveWindowPlacement() &&
-      chrome::ShouldSaveWindowPlacement(browser_.get())) {
-    WidgetDelegate::SaveWindowPlacement(bounds, show_state);
-    gfx::Rect saved_bounds = bounds;
-    if (chrome::SavedBoundsAreContentBounds(browser_.get())) {
-      // Invert the transformation done in GetSavedWindowPlacement().
-      gfx::Size client_size =
-          frame_->GetFrameView()->GetBoundsForClientView().size();
-      if (IsToolbarVisible())
-        client_size.Enlarge(0, -toolbar_->GetPreferredSize().height());
-      saved_bounds.set_size(client_size);
-    }
-    chrome::SaveWindowPlacement(browser_.get(), saved_bounds, show_state);
+  return !IsFullscreen() && frame_->ShouldSaveWindowPlacement() &&
+         chrome::ShouldSaveWindowPlacement(browser_.get());
+}
+
+void BrowserView::SaveWindowPlacement(const gfx::Rect& bounds,
+                                      ui::WindowShowState show_state) {
+  DCHECK(ShouldSaveWindowPlacement());
+
+  WidgetDelegate::SaveWindowPlacement(bounds, show_state);
+  gfx::Rect saved_bounds = bounds;
+  if (chrome::SavedBoundsAreContentBounds(browser_.get())) {
+    // Invert the transformation done in GetSavedWindowPlacement().
+    gfx::Size client_size =
+        frame_->GetFrameView()->GetBoundsForClientView().size();
+    if (IsToolbarVisible())
+      client_size.Enlarge(0, -toolbar_->GetPreferredSize().height());
+    saved_bounds.set_size(client_size);
   }
+  chrome::SaveWindowPlacement(browser_.get(), saved_bounds, show_state);
 }
 
 bool BrowserView::GetSavedWindowPlacement(

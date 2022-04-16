@@ -86,6 +86,10 @@ mojom("mojom") {
           cpp = "::remoting::protocol::MouseEvent::MouseButton"
         },
         {
+          mojom = "remoting.mojom.MouseCursor"
+          cpp = "::webrtc::MouseCursor"
+        },
+        {
           mojom = "remoting.mojom.MouseEvent"
           cpp = "::remoting::protocol::MouseEvent"
         },
@@ -120,6 +124,14 @@ mojom("mojom") {
         {
           mojom = "remoting.mojom.TransportRouteType"
           cpp = "::remoting::protocol::TransportRoute::RouteType"
+        },
+        {
+          mojom = "remoting.mojom.VideoLayout"
+          cpp = "::remoting::protocol::VideoLayout"
+        },
+        {
+          mojom = "remoting.mojom.VideoTrackLayout"
+          cpp = "::remoting::protocol::VideoTrackLayout"
         },
       ]
       traits_headers = [ "remoting_mojom_traits.h" ]

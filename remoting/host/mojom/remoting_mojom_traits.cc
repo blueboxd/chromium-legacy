@@ -168,6 +168,48 @@ bool mojo::StructTraits<remoting::mojom::KeyEventDataView,
 }
 
 // static
+bool mojo::StructTraits<
+    remoting::mojom::MouseCursorDataView,
+    ::webrtc::MouseCursor>::Read(remoting::mojom::MouseCursorDataView data_view,
+                                 ::webrtc::MouseCursor* out_cursor) {
+  ::webrtc::DesktopSize image_size;
+  if (!data_view.ReadImageSize(&image_size)) {
+    return false;
+  }
+
+  mojo::ArrayDataView<uint8_t> image_data;
+  data_view.GetImageDataDataView(&image_data);
+
+  base::CheckedNumeric<size_t> expected_image_data_size =
+      ::webrtc::DesktopFrame::kBytesPerPixel * image_size.width() *
+      image_size.height();
+  if (!expected_image_data_size.IsValid()) {
+    return false;
+  }
+
+  // ValueOrDie() won't CHECK since we've already verified the value is valid.
+  if (image_data.size() != expected_image_data_size.ValueOrDie()) {
+    return false;
+  }
+
+  ::webrtc::DesktopVector hotspot;
+  if (!data_view.ReadHotspot(&hotspot)) {
+    return false;
+  }
+
+  std::unique_ptr<::webrtc::DesktopFrame> new_frame(
+      new ::webrtc::BasicDesktopFrame(image_size));
+  memcpy(new_frame->data(), image_data.data(), image_data.size());
+
+  // ::webrtc::MouseCursor methods take a raw pointer *and* take ownership.
+  // TODO(joedow): Update webrtc::MouseCursor to use std::unique_ptr.
+  out_cursor->set_image(new_frame.release());
+  out_cursor->set_hotspot(hotspot);
+
+  return true;
+}
+
+// static
 bool mojo::StructTraits<remoting::mojom::MouseEventDataView,
                         ::remoting::protocol::MouseEvent>::
     Read(remoting::mojom::MouseEventDataView data_view,
@@ -346,6 +388,62 @@ bool mojo::StructTraits<remoting::mojom::TransportRouteDataView,
   if (!data_view.ReadLocalAddress(&out_transport_route->local_address)) {
     return false;
   }
+
+  return true;
+}
+
+// static
+bool mojo::StructTraits<remoting::mojom::VideoTrackLayoutDataView,
+                        ::remoting::protocol::VideoTrackLayout>::
+    Read(remoting::mojom::VideoTrackLayoutDataView data_view,
+         ::remoting::protocol::VideoTrackLayout* out_track) {
+  out_track->set_screen_id(data_view.screen_id());
+
+  std::string media_stream_id;
+  if (!data_view.ReadMediaStreamId(&media_stream_id)) {
+    return false;
+  }
+  // Don't set |media_stream_id| if the value is empty as the client will
+  // misinterpret an empty protobuf value and multi-mon scenarios will break.
+  if (!media_stream_id.empty()) {
+    out_track->set_media_stream_id(std::move(media_stream_id));
+  }
+
+  gfx::Point position;
+  if (!data_view.ReadPosition(&position)) {
+    return false;
+  }
+  out_track->set_position_x(position.x());
+  out_track->set_position_y(position.y());
+
+  webrtc::DesktopSize size;
+  if (!data_view.ReadSize(&size)) {
+    return false;
+  }
+  out_track->set_width(size.width());
+  out_track->set_height(size.height());
+
+  webrtc::DesktopVector dpi;
+  if (!data_view.ReadDpi(&dpi)) {
+    return false;
+  }
+  out_track->set_x_dpi(dpi.x());
+  out_track->set_y_dpi(dpi.y());
+
+  return true;
+}
+
+// static
+bool mojo::StructTraits<remoting::mojom::VideoLayoutDataView,
+                        ::remoting::protocol::VideoLayout>::
+    Read(remoting::mojom::VideoLayoutDataView data_view,
+         ::remoting::protocol::VideoLayout* out_layout) {
+  if (!data_view.ReadTracks(out_layout->mutable_video_track())) {
+    return false;
+  }
+
+  out_layout->set_supports_full_desktop_capture(
+      data_view.supports_full_desktop_capture());
 
   return true;
 }

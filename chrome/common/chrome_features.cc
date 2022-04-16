@@ -284,17 +284,6 @@ const base::Feature kDesktopPWAsElidedExtensionsMenu {
 const base::Feature kDesktopPWAsEnforceWebAppSettingsPolicy{
     "DesktopPWAsEnforceWebAppSettingsPolicy", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Replaces the origin text flash and the icon in web app notifications with
-// the name of the app and the icon of the app.
-const base::Feature kDesktopPWAsNotificationIconAndTitle {
-  "DesktopPWAsNotificationIconAndTitle",
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
-
 // Enables or disables Desktop PWAs to be auto-started on OS login.
 const base::Feature kDesktopPWAsRunOnOsLogin {
   "DesktopPWAsRunOnOsLogin",
@@ -372,7 +361,7 @@ const base::Feature kDnsProxyEnableDOH{"DnsProxyEnableDOH",
 #if BUILDFLAG(IS_ANDROID)
 // Enable loading native libraries earlier in startup on Android.
 const base::Feature kEarlyLibraryLoad{"EarlyLibraryLoad",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(IS_ANDROID)

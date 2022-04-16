@@ -360,6 +360,21 @@
             ]
         }
     ],
+    "ArcEnableTTSCaching": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ArcEnableTTSCaching"
+                    ]
+                }
+            ]
+        }
+    ],
     "ArcGuestZram": [
         {
             "platforms": [
@@ -1484,25 +1499,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "BackForwardCacheDedicatedWorker"
-                    ]
-                }
-            ]
-        }
-    ],
-    "BackForwardCacheMediaSessionPlaybackStateChange": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "BackForwardCacheMediaSessionPlaybackStateChange"
                     ]
                 }
             ]
@@ -3272,6 +3268,21 @@
             ]
         }
     ],
+    "FastPairPowerConsumption": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20220412",
+                    "enable_features": [
+                        "FastPair"
+                    ]
+                }
+            ]
+        }
+    ],
     "FeatureNotificationGuide": [
         {
             "platforms": [
@@ -4483,6 +4494,25 @@
                     "name": "Enabled",
                     "enable_features": [
                         "HardwareSecureDecryptionExperiment"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MediaSessionPlaybackStateChangeBackForwardCache": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "BackForwardCacheMediaSessionPlaybackStateChange"
                     ]
                 }
             ]
@@ -8435,6 +8465,21 @@
             "experiments": [
                 {
                     "name": "Enabled"
+                }
+            ]
+        }
+    ],
+    "WebRtcAllowWgcDesktopCapturer": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AllowWgcDesktopCapturer"
+                    ]
                 }
             ]
         }

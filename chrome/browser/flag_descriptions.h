@@ -308,6 +308,9 @@ extern const char kChromeLabsDescription[];
 extern const char kConsolidatedSiteStorageControlsName[];
 extern const char kConsolidatedSiteStorageControlsDescription[];
 
+extern const char kConsumerAutoUpdateToggleAllowedName[];
+extern const char kConsumerAutoUpdateToggleAllowedDescription[];
+
 extern const char kContextMenuGoogleLensChipName[];
 extern const char kContextMenuGoogleLensChipDescription[];
 
@@ -478,9 +481,6 @@ extern const char kDesktopPWAsDefaultOfflinePageDescription[];
 
 extern const char kDesktopPWAsElidedExtensionsMenuName[];
 extern const char kDesktopPWAsElidedExtensionsMenuDescription[];
-
-extern const char kDesktopPWAsNotificationIconAndTitleName[];
-extern const char kDesktopPWAsNotificationIconAndTitleDescription[];
 
 extern const char kDesktopPWAsLaunchHandlerName[];
 extern const char kDesktopPWAsLaunchHandlerDescription[];
@@ -2825,6 +2825,9 @@ extern const char kImeAssistMultiWordLacrosSupportDescription[];
 
 extern const char kLacrosProfileMigrationForAnyUserName[];
 extern const char kLacrosProfileMigrationForAnyUserDescription[];
+
+extern const char kLacrosMoveProfileMigrationName[];
+extern const char kLacrosMoveProfileMigrationDescription[];
 
 extern const char kLacrosProfileMigrationForceOffName[];
 extern const char kLacrosProfileMigrationForceOffDescription[];

@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/commerce_heuristics_data.h"
+#include "components/commerce/core/commerce_heuristics_data_metrics_helper.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -652,7 +653,7 @@ void CartService::AddCartsWithFakeData() {
   dummy_proto2.set_key(std::string(kFakeDataPrefix) + eTLDPlusOne(dummy_url2));
   dummy_proto2.set_merchant("Cart Bar");
   dummy_proto2.set_merchant_cart_url(dummy_url2.spec());
-  dummy_proto2.set_timestamp(time_now + 5);
+  dummy_proto2.set_timestamp(time_now + 3);
   dummy_proto2.mutable_discount_info()->set_discount_text(
       l10n_util::GetStringFUTF8(IDS_NTP_MODULES_CART_DISCOUNT_CHIP_AMOUNT,
                                 u"20%"));
@@ -693,7 +694,7 @@ void CartService::AddCartsWithFakeData() {
   dummy_proto4.set_key(std::string(kFakeDataPrefix) + eTLDPlusOne(dummy_url4));
   dummy_proto4.set_merchant("Cart Qux");
   dummy_proto4.set_merchant_cart_url(dummy_url4.spec());
-  dummy_proto4.set_timestamp(time_now + 3);
+  dummy_proto4.set_timestamp(time_now + 5);
   dummy_proto4.add_product_image_urls(
       "https://encrypted-tbn0.gstatic.com/"
       "shopping?q=tbn:ANd9GcQyMRYWeM2Yq095nOXTL0-"
@@ -895,11 +896,15 @@ void CartService::OnAddCart(const std::string& domain,
       domain_name_mapping_->FindStringKey(domain);
   if (merchant_name_from_component.has_value()) {
     proto.set_merchant(*merchant_name_from_component);
+    CommerceHeuristicsDataMetricsHelper::RecordMerchantNameSource(
+        CommerceHeuristicsDataMetricsHelper::HeuristicsSource::FROM_COMPONENT);
   } else if (merchant_name_from_resource) {
     proto.set_merchant(*merchant_name_from_resource);
-    // TODO(crbug.com/1300332): Add UMA here to track when component failed to
-    // feed heuristics. It's going to be a enum of {from component, from
-    // resource, missing}.
+    CommerceHeuristicsDataMetricsHelper::RecordMerchantNameSource(
+        CommerceHeuristicsDataMetricsHelper::HeuristicsSource::FROM_RESOURCE);
+  } else {
+    CommerceHeuristicsDataMetricsHelper::RecordMerchantNameSource(
+        CommerceHeuristicsDataMetricsHelper::HeuristicsSource::MISSING);
   }
   if (cart_url) {
     proto.set_merchant_cart_url(cart_url->spec());
@@ -913,9 +918,6 @@ void CartService::OnAddCart(const std::string& domain,
       proto.set_merchant_cart_url(*fallback_url_from_component);
     } else if (fallback_url_from_resource) {
       proto.set_merchant_cart_url(*fallback_url_from_resource);
-      // TODO(crbug.com/1300332): Add UMA here to track when component failed to
-      // feed heuristics. It's going to be a enum of {from component, from
-      // resource, missing}.
     }
   }
 

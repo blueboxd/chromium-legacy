@@ -130,6 +130,7 @@ source_set("connections_implementation") {
     ":nearby_defines",
   ]
   sources = [
+    "src/connections/implementation/base_bwu_handler.cc",
     "src/connections/implementation/base_endpoint_channel.cc",
     "src/connections/implementation/base_pcp_handler.cc",
     "src/connections/implementation/ble_advertisement.cc",
@@ -251,6 +252,7 @@ source_set("connections_implementation_mediums") {
     "src/connections/implementation/mediums/mediums.cc",
     "src/connections/implementation/mediums/uuid.cc",
     "src/connections/implementation/mediums/webrtc.cc",
+    "src/connections/implementation/mediums/wifi_hotspot.cc",
     "src/connections/implementation/mediums/wifi_lan.cc",
   ]
   public = [
@@ -267,6 +269,7 @@ source_set("connections_implementation_mediums") {
     "src/connections/implementation/mediums/mediums.h",
     "src/connections/implementation/mediums/uuid.h",
     "src/connections/implementation/mediums/webrtc.h",
+    "src/connections/implementation/mediums/wifi_hotspot.h",
     "src/connections/implementation/mediums/wifi_lan.h",
   ]
   public_deps = [
@@ -377,6 +380,7 @@ source_set("platform_api_comm") {
     "src/internal/platform/implementation/server_sync.h",
     "src/internal/platform/implementation/webrtc.h",
     "src/internal/platform/implementation/wifi.h",
+    "src/internal/platform/implementation/wifi_hotspot.h",
     "src/internal/platform/implementation/wifi_lan.h",
   ]
   public_deps = [
@@ -614,6 +618,7 @@ source_set("platform_public_comm") {
     "src/internal/platform/ble.cc",
     "src/internal/platform/bluetooth_classic.cc",
     "src/internal/platform/file.cc",
+    "src/internal/platform/wifi_hotspot.cc",
     "src/internal/platform/wifi_lan.cc",
   ]
   public = [
@@ -621,6 +626,7 @@ source_set("platform_public_comm") {
     "src/internal/platform/bluetooth_adapter.h",
     "src/internal/platform/bluetooth_classic.h",
     "src/internal/platform/webrtc.h",
+    "src/internal/platform/wifi_hotspot.h",
     "src/internal/platform/wifi_lan.h",
   ]
   public_deps = [

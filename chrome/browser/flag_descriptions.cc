@@ -565,6 +565,11 @@ const char kConsolidatedSiteStorageControlsName[] =
 const char kConsolidatedSiteStorageControlsDescription[] =
     "Enables the consolidated version of Site Storage controls in settings";
 
+const char kConsumerAutoUpdateToggleAllowedName[] =
+    "Allow Consumer Auto Update Toggle";
+const char kConsumerAutoUpdateToggleAllowedDescription[] =
+    "Allow enabling the consumer auto update toggle in settings";
+
 const char kContextMenuGoogleLensChipName[] =
     "Google Lens powered image search for surfaced as a chip below the context "
     "menu.";
@@ -834,12 +839,6 @@ const char kDesktopPWAsElidedExtensionsMenuName[] =
 const char kDesktopPWAsElidedExtensionsMenuDescription[] =
     "Moves the Extensions \"puzzle piece\" icon from the title bar into the "
     "app menu for web app windows.";
-
-const char kDesktopPWAsNotificationIconAndTitleName[] =
-    "Desktop PWAs improvements in notification icon and title";
-const char kDesktopPWAsNotificationIconAndTitleDescription[] =
-    "Replaces the websites origin and the Chrome icon with the web app's name "
-    "and app icon in notifications.";
 
 const char kDesktopPWAsLaunchHandlerName[] = "Desktop PWA launch handler";
 const char kDesktopPWAsLaunchHandlerDescription[] =
@@ -5002,6 +5001,13 @@ const char kLacrosProfileMigrationForAnyUserDescription[] =
     "means that any pre-existing lacros data will be wiped and replaced with "
     "data migrated from ash. It also has a side effect that lacros will be "
     "disbled until profile migration is completed.";
+
+const char kLacrosMoveProfileMigrationName[] = "Enforce profile move migration";
+const char kLacrosMoveProfileMigrationDescription[] =
+    "Enforce Lacros profile move migration which moves files from Ash profile "
+    "directory to Lacros profile directory instead of copying. Please note "
+    "that disabling Lacros and falling back to Ash after move migration is not "
+    "supported.";
 
 const char kLacrosProfileMigrationForceOffName[] = "Disable profile migration";
 const char kLacrosProfileMigrationForceOffDescription[] =

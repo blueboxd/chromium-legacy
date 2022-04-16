@@ -81,8 +81,9 @@ export class ModulesElement extends PolymerElement {
         type: Boolean,
         computed:
             `computeModulesFreShown_(modulesLoaded_, modulesFreVisible_, modulesShownToUser)`,
-        reflectToAttribute: true,
+        observer: 'onModulesFreShownChange_',
         notify: true,
+        reflectToAttribute: true,
       },
 
       modulesFreVisible_: {
@@ -95,6 +96,8 @@ export class ModulesElement extends PolymerElement {
         type: Object,
         value: null,
       },
+
+      moduleImpressionDetected_: Boolean,
 
       modulesLoaded_: Boolean,
 
@@ -138,6 +141,7 @@ export class ModulesElement extends PolymerElement {
   private modulesFreRemoved_: boolean;
   private modulesFreShown: boolean;
   private modulesFreVisible_: boolean;
+  private moduleImpressionDetected_: boolean;
   private modulesLoaded_: boolean;
   private modulesVisibilityDetermined_: boolean;
   private modulesLoadedAndVisibilityDetermined_: boolean;
@@ -180,13 +184,6 @@ export class ModulesElement extends PolymerElement {
   override ready() {
     super.ready();
     this.renderModules_();
-  }
-
-  private computeModulesFreShown_(): boolean {
-    return (
-        loadTimeData.getBoolean('modulesFirstRunExperienceEnabled') &&
-        this.modulesLoaded_ && this.modulesFreVisible_ &&
-        this.modulesShownToUser);
   }
 
   private appendModuleContainers_(moduleContainers: HTMLElement[]) {
@@ -243,6 +240,7 @@ export class ModulesElement extends PolymerElement {
   }
 
   private async renderModules_(): Promise<void> {
+    this.moduleImpressionDetected_ = false;
     const modules = await ModuleRegistry.getInstance().initializeModules(
         loadTimeData.getInteger('modulesLoadTimeout'));
     if (modules) {
@@ -260,6 +258,12 @@ export class ModulesElement extends PolymerElement {
         }
         moduleWrapper.addEventListener(
             'disable-module', e => this.onDisableModule_(e));
+        moduleWrapper.addEventListener('detect-impression', () => {
+          if (!this.moduleImpressionDetected_) {
+            NewTabPageProxy.getInstance().handler.incrementModulesShownCount();
+          }
+          this.moduleImpressionDetected_ = true;
+        });
         const moduleContainer = this.ownerDocument.createElement('div');
         moduleContainer.classList.add('module-container');
         if (loadTimeData.getBoolean('modulesRedesignedLayoutEnabled')) {
@@ -274,10 +278,6 @@ export class ModulesElement extends PolymerElement {
         moduleContainer.appendChild(moduleWrapper);
         return moduleContainer;
       });
-
-      if (modules.length > 0) {
-        NewTabPageProxy.getInstance().handler.incrementModulesShownCount();
-      }
 
       chrome.metricsPrivate.recordSmallCount(
           'NewTabPage.Modules.LoadedModulesCount', modules.length);
@@ -427,6 +427,24 @@ export class ModulesElement extends PolymerElement {
     const moduleContainers = [...this.shadowRoot!.querySelectorAll<HTMLElement>(
         '.module-container')];
     this.appendModuleContainers_(moduleContainers);
+  }
+
+  private computeModulesFreShown_(): boolean {
+    return loadTimeData.getBoolean('modulesFirstRunExperienceEnabled') &&
+        this.modulesLoaded_ && this.modulesFreVisible_ &&
+        this.modulesShownToUser;
+  }
+
+  private async onModulesFreShownChange_() {
+    chrome.metricsPrivate.recordBoolean(
+        `NewTabPage.Modules.FreLoaded`, this.modulesFreShown);
+    // The FRE only shows when modules are shown to users so we log a FRE
+    // impression whenever a module impression is detected and the FRE is set to
+    // show.
+    if (this.moduleImpressionDetected_) {
+      chrome.metricsPrivate.recordBoolean(
+          `NewTabPage.Modules.FreImpression`, this.modulesFreShown);
+    }
   }
 
   private onCustomizeModuleFre_() {

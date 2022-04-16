@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.compositor.overlays.strip;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -34,6 +35,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.components.VirtualView;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.test.util.browser.Features;
@@ -67,6 +69,7 @@ public class StripLayoutHelperTest {
     private static final float TAB_WIDTH_2 = 160.f;
     private static final float TAB_WIDTH_SMALL = 108.f;
     private static final float TAB_WIDTH_MEDIUM = 156.f;
+    private static final long TIMESTAMP = 5000;
 
     /** Reset the environment before each test. */
     @Before
@@ -162,7 +165,7 @@ public class StripLayoutHelperTest {
         mModel.closeAllTabs();
 
         // Notify strip of tab closure
-        mStripLayoutHelper.allTabsClosed();
+        mStripLayoutHelper.willCloseAllTabs();
 
         // Verify strip has no tabs.
         assertTrue(mStripLayoutHelper.getStripLayoutTabs().length == 0);
@@ -271,7 +274,7 @@ public class StripLayoutHelperTest {
         // Arrange
         TabUiFeatureUtilities.setTabMinWidthForTesting(TAB_WIDTH_MEDIUM);
         initializeTest(true, true, 3);
-        StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_2, 150.f);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_2, 150.f, 5);
         // Set mWidth value to 800.f.
         mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT);
         // The leftmost tab is partially hidden.
@@ -297,7 +300,7 @@ public class StripLayoutHelperTest {
         // Arrange
         TabUiFeatureUtilities.setTabMinWidthForTesting(TAB_WIDTH_MEDIUM);
         initializeTest(true, true, 3);
-        StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_2, 150.f);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_2, 150.f, 5);
         // Set mWidth value to 800.f
         mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT);
         // To make rightmost tab partially hidden value should be gt than (SCREEN_WIDTH - 120.f -
@@ -318,17 +321,242 @@ public class StripLayoutHelperTest {
         Mockito.verify(tabs[4]).setCanShowCloseButton(false);
     }
 
-    private void initializeTest(boolean rtl, boolean incognito, int tabIndex) {
+    @Test
+    @Feature("Tab Strip Improvements")
+    public void testScrollOffset_OnResume_StartOnLeft_SelectedRightmostTab() {
+        // Arrange: Initialize tabs with last tab selected.
+        initializeTest(false, true, 9, 10);
+        TabUiFeatureUtilities.setTabMinWidthForTesting(TAB_WIDTH_MEDIUM);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_MEDIUM, 150.f, 10);
+        mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
+
+        // Set screen width to 800dp.
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+        mStripLayoutHelper.scrollTabToView(TIMESTAMP, false);
+
+        int expectedFinalX = -1004; // scrollOffset(0) - delta(optimalRight(-980) - scrollOffset(0)
+                                    // - tabOverlapWidth(24))
+        assertEquals(expectedFinalX, mStripLayoutHelper.getScroller().getFinalX());
+    }
+
+    @Test
+    @Feature("Tab Strip Improvements")
+    public void testScrollOffset_OnResume_StartOnRight_SelectedLeftmostTab() {
+        // Arrange: Initialize tabs with first tab selected.
+        initializeTest(false, true, 0, 10);
+        TabUiFeatureUtilities.setTabMinWidthForTesting(TAB_WIDTH_MEDIUM);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_MEDIUM, 150.f, 10);
+        mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
+        mStripLayoutHelper.testSetScrollOffset(1200);
+
+        // Set screen width to 800dp.
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+        mStripLayoutHelper.scrollTabToView(TIMESTAMP, false);
+
+        int expectedFinalX = 490; // scrollOffset(1200) - delta(optimalRight(514) - scrollOffset(24)
+                                  // - tabOverlapWidth(1200))
+        assertEquals(expectedFinalX, mStripLayoutHelper.getScroller().getFinalX());
+    }
+
+    @Test
+    @Feature("Tab Strip Improvements")
+    public void testScrollDuration() {
+        initializeTest(false, true, 3);
+
+        // Act: Set scroll offset less than 960.
+        mStripLayoutHelper.testSetScrollOffset(800);
+
+        // Assert: Expand duration is 250.
+        assertEquals(mStripLayoutHelper.getExpandDurationForTesting(), 250);
+    }
+
+    @Test
+    @Feature("Tab Strip Improvements")
+    public void testScrollDuration_Medium() {
+        initializeTest(false, true, 3);
+
+        // Act: Set scroll offset between 960 and 1920.
+        mStripLayoutHelper.testSetScrollOffset(1000);
+
+        // Assert: Expand duration is 350.
+        assertEquals(mStripLayoutHelper.getExpandDurationForTesting(), 350);
+    }
+
+    @Test
+    @Feature("Tab Strip Improvements")
+    public void testScrollDuration_Large() {
+        initializeTest(false, true, 3);
+
+        // Act: Set scroll offset greater than 1920
+        mStripLayoutHelper.testSetScrollOffset(2000);
+
+        // Assert: Expand duration is 450.
+        assertEquals(mStripLayoutHelper.getExpandDurationForTesting(), 450);
+    }
+
+    @Test
+    @Feature("Tab Strip Improvements")
+    public void testUndoTabClose_SelectedTab_ReselectsTab() {
+        // Arrange: Initialize tabs with fourth tab selected.
+        initializeTest(true, true, 3);
+
+        // Act: Close fourth tab (selected) and undo closed tab.
+        mStripLayoutHelper.willCloseTab(3);
+        // When the third tab is closed, the second one should be selected.
+        mModel.setIndex(2);
+        // Undo 4th tab closure.
+        mStripLayoutHelper.tabClosureCancelled(TIMESTAMP, 3);
+
+        // Assert: Fourth tab is selected after undo.
+        assertEquals(mModel.index(), 3);
+    }
+
+    @Test
+    @Feature("Tab Strip Improvements")
+    public void testUndoTabClose_UnSelectedTab_DoesNotSelectTab() {
+        // Arrange: Initialize tabs with third tab selected.
+        initializeTest(true, true, 2);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_2, 150.f, 5);
+        mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
+
+        // Act: Close fourth tab (not selected) and undo closed tab.
+        mStripLayoutHelper.willCloseTab(3);
+        // Undo 4th tab closure.
+        mStripLayoutHelper.tabClosureCancelled(TIMESTAMP, 3);
+
+        // Assert: Fourth tab is not selected after undo.
+        assertNotEquals(mModel.index(), 3);
+    }
+
+    @Test
+    @Feature("Tab Strip Improvements")
+    public void testUndoAllTabsClose_ReselectsSelectedTab() {
+        // Arrange: Initialize tabs with fourth tab selected.
+        initializeTest(true, true, 3);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_2, 150.f, 5);
+        mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
+
+        // Act: Close all tabs and undo closure
+        mStripLayoutHelper.willCloseAllTabs();
+        // Undo closure.
+        cancelAllTabClosure(tabs);
+
+        // Assert: Fourth tab is selected after undo.
+        assertEquals(3, mModel.index());
+    }
+
+    @Test
+    @Feature("Tab Strip Improvements")
+    public void testUndoAllTabsClosed_ThenUndoSingleTabClose_ReselectsTab() {
+        // Arrange: Initialize tabs with fourth tab selected.
+        initializeTest(true, true, 3);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_2, 150.f, 5);
+        mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
+
+        // Act: Close all tabs and undo closure
+        mStripLayoutHelper.willCloseAllTabs();
+        // Undo closure.
+        cancelAllTabClosure(tabs);
+
+        // Assert: Fourth tab is selected after undo.
+        assertEquals(mModel.index(), 3);
+
+        // Act 2: Close just the fourth tab and undo.
+        mStripLayoutHelper.willCloseTab(3);
+        // After fourth tab is closed, the third one should be selected.
+        mModel.setIndex(2);
+        // Undo tab closure.
+        mStripLayoutHelper.tabClosureCancelled(TIMESTAMP, 3);
+
+        // Assert: Third tab is selected after undo.
+        assertEquals(3, mModel.index());
+    }
+
+    @Test
+    @Feature("Tab Strip Improvements")
+    public void testUndoSingleTabClose_ThenUndoAllTabsClosed_ReselectsTab() {
+        // Arrange: Initialize tabs with fourth tab selected.
+        initializeTest(true, true, 3);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_2, 150.f, 5);
+        mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
+
+        // Act 1: Close just the fourth tab and undo.
+        mStripLayoutHelper.willCloseTab(3);
+        // After fourth tab is closed, the third one should be selected.
+        mModel.setIndex(2);
+        // Undo tab closure.
+        mStripLayoutHelper.tabClosureCancelled(TIMESTAMP, 3);
+
+        // Assert: Fourth tab is selected after undo.
+        assertEquals(3, mModel.index());
+
+        // Act 2: Close all tabs and undo closure
+        mStripLayoutHelper.willCloseAllTabs();
+        // Undo closure.
+        cancelAllTabClosure(tabs);
+
+        // Assert: Fourth tab is selected after undo.
+        assertEquals(mModel.index(), 3);
+    }
+
+    @Test
+    @Feature("Tab Strip Improvements")
+    public void testUndoSingleTabClose_AfterManualTabReselection_DoesNotReselectTab() {
+        // Arrange: Initialize tabs with fourth tab selected.
+        initializeTest(true, true, 3);
+        StripLayoutTab[] tabs = getMockedStripLayoutTabs(TAB_WIDTH_2, 150.f, 5);
+        when(tabs[1].isVisible()).thenReturn(true);
+        mStripLayoutHelper.setStripLayoutTabsForTest(tabs);
+
+        // Act 1: Close just the fourth tab, click on the second tab, and undo.
+        mStripLayoutHelper.willCloseTab(3);
+        // After fourth tab is closed, the third one should be automatically selected.
+        mModel.setIndex(2);
+        // User manually selects the second tab before undoing the tab closure.
+        mockClickOnTab(1);
+        // Undo tab closure.
+        mStripLayoutHelper.tabClosureCancelled(TIMESTAMP, 3);
+
+        // Assert: Second tab is still selected after undo.
+        assertEquals(1, mModel.index());
+    }
+
+    private void mockClickOnTab(int index) {
+        mModel.setIndex(index);
+        mStripLayoutHelper.tabSelected(TIMESTAMP, 1, 2);
+        mStripLayoutHelper.click(TIMESTAMP, 160, 100, false, -1);
+    }
+
+    private void cancelAllTabClosure(StripLayoutTab[] tabs) {
+        for (StripLayoutTab tab : tabs) {
+            mStripLayoutHelper.tabClosureCancelled(TIMESTAMP, tab.getId());
+        }
+    }
+
+    private void initializeTest(boolean rtl, boolean incognito, int tabIndex, int numTabs) {
         mStripLayoutHelper = createStripLayoutHelper(rtl, incognito);
         mIncognito = incognito;
-        for (int i = 0; i < TEST_TAB_TITLES.length; i++) {
-            mModel.addTab(TEST_TAB_TITLES[i]);
-            when(mModel.getTabAt(i).isHidden()).thenReturn(tabIndex != i);
+        if (numTabs <= 5) {
+            for (int i = 0; i < numTabs; i++) {
+                mModel.addTab(TEST_TAB_TITLES[i]);
+                when(mModel.getTabAt(i).isHidden()).thenReturn(tabIndex != i);
+            }
+        } else {
+            for (int i = 0; i < numTabs; i++) {
+                mModel.addTab("Tab " + i);
+                when(mModel.getTabAt(i).isHidden()).thenReturn(tabIndex != i);
+            }
         }
         mModel.setIndex(tabIndex);
         mStripLayoutHelper.setTabModel(mModel, null);
         mStripLayoutHelper.tabSelected(0, tabIndex, 0);
         // Flush UI updated
+    }
+
+    private void initializeTest(boolean rtl, boolean incognito, int tabIndex) {
+        initializeTest(rtl, incognito, tabIndex, 5);
     }
 
     private void assertTabStripAndOrder(String[] expectedAccessibilityDescriptions) {
@@ -381,20 +609,18 @@ public class StripLayoutHelperTest {
         return expectedAccessibilityDescriptions;
     }
 
-    private StripLayoutTab[] getMockedStripLayoutTabs(float tabWidth, float mDrawX) {
+    private StripLayoutTab[] getMockedStripLayoutTabs(float tabWidth, float mDrawX, int numTabs) {
         StripLayoutTab[] tabs = new StripLayoutTab[mModel.getCount()];
 
-        tabs[0] = mockStripTab(0, tabWidth, mDrawX);
-        tabs[1] = mockStripTab(1, tabWidth, mDrawX);
-        tabs[2] = mockStripTab(2, tabWidth, mDrawX);
-        tabs[3] = mockStripTab(3, tabWidth, mDrawX);
-        tabs[4] = mockStripTab(4, tabWidth, mDrawX);
+        for (int i = 0; i < numTabs; i++) {
+            tabs[i] = mockStripTab(i, tabWidth, mDrawX);
+        }
 
         return tabs;
     }
 
     private StripLayoutTab[] getMockedStripLayoutTabs(float tabWidth) {
-        return getMockedStripLayoutTabs(tabWidth, 0.f);
+        return getMockedStripLayoutTabs(tabWidth, 0.f, 5);
     }
 
     private StripLayoutTab mockStripTab(int id, float tabWidth, float mDrawX) {
@@ -443,6 +669,11 @@ public class StripLayoutHelperTest {
 
         public void setIndex(int index) {
             mIndex = index;
+        }
+
+        @Override
+        public void setIndex(int i, @TabSelectionType int type, boolean skipLoadingTab) {
+            mIndex = i;
         }
     }
 }

@@ -493,6 +493,14 @@ class Node(object):
     # Set values only for variables that are needed to eval the expression.
     variable_map = {}
     for name in variables_in_expr:
+
+      # TODO(crbug.com/1230488): Remove the following check after a few days.
+      # This is needed to ensure that no occurrences of |chromeos| or |lacros|
+      # are missed (Grit does not normally catch undefined vars, see
+      # crbug.com/1316544)
+      if name == 'chromeos' or name == 'lacros':
+        assert False, 'chromeos/lacros variables found, use chromeos_ash/chromeos_lacros instead.'
+
       if name == 'os':
         value = target_platform
       elif name == 'defs':
@@ -656,9 +664,7 @@ class Node(object):
 
     if compress == 'gzip' or compress_by_default:
       # We only use rsyncable compression on Linux.
-      # We exclude ChromeOS since ChromeOS bots are Linux based but do not have
-      # the --rsyncable option built in for gzip. See crbug.com/617950.
-      if sys.platform == 'linux2' and 'chromeos' not in self.GetRoot().defines:
+      if sys.platform == 'linux2':
         return grit.format.gzip_string.GzipStringRsyncable(data)
       return grit.format.gzip_string.GzipString(data)
 

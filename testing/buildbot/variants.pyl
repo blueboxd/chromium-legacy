@@ -22,15 +22,15 @@
   },
   'LACROS_VERSION_SKEW_CANARY': {
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v102.0.5004.0/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v103.0.5006.0/test_ash_chrome',
     ],
-    'identifier': 'Lacros version skew testing ash 102.0.5004.0',
+    'identifier': 'Lacros version skew testing ash 103.0.5006.0',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v102.0.5004.0',
-          'revision': 'version:102.0.5004.0',
+          'location': 'lacros_version_skew_tests_v103.0.5006.0',
+          'revision': 'version:103.0.5006.0',
         },
       ],
     },
@@ -67,15 +67,15 @@
   },
   'LACROS_VERSION_SKEW_STABLE': {
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v100.0.4896.82/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v100.0.4896.93/test_ash_chrome',
     ],
-    'identifier': 'Lacros version skew testing ash 100.0.4896.82',
+    'identifier': 'Lacros version skew testing ash 100.0.4896.93',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v100.0.4896.82',
-          'revision': 'version:100.0.4896.82',
+          'location': 'lacros_version_skew_tests_v100.0.4896.93',
+          'revision': 'version:100.0.4896.93',
         },
       ],
     },
@@ -438,18 +438,18 @@
       '--client-outdir',
       '.',
       '--implementation-outdir',
-      '../../weblayer_instrumentation_test_M101/out/Release',
+      '../../weblayer_instrumentation_test_M102/out/Release',
       '--test-expectations',
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
-      '--impl-version=101',
+      '--impl-version=102',
     ],
-    'identifier': 'with_impl_from_101',
+    'identifier': 'with_impl_from_102',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
-          'location': 'weblayer_instrumentation_test_M101',
-          'revision': 'version:101.0.4951.36',
+          'location': 'weblayer_instrumentation_test_M102',
+          'revision': 'version:102.0.5005.3',
         }
       ],
     },
@@ -582,18 +582,18 @@
       '--client-outdir',
       '.',
       '--implementation-outdir',
-      '../../weblayer_instrumentation_test_M101/out/Release',
+      '../../weblayer_instrumentation_test_M102/out/Release',
       '--test-expectations',
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
-      '--impl-version=101',
+      '--impl-version=102',
     ],
-    'identifier': 'with_impl_from_101',
+    'identifier': 'with_impl_from_102',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
-          'location': 'weblayer_instrumentation_test_M101',
-          'revision': 'version:101.0.4951.36',
+          'location': 'weblayer_instrumentation_test_M102',
+          'revision': 'version:102.0.5005.3',
         }
       ],
     },
@@ -724,20 +724,20 @@
       '--test-runner-outdir',
       '.',
       '--client-outdir',
-      '../../weblayer_instrumentation_test_M101/out/Release',
+      '../../weblayer_instrumentation_test_M102/out/Release',
       '--implementation-outdir',
       '.',
       '--test-expectations',
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
-      '--client-version=101',
+      '--client-version=102',
     ],
-    'identifier': 'with_client_from_101',
+    'identifier': 'with_client_from_102',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
-          'location': 'weblayer_instrumentation_test_M101',
-          'revision': 'version:101.0.4951.36',
+          'location': 'weblayer_instrumentation_test_M102',
+          'revision': 'version:102.0.5005.3',
         }
       ],
     },

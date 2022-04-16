@@ -3424,6 +3424,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLacrosProfileMigrationForAnyUserName,
      flag_descriptions::kLacrosProfileMigrationForAnyUserDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kLacrosProfileMigrationForAnyUser)},
+    {"lacros-move-profile-migration",
+     flag_descriptions::kLacrosMoveProfileMigrationName,
+     flag_descriptions::kLacrosMoveProfileMigrationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kLacrosMoveProfileMigration)},
     {"lacros-profile-migration-force-off",
      flag_descriptions::kLacrosProfileMigrationForceOffName,
      flag_descriptions::kLacrosProfileMigrationForceOffDescription, kOsCrOS,
@@ -3541,6 +3545,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWifiConnectMacAddressRandomizationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(
          chromeos::features::kWifiConnectMacAddressRandomization)},
+    {"consumer-auto-update-toggle-allowed",
+     flag_descriptions::kConsumerAutoUpdateToggleAllowedName,
+     flag_descriptions::kConsumerAutoUpdateToggleAllowedDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kConsumerAutoUpdateToggleAllowed)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -4030,11 +4038,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsElidedExtensionsMenuName,
      flag_descriptions::kDesktopPWAsElidedExtensionsMenuDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDesktopPWAsElidedExtensionsMenu)},
-    {"enable-desktop-pwas-notification-icon-and-title",
-     flag_descriptions::kDesktopPWAsNotificationIconAndTitleName,
-     flag_descriptions::kDesktopPWAsNotificationIconAndTitleDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kDesktopPWAsNotificationIconAndTitle)},
     {"enable-desktop-pwas-tab-strip",
      flag_descriptions::kDesktopPWAsTabStripName,
      flag_descriptions::kDesktopPWAsTabStripDescription, kOsDesktop,

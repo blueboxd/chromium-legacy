@@ -877,6 +877,14 @@
     "expiry_milestone": 98
   },
   {
+    "name": "consumer-auto-update-toggle-allowed",
+    "owners": [
+      "kimjae",
+      "xiaohuic"
+    ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "content-languages-in-language-picker",
     "owners": [ "sclittle", "basiaz@google.com", "chrome-language@google.com" ],
     "expiry_milestone": 105
@@ -1895,11 +1903,6 @@
   {
     "name": "enable-desktop-pwas-manifest-id",
     "owners": [ "phillis@chromium.org", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 98
-  },
-  {
-    "name": "enable-desktop-pwas-notification-icon-and-title",
-    "owners": [ "loyso@chromium.org", "desktop-pwas-team@google.com" ],
     "expiry_milestone": 98
   },
   {
@@ -3732,6 +3735,14 @@
   {
     "name": "lacros-merge-icu-data-file",
     "owners": [ "andreaorru", "hidehiko", "lacros-team@google.com" ],
+    "expiry_milestone": 130
+  },
+  {
+    "name": "lacros-move-profile-migration",
+    "owners": ["ythjkt", "hidehiko", "lacros-team@google.com"],
+    // Once Lacros is launched, this flag can be removed. Until then, this
+    // absolutely must not expire. We do not yet have a launch milestone.
+    // TODO(https://crbug.com/1148474).
     "expiry_milestone": 130
   },
   {
@@ -5742,6 +5753,11 @@
     // This flag is used for in-the-field debugging of animation issues on
     // Chrome OS.
     "expiry_milestone": -1
+  },
+  {
+    "name": "uiview-window-observing",
+    "owners": [ "lpromero", "bling-flags@google.com" ],
+    "expiry_milestone": 105
   },
   {
     "name": "unified-password-manager-desktop",

@@ -300,6 +300,11 @@ const base::Feature kClipboardHistoryContextMenuNudge{
 const base::Feature kClipboardHistoryNudgeSessionReset{
     "ClipboardHistoryNudgeSessionReset", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled and account falls under the new deal, will be allowed to toggle
+// auto updates.
+const base::Feature kConsumerAutoUpdateToggleAllowed{
+    "ConsumerAutoUpdateToggleAllowed", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, replaces the `DeskMiniView` legacy desk close button and behavior
 // with a button to close desk and windows and a button to combine desks (the
 // legacy behavior).
@@ -892,6 +897,11 @@ const base::Feature kLacrosProfileMigrationForceOff{
 const base::Feature kLacrosProfileMigrationForAnyUser{
     "LacrosProfileMigrationForAnyUser", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, use `MoveMigrator` instead of `CopyMigrator` to migrate data.
+// `MoveMigrator` moves data from ash to lacros instead of copying them.
+const base::Feature kLacrosMoveProfileMigration{
+    "LacrosMoveProfileMigration", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables the second language settings update.
 const base::Feature kLanguageSettingsUpdate2{"LanguageSettingsUpdate2",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1243,7 +1253,7 @@ const base::Feature kSettingsAppNotificationSettings{
 
 // Whether theme changes should be animated for the Settings app.
 const base::Feature kSettingsAppThemeChangeAnimation{
-    "SettingsAppThemeChangeAnimation", base::FEATURE_ENABLED_BY_DEFAULT};
+    "SettingsAppThemeChangeAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables launcher nudge that animates the home button to guide users to open
 // the launcher.
@@ -1613,6 +1623,10 @@ bool IsDesksCloseAllEnabled() {
 bool IsLauncherItemColorSyncEnabled() {
   return IsLauncherAppSortEnabled() &&
          base::FeatureList::IsEnabled(kLauncherItemColorSync);
+}
+
+bool IsConsumerAutoUpdateAllowed() {
+  return base::FeatureList::IsEnabled(kConsumerAutoUpdateToggleAllowed);
 }
 
 bool IsCryptohomeRecoveryFlowEnabled() {
@@ -2089,11 +2103,6 @@ bool IsShelfLauncherNudgeEnabled() {
 
 bool IsShimlessRMAFlowEnabled() {
   return base::FeatureList::IsEnabled(kShimlessRMAFlow);
-}
-
-bool IsShimlessRMAStandaloneAppEnabled() {
-  return base::FeatureList::IsEnabled(kShimlessRMAEnableStandalone) &&
-         IsShimlessRMAFlowEnabled();
 }
 
 bool IsSimLockPolicyEnabled() {

@@ -825,7 +825,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/linux-amd64',
-          'version': 'qbr5dnKMM9N4KyoOHihJ71KkDTMjW0BUtowr5iX4w24C',
+          'version': 'aKQLo6Pv8RwRKmBPCU4h0LQJEFAz60u3T3GSUIabMYkC',
         },
       ],
       'dep_type': 'cipd',
@@ -836,7 +836,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/mac-amd64',
-          'version': 'wpVaHDWxZ9rxa7DxrfS_JYq07jJpcd-P745q_vXVEtoC',
+          'version': 'rde86u6hoGrXhakB3EZ-rsyWTbqVY47ynM_NS40aS88C',
         },
       ],
       'dep_type': 'cipd',
@@ -847,7 +847,7 @@ deps = {
       'packages': [
         {
           'package': 'chromium/rts/model/windows-amd64',
-          'version': 'jbaZ1Hdqko1BXQSSsvNlJRxbmuwOzSIBfPOEWD_qXekC',
+          'version': 'LlAjtmaj1pbrqJJKGY_o0nRkUWzxp7H1pPiwNxRikicC',
         },
       ],
       'dep_type': 'cipd',
@@ -1801,7 +1801,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7342e70c74b8648f8d55649e400192838f84db2d',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0a5765b5ca011420ff4de5c228b2e030b528f542',
     'condition': 'checkout_src_internal',
   },
 
@@ -1831,7 +1831,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': '3EGrIrUOwTkhu0KP52kMVMCZYm0-lK29stV4k5YFNM0C',
+        'version': 'YWgw-kbAd--iZtKDwNfK-lckKfk0XV9fPwZ2aIPrgbUC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -1842,7 +1842,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': '_F7hhzCim48uwQMT2pZL8cZb--mWqDZJQVOgAq47MzcC',
+        'version': 'qM9h_0BFx242vIjU6Z0Ed4ofdRi7IUBNc-o6rgyas3IC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

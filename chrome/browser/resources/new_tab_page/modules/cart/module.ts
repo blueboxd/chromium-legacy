@@ -41,6 +41,7 @@ export interface ChromeCartModuleElement {
     infoDialogRender: CrLazyRenderElement<InfoDialogElement>,
     removeCartButton: HTMLElement,
     undoDismissCartButton: HTMLElement,
+    consentContainer: HTMLElement,
   };
 }
 
@@ -88,7 +89,13 @@ export class ChromeCartModuleElement extends I18nMixin
             DiscountConsentVariation.StringChange
       },
       firstThreeCartItems_:
-          {type: Array, computed: 'computeFirstThreeCartItems_(cartItems)'}
+          {type: Array, computed: 'computeFirstThreeCartItems_(cartItems)'},
+
+      /** This is used for animation when the consent become invisible. */
+      discountConsentVisible_: {
+        type: Boolean,
+        reflectToAttribute: true,
+      }
     };
   }
 
@@ -96,6 +103,7 @@ export class ChromeCartModuleElement extends I18nMixin
   headerChipText: string;
   headerDescriptionText: string;
   showDiscountConsent: boolean;
+  discountConsentVisible_: boolean;
   scrollBehavior: ScrollBehavior = 'smooth';
   private showLeftScrollButton_: boolean;
   private showRightScrollButton_: boolean;
@@ -150,6 +158,19 @@ export class ChromeCartModuleElement extends I18nMixin
     this.eventTracker_.add(
         this, 'discount-consent-continued',
         () => this.onDiscountConsentContinued_());
+
+    this.eventTracker_.add(this.$.consentContainer, 'transitionend', () => {
+      if (this.showDiscountConsent && !this.discountConsentVisible_) {
+        this.showDiscountConsent = false;
+        // TODO(meiliang): Show the confirmation toast here instead.
+        const firstCartLink =
+            this.$.cartCarousel.querySelector<HTMLElement>('.cart-item');
+        if (firstCartLink !== null &&
+            !this.$.confirmDiscountConsentToast.open) {
+          firstCartLink.focus();
+        }
+      }
+    });
   }
 
   override disconnectedCallback() {
@@ -406,7 +427,7 @@ export class ChromeCartModuleElement extends I18nMixin
   }
 
   private onDiscountConsentRejected_() {
-    this.showDiscountConsent = false;
+    this.discountConsentVisible_ = false;
     this.confirmDiscountConsentString_ =
         loadTimeData.getString('modulesCartDiscountConsentRejectConfirmation');
     this.$.confirmDiscountConsentToast.show();
@@ -417,7 +438,7 @@ export class ChromeCartModuleElement extends I18nMixin
   }
 
   private onDiscountConsentAccepted_() {
-    this.showDiscountConsent = false;
+    this.discountConsentVisible_ = false;
     this.confirmDiscountConsentString_ =
         loadTimeData.getString('modulesCartDiscountConsentAcceptConfirmation');
     this.$.confirmDiscountConsentToast.show();
@@ -428,12 +449,7 @@ export class ChromeCartModuleElement extends I18nMixin
   }
 
   private onDiscountConsentDismissed_() {
-    this.showDiscountConsent = false;
-    const firstCart =
-        this.$.cartCarousel.querySelector<HTMLElement>('.cart-container');
-    if (firstCart !== null) {
-      firstCart.focus();
-    }
+    this.discountConsentVisible_ = false;
     ChromeCartProxy.getHandler().onDiscountConsentDismissed();
     chrome.metricsPrivate.recordUserAction(
         'NewTabPage.Carts.DismissDiscountConsent');
@@ -502,6 +518,7 @@ async function createCartElement(): Promise<HTMLElement|null> {
   }
   element.cartItems = carts;
   element.showDiscountConsent = consentVisible;
+  element.discountConsentVisible_ = consentVisible;
   return element;
 }
 

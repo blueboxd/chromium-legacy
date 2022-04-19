@@ -3975,9 +3975,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"isolate-origins", flag_descriptions::kIsolateOriginsName,
      flag_descriptions::kIsolateOriginsDescription, kOsAll,
      ORIGIN_LIST_VALUE_TYPE(switches::kIsolateOrigins, "")},
-    {"restricted-api-origins", flag_descriptions::kRestrictedApiOriginsName,
-     flag_descriptions::kRestrictedApiOriginsDescription, kOsAll,
-     ORIGIN_LIST_VALUE_TYPE(switches::kRestrictedApiOrigins, "")},
+    {"isolated-app-origins", flag_descriptions::kIsolatedAppOriginsName,
+     flag_descriptions::kIsolatedAppOriginsDescription, kOsAll,
+     ORIGIN_LIST_VALUE_TYPE(switches::kIsolatedAppOrigins, "")},
     {about_flags::kSiteIsolationTrialOptOutInternalName,
      flag_descriptions::kSiteIsolationOptOutName,
      flag_descriptions::kSiteIsolationOptOutDescription, kOsAll,
@@ -8422,6 +8422,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableVirtualCardFidoEnrollment)},
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"enable-desks-save-and-recall", flag_descriptions::kDesksSaveAndRecallName,
+     flag_descriptions::kDesksSaveAndRecallDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kEnableSavedDesks)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

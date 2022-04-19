@@ -34,7 +34,6 @@
 #include "content/browser/attribution_reporting/attribution_observer.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
-#include "content/browser/attribution_reporting/attribution_reporting.pb.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_storage.h"
 #include "content/browser/attribution_reporting/attribution_storage_delegate.h"
@@ -66,8 +65,6 @@ namespace content {
 class AttributionManagerImpl;
 class AttributionObserver;
 class AttributionTrigger;
-
-struct AttributionAggregatableKey;
 
 enum class RateLimitResult : int;
 
@@ -612,38 +609,6 @@ class ReportBuilder {
   std::vector<AggregatableHistogramContribution> contributions_;
 };
 
-// Helper class to construct a `proto::AttributionAggregatableKey` for testing.
-class AggregatableKeyProtoBuilder {
- public:
-  AggregatableKeyProtoBuilder();
-  ~AggregatableKeyProtoBuilder();
-
-  AggregatableKeyProtoBuilder& SetHighBits(uint64_t high_bits);
-
-  AggregatableKeyProtoBuilder& SetLowBits(uint64_t low_bits);
-
-  proto::AttributionAggregatableKey Build() const;
-
- private:
-  proto::AttributionAggregatableKey key_;
-};
-
-// Helper class to construct a `proto::AttributionAggregatableSource` for
-// testing.
-class AggregatableSourceProtoBuilder {
- public:
-  AggregatableSourceProtoBuilder();
-  ~AggregatableSourceProtoBuilder();
-
-  AggregatableSourceProtoBuilder& AddKey(std::string key_id,
-                                         proto::AttributionAggregatableKey key);
-
-  proto::AttributionAggregatableSource Build() const;
-
- private:
-  proto::AttributionAggregatableSource aggregatable_source_;
-};
-
 // Helper class to construct a `blink::mojom::AttributionAggregatableSource`
 // for testing.
 class AggregatableSourceMojoBuilder {
@@ -696,9 +661,6 @@ bool operator==(const AttributionReport& a, const AttributionReport& b);
 bool operator==(const SendResult& a, const SendResult& b);
 
 bool operator==(const DeactivatedSource& a, const DeactivatedSource& b);
-
-bool operator==(const AttributionAggregatableKey& a,
-                const AttributionAggregatableKey& b);
 
 bool operator==(const AttributionAggregatableTriggerData& a,
                 const AttributionAggregatableTriggerData& b);
@@ -769,9 +731,6 @@ std::ostream& operator<<(std::ostream& out,
                          const DeactivatedSource& deactivated_source);
 
 std::ostream& operator<<(std::ostream& out, StorableSource::Result status);
-
-std::ostream& operator<<(std::ostream& out,
-                         const AttributionAggregatableKey& key);
 
 std::ostream& operator<<(
     std::ostream& out,

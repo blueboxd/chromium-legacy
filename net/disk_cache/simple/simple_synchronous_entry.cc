@@ -76,11 +76,12 @@ bool CanOmitEmptyFile(int file_index) {
   return file_index == simple_util::GetFileIndexFromStreamIndex(2);
 }
 
-bool TruncatePath(const FilePath& filename_to_truncate) {
-  base::File file_to_truncate;
+bool TruncatePath(const FilePath& filename_to_truncate,
+                  BackendFileOperations* file_operations) {
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
               base::File::FLAG_WRITE | base::File::FLAG_WIN_SHARE_DELETE;
-  file_to_truncate.Initialize(filename_to_truncate, flags);
+  base::File file_to_truncate =
+      file_operations->OpenFile(filename_to_truncate, flags);
   if (!file_to_truncate.IsValid())
     return false;
   if (!file_to_truncate.SetLength(0))
@@ -365,6 +366,7 @@ void SimpleSynchronousEntry::OpenEntry(
   }
   if (out_results->result != net::OK) {
     sync_entry->Doom();
+    sync_entry->CloseFiles();
     out_results->sync_entry = nullptr;
     out_results->unbound_file_operations =
         std::move(sync_entry->unbound_file_operations_);
@@ -404,6 +406,7 @@ void SimpleSynchronousEntry::CreateEntry(
   if (out_results->result != net::OK) {
     if (out_results->result != net::ERR_FILE_EXISTS)
       sync_entry->Doom();
+    sync_entry->CloseFiles();
     out_results->unbound_file_operations =
         std::move(sync_entry->unbound_file_operations_);
     out_results->sync_entry = nullptr;
@@ -452,6 +455,7 @@ void SimpleSynchronousEntry::OpenOrCreateEntry(
           // In this case, ::OpenOrCreateEntry already returned claiming it made
           // a new entry. Try extra-hard to make that the actual case.
           sync_entry->Doom();
+          sync_entry->CloseFiles();
           file_operations = std::move(sync_entry->unbound_file_operations_);
           sync_entry = nullptr;
           CreateEntry(cache_type, path, key, entry_hash, file_tracker,
@@ -463,6 +467,7 @@ void SimpleSynchronousEntry::OpenOrCreateEntry(
       default:
         // Trouble. Fail this time.
         sync_entry->Doom();
+        sync_entry->CloseFiles();
         out_results->unbound_file_operations =
             std::move(sync_entry->unbound_file_operations_);
         return;
@@ -483,17 +488,34 @@ void SimpleSynchronousEntry::OpenOrCreateEntry(
 }
 
 // static
-int SimpleSynchronousEntry::DeleteEntryFiles(const FilePath& path,
-                                             net::CacheType cache_type,
-                                             uint64_t entry_hash) {
+int SimpleSynchronousEntry::DeleteEntryFiles(
+    const FilePath& path,
+    net::CacheType cache_type,
+    uint64_t entry_hash,
+    std::unique_ptr<UnboundBackendFileOperations> unbound_file_operations) {
+  auto file_operations =
+      unbound_file_operations->Bind(base::SequencedTaskRunnerHandle::Get());
+  return DeleteEntryFilesInternal(path, cache_type, entry_hash,
+                                  file_operations.get());
+}
+
+// static
+int SimpleSynchronousEntry::DeleteEntryFilesInternal(
+    const FilePath& path,
+    net::CacheType cache_type,
+    uint64_t entry_hash,
+    BackendFileOperations* file_operations) {
   base::TimeTicks start = base::TimeTicks::Now();
-  const bool deleted_well = DeleteFilesForEntryHash(path, entry_hash);
+  const bool deleted_well =
+      DeleteFilesForEntryHash(path, entry_hash, file_operations);
   SIMPLE_CACHE_UMA(TIMES, "DiskDoomLatency", cache_type,
                    base::TimeTicks::Now() - start);
   return deleted_well ? net::OK : net::ERR_FAILED;
 }
 
 int SimpleSynchronousEntry::Doom() {
+  BackendFileOperations* file_operations = nullptr;
+  ScopedFileOperationsBinding binding(this, &file_operations);
   if (entry_file_key_.doom_generation != 0u) {
     // Already doomed.
     return true;
@@ -512,7 +534,7 @@ int SimpleSynchronousEntry::Doom() {
             GetFilenameFromEntryFileKeyAndFileIndex(orig_key, i));
         FilePath new_name = path_.AppendASCII(
             GetFilenameFromEntryFileKeyAndFileIndex(entry_file_key_, i));
-        ok = base::ReplaceFile(old_name, new_name, &out_error) && ok;
+        ok = file_operations->ReplaceFile(old_name, new_name, &out_error) && ok;
       }
     }
 
@@ -522,7 +544,7 @@ int SimpleSynchronousEntry::Doom() {
           path_.AppendASCII(GetSparseFilenameFromEntryFileKey(orig_key));
       FilePath new_name =
           path_.AppendASCII(GetSparseFilenameFromEntryFileKey(entry_file_key_));
-      ok = base::ReplaceFile(old_name, new_name, &out_error) && ok;
+      ok = file_operations->ReplaceFile(old_name, new_name, &out_error) && ok;
     }
 
     SIMPLE_CACHE_UMA(TIMES, "DiskDoomLatency", cache_type_,
@@ -532,26 +554,36 @@ int SimpleSynchronousEntry::Doom() {
   } else {
     // No one has ever called Create or Open on us, so we don't have to worry
     // about being accessible to other ops after doom.
-    return DeleteEntryFiles(path_, cache_type_, entry_file_key_.entry_hash);
+    return DeleteEntryFilesInternal(
+        path_, cache_type_, entry_file_key_.entry_hash, file_operations);
   }
 }
 
 // static
-int SimpleSynchronousEntry::TruncateEntryFiles(const base::FilePath& path,
-                                               uint64_t entry_hash) {
-  const bool deleted_well = TruncateFilesForEntryHash(path, entry_hash);
+int SimpleSynchronousEntry::TruncateEntryFiles(
+    const base::FilePath& path,
+    uint64_t entry_hash,
+    std::unique_ptr<UnboundBackendFileOperations> unbound_file_operations) {
+  auto file_operations =
+      unbound_file_operations->Bind(base::SequencedTaskRunnerHandle::Get());
+  const bool deleted_well =
+      TruncateFilesForEntryHash(path, entry_hash, file_operations.get());
   return deleted_well ? net::OK : net::ERR_FAILED;
 }
 
 // static
 int SimpleSynchronousEntry::DeleteEntrySetFiles(
     const std::vector<uint64_t>* key_hashes,
-    const FilePath& path) {
-  const size_t did_delete_count = std::count_if(
-      key_hashes->begin(), key_hashes->end(),
-      [&path](const uint64_t& key_hash) {
-        return SimpleSynchronousEntry::DeleteFilesForEntryHash(path, key_hash);
-      });
+    const FilePath& path,
+    std::unique_ptr<UnboundBackendFileOperations> unbound_file_operations) {
+  auto file_operations =
+      unbound_file_operations->Bind(base::SequencedTaskRunnerHandle::Get());
+  const size_t did_delete_count =
+      std::count_if(key_hashes->begin(), key_hashes->end(),
+                    [&path, &file_operations](const uint64_t& key_hash) {
+                      return SimpleSynchronousEntry::DeleteFilesForEntryHash(
+                          path, key_hash, file_operations.get());
+                    });
   return (did_delete_count == key_hashes->size()) ? net::OK : net::ERR_FAILED;
 }
 
@@ -1117,11 +1149,11 @@ void SimpleSynchronousEntry::Close(
       if (!file.IsOK() || !CheckHeaderAndKey(file.get(), i))
         Doom();
     }
-    CloseFile(i);
+    CloseFile(file_operations.get(), i);
   }
 
   if (sparse_file_open()) {
-    CloseSparseFile();
+    CloseSparseFile(file_operations.get());
   }
 
   SIMPLE_CACHE_UMA(TIMES, "DiskCloseLatency", cache_type_,
@@ -1151,9 +1183,7 @@ SimpleSynchronousEntry::SimpleSynchronousEntry(
 }
 
 SimpleSynchronousEntry::~SimpleSynchronousEntry() {
-  DCHECK(!(have_open_files_ && initialized_));
-  if (have_open_files_)
-    CloseFiles();
+  DCHECK(!have_open_files_);
 }
 
 bool SimpleSynchronousEntry::MaybeOpenFile(
@@ -1234,7 +1264,7 @@ bool SimpleSynchronousEntry::OpenFiles(BackendFileOperations* file_operations,
       SIMPLE_CACHE_LOCAL(ENUMERATION, "SyncOpenPlatformFileError", cache_type_,
                          -error, -base::File::FILE_ERROR_MAX);
       while (--i >= 0)
-        CloseFile(i);
+        CloseFile(file_operations, i);
       return false;
     }
   }
@@ -1289,7 +1319,7 @@ bool SimpleSynchronousEntry::CreateFiles(BackendFileOperations* file_operations,
       SIMPLE_CACHE_LOCAL(ENUMERATION, "SyncCreatePlatformFileError",
                          cache_type_, -error, -base::File::FILE_ERROR_MAX);
       while (--i >= 0)
-        CloseFile(i);
+        CloseFile(file_operations, i);
       return false;
     }
   }
@@ -1305,7 +1335,8 @@ bool SimpleSynchronousEntry::CreateFiles(BackendFileOperations* file_operations,
   return true;
 }
 
-void SimpleSynchronousEntry::CloseFile(int index) {
+void SimpleSynchronousEntry::CloseFile(BackendFileOperations* file_operations,
+                                       int index) {
   if (empty_file_omitted_[index]) {
     empty_file_omitted_[index] = false;
   } else {
@@ -1313,7 +1344,7 @@ void SimpleSynchronousEntry::CloseFile(int index) {
     // this before calling SimpleFileTracker::Close, since that would make the
     // name available to other threads.
     if (entry_file_key_.doom_generation != 0u) {
-      base::DeleteFile(path_.AppendASCII(
+      file_operations->DeleteFile(path_.AppendASCII(
           GetFilenameFromEntryFileKeyAndFileIndex(entry_file_key_, index)));
     }
     file_tracker_->Close(this, SubFileForFileIndex(index));
@@ -1321,10 +1352,16 @@ void SimpleSynchronousEntry::CloseFile(int index) {
 }
 
 void SimpleSynchronousEntry::CloseFiles() {
+  if (!have_open_files_) {
+    return;
+  }
+  BackendFileOperations* file_operations = nullptr;
+  ScopedFileOperationsBinding binding(this, &file_operations);
   for (int i = 0; i < kSimpleEntryNormalFileCount; ++i)
-    CloseFile(i);
+    CloseFile(file_operations, i);
   if (sparse_file_open())
-    CloseSparseFile();
+    CloseSparseFile(file_operations);
+  have_open_files_ = false;
 }
 
 bool SimpleSynchronousEntry::CheckHeaderAndKey(base::File* file,
@@ -1469,9 +1506,9 @@ int SimpleSynchronousEntry::InitializeForOpen(
   DCHECK(CanOmitEmptyFile(stream2_file_index));
   if (!empty_file_omitted_[stream2_file_index] &&
       out_entry_stat->data_size(2) == 0) {
-    CloseFile(stream2_file_index);
+    CloseFile(file_operations, stream2_file_index);
     DeleteFileForEntryHash(path_, entry_file_key_.entry_hash,
-                           stream2_file_index);
+                           stream2_file_index, file_operations);
     empty_file_omitted_[stream2_file_index] = true;
   }
 
@@ -1725,44 +1762,52 @@ int SimpleSynchronousEntry::GetEOFRecordData(base::File* file,
 }
 
 // static
-bool SimpleSynchronousEntry::DeleteFileForEntryHash(const FilePath& path,
-                                                    const uint64_t entry_hash,
-                                                    const int file_index) {
+bool SimpleSynchronousEntry::DeleteFileForEntryHash(
+    const FilePath& path,
+    const uint64_t entry_hash,
+    const int file_index,
+    BackendFileOperations* file_operations) {
   FilePath to_delete = path.AppendASCII(GetFilenameFromEntryFileKeyAndFileIndex(
       SimpleFileTracker::EntryFileKey(entry_hash), file_index));
-  return base::DeleteFile(to_delete);
+  return file_operations->DeleteFile(to_delete);
 }
 
 // static
 bool SimpleSynchronousEntry::DeleteFilesForEntryHash(
     const FilePath& path,
-    const uint64_t entry_hash) {
+    const uint64_t entry_hash,
+    BackendFileOperations* file_operations) {
   bool result = true;
   for (int i = 0; i < kSimpleEntryNormalFileCount; ++i) {
-    if (!DeleteFileForEntryHash(path, entry_hash, i) && !CanOmitEmptyFile(i))
+    if (!DeleteFileForEntryHash(path, entry_hash, i, file_operations) &&
+        !CanOmitEmptyFile(i)) {
       result = false;
+    }
   }
   FilePath to_delete = path.AppendASCII(GetSparseFilenameFromEntryFileKey(
       SimpleFileTracker::EntryFileKey(entry_hash)));
-  simple_util::SimpleCacheDeleteFile(to_delete);
+  file_operations->DeleteFile(
+      to_delete,
+      BackendFileOperations::DeleteFileMode::kEnsureImmediateAvailability);
   return result;
 }
 
 // static
 bool SimpleSynchronousEntry::TruncateFilesForEntryHash(
     const FilePath& path,
-    const uint64_t entry_hash) {
+    const uint64_t entry_hash,
+    BackendFileOperations* file_operations) {
   SimpleFileTracker::EntryFileKey file_key(entry_hash);
   bool result = true;
   for (int i = 0; i < kSimpleEntryNormalFileCount; ++i) {
     FilePath filename_to_truncate =
         path.AppendASCII(GetFilenameFromEntryFileKeyAndFileIndex(file_key, i));
-    if (!TruncatePath(filename_to_truncate))
+    if (!TruncatePath(filename_to_truncate, file_operations))
       result = false;
   }
   FilePath to_delete =
       path.AppendASCII(GetSparseFilenameFromEntryFileKey(file_key));
-  TruncatePath(to_delete);
+  TruncatePath(to_delete, file_operations);
   return result;
 }
 
@@ -1826,11 +1871,13 @@ bool SimpleSynchronousEntry::CreateSparseFile(
   return true;
 }
 
-void SimpleSynchronousEntry::CloseSparseFile() {
+void SimpleSynchronousEntry::CloseSparseFile(
+    BackendFileOperations* file_operations) {
   DCHECK(sparse_file_open());
-  if (entry_file_key_.doom_generation != 0u)
-    DeleteCacheFile(
+  if (entry_file_key_.doom_generation != 0u) {
+    file_operations->DeleteFile(
         path_.AppendASCII(GetSparseFilenameFromEntryFileKey(entry_file_key_)));
+  }
   file_tracker_->Close(this, SimpleFileTracker::SubFile::FILE_SPARSE);
   sparse_file_open_ = false;
 }

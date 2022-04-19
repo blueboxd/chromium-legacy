@@ -512,8 +512,8 @@ extern const char kDeviceForceScheduledRebootDescription[];
 extern const char kDevicePostureName[];
 extern const char kDevicePostureDescription[];
 
-extern const char kRestrictedApiOriginsName[];
-extern const char kRestrictedApiOriginsDescription[];
+extern const char kIsolatedAppOriginsName[];
+extern const char kIsolatedAppOriginsDescription[];
 
 extern const char kEnableMigrateDefaultChromeAppToWebAppsGSuiteName[];
 extern const char kEnableMigrateDefaultChromeAppToWebAppsGSuiteDescription[];
@@ -2410,6 +2410,9 @@ extern const char kDefaultLinkCapturingInBrowserDescription[];
 
 extern const char kDesksCloseAllName[];
 extern const char kDesksCloseAllDescription[];
+
+extern const char kDesksSaveAndRecallName[];
+extern const char kDesksSaveAndRecallDescription[];
 
 extern const char kDesksTemplatesName[];
 extern const char kDesksTemplatesDescription[];

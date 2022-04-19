@@ -215,6 +215,15 @@ bool IntentFilter::IsFileExtensionsFilter() {
   return true;
 }
 
+bool IntentFilter::FilterNeedsUpgrade() {
+  for (const auto& condition : conditions) {
+    if (condition->condition_type == ConditionType::kAction) {
+      return false;
+    }
+  }
+  return true;
+}
+
 std::string IntentFilter::ToString() const {
   std::stringstream out;
   if (activity_name.has_value()) {
@@ -251,6 +260,16 @@ bool IsEqual(const IntentFilters& source, const IntentFilters& target) {
     }
   }
   return true;
+}
+
+bool Contains(const IntentFilters& intent_filters,
+              const IntentFilterPtr& intent_filter) {
+  for (const auto& filter : intent_filters) {
+    if (*filter == *intent_filter) {
+      return true;
+    }
+  }
+  return false;
 }
 
 ConditionType ConvertMojomConditionTypeToConditionType(

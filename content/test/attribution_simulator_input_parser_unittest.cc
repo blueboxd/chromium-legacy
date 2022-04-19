@@ -56,7 +56,7 @@ TEST(AttributionSimulatorInputParserTest, EmptyInputParses) {
 
   for (const char* json : kTestCases) {
     base::Value value = base::test::ParseJson(json);
-    std::stringstream error_stream;
+    std::ostringstream error_stream;
     EXPECT_THAT(ParseAttributionSimulationInput(std::move(value), kOffsetTime,
                                                 error_stream),
                 Optional(IsEmpty()))
@@ -123,7 +123,7 @@ TEST(AttributionSimulatorInputParserTest, ValidSourceParses) {
   ]})json";
 
   base::Value value = base::test::ParseJson(kJson);
-  std::stringstream error_stream;
+  std::ostringstream error_stream;
   EXPECT_THAT(
       ParseAttributionSimulationInput(std::move(value), kOffsetTime,
                                       error_stream),
@@ -189,13 +189,8 @@ TEST(AttributionSimulatorInputParserTest, ValidSourceParses) {
                   .SetExpiry(base::Days(10))  // rounded to whole number of days
                   .SetPriority(0)             // default
                   .SetDebugKey(absl::nullopt)  // default
-                  .SetAggregatableSource(*AttributionAggregatableSource::Create(
-                      AggregatableSourceProtoBuilder()
-                          .AddKey("a", AggregatableKeyProtoBuilder()
-                                           .SetHighBits(0)
-                                           .SetLowBits(1)
-                                           .Build())
-                          .Build()))
+                  .SetAggregatableSource(
+                      *AttributionAggregatableSource::FromKeys({{"a", 1}}))
                   .Build(),
               _))));
   EXPECT_THAT(error_stream.str(), IsEmpty());
@@ -233,7 +228,7 @@ TEST(AttributionSimulatorInputParserTest, OutputRetainsInputJSON) {
     ]})json";
 
   const base::Value value = base::test::ParseJson(kJson);
-  std::stringstream error_stream;
+  std::ostringstream error_stream;
   EXPECT_THAT(
       ParseAttributionSimulationInput(value.Clone(), kOffsetTime, error_stream),
       Optional(ElementsAre(
@@ -287,7 +282,7 @@ TEST(AttributionSimulatorInputParserTest, ValidTriggerParses) {
   ]})json";
 
   base::Value value = base::test::ParseJson(kJson);
-  std::stringstream error_stream;
+  std::ostringstream error_stream;
 
   std::vector<blink::mojom::AttributionAggregatableTriggerDataPtr>
       aggregatable_trigger_data;
@@ -393,7 +388,7 @@ TEST(AttributionSimulatorInputParserTest, ValidSourceAndTriggerParses) {
   })json";
 
   base::Value value = base::test::ParseJson(kJson);
-  std::stringstream error_stream;
+  std::ostringstream error_stream;
   EXPECT_THAT(ParseAttributionSimulationInput(std::move(value), kOffsetTime,
                                               error_stream),
               Optional(SizeIs(2)));
@@ -412,7 +407,7 @@ TEST_P(AttributionSimulatorInputParseErrorTest, InvalidInputFails) {
   const ParseErrorTestCase& test_case = GetParam();
 
   base::Value value = base::test::ParseJson(test_case.json);
-  std::stringstream error_stream;
+  std::ostringstream error_stream;
   EXPECT_EQ(ParseAttributionSimulationInput(std::move(value), kOffsetTime,
                                             error_stream),
             absl::nullopt);

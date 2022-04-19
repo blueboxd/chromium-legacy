@@ -121,18 +121,17 @@ std::vector<apps::mojom::IntentFilterPtr> GetSupportedLinkIntentFilters(
   std::vector<apps::mojom::IntentFilterPtr> intent_filters;
   apps::AppServiceProxyFactory::GetForProfile(profile)
       ->AppRegistryCache()
-      .ForOneApp(app_id,
-                 [&app_id, &intent_filters](const apps::AppUpdate& update) {
-                   if (update.Readiness() == apps::Readiness::kReady) {
-                     for (auto& filter : update.IntentFilters()) {
-                       if (apps_util::IsSupportedLinkForApp(app_id, filter)) {
-                         intent_filters.emplace_back(
-                             apps::ConvertIntentFilterToMojomIntentFilter(
-                                 filter));
-                       }
-                     }
-                   }
-                 });
+      .ForOneApp(
+          app_id, [&app_id, &intent_filters](const apps::AppUpdate& update) {
+            if (update.Readiness() == apps::Readiness::kReady) {
+              for (auto& filter : update.IntentFilters()) {
+                if (apps_util::IsSupportedLinkForApp(app_id, filter)) {
+                  intent_filters.emplace_back(
+                      apps::ConvertIntentFilterToMojomIntentFilter(filter));
+                }
+              }
+            }
+          });
   return intent_filters;
 }
 
@@ -205,17 +204,25 @@ void AppManagementPageHandler::OnPinnedChanged(const std::string& app_id,
 }
 
 void AppManagementPageHandler::GetApps(GetAppsCallback callback) {
-  std::vector<app_management::mojom::AppPtr> apps;
-  apps::AppServiceProxyFactory::GetForProfile(profile_)
-      ->AppRegistryCache()
-      .ForEachApp([this, &apps](const apps::AppUpdate& update) {
-        if (update.ShowInManagement().value_or(false) &&
-            apps_util::IsInstalled(update.Readiness())) {
-          apps.push_back(CreateUIAppPtr(update));
-        }
-      });
+  std::vector<app_management::mojom::AppPtr> app_management_apps;
+  std::vector<apps::AppPtr> apps =
+      apps::AppServiceProxyFactory::GetForProfile(profile_)
+          ->AppRegistryCache()
+          .GetAllApps();
 
-  std::move(callback).Run(std::move(apps));
+  // TODO(crbug/1315958): A speculative fix for crbug/1315958. If the crashes go
+  // away, there is some other bugs in CreateUIAppPtr, and we need to track down
+  // here so that the ForEachApps call works.
+  for (auto& app : apps) {
+    if (app->show_in_management.value_or(false) &&
+        apps_util::IsInstalled(app->readiness)) {
+      app_management_apps.push_back(
+          CreateUIAppPtr(apps::AppUpdate(app.get(),
+                                         /*delta=*/nullptr, AccountId())));
+    }
+  }
+
+  std::move(callback).Run(std::move(app_management_apps));
 }
 
 void AppManagementPageHandler::GetApp(const std::string& app_id,
@@ -308,9 +315,9 @@ void AppManagementPageHandler::GetOverlappingPreferredApps(
   base::flat_set<std::string> app_ids =
       preferred_apps_list_handle_.FindPreferredAppsForFilters(intent_filters);
   app_ids.erase(app_id);
-  // Remove the use_browser app ID as it's mainly used inside the intent system and is not an app
-  // in app management. This prevents an overlap dialog from being shown when there are no "real"
-  // apps that overlap.
+  // Remove the use_browser app ID as it's mainly used inside the intent system
+  // and is not an app in app management. This prevents an overlap dialog from
+  // being shown when there are no "real" apps that overlap.
   app_ids.erase(apps_util::kUseBrowserForLink);
   std::move(callback).Run(std::move(app_ids).extract());
 }
@@ -322,8 +329,15 @@ void AppManagementPageHandler::SetWindowMode(const std::string& app_id,
 #if BUILDFLAG(IS_CHROMEOS)
   NOTREACHED();
 #else
-  apps::AppServiceProxyFactory::GetForProfile(profile_)->SetWindowMode(
-      app_id, apps::ConvertWindowModeToMojomWindowMode(window_mode));
+  auto* provider = web_app::WebAppProvider::GetForLocalAppsUnchecked(profile_);
+
+  // Changing window mode is not allowed for isolated web apps.
+  if (provider->registrar().IsIsolated(app_id)) {
+    NOTREACHED();
+  } else {
+    apps::AppServiceProxyFactory::GetForProfile(profile_)->SetWindowMode(
+        app_id, apps::ConvertWindowModeToMojomWindowMode(window_mode));
+  }
 #endif
 }
 
@@ -460,6 +474,8 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
     app->file_handling_state = app_management::mojom::FileHandlingState::New(
         fh_enabled, /*is_managed=*/false, file_handling_types,
         file_handling_types_label, learn_more_url);
+
+    app->hide_window_mode = provider->registrar().IsIsolated(app->id);
   }
 
   return app;
@@ -468,23 +484,19 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
 void AppManagementPageHandler::OpenStorePage(const std::string& app_id) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
-  proxy->AppRegistryCache().ForOneApp(
-      app_id, [&proxy](const apps::AppUpdate& update) {
-        if (update.InstallSource() == apps::InstallSource::kPlayStore) {
-          GURL url("https://play.google.com/store/apps/details?id=" +
-                   update.PublisherId());
-          proxy->LaunchAppWithUrl(
-              arc::kPlayStoreAppId, ui::EF_NONE, url,
-              apps::mojom::LaunchSource::kFromChromeInternal);
-        } else if (update.InstallSource() ==
-                   apps::InstallSource::kChromeWebStore) {
-          GURL url("https://chrome.google.com/webstore/detail/" +
-                   update.AppId());
-          proxy->LaunchAppWithUrl(
-              extensions::kWebStoreAppId, ui::EF_NONE, url,
-              apps::mojom::LaunchSource::kFromChromeInternal);
-        }
-      });
+  proxy->AppRegistryCache().ForOneApp(app_id, [&proxy](const apps::AppUpdate&
+                                                           update) {
+    if (update.InstallSource() == apps::InstallSource::kPlayStore) {
+      GURL url("https://play.google.com/store/apps/details?id=" +
+               update.PublisherId());
+      proxy->LaunchAppWithUrl(arc::kPlayStoreAppId, ui::EF_NONE, url,
+                              apps::mojom::LaunchSource::kFromChromeInternal);
+    } else if (update.InstallSource() == apps::InstallSource::kChromeWebStore) {
+      GURL url("https://chrome.google.com/webstore/detail/" + update.AppId());
+      proxy->LaunchAppWithUrl(extensions::kWebStoreAppId, ui::EF_NONE, url,
+                              apps::mojom::LaunchSource::kFromChromeInternal);
+    }
+  });
 #endif
 }
 

@@ -32,7 +32,6 @@
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_observer_types.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
-#include "content/browser/attribution_reporting/attribution_reporting.pb.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_storage_delegate.h"
 #include "content/browser/attribution_reporting/attribution_storage_sql_migrations.h"
@@ -243,15 +242,6 @@ absl::optional<uint64_t> ColumnUint64OrNull(sql::Statement& statement,
                    DeserializeUint64(statement.ColumnInt64(col)));
 }
 
-absl::optional<AttributionAggregatableSource> ParseAggregatableSource(
-    const std::string& str) {
-  proto::AttributionAggregatableSource aggregatable_source;
-  if (!aggregatable_source.ParseFromString(str))
-    return absl::nullopt;
-
-  return AttributionAggregatableSource::Create(std::move(aggregatable_source));
-}
-
 struct StoredSourceData {
   StoredSource source;
   int num_conversions;
@@ -287,7 +277,7 @@ absl::optional<StoredSourceData> ReadSourceFromStatement(
   int num_conversions = statement.ColumnInt(col++);
   int64_t aggregatable_budget_consumed = statement.ColumnInt64(col++);
   absl::optional<AttributionAggregatableSource> aggregatable_source =
-      ParseAggregatableSource(statement.ColumnString(col++));
+      AttributionAggregatableSource::Deserialize(statement.ColumnString(col++));
 
   if (impression_origin.opaque() || conversion_origin.opaque() ||
       reporting_origin.opaque() || !source_type.has_value() ||
@@ -565,8 +555,7 @@ AttributionStorage::StoreSourceResult AttributionStorageSql::StoreSource(
       GetSourceActiveState(event_level_active, aggregatable_active);
   DCHECK(active_state.has_value());
 
-  statement.BindBlob(
-      15, common_info.aggregatable_source().proto().SerializeAsString());
+  statement.BindBlob(15, common_info.aggregatable_source().Serialize());
   statement.BindBlob(16, common_info.filter_data().Serialize());
 
   if (!statement.Run())
@@ -779,9 +768,10 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
 
   // We don't bother creating the DB here if it doesn't exist, because it's not
   // possible for there to be a matching source if there's no DB.
-  if (!LazyInit(DbCreationPolicy::kIgnoreIfAbsent))
+  if (!LazyInit(DbCreationPolicy::kIgnoreIfAbsent)) {
     return assemble_report_result(EventLevelResult::kNoMatchingImpressions,
                                   AggregatableResult::kNoMatchingImpressions);
+  }
 
   absl::optional<StoredSource::Id> source_id_to_attribute;
   std::vector<StoredSource::Id> source_ids_to_delete;
@@ -790,20 +780,21 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
     return assemble_report_result(EventLevelResult::kInternalError,
                                   AggregatableResult::kInternalError);
   }
-  if (!source_id_to_attribute.has_value())
+  if (!source_id_to_attribute.has_value()) {
     return assemble_report_result(EventLevelResult::kNoMatchingImpressions,
                                   AggregatableResult::kNoMatchingImpressions);
+  }
 
   absl::optional<StoredSourceData> source_to_attribute =
       ReadSourceToAttribute(db_.get(), *source_id_to_attribute);
   // This is only possible if there is a corrupt DB.
-  if (!source_to_attribute.has_value())
+  if (!source_to_attribute.has_value()) {
     return assemble_report_result(EventLevelResult::kInternalError,
                                   AggregatableResult::kInternalError);
+  }
 
   if (source_to_attribute->source.common_info()
           .aggregatable_source()
-          .proto()
           .keys()
           .empty()) {
     aggregatable_status = AggregatableResult::kNotRegistered;
@@ -835,9 +826,10 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
     }
   }
 
-  if (event_level_status.has_value() && aggregatable_status.has_value())
+  if (event_level_status.has_value() && aggregatable_status.has_value()) {
     return assemble_report_result(/*new_event_level_status=*/absl::nullopt,
                                   /*new_aggregaable_status=*/absl::nullopt);
+  }
 
   switch (CapacityForStoringReport(trigger)) {
     case ConversionCapacityStatus::kHasCapacity:
@@ -877,9 +869,10 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
   }
 
   sql::Transaction transaction(db_.get());
-  if (!transaction.Begin())
+  if (!transaction.Begin()) {
     return assemble_report_result(EventLevelResult::kInternalError,
                                   AggregatableResult::kInternalError);
+  }
 
   absl::optional<EventLevelResult> store_event_level_status;
   if (!event_level_status.has_value()) {
@@ -908,18 +901,20 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
   if (!IsSuccessResult(store_event_level_status) &&
       !IsSuccessResult(store_aggregatable_status) &&
       store_event_level_status != EventLevelResult::kDroppedForNoise) {
-    if (!transaction.Commit())
+    if (!transaction.Commit()) {
       return assemble_report_result(EventLevelResult::kInternalError,
                                     AggregatableResult::kInternalError);
+    }
 
     return assemble_report_result(store_event_level_status,
                                   store_aggregatable_status);
   }
 
   // Delete all unattributed sources.
-  if (!DeleteSources(source_ids_to_delete))
+  if (!DeleteSources(source_ids_to_delete)) {
     return assemble_report_result(EventLevelResult::kInternalError,
                                   AggregatableResult::kInternalError);
+  }
 
   // Based on the deletion logic here and the fact that we delete sources
   // with |num_conversions > 0| or |aggregatable_budget_consumed > 0| when
@@ -932,9 +927,10 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
   // Reports which are dropped do not need to make any further changes.
   if (store_event_level_status == EventLevelResult::kDroppedForNoise &&
       !IsSuccessResult(store_aggregatable_status)) {
-    if (!transaction.Commit())
+    if (!transaction.Commit()) {
       return assemble_report_result(EventLevelResult::kInternalError,
                                     AggregatableResult::kInternalError);
+    }
 
     return assemble_report_result(store_event_level_status,
                                   store_aggregatable_status);
@@ -946,9 +942,10 @@ CreateReportResult AttributionStorageSql::MaybeCreateAndStoreReport(
                                   AggregatableResult::kInternalError);
   }
 
-  if (!transaction.Commit())
+  if (!transaction.Commit()) {
     return assemble_report_result(EventLevelResult::kInternalError,
                                   AggregatableResult::kInternalError);
+  }
 
   return assemble_report_result(store_event_level_status,
                                 store_aggregatable_status);
@@ -2260,10 +2257,11 @@ void AttributionStorageSql::DatabaseErrorCallback(int extended_error,
 
   // The default handling is to assert on debug and to ignore on release.
   if (!sql::Database::IsExpectedSqliteError(extended_error) &&
-      !ignore_errors_for_testing_)
+      !ignore_errors_for_testing_) {
     DLOG(FATAL) << db_->GetErrorMessage();
+  }
 
-  // Consider the  database closed if we did not attempt to recover so we did
+  // Consider the database closed if we did not attempt to recover so we did
   // not produce further errors.
   db_init_status_ = DbStatus::kClosed;
 }

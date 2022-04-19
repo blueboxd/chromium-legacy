@@ -8,6 +8,7 @@
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_test_util.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
+#include "components/services/app_service/public/cpp/preferred_app.h"
 #include "components/services/app_service/public/cpp/preferred_apps_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -151,7 +152,7 @@ TEST_F(PreferredAppsConverterTest, ParseSimpleEntryJson) {
   preferred_apps.AddPreferredApp(kAppId1, intent_filter);
   auto& expected_entry = preferred_apps.GetReference();
 
-  EXPECT_EQ(expected_entry, parsed_entry);
+  EXPECT_TRUE(IsEqual(expected_entry, parsed_entry));
 }
 
 // Test parse simple entry from json string (upgraded for sharing).
@@ -198,7 +199,7 @@ TEST_F(PreferredAppsConverterTest, ParseUpgradedSimpleEntryJson) {
   preferred_apps.AddPreferredApp(kAppId1, intent_filter);
   auto& expected_entry = preferred_apps.GetReference();
 
-  EXPECT_EQ(expected_entry, parsed_entry);
+  EXPECT_TRUE(IsEqual(expected_entry, parsed_entry));
 }
 
 TEST_F(PreferredAppsConverterTest, ParseJsonWithInvalidAppId) {
@@ -545,5 +546,6 @@ TEST_F(PreferredAppsConverterTest, UpgradePreferredApp) {
 
   auto old_preferred_apps_value = old_preferred_apps.GetValue();
   apps::UpgradePreferredApps(old_preferred_apps_value);
-  EXPECT_EQ(old_preferred_apps_value, new_preferred_apps.GetReference());
+  EXPECT_TRUE(
+      IsEqual(old_preferred_apps_value, new_preferred_apps.GetReference()));
 }

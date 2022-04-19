@@ -13,9 +13,11 @@
 #include "base/run_loop.h"
 #include "components/services/app_service/app_service_mojom_impl.h"
 #include "components/services/app_service/public/cpp/app_capability_access_cache.h"
+#include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_test_util.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
+#include "components/services/app_service/public/cpp/preferred_app.h"
 #include "components/services/app_service/public/cpp/preferred_apps_list.h"
 #include "components/services/app_service/public/cpp/publisher_base.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -226,11 +228,14 @@ class FakeSubscriber : public apps::mojom::Subscriber {
 
   void OnPreferredAppsChanged(
       apps::mojom::PreferredAppChangesPtr changes) override {
-    preferred_apps_.ApplyBulkUpdate(std::move(changes));
+    preferred_apps_.ApplyBulkUpdate(
+        ConvertMojomPreferredAppChangesToPreferredAppChanges(changes));
   }
 
   void InitializePreferredApps(
-      PreferredAppsList::PreferredApps preferred_apps) override {
+      std::vector<apps::mojom::PreferredAppPtr> mojom_preferred_apps) override {
+    auto preferred_apps =
+        ConvertMojomPreferredAppsToPreferredApps(mojom_preferred_apps);
     preferred_apps_.Init(preferred_apps);
   }
 
@@ -507,11 +512,12 @@ TEST_F(AppServiceMojomImplTest, PreferredAppsWriteBeforeInit) {
   run_loop_read.Run();
 
   // Both changes to the PreferredAppsList should have been applied.
-  ASSERT_EQ(
-      kAppId1,
-      impl.GetPreferredAppsListForTesting().FindPreferredAppForIntent(
-          apps_util::CreateShareIntentFromFiles(
-              {GURL("filesystem:chrome://foo/image.png")}, {"image/png"})));
+  std::vector<GURL> filesystem_urls(
+      {GURL("filesystem:chrome://foo/image.png")});
+  std::vector<std::string> mime_types({"image/png"});
+  ASSERT_EQ(kAppId1,
+            impl.GetPreferredAppsListForTesting().FindPreferredAppForIntent(
+                std::make_unique<Intent>(filesystem_urls, mime_types)));
   ASSERT_EQ(
       kAppId2,
       impl.GetPreferredAppsListForTesting().FindPreferredAppForUrl(filter_url));

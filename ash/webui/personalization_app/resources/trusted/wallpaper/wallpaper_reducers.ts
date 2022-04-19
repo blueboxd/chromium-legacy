@@ -348,7 +348,7 @@ function googlePhotosReducer(
       assert(!!state.albums);
       assert(state.albums.some(album => album.id === action.albumId));
       assert(
-          state.photosByAlbumId[action.albumId] === undefined ||
+          !state.photosByAlbumId[action.albumId] ||
           state.resumeTokens.photosByAlbumId[action.albumId]);
       return state;
     case WallpaperActionName.APPEND_GOOGLE_PHOTOS_ALBUM:
@@ -404,7 +404,7 @@ function googlePhotosReducer(
       };
     case WallpaperActionName.BEGIN_LOAD_GOOGLE_PHOTOS_ALBUMS:
       // The list of albums should be loaded only while additional albums exist.
-      assert(state.albums === undefined || state.resumeTokens.albums);
+      assert(!state.albums || state.resumeTokens.albums);
       return state;
     case WallpaperActionName.APPEND_GOOGLE_PHOTOS_ALBUMS:
       assert(action.albums !== undefined);
@@ -461,7 +461,7 @@ function googlePhotosReducer(
       };
     case WallpaperActionName.BEGIN_LOAD_GOOGLE_PHOTOS_PHOTOS:
       // The list of photos should be loaded only while additional photos exist.
-      assert(state.photos === undefined || state.resumeTokens.photos);
+      assert(!state.photos || state.resumeTokens.photos);
       return state;
     case WallpaperActionName.APPEND_GOOGLE_PHOTOS_PHOTOS:
       assert(action.photos !== undefined);

@@ -193,23 +193,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_20000_2022-03-18",
-                    "params": {
-                        "autodismiss_duration_ms_SaveCard": "20000",
-                        "save_card_dialog_explanation": "true",
-                        "save_card_message_use_followup_button_text": "false",
-                        "save_card_message_use_gpay_icon": "true"
-                    },
-                    "enable_features": [
-                        "MessagesForAndroidInfrastructure",
-                        "MessagesForAndroidSaveCard"
-                    ]
-                },
-                {
-                    "name": "Enabled_30000_2022-03-18",
+                    "name": "Enabled_30000_dialogV2_2022-04-18",
                     "params": {
                         "autodismiss_duration_ms_SaveCard": "30000",
-                        "save_card_dialog_explanation": "true",
+                        "save_card_dialog_v2_enabled": "true",
                         "save_card_message_use_followup_button_text": "false",
                         "save_card_message_use_gpay_icon": "true"
                     },
@@ -219,10 +206,22 @@
                     ]
                 },
                 {
-                    "name": "Enabled_60000_2022-03-18",
+                    "name": "Enabled_60000_dialogV2_2022-04-18",
                     "params": {
                         "autodismiss_duration_ms_SaveCard": "60000",
-                        "save_card_dialog_explanation": "true",
+                        "save_card_dialog_v2_enabled": "true",
+                        "save_card_message_use_followup_button_text": "false",
+                        "save_card_message_use_gpay_icon": "true"
+                    },
+                    "enable_features": [
+                        "MessagesForAndroidInfrastructure",
+                        "MessagesForAndroidSaveCard"
+                    ]
+                },
+                {
+                    "name": "Enabled_60000_dialogV1_2022-04-18",
+                    "params": {
+                        "autodismiss_duration_ms_SaveCard": "60000",
                         "save_card_message_use_followup_button_text": "false",
                         "save_card_message_use_gpay_icon": "true"
                     },
@@ -1729,6 +1728,22 @@
             ]
         }
     ],
+    "CacheFontFamilyMatching": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CacheFontFamilyMatching"
+                    ]
+                }
+            ]
+        }
+    ],
     "Canvas2dStaysGPUOnReadback": [
         {
             "platforms": [
@@ -2546,6 +2561,24 @@
                     "name": "Enabled",
                     "enable_features": [
                         "CrOSLateBootSchedTrace"
+                    ]
+                }
+            ]
+        }
+    ],
+    "CrOSMglruARM": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "MglruBehavior_20220407",
+                    "params": {
+                        "KstaledRatio": "1"
+                    },
+                    "enable_features": [
+                        "KstaledSwap"
                     ]
                 }
             ]
@@ -3869,6 +3902,30 @@
             ]
         }
     ],
+    "IOSPasswordAutofillRichIPHStudy": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "availability": "any",
+                        "event_trigger": "name:password_suggestions_iph_triggered;comparator:==0;window:1825;storage:1825",
+                        "event_used": "name:password_suggestions_shown;comparator:==0;window:90;storage:360",
+                        "session_rate": "any",
+                        "session_rate_impact": "none",
+                        "snooze_params": "max_limit:1,snooze_interval:14"
+                    },
+                    "enable_features": [
+                        "BubbleRichIPH",
+                        "IPH_PasswordSuggestions"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSRestoreSessionFromCache": [
         {
             "platforms": [
@@ -4702,21 +4759,6 @@
             ]
         }
     ],
-    "NearbyShareBackgroundScanningPower": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "NearbySharingBackgroundScanning"
-                    ]
-                }
-            ]
-        }
-    ],
     "NearbySharingOnePageOnboarding": [
         {
             "platforms": [
@@ -4913,6 +4955,7 @@
                         "ZeroSuggestPrefetchBypassCache": "true"
                     },
                     "enable_features": [
+                        "AndroidAuxiliarySearch",
                         "OmniboxDynamicMaxAutocomplete",
                         "OmniboxLocalZeroSuggestAgeThreshold",
                         "OmniboxMaxURLMatches",
@@ -5005,7 +5048,7 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledPrerenderDUIAndDSE_20220412",
+                    "name": "EnabledPrerenderDUIAndDSE_20220414",
                     "enable_features": [
                         "OmniboxTriggerForPrerender2",
                         "SupportSearchSuggestionForPrerender2"
@@ -5015,7 +5058,7 @@
                     ]
                 },
                 {
-                    "name": "EnabledPrerenderDUI_20220412",
+                    "name": "EnabledPrerenderDUI_20220414",
                     "enable_features": [
                         "OmniboxTriggerForPrerender2"
                     ],
@@ -5025,7 +5068,7 @@
                     ]
                 },
                 {
-                    "name": "EnabledPrefetchDUIControl_20220412",
+                    "name": "EnabledPrefetchDUIControl_20220414",
                     "enable_features": [
                         "OmniboxTriggerForNoStatePrefetch"
                     ],
@@ -5035,7 +5078,7 @@
                     ]
                 },
                 {
-                    "name": "DisabledDUI_20220412",
+                    "name": "DisabledDUI_20220414",
                     "disable_features": [
                         "OmniboxTriggerForNoStatePrefetch",
                         "OmniboxTriggerForPrerender2",
@@ -5043,12 +5086,30 @@
                     ]
                 },
                 {
-                    "name": "EnabledPrerenderDSE_20220412",
+                    "name": "EnabledPrerenderDSE_20220414",
                     "enable_features": [
                         "SupportSearchSuggestionForPrerender2"
                     ],
                     "disable_features": [
                         "OmniboxTriggerForPrerender2"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OmniboxPrerenderDogfood": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledPrerenderDUI_20220414_Dogfood",
+                    "enable_features": [
+                        "OmniboxTriggerForPrerender2"
+                    ],
+                    "disable_features": [
+                        "OmniboxTriggerForNoStatePrefetch"
                     ]
                 }
             ]
@@ -6019,7 +6080,8 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "FetchBehavior": "background-and-on-demand"
+                        "FetchBehavior": "background-and-on-demand",
+                        "RandomQueryProbability": "0.0197"
                     },
                     "enable_features": [
                         "NetworkTimeServiceQuerying"

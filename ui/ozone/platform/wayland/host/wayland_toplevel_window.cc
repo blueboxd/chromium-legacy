@@ -385,10 +385,9 @@ void WaylandToplevelWindow::HandleAuraToplevelConfigure(int32_t x,
     }
   } else if (is_normal) {
     pending_bounds_dip_.set_size(
-        gfx::ScaleToRoundedSize(GetRestoredBoundsInPixels().IsEmpty()
-                                    ? GetBounds().size()
-                                    : GetRestoredBoundsInPixels().size(),
-                                1.0 / window_scale()));
+        restored_size_in_dip_.IsEmpty()
+            ? gfx::ScaleToRoundedSize(GetBounds().size(), 1.0 / window_scale())
+            : restored_size_in_dip_);
   }
 
   pending_bounds_dip_ = gfx::ScaleToRoundedRect(
@@ -474,6 +473,8 @@ bool WaylandToplevelWindow::OnInitialize(
   } else if (properties.visible_on_all_workspaces) {
     workspace_ = kVisibleOnAllWorkspaces;
   }
+  restore_session_id_ = properties.restore_session_id;
+  restore_window_id_ = properties.restore_window_id;
 
   SetPinnedModeExtension(this, static_cast<PinnedModeExtension*>(this));
   return true;
@@ -825,15 +826,15 @@ void WaylandToplevelWindow::SetSizeConstraints() {
 }
 
 void WaylandToplevelWindow::SetOrResetRestoredBounds() {
-  // The |restored_bounds_| are used when the window gets back to normal
+  // The |restored_size_in_dp_| are used when the window gets back to normal
   // state after it went maximized or fullscreen.  So we reset these if the
   // window has just become normal and store the current bounds if it is
   // either going out of normal state or simply changes the state and we don't
   // have any meaningful value stored.
   if (GetPlatformWindowState() == PlatformWindowState::kNormal) {
-    SetRestoredBoundsInPixels({});
-  } else if (GetRestoredBoundsInPixels().IsEmpty()) {
-    SetRestoredBoundsInPixels(GetBounds());
+    SetRestoredBoundsInDIP({});
+  } else if (GetRestoredBoundsInDIP().IsEmpty()) {
+    SetRestoredBoundsInDIP(delegate()->ConvertRectToDIP(GetBounds()));
   }
 }
 
@@ -852,6 +853,8 @@ void WaylandToplevelWindow::SetUpShellIntegration() {
     zaura_surface_set_occlusion_tracking(aura_surface_.get());
     SetImmersiveFullscreenStatus(false);
     SetInitialWorkspace();
+    if (restore_session_id_)
+      shell_toplevel_->SetRestoreInfo(restore_session_id_, restore_window_id_);
   }
 
   if (connection()->gtk_shell1()) {

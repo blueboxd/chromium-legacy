@@ -168,6 +168,9 @@ struct COMPONENT_EXPORT(APP_TYPES) IntentFilter {
   // Returns true if the filter only contains file extension pattern matches.
   bool IsFileExtensionsFilter();
 
+  // Checks if the filter is the older version that doesn't contain action.
+  bool FilterNeedsUpgrade();
+
   std::string ToString() const;
 
   // A list of Conditions which Intents must match.
@@ -191,6 +194,11 @@ IntentFilters CloneIntentFilters(const IntentFilters& intent_filters);
 
 COMPONENT_EXPORT(APP_TYPES)
 bool IsEqual(const IntentFilters& source, const IntentFilters& target);
+
+// Returns true if `intent_filters` contains `intent_filter`.
+COMPONENT_EXPORT(APP_TYPES)
+bool Contains(const IntentFilters& intent_filters,
+              const IntentFilterPtr& intent_filter);
 
 // TODO(crbug.com/1253250): Remove these functions after migrating to non-mojo
 // AppService.

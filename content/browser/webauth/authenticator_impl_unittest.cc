@@ -26,6 +26,7 @@
 #include "base/system/sys_info.h"
 #include "base/test/bind.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/tick_clock.h"
@@ -43,6 +44,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/test/test_render_frame_host.h"
 #include "crypto/sha2.h"
@@ -82,14 +84,13 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/webauthn/authenticator.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/webauthn/authenticator.mojom-shared.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/ec_key.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/boringssl/src/include/openssl/obj.h"
 #include "third_party/zlib/google/compression_utils.h"
+#include "url/origin.h"
 #include "url/url_util.h"
 
 #if BUILDFLAG(IS_MAC)
@@ -135,6 +136,8 @@ using blink::mojom::PublicKeyCredentialRpEntityPtr;
 using blink::mojom::PublicKeyCredentialType;
 using blink::mojom::PublicKeyCredentialUserEntity;
 using blink::mojom::PublicKeyCredentialUserEntityPtr;
+using blink::mojom::RemoteDesktopClientOverride;
+using blink::mojom::RemoteDesktopClientOverridePtr;
 using blink::mojom::WebAuthnDOMExceptionDetails;
 using blink::mojom::WebAuthnDOMExceptionDetailsPtr;
 using cbor::Reader;
@@ -444,9 +447,9 @@ url::Origin GetTestOrigin() {
 }
 
 std::string GetTestClientDataJSON(ClientDataRequestType type) {
-  return BuildClientDataJson(std::move(type), GetTestOrigin().Serialize(),
-                             GetTestChallengeBytes(),
-                             /*is_cross_origin=*/false);
+  return BuildClientDataJson({std::move(type), GetTestOrigin(),
+                              GetTestChallengeBytes(),
+                              /*is_cross_origin_iframe=*/false});
 }
 
 std::vector<uint8_t> StringToVector(const std::string& string) {
@@ -704,41 +707,41 @@ TEST_F(AuthenticatorImplTest, ClientDataJSONSerialization) {
   // the returned value.
   std::vector<uint8_t> challenge_bytes = {1, 2, 3};
   EXPECT_EQ(
-      BuildClientDataJson(ClientDataRequestType::kWebAuthnCreate, "ori\"gin",
-                          challenge_bytes, false)
+      BuildClientDataJson({ClientDataRequestType::kWebAuthnCreate,
+                           GetTestOrigin(), challenge_bytes, false})
           .find(
               "{\"type\":\"webauthn.create\",\"challenge\":\"AQID\",\"origin\":"
-              "\"ori\\\"gin\",\"crossOrigin\":false"),
+              "\"https://a.google.com\",\"crossOrigin\":false"),
       0u);
 
   // Second, check that a generic JSON parser correctly parses the result.
   static const struct {
     const ClientDataRequestType type;
-    const char* origin;
+    url::Origin origin;
     std::vector<uint8_t> challenge;
     bool is_cross_origin;
   } kTestCases[] = {
       {
           ClientDataRequestType::kWebAuthnGet,
-          "origin",
+          GetTestOrigin(),
           {1, 2, 3},
           false,
       },
       {
           ClientDataRequestType::kU2fRegister,
-          "ori\"gin",
+          GetTestOrigin(),
           {1, 2, 3, 4},
           true,
       },
       {
           ClientDataRequestType::kU2fSign,
-          "\x01\x02\x03\x04{}\x05c",
+          GetTestOrigin(),
           {1, 2, 3, 4, 5},
           true,
       },
       {
           ClientDataRequestType::kPaymentGet,
-          "origin",
+          GetTestOrigin(),
           {1, 2, 3},
           false,
       },
@@ -749,7 +752,7 @@ TEST_F(AuthenticatorImplTest, ClientDataJSONSerialization) {
     SCOPED_TRACE(num++);
 
     const std::string json = BuildClientDataJson(
-        test.type, test.origin, test.challenge, test.is_cross_origin);
+        {test.type, test.origin, test.challenge, test.is_cross_origin});
 
     const auto parsed = base::JSONReader::Read(json);
     ASSERT_TRUE(parsed.has_value());
@@ -779,7 +782,7 @@ TEST_F(AuthenticatorImplTest, ClientDataJSONSerialization) {
     }
 
     EXPECT_EQ(*parsed->FindStringKey(type_key), expected_type);
-    EXPECT_EQ(*parsed->FindStringKey("origin"), test.origin);
+    EXPECT_EQ(*parsed->FindStringKey("origin"), test.origin.Serialize());
     std::string expected_challenge;
     base::Base64UrlEncode(
         base::StringPiece(reinterpret_cast<const char*>(test.challenge.data()),
@@ -1712,11 +1715,11 @@ class TestWebAuthenticationRequestProxy : public WebAuthenticationRequestProxy {
         nullptr;
   };
 
-  struct CallCounts {
-    size_t signal_create_request;
-    size_t signal_get_request;
-    size_t signal_is_uvpaa_request;
-    size_t cancel_request;
+  struct Observations {
+    std::vector<PublicKeyCredentialCreationOptionsPtr> create_requests;
+    std::vector<PublicKeyCredentialRequestOptionsPtr> get_requests;
+    size_t num_isuvpaa;
+    size_t num_cancel;
   };
 
   ~TestWebAuthenticationRequestProxy() override {
@@ -1725,7 +1728,7 @@ class TestWebAuthenticationRequestProxy : public WebAuthenticationRequestProxy {
 
   Config& config() { return config_; }
 
-  const CallCounts& call_counts() { return call_counts_; }
+  const Observations& observations() { return observations_; }
 
   bool IsActive() override { return config_.is_active; }
 
@@ -1735,7 +1738,7 @@ class TestWebAuthenticationRequestProxy : public WebAuthenticationRequestProxy {
     DCHECK(!HasPendingRequest());
 
     current_request_id_++;
-    call_counts_.signal_create_request++;
+    observations_.create_requests.push_back(options->Clone());
     pending_create_callback_ = std::move(callback);
     if (config_.resolve_callbacks) {
       RunPendingCreateCallback();
@@ -1748,7 +1751,7 @@ class TestWebAuthenticationRequestProxy : public WebAuthenticationRequestProxy {
       const PublicKeyCredentialRequestOptionsPtr& options,
       GetCallback callback) override {
     current_request_id_++;
-    call_counts_.signal_get_request++;
+    observations_.get_requests.push_back(options->Clone());
     pending_get_callback_ = std::move(callback);
     if (config_.resolve_callbacks) {
       RunPendingGetCallback();
@@ -1761,7 +1764,7 @@ class TestWebAuthenticationRequestProxy : public WebAuthenticationRequestProxy {
     DCHECK(!HasPendingRequest());
 
     current_request_id_++;
-    call_counts_.signal_is_uvpaa_request++;
+    observations_.num_isuvpaa++;
     if (config_.resolve_callbacks) {
       base::SequencedTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(std::move(callback), config_.is_uvpaa));
@@ -1774,7 +1777,7 @@ class TestWebAuthenticationRequestProxy : public WebAuthenticationRequestProxy {
 
   void CancelRequest(RequestId request_id) override {
     DCHECK_EQ(request_id, current_request_id_);
-    call_counts_.cancel_request++;
+    observations_.num_cancel++;
     if (pending_create_callback_) {
       pending_create_callback_.Reset();
     }
@@ -1827,7 +1830,7 @@ class TestWebAuthenticationRequestProxy : public WebAuthenticationRequestProxy {
 
  private:
   Config config_;
-  CallCounts call_counts_;
+  Observations observations_;
 
   RequestId current_request_id_ = 0;
   CreateCallback pending_create_callback_;
@@ -1843,6 +1846,7 @@ class TestWebAuthenticationDelegate : public WebAuthenticationDelegate {
       RenderFrameHost*) override {
     return is_uvpaa_override;
   }
+
   bool OverrideCallerOriginAndRelyingPartyIdValidation(
       content::BrowserContext* browser_context,
       const url::Origin& origin,
@@ -1887,6 +1891,12 @@ class TestWebAuthenticationDelegate : public WebAuthenticationDelegate {
     return request_proxy.get();
   }
 
+  bool OriginMayUseRemoteDesktopClientOverride(
+      content::BrowserContext* browser_context,
+      const url::Origin& caller_origin) override {
+    return caller_origin == remote_desktop_client_override_origin;
+  }
+
   // If set, the return value of IsUVPAA() will be overridden with this value.
   // Platform-specific implementations will not be invoked.
   absl::optional<bool> is_uvpaa_override;
@@ -1916,6 +1926,9 @@ class TestWebAuthenticationDelegate : public WebAuthenticationDelegate {
 
   // The WebAuthenticationRequestProxy returned by |MaybeGetRequestProxy|.
   std::unique_ptr<TestWebAuthenticationRequestProxy> request_proxy = nullptr;
+
+  // The origin permitted to use the RemoteDesktopClientOverride extension.
+  absl::optional<url::Origin> remote_desktop_client_override_origin;
 };
 
 enum class EnterprisePolicy {
@@ -3392,6 +3405,96 @@ TEST_F(AuthenticatorContentBrowserClientWithCableFlagTest,
 
   EXPECT_EQ(AuthenticatorGetAssertion(std::move(options)).status,
             AuthenticatorStatus::NOT_ALLOWED_ERROR);
+}
+
+class AuthenticatorImplRemoteDesktopClientOverrideTest
+    : public AuthenticatorContentBrowserClientTest {
+ protected:
+  static constexpr char kCorpCrdOrigin[] =
+      "https://remotedesktop.corp.google.com";
+  static constexpr char kOtherRdpOrigin[] = "https://myrdp.test";
+  static constexpr char kExampleOrigin[] = "https://example.test";
+  static constexpr char kExampleRpId[] = "example.test";
+  static constexpr char kOtherRpId[] = "other.test";
+
+  void SetUp() override {
+    AuthenticatorContentBrowserClientTest ::SetUp();
+    scoped_command_line_.GetProcessCommandLine()->AppendSwitch(
+        switches::kWebAuthRemoteDesktopSupport);
+    test_client_.GetTestWebAuthenticationDelegate()
+        ->remote_desktop_client_override_origin =
+        url::Origin::Create(GURL(kCorpCrdOrigin));
+  }
+
+  base::test::ScopedCommandLine scoped_command_line_;
+  base::test::ScopedFeatureList scoped_feature_list_{
+      device::kWebAuthnGoogleCorpRemoteDesktopClientPrivilege};
+};
+
+TEST_F(AuthenticatorImplRemoteDesktopClientOverrideTest, MakeCredential) {
+  const struct TestCase {
+    std::string local_origin;
+    std::string remote_origin;
+    std::string rp_id;
+    bool success;
+  } test_cases[] = {
+      {kCorpCrdOrigin, kExampleOrigin, kExampleRpId, true},
+      {kOtherRdpOrigin, kExampleOrigin, kExampleRpId, false},
+      {kOtherRdpOrigin, kExampleOrigin, kOtherRpId, false},
+      {kExampleOrigin, kExampleOrigin, kExampleRpId, false},
+  };
+
+  for (const auto& test : test_cases) {
+    SCOPED_TRACE(testing::Message()
+                 << "local=" << test.local_origin
+                 << " remote=" << test.remote_origin << " rp=" << test.rp_id);
+    NavigateAndCommit(GURL(test.local_origin));
+
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->relying_party.id = test.rp_id;
+    options->remote_desktop_client_override = RemoteDesktopClientOverride::New(
+        url::Origin::Create(GURL(test.remote_origin)), true);
+
+    EXPECT_EQ(AuthenticatorMakeCredential(std::move(options)).status,
+              test.success ? AuthenticatorStatus::SUCCESS
+                           : AuthenticatorStatus::NOT_ALLOWED_ERROR);
+  }
+}
+
+TEST_F(AuthenticatorImplRemoteDesktopClientOverrideTest, GetAssertion) {
+  const struct TestCase {
+    std::string local_origin;
+    std::string remote_origin;
+    std::string rp_id;
+    bool success;
+  } test_cases[] = {
+      {kCorpCrdOrigin, kExampleOrigin, kExampleRpId, true},
+      {kOtherRdpOrigin, kExampleOrigin, kExampleRpId, false},
+      {kOtherRdpOrigin, kExampleOrigin, kOtherRpId, false},
+      {kExampleOrigin, kExampleOrigin, kExampleRpId, false},
+  };
+
+  for (const auto& test : test_cases) {
+    SCOPED_TRACE(testing::Message()
+                 << "local=" << test.local_origin
+                 << " remote=" << test.remote_origin << " rp=" << test.rp_id);
+    ResetVirtualDevice();
+    NavigateAndCommit(GURL(test.local_origin));
+
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    options->relying_party_id = test.rp_id;
+    options->remote_desktop_client_override = RemoteDesktopClientOverride::New(
+        url::Origin::Create(GURL(test.remote_origin)), true);
+
+    ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+        options->allow_credentials[0].id, test.rp_id));
+
+    EXPECT_EQ(AuthenticatorGetAssertion(std::move(options)).status,
+              test.success ? AuthenticatorStatus::SUCCESS
+                           : AuthenticatorStatus::NOT_ALLOWED_ERROR);
+  }
 }
 
 class MockAuthenticatorRequestDelegateObserver
@@ -8569,7 +8672,7 @@ TEST_F(AuthenticatorCableV2AuthenticatorTest, EmptyAllowList) {
 // AuthenticatorImplWithRequestProxyTest tests behavior with an installed
 // TestWebAuthenticationRequestProxy that takes over WebAuthn request handling.
 class AuthenticatorImplWithRequestProxyTest : public AuthenticatorImplTest {
- public:
+ protected:
   void SetUp() override {
     AuthenticatorImplTest::SetUp();
     old_client_ = SetBrowserClientForTesting(&test_client_);
@@ -8599,7 +8702,7 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, Inactive) {
   TestIsUvpaaCallback cb;
   authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
   cb.WaitForCallback();
-  EXPECT_EQ(request_proxy().call_counts().signal_is_uvpaa_request, 0u);
+  EXPECT_EQ(request_proxy().observations().num_isuvpaa, 0u);
 }
 
 TEST_F(AuthenticatorImplWithRequestProxyTest, IsUVPAA) {
@@ -8614,7 +8717,7 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, IsUVPAA) {
     authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
     cb.WaitForCallback();
     EXPECT_EQ(cb.value(), is_uvpaa);
-    EXPECT_EQ(request_proxy().call_counts().signal_is_uvpaa_request, ++i);
+    EXPECT_EQ(request_proxy().observations().num_isuvpaa, ++i);
   }
 }
 
@@ -8626,12 +8729,19 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, MakeCredential) {
       CommonCredentialInfo::New();
 
   NavigateAndCommit(GURL(kTestOrigin1));
-  MakeCredentialResult result =
-      AuthenticatorMakeCredential(GetTestPublicKeyCredentialCreationOptions());
+  auto request = GetTestPublicKeyCredentialCreationOptions();
+  MakeCredentialResult result = AuthenticatorMakeCredential(request->Clone());
 
   EXPECT_EQ(result.status, AuthenticatorStatus::SUCCESS);
-  EXPECT_EQ(request_proxy().call_counts().signal_create_request, 1u);
-  EXPECT_EQ(request_proxy().call_counts().cancel_request, 0u);
+  EXPECT_EQ(request_proxy().observations().num_cancel, 0u);
+  EXPECT_EQ(request_proxy().observations().create_requests.size(), 1u);
+
+  auto expected = request->Clone();
+  expected->remote_desktop_client_override = RemoteDesktopClientOverride::New();
+  expected->remote_desktop_client_override->origin =
+      url::Origin::Create(GURL(kTestOrigin1));
+  expected->remote_desktop_client_override->same_origin_with_ancestors = true;
+  EXPECT_EQ(request_proxy().observations().create_requests.at(0), expected);
 }
 
 // Verify requests with an attached proxy run RP ID checks.
@@ -8658,7 +8768,7 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, MakeCredentialOriginAndRpIds) {
 
     EXPECT_EQ(AuthenticatorMakeCredential(std::move(options)).status,
               test_case.expected_status);
-    EXPECT_EQ(request_proxy().call_counts().signal_create_request, 0u);
+    EXPECT_EQ(request_proxy().observations().create_requests.size(), 0u);
   }
 }
 
@@ -8675,8 +8785,8 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, MakeCredential_Timeout) {
       GetTestPublicKeyCredentialCreationOptions());
 
   EXPECT_EQ(result.status, AuthenticatorStatus::NOT_ALLOWED_ERROR);
-  EXPECT_EQ(request_proxy().call_counts().signal_create_request, 1u);
-  EXPECT_EQ(request_proxy().call_counts().cancel_request, 1u);
+  EXPECT_EQ(request_proxy().observations().create_requests.size(), 1u);
+  EXPECT_EQ(request_proxy().observations().num_cancel, 1u);
 
   // Proxy should not hold a pending request after cancellation.
   EXPECT_FALSE(request_proxy().HasPendingRequest());
@@ -8690,12 +8800,19 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, GetAssertion) {
       CommonCredentialInfo::New();
 
   NavigateAndCommit(GURL(kTestOrigin1));
-  GetAssertionResult result =
-      AuthenticatorGetAssertion(GetTestPublicKeyCredentialRequestOptions());
+  auto request = GetTestPublicKeyCredentialRequestOptions();
+  GetAssertionResult result = AuthenticatorGetAssertion(request->Clone());
 
   EXPECT_EQ(result.status, AuthenticatorStatus::SUCCESS);
-  EXPECT_EQ(request_proxy().call_counts().signal_get_request, 1u);
-  EXPECT_EQ(request_proxy().call_counts().cancel_request, 0u);
+  EXPECT_EQ(request_proxy().observations().num_cancel, 0u);
+  EXPECT_EQ(request_proxy().observations().get_requests.size(), 1u);
+
+  auto expected = request->Clone();
+  expected->remote_desktop_client_override = RemoteDesktopClientOverride::New();
+  expected->remote_desktop_client_override->origin =
+      url::Origin::Create(GURL(kTestOrigin1));
+  expected->remote_desktop_client_override->same_origin_with_ancestors = true;
+  EXPECT_EQ(request_proxy().observations().get_requests.at(0), expected);
 }
 
 // Verify requests with an attached proxy run RP ID checks.
@@ -8722,7 +8839,7 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, GetAssertionOriginAndRpIds) {
 
     EXPECT_EQ(AuthenticatorGetAssertion(std::move(options)).status,
               test_case.expected_status);
-    EXPECT_EQ(request_proxy().call_counts().signal_get_request, 0u);
+    EXPECT_EQ(request_proxy().observations().get_requests.size(), 0u);
   }
 }
 
@@ -8739,8 +8856,8 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, GetAssertion_Timeout) {
       GetTestPublicKeyCredentialRequestOptions());
 
   EXPECT_EQ(result.status, AuthenticatorStatus::NOT_ALLOWED_ERROR);
-  EXPECT_EQ(request_proxy().call_counts().signal_get_request, 1u);
-  EXPECT_EQ(request_proxy().call_counts().cancel_request, 1u);
+  EXPECT_EQ(request_proxy().observations().get_requests.size(), 1u);
+  EXPECT_EQ(request_proxy().observations().num_cancel, 1u);
 
   // Proxy should not hold a pending request after cancellation.
   EXPECT_FALSE(request_proxy().HasPendingRequest());

@@ -19,7 +19,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/task_runner_util.h"
 #include "base/test/bind.h"
-#include "content/browser/attribution_reporting/attribution_aggregatable_key.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_observer.h"
 #include "content/browser/attribution_reporting/rate_limit_result.h"
@@ -707,42 +706,6 @@ AttributionReport ReportBuilder::BuildAggregatableAttribution() const {
           contributions_, aggregatable_attribution_report_id_, report_time_));
 }
 
-AggregatableKeyProtoBuilder::AggregatableKeyProtoBuilder() = default;
-
-AggregatableKeyProtoBuilder::~AggregatableKeyProtoBuilder() = default;
-
-AggregatableKeyProtoBuilder& AggregatableKeyProtoBuilder::SetHighBits(
-    uint64_t high_bits) {
-  key_.set_high_bits(high_bits);
-  return *this;
-}
-
-AggregatableKeyProtoBuilder& AggregatableKeyProtoBuilder::SetLowBits(
-    uint64_t low_bits) {
-  key_.set_low_bits(low_bits);
-  return *this;
-}
-
-proto::AttributionAggregatableKey AggregatableKeyProtoBuilder::Build() const {
-  return key_;
-}
-
-AggregatableSourceProtoBuilder::AggregatableSourceProtoBuilder() = default;
-
-AggregatableSourceProtoBuilder::~AggregatableSourceProtoBuilder() = default;
-
-AggregatableSourceProtoBuilder& AggregatableSourceProtoBuilder::AddKey(
-    std::string key_id,
-    proto::AttributionAggregatableKey key) {
-  (*aggregatable_source_.mutable_keys())[std::move(key_id)] = std::move(key);
-  return *this;
-}
-
-proto::AttributionAggregatableSource AggregatableSourceProtoBuilder::Build()
-    const {
-  return aggregatable_source_;
-}
-
 AggregatableSourceMojoBuilder::AggregatableSourceMojoBuilder() = default;
 
 AggregatableSourceMojoBuilder::~AggregatableSourceMojoBuilder() = default;
@@ -890,14 +853,6 @@ bool operator==(const DeactivatedSource& a, const DeactivatedSource& b) {
   const auto tie = [](const DeactivatedSource& deactivated_source) {
     return std::make_tuple(deactivated_source.source,
                            deactivated_source.reason);
-  };
-  return tie(a) == tie(b);
-}
-
-bool operator==(const AttributionAggregatableKey& a,
-                const AttributionAggregatableKey& b) {
-  const auto tie = [](const AttributionAggregatableKey& key) {
-    return std::make_tuple(key.high_bits, key.low_bits);
   };
   return tie(a) == tie(b);
 }
@@ -1279,12 +1234,6 @@ std::ostream& operator<<(std::ostream& out, StorableSource::Result status) {
   }
 }
 
-std::ostream& operator<<(std::ostream& out,
-                         const AttributionAggregatableKey& key) {
-  return out << "{high_bits=" << key.high_bits << ",low_bits=" << key.low_bits
-             << "}";
-}
-
 std::ostream& operator<<(
     std::ostream& out,
     const AttributionAggregatableTriggerData& trigger_data) {
@@ -1337,37 +1286,9 @@ AttributionFilterSizeTestCase::Map AttributionFilterSizeTestCase::AsMap()
   return map;
 }
 
-namespace proto {
-
-bool operator==(const AttributionAggregatableKey& a,
-                const AttributionAggregatableKey& b) {
-  auto tie = [](const AttributionAggregatableKey& key) {
-    return std::make_tuple(key.has_high_bits(), key.high_bits(),
-                           key.has_low_bits(), key.low_bits());
-  };
-  return tie(a) == tie(b);
-}
-
 bool operator==(const AttributionAggregatableSource& a,
                 const AttributionAggregatableSource& b) {
-  if (a.keys().size() != b.keys().size())
-    return false;
-
-  return base::ranges::all_of(a.keys(), [&](const auto& key) {
-    auto iter = b.keys().find(key.first);
-    return iter != b.keys().end() && iter->second == key.second;
-  });
-}
-
-std::ostream& operator<<(std::ostream& out,
-                         const AttributionAggregatableKey& key) {
-  return out << "{high_bits="
-             << (key.has_high_bits() ? base::NumberToString(key.high_bits())
-                                     : "null")
-             << ",low_bits="
-             << (key.has_low_bits() ? base::NumberToString(key.low_bits())
-                                    : "null")
-             << "}";
+  return a.keys() == b.keys();
 }
 
 std::ostream& operator<<(
@@ -1381,19 +1302,6 @@ std::ostream& operator<<(
     separator = ", ";
   }
   return out << "]}";
-}
-
-}  // namespace proto
-
-bool operator==(const AttributionAggregatableSource& a,
-                const AttributionAggregatableSource& b) {
-  return a.proto() == b.proto();
-}
-
-std::ostream& operator<<(
-    std::ostream& out,
-    const AttributionAggregatableSource& aggregatable_source) {
-  return out << "{proto=" << aggregatable_source.proto() << "}";
 }
 
 EventTriggerDataMatcherConfig::~EventTriggerDataMatcherConfig() = default;
@@ -1453,14 +1361,13 @@ std::unique_ptr<MockDataHost> GetRegisteredDataHost(
 }
 
 TestAggregatableSourceProvider::TestAggregatableSourceProvider(size_t size) {
-  AggregatableSourceProtoBuilder source_builder;
+  AttributionAggregatableSource::Keys::container_type keys;
+  keys.reserve(size);
   for (size_t i = 0; i < size; ++i) {
-    source_builder.AddKey(
-        base::NumberToString(i),
-        AggregatableKeyProtoBuilder().SetHighBits(0).SetLowBits(i).Build());
+    keys.emplace_back(base::NumberToString(i), i);
   }
 
-  auto source = AttributionAggregatableSource::Create(source_builder.Build());
+  auto source = AttributionAggregatableSource::FromKeys(std::move(keys));
   DCHECK(source.has_value());
   source_ = std::move(*source);
 }

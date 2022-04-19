@@ -4,8 +4,12 @@
 
 #include "ash/webui/os_feedback_ui/backend/feedback_service_provider.h"
 
+#include <utility>
+
+#include "ash/webui/os_feedback_ui/backend/os_feedback_delegate.h"
 #include "ash/webui/os_feedback_ui/mojom/os_feedback_ui.mojom.h"
 #include "base/bind.h"
+#include "base/logging.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "url/gurl.h"
@@ -15,13 +19,30 @@ namespace feedback {
 
 using ::ash::os_feedback_ui::mojom::FeedbackContext;
 using ::ash::os_feedback_ui::mojom::FeedbackContextPtr;
+using ::ash::os_feedback_ui::mojom::ReportPtr;
+using ::ash::os_feedback_ui::mojom::SendReportStatus;
+
+FeedbackServiceProvider::FeedbackServiceProvider(
+    std::unique_ptr<OsFeedbackDelegate> feedback_delegate)
+    : feedback_delegate_(std::move(feedback_delegate)) {}
+
+FeedbackServiceProvider::~FeedbackServiceProvider() = default;
 
 void FeedbackServiceProvider::GetFeedbackContext(
     GetFeedbackContextCallback callback) {
-  // TODO(xiangdongkong): Replace with real values.
-  FeedbackContextPtr feedback_context =
-      FeedbackContext::New("test@test.com", GURL("chrome://flags/"));
+  FeedbackContextPtr feedback_context = FeedbackContext::New();
+  feedback_context->page_url = feedback_delegate_->GetLastActivePageUrl();
+  feedback_context->email = feedback_delegate_->GetSignedInUserEmail();
+
   std::move(callback).Run(std::move(feedback_context));
+}
+
+void FeedbackServiceProvider::SendReport(ReportPtr report,
+                                         SendReportCallback callback) {
+  // TODO(xiangdongkong): Implement send report logic.
+  VLOG(2) << report->include_system_logs_and_histograms;
+
+  std::move(callback).Run(SendReportStatus::kSuccess);
 }
 
 void FeedbackServiceProvider::BindInterface(
@@ -29,9 +50,6 @@ void FeedbackServiceProvider::BindInterface(
         receiver) {
   receiver_.Bind(std::move(receiver));
 }
-
-FeedbackServiceProvider::FeedbackServiceProvider() = default;
-FeedbackServiceProvider::~FeedbackServiceProvider() = default;
 
 }  // namespace feedback
 }  // namespace ash

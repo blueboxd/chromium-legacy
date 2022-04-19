@@ -661,10 +661,11 @@ const char kDevicePostureDescription[] =
 const char kDiscountConsentV2Name[] = "Discount Consent V2";
 const char kDiscountConsentV2Description[] = "Enables Discount Consent V2";
 
-const char kRestrictedApiOriginsName[] = "Restricted API Origins";
-const char kRestrictedApiOriginsDescription[] =
-    "Enables Restricted APIs (Direct Sockets API) for development purposes for "
-    "a set of origins, specified as a comma-separated list.";
+const char kIsolatedAppOriginsName[] = "Isolated App Origins";
+const char kIsolatedAppOriginsDescription[] =
+    "Enables Isolated App policy enforcement and related APIs (e.g. Direct "
+    "Sockets API) for development purposes for a set of origins, specified as "
+    "a comma-separated list.";
 
 const char kDoubleBufferCompositingName[] = "Double buffered compositing";
 const char kDoubleBufferCompositingDescription[] =
@@ -4210,6 +4211,11 @@ const char kDefaultLinkCapturingInBrowserDescription[] =
 const char kDesksCloseAllName[] = "Desks Close All";
 const char kDesksCloseAllDescription[] =
     "Close a desk along with all of its windows and tabs.";
+
+const char kDesksSaveAndRecallName[] = "Desks Save and Recall";
+const char kDesksSaveAndRecallDescription[] =
+    "Save a desk and its applications so that they can be recalled at a later "
+    "time.";
 
 const char kDesksTemplatesName[] = "Desk Templates";
 const char kDesksTemplatesDescription[] =

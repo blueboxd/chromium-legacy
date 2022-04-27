@@ -15,6 +15,9 @@ extern const base::Feature kExplicitLanguageAsk;
 // The feature that enables a second run prompt to select the app UI language on
 // Android.
 extern const base::Feature kAppLanguagePrompt;
+// When enabled does not show the AppLanguagePrompt to users whose base UI
+// language is their top ULP language.
+extern const base::Feature kAppLanguagePromptULP;
 // This feature forces the app UI prompt even if it has already been shown.
 extern const base::Feature kForceAppLanguagePrompt;
 
@@ -54,9 +57,6 @@ extern const base::Feature kTranslateIntent;
 
 // This feature enables an intent that starts translating the foreground tab.
 extern const base::Feature kContentLanguagesInLanguagePicker;
-
-// This feature enables use of ULP language data in Chrome.
-extern const base::Feature kUseULPLanguagesInChrome;
 
 enum class OverrideLanguageModel {
   DEFAULT,

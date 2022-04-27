@@ -132,6 +132,10 @@
     "META": {"sizes": {"includes": [50]}},
     "includes": [1380],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/profile_internals/resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
+    "includes": [1385],
+  },
   "chrome/browser/resources/chromeos/app_icon/app_icon_resources.grd": {
     "structures": [1390],
   },
@@ -252,7 +256,7 @@
     "includes": [1930],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/side_panel_resources.grd": {
-    "META": {"sizes": {"includes": [10],}},
+    "META": {"sizes": {"includes": [20],}},
     "includes": [1935],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/settings/chromeos/os_settings_resources.grd": {
@@ -296,6 +300,10 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/download_shelf/resources.grd": {
     "META": {"sizes": {"includes": [10]}},
     "includes": [2120],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/webui_gallery/resources.grd": {
+    "META": {"sizes": {"includes": [20]}},
+    "includes": [2130],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/whats_new/resources.grd": {
     "META": {"sizes": {"includes": [10]}},

@@ -107,6 +107,7 @@ source_set("common") {
     "device_memory/approximated_device_memory.cc",
     "dom_storage/session_storage_namespace_id.cc",
     "features.cc",
+    "fenced_frame/fenced_frame_utils.cc",
     "fetch/fetch_api_request_body_mojom_traits.cc",
     "frame/event_page_show_persisted.cc",
     "frame/frame_ad_evidence.cc",
@@ -116,6 +117,7 @@ source_set("common") {
     "frame/frame_visual_properties.cc",
     "frame/frame_visual_properties_mojom_traits.cc",
     "frame/from_ad_state.cc",
+    "frame/fullscreen_request_token.cc",
     "frame/payment_request_token.cc",
     "frame/transient_allow_fullscreen.cc",
     "frame/user_activation_state.cc",
@@ -281,6 +283,10 @@ source_set("common") {
     sources += [ "dwrite_rasterizer_support/dwrite_rasterizer_support.cc" ]
     deps += [ "//ui/gfx/" ]
   }
+
+  if (is_chromeos || is_android || is_win || is_chromecast || is_fuchsia) {
+    defines = [ "ENABLE_PROTECTED_MEDIA_IDENTIFIER_PERMISSION" ]
+  }
 }
 
 test("blink_common_unittests") {
@@ -323,6 +329,7 @@ source_set("common_unittests_sources") {
     "client_hints/client_hints_unittest.cc",
     "client_hints/enabled_client_hints_unittest.cc",
     "device_memory/approximated_device_memory_unittest.cc",
+    "frame/fullscreen_request_token_unittest.cc",
     "frame/transient_allow_fullscreen_unittest.cc",
     "frame/user_activation_state_unittest.cc",
     "indexeddb/indexeddb_key_unittest.cc",

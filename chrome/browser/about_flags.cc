@@ -127,7 +127,6 @@
 #include "components/safe_browsing/core/common/features.h"
 #include "components/search/ntp_features.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
-#include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/services/heap_profiling/public/cpp/switches.h"
@@ -218,7 +217,6 @@
 #include "components/browser_ui/photo_picker/android/features.h"
 #include "components/content_creation/notes/core/note_features.h"
 #include "components/content_creation/reactions/core/reactions_features.h"
-#include "components/external_intents/android/external_intents_features.h"
 #include "components/translate/content/android/translate_message.h"
 #include "components/webapps/browser/android/features.h"
 #else  // BUILDFLAG(IS_ANDROID)
@@ -1507,35 +1505,16 @@ const FeatureEntry::FeatureVariation kNtpChromeCartModuleVariations[] = {
 };
 
 // The following are consent v2 variations in the Chrome Cart module.
-const flags_ui::FeatureEntry::FeatureParam kDiscountConsentNtpStringChange[] = {
-    {commerce::kNtpChromeCartModuleDiscountConsentNtpVariationParam, "1"}};
-const flags_ui::FeatureEntry::FeatureParam kDiscountConsentNtpInline[] = {
-    {commerce::kNtpChromeCartModuleDiscountConsentNtpVariationParam, "2"}};
 const flags_ui::FeatureEntry::FeatureParam kDiscountConsentNtpDialog[] = {
     {commerce::kNtpChromeCartModuleDiscountConsentNtpVariationParam, "3"}};
-const flags_ui::FeatureEntry::FeatureParam
-    kDiscountConsentOnCartAndCheckoutPage[] = {
-        {commerce::kContextualConsentShowOnCartAndCheckoutPageParam, "true"}};
-const flags_ui::FeatureEntry::FeatureParam kDiscountConsentOnSRP[] = {
-    {commerce::kContextualConsentShowOnSRPParam, "true"}};
-const flags_ui::FeatureEntry::FeatureParam
-    kDiscountConsentOnNTPDialogAndCartCheckout[] = {
-        {commerce::kNtpChromeCartModuleDiscountConsentNtpVariationParam, "3"},
-        {commerce::kContextualConsentShowOnCartAndCheckoutPageParam, "true"}};
+const flags_ui::FeatureEntry::FeatureParam kDiscountConsentNtpNativeDialog[] = {
+    {commerce::kNtpChromeCartModuleDiscountConsentNtpVariationParam, "4"}};
+
 const FeatureEntry::FeatureVariation kDiscountConsentV2Variations[] = {
-    {"Changing string", kDiscountConsentNtpStringChange,
-     std::size(kDiscountConsentNtpStringChange), nullptr},
-    {"Inline Consent", kDiscountConsentNtpInline,
-     std::size(kDiscountConsentNtpInline), nullptr},
-    {"Dialog Consent", kDiscountConsentNtpDialog,
+    {"WebUi Dialog Consent", kDiscountConsentNtpDialog,
      std::size(kDiscountConsentNtpDialog), nullptr},
-    {"Cart and Checkout Consent", kDiscountConsentOnCartAndCheckoutPage,
-     std::size(kDiscountConsentOnCartAndCheckoutPage), nullptr},
-    {"SRP Consent", kDiscountConsentOnSRP, std::size(kDiscountConsentOnSRP),
-     nullptr},
-    {"Cart, Checkout, and Dialog Consent",
-     kDiscountConsentOnNTPDialogAndCartCheckout,
-     std::size(kDiscountConsentOnNTPDialogAndCartCheckout), nullptr},
+    {"Native Dialog Consent", kDiscountConsentNtpNativeDialog,
+     std::size(kDiscountConsentNtpNativeDialog), nullptr},
 };
 
 const FeatureEntry::FeatureParam kNtpRecipeTasksModuleFakeData[] = {
@@ -3555,17 +3534,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"dark-light-mode", flag_descriptions::kDarkLightTestName,
      flag_descriptions::kDarkLightTestDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kDarkLightMode)},
-    // TODO(b/180051795): remove kOsLinux when lacros-chrome switches to
-    // kOsCrOS.
     {"deprecate-low-usage-codecs",
      flag_descriptions::kDeprecateLowUsageCodecsName,
      flag_descriptions::kDeprecateLowUsageCodecsDescription,
-     kOsCrOS | kOsLinux | kOsLacros,
-     FEATURE_VALUE_TYPE(media::kDeprecateLowUsageCodecs)},
+     kOsCrOS | kOsLacros, FEATURE_VALUE_TYPE(media::kDeprecateLowUsageCodecs)},
     {"enable-tts-lacros-support",
      flag_descriptions::kEnableTtsLacrosSupportName,
-     flag_descriptions::kEnableTtsLacrosSupportDescription,
-     kOsCrOS | kOsLinux | kOsLacros,
+     flag_descriptions::kEnableTtsLacrosSupportDescription, kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(chromeos::kLacrosTtsSupport)},
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
@@ -3574,18 +3549,15 @@ const FeatureEntry kFeatureEntries[] = {
         "enable-accelerated-video-decode",
         flag_descriptions::kAcceleratedVideoDecodeName,
         flag_descriptions::kAcceleratedVideoDecodeDescription,
-        kOsLinux | kOsLacros,
+        kOsLinux,
         FEATURE_VALUE_TYPE(media::kVaapiVideoDecodeLinux),
     },
 #else
-    // TODO(b/180051795): remove kOsLinux when lacros-chrome switches to
-    // kOsCrOS.
     {
         "disable-accelerated-video-decode",
         flag_descriptions::kAcceleratedVideoDecodeName,
         flag_descriptions::kAcceleratedVideoDecodeDescription,
-        kOsMac | kOsWin | kOsCrOS | kOsAndroid | kOsLinux | kOsLacros |
-            kOsFuchsia,
+        kOsMac | kOsWin | kOsCrOS | kOsAndroid | kOsLacros | kOsFuchsia,
         SINGLE_DISABLE_VALUE_TYPE(switches::kDisableAcceleratedVideoDecode),
     },
 #endif  // BUILDFLAG(IS_LINUX)
@@ -4169,20 +4141,19 @@ const FeatureEntry kFeatureEntries[] = {
 
 #if BUILDFLAG(IS_LINUX)
     {"ozone-platform-hint", flag_descriptions::kOzonePlatformHintName,
-     flag_descriptions::kOzonePlatformHintDescription, kOsLinux | kOsLacros,
+     flag_descriptions::kOzonePlatformHintDescription, kOsLinux,
      MULTI_VALUE_TYPE(kOzonePlatformHintRuntimeChoices)},
 
     {"clean-undecryptable-passwords",
      flag_descriptions::kCleanUndecryptablePasswordsLinuxName,
-     flag_descriptions::kCleanUndecryptablePasswordsLinuxDescription,
-     kOsLinux | kOsLacros,
+     flag_descriptions::kCleanUndecryptablePasswordsLinuxDescription, kOsLinux,
      FEATURE_VALUE_TYPE(
          password_manager::features::kSyncUndecryptablePasswordsLinux)},
 
     {"force-password-initial-sync-when-decryption-fails",
      flag_descriptions::kForcePasswordInitialSyncWhenDecryptionFailsName,
      flag_descriptions::kForcePasswordInitialSyncWhenDecryptionFailsDescription,
-     kOsLinux | kOsLacros,
+     kOsLinux,
      FEATURE_VALUE_TYPE(
          password_manager::features::kForceInitialSyncWhenDecryptionFails)},
 #endif  // BUILDFLAG(IS_LINUX)
@@ -4191,7 +4162,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"skip-undecryptable-passwords",
      flag_descriptions::kSkipUndecryptablePasswordsName,
      flag_descriptions::kSkipUndecryptablePasswordsDescription,
-     kOsLinux | kOsLacros | kOsMac,
+     kOsLinux | kOsMac,
      FEATURE_VALUE_TYPE(
          password_manager::features::kSkipUndecryptablePasswords)},
 
@@ -4304,6 +4275,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"theme-refactor-android", flag_descriptions::kThemeRefactorAndroidName,
      flag_descriptions::kThemeRefactorAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kThemeRefactorAndroid)},
+    {"back-gesture-refactor-android",
+     flag_descriptions::kBackGestureRefactorAndroidName,
+     flag_descriptions::kBackGestureRefactorAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kBackGestureRefactorAndroid)},
 #endif  // BUILDFLAG(IS_ANDROID)
     {"disallow-doc-written-script-loads",
      flag_descriptions::kDisallowDocWrittenScriptsUiName,
@@ -4788,6 +4763,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"fuse-box", flag_descriptions::kFuseBoxName,
      flag_descriptions::kFuseBoxDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFuseBox)},
+    {"fuse-box-debug", flag_descriptions::kFuseBoxDebugName,
+     flag_descriptions::kFuseBoxDebugDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kFuseBoxDebug)},
     {"guest-os-files", flag_descriptions::kGuestOsFilesName,
      flag_descriptions::kGuestOsFilesDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kGuestOsFiles)},
@@ -5067,6 +5045,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kDynamicMaxAutocomplete,
                                     kOmniboxDynamicMaxAutocompleteVariations,
                                     "OmniboxBundledExperimentV1")},
+
+    {"omnibox-retain-suggestions-with-headers",
+     flag_descriptions::kOmniboxRetainSuggestionsWithHeadersName,
+     flag_descriptions::kOmniboxRetainSuggestionsWithHeadersDescription, kOsAll,
+     FEATURE_VALUE_TYPE(omnibox::kRetainSuggestionsWithHeaders)},
+
     {"optimization-guide-debug-logs",
      flag_descriptions::kOptimizationGuideDebugLogsName,
      flag_descriptions::kOptimizationGuideDebugLogsDescription, kOsAll,
@@ -5202,10 +5186,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kReadLaterReminderNotificationDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(
          reading_list::switches::kReadLaterReminderNotification)},
-
-    {"bookmark-bottom-sheet", flag_descriptions::kBookmarkBottomSheetName,
-     flag_descriptions::kBookmarkBottomSheetDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kBookmarkBottomSheet)},
 #endif
 
     {"tab-groups-new-badge-promo",
@@ -5597,10 +5577,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCriticalPersistedTabDataDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kCriticalPersistedTabData)},
 
-    {"enable-store-hours", flag_descriptions::kStoreHoursAndroidName,
-     flag_descriptions::kStoreHoursAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kStoreHoursAndroid)},
-
     {"suppress-toolbar-captures",
      flag_descriptions::kSuppressToolbarCapturesName,
      flag_descriptions::kSuppressToolbarCapturesDescription, kOsAndroid,
@@ -5745,33 +5721,28 @@ const FeatureEntry kFeatureEntries[] = {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
     {"allow-dsp-based-aec", flag_descriptions::kCrOSDspBasedAecAllowedName,
-     flag_descriptions::kCrOSDspBasedAecAllowedDescription,
-     kOsCrOS | kOsLinux | kOsLacros,
+     flag_descriptions::kCrOSDspBasedAecAllowedDescription, kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(features::kCrOSDspBasedAecAllowed)},
     {"allow-dsp-based-ns", flag_descriptions::kCrOSDspBasedNsAllowedName,
-     flag_descriptions::kCrOSDspBasedNsAllowedDescription,
-     kOsCrOS | kOsLinux | kOsLacros,
+     flag_descriptions::kCrOSDspBasedNsAllowedDescription, kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(features::kCrOSDspBasedNsAllowed)},
     {"allow-dsp-based-agc", flag_descriptions::kCrOSDspBasedAgcAllowedName,
-     flag_descriptions::kCrOSDspBasedAgcAllowedDescription,
-     kOsCrOS | kOsLinux | kOsLacros,
+     flag_descriptions::kCrOSDspBasedAgcAllowedDescription, kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(features::kCrOSDspBasedAgcAllowed)},
     {"enforce-system-aec", flag_descriptions::kCrOSEnforceSystemAecName,
-     flag_descriptions::kCrOSEnforceSystemAecDescription,
-     kOsCrOS | kOsLinux | kOsLacros,
+     flag_descriptions::kCrOSEnforceSystemAecDescription, kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(features::kCrOSEnforceSystemAec)},
     {"enforce-system-aec-agc", flag_descriptions::kCrOSEnforceSystemAecAgcName,
      flag_descriptions::kCrOSEnforceSystemAecAgcDescription,
-     kOsCrOS | kOsLinux | kOsLacros,
+     kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(features::kCrOSEnforceSystemAecAgc)},
     {"enforce-system-aec-ns-agc",
      flag_descriptions::kCrOSEnforceSystemAecNsAgcName,
      flag_descriptions::kCrOSEnforceSystemAecNsAgcDescription,
-     kOsCrOS | kOsLinux | kOsLacros,
+     kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(features::kCrOSEnforceSystemAecNsAgc)},
     {"enforce-system-aec-ns", flag_descriptions::kCrOSEnforceSystemAecNsName,
-     flag_descriptions::kCrOSEnforceSystemAecNsDescription,
-     kOsCrOS | kOsLinux | kOsLacros,
+     flag_descriptions::kCrOSEnforceSystemAecNsDescription, kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(features::kCrOSEnforceSystemAecNs)},
 #endif
 
@@ -6009,18 +5980,16 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-    // TODO(b/180051795): remove kOsLinux when lacros-chrome switches
-    // to kOsCrOS.
     {"chromeos-direct-video-decoder",
      flag_descriptions::kChromeOSDirectVideoDecoderName,
      flag_descriptions::kChromeOSDirectVideoDecoderDescription,
-     kOsCrOS | kOsLinux | kOsLacros,
+     kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(media::kUseChromeOSDirectVideoDecoder)},
 #if defined(ARCH_CPU_ARM_FAMILY)
     {"prefer-libyuv-image-processor",
      flag_descriptions::kPreferLibYuvImageProcessorName,
      flag_descriptions::kPreferLibYuvImageProcessorDescription,
-     kOsCrOS | kOsLinux | kOsLacros,
+     kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(media::kPreferLibYuvImageProcessor)},
 #endif  // defined(ARCH_CPU_ARM_FAMILY)
 #endif  // BUILDFLAG(IS_CHROMEOS) && BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
@@ -6130,6 +6099,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kFastPairLowPowerDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kFastPairLowPower)},
 
+    {"fast-pair-saved-devices", flag_descriptions::kFastPairSavedDevicesName,
+     flag_descriptions::kFastPairSavedDevicesDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kFastPairSavedDevices)},
+
     {"fast-pair-software-scanning",
      flag_descriptions::kFastPairSoftwareScanningName,
      flag_descriptions::kFastPairSoftwareScanningDescription, kOsCrOS,
@@ -6192,7 +6165,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"enable-rgb-keyboard", flag_descriptions::kEnableRgbKeyboardName,
      flag_descriptions::kEnableRgbKeyboardDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kRgbKeyboard)},
+     FEATURE_VALUE_TYPE(ash::features::kRgbKeyboard)},
 
     {"enhanced-network-voices", flag_descriptions::kEnhancedNetworkVoicesName,
      flag_descriptions::kEnhancedNetworkVoicesDescription, kOsCrOS,
@@ -6282,7 +6255,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(autofill::features::kAutofillCreditCardUploadFeedback)},
 
     {"font-access", flag_descriptions::kFontAccessAPIName,
-     flag_descriptions::kFontAccessAPIDescription, kOsAll,
+     flag_descriptions::kFontAccessAPIDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(blink::features::kFontAccess)},
 
     {"mouse-subframe-no-implicit-capture",
@@ -6633,9 +6606,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHelpAppSearchServiceIntegrationName,
      flag_descriptions::kHelpAppSearchServiceIntegrationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kHelpAppSearchServiceIntegration)},
-    {"media-app-handles-audio", flag_descriptions::kMediaAppHandlesAudioName,
-     flag_descriptions::kMediaAppHandlesAudioDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kMediaAppHandlesAudio)},
     {"media-app-handles-pdf", flag_descriptions::kMediaAppHandlesPdfName,
      flag_descriptions::kMediaAppHandlesPdfDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kMediaAppHandlesPdf)},
@@ -6690,12 +6660,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // BUILDFLAG(ENABLE_PAINT_PREVIEW) && BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
-    {"block-external-form-redirects-no-gesture",
-     flag_descriptions::kIntentBlockExternalFormRedirectsNoGestureName,
-     flag_descriptions::kIntentBlockExternalFormRedirectsNoGestureDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         external_intents::kIntentBlockExternalFormRedirectsNoGesture)},
     {"recover-from-never-save-android",
      flag_descriptions::kRecoverFromNeverSaveAndroidName,
      flag_descriptions::kRecoverFromNeverSaveAndroidDescription, kOsAndroid,
@@ -6793,7 +6757,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"page-info-about-this-site", flag_descriptions::kPageInfoAboutThisSiteName,
      flag_descriptions::kPageInfoAboutThisSiteDescription,
      kOsDesktop | kOsAndroid,
-     FEATURE_VALUE_TYPE(page_info::kPageInfoAboutThisSite)},
+     FEATURE_VALUE_TYPE(page_info::kPageInfoAboutThisSiteEn)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enhanced_clipboard", flag_descriptions::kEnhancedClipboardName,
@@ -7203,6 +7167,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(printing::features::kEnableOopPrintDrivers)},
 #endif
 
+    {"enable-browsing-data-lifetime-manager",
+     flag_descriptions::kEnableBrowsingDataLifetimeManagerName,
+     flag_descriptions::kEnableBrowsingDataLifetimeManagerDescription, kOsAll,
+     FEATURE_VALUE_TYPE(
+         browsing_data::features::kEnableBrowsingDataLifetimeManager)},
+
     {"privacy-sandbox-v3-desktop", flag_descriptions::kPrivacySandboxV3Name,
      flag_descriptions::kPrivacySandboxV3Description, kOsDesktop,
      // Use a command-line parameter instead of a FEATURE_VALUE_TYPE to enable
@@ -7234,7 +7204,7 @@ const FeatureEntry kFeatureEntries[] = {
                                  "InterestGroupStorage,Fledge,"
                                  "BiddingAndScoringDebugReportingAPI,"
                                  "AllowURNsInIframes,BrowsingTopics,"
-                                 "ConversionMeasurement,"
+                                 "ConversionMeasurement,FencedFrames,"
                                  "OverridePrivacySandboxSettingsLocalTesting")},
 
     {"animated-image-resume", flag_descriptions::kAnimatedImageResumeName,
@@ -7404,12 +7374,9 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
-    // TODO(b/180051795): remove kOsLinux when lacros-chrome switches to
-    // kOsCrOS.
     {"enable-vaapi-av1-decode-acceleration",
      flag_descriptions::kVaapiAV1DecoderName,
-     flag_descriptions::kVaapiAV1DecoderDescription,
-     kOsCrOS | kOsLinux | kOsLacros,
+     flag_descriptions::kVaapiAV1DecoderDescription, kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(media::kVaapiAV1Decoder)},
 
     {"default-chrome-apps-migration",
@@ -7425,12 +7392,9 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)
     // TODO(b/214589754): revisit the need for this flag when the final design
     // for HW encoding is implemented for lacros-chrome.
-    // TODO(b/180051795): remove kOsLinux when lacros-chrome switches to
-    // kOsCrOS.
     {"enable-vaapi-vp9-kSVC-encode-acceleration",
      flag_descriptions::kVaapiVP9kSVCEncoderName,
-     flag_descriptions::kVaapiVP9kSVCEncoderDescription,
-     kOsCrOS | kOsLinux | kOsLacros,
+     flag_descriptions::kVaapiVP9kSVCEncoderDescription, kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(media::kVaapiVp9kSVCHWEncoding)},
 #endif  // defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)
 
@@ -8035,11 +7999,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_ANDROID)
-    {"enable-chrome-management-page-android",
-     flag_descriptions::kChromeManagementPageAndroidName,
-     flag_descriptions::kChromeManagementPageAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(policy::features::kChromeManagementPageAndroid)},
-
     {"context-menu-popup-style", flag_descriptions::kContextMenuPopupStyleName,
      flag_descriptions::kContextMenuPopupStyleDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextMenuPopupStyle)},
@@ -8129,11 +8088,8 @@ const FeatureEntry kFeatureEntries[] = {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
-    // TODO(crbug.com/1308294): Replace kOsLinux with Lacros in Link
-    // Capturing/Intent Chip flags.
     {"link-capturing-ui-update", flag_descriptions::kLinkCapturingUiUpdateName,
-     flag_descriptions::kLinkCapturingUiUpdateDescription,
-     kOsCrOS | kOsLinux | kOsLacros,
+     flag_descriptions::kLinkCapturingUiUpdateDescription, kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(apps::features::kLinkCapturingUiUpdate)},
 #endif
 
@@ -8152,20 +8108,14 @@ const FeatureEntry kFeatureEntries[] = {
          autofill::features::kAutofillEnableUpdateVirtualCardEnrollment)},
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-    // TODO(b/180051795): Remove kOsLinux when lacros-chrome switches to
-    // kOsCrOS.
     {"enable-desktop-capture-lacros-v2",
      flag_descriptions::kDesktopCaptureLacrosV2Name,
-     flag_descriptions::kDesktopCaptureLacrosV2Description,
-     kOsCrOS | kOsLinux | kOsLacros,
+     flag_descriptions::kDesktopCaptureLacrosV2Description, kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(features::kDesktopCaptureLacrosV2)},
 
-    // TODO(b/180051795): Remove kOsLinux when lacros-chrome switches to
-    // kOsCrOS.
     {"lacros-merge-icu-data-file",
      flag_descriptions::kLacrosMergeIcuDataFileName,
-     flag_descriptions::kLacrosMergeIcuDataFileDescription,
-     kOsCrOS | kOsLinux | kOsLacros,
+     flag_descriptions::kLacrosMergeIcuDataFileDescription, kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(base::i18n::kLacrosMergeIcuDataFile)},
 
     {"lacros-non-syncing-profiles",
@@ -8181,16 +8131,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"lacros-screen-coordinates-enabled",
      flag_descriptions::kLacrosScreenCoordinatesEnabledName,
      flag_descriptions::kLacrosScreenCoordinatesEnabledDescription,
-     kOsCrOS | kOsLinux | kOsLacros,
+     kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(features::kWaylandScreenCoordinatesEnabled)},
 #endif
-
-#if BUILDFLAG(IS_ANDROID)
-    {"close-all-tabs-modal-dialog",
-     flag_descriptions::kCloseAllTabsModalDialogName,
-     flag_descriptions::kCloseAllTabsModalDialogDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kCloseAllTabsModalDialog)},
-#endif  // BUILDFLAG(IS_ANDROID)
 
     {"tailored-security-integration",
      flag_descriptions::kTailoredSecurityIntegrationName,
@@ -8276,6 +8219,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"edit-context", flag_descriptions::kEditContextName,
      flag_descriptions::kEditContextDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kEditContext)},
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"enable-fake-keyboard-heuristic",
+     flag_descriptions::kEnableFakeKeyboardHeuristicName,
+     flag_descriptions::kEnableFakeKeyboardHeuristicDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ui::kEnableFakeKeyboardHeuristic)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     {"initial-navigation-entry", flag_descriptions::kInitialNavigationEntryName,
      flag_descriptions::kInitialNavigationEntryDescription, kOsAll,
@@ -8340,30 +8289,23 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(network::features::kOmitCorsClientCert)},
 
 #if BUILDFLAG(IS_CHROMEOS)
-    // TODO(crbug.com/1308294): Replace kOsLinux with Lacros in Link
-    // Capturing/Intent Chip flags.
     {"link-capturing-infobar", flag_descriptions::kLinkCapturingInfoBarName,
-     flag_descriptions::kLinkCapturingInfoBarDescription,
-     kOsCrOS | kOsLinux | kOsLacros,
+     flag_descriptions::kLinkCapturingInfoBarDescription, kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(apps::features::kLinkCapturingInfoBar)},
 
     {"intent-chip-skips-intent-picker",
      flag_descriptions::kIntentChipSkipsPickerName,
-     flag_descriptions::kIntentChipSkipsPickerDescription,
-     kOsCrOS | kOsLinux | kOsLacros,
+     flag_descriptions::kIntentChipSkipsPickerDescription, kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(apps::features::kIntentChipSkipsPicker)},
 
     {"intent-chip-app-icon", flag_descriptions::kIntentChipAppIconName,
-     flag_descriptions::kIntentChipAppIconDescription,
-     kOsCrOS | kOsLinux | kOsLacros,
+     flag_descriptions::kIntentChipAppIconDescription, kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(apps::features::kIntentChipAppIcon)},
 
-    // TODO(crbug.com/1313512): Replace kOsLinux with Lacros for sync custom
-    // passphrase flag.
     {"sync-chromeos-explicit-passphrase-sharing",
      flag_descriptions::kSyncChromeOSExplicitPassphraseSharingName,
      flag_descriptions::kSyncChromeOSExplicitPassphraseSharingDescription,
-     kOsCrOS | kOsLinux | kOsLacros,
+     kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(syncer::kSyncChromeOSExplicitPassphraseSharing)},
 #endif
 
@@ -8422,12 +8364,33 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnableVirtualCardFidoEnrollment)},
+    {"autofill-upstream-allow-additional-email-domains",
+     flag_descriptions::kAutofillUpstreamAllowAdditionalEmailDomainsName,
+     flag_descriptions::kAutofillUpstreamAllowAdditionalEmailDomainsDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillUpstreamAllowAdditionalEmailDomains)},
+    {"autofill-upstream-allow-all-email-domains",
+     flag_descriptions::kAutofillUpstreamAllowAllEmailDomainsName,
+     flag_descriptions::kAutofillUpstreamAllowAllEmailDomainsDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillUpstreamAllowAllEmailDomains)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-desks-save-and-recall", flag_descriptions::kDesksSaveAndRecallName,
      flag_descriptions::kDesksSaveAndRecallDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kEnableSavedDesks)},
+
+    {"launcher-play-store-search",
+     flag_descriptions::kLauncherPlayStoreSearchName,
+     flag_descriptions::kLauncherPlayStoreSearchDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list_features::kLauncherPlayStoreSearch)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+    {"dm-token-deletion", flag_descriptions::kDmTokenDeletionName,
+     flag_descriptions::kDmTokenDeletionDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kDmTokenDeletion)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

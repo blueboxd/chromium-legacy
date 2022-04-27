@@ -36,7 +36,6 @@
 #include "components/metrics/daily_event.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/visibility.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -293,7 +292,7 @@ class TabStatsTracker::WebContentsUsageObserver
                            TabStatsTracker* tab_stats_tracker)
       : content::WebContentsObserver(web_contents),
         tab_stats_tracker_(tab_stats_tracker),
-        ukm_source_id_(ukm::GetSourceIdForWebContentsDocument(web_contents)) {}
+        ukm_source_id_(web_contents->GetMainFrame()->GetPageUkmSourceId()) {}
 
   WebContentsUsageObserver(const WebContentsUsageObserver&) = delete;
   WebContentsUsageObserver& operator=(const WebContentsUsageObserver&) = delete;
@@ -308,22 +307,12 @@ class TabStatsTracker::WebContentsUsageObserver
         tab_stats_observer.OnTabInteraction(web_contents());
       }
     }
-  }
-
-  // TODO(crbug.com/1245014): Change this to PrimaryPageChanged and use
-  // RFH::GetUkmPageSourceId instead of navigation_handle->GetNavigationId() for
-  // the Ukm source id.
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override {
-    if (!navigation_handle->HasCommitted() ||
-        !navigation_handle->IsInPrimaryMainFrame() ||
-        navigation_handle->IsSameDocument()) {
-      return;
-    }
     // Update navigation time for UKM reporting.
     navigation_time_ = navigation_handle->NavigationStart();
-    ukm_source_id_ = ukm::ConvertToSourceId(
-        navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
+  }
+
+  void PrimaryPageChanged(content::Page& page) override {
+    ukm_source_id_ = page.GetMainDocument().GetPageUkmSourceId();
 
     // Update observers.
     for (TabStatsObserver& tab_stats_observer :

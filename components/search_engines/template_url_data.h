@@ -44,6 +44,7 @@ struct TemplateURLData {
                   base::StringPiece encoding,
                   const base::Value& alternate_urls_list,
                   bool preconnect_to_search_url,
+                  bool prefetch_likely_navigations,
                   int prepopulate_id);
 
   ~TemplateURLData();
@@ -64,8 +65,9 @@ struct TemplateURLData {
   const std::string& url() const { return url_; }
 
   // Recomputes |sync_guid| using the same logic as in the constructor. This
-  // means a random GUID is generated, except for prepopulated search engines,
-  // which generate GUIDs deterministically based on |prepopulate_id|.
+  // means a random GUID is generated, except for built-in search engines,
+  // which generate GUIDs deterministically based on |prepopulate_id| or
+  // |starter_pack_id|.
   void GenerateSyncGUID();
 
   // Estimates dynamic memory usage.
@@ -159,6 +161,11 @@ struct TemplateURLData {
   // Whether a connection to |url_| should regularly be established when this is
   // set as the "default search engine".
   bool preconnect_to_search_url = false;
+
+  // Whether the client is allowed to prefetch Search queries that are likely
+  // (in addition to queries that are recommended via suggestion server). This
+  // is experimental.
+  bool prefetch_likely_navigations = false;
 
   enum class ActiveStatus {
     kUnspecified = 0,  // The default value when a search engine is auto-added.

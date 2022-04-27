@@ -44,7 +44,7 @@ class ClientHeadless : public Client, public AccessTokenFetcher {
   void DestroyUI() override;
   version_info::Channel GetChannel() const override;
   std::string GetEmailAddressForAccessTokenAccount() const override;
-  std::string GetChromeSignedInEmailAddress() const override;
+  std::string GetSignedInEmail() const override;
   absl::optional<std::pair<int, int>> GetWindowSize() const override;
   ClientContextProto::ScreenOrientation GetScreenOrientation() const override;
   void FetchPaymentsClientToken(
@@ -64,6 +64,7 @@ class ClientHeadless : public Client, public AccessTokenFetcher {
   void RecordDropOut(Metrics::DropOutReason reason) override;
   bool HasHadUI() const override;
   ScriptExecutorUiDelegate* GetScriptExecutorUiDelegate() override;
+  bool MustUseBackendData() const override;
 
   // Overrides AccessTokenFetcher
   void FetchAccessToken(

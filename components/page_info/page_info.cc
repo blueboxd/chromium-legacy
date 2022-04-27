@@ -56,7 +56,6 @@
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
-#include "components/ukm/content/source_url_recorder.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -292,10 +291,6 @@ const char kPageInfoTimePrefix[] = "Security.PageInfo.TimeOpen";
 const char kPageInfoTimeActionPrefix[] = "Security.PageInfo.TimeOpen.Action";
 const char kPageInfoTimeNoActionPrefix[] =
     "Security.PageInfo.TimeOpen.NoAction";
-const char kPageInfoTimeAboutThisShown[] =
-    "Security.PageInfo.TimeOpen.AboutThisSiteShown";
-const char kPageInfoTimeAboutThisNotShown[] =
-    "Security.PageInfo.TimeOpen.AboutThisSiteNotShown";
 
 }  // namespace
 
@@ -368,13 +363,6 @@ PageInfo::~PageInfo() {
                                                   safety_tip_info_.status),
         start_time_);
   }
-  if (base::FeatureList::IsEnabled(page_info::kPageInfoAboutThisSite)) {
-    if (was_about_this_site_shown_) {
-      LogTimeOpenHistogram(kPageInfoTimeAboutThisShown, start_time_);
-    } else {
-      LogTimeOpenHistogram(kPageInfoTimeAboutThisNotShown, start_time_);
-    }
-  }
 }
 
 // static
@@ -432,7 +420,7 @@ void PageInfo::RecordPageInfoAction(PageInfoAction action) {
 
   if (web_contents_) {
     ukm::builders::PageInfoBubble(
-        ukm::GetSourceIdForWebContentsDocument(web_contents_.get()))
+        web_contents_->GetMainFrame()->GetPageUkmSourceId())
         .SetActionTaken(action)
         .Record(ukm::UkmRecorder::Get());
   }
@@ -833,15 +821,13 @@ void PageInfo::ComputeUIInputs(const GURL& url) {
 
   safety_tip_info_ = visible_security_state.safety_tip_info;
 #if BUILDFLAG(IS_ANDROID)
-  if (security_state::IsSafetyTipUIFeatureEnabled()) {
-    // identity_status_description_android_ is only displayed on Android when
-    // the user taps "Details" link on the page info. Reuse the description from
-    // page info UI.
-    std::unique_ptr<PageInfoUI::SecurityDescription> security_description =
-        PageInfoUI::CreateSafetyTipSecurityDescription(safety_tip_info_);
-    if (security_description) {
-      identity_status_description_android_ = security_description->details;
-    }
+  // identity_status_description_android_ is only displayed on Android when
+  // the user taps "Details" link on the page info. Reuse the description from
+  // page info UI.
+  std::unique_ptr<PageInfoUI::SecurityDescription> security_description =
+      PageInfoUI::CreateSafetyTipSecurityDescription(safety_tip_info_);
+  if (security_description) {
+    identity_status_description_android_ = security_description->details;
   }
 #endif
 
@@ -1075,9 +1061,7 @@ void PageInfo::PresentSiteIdentity() {
   info.identity_status = site_identity_status_;
   info.safe_browsing_status = safe_browsing_status_;
   info.safe_browsing_details = safe_browsing_details_;
-  if (security_state::IsSafetyTipUIFeatureEnabled()) {
-    info.safety_tip_info = safety_tip_info_;
-  }
+  info.safety_tip_info = safety_tip_info_;
 #if BUILDFLAG(IS_ANDROID)
   info.identity_status_description_android =
       UTF16ToUTF8(identity_status_description_android_);

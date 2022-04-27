@@ -34,6 +34,9 @@ consoles.console_view(
     },
 )
 
+# TODO(gbeaty) Investigate if the testers need to run on windows, if not, switch
+# them to ci.thin_tester
+
 ci.builder(
     name = "WebKit Win10",
     console_view_entry = consoles.console_view_entry(
@@ -100,19 +103,6 @@ ci.builder(
     ),
     os = os.WINDOWS_10,
     triggered_by = ["Win Builder"],
-)
-
-ci.builder(
-    name = "Win7 Tests (dbg)(1)",
-    builderless = True,
-    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
-    console_view_entry = consoles.console_view_entry(
-        category = "debug|tester",
-        short_name = "7",
-    ),
-    cq_mirrors_console_view = "mirrors",
-    os = os.WINDOWS_10,
-    triggered_by = ["ci/Win Builder (dbg)"],
 )
 
 ci.builder(

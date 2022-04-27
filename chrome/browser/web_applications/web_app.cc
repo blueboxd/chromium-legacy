@@ -13,6 +13,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -187,22 +188,8 @@ void WebApp::SetDisplayMode(DisplayMode display_mode) {
   display_mode_ = display_mode;
 }
 
-void WebApp::SetUserDisplayMode(DisplayMode user_display_mode) {
-  switch (user_display_mode) {
-    case DisplayMode::kBrowser:
-    case DisplayMode::kTabbed:
-      user_display_mode_ = user_display_mode;
-      break;
-    case DisplayMode::kUndefined:
-    case DisplayMode::kMinimalUi:
-    case DisplayMode::kFullscreen:
-    case DisplayMode::kWindowControlsOverlay:
-      NOTREACHED();
-      [[fallthrough]];
-    case DisplayMode::kStandalone:
-      user_display_mode_ = DisplayMode::kStandalone;
-      break;
-  }
+void WebApp::SetUserDisplayMode(UserDisplayMode user_display_mode) {
+  user_display_mode_ = user_display_mode;
 }
 
 void WebApp::SetDisplayModeOverride(
@@ -390,15 +377,26 @@ void WebApp::SetInstallSourceForMetrics(
   install_source_for_metrics_ = install_source;
 }
 
-void WebApp::SetIsPlaceholder(bool is_placeholder) {
-  is_placeholder_ = is_placeholder;
+void WebApp::SetAppSizeInBytes(absl::optional<int64_t> app_size_in_bytes) {
+  app_size_in_bytes_ = app_size_in_bytes;
 }
 
-void WebApp::SetManagementToInstallURLsMap(
-    const WebAppManagementToInstallURLsMap
-        management_to_install_urls_map_without_sync) {
-  management_to_install_urls_map_without_sync_ =
-      management_to_install_urls_map_without_sync;
+void WebApp::SetDataSizeInBytes(absl::optional<int64_t> data_size_in_bytes) {
+  data_size_in_bytes_ = data_size_in_bytes;
+}
+
+void WebApp::SetWebAppManagementExternalConfigMap(
+    base::flat_map<WebAppManagement::Type, ExternalManagementConfig>
+        management_to_external_config_map) {
+  management_to_external_config_map_ =
+      std::move(management_to_external_config_map);
+}
+
+void WebApp::AddPlaceholderInfoToManagementExternalConfigMap(
+    WebAppManagement::Type type,
+    bool is_placeholder) {
+  DCHECK_NE(type, WebAppManagement::Type::kSync);
+  management_to_external_config_map_[type].is_placeholder = is_placeholder;
 }
 
 WebApp::ClientData::ClientData() = default;
@@ -437,6 +435,27 @@ base::Value WebApp::SyncFallbackData::AsDebugValue() const {
       *root.SetKey("manifest_icons", base::Value(base::Value::Type::LIST));
   for (const apps::IconInfo& icon_info : icon_infos)
     manifest_icons_json.Append(icon_info.AsDebugValue());
+  return root;
+}
+
+WebApp::ExternalManagementConfig::ExternalManagementConfig() = default;
+
+WebApp::ExternalManagementConfig::~ExternalManagementConfig() = default;
+
+WebApp::ExternalManagementConfig::ExternalManagementConfig(
+    const ExternalManagementConfig& external_management_config) = default;
+
+WebApp::ExternalManagementConfig& WebApp::ExternalManagementConfig::operator=(
+    ExternalManagementConfig&& external_management_config) = default;
+
+base::Value::Dict WebApp::ExternalManagementConfig::AsDebugValue() const {
+  base::Value::Dict root;
+  base::Value::List urls;
+  for (auto it : install_urls) {
+    urls.Append(it.spec());
+  }
+  root.Set("install_urls", std::move(urls));
+  root.Set("is_placeholder", is_placeholder);
   return root;
 }
 
@@ -501,8 +520,9 @@ bool WebApp::operator==(const WebApp& other) const {
         app.parent_app_id_,
         app.permissions_policy_,
         app.install_source_for_metrics_,
-        app.is_placeholder_,
-        app.management_to_install_urls_map_without_sync_
+        app.app_size_in_bytes_,
+        app.data_size_in_bytes_,
+        app.management_to_external_config_map_
         // clang-format on
     );
   };
@@ -568,8 +588,22 @@ base::Value WebApp::AsDebugValue() const {
   root.SetStringKey("app_service_icon_url",
                     base::StrCat({"chrome://app-icon/", app_id_, "/32"}));
 
+  if (app_size_in_bytes_.has_value()) {
+    root.SetStringKey("app_size_in_bytes",
+                      base::NumberToString(app_size_in_bytes_.value()));
+  } else {
+    root.SetStringKey("app_size_in_bytes", "");
+  }
+
   root.SetKey("allowed_launch_protocols",
               ConvertList(allowed_launch_protocols_));
+
+  if (data_size_in_bytes_.has_value()) {
+    root.SetStringKey("data_size_in_bytes",
+                      base::NumberToString(data_size_in_bytes_.value()));
+  } else {
+    root.SetStringKey("data_size_in_bytes", "");
+  }
 
   root.SetKey("disallowed_launch_protocols",
               ConvertList(disallowed_launch_protocols_));
@@ -590,6 +624,13 @@ base::Value WebApp::AsDebugValue() const {
               chromeos_data_ ? chromeos_data_->AsDebugValue() : base::Value());
 
   root.SetKey("client_data", client_data_.AsDebugValue());
+
+  if (data_size_in_bytes_.has_value()) {
+    root.SetStringKey("data_size_in_bytes",
+                      base::NumberToString(data_size_in_bytes_.value()));
+  } else {
+    root.SetStringKey("data_size_in_bytes", "");
+  }
 
   root.SetStringKey("description", description_);
 
@@ -639,19 +680,13 @@ base::Value WebApp::AsDebugValue() const {
     root.SetStringKey("install_source_for_metrics", "not set");
   }
 
-  root.SetBoolKey("is_placeholder", false);
-
-  base::Value::Dict install_urls_map;
-  for (auto it : management_to_install_urls_map_without_sync_) {
-    base::Value::List install_urls;
-    for (auto set_it : it.second) {
-      install_urls.Append(set_it.spec());
-    }
-    install_urls_map.Set(ConvertWebAppManagementToStringType(it.first),
-                         base::Value(std::move(install_urls)));
+  base::Value::Dict external_map;
+  for (auto it : management_to_external_config_map_) {
+    external_map.Set(ConvertWebAppManagementToStringType(it.first),
+                     it.second.AsDebugValue());
   }
-  root.SetKey("management_to_install_urls_map_without_sync",
-              base::Value(std::move(install_urls_map)));
+  root.SetKey("management_type_to_external_configuration_map",
+              base::Value(std::move(external_map)));
 
   root.SetStringKey("install_time", ConvertToString(install_time_));
 
@@ -754,7 +789,9 @@ base::Value WebApp::AsDebugValue() const {
   root.SetKey("url_handlers", ConvertDebugValueList(url_handlers_));
 
   root.SetStringKey("user_display_mode",
-                    blink::DisplayModeToString(user_display_mode_));
+                    user_display_mode_.has_value()
+                        ? ConvertUserDisplayModeToString(*user_display_mode_)
+                        : "");
 
   root.SetStringKey("user_launch_ordinal",
                     user_launch_ordinal_.ToDebugString());
@@ -782,6 +819,17 @@ bool operator==(const WebApp::SyncFallbackData& sync_fallback_data1,
 bool operator!=(const WebApp::SyncFallbackData& sync_fallback_data1,
                 const WebApp::SyncFallbackData& sync_fallback_data2) {
   return !(sync_fallback_data1 == sync_fallback_data2);
+}
+
+bool operator==(const WebApp::ExternalManagementConfig& management_config1,
+                const WebApp::ExternalManagementConfig& management_config2) {
+  return management_config1.install_urls == management_config2.install_urls &&
+         management_config1.is_placeholder == management_config2.is_placeholder;
+}
+
+bool operator!=(const WebApp::ExternalManagementConfig& management_config1,
+                const WebApp::ExternalManagementConfig& management_config2) {
+  return !(management_config1 == management_config2);
 }
 
 }  // namespace web_app

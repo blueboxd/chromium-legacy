@@ -141,7 +141,7 @@ void EnterpriseProfileWelcomeHandler::RegisterMessages() {
       "initialized",
       base::BindRepeating(&EnterpriseProfileWelcomeHandler::HandleInitialized,
                           base::Unretained(this)));
-  web_ui()->RegisterDeprecatedMessageCallback(
+  web_ui()->RegisterMessageCallback(
       "initializedWithSize",
       base::BindRepeating(
           &EnterpriseProfileWelcomeHandler::HandleInitializedWithSize,
@@ -209,17 +209,26 @@ void EnterpriseProfileWelcomeHandler::HandleInitialized(
 }
 
 void EnterpriseProfileWelcomeHandler::HandleInitializedWithSize(
-    const base::ListValue* args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   if (browser_)
     signin::SetInitializedModalHeight(browser_, web_ui(), args);
 }
 
+void EnterpriseProfileWelcomeHandler::HandleProceedForTesting(
+    bool should_link_data) {
+  base::Value::List args;
+  args.Append(should_link_data);
+  HandleProceed(args);
+}
+
 void EnterpriseProfileWelcomeHandler::HandleProceed(
     const base::Value::List& args) {
   CHECK_EQ(1u, args.size());
   if (proceed_callback_) {
+    // TODO(crbug.com/1317969): `force_new_profile_` is not forcing anything.
+    // Improve the naming and/or design related to this parameter.
     bool use_existing_profile = args[0].GetIfBool().value_or(false);
     std::move(proceed_callback_)
         .Run(use_existing_profile || !force_new_profile_

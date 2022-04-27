@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/mediastream/webrtc_uma_histograms.h"
@@ -480,7 +481,7 @@ void UserMediaProcessor::RequestInfo::StartAudioTrack(
   sources_waiting_for_callback_.push_back(native_source);
 
   sources_.push_back(component->Source());
-  bool connected = native_source->ConnectToTrack(component);
+  bool connected = native_source->ConnectToInitializedTrack(component);
   if (!is_pending) {
     OnTrackStarted(native_source,
                    connected
@@ -939,15 +940,27 @@ void UserMediaProcessor::GenerateStreamForCurrentRequestInfo(
       current_request_info_->stream_controls()->video.device_id.c_str()));
   current_request_info_->set_state(RequestInfo::State::kSentForGeneration);
 
-  // The browser replies to this request by invoking OnStreamGenerated().
-  GetMediaStreamDispatcherHost()->GenerateStream(
-      current_request_info_->request_id(),
-      *current_request_info_->stream_controls(),
-      current_request_info_->is_processing_user_gesture(),
-      blink::mojom::blink::StreamSelectionInfo::New(
-          strategy, requested_audio_capture_session_id),
-      WTF::Bind(&UserMediaProcessor::OnStreamGenerated,
-                WrapWeakPersistent(this), current_request_info_->request_id()));
+  // If SessionId is set, this request is for a transferred MediaStreamTrack and
+  // GetOpenDevice() should be called.
+  if (current_request_info_->request() &&
+      current_request_info_->request()->IsTransferredTrackRequest()) {
+    GetMediaStreamDispatcherHost()->GetOpenDevice(
+        current_request_info_->request_id(),
+        *current_request_info_->request()->GetSessionId(),
+        WTF::Bind(&UserMediaProcessor::GotOpenDevice, WrapWeakPersistent(this),
+                  current_request_info_->request_id()));
+  } else {
+    // The browser replies to this request by invoking OnStreamGenerated().
+    GetMediaStreamDispatcherHost()->GenerateStream(
+        current_request_info_->request_id(),
+        *current_request_info_->stream_controls(),
+        current_request_info_->is_processing_user_gesture(),
+        blink::mojom::blink::StreamSelectionInfo::New(
+            strategy, requested_audio_capture_session_id),
+        WTF::Bind(&UserMediaProcessor::OnStreamGenerated,
+                  WrapWeakPersistent(this),
+                  current_request_info_->request_id()));
+  }
 }
 
 WebMediaStreamDeviceObserver*
@@ -968,6 +981,30 @@ UserMediaProcessor::GetMediaStreamDeviceObserver() {
   }
 
   return media_stream_device_observer;
+}
+
+void UserMediaProcessor::GotOpenDevice(
+    int32_t request_id,
+    blink::mojom::blink::MediaStreamRequestResult result,
+    blink::mojom::blink::GetOpenDeviceResponsePtr response) {
+  if (result != MediaStreamRequestResult::OK) {
+    OnStreamGenerationFailed(request_id, result);
+    return;
+  }
+
+  Vector<MediaStreamDevice> audio_devices;
+  Vector<MediaStreamDevice> video_devices;
+
+  if (IsAudioInputMediaType(response->device.type)) {
+    audio_devices.push_back(response->device);
+  } else if (IsVideoInputMediaType(response->device.type)) {
+    video_devices.push_back(response->device);
+  } else {
+    NOTREACHED();
+  }
+
+  OnStreamGenerated(request_id, result, response->label, audio_devices,
+                    video_devices, response->pan_tilt_zoom_allowed);
 }
 
 void UserMediaProcessor::OnStreamGenerated(
@@ -1568,7 +1605,9 @@ void UserMediaProcessor::CreateAudioTracks(
     bool is_pending = false;
     MediaStreamSource* source =
         InitializeAudioSourceObject(overridden_audio_devices[i], &is_pending);
-    (*components)[i] = MakeGarbageCollected<MediaStreamComponent>(source);
+    (*components)[i] = MakeGarbageCollected<MediaStreamComponent>(
+        source,
+        std::make_unique<MediaStreamAudioTrack>(true /* is_local_track */));
     current_request_info_->StartAudioTrack((*components)[i], is_pending);
     // At this point the source has started, and its audio parameters have been
     // set. Thus, all audio processing properties are known and can be surfaced

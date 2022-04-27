@@ -743,8 +743,68 @@ experimental domain Audits
 
   type DeprecationIssueType extends string
     enum
+      AuthorizationCoveredByWildcard
+      BatteryStatusInsecureOrigin
+      CanRequestURLHTTPContainingNewline
+      ChromeLoadTimesConnectionInfo
+      ChromeLoadTimesFirstPaintAfterLoadTime
+      ChromeLoadTimesWasAlternateProtocolAvailable
+      CookieWithTruncatingChar
+      CrossOriginAccessBasedOnDocumentDomain
+      CrossOriginWindowAlert
+      CrossOriginWindowConfirm
+      CSSSelectorInternalMediaControlsOverlayCastButton
+      CustomCursorIntersectsViewport
       DeprecationExample
+      DocumentDomainSettingWithoutOriginAgentClusterHeader
+      EventPath
+      GeolocationInsecureOrigin
+      GeolocationInsecureOriginDeprecatedNotRemoved
+      GetUserMediaInsecureOrigin
+      HostCandidateAttributeGetter
+      InsecurePrivateNetworkSubresourceRequest
+      LegacyConstraintGoogCpuOveruseDetection
+      LegacyConstraintGoogIPv6
+      LegacyConstraintGoogScreencastMinBitrate
+      LegacyConstraintGoogSuspendBelowMinBitrate
+      LocalCSSFileExtensionRejected
+      MediaElementAudioSourceNode
+      MediaSourceAbortRemove
+      MediaSourceDurationTruncatingBuffered
+      NoSysexWebMIDIWithoutPermission
+      NotificationInsecureOrigin
+      NotificationPermissionRequestedIframe
+      ObsoleteWebRtcCipherSuite
+      PaymentRequestBasicCard
+      PaymentRequestShowWithoutGesture
+      PictureSourceSrc
+      PrefixedCancelAnimationFrame
+      PrefixedRequestAnimationFrame
+      PrefixedStorageInfo
+      PrefixedVideoDisplayingFullscreen
+      PrefixedVideoEnterFullscreen
+      PrefixedVideoEnterFullScreen
+      PrefixedVideoExitFullscreen
+      PrefixedVideoExitFullScreen
+      PrefixedVideoSupportsFullscreen
+      RangeExpand
+      RequestedSubresourceWithEmbeddedCredentials
+      RTCConstraintEnableDtlsSrtpFalse
+      RTCConstraintEnableDtlsSrtpTrue
+      RTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics
+      RTCPeerConnectionLegacyCreateWithMediaConstraints
+      RTCPeerConnectionSdpSemanticsPlanB
+      RtcpMuxPolicyNegotiate
+      RTPDataChannel
+      SelectionAddRangeIntersect
+      SharedArrayBufferConstructedWithoutIsolation
+      TextToSpeech_DisallowedByAutoplay
       Untranslated
+      V8SharedArrayBufferConstructedInExtensionWithoutIsolation
+      WebCodecsVideoFrameDefaultTimestamp
+      XHRJSONEncodingDetection
+      XMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload
+      XRSupportsSession
 
   # This issue tracks information needed to print a deprecation message.
   # The formatting is inherited from the old console.log version, see more at:
@@ -3544,6 +3604,8 @@ domain Emulation
       string architecture
       string model
       boolean mobile
+      optional string bitness
+      optional boolean wow64
 
   # Tells whether emulation is supported.
   command canEmulate
@@ -6990,6 +7052,7 @@ domain Page
       interest-cohort
       join-ad-interest-group
       keyboard-map
+      local-fonts
       magnetometer
       microphone
       midi
@@ -7294,6 +7357,8 @@ domain Page
       optional string cursive
       # The fantasy font-family.
       optional string fantasy
+      # The math font-family.
+      optional string math
 
   # Font families collection for a script.
   experimental type ScriptFontFamilies extends object
@@ -7614,12 +7679,15 @@ domain Page
       optional number marginLeft
       # Right margin in inches. Defaults to 1cm (~0.4 inches).
       optional number marginRight
-      # Paper ranges to print, e.g., '1-5, 8, 11-13'. Defaults to the empty string, which means
-      # print all pages.
+      # Paper ranges to print, one based, e.g., '1-5, 8, 11-13'. Pages are
+      # printed in the document order, not in the order specified, and no
+      # more than once.
+      # Defaults to empty string, which implies the entire document is printed.
+      # The page numbers are quietly capped to actual page count of the
+      # document, and ranges beyond the end of the document are ignored.
+      # If this results in no pages to print, an error is reported.
+      # It is an error to specify a range with start greater than end.
       optional string pageRanges
-      # Whether to silently ignore invalid but successfully parsed page ranges, such as '3-2'.
-      # Defaults to false.
-      optional boolean ignoreInvalidPageRanges
       # HTML template for the print header. Should be valid HTML markup with following
       # classes used to inject printing values into them:
       # - `date`: formatted print date
@@ -8102,7 +8170,6 @@ domain Page
       JavaScriptExecution
       RendererProcessKilled
       RendererProcessCrashed
-      GrantedMediaStreamAccess
       SchedulerTrackedFeatureUsed
       ConflictingBrowsingInstance
       CacheFlushed

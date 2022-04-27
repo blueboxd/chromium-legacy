@@ -176,6 +176,12 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AutofillFeatures.AUTOFILL_PARSE_MERCHANT_PROMO_CODE_FIELDS,
                     "When enabled, Autofill will attempt to find merchant promo/coupon/gift code "
                             + "fields when parsing forms."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_UPSTREAM_ALLOW_ADDITIONAL_EMAIL_DOMAINS,
+                    "When enabled, Autofill will allow credit card upload save for select "
+                            + "non-Google-based accounts."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_UPSTREAM_ALLOW_ALL_EMAIL_DOMAINS,
+                    "When enabled, Autofill will allow credit card upload save for all "
+                            + "non-Google-based accounts."),
             Flag.baseFeature(FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_VIRTUAL_CARD_FEATURE,
                     "When enabled, merchant bound virtual cards will be offered in the keyboard "
                             + "accessory."),
@@ -219,6 +225,8 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(NetworkServiceFeatures.COMBINE_RESPONSE_BODY,
                     "Reduces URLLoaderClient mojo calls."),
             Flag.baseFeature(NetworkServiceFeatures.FASTER_SET_COOKIE, "Optimizes cookie access."),
+            Flag.baseFeature(NetworkServiceFeatures.OPTIMIZE_NETWORK_BUFFERS,
+                    "Optimizes buffer size for reading from the network or InputStream."),
             Flag.baseFeature(BlinkFeatures.SET_TIMEOUT_WITHOUT_CLAMP,
                     "Enables faster setTimeout(,0) by removing the 1 ms clamping."),
             Flag.baseFeature(BlinkFeatures.PAINT_HOLDING_CROSS_ORIGIN,
@@ -302,6 +310,9 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.DEFER_BEGIN_MAIN_FRAME_DURING_LOADING,
                     "If enabled, the parser may continue parsing if BeginMainFrame was "
                             + "recently called."),
+            Flag.baseFeature(BlinkFeatures.DECODE_SCRIPT_SOURCE_OFF_THREAD,
+                    "If enabled, script source text will be decoded and hashed off the main"
+                            + "thread."),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

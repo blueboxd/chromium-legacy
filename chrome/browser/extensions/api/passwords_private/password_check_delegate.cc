@@ -17,6 +17,7 @@
 #include "base/containers/flat_set.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/escape.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
@@ -45,7 +46,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_formatter.h"
-#include "net/base/escape.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
@@ -195,10 +195,11 @@ std::vector<CompromisedCredentialAndType> OrderCompromisedCredentials(
   std::vector<CompromisedCredentialAndType> results;
   results.reserve(compromised_credentials.size());
   for (auto& credential : compromised_credentials) {
-    // Since CompromiseType does not contain information about weakness of
-    // credential, we need to unset this bit in the |credential.insecure_type|.
+    // Since CompromiseType does not contain information about weakness/reuse
+    // of credential, we need to unset those bits in the
+    // |credential.insecure_type|.
     auto type = static_cast<api::passwords_private::CompromiseType>(
-        UnsetWeakCredentialTypeFlag(credential.insecure_type));
+        UnsetWeakAndReusedCredentialTypeFlags(credential.insecure_type));
     results.push_back({std::move(credential), type});
   }
   // Reordering phished credential to the beginning.
@@ -598,7 +599,7 @@ PasswordCheckDelegate::ConstructInsecureCredential(
                 url_formatter::kFormatUrlOmitHTTPS |
                 url_formatter::kFormatUrlOmitTrivialSubdomains |
                 url_formatter::kFormatUrlTrimAfterHost,
-            net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
+            base::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
     api_credential.detailed_origin =
         base::UTF16ToUTF8(url_formatter::FormatUrlForSecurityDisplay(
             credential.url.DeprecatedGetOriginAsURL()));

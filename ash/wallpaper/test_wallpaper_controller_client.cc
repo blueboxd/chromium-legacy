@@ -61,8 +61,10 @@ void TestWallpaperControllerClient::MaybeClosePreviewWallpaper() {
 
 void TestWallpaperControllerClient::SetDefaultWallpaper(
     const AccountId& account_id,
-    bool show_wallpaper) {
+    bool show_wallpaper,
+    base::OnceCallback<void(bool success)> callback) {
   set_default_wallpaper_count_++;
+  std::move(callback).Run(/*success=*/true);
 }
 
 void TestWallpaperControllerClient::MigrateCollectionIdFromChromeApp(
@@ -115,6 +117,16 @@ void TestWallpaperControllerClient::FetchGooglePhotosPhoto(
             GURL("https://google.com/picture.png"), "home"),
         /*success=*/true);
   }
+}
+
+void TestWallpaperControllerClient::FetchDailyGooglePhotosPhoto(
+    const AccountId& account_id,
+    const std::string& album_id,
+    const absl::optional<std::string>& current_photo_id,
+    FetchGooglePhotosPhotoCallback callback) {
+  std::string photo_id = album_id;
+  std::reverse(photo_id.begin(), photo_id.end());
+  FetchGooglePhotosPhoto(account_id, photo_id, std::move(callback));
 }
 
 void TestWallpaperControllerClient::SaveWallpaperToDriveFs(

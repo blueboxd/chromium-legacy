@@ -63,6 +63,7 @@
 #include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_test_data.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/fido_types.h"
@@ -78,8 +79,10 @@
 #include "device/fido/virtual_ctap2_device.h"
 #include "device/fido/virtual_fido_device.h"
 #include "device/fido/virtual_fido_device_factory.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/data_decoder/gzipper.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -452,22 +455,33 @@ std::string GetTestClientDataJSON(ClientDataRequestType type) {
                               /*is_cross_origin_iframe=*/false});
 }
 
-std::vector<uint8_t> StringToVector(const std::string& string) {
-  std::vector<uint8_t> vector;
-  vector.assign(string.begin(), string.end());
-  return vector;
+device::LargeBlob CompressLargeBlob(base::span<const uint8_t> blob) {
+  data_decoder::Gzipper gzipper;
+  std::vector<uint8_t> compressed;
+  base::RunLoop run_loop;
+  gzipper.Deflate(
+      blob, base::BindLambdaForTesting(
+                [&](absl::optional<mojo_base::BigBuffer> result) {
+                  compressed = device::fido_parsing_utils::Materialize(*result);
+                  run_loop.Quit();
+                }));
+  run_loop.Run();
+  return device::LargeBlob(std::move(compressed), blob.size());
 }
 
-std::vector<uint8_t> CompressLargeBlob(base::span<const uint8_t> blob) {
-  std::string output;
-  CHECK(compression::GzipCompress(blob, &output));
-  return StringToVector(output);
-}
-
-std::vector<uint8_t> UncompressLargeBlob(base::span<const uint8_t> blob) {
-  std::string output;
-  CHECK(compression::GzipUncompress(blob, &output));
-  return StringToVector(output);
+std::vector<uint8_t> UncompressLargeBlob(device::LargeBlob blob) {
+  data_decoder::Gzipper gzipper;
+  std::vector<uint8_t> uncompressed;
+  base::RunLoop run_loop;
+  gzipper.Inflate(blob.compressed_data, blob.original_size,
+                  base::BindLambdaForTesting(
+                      [&](absl::optional<mojo_base::BigBuffer> result) {
+                        uncompressed =
+                            device::fido_parsing_utils::Materialize(*result);
+                        run_loop.Quit();
+                      }));
+  run_loop.Run();
+  return uncompressed;
 }
 
 // Convert a blink::mojom::AttestationConveyancePreference to a
@@ -3407,6 +3421,9 @@ TEST_F(AuthenticatorContentBrowserClientWithCableFlagTest,
             AuthenticatorStatus::NOT_ALLOWED_ERROR);
 }
 
+// AuthenticatorImplRemoteDesktopClientOverrideTest exercises the
+// RemoteDesktopClientOverride extension, which is used by remote desktop
+// applications exercising requests on behalf of other origins.
 class AuthenticatorImplRemoteDesktopClientOverrideTest
     : public AuthenticatorContentBrowserClientTest {
  protected:
@@ -3415,15 +3432,21 @@ class AuthenticatorImplRemoteDesktopClientOverrideTest
   static constexpr char kOtherRdpOrigin[] = "https://myrdp.test";
   static constexpr char kExampleOrigin[] = "https://example.test";
   static constexpr char kExampleRpId[] = "example.test";
+  static constexpr char kExampleAppid[] = "https://example.test/appid.json";
   static constexpr char kOtherRpId[] = "other.test";
+  static constexpr char kOtherAppid[] = "https://other.test/appid.json";
 
   void SetUp() override {
     AuthenticatorContentBrowserClientTest ::SetUp();
-    scoped_command_line_.GetProcessCommandLine()->AppendSwitch(
-        switches::kWebAuthRemoteDesktopSupport);
+    // Authorize `kCorpCrdOrigin` to exercise the extension. In //chrome, this
+    // is controlled by the `WebAuthenticationRemoteProxiedRequestsAllowed`
+    // enterprise policy.
     test_client_.GetTestWebAuthenticationDelegate()
         ->remote_desktop_client_override_origin =
         url::Origin::Create(GURL(kCorpCrdOrigin));
+    // Controls the Blink feature gating the extension.
+    scoped_command_line_.GetProcessCommandLine()->AppendSwitch(
+        switches::kWebAuthRemoteDesktopSupport);
   }
 
   base::test::ScopedCommandLine scoped_command_line_;
@@ -3432,6 +3455,9 @@ class AuthenticatorImplRemoteDesktopClientOverrideTest
 };
 
 TEST_F(AuthenticatorImplRemoteDesktopClientOverrideTest, MakeCredential) {
+  // Verify that an authorized origin may use the extension. Regular RP ID
+  // processing applies, i.e. the origin override must be authorized to claim
+  // the specified RP ID.
   const struct TestCase {
     std::string local_origin;
     std::string remote_origin;
@@ -3463,6 +3489,9 @@ TEST_F(AuthenticatorImplRemoteDesktopClientOverrideTest, MakeCredential) {
 }
 
 TEST_F(AuthenticatorImplRemoteDesktopClientOverrideTest, GetAssertion) {
+  // Verify that an authorized origin may use the extension. Regular RP ID
+  // processing applies, i.e. the origin override must be authorized to claim
+  // the specified RP ID.
   const struct TestCase {
     std::string local_origin;
     std::string remote_origin;
@@ -3494,6 +3523,86 @@ TEST_F(AuthenticatorImplRemoteDesktopClientOverrideTest, GetAssertion) {
     EXPECT_EQ(AuthenticatorGetAssertion(std::move(options)).status,
               test.success ? AuthenticatorStatus::SUCCESS
                            : AuthenticatorStatus::NOT_ALLOWED_ERROR);
+  }
+}
+
+TEST_F(AuthenticatorImplRemoteDesktopClientOverrideTest, MakeCredentialAppid) {
+  // Verify that origin overriding extends to the appidExclude extension. If the
+  // caller origin is authorized to use the extension, App ID processing is
+  // applied to the overridden origin.
+  const struct TestCase {
+    std::string local_origin;
+    std::string remote_origin;
+    std::string rp_id;
+    std::string app_id;
+    bool success;
+  } test_cases[] = {
+      {kCorpCrdOrigin, kExampleOrigin, kExampleRpId, kExampleAppid, true},
+      {kCorpCrdOrigin, kExampleOrigin, kExampleRpId, kOtherAppid, false},
+      {kOtherRdpOrigin, kExampleOrigin, kExampleRpId, kExampleAppid, false},
+      {kOtherRdpOrigin, kExampleOrigin, kExampleRpId, kOtherAppid, false},
+      {kExampleOrigin, kExampleOrigin, kExampleRpId, kExampleAppid, false},
+      {kExampleOrigin, kExampleOrigin, kExampleRpId, kOtherAppid, false},
+  };
+
+  for (const auto& test : test_cases) {
+    SCOPED_TRACE(testing::Message()
+                 << "local=" << test.local_origin
+                 << " remote=" << test.remote_origin << " rp=" << test.rp_id
+                 << " appid=" << test.app_id);
+    NavigateAndCommit(GURL(test.local_origin));
+
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->relying_party.id = test.rp_id;
+    options->appid_exclude = test.app_id;
+    options->remote_desktop_client_override = RemoteDesktopClientOverride::New(
+        url::Origin::Create(GURL(test.remote_origin)), true);
+
+    auto result = AuthenticatorMakeCredential(std::move(options));
+    EXPECT_EQ(test.success, result.status == AuthenticatorStatus::SUCCESS);
+  }
+}
+
+TEST_F(AuthenticatorImplRemoteDesktopClientOverrideTest, GetAssertionAppid) {
+  // Verify that origin overriding extends to the appid extension. If the
+  // caller origin is authorized to use the extension, App ID processing is
+  // applied to the overridden origin.
+  const struct TestCase {
+    std::string local_origin;
+    std::string remote_origin;
+    std::string rp_id;
+    std::string app_id;
+    bool success;
+  } test_cases[] = {
+      {kCorpCrdOrigin, kExampleOrigin, kExampleRpId, kExampleAppid, true},
+      {kCorpCrdOrigin, kExampleOrigin, kExampleRpId, kOtherAppid, false},
+      {kOtherRdpOrigin, kExampleOrigin, kExampleRpId, kExampleAppid, false},
+      {kOtherRdpOrigin, kExampleOrigin, kExampleRpId, kOtherAppid, false},
+      {kExampleOrigin, kExampleOrigin, kExampleRpId, kExampleAppid, false},
+      {kExampleOrigin, kExampleOrigin, kExampleRpId, kOtherAppid, false},
+  };
+
+  for (const auto& test : test_cases) {
+    SCOPED_TRACE(testing::Message()
+                 << "local=" << test.local_origin
+                 << " remote=" << test.remote_origin << " rp=" << test.rp_id
+                 << " appid=" << test.app_id);
+    ResetVirtualDevice();
+    NavigateAndCommit(GURL(test.local_origin));
+
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    options->relying_party_id = test.rp_id;
+    options->appid = test.app_id;
+    options->remote_desktop_client_override = RemoteDesktopClientOverride::New(
+        url::Origin::Create(GURL(test.remote_origin)), true);
+
+    ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
+        options->allow_credentials[0].id, test.rp_id));
+
+    auto result = AuthenticatorGetAssertion(std::move(options));
+    EXPECT_EQ(test.success, result.status == AuthenticatorStatus::SUCCESS);
   }
 }
 
@@ -7282,7 +7391,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionLargeBlobWrite) {
     EXPECT_TRUE(result.response->echo_large_blob_written);
     EXPECT_EQ(test.did_write_large_blob, result.response->large_blob_written);
     if (test.did_write_large_blob) {
-      absl::optional<std::vector<uint8_t>> compressed_blob =
+      absl::optional<device::LargeBlob> compressed_blob =
           virtual_device_factory_->mutable_state()->GetLargeBlob(
               virtual_device_factory_->mutable_state()
                   ->registrations.begin()
@@ -8494,9 +8603,10 @@ static ServerLinkValues CreateServerLink() {
                               ret.peer_identity.size(), /*ctx=*/nullptr));
 
   ret.desktop_side.version = device::CableDiscoveryData::Version::V2;
-  ret.desktop_side.v2 = seed;
-  ret.desktop_side.v2->insert(ret.desktop_side.v2->end(), ret.secret.begin(),
-                              ret.secret.end());
+  ret.desktop_side.v2.emplace(seed, std::vector<uint8_t>());
+  ret.desktop_side.v2->server_link_data.insert(
+      ret.desktop_side.v2->server_link_data.end(), ret.secret.begin(),
+      ret.secret.end());
 
   return ret;
 }

@@ -446,6 +446,19 @@ const char kAutofillSuggestVirtualCardsOnIncompleteFormDescription[] =
     "of the card number, exp date and CVC fields are detected in a payment "
     "form.";
 
+const char kAutofillUpstreamAllowAdditionalEmailDomainsName[] =
+    "Allow Autofill credit card upload save for select non-Google-based "
+    "accounts";
+const char kAutofillUpstreamAllowAdditionalEmailDomainsDescription[] =
+    "When enabled, credit card upload is offered if the user's logged-in "
+    "account's domain is from a common email provider.";
+
+const char kAutofillUpstreamAllowAllEmailDomainsName[] =
+    "Allow Autofill credit card upload save for all non-Google-based accounts";
+const char kAutofillUpstreamAllowAllEmailDomainsDescription[] =
+    "When enabled, credit card upload is offered without regard to the user's "
+    "logged-in account's domain.";
+
 const char kAutofillUseImprovedLabelDisambiguationName[] =
     "Autofill Uses Improved Label Disambiguation";
 const char kAutofillUseImprovedLabelDisambiguationDescription[] =
@@ -808,6 +821,12 @@ const char kEnableRemovingAllThirdPartyCookiesDescription[] =
     "Enables UI on chrome://settings/siteData to remove all third-party "
     "cookies and site data.";
 
+const char kEnableBrowsingDataLifetimeManagerName[] =
+    "Enables the BrowsingDataLifetimeManager service to run.";
+const char kEnableBrowsingDataLifetimeManagerDescription[] =
+    "Enables the BrowsingDataLifetimeManager service to run and periodically "
+    "delete browsing data as specified by the BrowsingDataLifetime policy.";
+
 const char kColorProviderRedirectionForThemeProviderName[] =
     "Color Provider Redirection For Theme Provider";
 const char kColorProviderRedirectionForThemeProviderDescription[] =
@@ -948,7 +967,8 @@ const char kWinrtGeolocationImplementationDescription[] =
 const char kEnableFencedFramesName[] = "Enable the <fencedframe> element.";
 const char kEnableFencedFramesDescription[] =
     "Fenced frames are an experimental web platform feature that allows "
-    "embedding an isolated top-level page. See "
+    "embedding an isolated top-level page. This requires "
+    "#privacy-sandbox-ads-apis to also be enabled. See "
     "https://github.com/shivanigithub/fenced-frame";
 
 const char kEnableFirmwareUpdaterAppName[] = "Enable firmware updater app";
@@ -1817,6 +1837,13 @@ const char kOmniboxSpareRendererDescription[] =
     "When the omnibox is focused, start an empty spare renderer. This can "
     "speed up the load of the navigation from the omnibox.";
 
+const char kOmniboxRetainSuggestionsWithHeadersName[] =
+    "Retain complete set of suggestions with headers";
+const char kOmniboxRetainSuggestionsWithHeadersDescription[] =
+    "Given a list of suggestions, all suggestions for which a header metadata "
+    "is available will be retained as a whole and not be counted towards the "
+    "limit.";
+
 const char kOmniboxTabSwitchSuggestionsName[] =
     "Omnibox switch to tab suggestions";
 const char kOmniboxTabSwitchSuggestionsDescription[] =
@@ -2106,8 +2133,8 @@ const char kPrivacyGuide2Description[] =
 
 const char kPrivacySandboxAdsAPIsOverrideName[] = "Privacy Sandbox Ads APIs";
 const char kPrivacySandboxAdsAPIsOverrideDescription[] =
-    "Enables Privacy Sandbox APIs: Attribution Reporting, Fledge, Topics and "
-    "their associated features.";
+    "Enables Privacy Sandbox APIs: Attribution Reporting, Fledge, Topics, "
+    "Fenced Frames and their associated features.";
 
 const char kPrivacySandboxV3Name[] = "Privacy Sandbox V3";
 const char kPrivacySandboxV3Description[] =
@@ -2374,10 +2401,6 @@ const char kStoragePressureEventName[] = "Enable storage pressure Event";
 const char kStoragePressureEventDescription[] =
     "If enabled, Chrome will dispatch a DOM event, informing applications "
     "about storage pressure (low disk space)";
-
-const char kStoreHoursAndroidName[] = "Store Hours";
-const char kStoreHoursAndroidDescription[] =
-    "When enabled, shows store hours for stores in tab grid view.";
 
 const char kSuggestionsWithSubStringMatchName[] =
     "Substring matching for Autofill suggestions";
@@ -2872,6 +2895,11 @@ const char kWebSQLAccessName[] = "Allows access to WebSQL APIs";
 const char kWebSQLAccessDescription[] =
     "The WebSQL API is enabled by default, but can be disabled here.";
 
+const char kDmTokenDeletionName[] = "DMToken deletion";
+const char kDmTokenDeletionDescription[] =
+    "Delete the corresponding DMToken when a managed browser is deleted in "
+    "Chrome Browser Cloud Management.";
+
 // Android ---------------------------------------------------------------------
 
 #if BUILDFLAG(IS_ANDROID)
@@ -2949,9 +2977,9 @@ const char kAppMenuMobileSiteOptionDescription[] =
     "When enabled, app menu should show 'Mobile site' when showing desktop "
     "site, instead of showing 'Desktop Site' with checkbox";
 
-const char kBookmarkBottomSheetName[] = "Enables bookmark bottom sheet";
-const char kBookmarkBottomSheetDescription[] =
-    "Enables showing a bookmark bottom sheet when adding a bookmark.";
+const char kBackGestureRefactorAndroidName[] = "Back Gesture Refactor";
+const char kBackGestureRefactorAndroidDescription[] =
+    "Enable Back Gesture Refactor.";
 
 const char kCCTIncognitoName[] = "Chrome Custom Tabs Incognito mode";
 const char kCCTIncognitoDescription[] =
@@ -3006,11 +3034,6 @@ const char kChromeSharingHubLaunchAdjacentName[] =
 const char kChromeSharingHubLaunchAdjacentDescription[] =
     "In multi-window mode, launches share hub actions in an adjacent window. "
     "For internal debugging.";
-
-const char kCloseAllTabsModalDialogName[] = "Close all tabs modal dialog";
-const char kCloseAllTabsModalDialogDescription[] =
-    "Shows a confirmation modal dialog when clicking 'Close all tabs' in the"
-    "app menu.";
 
 const char kCloseTabSuggestionsName[] = "Suggest to close Tabs";
 const char kCloseTabSuggestionsDescription[] =
@@ -3129,13 +3152,6 @@ const char kEnableAutofillRefreshStyleName[] =
 const char kEnableAutofillRefreshStyleDescription[] =
     "Enable modernized style for Autofill on Android";
 
-const char kChromeManagementPageAndroidName[] =
-    "Enable chrome://management page on Android";
-const char kChromeManagementPageAndroidDescription[] =
-    "Enable chrome://management page on Android, which aims to inform the user "
-    "if their browser is managed by their employer along with other useful "
-    "information.";
-
 const char kEnableCommandLineOnNonRootedName[] =
     "Enable command line on non-rooted devices";
 const char kEnableCommandLineOnNoRootedDescription[] =
@@ -3183,12 +3199,6 @@ const char kInstanceSwitcherDescription[] =
 const char kInstantStartName[] = "Instant start";
 const char kInstantStartDescription[] =
     "Show start surface before native library is loaded.";
-
-const char kIntentBlockExternalFormRedirectsNoGestureName[] =
-    "Block intents from form submissions without user gesture";
-const char kIntentBlockExternalFormRedirectsNoGestureDescription[] =
-    "Require a user gesture that triggered a form submission in order to "
-    "allow for redirecting to an external intent.";
 
 const char kInterestFeedV2Name[] = "Interest Feed v2";
 const char kInterestFeedV2Description[] =
@@ -4408,6 +4418,13 @@ const char kEnableLibinputToHandleTouchpadDescription[] =
     "devices. Use libinput if an input device doesn't work or is not working"
     "well.";
 
+const char kEnableFakeKeyboardHeuristicName[] =
+    "Enable Fake Keyboard Heuristic";
+const char kEnableFakeKeyboardHeuristicDescription[] =
+    "Enable heuristic to prevent non-keyboard devices from pretending "
+    "to be keyboards. Primarily assists in preventing the virtual keyboard "
+    "from being disabled unintentionally.";
+
 const char kFastPairName[] = "Enable Fast Pair";
 const char kFastPairDescription[] =
     "Enables Google Fast Pair service which uses BLE to discover supported "
@@ -4432,6 +4449,12 @@ const char kFastPairSubsequentPairingUXName[] =
 const char kFastPairSubsequentPairingUXDescription[] =
     "Enables the \"Subsequent Pairing\" Fast Pair scenario in Bluetooth "
     "Settings and Quick Settings.";
+
+const char kFastPairSavedDevicesName[] = "Enable Fast Pair Saved Devices";
+const char kFastPairSavedDevicesDescription[] =
+    "Enables the Fast Pair \"Saved Devices\" page to display a list of the "
+    "user's devices and provide the option to opt in or out of saving devices "
+    "to their account.";
 
 const char kUseHDRTransferFunctionName[] =
     "Monitor/Display HDR transfer function";
@@ -4865,6 +4888,10 @@ const char kFullRestoreForLacrosDescription[] =
 const char kFuseBoxName[] = "Enable ChromeOS FuseBox service";
 const char kFuseBoxDescription[] = "ChromeOS FuseBox service.";
 
+const char kFuseBoxDebugName[] = "Debugging UI for ChromeOS FuseBox service";
+const char kFuseBoxDebugDescription[] =
+    "Show additional debugging UI for ChromeOS FuseBox service.";
+
 const char kGuestOsFilesName[] =
     "Enabled Guest OS Service + file manager integration";
 const char kGuestOsFilesDescription[] =
@@ -5031,6 +5058,10 @@ const char kLauncherLacrosIntegrationDescription[] =
     "Forces launcher Omnibox search queries to be sent to the lacros browser. "
     "If disabled, queries are sent to the ash browser.";
 
+const char kLauncherPlayStoreSearchName[] = "Launcher Play Store search";
+const char kLauncherPlayStoreSearchDescription[] =
+    "Enables Play Store search in the Launcher";
+
 const char kLimitShelfItemsToActiveDeskName[] =
     "Limit Shelf items to active desk";
 const char kLimitShelfItemsToActiveDeskDescription[] =
@@ -5053,10 +5084,6 @@ const char kEnableHardwareMirrorModeDescription[] =
 const char kLockScreenNotificationName[] = "Lock screen notification";
 const char kLockScreenNotificationDescription[] =
     "Enable notifications on the lock screen.";
-
-const char kMediaAppHandlesAudioName[] = "Media App Handles Audio";
-const char kMediaAppHandlesAudioDescription[] =
-    "Enables opening audio files by default in chrome://media-app";
 
 const char kMediaAppHandlesPdfName[] = "Media App Handles PDF";
 const char kMediaAppHandlesPdfDescription[] =

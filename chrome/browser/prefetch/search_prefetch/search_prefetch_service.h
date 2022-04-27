@@ -122,7 +122,8 @@ class SearchPrefetchService : public KeyedService,
   std::unique_ptr<SearchPrefetchURLLoader> TakePrefetchResponseFromDiskCache(
       const GURL& navigation_url);
 
-  // Allows search prerender to use the BackForwardSearchPrefetchURLLoader.
+  // Allows search prerender to use a CacheAliasSearchPrefetchURLLoader for
+  // restore-style navigations.
   // Called on prerender activation. Search prerender emplaces a new mapping
   // relationship:
   // key  : The URL displayed on the location bar, The prerendered
@@ -144,6 +145,12 @@ class SearchPrefetchService : public KeyedService,
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
  private:
+  // Returns whether the prefetch started or not.
+  bool MaybePrefetchURL(const GURL& url, bool navigation_prefetch);
+
+  // Adds |this| as an observer of |template_url_service| if not added already.
+  void ObserveTemplateURLService(TemplateURLService* template_url_service);
+
   // Records a cache entry for a navigation that is being served.
   void AddCacheEntry(const GURL& navigation_url, const GURL& prefetch_url);
 

@@ -177,7 +177,9 @@ source_set("policy_specific_browser_tests") {
     "test/network_prediction_policy_browsertest.cc",
     "test/network_time_policy_browsertest.cc",
     "test/safe_browsing_policy_browsertest.cc",
+    "test/shared_clipboard_enabled_browsertest.cc",
     "test/ssl_error_overriding_allowed_policy_browsertest.cc",
+    "test/url_keyed_anonymized_data_collection_enabled_browsertest.cc",
     "test/web_rtc_udp_port_range_policy_browsertest.cc",
   ]
   if (is_chromeos) {
@@ -194,6 +196,7 @@ source_set("policy_specific_browser_tests") {
     "//components/policy/core/common",
     "//components/prefs",
     "//components/security_interstitials/content:security_interstitial_page",
+    "//components/unified_consent",
     "//content/test:test_support",
     "//testing/gmock",
   ]
@@ -249,6 +252,11 @@ source_set("policy_specific_browser_tests") {
 
   if (!is_android && !is_chromeos_ash) {
     sources += [ "policy_startup_browsertest.cc" ]
+  }
+
+  if (!is_chromeos_ash) {
+    sources += [ "test/variation_restrict_parameter_policy_browsertest.cc" ]
+    deps += [ "//components/variations/service" ]
   }
 }
 
@@ -337,7 +345,7 @@ source_set("browser_tests") {
       "//ash/components/arc/session:session",
       "//ash/components/audio:audio",
       "//ash/components/cryptohome",
-      "//chrome/browser/chromeos",
+      "//chrome/browser/ash",
       "//chromeos/dbus/constants",
       "//chromeos/dbus/userdataauth",
       "//chromeos/services/assistant/public/cpp",
@@ -434,6 +442,7 @@ source_set("unit_tests") {
 
   if (is_chromeos_ash) {
     deps += [
+      "//chrome/browser/ash",
       "//chrome/browser/chromeos:test_support",
       "//chromeos/system:system",
     ]

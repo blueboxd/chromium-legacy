@@ -86,7 +86,6 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/translate/core/browser/translate_manager.h"
-#include "components/ukm/content/source_url_recorder.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_context.h"
@@ -623,7 +622,8 @@ void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
   }
 
   (new CredentialLeakControllerAndroid(
-       leak_type, origin, username, web_contents()->GetTopLevelNativeWindow()))
+       leak_type, origin, username, GetPasswordChangeSuccessTracker(),
+       web_contents()->GetTopLevelNativeWindow()))
       ->ShowDialog();
 #else   // !BUILDFLAG(IS_ANDROID)
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
@@ -786,10 +786,9 @@ ChromePasswordManagerClient::GetAutofillDownloadManager() {
         factory->DriverForFrame(web_contents()->GetMainFrame());
     // |driver| can be NULL if the tab is being closed.
     if (driver) {
-      autofill::BrowserAutofillManager* browser_autofill_manager =
-          driver->browser_autofill_manager();
-      if (browser_autofill_manager)
-        return browser_autofill_manager->download_manager();
+      autofill::AutofillManager* autofill_manager = driver->autofill_manager();
+      if (autofill_manager)
+        return autofill_manager->download_manager();
     }
   }
   return nullptr;
@@ -934,7 +933,7 @@ void ChromePasswordManagerClient::MaybeReportEnterprisePasswordBreachEvent(
 #endif
 
 ukm::SourceId ChromePasswordManagerClient::GetUkmSourceId() {
-  return ukm::GetSourceIdForWebContentsDocument(web_contents());
+  return web_contents()->GetMainFrame()->GetPageUkmSourceId();
 }
 
 PasswordManagerMetricsRecorder*

@@ -25,11 +25,15 @@
 #include "chromeos/ash/components/dbus/os_install/os_install_client.h"
 #include "chromeos/ash/components/dbus/patchpanel/patchpanel_client.h"
 #include "chromeos/ash/components/dbus/pciguard/pciguard_client.h"
+#include "chromeos/ash/components/dbus/rgbkbd/rgbkbd_client.h"
+#include "chromeos/ash/components/dbus/rmad/rmad_client.h"
 #include "chromeos/ash/components/dbus/spaced/spaced_client.h"
+#include "chromeos/ash/components/dbus/system_clock/system_clock_client.h"
+#include "chromeos/ash/components/dbus/system_proxy/system_proxy_client.h"
 #include "chromeos/ash/components/dbus/typecd/typecd_client.h"
 #include "chromeos/ash/components/dbus/upstart/upstart_client.h"
+#include "chromeos/ash/components/hibernate/buildflags.h"  // ENABLE_HIBERNATE
 #include "chromeos/components/chromebox_for_meetings/buildflags/buildflags.h"  // PLATFORM_CFM
-#include "chromeos/components/hibernate/buildflags.h"  // ENABLE_HIBERNATE
 #include "chromeos/dbus/arc/arc_camera_client.h"
 #include "chromeos/dbus/arc/arc_sensor_service_client.h"
 #include "chromeos/dbus/attestation/attestation_client.h"
@@ -43,18 +47,15 @@
 #include "chromeos/dbus/dlp/dlp_client.h"
 #include "chromeos/dbus/federated/federated_client.h"
 #include "chromeos/dbus/hermes/hermes_clients.h"
-#include "chromeos/dbus/hps/hps_dbus_client.h"
+#include "chromeos/dbus/human_presence/human_presence_dbus_client.h"
 #include "chromeos/dbus/init/initialize_dbus_client.h"
 #include "chromeos/dbus/machine_learning/machine_learning_client.h"
 #include "chromeos/dbus/missive/missive_client.h"
 #include "chromeos/dbus/permission_broker/permission_broker_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/resourced/resourced_client.h"
-#include "chromeos/dbus/rmad/rmad_client.h"
 #include "chromeos/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "chromeos/dbus/system_clock/system_clock_client.h"
-#include "chromeos/dbus/system_proxy/system_proxy_client.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
 #include "chromeos/dbus/u2f/u2f_client.h"
 #include "chromeos/dbus/userdataauth/arc_quota_client.h"
@@ -67,8 +68,8 @@
 #include "device/bluetooth/floss/floss_features.h"
 
 #if BUILDFLAG(PLATFORM_CFM)
+#include "chromeos/ash/components/dbus/chromebox_for_meetings/cfm_hotline_client.h"
 #include "chromeos/components/chromebox_for_meetings/features/features.h"
-#include "chromeos/dbus/chromebox_for_meetings/cfm_hotline_client.h"
 #endif
 
 #if BUILDFLAG(ENABLE_HIBERNATE)
@@ -145,8 +146,8 @@ void InitializeDBus() {
   InitializeDBusClient<chromeos::SeneschalClient>(bus);
   InitializeDBusClient<chromeos::SessionManagerClient>(bus);
   InitializeDBusClient<SpacedClient>(bus);
-  InitializeDBusClient<chromeos::SystemClockClient>(bus);
-  InitializeDBusClient<chromeos::SystemProxyClient>(bus);
+  InitializeDBusClient<SystemClockClient>(bus);
+  InitializeDBusClient<SystemProxyClient>(bus);
   InitializeDBusClient<chromeos::TpmManagerClient>(bus);
   InitializeDBusClient<TypecdClient>(bus);
   InitializeDBusClient<chromeos::U2FClient>(bus);
@@ -171,11 +172,14 @@ void InitializeFeatureListDependentDBus() {
   }
 #if BUILDFLAG(PLATFORM_CFM)
   if (base::FeatureList::IsEnabled(chromeos::cfm::features::kMojoServices)) {
-    InitializeDBusClient<chromeos::CfmHotlineClient>(bus);
+    InitializeDBusClient<CfmHotlineClient>(bus);
   }
 #endif
   if (ash::features::IsShimlessRMAFlowEnabled()) {
-    InitializeDBusClient<chromeos::RmadClient>(bus);
+    InitializeDBusClient<RmadClient>(bus);
+  }
+  if (ash::features::IsRgbKeyboardEnabled()) {
+    InitializeDBusClient<RgbkbdClient>(bus);
   }
   InitializeDBusClient<chromeos::WilcoDtcSupportdClient>(bus);
 
@@ -195,7 +199,7 @@ void ShutdownDBus() {
   chromeos::WilcoDtcSupportdClient::Shutdown();
 #if BUILDFLAG(PLATFORM_CFM)
   if (base::FeatureList::IsEnabled(chromeos::cfm::features::kMojoServices)) {
-    chromeos::CfmHotlineClient::Shutdown();
+    CfmHotlineClient::Shutdown();
   }
 #endif
   if (base::FeatureList::IsEnabled(floss::features::kFlossEnabled)) {
@@ -209,14 +213,17 @@ void ShutdownDBus() {
   chromeos::U2FClient::Shutdown();
   TypecdClient::Shutdown();
   chromeos::TpmManagerClient::Shutdown();
-  chromeos::SystemProxyClient::Shutdown();
-  chromeos::SystemClockClient::Shutdown();
+  SystemProxyClient::Shutdown();
+  SystemClockClient::Shutdown();
   SpacedClient::Shutdown();
   chromeos::SessionManagerClient::Shutdown();
   chromeos::SeneschalClient::Shutdown();
   chromeos::ResourcedClient::Shutdown();
+  if (ash::features::IsRgbKeyboardEnabled()) {
+    RgbkbdClient::Shutdown();
+  }
   if (ash::features::IsShimlessRMAFlowEnabled()) {
-    chromeos::RmadClient::Shutdown();
+    RmadClient::Shutdown();
   }
   chromeos::PowerManagerClient::Shutdown();
   chromeos::PermissionBrokerClient::Shutdown();

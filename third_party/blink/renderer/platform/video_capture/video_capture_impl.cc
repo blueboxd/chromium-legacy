@@ -39,7 +39,6 @@
 #include "media/capture/mojom/video_capture_types.mojom-blink.h"
 #include "media/capture/video_capture_types.h"
 #include "media/video/gpu_video_accelerator_factories.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -80,21 +79,21 @@ struct VideoCaptureImpl::BufferContext
       : buffer_type_(buffer_handle->which()),
         media_task_runner_(media_task_runner) {
     switch (buffer_type_) {
-      case VideoFrameBufferHandleType::SHARED_BUFFER_HANDLE:
-        InitializeFromSharedMemory(
-            std::move(buffer_handle->get_shared_buffer_handle()));
+      case VideoFrameBufferHandleType::kUnsafeShmemRegion:
+        InitializeFromUnsafeShmemRegion(
+            std::move(buffer_handle->get_unsafe_shmem_region()));
         break;
-      case VideoFrameBufferHandleType::READ_ONLY_SHMEM_REGION:
+      case VideoFrameBufferHandleType::kReadOnlyShmemRegion:
         InitializeFromReadOnlyShmemRegion(
             std::move(buffer_handle->get_read_only_shmem_region()));
         break;
-      case VideoFrameBufferHandleType::SHARED_MEMORY_VIA_RAW_FILE_DESCRIPTOR:
+      case VideoFrameBufferHandleType::kSharedMemoryViaRawFileDescriptor:
         NOTREACHED();
         break;
-      case VideoFrameBufferHandleType::MAILBOX_HANDLES:
+      case VideoFrameBufferHandleType::kMailboxHandles:
         InitializeFromMailbox(std::move(buffer_handle->get_mailbox_handles()));
         break;
-      case VideoFrameBufferHandleType::GPU_MEMORY_BUFFER_HANDLE:
+      case VideoFrameBufferHandleType::kGpuMemoryBufferHandle:
 #if !BUILDFLAG(IS_MAC)
         // On macOS, an IOSurfaces passed as a GpuMemoryBufferHandle can be
         // used by both hardware and software paths.
@@ -186,23 +185,6 @@ struct VideoCaptureImpl::BufferContext
   }
 
  private:
-  void InitializeFromSharedMemory(mojo::ScopedSharedBufferHandle handle) {
-    DCHECK(handle.is_valid());
-    base::UnsafeSharedMemoryRegion region =
-        mojo::UnwrapUnsafeSharedMemoryRegion(std::move(handle));
-    if (!region.IsValid()) {
-      DLOG(ERROR) << "Unwrapping shared memory failed.";
-      return;
-    }
-    writable_mapping_ = region.Map();
-    if (!writable_mapping_.IsValid()) {
-      DLOG(ERROR) << "Mapping shared memory failed.";
-      return;
-    }
-    data_ = writable_mapping_.GetMemoryAsSpan<uint8_t>().data();
-    data_size_ = writable_mapping_.size();
-  }
-
   void InitializeFromReadOnlyShmemRegion(
       base::ReadOnlySharedMemoryRegion region) {
     DCHECK(region.IsValid());
@@ -304,10 +286,10 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::Initialize() {
   DCHECK(iter != video_capture_impl_.client_buffers_.end());
   buffer_context_ = iter->second;
   switch (buffer_context_->buffer_type()) {
-    case VideoFrameBufferHandleType::SHARED_BUFFER_HANDLE:
+    case VideoFrameBufferHandleType::kUnsafeShmemRegion:
       // The frame is backed by a writable (unsafe) shared memory handle, but as
       // it is not sent cross-process the region does not need to be attached to
-      // the frame. See also the case for READ_ONLY_SHMEM_REGION.
+      // the frame. See also the case for kReadOnlyShmemRegion.
       if (frame_info_->strides) {
         CHECK(IsYuvPlanar(frame_info_->pixel_format) &&
               (media::VideoFrame::NumPlanes(frame_info_->pixel_format) == 3))
@@ -340,8 +322,8 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::Initialize() {
             buffer_context_->data_size(), frame_info_->timestamp);
       }
       break;
-    case VideoFrameBufferHandleType::READ_ONLY_SHMEM_REGION:
-      // As with the SHARED_BUFFER_HANDLE type, it is sufficient to just wrap
+    case VideoFrameBufferHandleType::kReadOnlyShmemRegion:
+      // As with the kSharedBufferHandle type, it is sufficient to just wrap
       // the data without attaching the shared region to the frame.
       frame_ = media::VideoFrame::WrapExternalData(
           frame_info_->pixel_format, gfx::Size(frame_info_->coded_size),
@@ -350,10 +332,10 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::Initialize() {
           const_cast<uint8_t*>(buffer_context_->data()),
           buffer_context_->data_size(), frame_info_->timestamp);
       break;
-    case VideoFrameBufferHandleType::SHARED_MEMORY_VIA_RAW_FILE_DESCRIPTOR:
+    case VideoFrameBufferHandleType::kSharedMemoryViaRawFileDescriptor:
       NOTREACHED();
       break;
-    case VideoFrameBufferHandleType::MAILBOX_HANDLES: {
+    case VideoFrameBufferHandleType::kMailboxHandles: {
       gpu::MailboxHolder mailbox_holder_array[media::VideoFrame::kMaxPlanes];
       CHECK_EQ(media::VideoFrame::kMaxPlanes,
                buffer_context_->mailbox_holders().size());
@@ -368,7 +350,7 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::Initialize() {
           frame_info_->visible_rect.size(), frame_info_->timestamp);
       break;
     }
-    case VideoFrameBufferHandleType::GPU_MEMORY_BUFFER_HANDLE: {
+    case VideoFrameBufferHandleType::kGpuMemoryBufferHandle: {
 #if BUILDFLAG(IS_MAC)
       // On macOS, an IOSurfaces passed as a GpuMemoryBufferHandle can be
       // used by both hardware and software paths.
@@ -819,7 +801,7 @@ void VideoCaptureImpl::OnStateChanged(
   startup_timeout_.Stop();
 
   if (result->which() ==
-      media::mojom::blink::VideoCaptureResult::Tag::ERROR_CODE) {
+      media::mojom::blink::VideoCaptureResult::Tag::kErrorCode) {
     DVLOG(1) << __func__ << " Failed with an error.";
     if (result->get_error_code() ==
         media::VideoCaptureError::kWinMediaFoundationSystemPermissionDenied) {
@@ -1083,7 +1065,7 @@ void VideoCaptureImpl::OnBufferDestroyed(int32_t buffer_id) {
     // only one reference should be held.
     DCHECK(!cb_iter->second.get() ||
            cb_iter->second->buffer_type() ==
-               VideoFrameBufferHandleType::GPU_MEMORY_BUFFER_HANDLE ||
+               VideoFrameBufferHandleType::kGpuMemoryBufferHandle ||
            cb_iter->second->HasOneRef())
         << "Instructed to delete buffer we are still using.";
     client_buffers_.erase(cb_iter);
@@ -1115,7 +1097,7 @@ void VideoCaptureImpl::OnAllClientsFinishedConsumingFrame(
   // frames, because MailboxHolderReleased may hold on to a reference to
   // |buffer_context|.
   if (buffer_raw_ptr->buffer_type() !=
-      VideoFrameBufferHandleType::GPU_MEMORY_BUFFER_HANDLE) {
+      VideoFrameBufferHandleType::kGpuMemoryBufferHandle) {
     DCHECK(buffer_raw_ptr->HasOneRef());
   }
 #else

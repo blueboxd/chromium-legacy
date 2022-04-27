@@ -6,6 +6,7 @@
 
 #include "base/check.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/escape.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -20,7 +21,6 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/base/data_url.h"
-#include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -77,7 +77,7 @@ class AccessibilityActionBrowserTest : public ContentBrowserTest {
                                            ui::kAXModeComplete,
                                            ax::mojom::Event::kLoadComplete);
     GURL html_data_url("data:text/html," +
-                       net::EscapeQueryParamValue(html, false));
+                       base::EscapeQueryParamValue(html, false));
     EXPECT_TRUE(NavigateToURL(shell(), html_data_url));
     waiter.WaitForNotification();
   }
@@ -262,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest,
                      ax::mojom::FloatAttribute::kValueForRange));
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, Scroll) {
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, VerticalScroll) {
   LoadInitialAccessibilityTreeFromHtml(R"HTML(
       <div role="group" style="width:100; height:50; overflow:scroll"
           aria-label="shakespeare">
@@ -284,12 +284,92 @@ IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, Scroll) {
   data.action = ax::mojom::Action::kScrollDown;
   data.target_node_id = target->GetId();
 
-  target->manager()->delegate()->AccessibilityPerformAction(data);
+  target->AccessibilityPerformAction(data);
   waiter2.WaitForNotification();
 
-  int y_after = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollY);
+  int y_step_1 = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollY);
 
-  EXPECT_GT(y_after, y_before);
+  EXPECT_GT(y_step_1, y_before);
+
+  data.action = ax::mojom::Action::kScrollUp;
+  target->AccessibilityPerformAction(data);
+  waiter2.WaitForNotification();
+
+  int y_step_2 = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollY);
+
+  EXPECT_EQ(y_step_2, y_before);
+
+  data.action = ax::mojom::Action::kScrollForward;
+  target->AccessibilityPerformAction(data);
+  waiter2.WaitForNotification();
+
+  int y_step_3 = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollY);
+
+  EXPECT_GT(y_step_3, y_before);
+  EXPECT_EQ(y_step_3, y_step_1);
+
+  data.action = ax::mojom::Action::kScrollBackward;
+  target->AccessibilityPerformAction(data);
+  waiter2.WaitForNotification();
+
+  int y_step_4 = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollY);
+
+  EXPECT_EQ(y_step_4, y_before);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityActionBrowserTest, HorizontalScroll) {
+  LoadInitialAccessibilityTreeFromHtml(R"HTML(
+      <div role="group" aria-label="shakespeare"
+          style="width:100; height:50; overflow:scroll; white-space: nowrap;">
+        To be or not to be, that is the question.
+      </div>
+      )HTML");
+
+  BrowserAccessibility* target =
+      FindNode(ax::mojom::Role::kGroup, "shakespeare");
+  EXPECT_NE(target, nullptr);
+
+  int x_before = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollX);
+
+  AccessibilityNotificationWaiter waiter2(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ui::AXEventGenerator::Event::SCROLL_HORIZONTAL_POSITION_CHANGED);
+
+  ui::AXActionData data;
+  data.action = ax::mojom::Action::kScrollRight;
+  data.target_node_id = target->GetId();
+
+  target->AccessibilityPerformAction(data);
+  waiter2.WaitForNotification();
+
+  int x_step_1 = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollX);
+
+  EXPECT_GT(x_step_1, x_before);
+
+  data.action = ax::mojom::Action::kScrollLeft;
+  target->AccessibilityPerformAction(data);
+  waiter2.WaitForNotification();
+
+  int x_step_2 = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollX);
+
+  EXPECT_EQ(x_step_2, x_before);
+
+  data.action = ax::mojom::Action::kScrollForward;
+  target->AccessibilityPerformAction(data);
+  waiter2.WaitForNotification();
+
+  int x_step_3 = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollX);
+
+  EXPECT_GT(x_step_3, x_before);
+  EXPECT_EQ(x_step_3, x_step_1);
+
+  data.action = ax::mojom::Action::kScrollBackward;
+  target->AccessibilityPerformAction(data);
+  waiter2.WaitForNotification();
+
+  int x_step_4 = target->GetIntAttribute(ax::mojom::IntAttribute::kScrollX);
+
+  EXPECT_EQ(x_step_4, x_before);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityCanvasActionBrowserTest, CanvasGetImage) {

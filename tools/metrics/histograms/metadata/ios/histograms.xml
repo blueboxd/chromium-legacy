@@ -1191,7 +1191,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.ReconcileEULAPref" enum="Boolean"
-    expires_after="2022-05-01">
+    expires_after="2023-04-27">
   <owner>olivierrobin@google.com</owner>
   <owner>rohitrao@google.com</owner>
   <summary>
@@ -1428,7 +1428,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.TabGrid.Selection.AddToBookmarks" units="Tabs"
-    expires_after="2022-05-08">
+    expires_after="2022-11-01">
   <owner>mrefaat@chromium.org</owner>
   <owner>michaeldo@chromium.org</owner>
   <owner>bling-team@google.com</owner>
@@ -1439,7 +1439,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.TabGrid.Selection.AddToReadingList" units="Tabs"
-    expires_after="2022-05-08">
+    expires_after="2022-11-01">
   <owner>mrefaat@chromium.org</owner>
   <owner>michaeldo@chromium.org</owner>
   <owner>bling-team@google.com</owner>
@@ -1482,7 +1482,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.TabSwitcher.TimeSpent" units="ms"
-    expires_after="2022-05-01">
+    expires_after="2022-11-01">
   <owner>mrefaat@chromium.org</owner>
   <owner>marq@chromium.org</owner>
   <summary>
@@ -1513,6 +1513,16 @@ chromium-metrics-reviews@google.com.
   <owner>djean@chromium.org</owner>
   <owner>rkgibson@chromium.org</owner>
   <summary>[iOS] Reports how the thumbstrip was opened.</summary>
+</histogram>
+
+<histogram name="IOS.Translate.PageLoad.LanguageDetectionMethod"
+    enum="LanguageDetectionMethod" expires_after="2023-03-24">
+  <owner>olivierrobin@chromium.org</owner>
+  <owner>sophiechang@chromium.org</owner>
+  <summary>
+    The method used to detect language in the web page during the
+    CLD3-&gt;TFlite transition.
+  </summary>
 </histogram>
 
 <histogram name="IOS.Web.URLDidChangeToEmptyURL" enum="BooleanHit"

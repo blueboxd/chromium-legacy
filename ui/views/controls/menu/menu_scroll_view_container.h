@@ -66,13 +66,10 @@ class MenuScrollViewContainer : public View {
   // Returns the last item in the menu if it is of type HIGHLIGHTED.
   MenuItemView* GetFootnote() const;
 
-  // Check if the menu uses Ash system UI layout.
-  bool UseAshSystemUILayout() const;
-
   class MenuScrollView;
 
   // The background view.
-  raw_ptr<View> background_view_;
+  raw_ptr<View> background_view_ = nullptr;
 
   // The scroll buttons.
   raw_ptr<View> scroll_up_button_;
@@ -89,6 +86,9 @@ class MenuScrollViewContainer : public View {
 
   // Corner radius of the background.
   int corner_radius_ = 0;
+
+  // Whether the menu uses ash system UI layout.
+  const bool use_ash_system_ui_layout_;
 };
 
 }  // namespace views

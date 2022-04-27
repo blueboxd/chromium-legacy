@@ -262,6 +262,7 @@ group("gn_all") {
   if (is_fuchsia && !is_chromecast) {
     deps += [
       ":d8_fuchsia",
+      "//fuchsia/cipd",
       "//fuchsia/engine:web_engine",
       "//fuchsia/release:fuchsia_sizes",
       "//fuchsia/runners:cast_runner",
@@ -274,10 +275,6 @@ group("gn_all") {
       # Ensure this target continues to build.
       "//chromecast/bindings:bindings_manager_fuchsia",
     ]
-
-    if (is_official_build) {
-      deps += [ "//fuchsia/cipd" ]
-    }
   }
 
   deps += root_extra_deps
@@ -457,8 +454,11 @@ group("gn_all") {
       "//third_party/breakpad:generate_test_dump",
       "//third_party/breakpad:minidump-2-core",
       "//tools/dump_process_memory:dump_process",
-      "//tools/memory/partition_allocator:all",
     ]
+  }
+
+  if (is_linux || is_chromeos || is_android || is_mac) {
+    deps += [ "//tools/memory/partition_allocator:all" ]
   }
 
   if (is_chromeos_ash) {
@@ -852,6 +852,7 @@ group("gn_all") {
     deps += [
       "//mojo/public/rust",
       "//mojo/public/rust:mojo_rust_tests",
+      "//third_party/rust/autocxx/chromium_integration/tests",
     ]
   }
   if (enable_rust) {
@@ -859,9 +860,15 @@ group("gn_all") {
   }
 }
 
+# This group and the following exist to give targets for the waterfall to refer to.
 group("rust_build_tests") {
   testonly = true
   deps = [ "//build/rust/tests" ]
+}
+
+group("rust_autocxx_tests") {
+  testonly = true
+  deps = [ "//third_party/rust/autocxx/chromium_integration/tests" ]
 }
 
 # TODO(https://crbug.com/1112776): ensure remoting is functional on Linux builds with

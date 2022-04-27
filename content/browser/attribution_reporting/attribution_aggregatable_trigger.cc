@@ -41,8 +41,7 @@ AttributionAggregatableTriggerData::FromMojo(
     return absl::nullopt;
 
   return AttributionAggregatableTriggerData(
-      absl::MakeUint128(/*high=*/mojo->key->high_bits,
-                        /*low=*/mojo->key->low_bits),
+      mojo->key,
       base::flat_set<std::string>(
           std::make_move_iterator(mojo->source_keys.begin()),
           std::make_move_iterator(mojo->source_keys.end())),
@@ -106,7 +105,8 @@ AttributionAggregatableTrigger::FromMojo(
   bool is_valid = base::ranges::all_of(mojo->values, [](const auto& value) {
     return value.first.size() <=
                blink::kMaxBytesPerAttributionAggregatableKeyId &&
-           value.second > 0;
+           value.second > 0 &&
+           value.second <= blink::kMaxAttributionAggregatableValue;
   });
   if (!is_valid)
     return absl::nullopt;

@@ -90,6 +90,8 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetWebGL2Enabled(bool) override;
   void SetFantasyFontFamily(const WebString&,
                             UScriptCode = USCRIPT_COMMON) override;
+  void SetMathFontFamily(const WebString&,
+                         UScriptCode = USCRIPT_COMMON) override;
   void SetFixedFontFamily(const WebString&,
                           UScriptCode = USCRIPT_COMMON) override;
   void SetNetworkQuietTimeout(double timeout) override;
@@ -223,7 +225,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetSelectionClipboardBufferAvailable(bool) override;
   void SetAccessibilityIncludeSvgGElement(bool) override;
   void SetWebXRImmersiveArAllowed(bool webxr_immersive_ar_allowed) override;
-  void SetLitePageSubresourceRedirectOrigin(const WebString&) override;
 
   bool RenderVSyncNotificationEnabled() const {
     return render_v_sync_notification_enabled_;

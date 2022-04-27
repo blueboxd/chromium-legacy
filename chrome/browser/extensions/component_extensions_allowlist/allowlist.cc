@@ -42,6 +42,9 @@ bool IsComponentExtensionAllowlisted(const std::string& extension_id) {
     extension_misc::kSelectToSpeakExtensionId,
     extension_misc::kSwitchAccessExtensionId,
 #endif
+#if BUILDFLAG(IS_CHROMEOS)
+    extension_misc::kContactCenterInsightsExtensionId,
+#endif
   };
 
   for (size_t i = 0; i < std::size(kAllowed); ++i) {
@@ -78,7 +81,6 @@ bool IsComponentExtensionAllowlisted(int manifest_resource_id) {
     case IDR_ARC_SUPPORT_MANIFEST:
     case IDR_AUDIO_PLAYER_MANIFEST:
     case IDR_CHROME_APP_MANIFEST:
-    case IDR_ECHO_MANIFEST:
     case IDR_FILEMANAGER_MANIFEST:
     case IDR_IMAGE_LOADER_MANIFEST:
     case IDR_KEYBOARD_MANIFEST:
@@ -88,6 +90,11 @@ bool IsComponentExtensionAllowlisted(int manifest_resource_id) {
     case IDR_QUICKOFFICE_MANIFEST:
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS)
+    case IDR_CONTACT_CENTER_INSIGHTS_MANIFEST:
+    case IDR_ECHO_MANIFEST:
+#endif
       return true;
   }
 

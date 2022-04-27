@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -36,6 +37,7 @@ class RenderFrame;
 
 namespace safe_browsing {
 class ClientPhishingRequest;
+class VisualFeatures;
 class FeatureMap;
 class PhishingDOMFeatureExtractor;
 class PhishingTermFeatureExtractor;
@@ -124,6 +126,10 @@ class PhishingClassifier {
   // complete.
   void OnPlaybackDone(std::unique_ptr<SkBitmap> bitmap);
 
+  // Callback when visual features have been extracted from the screenshot.
+  void OnVisualFeaturesExtracted(
+      std::unique_ptr<VisualFeatures> visual_features);
+
   // Callback when visual feature extraction is complete.
   // If it was successful, computes a score and runs the DoneCallback.
   // If extraction was unsuccessful, runs the DoneCallback with a
@@ -133,7 +139,7 @@ class PhishingClassifier {
   // Callback when the visual TFLite model has been applied, and returned a list
   // of scores.
   void OnVisualTfLiteModelDone(std::unique_ptr<ClientPhishingRequest> verdict,
-                               std::vector<double> result);
+                               base::flat_map<std::string, double> result);
 
   // Helper method to run the DoneCallback and clear the state.
   void RunCallback(const ClientPhishingRequest& verdict);
@@ -157,6 +163,7 @@ class PhishingClassifier {
   std::unique_ptr<std::set<uint32_t>> shingle_hashes_;
   const std::u16string* page_text_;  // owned by the caller
   std::unique_ptr<SkBitmap> bitmap_;
+  std::unique_ptr<VisualFeatures> visual_features_;
   DoneCallback done_callback_;
 
   // Used to record the duration of visual feature scoring.

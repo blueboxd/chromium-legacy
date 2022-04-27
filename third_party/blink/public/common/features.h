@@ -98,21 +98,28 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 // Maximum number of tries to initialize the database.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kMaxSharedStorageInitTries;
-// The maximum number of keys or key-value pairs returned in each batch by
+// Maximum number of keys or key-value pairs returned in each batch by
 // the async `keys()` and `entries()` iterators, respectively.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kMaxSharedStorageIteratorBatchSize;
-// The length of the initial interval from service startup after which
+// Maximum number of bits of entropy allowed per origin to output via the Shared
+// Storage API.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kSharedStorageBitBudget;
+// Interval over which `kSharedStorageBitBudget` is defined.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kSharedStorageBudgetInterval;
+// Initial interval from service startup after which
 // SharedStorageManager first checks for any stale origins, purging any that it
 // finds.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kSharedStorageStaleOriginPurgeInitialInterval;
-// The length of the second and subsequent intervals from service startup after
+// Second and subsequent intervals from service startup after
 // which SharedStorageManager checks for any stale origins, purging any that it
 // finds.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kSharedStorageStaleOriginPurgeRecurringInterval;
-// The length of time that an origin must be inactive for it to be deemed stale
+// Length of time that an origin must be inactive for it to be deemed stale
 // and hence necessary to auto-purge.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kSharedStorageOriginStalenessThreshold;
@@ -262,6 +269,9 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 // is in stable with no issues.
 BLINK_COMMON_EXPORT extern const base::Feature kOffsetParentNewSpecBehavior;
 
+BLINK_COMMON_EXPORT extern const base::Feature
+    kCancelFormSubmissionInDefaultHandler;
+
 BLINK_COMMON_EXPORT extern const base::Feature kKeepScriptResourceAlive;
 
 BLINK_COMMON_EXPORT extern const base::Feature
@@ -382,6 +392,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableManifestId;
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableTranslations;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableUrlHandlers;
+
+BLINK_COMMON_EXPORT extern const base::Feature kWebAppManifestLockScreen;
 
 BLINK_COMMON_EXPORT extern const base::Feature kLoadingTasksUnfreezable;
 
@@ -677,6 +689,8 @@ BLINK_COMMON_EXPORT extern const base::Feature
 
 // If enabled, the minor version of the User-Agent string will be reduced.
 BLINK_COMMON_EXPORT extern const base::Feature kReduceUserAgentMinorVersion;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
+    kUserAgentFrozenBuildVersion;
 
 // If enabled, we only report FCP if there’s a successful commit to the
 // compositor. Otherwise, FCP may be reported if first BeginMainFrame results in
@@ -720,6 +734,18 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kDeferBeginMainFrameDuringLoading;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
     kRecentBeginMainFrameCutoff;
+
+// If enabled, script source text will be decoded and hashed off the main
+// thread.
+BLINK_COMMON_EXPORT extern const base::Feature kDecodeScriptSourceOffThread;
+
+// If enabled, allows MediaStreamVideoSource objects to be restarted by a
+// successful source switch. Normally, switching the source would only allowed
+// on streams that are in started state. However, changing the source also first
+// stops the stream before performing the switch and sometimes it can be useful
+// to do a change directly on a paused stream.
+BLINK_COMMON_EXPORT extern const base::Feature
+    kAllowSourceSwitchOnPausedVideoMediaStream;
 
 }  // namespace features
 }  // namespace blink

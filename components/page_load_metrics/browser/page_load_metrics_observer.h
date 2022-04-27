@@ -276,14 +276,26 @@ class PageLoadMetricsObserver {
                                 bool started_in_foreground);
 
   // For FencedFrames pages, OnFencedFramesStart is called instead of OnStart.
-  // The default implementation returns STOP_OBSERVING, so that observers that
-  // are not aware of FencedFrames will not mix FencedFrames metrics into the
-  // existing reports. FencedFrames will show different characteristics as it's
-  // content is likely a subframe rather than a main frame.
-  // TODO(crbug.com/1301880): FencedFrames support is still in progress.
+  // This method is pure virtual and each observer must explicitly override it
+  // and return appropriate policy. Currently, all observers that are not aware
+  // of FencedFrames return STOP_OBSERVING not to mix FencedFrames metrics into
+  // the existing reports. FencedFrames will show different characteristics as
+  // its content is likely a subframe rather than a main frame. A guideline is:
+  //
+  // - FORWARD_OBSERVING: Default. Use it if no special reason.
+  // - CONTINUE_OBSERVING: Use it if the observer want to capture events for
+  //   FencedFrames in a different way, e.g. using a FencedFrames variant for
+  //   name of histogram.
+  // - STOP_OBSERVING: Use it if the observer want to exclude metrics to
+  //   FencedFrames from the reports. Even with this policy, FencedFrames still
+  //   affect per-outermost page lifecycle events that are preprocessed in the
+  //   PageLoadTracker
+  //
+  // TODO(crbug.com/1317494): FencedFrames support is still in progress. Update
+  // the above description once we fixed all subclasses.
   virtual ObservePolicy OnFencedFramesStart(
       content::NavigationHandle* navigation_handle,
-      const GURL& currently_committed_url);
+      const GURL& currently_committed_url) = 0;
 
   // For prerendered pages, OnPrerenderStart is called instead of OnStart. The
   // default implementation returns STOP_OBSERVING, so that observers that are
@@ -498,14 +510,13 @@ class PageLoadMetricsObserver {
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
       content::RenderFrameHost* render_frame_host) {}
 
-  // Invoked when a frame's intersections with page elements changes and an
-  // update is received. The main_frame_document_intersection_rect
-  // returns an empty rect for out of view subframes and the root document size
-  // for the main frame.
+  // Invoked when a frame's intersections with the main frame changes and an
+  // update is received. The `main_frame_intersection_rect` is an empty rect for
+  // out of view subframes and is the root document size for the main frame.
   // TODO(crbug/1048175): Expose intersections to observers via shared delegate.
-  virtual void OnFrameIntersectionUpdate(
+  virtual void OnMainFrameIntersectionRectChanged(
       content::RenderFrameHost* rfh,
-      const mojom::FrameIntersectionUpdate& intersection_update) {}
+      const gfx::Rect& main_frame_intersection_rect) {}
 
   // Invoked when the UMA metrics subsystem is persisting metrics as the
   // application goes into the background, on platforms where the browser

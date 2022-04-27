@@ -25,6 +25,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #import "ios/chrome/browser/follow/follow_java_script_feature.h"
+#import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter_observer_bridge.h"
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
@@ -42,7 +43,6 @@
 #import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/follow/follow_web_page_urls.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_swift.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
@@ -602,25 +602,23 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
                                           .GetFollowProvider()
                                           ->GetFollowStatus(webPageURLs);
 
-              std::string domainName =
-                  web::GetMainFrame(self.webState)->GetSecurityOrigin().host();
-              domainName = domainName.substr(4, domainName.length());
-
-              if (!webChannelFollowed) {
-                strongSelf.followAction.name = l10n_util::GetNSStringF(
-                    IDS_IOS_TOOLS_MENU_FOLLOW, base::UTF8ToUTF16(domainName));
-                strongSelf.pageActionsGroup.actions = [@[
-                  strongSelf.followAction
-                ] arrayByAddingObjectsFromArray:strongSelf.pageActionsGroup
-                                                    .actions];
-              } else {
-                strongSelf.unfollowAction.name = l10n_util::GetNSStringF(
-                    IDS_IOS_TOOLS_MENU_UNFOLLOW, base::UTF8ToUTF16(domainName));
-                strongSelf.pageActionsGroup.actions = [@[
-                  strongSelf.unfollowAction
-                ] arrayByAddingObjectsFromArray:strongSelf.pageActionsGroup
-                                                    .actions];
-              }
+            std::string domainName =
+                web::GetMainFrame(self.webState)->GetSecurityOrigin().host();
+            if (!webChannelFollowed) {
+              strongSelf.followAction.name = l10n_util::GetNSStringF(
+                  IDS_IOS_TOOLS_MENU_FOLLOW, base::UTF8ToUTF16(domainName));
+              strongSelf.pageActionsGroup.actions =
+                  [@[ strongSelf.followAction ]
+                      arrayByAddingObjectsFromArray:strongSelf.pageActionsGroup
+                                                        .actions];
+            } else {
+              strongSelf.unfollowAction.name = l10n_util::GetNSStringF(
+                  IDS_IOS_TOOLS_MENU_UNFOLLOW, base::UTF8ToUTF16(domainName));
+              strongSelf.pageActionsGroup.actions =
+                  [@[ strongSelf.unfollowAction ]
+                      arrayByAddingObjectsFromArray:strongSelf.pageActionsGroup
+                                                        .actions];
+            }
           }
         }));
   }

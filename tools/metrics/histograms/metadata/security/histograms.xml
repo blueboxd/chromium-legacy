@@ -221,28 +221,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.PageInfo.TimeOpen" units="ms"
-    expires_after="2022-10-16">
+    expires_after="2022-10-23">
   <owner>cthomp@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
     Records the amount of time the Page Info bubble is open before the user
     closes it or takes an action which closes it.
   </summary>
-</histogram>
-
-<histogram name="Security.PageInfo.TimeOpen.AboutThisSite{WasShown}" units="ms"
-    expires_after="M104">
-  <owner>olesiamarukhno@google.com</owner>
-  <owner>dullweber@chromium.org</owner>
-  <summary>
-    Records the amount of time the Page Info bubble is open before the user
-    closes it, for cases where the &quot;About this site&quot; feature is
-    enabled and the data {WasShown} available, and therefore {WasShown} shown.
-  </summary>
-  <token key="WasShown">
-    <variant name="NotShown" summary="is not"/>
-    <variant name="Shown" summary="is"/>
-  </token>
 </histogram>
 
 <histogram name="Security.PageInfo.TimeOpen.Action" units="ms"
@@ -302,32 +287,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Security.SafetyTips.DownloadStarted" enum="SafetyTipStatus"
-    expires_after="2022-04-24">
-  <owner>jdeblasio@chromium.org</owner>
-  <owner>estark@chromium.org</owner>
-  <summary>
-    Records the Safety Tip status on a page that initiated a download (*not* the
-    Safety Tip status of the download URL itself). This is recorded regardless
-    of whether the Safety Tip UI is enabled or disabled. This histogram is not
-    recorded for downloads that are initiated in a new tab or window, as the
-    Safety Tip status of the initiating page cannot be tracked.
-  </summary>
-</histogram>
-
-<histogram name="Security.SafetyTips.FormSubmission" enum="SafetyTipStatus"
-    expires_after="2022-04-24">
-  <owner>jdeblasio@chromium.org</owner>
-  <owner>estark@chromium.org</owner>
-  <summary>
-    Records the Safety Tip status of a page when submitting a form. This
-    histogram is recorded whenever a form submission navigation begins. The
-    recorded safety tip status is the status of the page the form was submitted
-    from, not the one that the form targets. Recorded regardless of whether the
-    Safety Tip UI is enabled or disabled.
-  </summary>
-</histogram>
-
 <histogram name="Security.SafetyTips.GetDomainInfoTime" units="ms"
     expires_after="2022-09-11">
   <owner>jdeblasio@chromium.org</owner>
@@ -360,100 +319,6 @@ chromium-metrics-reviews@google.com.
     uses one of the Safety Tip's buttons or dismisses it explicitly. Can be
     normalized against Security.SafetyTips.SafetyTipShown, filtered to users
     with the feature enabled to show the UI.
-  </summary>
-</histogram>
-
-<histogram name="Security.SafetyTips.OpenTime.ChangePrimaryPage" units="ms"
-    expires_after="2022-04-24">
-  <owner>jdeblasio@chromium.org</owner>
-  <owner>estark@chromium.org</owner>
-  <summary>
-    Records the amount of time a Safety Tip bubble is open, for cases where the
-    document changes in the page the user sees.
-  </summary>
-</histogram>
-
-<histogram name="Security.SafetyTips.OpenTime.CloseTab" units="ms"
-    expires_after="2022-06-19">
-  <owner>jdeblasio@chromium.org</owner>
-  <owner>estark@chromium.org</owner>
-  <summary>
-    Records the amount of time a Safety Tip bubble is open, for cases where the
-    user closed the tab.
-  </summary>
-</histogram>
-
-<histogram name="Security.SafetyTips.OpenTime.Dismiss" units="ms"
-    expires_after="2022-06-19">
-  <owner>jdeblasio@chromium.org</owner>
-  <owner>estark@chromium.org</owner>
-  <summary>
-    Records the amount of time a Safety Tip bubble is open, for cases where the
-    user explicitly closed the bubble. This is recorded in addition to the more
-    specifc metric that indicates how the user dismissed the Safety Tip.
-  </summary>
-</histogram>
-
-<histogram name="Security.SafetyTips.OpenTime.DismissWithClose" units="ms"
-    expires_after="2021-12-26">
-  <owner>jdeblasio@chromium.org</owner>
-  <owner>estark@chromium.org</owner>
-  <summary>
-    Records the amount of time a Safety Tip bubble is open, for cases where the
-    user explicitly closed the bubble with the close button. This is recorded in
-    addition to the base dismiss metric.
-  </summary>
-</histogram>
-
-<histogram name="Security.SafetyTips.OpenTime.DismissWithEsc" units="ms"
-    expires_after="2021-12-26">
-  <owner>jdeblasio@chromium.org</owner>
-  <owner>estark@chromium.org</owner>
-  <summary>
-    Records the amount of time a Safety Tip bubble is open, for cases where the
-    user explicitly closed the bubble with the esc key. This is recorded in
-    addition to the base dismiss metric.
-  </summary>
-</histogram>
-
-<histogram name="Security.SafetyTips.OpenTime.DismissWithIgnore" units="ms"
-    expires_after="2021-10-25">
-  <owner>jdeblasio@chromium.org</owner>
-  <owner>estark@chromium.org</owner>
-  <summary>
-    Records the amount of time a Safety Tip bubble is open, for cases where the
-    user explicitly closed the bubble with the ignore button. This is recorded
-    in addition to the base dismiss metric.
-  </summary>
-</histogram>
-
-<histogram name="Security.SafetyTips.OpenTime.LeaveSite" units="ms"
-    expires_after="2022-04-17">
-  <owner>jdeblasio@chromium.org</owner>
-  <owner>estark@chromium.org</owner>
-  <summary>
-    Records the amount of time a Safety Tip bubble is open, for cases where the
-    user closed the bubble by heeding the call-to-action to leave the site.
-  </summary>
-</histogram>
-
-<histogram name="Security.SafetyTips.OpenTime.NoAction" units="ms"
-    expires_after="2021-10-25">
-  <owner>jdeblasio@chromium.org</owner>
-  <owner>estark@chromium.org</owner>
-  <summary>
-    Records the amount of time a Safety Tip bubble is open, for cases where the
-    user did not dismiss or take action in the bubble.
-  </summary>
-</histogram>
-
-<histogram name="Security.SafetyTips.OpenTime.SwitchTab" units="ms"
-    expires_after="2022-04-24">
-  <owner>jdeblasio@chromium.org</owner>
-  <owner>estark@chromium.org</owner>
-  <summary>
-    Records the amount of time a Safety Tip bubble is open, for cases where the
-    user switched tabs.
   </summary>
 </histogram>
 

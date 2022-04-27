@@ -64,6 +64,7 @@
 #include "chrome/browser/ash/login/chrome_restart_request.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_key_manager.h"
+#include "chrome/browser/ash/login/easy_unlock/easy_unlock_notification_controller.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/helper.h"
@@ -95,7 +96,6 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/about_flags.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/ash/sync/os_sync_util.h"
 #include "chrome/browser/ash/tether/tether_service.h"
 #include "chrome/browser/ash/tpm_firmware_update_notification.h"
@@ -443,61 +443,6 @@ void SaveSyncTrustedVaultKeysToProfile(
     sync_service->AddTrustedVaultRecoveryMethodFromWeb(
         gaia_id, method.public_key, method.type_hint, base::DoNothing());
   }
-}
-
-bool IsHwDataUsageDeviceSettingSet() {
-  return DeviceSettingsService::Get() &&
-         DeviceSettingsService::Get()->device_settings() &&
-         DeviceSettingsService::Get()
-             ->device_settings()
-             ->has_hardware_data_usage_enabled();
-}
-
-// Updates local_state kOobeRevenUpdatedToFlex pref to true if OS was updated.
-// Returns value of the kOobeRevenUpdatedToFlex pref.
-bool IsRevenUpdatedToFlex() {
-  CHECK(switches::IsRevenBranding());
-  PrefService* local_state = g_browser_process->local_state();
-  if (local_state->GetBoolean(prefs::kOobeRevenUpdatedToFlex))
-    return true;
-
-  // If it is a first login after update from CloudReady this field in the
-  // device settings service won't be set.
-  bool is_hw_data_usage_enabled_already_set = IsHwDataUsageDeviceSettingSet();
-
-  // If this field isn't set it means that the device was updated to Flex
-  // and owner hasn't logged in yet. Set a boolean flag to control if the
-  // new terms should be shown for existing users on the device.
-  if (!is_hw_data_usage_enabled_already_set) {
-    local_state->SetBoolean(prefs::kOobeRevenUpdatedToFlex, true);
-  }
-  return local_state->GetBoolean(prefs::kOobeRevenUpdatedToFlex);
-}
-
-bool MaybeShowNewTermsAfterUpdateToFlex(Profile* profile) {
-  // Check if the device has been recently updated from CloudReady to show new
-  // license agreement and data collection consent. This applies only for
-  // existing users of not managed reven boards.
-  policy::BrowserPolicyConnectorAsh* connector =
-      g_browser_process->platform_part()->browser_policy_connector_ash();
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  bool is_device_managed = connector->IsDeviceEnterpriseManaged();
-  if (!switches::IsRevenBranding() || user_manager->IsCurrentUserNew() ||
-      is_device_managed) {
-    return false;
-  }
-  const bool should_show_new_terms =
-      IsRevenUpdatedToFlex() &&
-      ((user_manager->IsCurrentUserOwner() &&
-        !IsHwDataUsageDeviceSettingSet()) ||
-       (features::IsOobeConsolidatedConsentEnabled() &&
-        !profile->GetPrefs()->GetBoolean(
-            prefs::kRevenOobeConsolidatedConsentAccepted)));
-  if (should_show_new_terms) {
-    LoginDisplayHost::default_host()->GetSigninUI()->ShowNewTermsForFlexUsers();
-    return true;
-  }
-  return false;
 }
 
 }  // namespace
@@ -1821,6 +1766,13 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
         ProfileHelper::Get()->GetUserByProfile(profile);
     std::string pending_screen =
         known_user.GetPendingOnboardingScreen(user->GetAccountId());
+    if (!pending_screen.empty() &&
+        !WizardController::IsResumablePostLoginScreen(
+            OobeScreenId(pending_screen))) {
+      pending_screen.clear();
+      known_user.RemovePendingOnboardingScreen(user->GetAccountId());
+    }
+
     absl::optional<base::Version> onboarding_completed_version =
         known_user.GetOnboardingCompletedVersion(user->GetAccountId());
 
@@ -1833,7 +1785,6 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
           ->ClearOnboardingAuthSession();
     }
 
-    // TODO(https://crbug.com/1313844): better structure different user flows
     if (user_manager->IsCurrentUserNew() && !skip_post_login_screens) {
       prefs->SetTime(prefs::kOobeOnboardingTime, base::Time::Now());
       prefs->SetBoolean(arc::prefs::kArcPlayStoreLaunchMetricCanBeRecorded,
@@ -1856,9 +1807,6 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
 
       OnboardingUserActivityCounter::MaybeMarkForStart(profile);
 
-      return false;
-    }
-    if (MaybeShowNewTermsAfterUpdateToFlex(profile)) {
       return false;
     }
     if (!user_manager->IsCurrentUserNew() && !pending_screen.empty()) {
@@ -1987,6 +1935,13 @@ void UserSessionManager::ShowNotificationsIfNeeded(Profile* profile) {
       ->browser_policy_connector_ash()
       ->GetAdbSideloadingAllowanceModePolicyHandler()
       ->ShowAdbSideloadingPolicyChangeNotificationIfNeeded();
+
+  if (EasyUnlockNotificationController::ShouldShowSignInRemovedNotification(
+          profile)) {
+    easy_unlock_notification_controller_ =
+        std::make_unique<EasyUnlockNotificationController>(profile);
+    easy_unlock_notification_controller_->ShowSignInRemovedNotification();
+  }
 }
 
 void UserSessionManager::MaybeLaunchSettings(Profile* profile) {
@@ -2419,6 +2374,7 @@ void UserSessionManager::Shutdown() {
   token_observers_.clear();
   always_on_vpn_manager_.reset();
   u2f_notification_.reset();
+  easy_unlock_notification_controller_.reset();
   help_app_notification_controller_.reset();
   password_service_voted_.reset();
   password_was_saved_ = false;

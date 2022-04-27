@@ -22,7 +22,6 @@ import dalvik.system.BaseDexClassLoader;
 import dalvik.system.PathClassLoader;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.IdentifierNameString;
 import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.build.BuildConfig;
@@ -257,15 +256,6 @@ public class BundleUtils {
     }
 
     /**
-     * Gets the obfuscated name for the passed in class name. Important: this MUST be called with a
-     * string literal, otherwise @IdentifierNameString will not work.
-     */
-    @IdentifierNameString
-    public static String getIdentifierName(String className) {
-        return className;
-    }
-
-    /**
      * Constructs a new instance of the given class name. If the application context class loader
      * can load the class, that class loader will be used, otherwise the class loader from the
      * passed in context will be used.
@@ -382,7 +372,7 @@ public class BundleUtils {
             // We will never have android.* classes in isolated split class loaders,
             // but android framework inflater does sometimes try loading classes
             // that do not exist when inflating xml files on startup.
-            if (!cn.startsWith("android.") && sSplitsToRestore != null) {
+            if (sSplitsToRestore != null && !cn.startsWith("android.")) {
                 // If we fail from all the currently loaded classLoaders, lets
                 // try loading some splits that were loaded when chrome was last
                 // run and check again.
@@ -396,9 +386,6 @@ public class BundleUtils {
         }
 
         private void restoreSplitsClassLoaders() {
-            if (sSplitsToRestore == null) {
-                return;
-            }
             // Load splits that were stored in the SavedInstanceState Bundle.
             for (String splitName : sSplitsToRestore) {
                 if (!sInflationClassLoaders.containsKey(splitName)) {

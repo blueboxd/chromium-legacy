@@ -39,6 +39,7 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/event_page_show_persisted.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions_policy/policy_disposition.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -1053,7 +1054,7 @@ void LocalDOMWindow::SchedulePostMessage(PostedMessage* posted_message) {
       std::move(posted_message->channels), std::move(posted_message->data),
       posted_message->source_origin->ToString(), String(),
       posted_message->source, posted_message->user_activation,
-      posted_message->delegate_payment_request);
+      posted_message->delegated_capability);
 
   // Allowing unbounded amounts of messages to build up for a suspended context
   // is problematic; consider imposing a limit or other restriction if this
@@ -1162,10 +1163,20 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
                               ActionAfterPagehide::kReceivedPostMessage);
   }
 
-  if (RuntimeEnabledFeatures::CapabilityDelegationPaymentRequestEnabled(this) &&
-      event->delegatePaymentRequest()) {
+  if (event->delegatedCapability() ==
+      mojom::blink::DelegatedCapability::kPaymentRequest) {
     UseCounter::Count(this, WebFeature::kCapabilityDelegationOfPaymentRequest);
     payment_request_token_.Activate();
+  }
+
+  if (RuntimeEnabledFeatures::CapabilityDelegationFullscreenRequestEnabled(
+          this) &&
+      event->delegatedCapability() ==
+          mojom::blink::DelegatedCapability::kFullscreenRequest) {
+    UseCounter::Count(this,
+                      WebFeature::kCapabilityDelegationOfFullscreenRequest);
+    // TODO(crbug.com/1293083): Activate a corresponding token in the browser.
+    fullscreen_request_token_.Activate();
   }
 
   DispatchEvent(*event);
@@ -2256,6 +2267,14 @@ bool LocalDOMWindow::IsPaymentRequestTokenActive() const {
 
 bool LocalDOMWindow::ConsumePaymentRequestToken() {
   return payment_request_token_.ConsumeIfActive();
+}
+
+bool LocalDOMWindow::IsFullscreenRequestTokenActive() const {
+  return fullscreen_request_token_.IsActive();
+}
+
+bool LocalDOMWindow::ConsumeFullscreenRequestToken() {
+  return fullscreen_request_token_.ConsumeIfActive();
 }
 
 void LocalDOMWindow::SetIsInBackForwardCache(bool is_in_back_forward_cache) {

@@ -136,7 +136,10 @@ public class ChildProcessConnection {
     private static int sLastRecordedZygotePid;
 
     // Only accessed on launcher thread.
-    private static boolean sFallbackEnabled;
+    // Set when a launching a service with zygote times out, in which case
+    // it's assumed the zygote code path is not functional. Make all future
+    // launches directly fallback without timeout to minimize user impact.
+    private static boolean sAlwaysFallback;
 
     // Lock to protect all the fields that can be accessed outside launcher thread.
     private final Object mBindingStateLock = new Object();
@@ -231,10 +234,6 @@ public class ChildProcessConnection {
     // This is also used as the initial binding before any priorities are set.
     private ChildServiceConnection mModerateBinding;
 
-    // Uses the BIND_NOT_FOREGROUND flag. This is the same as |mModerateBinding| for memory
-    // management and same as |mWaivedBinding| for CPU scheduling.
-    private ChildServiceConnection mModerateWaiveCpuBinding;
-
     // Low priority binding maintained in the entire lifetime of the connection, i.e. between calls
     // to start() and stop().
     private ChildServiceConnection mWaivedBinding;
@@ -242,7 +241,6 @@ public class ChildProcessConnection {
     // Refcount of bindings.
     private int mStrongBindingCount;
     private int mModerateBindingCount;
-    private int mModerateWaiveCpuBindingCount;
 
     private int mGroup;
     private int mImportanceInGroup;
@@ -336,8 +334,8 @@ public class ChildProcessConnection {
             }
         };
 
-        createBindings(sFallbackEnabled && mFallbackServiceName != null ? mFallbackServiceName
-                                                                        : mServiceName);
+        createBindings(sAlwaysFallback && mFallbackServiceName != null ? mFallbackServiceName
+                                                                       : mServiceName);
     }
 
     private void createBindings(ComponentName serviceName) {
@@ -352,8 +350,6 @@ public class ChildProcessConnection {
 
         mModerateBinding = mConnectionFactory.createConnection(
                 intent, defaultFlags, mConnectionDelegate, mInstanceName);
-        mModerateWaiveCpuBinding = mConnectionFactory.createConnection(intent,
-                defaultFlags | Context.BIND_NOT_FOREGROUND, mConnectionDelegate, mInstanceName);
         mStrongBinding = mConnectionFactory.createConnection(
                 intent, defaultFlags | Context.BIND_IMPORTANT, mConnectionDelegate, mInstanceName);
         mWaivedBinding = mConnectionFactory.createConnection(intent,
@@ -674,7 +670,6 @@ public class ChildProcessConnection {
         s.append("bindings:");
         s.append(mWaivedBinding.isBound() ? "W" : " ");
         s.append(mModerateBinding.isBound() ? "M" : " ");
-        s.append(mModerateWaiveCpuBinding.isBound() ? "C" : " ");
         s.append(mStrongBinding.isBound() ? "S" : " ");
         return s.toString();
     }
@@ -794,15 +789,24 @@ public class ChildProcessConnection {
         assert !mUnbound;
 
         boolean success;
+        boolean usedFallback = sAlwaysFallback && mFallbackServiceName != null;
         if (useStrongBinding) {
             success = mStrongBinding.bindServiceConnection();
         } else {
             mModerateBindingCount++;
             success = mModerateBinding.bindServiceConnection();
         }
-        if (!success) return false;
+        if (!success) {
+            // Note this error condition is generally transient so `sAlwaysFallback` is
+            // not set in this code path.
+            if (!usedFallback && mFallbackServiceName != null && retireBindingsAndBindFallback()) {
+                usedFallback = true;
+            } else {
+                return false;
+            }
+        }
 
-        if (!sFallbackEnabled && mFallbackServiceName != null) {
+        if (!usedFallback && mFallbackServiceName != null) {
             mLauncherHandler.postDelayed(
                     this::checkBindTimeOut, FALLBACK_TIMEOUT_IN_SECONDS * 1000);
         }
@@ -821,24 +825,38 @@ public class ChildProcessConnection {
         if (mUnbound) {
             return;
         }
+        sAlwaysFallback = true;
+        retireBindingsAndBindFallback();
+    }
 
-        Log.w(TAG, "Fallback to " + mFallbackServiceName);
-        sFallbackEnabled = true;
+    private boolean retireBindingsAndBindFallback() {
+        assert mFallbackServiceName != null;
+        Log.w(TAG, "Fallback to %s", mFallbackServiceName);
         boolean isStrongBindingBound = mStrongBinding.isBound();
         boolean isModerateBindingBound = mModerateBinding.isBound();
-        boolean isModerateWaiveCpuBindingBound = mModerateWaiveCpuBinding.isBound();
         boolean isWaivedBindingBound = mWaivedBinding.isBound();
         mStrongBinding.retire();
         mModerateBinding.retire();
-        mModerateWaiveCpuBinding.retire();
         mWaivedBinding.retire();
         createBindings(mFallbackServiceName);
-        if (isStrongBindingBound) mStrongBinding.bindServiceConnection();
-        if (isModerateBindingBound) mModerateBinding.bindServiceConnection();
-        if (isModerateWaiveCpuBindingBound) {
-            mModerateWaiveCpuBinding.bindServiceConnection();
+        // Expect all bindings to succeed or fail together. So early out as soon as
+        // one binding fails.
+        if (isStrongBindingBound) {
+            if (!mStrongBinding.bindServiceConnection()) {
+                return false;
+            }
         }
-        if (isWaivedBindingBound) mWaivedBinding.bindServiceConnection();
+        if (isModerateBindingBound) {
+            if (!mModerateBinding.bindServiceConnection()) {
+                return false;
+            }
+        }
+        if (isWaivedBindingBound) {
+            if (!mWaivedBinding.bindServiceConnection()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @VisibleForTesting
@@ -850,7 +868,6 @@ public class ChildProcessConnection {
         mStrongBinding.unbindServiceConnection();
         mWaivedBinding.unbindServiceConnection();
         mModerateBinding.unbindServiceConnection();
-        mModerateWaiveCpuBinding.unbindServiceConnection();
         updateBindingState();
 
         if (mMemoryPressureCallback != null) {
@@ -897,9 +914,6 @@ public class ChildProcessConnection {
         }
         if (mStrongBindingCount == 0) {
             mStrongBinding.bindServiceConnection();
-            if (mModerateWaiveCpuBinding.isBound()) {
-                mModerateWaiveCpuBinding.unbindServiceConnection();
-            }
             updateBindingState();
         }
         mStrongBindingCount++;
@@ -913,10 +927,6 @@ public class ChildProcessConnection {
         assert mStrongBindingCount > 0;
         mStrongBindingCount--;
         if (mStrongBindingCount == 0) {
-            if (mModerateWaiveCpuBindingCount > 0 && !mModerateWaiveCpuBinding.isBound()
-                    && !mModerateBinding.isBound()) {
-                mModerateWaiveCpuBinding.bindServiceConnection();
-            }
             mStrongBinding.unbindServiceConnection();
             updateBindingState();
         }
@@ -924,7 +934,7 @@ public class ChildProcessConnection {
 
     public boolean isModerateBindingBound() {
         assert isRunningOnLauncherThread();
-        return mModerateBinding.isBound() || mModerateWaiveCpuBinding.isBound();
+        return mModerateBinding.isBound();
     }
 
     /**
@@ -933,26 +943,14 @@ public class ChildProcessConnection {
      * priority. Note the refcounts for waiveCpuPriority and not are separate,
      * so removeModerateBinding parameter must match.
      */
-    public void addModerateBinding(boolean waiveCpuPriority) {
+    public void addModerateBinding() {
         assert isRunningOnLauncherThread();
         if (!isConnected()) {
             Log.w(TAG, "The connection is not bound for %d", getPid());
             return;
         }
-        if (waiveCpuPriority) {
-            if (mModerateWaiveCpuBindingCount == 0 && !mStrongBinding.isBound()
-                    && !mModerateBinding.isBound()) {
-                mModerateWaiveCpuBinding.bindServiceConnection();
-                updateBindingState();
-            }
-            mModerateWaiveCpuBindingCount++;
-            return;
-        }
         if (mModerateBindingCount == 0) {
             mModerateBinding.bindServiceConnection();
-            if (mModerateWaiveCpuBinding.isBound()) {
-                mModerateWaiveCpuBinding.unbindServiceConnection();
-            }
             updateBindingState();
         }
         mModerateBindingCount++;
@@ -961,27 +959,14 @@ public class ChildProcessConnection {
     /**
      * @param waiveCpuPriority See addModerateBinding.
      */
-    public void removeModerateBinding(boolean waiveCpuPriority) {
+    public void removeModerateBinding() {
         assert isRunningOnLauncherThread();
         if (!isConnected()) {
-            return;
-        }
-        if (waiveCpuPriority) {
-            assert mModerateWaiveCpuBindingCount > 0;
-            mModerateWaiveCpuBindingCount--;
-            if (mModerateWaiveCpuBindingCount == 0 && mModerateWaiveCpuBinding.isBound()) {
-                mModerateWaiveCpuBinding.unbindServiceConnection();
-                updateBindingState();
-            }
             return;
         }
         assert mModerateBindingCount > 0;
         mModerateBindingCount--;
         if (mModerateBindingCount == 0) {
-            if (mModerateWaiveCpuBindingCount > 0 && !mModerateWaiveCpuBinding.isBound()
-                    && !mStrongBinding.isBound()) {
-                mModerateWaiveCpuBinding.bindServiceConnection();
-            }
             mModerateBinding.unbindServiceConnection();
             updateBindingState();
         }
@@ -1038,7 +1023,7 @@ public class ChildProcessConnection {
             newBindingState = ChildBindingState.UNBOUND;
         } else if (mStrongBinding.isBound()) {
             newBindingState = ChildBindingState.STRONG;
-        } else if (mModerateBinding.isBound() || mModerateWaiveCpuBinding.isBound()) {
+        } else if (mModerateBinding.isBound()) {
             newBindingState = ChildBindingState.MODERATE;
         } else {
             assert mWaivedBinding.isBound();

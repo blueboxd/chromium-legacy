@@ -74,6 +74,7 @@ message DeviceRegisterRequest {
     DEVICE = 2;           // Register for Chrome OS device policies.
     BROWSER = 3;          // Register for desktop Chrome browser user policies.
     ANDROID_BROWSER = 4;  // Register for Android Chrome browser user policies.
+    IOS_BROWSER = 6;      // Register for iOS Chrome browser user policies.
   }
   // NOTE: we also use this field to detect client version.  If this
   // field is missing, then the request comes from TT.  We will remove
@@ -711,6 +712,11 @@ message PolicyData {
   // device's managing OU's SSO profile. Currently, this points to the OU's
   // SAML settings. May support OIDC in the future.
   optional string sso_profile = 37;
+
+  // Indicates which kind of licenses this device is using, so that chrome OS
+  // can check that. The value is from ChromeOsDeviceInfo
+  // http://google3/ccc/hosted/devices/services/chromeos/common.proto;rcl=436571779;l=549
+  optional string license_sku = 38;
 }
 
 message ClientActionRequired {
@@ -1565,6 +1571,8 @@ message DeviceStatusReportRequest {
 
   // Information about the device's network hardware.
   repeated NetworkAdapterInfo network_adapter_info = 45;
+
+  repeated LaCrOsBrowserReport lacros_browser_report = 46;
 }
 
 message OsUpdateStatus {
@@ -4003,6 +4011,20 @@ message BrowserPublicKeyUploadResponse {
   optional ResponseCode response_code = 1;
 }
 
+// Additional detail about the error which can be used to clarify user messaging
+// around the error or to influence Chrome's error-handling behavior.
+enum DeviceManagementErrorDetail {
+  NO_ERROR_DETAIL = 0;
+
+  // Only valid for CBCM browser DEVICE_NOT_FOUND errors. Indicates that the
+  // DMToken should be deleted entirely from its storage location.
+  CBCM_DELETION_POLICY_PREFERENCE_DELETE_TOKEN = 1;
+
+  // Only valid for CBCM browser DEVICE_NOT_FOUND errors. Indicates that the
+  // DMToken should be invalidated, preventing device re-enrollment.
+  CBCM_DELETION_POLICY_PREFERENCE_INVALIDATE_TOKEN = 2;
+}
+
 // Request from the DMAgent on the device to the DMServer.  This is
 // container for all requests from device to server.  The overall HTTP
 // request MUST be in the following format:
@@ -4272,6 +4294,9 @@ message DeviceManagementResponse {
   // Error message.
   optional string error_message = 2;
 
+  // Additional details about the error message.
+  repeated DeviceManagementErrorDetail error_detail = 39;
+
   // Register response
   optional DeviceRegisterResponse register_response = 3;
 
@@ -4383,7 +4408,7 @@ message DeviceManagementResponse {
   // Response to a Chrome Profile report request.
   optional ChromeProfileReportResponse chrome_profile_report_response = 38;
 
-  // Next id: 39.
+  // Next id: 40.
 }
 
 // Device State Information stored in the server is retrieval at
@@ -4391,4 +4416,13 @@ message DeviceManagementResponse {
 message DeviceStateRetrievalInfo {
   // Whether the device should retrieve initial state or not.
   optional bool has_initial_state = 1;
+}
+
+// Report device user with browser report
+message LaCrOsBrowserReport {
+  optional DeviceUser device_user = 1;
+
+  optional BrowserReport browser_report = 2;
+
+  // Next id: 3.
 }

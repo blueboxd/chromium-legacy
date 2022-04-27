@@ -53,7 +53,6 @@
 #include "components/query_tiles/switches.h"
 #include "components/reading_list/features/reading_list_switches.h"
 #include "components/safe_browsing/core/common/features.h"
-#include "components/security_state/core/features.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/shared_highlighting/core/common/shared_highlighting_features.h"
 #include "components/signin/public/base/signin_switches.h"
@@ -106,6 +105,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &download::features::kSmartSuggestionForLargeDownloads,
     &download::features::kUseDownloadOfflineContentProvider,
     &embedder_support::kShowTrustedPublisherURL,
+    &features::kAndroidPWAsDefaultOfflinePage,
     &features::kAnonymousUpdateChecks,
     &features::kContinuousSearch,
     &features::kEarlyLibraryLoad,
@@ -170,10 +170,8 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAppMenuMobileSiteOption,
     &kAppToWebAttribution,
     &kBackgroundThreadPool,
-    &kBookmarkBottomSheet,
     &kBulkTabRestore,
     &kCastDeviceFilter,
-    &kCloseAllTabsModalDialog,
     &kCloseTabSuggestions,
     &kCriticalPersistedTabData,
     &kCCTBackgroundTab,
@@ -247,6 +245,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kPageAnnotationsService,
     &kBookmarksImprovedSaveFlow,
     &kBookmarksRefresh,
+    &kBackGestureRefactorAndroid,
     &kProbabilisticCryptidRenderer,
     &kReachedCodeProfiler,
     &kImproveReaderModePrompt,
@@ -313,6 +312,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &paint_preview::kPaintPreviewDemo,
     &paint_preview::kPaintPreviewShowOnStartup,
     &language::kAppLanguagePrompt,
+    &language::kAppLanguagePromptULP,
     &language::kDetailedLanguageSettings,
     &language::kExplicitLanguageAsk,
     &language::kForceAppLanguagePrompt,
@@ -339,7 +339,9 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &omnibox::kAndroidAuxiliarySearch,
     &omnibox::kUpdatedConnectionSecurityIndicators,
     &optimization_guide::features::kPushNotifications,
-    &page_info::kPageInfoAboutThisSite,
+    &page_info::kPageInfoAboutThisSiteEn,
+    &page_info::kPageInfoAboutThisSiteMoreInfo,
+    &page_info::kPageInfoAboutThisSiteNonEn,
     &page_info::kAboutThisSiteBanner,
     &page_info::kPageInfoDiscoverability,
     &password_manager::features::kBiometricTouchToFill,
@@ -352,7 +354,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &password_manager::features::kUnifiedPasswordManagerAndroid,
     &password_manager::features::kPasswordEditDialogWithDetails,
     &performance_hints::features::kContextMenuPerformanceInfo,
-    &policy::features::kChromeManagementPageAndroid,
     &privacy_sandbox::kPrivacySandboxSettings3,
     &query_tiles::features::kQueryTiles,
     &query_tiles::features::kQueryTilesInNTP,
@@ -437,9 +438,6 @@ const base::Feature kAppToWebAttribution{"AppToWebAttribution",
 const base::Feature kBackgroundThreadPool{"BackgroundThreadPool",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kBookmarkBottomSheet{"BookmarkBottomSheet",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kBulkTabRestore{"BulkTabRestore",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -449,9 +447,6 @@ const base::Feature kConditionalTabStripAndroid{
 // Used in downstream code.
 const base::Feature kCastDeviceFilter{"CastDeviceFilter",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kCloseAllTabsModalDialog{"CloseAllTabsModalDialog",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCloseTabSuggestions{"CloseTabSuggestions",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
@@ -686,6 +681,9 @@ const base::Feature kBookmarksImprovedSaveFlow{
 
 const base::Feature kBookmarksRefresh{"BookmarksRefresh",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kBackGestureRefactorAndroid{
+    "BackGestureRefactorAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kProbabilisticCryptidRenderer{
     "ProbabilisticCryptidRenderer", base::FEATURE_DISABLED_BY_DEFAULT};

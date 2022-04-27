@@ -2698,7 +2698,7 @@ enum WebFeature {
   kDOMWindowOpenPositioningFeaturesCrossScreen = 3392,
   kDOMWindowSetWindowRectCrossScreen = 3393,
   kFullscreenCrossScreen = 3394,
-  kBatterySavingsMeta = 3395,
+  kOBSOLETE_BatterySavingsMeta = 3395,
   kDigitalGoodsGetDigitalGoodsService = 3396,
   kDigitalGoodsGetDetails = 3397,
   kDigitalGoodsAcknowledge = 3398,
@@ -3088,8 +3088,8 @@ enum WebFeature {
   kV8TCPSocket_RemotePort_AttributeGetter = 3779,
   kCSSSelectorTargetText = 3780,
   kPopupElement = 3781,
-  kV8HTMLPopupElement_Show_Method = 3782,
-  kV8HTMLPopupElement_Hide_Method = 3783,
+  kOBSOLETE_V8HTMLPopupElement_Show_Method = 3782,
+  kOBSOLETE_V8HTMLPopupElement_Hide_Method = 3783,
   kOBSOLETE_WindowOpenWithAdditionalBoolParameter = 3784,
   kRTCPeerConnectionConstructedWithPlanB = 3785,
   kRTCPeerConnectionConstructedWithUnifiedPlan = 3786,
@@ -3530,6 +3530,13 @@ enum WebFeature {
   kLegacyConstraintGoogCpuOveruseDetection = 4209,
   kAudioContextOutputLatency = 4210,
   kV8Window_QueryLocalFonts_Method = 4211,
+  kCSSAtRuleScope = 4212,
+  kDeferredShapingDisabledByPositioned = 4213,
+  kCapabilityDelegationOfFullscreenRequest = 4214,
+  kSerialPortForget = 4215,
+  kCookieHasNotBeenRefreshedIn201To300Days = 4216,
+  kCookieHasNotBeenRefreshedIn301To350Days = 4217,
+  kCookieHasNotBeenRefreshedIn351To400Days = 4218,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

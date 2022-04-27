@@ -20,6 +20,7 @@ source_set("browser_util") {
     "//chrome/browser:browser_process",
     "//chrome/common",
     "//chromeos/crosapi/cpp",
+    "//chromeos/crosapi/cpp:crosapi_constants",
     "//chromeos/crosapi/mojom",
     "//components/account_id",
     "//components/exo",
@@ -66,6 +67,8 @@ source_set("crosapi") {
     "copy_migrator.h",
     "crosapi_ash.cc",
     "crosapi_ash.h",
+    "crosapi_dependency_registry.cc",
+    "crosapi_dependency_registry.h",
     "crosapi_id.h",
     "crosapi_manager.cc",
     "crosapi_manager.h",
@@ -87,6 +90,8 @@ source_set("crosapi") {
     "echo_private_ash.h",
     "environment_provider.cc",
     "environment_provider.h",
+    "extension_info_private_ash.cc",
+    "extension_info_private_ash.h",
     "feedback_ash.cc",
     "feedback_ash.h",
     "field_trial_service_ash.cc",
@@ -99,6 +104,8 @@ source_set("crosapi") {
     "force_installed_tracker_ash.h",
     "geolocation_service_ash.cc",
     "geolocation_service_ash.h",
+    "hosted_app_util.cc",
+    "hosted_app_util.h",
     "identity_manager_ash.cc",
     "identity_manager_ash.h",
     "idle_service_ash.cc",
@@ -185,6 +192,7 @@ source_set("crosapi") {
   deps = [
     "//ash",
     "//ash/components/account_manager",
+    "//ash/components/arc:arc_base_utils",
     "//ash/components/arc/mojom",
     "//ash/components/arc/session",
     "//ash/components/cryptohome",
@@ -207,6 +215,7 @@ source_set("crosapi") {
     "//chromeos/components/quick_answers/public/cpp:prefs",
     "//chromeos/components/sensors",
     "//chromeos/crosapi/cpp",
+    "//chromeos/crosapi/cpp:crosapi_constants",
     "//chromeos/crosapi/mojom",
     "//chromeos/dbus",
     "//chromeos/dbus/cros_disks",
@@ -219,6 +228,7 @@ source_set("crosapi") {
     "//chromeos/network",
     "//chromeos/printing",
     "//chromeos/services/machine_learning/public/cpp",
+    "//chromeos/startup",
     "//chromeos/startup:constants",
     "//chromeos/system",
     "//components/arc",
@@ -260,13 +270,16 @@ source_set("crosapi") {
   # chrome/browser/ash/printing/print_management/printing_manager.h, which in
   # turn requires //ash/webui/print_management/mojom to generate the Mojo
   # headers referenced by printing_manager.h.
-  # Ideally, //chrome/browser/chromeos can just make
+  # Ideally, //chrome/browser/ash can just make
   # //ash/webui/print_management/mojom a public_deps entry, and this target can
-  # depend on //chrome/browser/chromeos. However, that creates a circular
+  # depend on //chrome/browser/ash. However, that creates a circular
   # dependency, so add this indirect dependency to make it work as intended.
   deps += [ "//ash/webui/print_management/mojom" ]
 
-  public_deps = [ ":browser_util" ]
+  public_deps = [
+    ":browser_util",
+    "//media/gpu:buildflags",
+  ]
 }
 
 source_set("test_support") {
@@ -277,6 +290,8 @@ source_set("test_support") {
     "fake_browser_manager.h",
     "test_controller_ash.cc",
     "test_controller_ash.h",
+    "test_crosapi_dependency_registry.cc",
+    "test_crosapi_dependency_registry.h",
   ]
 
   deps = [
@@ -335,6 +350,7 @@ source_set("unit_tests") {
     "//chrome/test:test_support",
     "//chromeos/ash/components/dbus/upstart",
     "//chromeos/crosapi/cpp:cpp",
+    "//chromeos/crosapi/cpp:crosapi_constants",
     "//chromeos/dbus/shill",
     "//chromeos/login/login_state",
     "//chromeos/printing",

@@ -9,7 +9,7 @@
 // #import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js'
 // #import {assert} from 'chrome://resources/js/assert.m.js';
 // #import {$, appendParam} from 'chrome://resources/js/util.m.js';
-// #import {sendWithPromise} from 'chrome://resources/js/cr.m.js';
+// #import {sendWithPromise, getPropertyDescriptor} from 'chrome://resources/js/cr.m.js';
 
 // #import {SamlHandler, OnHeadersReceivedDetails} from './saml_handler.m.js';
 // #import {WebviewEventManager} from './webview_event_manager.m.js';
@@ -357,11 +357,11 @@ cr.define('cr.login', function() {
         return;
       }
 
-      if (!this.services_) {
-        console.error('Authenticator: UserInfo should come before closeView');
-      }
 
       if (!this.authCompletedFired_) {
+        if (!this.services_) {
+          console.error('Authenticator: UserInfo should come before closeView');
+        }
         const metric = this.authFlow === AuthFlow.SAML ?
             GAIA_MESSAGE_SAML_CLOSE_VIEW :
             GAIA_MESSAGE_GAIA_CLOSE_VIEW;
@@ -488,7 +488,7 @@ cr.define('cr.login', function() {
       this.samlHandler_.reset();
       this.videoEnabled = false;
       this.services_ = null;
-      this.gaiaDoneTimer_ = null;
+      this.maybeClearGaiaTimeout_();
       this.syncTrustedVaultKeys_ = null;
       this.closeViewReceived_ = false;
       this.isAzureADIntegrationEnabled_ = false;
@@ -1090,18 +1090,13 @@ cr.define('cr.login', function() {
       const gaiaDone = userInfoAvailable &&
           (!this.enableCloseView_ || this.closeViewReceived_);
 
-      if (gaiaDone && this.gaiaDoneTimer_) {
-        window.clearTimeout(this.gaiaDoneTimer_);
-        this.gaiaDoneTimer_ = null;
-      }
-
-      if (this.gaiaDoneTimer_) {
+      if (gaiaDone) {
+        this.maybeClearGaiaTimeout_();
+      } else if (this.gaiaDoneTimer_) {
         // Early out if `gaiaDoneTimer_` is running.
         return;
-      }
-
-      if (!gaiaDone) {
-        // Start `gaiaDoneTimer_` if user info is not available.
+      } else {
+        // Start `gaiaDoneTimer_` if Gaia is not yet done.
         this.gaiaDoneTimer_ = window.setTimeout(
             () => this.onGaiaDoneTimeout_(), GAIA_DONE_WAIT_TIMEOUT_MS);
         return;
@@ -1442,12 +1437,22 @@ cr.define('cr.login', function() {
         chrome.send('metricsHandler:recordBooleanHistogram', [metric, false]);
       }
 
-      this.gaiaDoneTimer_ = null;
+      this.maybeClearGaiaTimeout_();
       this.maybeCompleteAuth_();
+    }
+
+    /**
+     * @private
+     */
+    maybeClearGaiaTimeout_() {
+      if (!this.gaiaDoneTimer_) {
+        return;
+      }
+      window.clearTimeout(this.gaiaDoneTimer_);
+      this.gaiaDoneTimer_ = null;
     }
   }
 
-  // #cr_define_end
   /**
    * The current auth flow of the hosted auth page.
    * @type {AuthFlow}
@@ -1479,5 +1484,6 @@ cr.define('cr.login', function() {
   Authenticator.AuthMode = AuthMode;
   Authenticator.SUPPORTED_PARAMS = SUPPORTED_PARAMS;
 
+  // #cr_define_end
   return {Authenticator: Authenticator};
 });

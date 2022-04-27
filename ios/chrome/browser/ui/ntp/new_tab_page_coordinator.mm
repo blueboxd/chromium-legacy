@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/discover_feed/feed_constants.h"
 #import "ios/chrome/browser/discover_feed/feed_model_configuration.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -564,6 +565,12 @@ namespace {
   menuButtonGuide.constrainedView = self.feedHeaderViewController.menuButton;
 }
 
+- (void)updateFollowingFeedHasUnseenContent:(BOOL)hasUnseenContent {
+  DCHECK(IsWebChannelsEnabled());
+  [self.feedHeaderViewController
+      updateFollowingSegmentDotForUnseenContent:hasUnseenContent];
+}
+
 - (void)ntpDidChangeVisibility:(BOOL)visible {
   if (!self.browser->GetBrowserState()->IsOffTheRecord()) {
     if (visible && self.started) {
@@ -586,14 +593,24 @@ namespace {
 
 - (void)handleFeedSelected:(FeedType)feedType {
   DCHECK(IsWebChannelsEnabled());
+
+  // Saves scroll position before changing feed.
+  CGFloat scrollPosition = [self.ntpViewController scrollPosition];
+
   if (feedType == FeedTypeFollowing) {
     // Clears dot and notifies service that the Following feed content has been
     // seen.
-    self.feedHeaderViewController.followingSegmentDotVisible = NO;
+    [self.feedHeaderViewController
+        updateFollowingSegmentDotForUnseenContent:NO];
     self.discoverFeedService->SetFollowingFeedContentSeen();
   }
   self.selectedFeed = feedType;
   [self updateNTPForFeed];
+  [self updateFeedLayout];
+
+  // Scroll position resets when changing the feed, so we set it back to what it
+  // was.
+  [self.ntpViewController setContentOffsetUpToTopOfFeed:scrollPosition];
 }
 
 - (void)handleSortTypeForFollowingFeed:(FollowingFeedSortType)sortType {
@@ -1150,13 +1167,12 @@ namespace {
   DCHECK(!self.browser->GetBrowserState()->IsOffTheRecord());
   if (!_feedHeaderViewController) {
     _feedHeaderViewController = [[FeedHeaderViewController alloc]
-               initWithSelectedFeed:self.selectedFeed
-              followingFeedSortType:(FollowingFeedSortType)
-                                        self.prefService->GetInteger(
-                                            prefs::kNTPFollowingFeedSortType)
-         followingSegmentDotVisible:self.discoverFeedService
-                                        ->GetFollowingFeedHasUnseenContent()
-        isGoogleDefaultSearchEngine:[self isGoogleDefaultSearchEngine]];
+        initWithFollowingFeedSortType:(FollowingFeedSortType)
+                                          self.prefService->GetInteger(
+                                              prefs::kNTPFollowingFeedSortType)
+           followingSegmentDotVisible:self.discoverFeedService
+                                          ->GetFollowingFeedHasUnseenContent()
+          isGoogleDefaultSearchEngine:[self isGoogleDefaultSearchEngine]];
     _feedHeaderViewController.feedControlDelegate = self;
     [_feedHeaderViewController.menuButton
                addTarget:self

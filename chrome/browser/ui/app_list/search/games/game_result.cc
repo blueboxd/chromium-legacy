@@ -39,6 +39,8 @@
 namespace app_list {
 namespace {
 
+using OverflowBehavior = ash::SearchResultTextItem::OverflowBehavior;
+
 constexpr char16_t kPlatformDelimiter[] = u", ";
 constexpr char16_t kDetailsDelimiter[] = u" - ";
 constexpr char16_t kA11yDelimiter[] = u", ";
@@ -48,11 +50,6 @@ constexpr char kLaunchUrlPrefix[] = "https://todo.com?game=";
 
 GURL LaunchUrlFromId(const std::string& id) {
   return GURL(base::StrCat({kLaunchUrlPrefix, id}));
-}
-
-std::u16string DisplayStringForGameSource(apps::GameExtras::Source source) {
-  // TODO(crbug.com/1305880): Replace with display string once finalized.
-  return u"[game source]";
 }
 
 bool IsDarkModeEnabled() {
@@ -122,9 +119,9 @@ void GameResult::UpdateText(const apps::Result& game,
   accessible_name.push_back(title());
   accessible_name.push_back(kA11yDelimiter);
 
-  std::u16string source = DisplayStringForGameSource(extras->GetSource());
+  std::u16string source = extras->GetSource();
   details.push_back(CreateStringTextItem(source).SetOverflowBehavior(
-      ash::SearchResultTextItem::OverflowBehavior::kNoElide));
+      OverflowBehavior::kNoElide));
   accessible_name.push_back(source);
 
   const auto& platforms = extras->GetPlatforms();
@@ -132,11 +129,15 @@ void GameResult::UpdateText(const apps::Result& game,
     std::u16string platforms_string =
         base::JoinString(platforms.value(), kPlatformDelimiter);
 
-    details.push_back(CreateStringTextItem(kDetailsDelimiter));
+    details.push_back(CreateStringTextItem(kDetailsDelimiter)
+                          .SetOverflowBehavior(OverflowBehavior::kHide));
     details.push_back(
-        CreateStringTextItem(IDS_APP_LIST_SEARCH_GAME_PLATFORMS_PREFIX));
-    details.push_back(CreateStringTextItem(u" "));
-    details.push_back(CreateStringTextItem(platforms_string));
+        CreateStringTextItem(IDS_APP_LIST_SEARCH_GAME_PLATFORMS_PREFIX)
+            .SetOverflowBehavior(OverflowBehavior::kHide));
+    details.push_back(CreateStringTextItem(u" ").SetOverflowBehavior(
+        OverflowBehavior::kHide));
+    details.push_back(CreateStringTextItem(platforms_string)
+                          .SetOverflowBehavior(OverflowBehavior::kHide));
 
     accessible_name.push_back(kA11yDelimiter);
     accessible_name.push_back(

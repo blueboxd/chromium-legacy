@@ -173,7 +173,7 @@ struct PrintPagesParams {
   // value for all the document.
   PrintParams params;
   // If empty, this means a request to render all the printed pages.
-  array<uint32> pages;
+  array<PageRange> pages;
 };
 
 // Parameters to describe a rendered page.
@@ -270,6 +270,11 @@ interface PrintPreviewUI {
   DidStartPreview(DidStartPreviewParams params, int32 request_id);
 };
 
+enum PrintFailureReason {
+  kGeneralFailure,
+  kInvalidPageRange,
+};
+
 // Render process interface exposed to the browser to handle most of the
 // printing grunt work for RenderView.
 interface PrintRenderFrame {
@@ -354,7 +359,7 @@ interface PrintManagerHost {
   ShowInvalidPrinterSettingsError();
 
   // Tells the browser printing failed.
-  PrintingFailed(int32 cookie);
+  PrintingFailed(int32 cookie, PrintFailureReason reason);
 
   // Update the current print settings with new |job_settings|.
   [EnableIf=enable_print_preview, Sync]

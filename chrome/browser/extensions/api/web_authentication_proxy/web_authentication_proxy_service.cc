@@ -219,10 +219,10 @@ void WebAuthenticationProxyService::OnParseCreateResponse(
         .Run("Parsing responseJson failed: " + *value_or_error.error);
     return;
   }
-  blink::mojom::MakeCredentialAuthenticatorResponsePtr response =
-      MakeCredentialResponseFromValue(*value_or_error.value);
+  auto [response, error] =
+      webauthn_proxy::MakeCredentialResponseFromValue(*value_or_error.value);
   if (!response) {
-    std::move(respond_callback).Run("Invalid responseJson");
+    std::move(respond_callback).Run("Invalid responseJson: " + error);
     return;
   }
 
@@ -250,10 +250,10 @@ void WebAuthenticationProxyService::OnParseGetResponse(
         .Run("Parsing responseJson failed: " + *value_or_error.error);
     return;
   }
-  blink::mojom::GetAssertionAuthenticatorResponsePtr response =
-      GetAssertionResponseFromValue(*value_or_error.value);
+  auto [response, error] =
+      webauthn_proxy::GetAssertionResponseFromValue(*value_or_error.value);
   if (!response) {
-    std::move(respond_callback).Run("Invalid responseJson");
+    std::move(respond_callback).Run("Invalid responseJson: " + error);
     return;
   }
 
@@ -288,7 +288,7 @@ WebAuthenticationProxyService::SignalCreateRequest(
   api::web_authentication_proxy::CreateRequest request;
   request.request_id = request_id;
 
-  base::Value options_value = ToValue(options_ptr);
+  base::Value options_value = webauthn_proxy::ToValue(options_ptr);
   std::string request_json;
   JSONStringValueSerializer serializer(&request.request_details_json);
   CHECK(serializer.Serialize(options_value));
@@ -315,7 +315,7 @@ WebAuthenticationProxyService::SignalGetRequest(
   api::web_authentication_proxy::GetRequest request;
   request.request_id = request_id;
 
-  base::Value options_value = ToValue(options_ptr);
+  base::Value options_value = webauthn_proxy::ToValue(options_ptr);
   std::string request_json;
   JSONStringValueSerializer serializer(&request.request_details_json);
   CHECK(serializer.Serialize(options_value));

@@ -79,47 +79,6 @@ class OnDownloadUpdatedWaiter : public DownloadTaskObserver {
   bool download_updated_ = false;
 };
 
-// Mocks DownloadTaskImpl::Delegate's OnTaskUpdated and OnTaskDestroyed methods
-// and stubs DownloadTaskImpl::Delegate::CreateSession with session mock.
-class FakeDownloadSessionTaskImplDelegate : public DownloadTaskImpl::Delegate {
- public:
-  FakeDownloadSessionTaskImplDelegate()
-      : configuration_([NSURLSessionConfiguration
-            backgroundSessionConfigurationWithIdentifier:
-                [NSUUID UUID].UUIDString]),
-        session_(OCMStrictClassMock([NSURLSession class])) {
-    OCMStub([session_ configuration]).andReturn(configuration_);
-  }
-
-  MOCK_METHOD1(OnTaskDestroyed, void(DownloadTaskImpl* task));
-
-  // Returns mock, which can be accessed via session() method.
-  NSURLSession* CreateSession(NSString* identifier,
-                              NSArray<NSHTTPCookie*>* cookies,
-                              id<NSURLSessionDataDelegate> delegate,
-                              NSOperationQueue* delegate_queue) {
-    // Make sure this method is called only once.
-    EXPECT_FALSE(session_delegate_);
-    session_delegate_ = delegate;
-    cookies_ = [cookies copy];
-    return session_;
-  }
-
-  // These methods return session objects injected into DownloadTaskImpl.
-  NSURLSessionConfiguration* configuration() { return configuration_; }
-  id session() { return session_; }
-  id<NSURLSessionDataDelegate> session_delegate() { return session_delegate_; }
-
-  // Returns the cookies passed to Create session method.
-  NSArray<NSHTTPCookie*>* cookies() { return cookies_; }
-
- private:
-  id<NSURLSessionDataDelegate> session_delegate_;
-  id configuration_;
-  NSArray<NSHTTPCookie*>* cookies_ = nil;
-  id session_;
-};
-
 }  //  namespace
 
 // Test fixture for testing DownloadTaskImplTest class.
@@ -133,10 +92,14 @@ class DownloadSessionTaskImplTest : public PlatformTest {
             kContentDisposition,
             /*total_bytes=*/-1,
             kMimeType,
-            task_delegate_.configuration().identifier,
-            &task_delegate_)),
+            [[NSUUID UUID] UUIDString],
+            base::BindRepeating(&DownloadSessionTaskImplTest::CreateSession,
+                                base::Unretained(this)))),
         session_delegate_callbacks_queue_(
             dispatch_queue_create(nullptr, DISPATCH_QUEUE_SERIAL)) {
+    DCHECK(!session_);
+    session_ = OCMStrictClassMock([NSURLSession class]);
+
     browser_state_.SetOffTheRecord(true);
     browser_state_.SetCookieStore(std::make_unique<FakeCookieStore>());
     web_state_.SetBrowserState(&browser_state_);
@@ -150,11 +113,9 @@ class DownloadSessionTaskImplTest : public PlatformTest {
     NSURL* url = [NSURL URLWithString:@(kUrl)];
     CRWFakeNSURLSessionTask* session_task =
         [[CRWFakeNSURLSessionTask alloc] initWithURL:url];
-    EXPECT_TRUE(task_delegate_.session());
     NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:url];
     request.HTTPMethod = kHttpMethod;
-    OCMExpect([task_delegate_.session() dataTaskWithRequest:request])
-        .andReturn(session_task);
+    OCMExpect([session_ dataTaskWithRequest:request]).andReturn(session_task);
 
     // Start the download.
     task_->Start(path, destination_hint);
@@ -178,9 +139,10 @@ class DownloadSessionTaskImplTest : public PlatformTest {
   }
 
   // Session and session delegate injected into DownloadTaskImpl for testing.
-  NSURLSession* session() { return task_delegate_.session(); }
-  id<NSURLSessionDataDelegate> session_delegate() {
-    return task_delegate_.session_delegate();
+  NSURLSession* session() { return session_; }
+  id<NSURLSessionDataDelegate> session_delegate() { return session_delegate_; }
+  NSURLSessionConfiguration* session_configuration() {
+    return session_configuration_;
   }
 
   // Updates NSURLSessionTask.countOfBytesReceived and calls
@@ -218,22 +180,35 @@ class DownloadSessionTaskImplTest : public PlatformTest {
     task_->RemoveObserver(&callback_waiter);
   }
 
+  NSURLSession* CreateSession(NSURLSessionConfiguration* configuration,
+                              id<NSURLSessionDataDelegate> delegate) {
+    DCHECK(session_);
+
+    session_configuration_ = configuration;
+    session_delegate_ = delegate;
+
+    OCMStub([session_ configuration]).andReturn(session_configuration_);
+
+    return session_;
+  }
+
   web::WebTaskEnvironment task_environment_;
   FakeBrowserState browser_state_;
   FakeWebState web_state_;
-  testing::StrictMock<FakeDownloadSessionTaskImplDelegate> task_delegate_;
   std::unique_ptr<DownloadSessionTaskImpl> task_;
   MockDownloadTaskObserver task_observer_;
   // NSURLSessionDataDelegate callbacks are called on background serial queue.
   dispatch_queue_t session_delegate_callbacks_queue_ = 0;
+  __strong id session_ = nil;
+  __strong id<NSURLSessionDataDelegate> session_delegate_ = nil;
+  __strong NSURLSessionConfiguration* session_configuration_ = nil;
 };
 
 // Tests DownloadSessionTaskImpl default state after construction.
 TEST_F(DownloadSessionTaskImplTest, DefaultState) {
   EXPECT_EQ(&web_state_, task_->GetWebState());
   EXPECT_EQ(DownloadTask::State::kNotStarted, task_->GetState());
-  EXPECT_NSEQ(task_delegate_.configuration().identifier,
-              task_->GetIndentifier());
+  EXPECT_NE(@"", task_->GetIdentifier());
   EXPECT_EQ(kUrl, task_->GetOriginalUrl());
   EXPECT_FALSE(task_->IsDone());
   EXPECT_EQ(0, task_->GetErrorCode());
@@ -245,8 +220,6 @@ TEST_F(DownloadSessionTaskImplTest, DefaultState) {
   EXPECT_EQ(kMimeType, task_->GetMimeType());
   EXPECT_EQ(kMimeType, task_->GetOriginalMimeType());
   EXPECT_EQ("file.test", base::UTF16ToUTF8(task_->GetSuggestedFilename()));
-
-  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 
 // Tests sucessfull download of response without content.
@@ -269,8 +242,6 @@ TEST_F(DownloadSessionTaskImplTest, EmptyContentDownload) {
   EXPECT_EQ(0, task_->GetTotalBytes());
   EXPECT_EQ(0, task_->GetReceivedBytes());
   EXPECT_EQ(100, task_->GetPercentComplete());
-
-  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 
 // Tests sucessfull download of response when content length is unknown until
@@ -310,8 +281,6 @@ TEST_F(DownloadSessionTaskImplTest, UnknownLengthContentDownload) {
   EXPECT_EQ(100, task_->GetPercentComplete());
   EXPECT_NSEQ(@(kData), [[NSString alloc] initWithData:task_->GetResponseData()
                                               encoding:NSUTF8StringEncoding]);
-
-  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 
 // Tests cancelling the download task.
@@ -329,8 +298,6 @@ TEST_F(DownloadSessionTaskImplTest, Cancelling) {
   }));
   testing::Mock::VerifyAndClearExpectations(&task_observer_);
   EXPECT_EQ(DownloadTask::State::kCancelled, task_->GetState());
-
-  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 
 // Tests restarting failed download task.
@@ -368,8 +335,6 @@ TEST_F(DownloadSessionTaskImplTest, Restarting) {
   EXPECT_EQ(DownloadTask::State::kComplete, task_->GetState());
   EXPECT_EQ(0, task_->GetErrorCode());
   EXPECT_EQ(100, task_->GetPercentComplete());
-
-  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 
 // Tests sucessfull download of response with only one
@@ -410,8 +375,6 @@ TEST_F(DownloadSessionTaskImplTest, SmallResponseDownload) {
   EXPECT_EQ(100, task_->GetPercentComplete());
   EXPECT_NSEQ(@(kData), [[NSString alloc] initWithData:task_->GetResponseData()
                                               encoding:NSUTF8StringEncoding]);
-
-  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 
 // Tests sucessfull download of response with multiple
@@ -469,8 +432,6 @@ TEST_F(DownloadSessionTaskImplTest, LargeResponseDownload) {
   EXPECT_NSEQ([@(kData1) stringByAppendingString:@(kData2)],
               [[NSString alloc] initWithData:task_->GetResponseData()
                                     encoding:NSUTF8StringEncoding]);
-
-  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 
 // Tests failed download when URLSession:dataTask:didReceiveData: callback was
@@ -495,8 +456,6 @@ TEST_F(DownloadSessionTaskImplTest, FailureInTheBeginning) {
   EXPECT_EQ(0, task_->GetTotalBytes());
   EXPECT_EQ(0, task_->GetReceivedBytes());
   EXPECT_EQ(100, task_->GetPercentComplete());
-
-  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 
 // Tests failed download when URLSession:dataTask:didReceiveData: callback was
@@ -543,8 +502,6 @@ TEST_F(DownloadSessionTaskImplTest, FailureInTheMiddle) {
   EXPECT_NSEQ(@(kReceivedData),
               [[NSString alloc] initWithData:task_->GetResponseData()
                                     encoding:NSUTF8StringEncoding]);
-
-  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 
 // Tests that CreateSession is called with the correct cookies from the cookie
@@ -558,9 +515,11 @@ TEST_F(DownloadSessionTaskImplTest, Cookie) {
           /*creation=*/now,
           /*expire_date=*/now + base::Hours(2),
           /*last_access=*/now,
+          /*last_update=*/now,
           /*secure=*/false,
           /*httponly=*/false, net::CookieSameSite::UNSPECIFIED,
           net::COOKIE_PRIORITY_DEFAULT, /*same_party=*/false);
+  ASSERT_TRUE(expected_cookie);
   cookie_store()->SetAllCookies({*expected_cookie});
 
   // Start the download and make sure that all cookie from BrowserState were
@@ -568,12 +527,12 @@ TEST_F(DownloadSessionTaskImplTest, Cookie) {
   EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
   ASSERT_TRUE(Start());
 
-  EXPECT_EQ(1U, task_delegate_.cookies().count);
-  NSHTTPCookie* actual_cookie = task_delegate_.cookies().firstObject;
+  NSArray<NSHTTPCookie*>* cookies =
+      session_configuration().HTTPCookieStorage.cookies;
+  EXPECT_EQ(1U, cookies.count);
+  NSHTTPCookie* actual_cookie = cookies.firstObject;
   EXPECT_NSEQ(@"name", actual_cookie.name);
   EXPECT_NSEQ(@"value", actual_cookie.value);
-
-  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 
 // Tests that URLFetcherFileWriter deletes the file if download has failed with
@@ -611,8 +570,6 @@ TEST_F(DownloadSessionTaskImplTest, FileDeletion) {
     base::RunLoop().RunUntilIdle();
     return !base::PathExists(temp_file);
   }));
-
-  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 
 // Tests changing MIME type during the download.
@@ -638,8 +595,6 @@ TEST_F(DownloadSessionTaskImplTest, MimeTypeChange) {
   }));
   EXPECT_EQ(kMimeType, task_->GetOriginalMimeType());
   EXPECT_EQ(kOtherMimeType, task_->GetMimeType());
-
-  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 
 // Tests updating HTTP response code.
@@ -662,8 +617,6 @@ TEST_F(DownloadSessionTaskImplTest, HttpResponseCode) {
     return task_->IsDone();
   }));
   EXPECT_EQ(kHttpCode, task_->GetHttpCode());
-
-  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 
 // Tests that destructing DownloadTaskImpl calls -[NSURLSessionDataTask cancel]
@@ -673,20 +626,7 @@ TEST_F(DownloadSessionTaskImplTest, DownloadTaskDestruction) {
   CRWFakeNSURLSessionTask* session_task = Start();
   ASSERT_TRUE(session_task);
   testing::Mock::VerifyAndClearExpectations(&task_observer_);
-  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
   task_ = nullptr;  // Destruct DownloadTaskImpl.
-  EXPECT_TRUE(session_task.state = NSURLSessionTaskStateCanceling);
-}
-
-// Tests that shutting down DownloadTaskImpl calls
-// -[NSURLSessionDataTask cancel], but does not call OnTaskDestroyed().
-TEST_F(DownloadSessionTaskImplTest, DownloadTaskShutdown) {
-  EXPECT_CALL(task_observer_, OnDownloadUpdated(task_.get()));
-  CRWFakeNSURLSessionTask* session_task = Start();
-  ASSERT_TRUE(session_task);
-  testing::Mock::VerifyAndClearExpectations(&task_observer_);
-
-  task_->ShutDown();
   EXPECT_TRUE(session_task.state = NSURLSessionTaskStateCanceling);
 }
 

@@ -133,8 +133,8 @@ class OfferNotificationInfoBarControllerImplBrowserTest
   AutofillOfferManager* GetOfferManager() {
     return ContentAutofillDriver::GetForRenderFrameHost(
                GetWebContents()->GetMainFrame())
-        ->browser_autofill_manager()
-        ->offer_manager();
+        ->autofill_manager()
+        ->GetOfferManager();
   }
 
   void SetShownOffer(int64_t id) {

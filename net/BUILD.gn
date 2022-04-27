@@ -146,8 +146,6 @@ component("net") {
     "base/datagram_buffer.h",
     "base/elements_upload_data_stream.cc",
     "base/elements_upload_data_stream.h",
-    "base/escape.cc",
-    "base/escape.h",
     "base/expiring_cache.h",
     "base/features.cc",
     "base/features.h",
@@ -993,8 +991,6 @@ component("net") {
     "ssl/ssl_server_config.h",
     "ssl/threaded_ssl_private_key.cc",
     "ssl/threaded_ssl_private_key.h",
-    "third_party/uri_template/uri_template.cc",
-    "third_party/uri_template/uri_template.h",
     "url_request/redirect_info.cc",
     "url_request/redirect_info.h",
     "url_request/redirect_util.cc",
@@ -1091,7 +1087,6 @@ component("net") {
     "//net/dns:mdns_client",
     "//net/dns/public",
     "//net/http:transport_security_state_generated_files",
-    "//net/third_party/quiche",
   ]
 
   if (enable_reporting) {
@@ -1388,7 +1383,10 @@ component("net") {
       "cert/internal/trust_store_chrome.cc",
       "cert/internal/trust_store_chrome.h",
     ]
-    deps += [ "//net/data/ssl/chrome_root_store:gen_root_store_inc" ]
+    deps += [
+      "//net/cert:root_store_proto_lite",
+      "//net/data/ssl/chrome_root_store:gen_root_store_inc",
+    ]
     if (is_win) {
       sources += [
         "cert/internal/trust_store_win.cc",
@@ -1684,12 +1682,12 @@ source_set("net_public_deps") {
   public_deps = [
     ":buildflags",
     ":net_nqe_proto",
+    ":uri_template",
     "//base",
     "//crypto",
     "//crypto:platform",
-    "//net/third_party/quiche:net_quic_proto",
     "//net/third_party/quiche:net_quic_test_tools_proto",
-    "//net/third_party/quiche:quiche_public_deps",
+    "//net/third_party/quiche:quiche",
     "//net/traffic_annotation",
     "//third_party/boringssl",
     "//url",
@@ -1700,6 +1698,19 @@ if (is_android) {
   java_cpp_enum("effective_connection_type_java") {
     sources = [ "//net/nqe/effective_connection_type.h" ]
   }
+}
+
+component("uri_template") {
+  sources = [
+    "third_party/uri_template/uri_template.cc",
+    "third_party/uri_template/uri_template.h",
+  ]
+  visibility = [
+    ":net_public_deps",
+    "//net/third_party/quiche",
+  ]
+  defines = [ "IS_URI_TEMPLATE_IMPL" ]
+  public_deps = [ "//base" ]
 }
 
 grit("net_resources") {
@@ -4011,7 +4022,6 @@ test("net_unittests") {
     "base/data_url_unittest.cc",
     "base/datagram_buffer_unittest.cc",
     "base/elements_upload_data_stream_unittest.cc",
-    "base/escape_unittest.cc",
     "base/expiring_cache_unittest.cc",
     "base/file_stream_unittest.cc",
     "base/filename_util_unittest.cc",

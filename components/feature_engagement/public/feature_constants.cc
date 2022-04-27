@@ -83,6 +83,8 @@ const base::Feature kIPHAutoDarkUserEducationMessageFeature{
     "IPH_AutoDarkUserEducationMessage", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHAutoDarkUserEducationMessageOptInFeature{
     "IPH_AutoDarkUserEducationMessageOptIn", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kIPHCrowFeature{"IPH_Crow",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDataSaverDetailFeature{
     "IPH_DataSaverDetail", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHDataSaverMilestonePromoFeature{
@@ -208,7 +210,7 @@ const base::Feature kIPHPageInfoStoreInfoFeature{
 const base::Feature kIPHPreviewsOmniboxUIFeature{
     "IPH_PreviewsOmniboxUI", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHShoppingListMenuItemFeature{
-    "IPH_ShoppingListMenuItem", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IPH_ShoppingListMenuItem", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHTabGroupsQuicklyComparePagesFeature{
     "IPH_TabGroupsQuicklyComparePages", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHTabGroupsTapToSeeAnotherTabFeature{
@@ -292,9 +294,6 @@ const base::Feature kIPHPasswordSuggestionsFeature{
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
 const base::Feature kIPHAutofillVirtualCardSuggestionFeature{
     "IPH_AutofillVirtualCardSuggestion", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kIPHUpdatedConnectionSecurityIndicatorsFeature{
-    "IPH_UpdatedConnectionSecurityIndicators",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) ||
         // BUILDFLAG(IS_FUCHSIA)

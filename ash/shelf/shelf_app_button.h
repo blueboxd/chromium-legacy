@@ -19,7 +19,7 @@
 namespace views {
 class DotIndicator;
 class ImageView;
-}
+}  // namespace views
 
 namespace ash {
 struct ShelfItem;
@@ -104,6 +104,7 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
                        ui::MenuSourceType source_type) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool ShouldEnterPushedState(const ui::Event& event) override;
+  void OnThemeChanged() override;
 
   // views::View overrides:
   const char* GetClassName() const override;
@@ -119,6 +120,9 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
 
   // Returns whether the icon size is up to date.
   bool IsIconSizeCurrent();
+
+  // Called when the request for the context menu model is canceled.
+  void OnContextMenuModelRequestCanceled();
 
   bool FireDragTimerForTest();
   void FireRippleActivationTimerForTest();
@@ -216,6 +220,11 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
 
   // A timer to activate the ink drop ripple during a long press.
   base::OneShotTimer ripple_activation_timer_;
+
+  // The target visibility of the shelf app's context menu.
+  // NOTE: when `context_menu_target_visibility_` is true, the context menu may
+  // not show yet due to the async request for the menu model.
+  bool context_menu_target_visibility_ = false;
 
   std::unique_ptr<ShelfButtonDelegate::ScopedActiveInkDropCount>
       ink_drop_count_;

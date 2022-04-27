@@ -30,6 +30,14 @@ EarlyHintsPageLoadMetricsObserver::~EarlyHintsPageLoadMetricsObserver() =
     default;
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+EarlyHintsPageLoadMetricsObserver::OnFencedFramesStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url) {
+  // This class doesn't use subframe information. No need to forward.
+  return STOP_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 EarlyHintsPageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle) {
   // Continue observing when 103 Early Hints are received during the navigation

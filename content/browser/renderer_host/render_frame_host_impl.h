@@ -71,7 +71,6 @@
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/extra_mojo_js_features.mojom-forward.h"
@@ -200,7 +199,6 @@ class DocumentServiceBase;
 }  // namespace internal
 
 class AgentSchedulingGroupHost;
-class AXScreenAIAnnotator;
 class BrowsingContextState;
 class CodeCacheHostImpl;
 class CrossOriginEmbedderPolicyReporter;
@@ -256,7 +254,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public mojom::FrameHost,
       public mojom::DomAutomationControllerHost,
       public BrowserAccessibilityDelegate,
-      public RenderProcessHostObserver,
       public SiteInstanceGroup::Observer,
       public blink::mojom::BackForwardCacheControllerHost,
       public blink::mojom::LocalFrameHost,
@@ -543,10 +540,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                               int hit_node_id)> opt_callback) override;
   bool AccessibilityIsMainFrame() override;
   WebContentsAccessibility* AccessibilityGetWebContentsAccessibility() override;
-
-  // RenderProcessHostObserver implementation.
-  void RenderProcessExited(RenderProcessHost* host,
-                           const ChildProcessTerminationInfo& info) override;
 
   // SiteInstanceGroup::Observer
   void RenderProcessGone(SiteInstanceGroup* site_instance_group,
@@ -1536,11 +1529,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ForwardMessageFromHost(blink::TransferableMessage message,
                               const url::Origin& source_origin);
 
-  void NotifyVirtualKeyboardOverlayRect(const gfx::Rect& keyboard_rect);
-
-  // Returns the keyboard layout mapping.
-  base::flat_map<std::string, std::string> GetKeyboardLayoutMap();
-
   blink::mojom::FrameVisibility visibility() const { return visibility_; }
 
   // A CommitCallbackInterceptor is used to modify parameters for or cancel a
@@ -2457,20 +2445,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void DidChangeReferrerPolicy(network::mojom::ReferrerPolicy referrer_policy);
 
-  // TODO: While FencedFrame shadow DOM implementation exists and is dependent
-  // on the effective frame policy in BrowsingContextState, fenced frame status
-  // is dependent on FrameTreeNode being initialized and associated with a
-  // RenderFrameHostImpl. However, it may need to be accessed before node
-  // initialization, which is the reason for these methods. For example,
-  // RenderFrameHostImpl needs to have access to the effective frame policy
-  // (which is stored in FrameReplicationState), and we need to call this
-  // inside RenderFrameHostImpl's constructor (where FrameTreeNode doesn't
-  // have current RenderFrameHost yet). Remove these methods when shadow DOM is
-  // also removed.
-  bool IsFencedFrameRootNoStatus();
-  bool IsInFencedFrameTree();
-
   float GetPageScaleFactor() const;
+
+  enum class FencedFrameStatus {
+    kNotNestedInFencedFrame,
+    kFencedFrameRoot,
+    kIframeNestedWithinFencedFrame
+  };
 
  protected:
   friend class RenderFrameHostFactory;
@@ -2641,12 +2622,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest, FrozenAndUnfrozenIPC);
 
   class SubresourceLoaderFactoriesConfig;
-
-  enum class FencedFrameStatus {
-    kNotNestedInFencedFrame,
-    kFencedFrameRoot,
-    kIframeNestedWithinFencedFrame
-  };
 
   FrameTreeNode* GetSibling(int relative_offset) const;
 
@@ -3344,10 +3319,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
           receiver);
 
   TraceProto::LifecycleState LifecycleStateToProto() const;
-
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-  void RunScreenAIAnnotator();
-#endif
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //
@@ -4196,11 +4167,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   BackForwardCacheDisablingFeaturesCallback
       back_forward_cache_disabling_features_callback_for_testing_;
-
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-  // Manages the snapshot processing by Screen AI, if enabled.
-  std::unique_ptr<AXScreenAIAnnotator> ax_screen_ai_annotator_;
-#endif
 
   // Manages a transient affordance for this frame or subframes to open a popup.
   TransientAllowPopup transient_allow_popup_;

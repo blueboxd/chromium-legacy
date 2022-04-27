@@ -86,9 +86,6 @@ class WebRuntimeFeatures {
       bool);
   BLINK_PLATFORM_EXPORT static void EnableBlockingFocusWithoutUserActivation(
       bool);
-  BLINK_PLATFORM_EXPORT static void EnableCacheInlineScriptCode(bool);
-  BLINK_PLATFORM_EXPORT static void EnableCapabilityDelegationPaymentRequest(
-      bool enable);
   BLINK_PLATFORM_EXPORT static void EnableClickPointerEvent(bool enable);
   BLINK_PLATFORM_EXPORT static void EnableCompositeBGColorAnimation(
       bool enable);
@@ -153,7 +150,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableDirectSockets(bool);
   BLINK_PLATFORM_EXPORT static void EnableRemotePlaybackAPI(bool);
   BLINK_PLATFORM_EXPORT static void EnableSecurePaymentConfirmation(bool);
-  BLINK_PLATFORM_EXPORT static void EnableSecurePaymentConfirmationAPIV3(bool);
   BLINK_PLATFORM_EXPORT static void EnableSecurePaymentConfirmationDebug(bool);
   BLINK_PLATFORM_EXPORT static void EnableScriptedSpeechRecognition(bool);
   BLINK_PLATFORM_EXPORT static void EnableScriptedSpeechSynthesis(bool);

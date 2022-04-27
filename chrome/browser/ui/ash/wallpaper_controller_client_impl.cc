@@ -26,6 +26,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
@@ -570,9 +571,10 @@ bool WallpaperControllerClientImpl::IsWallpaperSyncEnabled(
   if (!sync_service)
     return false;
   if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
-    // If in client use profile otherwise use GetUserPrefServiceSyncable.
-    return profile->GetPrefs()->GetBoolean(
-        chromeos::settings::prefs::kSyncOsWallpaper);
+    syncer::SyncUserSettings* user_settings = sync_service->GetUserSettings();
+    return user_settings->IsSyncAllOsTypesEnabled() ||
+           profile->GetPrefs()->GetBoolean(
+               chromeos::settings::prefs::kSyncOsWallpaper);
   }
   return sync_service->CanSyncFeatureStart() &&
          sync_service->GetUserSettings()->GetSelectedTypes().Has(
@@ -660,8 +662,9 @@ void WallpaperControllerClientImpl::OpenWallpaperPicker() {
   DCHECK(profile);
   if (ash::features::IsWallpaperWebUIEnabled()) {
     web_app::SystemAppLaunchParams params;
-    params.url = GURL(ash::personalization_app::
-                          kChromeUIPersonalizationAppWallpaperSubpageURL);
+    params.url = GURL(
+        std::string(ash::personalization_app::kChromeUIPersonalizationAppURL) +
+        ash::personalization_app::kWallpaperSubpageRelativeUrl);
     params.launch_source = apps::mojom::LaunchSource::kFromShelf;
     web_app::LaunchSystemWebAppAsync(
         profile, web_app::SystemAppType::PERSONALIZATION, params);
@@ -698,11 +701,13 @@ void WallpaperControllerClientImpl::MaybeClosePreviewWallpaper() {
 
 void WallpaperControllerClientImpl::SetDefaultWallpaper(
     const AccountId& account_id,
-    bool show_wallpaper) {
+    bool show_wallpaper,
+    ash::WallpaperController::SetWallpaperCallback callback) {
   if (!IsKnownUser(account_id))
     return;
 
-  wallpaper_controller_->SetDefaultWallpaper(account_id, show_wallpaper);
+  wallpaper_controller_->SetDefaultWallpaper(account_id, show_wallpaper,
+                                             std::move(callback));
 }
 
 void WallpaperControllerClientImpl::MigrateCollectionIdFromChromeApp(
@@ -777,6 +782,27 @@ void WallpaperControllerClientImpl::FetchGooglePhotosPhoto(
       /*resume_token=*/absl::nullopt, std::move(fetched_callback));
 }
 
+void WallpaperControllerClientImpl::FetchDailyGooglePhotosPhoto(
+    const AccountId& account_id,
+    const std::string& album_id,
+    const absl::optional<std::string>& current_photo_id,
+    FetchGooglePhotosPhotoCallback callback) {
+  if (google_photos_photos_fetchers_.find(account_id) ==
+      google_photos_photos_fetchers_.end()) {
+    Profile* profile = ProfileHelper::Get()->GetProfileByAccountId(account_id);
+    google_photos_photos_fetchers_.insert(
+        {account_id,
+         std::make_unique<wallpaper_handlers::GooglePhotosPhotosFetcher>(
+             profile)});
+  }
+  auto fetched_callback = base::BindOnce(
+      &WallpaperControllerClientImpl::OnGooglePhotosDailyAlbumFetched,
+      weak_factory_.GetWeakPtr(), current_photo_id, std::move(callback));
+  google_photos_photos_fetchers_[account_id]->AddRequestAndStartIfNecessary(
+      /*item_id=*/absl::nullopt, album_id,
+      /*resume_token=*/absl::nullopt, std::move(fetched_callback));
+}
+
 bool WallpaperControllerClientImpl::ShouldShowUserNamesOnLogin() const {
   bool show_user_names = true;
   ash::CrosSettings::Get()->GetBoolean(ash::kAccountsPrefShowUserNamesOnSignIn,
@@ -840,6 +866,39 @@ void WallpaperControllerClientImpl::OnGooglePhotosPhotoFetched(
   } else {
     std::move(callback).Run(nullptr, /*success=*/response->photos.has_value());
   }
+}
+
+void WallpaperControllerClientImpl::OnGooglePhotosDailyAlbumFetched(
+    const absl::optional<std::string>& current_photo_id,
+    FetchGooglePhotosPhotoCallback callback,
+    ash::personalization_app::mojom::FetchGooglePhotosPhotosResponsePtr
+        response) {
+  if (!response->photos.has_value() || response->photos.value().size() == 0) {
+    std::move(callback).Run(nullptr, /*success=*/response->photos.has_value());
+    return;
+  }
+
+  if (response->photos.value().size() == 1) {
+    std::move(callback).Run(std::move(response->photos.value()[0]),
+                            /*success=*/true);
+    return;
+  }
+
+  // TODO(b/229146895): Revist the random selection approach, specifically for
+  // large albums and to prevent repeateding the same subset of pictures in the
+  // event of unlucky randomness.
+
+  // To avoid re-selecting the currently selected photo if one exists:
+  // * Reduce range to [0, size - 1) to prevent selecting of the last photo.
+  // * Treat selecting of the current photo as selecting of the last photo.
+  size_t selected_index = base::RandGenerator(response->photos.value().size() -
+                                              (current_photo_id ? 1u : 0u));
+  if (current_photo_id &&
+      response->photos.value()[selected_index]->id == current_photo_id)
+    selected_index = response->photos.value().size() - 1u;
+
+  std::move(callback).Run(std::move(response->photos.value()[selected_index]),
+                          /*success=*/true);
 }
 
 void WallpaperControllerClientImpl::ObserveVolumeManagerForAccountId(

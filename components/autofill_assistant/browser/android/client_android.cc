@@ -33,7 +33,6 @@
 #include "components/password_manager/content/browser/password_change_success_tracker_factory.h"
 #include "components/password_manager/core/browser/password_change_success_tracker.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
-#include "components/variations/service/variations_service.h"
 #include "components/version_info/android/channel_getter.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -42,11 +41,13 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/gurl.h"
 
-using base::android::AttachCurrentThread;
-using base::android::JavaParamRef;
-using base::android::JavaRef;
-using base::android::ScopedJavaGlobalRef;
-using base::android::ScopedJavaLocalRef;
+using ::base::android::AttachCurrentThread;
+using ::base::android::ConvertJavaStringToUTF8;
+using ::base::android::ConvertUTF8ToJavaString;
+using ::base::android::JavaParamRef;
+using ::base::android::JavaRef;
+using ::base::android::ScopedJavaGlobalRef;
+using ::base::android::ScopedJavaLocalRef;
 
 namespace autofill_assistant {
 namespace {
@@ -211,8 +212,7 @@ void ClientAndroid::TransferUITo(
 base::android::ScopedJavaLocalRef<jstring> ClientAndroid::GetPrimaryAccountName(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
-  return base::android::ConvertUTF8ToJavaString(
-      env, GetChromeSignedInEmailAddress());
+  return ConvertUTF8ToJavaString(env, GetSignedInEmail());
 }
 
 void ClientAndroid::OnAccessToken(JNIEnv* env,
@@ -484,8 +484,8 @@ std::string ClientAndroid::GetEmailAddressForAccessTokenAccount() const {
           env, java_object_));
 }
 
-std::string ClientAndroid::GetChromeSignedInEmailAddress() const {
-  return dependencies_->GetChromeSignedInEmailAddress(GetWebContents());
+std::string ClientAndroid::GetSignedInEmail() const {
+  return dependencies_->GetSignedInEmail(GetWebContents());
 }
 
 absl::optional<std::pair<int, int>> ClientAndroid::GetWindowSize() const {
@@ -558,12 +558,7 @@ std::string ClientAndroid::GetLocale() const {
 }
 
 std::string ClientAndroid::GetCountryCode() const {
-  variations::VariationsService* variations_service =
-      dependencies_->GetVariationsService();
-  // Use fallback "ZZ" if no country is available.
-  if (!variations_service || variations_service->GetLatestCountry().empty())
-    return "ZZ";
-  return base::ToUpperASCII(variations_service->GetLatestCountry());
+  return dependencies_->GetCountryCode();
 }
 
 DeviceContext ClientAndroid::GetDeviceContext() const {
@@ -612,6 +607,14 @@ bool ClientAndroid::HasHadUI() const {
 
 ScriptExecutorUiDelegate* ClientAndroid::GetScriptExecutorUiDelegate() {
   return ui_controller_.get();
+}
+
+bool ClientAndroid::MustUseBackendData() const {
+  // For WebLayer flows the client does not have access to Chrome's Autofill
+  // data and must use data from our backend. Similarly the client can not use
+  // e.g. Autofill's data editors and must rely on GMS Core provided
+  // replacements.
+  return dependencies_->IsWebLayer();
 }
 
 void ClientAndroid::Shutdown(Metrics::DropOutReason reason) {

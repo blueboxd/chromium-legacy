@@ -21,6 +21,24 @@
 
 namespace autofill {
 
+namespace {
+
+bool ShouldEnableHeavyFormDataScraping(const version_info::Channel channel) {
+  switch (channel) {
+    case version_info::Channel::CANARY:
+    case version_info::Channel::DEV:
+      return true;
+    case version_info::Channel::STABLE:
+    case version_info::Channel::BETA:
+    case version_info::Channel::UNKNOWN:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
+}  // namespace
+
 const char ContentAutofillDriverFactory::
     kContentAutofillDriverFactoryWebContentsUserDataKey[] =
         "web_contents_autofill_driver_factory";
@@ -89,6 +107,25 @@ ContentAutofillDriverFactory::ContentAutofillDriverFactory(
 
 ContentAutofillDriverFactory::~ContentAutofillDriverFactory() = default;
 
+std::unique_ptr<ContentAutofillDriver>
+ContentAutofillDriverFactory::CreateDriver(content::RenderFrameHost* rfh) {
+  auto driver = std::make_unique<ContentAutofillDriver>(rfh, &router_);
+  if (autofill_manager_factory_callback_) {
+    driver->set_autofill_manager(autofill_manager_factory_callback_.Run(
+        driver.get(), client(), app_locale_, enable_download_manager_));
+    driver->GetAutofillAgent()->SetUserGestureRequired(false);
+    driver->GetAutofillAgent()->SetSecureContextRequired(true);
+    driver->GetAutofillAgent()->SetFocusRequiresScroll(false);
+    driver->GetAutofillAgent()->SetQueryPasswordSuggestion(true);
+  } else {
+    driver->set_autofill_manager(std::make_unique<BrowserAutofillManager>(
+        driver.get(), client(), app_locale_, enable_download_manager_));
+  }
+  if (client() && ShouldEnableHeavyFormDataScraping(client()->GetChannel()))
+    driver->GetAutofillAgent()->EnableHeavyFormDataScraping();
+  return driver;
+}
+
 ContentAutofillDriver* ContentAutofillDriverFactory::DriverForFrame(
     content::RenderFrameHost* render_frame_host) {
   // Within fenced frames and their descendants, Password Manager should for now
@@ -116,9 +153,7 @@ ContentAutofillDriver* ContentAutofillDriverFactory::DriverForFrame(
     //    calls `DriverForFrame(render_frame_host)`.
     // 5. `render_frame_host->~RenderFrameHostImpl()` finishes.
     if (render_frame_host->IsRenderFrameCreated()) {
-      driver = std::make_unique<ContentAutofillDriver>(
-          render_frame_host, client(), app_locale_, &router_,
-          enable_download_manager_, autofill_manager_factory_callback_);
+      driver = CreateDriver(render_frame_host);
       DCHECK_EQ(driver_map_.find(render_frame_host)->second.get(),
                 driver.get());
     } else {
@@ -141,8 +176,10 @@ void ContentAutofillDriverFactory::RenderFrameDeleted(
   DCHECK(driver);
 
   if (render_frame_host->GetLifecycleState() !=
-      content::RenderFrameHost::LifecycleState::kPrerendering) {
-    driver->MaybeReportAutofillWebOTPMetrics();
+          content::RenderFrameHost::LifecycleState::kPrerendering &&
+      driver->autofill_manager()) {
+    driver->autofill_manager()->ReportAutofillWebOTPMetrics(
+        render_frame_host->DocumentUsedWebOTP());
   }
 
   // If the popup menu has been triggered from within an iframe and that
@@ -219,8 +256,6 @@ void ContentAutofillDriverFactory::ReadyToCommitNavigation(
       content::RenderFrameHost::LifecycleState::kPrerendering) {
     return;
   }
-  if (auto* driver = DriverForFrame(render_frame_host))
-    driver->MaybeReportAutofillWebOTPMetrics();
 }
 
 }  // namespace autofill

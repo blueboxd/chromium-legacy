@@ -4,12 +4,14 @@
 
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -122,9 +124,11 @@ net::Error CacheCreator::Run() {
   static const bool kSimpleBackendIsDefault = false;
 #endif
   if (!retry_ && reset_handling_ == disk_cache::ResetHandling::kReset) {
+    // Pretend that we failed to create a cache, so that we can handle `kReset`
+    // and `kResetOnError` in a unified way, in CacheCreator::OnIOComplete.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&CacheCreator::OnIOComplete,
-                                  base::Unretained(this), net::ERR_IO_PENDING));
+                                  base::Unretained(this), net::ERR_FAILED));
     return net::ERR_IO_PENDING;
   }
   if (backend_type_ == net::CACHE_BACKEND_SIMPLE ||
@@ -204,6 +208,7 @@ void CacheCreator::DoCallback(int result) {
 // If the initialization of the cache fails, and |reset_handling| isn't set to
 // kNeverReset, we will discard the whole cache and create a new one.
 void CacheCreator::OnIOComplete(int result) {
+  DCHECK_NE(result, net::ERR_IO_PENDING);
   if (result == net::OK ||
       reset_handling_ == disk_cache::ResetHandling::kNeverReset || retry_) {
     return DoCallback(result);
@@ -212,8 +217,13 @@ void CacheCreator::OnIOComplete(int result) {
   // We are supposed to try again, so delete the object and all files and do so.
   retry_ = true;
   created_cache_.reset();
-  if (!disk_cache::DelayedCacheCleanup(path_))
+  if (!disk_cache::DelayedCacheCleanup(path_)) {
+    // Cleaning up the cache directory fails, so this operation should be
+    // considered failed.
+    DCHECK_NE(result, net::OK);
+    DCHECK_NE(result, net::ERR_IO_PENDING);
     return DoCallback(result);
+  }
 
   // The worker thread will start deleting files soon, but the original folder
   // is not there anymore... let's create a new set of files.
@@ -360,11 +370,22 @@ net::Error CreateCacheBackend(
 
 void FlushCacheThreadForTesting() {
   // For simple backend.
-  SimpleBackendImpl::FlushWorkerPoolForTesting();
   base::ThreadPoolInstance::Get()->FlushForTesting();
 
   // Block backend.
   BackendImpl::FlushForTesting();
+}
+
+void FlushCacheThreadAsynchronouslyForTesting(base::OnceClosure callback) {
+  auto repeating_callback = base::BarrierClosure(2, std::move(callback));
+
+  // For simple backend.
+  base::ThreadPoolInstance::Get()->FlushAsyncForTesting(  // IN-TEST
+      base::BindPostTask(base::SequencedTaskRunnerHandle::Get(),
+                         repeating_callback));
+
+  // Block backend.
+  BackendImpl::FlushAsynchronouslyForTesting(repeating_callback);
 }
 
 int64_t Backend::CalculateSizeOfEntriesBetween(

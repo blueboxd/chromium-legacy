@@ -12,6 +12,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/public/cpp/image_util.h"
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/public/cpp/style/color_mode_observer.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
@@ -22,7 +23,6 @@
 #include "ash/public/cpp/wallpaper/wallpaper_types.h"
 #include "ash/shell_observer.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_color_calculator_observer.h"
-#include "ash/wallpaper/wallpaper_utils/wallpaper_decoder.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer_observer.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom-forward.h"
 #include "ash/wm/overview/overview_observer.h"
@@ -266,7 +266,8 @@ class ASH_EXPORT WallpaperControllerImpl
   void SetGooglePhotosWallpaper(const GooglePhotosWallpaperParams& params,
                                 SetWallpaperCallback callback) override;
   void SetDefaultWallpaper(const AccountId& account_id,
-                           bool show_wallpaper) override;
+                           bool show_wallpaper,
+                           SetWallpaperCallback callback) override;
   void SetCustomizedDefaultWallpaperPaths(
       const base::FilePath& customized_default_small_path,
       const base::FilePath& customized_default_large_path) override;
@@ -419,7 +420,8 @@ class ASH_EXPORT WallpaperControllerImpl
   // |show_wallpaper| is true. Otherwise just save the defaut wallpaper to
   // cache.
   void SetDefaultWallpaperImpl(const AccountId& account_id,
-                               bool show_wallpaper);
+                               bool show_wallpaper,
+                               SetWallpaperCallback callback);
 
   // When kiosk app is running or policy is enforced, setting a user wallpaper
   // is not allowed.
@@ -433,7 +435,7 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // Reads image from |file_path| on disk, and calls |OnWallpaperDataRead|
   // with the result of |ReadFileToString|.
-  void ReadAndDecodeWallpaper(DecodeImageCallback callback,
+  void ReadAndDecodeWallpaper(image_util::DecodeImageCallback callback,
                               const base::FilePath& file_path);
 
   // Sets wallpaper info for the user to default and saves it to local
@@ -472,6 +474,19 @@ class ASH_EXPORT WallpaperControllerImpl
       ash::personalization_app::mojom::GooglePhotosPhotoPtr photo,
       bool success);
 
+  void OnDailyGooglePhotosPhotoFetched(
+      const AccountId& account_id,
+      const std::string& album_id,
+      RefreshWallpaperCallback callback,
+      ash::personalization_app::mojom::GooglePhotosPhotoPtr photo,
+      bool success);
+
+  void OnDailyGooglePhotosWallpaperDownloaded(const AccountId& account_id,
+                                              const std::string& photo_id,
+                                              const std::string& album_id,
+                                              RefreshWallpaperCallback callback,
+                                              const gfx::ImageSkia& image);
+
   void GetGooglePhotosWallpaperFromCacheOrDownload(
       const GooglePhotosWallpaperParams& params,
       ash::personalization_app::mojom::GooglePhotosPhotoPtr photo,
@@ -493,13 +508,13 @@ class ASH_EXPORT WallpaperControllerImpl
       SetWallpaperCallback callback,
       const gfx::ImageSkia& image);
 
-  // Sets the current wallpaper to the Google Photos photo specified by `params`
+  // Sets the current wallpaper to the Google Photos photo specified by `info`
   // and updates the Google Photos cache to contain only `image`. Shows the
   // wallpaper on screen if `show_wallpaper` is true.
-  void SetGooglePhotosWallpaperAndUpdateCache(
-      const GooglePhotosWallpaperParams& params,
-      const gfx::ImageSkia& image,
-      bool show_wallpaper);
+  void SetGooglePhotosWallpaperAndUpdateCache(const AccountId& account_id,
+                                              const WallpaperInfo& info,
+                                              const gfx::ImageSkia& image,
+                                              bool show_wallpaper);
 
   // Implementation of |SetOnlineWallpaper|. Shows the wallpaper on screen if
   // |show_wallpaper| is true.
@@ -519,6 +534,7 @@ class ASH_EXPORT WallpaperControllerImpl
   void OnDefaultWallpaperDecoded(const base::FilePath& path,
                                  WallpaperLayout layout,
                                  bool show_wallpaper,
+                                 SetWallpaperCallback callback,
                                  const gfx::ImageSkia& image);
 
   // Saves |image| to disk if the user's data is not ephemeral, or if it is a
@@ -668,6 +684,9 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // If daily refresh wallpapers is enabled by the user.
   bool IsDailyRefreshEnabled() const;
+
+  // If a Google Photos daily refresh wallpaper is the active user's wallpaper.
+  bool IsDailyGooglePhotosWallpaperSelected();
 
   // If the user has a Google Photos wallpaper set.
   bool IsGooglePhotosWallpaperSet() const;

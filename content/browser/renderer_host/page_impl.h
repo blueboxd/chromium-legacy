@@ -162,6 +162,8 @@ class CONTENT_EXPORT PageImpl : public Page {
   }
   double load_progress() const { return load_progress_; }
 
+  void NotifyVirtualKeyboardOverlayRect(const gfx::Rect& keyboard_rect);
+
   void set_virtual_keyboard_overlays_content(bool vk_overlays_content) {
     virtual_keyboard_overlays_content_ = vk_overlays_content;
   }
@@ -171,6 +173,9 @@ class CONTENT_EXPORT PageImpl : public Page {
 
   const std::string& GetEncoding() { return canonical_encoding_; }
   void UpdateEncoding(const std::string& encoding_name);
+
+  // Returns the keyboard layout mapping.
+  base::flat_map<std::string, std::string> GetKeyboardLayoutMap();
 
  private:
   void DidActivateAllRenderViewsForPrerendering();

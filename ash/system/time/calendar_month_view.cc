@@ -66,7 +66,6 @@ void MoveToNextDay(int& column,
   local_current_date += base::Hours(30 - hours);
   local_current_date.UTCExplode(&current_date_exploded);
   column = (column + 1) % calendar_utils::kDateInOneWeek;
-  DCHECK_EQ(column, current_date_exploded.day_of_week);
 }
 
 }  // namespace
@@ -98,7 +97,7 @@ CalendarDateCellView::CalendarDateCellView(
   DisableFocus();
   if (!grayed_out_) {
     if (calendar_utils::IsActiveUser()) {
-      event_number_ = GetEventNumber();
+      event_number_ = calendar_view_controller_->GetEventNumber(date_);
     }
     SetTooltipAndAccessibleName();
   }
@@ -134,12 +133,42 @@ void CalendarDateCellView::OnPaintBackground(gfx::Canvas* canvas) {
       (content.width() + calendar_utils::kDateHorizontalPadding * 2) / 2,
       (content.height() + calendar_utils::kDateVerticalPadding * 2) / 2);
 
-  is_selected_ = calendar_utils::IsTheSameDay(
-      date_, calendar_view_controller_->selected_date());
+  if (views::View::HasFocus()) {
+    cc::PaintFlags highlight_border;
+    highlight_border.setColor(border_color);
+    highlight_border.setAntiAlias(true);
+    highlight_border.setStyle(cc::PaintFlags::kStroke_Style);
+    highlight_border.setStrokeWidth(kBorderLineThickness);
 
-  // Sets accessible label. E.g. Calendar, week of July 16th 2021, [selected
-  // date] is currently selected.
-  if (is_selected_) {
+    canvas->DrawCircle(center, kBorderRadius, highlight_border);
+  }
+
+  if (calendar_utils::IsToday(date_)) {
+    cc::PaintFlags highlight_background;
+    highlight_background.setColor(bg_color);
+    highlight_background.setStyle(cc::PaintFlags::kFill_Style);
+    highlight_background.setAntiAlias(true);
+
+    canvas->DrawCircle(center,
+                       views::View::HasFocus() ? kTodayFocusedRoundedRadius
+                                               : kTodayRoundedRadius,
+                       highlight_background);
+  }
+}
+
+void CalendarDateCellView::OnSelectedDateUpdated() {
+  bool is_selected = calendar_utils::IsTheSameDay(
+      date_, calendar_view_controller_->selected_date());
+  // If the selected day changes, repaint the background.
+  if (is_selected_ != is_selected) {
+    is_selected_ = is_selected;
+    SchedulePaint();
+    if (!is_selected_) {
+      SetAccessibleName(tool_tip_);
+      return;
+    }
+    // Sets accessible label. E.g. Calendar, week of July 16th 2021, [selected
+    // date] is currently selected.
     base::Time local_date =
         date_ +
         base::Minutes(calendar_view_controller_->time_difference_minutes());
@@ -152,53 +181,6 @@ void CalendarDateCellView::OnPaintBackground(gfx::Canvas* canvas) {
         IDS_ASH_CALENDAR_SELECTED_DATE_CELL_ACCESSIBLE_DESCRIPTION,
         calendar_utils::GetMonthDayYear(first_day_of_week),
         calendar_utils::GetDayOfMonth(date_)));
-  }
-
-  SetEnabledTextColors(grayed_out_ ? calendar_utils::GetSecondaryTextColor()
-                                   : calendar_utils::GetPrimaryTextColor());
-
-  if (views::View::HasFocus()) {
-    cc::PaintFlags highlight_border;
-    highlight_border.setColor(border_color);
-    highlight_border.setAntiAlias(true);
-    highlight_border.setStyle(cc::PaintFlags::kStroke_Style);
-    highlight_border.setStrokeWidth(kBorderLineThickness);
-
-    canvas->DrawCircle(center, kBorderRadius, highlight_border);
-  }
-
-  if (calendar_utils::IsToday(date_)) {
-    const SkColor text_color = color_provider->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kButtonLabelColorPrimary);
-    SetEnabledTextColors(text_color);
-
-    cc::PaintFlags highlight_background;
-    highlight_background.setColor(bg_color);
-    highlight_background.setStyle(cc::PaintFlags::kFill_Style);
-    highlight_background.setAntiAlias(true);
-
-    canvas->DrawCircle(center,
-                       views::View::HasFocus() ? kTodayFocusedRoundedRadius
-                                               : kTodayRoundedRadius,
-                       highlight_background);
-
-    return;
-  }
-
-  if (is_selected_) {
-    const SkColor text_color = color_provider->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kIconColorProminent);
-    SetEnabledTextColors(text_color);
-  }
-}
-
-void CalendarDateCellView::OnSelectedDateUpdated() {
-  bool is_selected = calendar_utils::IsTheSameDay(
-      date_, calendar_view_controller_->selected_date());
-  // If the selected day changes, repaint the background.
-  if (is_selected_ != is_selected) {
-    is_selected_ = is_selected;
-    SchedulePaint();
   }
 }
 
@@ -249,7 +231,7 @@ void CalendarDateCellView::MaybeSchedulePaint() {
   }
 
   // Early return if the event number doesn't change.
-  const int event_number = GetEventNumber();
+  const int event_number = calendar_view_controller_->GetEventNumber(date_);
   if (event_number_ == event_number)
     return;
 
@@ -277,14 +259,15 @@ void CalendarDateCellView::MaybeDrawEventsIndicator(gfx::Canvas* canvas) {
   if (grayed_out_ || !calendar_utils::IsActiveUser())
     return;
 
-  if (GetEventNumber() == 0)
+  if (event_number_ == 0)
     return;
 
   const SkColor indicator_color =
-      is_selected_ ? AshColorProvider::Get()->GetBaseLayerColor(
-                         AshColorProvider::BaseLayerType::kTransparent90)
-                   : AshColorProvider::Get()->GetControlsLayerColor(
-                         AshColorProvider::ControlsLayerType::kFocusRingColor);
+      calendar_utils::IsToday(date_)
+          ? AshColorProvider::Get()->GetBaseLayerColor(
+                AshColorProvider::BaseLayerType::kTransparent90)
+          : AshColorProvider::Get()->GetControlsLayerColor(
+                AshColorProvider::ControlsLayerType::kFocusRingColor);
 
   const float indicator_radius = is_selected_ ? kEventsPresentRoundedRadius * 2
                                               : kEventsPresentRoundedRadius;
@@ -297,14 +280,21 @@ void CalendarDateCellView::MaybeDrawEventsIndicator(gfx::Canvas* canvas) {
                      indicator_radius, indicator_paint_flags);
 }
 
-int CalendarDateCellView::GetEventNumber() {
-  return Shell::Get()->system_tray_model()->calendar_model()->EventsNumberOfDay(
-      date_,
-      /*events =*/nullptr);
-}
-
 void CalendarDateCellView::PaintButtonContents(gfx::Canvas* canvas) {
   views::LabelButton::PaintButtonContents(canvas);
+  const AshColorProvider* color_provider = AshColorProvider::Get();
+  if (calendar_utils::IsToday(date_)) {
+    const SkColor text_color = color_provider->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kButtonLabelColorPrimary);
+    SetEnabledTextColors(text_color);
+  } else if (is_selected_) {
+    const SkColor text_color = color_provider->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kIconColorProminent);
+    SetEnabledTextColors(text_color);
+  } else {
+    SetEnabledTextColors(grayed_out_ ? calendar_utils::GetSecondaryTextColor()
+                                     : calendar_utils::GetPrimaryTextColor());
+  }
   MaybeDrawEventsIndicator(canvas);
 }
 
@@ -338,13 +328,13 @@ CalendarMonthView::CalendarMonthView(
       base::Minutes(calendar_view_controller_->time_difference_minutes());
   base::Time::Exploded first_day_of_month_exploded =
       calendar_utils::GetExplodedUTC(first_day_of_month_local);
-
-  // Calculates the start date.
+  // Find the first day of the week.
   base::Time current_date =
-      first_day_of_month - base::Days(first_day_of_month_exploded.day_of_week);
+      calendar_utils::GetFirstDayOfWeekLocalMidnight(first_day_of_month);
   base::Time current_date_local =
-      first_day_of_month_local -
-      base::Days(first_day_of_month_exploded.day_of_week);
+      current_date +
+      base::Minutes(calendar_view_controller_->time_difference_minutes());
+
   base::Time::Exploded current_date_exploded =
       calendar_utils::GetExplodedUTC(current_date_local);
 
@@ -389,17 +379,20 @@ CalendarMonthView::CalendarMonthView(
 
   last_row_index_ = row_number - 1;
 
-  // TODO(https://crbug.com/1236276): Handle some cases when the first day is
-  // not Sunday.
-  if (current_date_exploded.day_of_week == 0)
+  if (calendar_utils::GetDayOfWeek(current_date) ==
+      calendar_utils::kFirstDayOfWeekString)
     return;
 
   // Adds the first several days from the next month if the last day is not the
-  // end day of this week.
-  const base::Time end_of_the_last_row =
-      current_date_local + base::Days(6 - current_date_exploded.day_of_week);
+  // end day of this week. The end date of the last row should be 6 day's away
+  // from the first day of this week. Adds 5 more hours just to cover the case
+  // 25 hours in a day due to daylight saving.
+  base::Time end_of_the_last_row_local =
+      calendar_utils::GetFirstDayOfWeekLocalMidnight(current_date) +
+      base::Days(6) + base::Hours(5) +
+      base::Minutes(calendar_view_controller_->time_difference_minutes());
   base::Time::Exploded end_of_row_exploded =
-      calendar_utils::GetExplodedUTC(end_of_the_last_row);
+      calendar_utils::GetExplodedUTC(end_of_the_last_row_local);
 
   // Gray-out dates in the last row, which are from the next month.
   while (current_date_exploded.day_of_month <=

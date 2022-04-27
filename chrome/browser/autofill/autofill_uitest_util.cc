@@ -9,6 +9,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
+#include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -119,7 +120,7 @@ void WaitForPersonalDataChange(Profile* base_profile) {
 
 void WaitForPersonalDataManagerToBeLoaded(Profile* base_profile) {
   PersonalDataManager* pdm =
-      autofill::PersonalDataManagerFactory::GetForProfile(base_profile);
+      PersonalDataManagerFactory::GetForProfile(base_profile);
   while (!pdm->IsDataLoaded())
     WaitForPersonalDataChange(base_profile);
 }

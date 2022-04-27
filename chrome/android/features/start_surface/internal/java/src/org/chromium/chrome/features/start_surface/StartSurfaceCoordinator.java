@@ -5,6 +5,7 @@
 package org.chromium.chrome.features.start_surface;
 
 import android.app.Activity;
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,8 +26,8 @@ import org.chromium.base.jank_tracker.JankTracker;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.feed.FeedLaunchReliabilityLoggingState;
 import org.chromium.chrome.browser.feed.FeedSwipeRefreshLayout;
 import org.chromium.chrome.browser.feed.ScrollListener;
 import org.chromium.chrome.browser.feed.ScrollableContainerDelegate;
@@ -41,15 +42,15 @@ import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
-import org.chromium.chrome.browser.tasks.TasksSurface;
-import org.chromium.chrome.browser.tasks.TasksSurfaceProperties;
+import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate.TabSwitcherType;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger.SurfaceType;
+import org.chromium.chrome.features.tasks.TasksSurface;
+import org.chromium.chrome.features.tasks.TasksSurfaceCoordinator;
+import org.chromium.chrome.features.tasks.TasksSurfaceProperties;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
@@ -148,8 +149,8 @@ public class StartSurfaceCoordinator implements StartSurface {
     private final ObserverList<ScrollListener> mScrollListeners =
             new ObserverList<ScrollListener>();
 
-    // Stores surface creation time for Feed launch reliability logging.
-    private final FeedLaunchReliabilityLoggingState mFeedLaunchReliabilityLoggingState;
+    // Time at which constructor started to run. Used for feed reliability logging.
+    private final long mConstructedTimeNs;
 
     @Nullable
     private AppBarLayout.OnOffsetChangedListener mOffsetChangedListenerToGenerateScrollEvents;
@@ -234,11 +235,10 @@ public class StartSurfaceCoordinator implements StartSurface {
             @NonNull MenuOrKeyboardActionController menuOrKeyboardActionController,
             @NonNull MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
             @NonNull JankTracker jankTracker, @NonNull Supplier<Toolbar> toolbarSupplier) {
-        mFeedLaunchReliabilityLoggingState =
-                new FeedLaunchReliabilityLoggingState(SurfaceType.START_SURFACE, System.nanoTime());
+        mConstructedTimeNs = SystemClock.elapsedRealtimeNanos();
         mActivity = activity;
         mScrimCoordinator = scrimCoordinator;
-        mIsStartSurfaceEnabled = ReturnToChromeExperimentsUtil.isStartSurfaceEnabled(mActivity);
+        mIsStartSurfaceEnabled = ReturnToChromeUtil.isStartSurfaceEnabled(mActivity);
         mBottomSheetController = sheetController;
         mParentTabSupplier = parentTabSupplier;
         mWindowAndroid = windowAndroid;
@@ -394,12 +394,12 @@ public class StartSurfaceCoordinator implements StartSurface {
                     mTasksSurface.getBodyViewContainer(), mPropertyModel, mBottomSheetController,
                     mParentTabSupplier, new ScrollableContainerDelegateImpl(), mSnackbarManager,
                     mShareDelegateSupplier, mWindowAndroid, mTabModelSelector, mToolbarSupplier,
-                    mFeedLaunchReliabilityLoggingState, mSwipeRefreshLayout);
+                    mConstructedTimeNs, mSwipeRefreshLayout);
         }
         mStartSurfaceMediator.initWithNative(
                 mIsStartSurfaceEnabled ? mOmniboxStubSupplier.get() : null,
                 mExploreSurfaceCoordinatorFactory,
-                UserPrefs.get(Profile.getLastUsedRegularProfile()));
+                UserPrefs.get(Profile.getLastUsedRegularProfile()), mSnackbarManager);
 
         if (mTabSwitcher != null) {
             mTabSwitcher.initWithNative(mActivity, mTabContentManager,
@@ -480,15 +480,15 @@ public class StartSurfaceCoordinator implements StartSurface {
             }
         }
         if (StartSurfaceConfiguration.CHECK_SYNC_BEFORE_SHOW_START_AT_STARTUP.getValue()) {
-            ReturnToChromeExperimentsUtil.cachePrimaryAccountSyncStatus();
+            ReturnToChromeUtil.cachePrimaryAccountSyncStatus();
         }
-        if (ReturnToChromeExperimentsUtil.isStartSurfaceEnabled(mActivity)) {
+        if (ReturnToChromeUtil.isStartSurfaceEnabled(mActivity)) {
             Log.i(TAG, "Recorded %s = %b", START_SHOWN_AT_STARTUP_UMA, isOverviewShownOnStartup);
             RecordHistogram.recordBooleanHistogram(
                     START_SHOWN_AT_STARTUP_UMA, isOverviewShownOnStartup);
         }
         if (!TextUtils.isEmpty(StartSurfaceConfiguration.BEHAVIOURAL_TARGETING.getValue())) {
-            ReturnToChromeExperimentsUtil.cacheSegmentationResult();
+            ReturnToChromeUtil.cacheSegmentationResult();
         }
     }
 
@@ -496,6 +496,54 @@ public class StartSurfaceCoordinator implements StartSurface {
     @Nullable
     public TasksSurface getPrimaryTasksSurface() {
         return mTasksSurface;
+    }
+
+    /**
+     * Create the {@link TasksSurface}
+     * @param activity The {@link Activity} that creates this surface.
+     * @param scrimCoordinator The {@link ScrimCoordinator} that controls scrim view.
+     * @param propertyModel The {@link PropertyModel} contains the {@link TasksSurfaceProperties}
+     *         to communicate with this surface.
+     * @param tabSwitcherType The type of the tab switcher to show.
+     * @param parentTabSupplier {@link Supplier} to provide parent tab for the
+     *         TasksSurface.
+     * @param hasMVTiles whether has MV tiles on the surface.
+     * @param windowAndroid An instance of a {@link WindowAndroid}.
+     * @param activityLifecycleDispatcher Allows observation of the activity lifecycle.
+     * @param tabModelSelector Gives access to the current set of {@TabModel}.
+     * @param snackbarManager Manages the display of snackbars.
+     * @param dynamicResourceLoaderSupplier Supplies the current {@link DynamicResourceLoader}.
+     * @param tabContentManager Gives access to the tab content.
+     * @param modalDialogManager Manages the display of modal dialogs.
+     * @param browserControlsStateProvider Gives access to the state of the browser controls.
+     * @param tabCreatorManager Manages creation of tabs.
+     * @param menuOrKeyboardActionController allows access to menu or keyboard actions.
+     * @param shareDelegateSupplier Supplies the current {@link ShareDelegate}.
+     * @param multiWindowModeStateDispatcher Gives access to the multi window mode state.
+     * @param rootView The root view of the app.
+     * @return The {@link TasksSurface}.
+     */
+    TasksSurface createTasksSurface(@NonNull Activity activity,
+            @NonNull ScrimCoordinator scrimCoordinator, @NonNull PropertyModel propertyModel,
+            @TabSwitcherType int tabSwitcherType, @NonNull Supplier<Tab> parentTabSupplier,
+            boolean hasMVTiles, boolean hasQueryTiles, @NonNull WindowAndroid windowAndroid,
+            @NonNull ActivityLifecycleDispatcher activityLifecycleDispatcher,
+            @NonNull TabModelSelector tabModelSelector, @NonNull SnackbarManager snackbarManager,
+            @NonNull Supplier<DynamicResourceLoader> dynamicResourceLoaderSupplier,
+            @NonNull TabContentManager tabContentManager,
+            @NonNull ModalDialogManager modalDialogManager,
+            @NonNull BrowserControlsStateProvider browserControlsStateProvider,
+            @NonNull TabCreatorManager tabCreatorManager,
+            @NonNull MenuOrKeyboardActionController menuOrKeyboardActionController,
+            @NonNull Supplier<ShareDelegate> shareDelegateSupplier,
+            @NonNull MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
+            @NonNull ViewGroup rootView) {
+        return new TasksSurfaceCoordinator(activity, scrimCoordinator, propertyModel,
+                tabSwitcherType, parentTabSupplier, hasMVTiles, hasQueryTiles, windowAndroid,
+                activityLifecycleDispatcher, tabModelSelector, snackbarManager,
+                dynamicResourceLoaderSupplier, tabContentManager, modalDialogManager,
+                browserControlsStateProvider, tabCreatorManager, menuOrKeyboardActionController,
+                shareDelegateSupplier, multiWindowModeStateDispatcher, rootView);
     }
 
     @VisibleForTesting
@@ -539,13 +587,12 @@ public class StartSurfaceCoordinator implements StartSurface {
         if (StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY.getValue()) {
             tabSwitcherType = TabSwitcherType.SINGLE;
         }
-        mTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(mActivity,
-                mScrimCoordinator, mPropertyModel, tabSwitcherType, mParentTabSupplier,
-                !excludeMVTiles, !excludeQueryTiles, mWindowAndroid, mActivityLifecycleDispatcher,
-                mTabModelSelector, mSnackbarManager, mDynamicResourceLoaderSupplier,
-                mTabContentManager, mModalDialogManager, mBrowserControlsManager,
-                mTabCreatorManager, mMenuOrKeyboardActionController, mShareDelegateSupplier,
-                mMultiWindowModeStateDispatcher, mContainerView);
+        mTasksSurface = createTasksSurface(mActivity, mScrimCoordinator, mPropertyModel,
+                tabSwitcherType, mParentTabSupplier, !excludeMVTiles, !excludeQueryTiles,
+                mWindowAndroid, mActivityLifecycleDispatcher, mTabModelSelector, mSnackbarManager,
+                mDynamicResourceLoaderSupplier, mTabContentManager, mModalDialogManager,
+                mBrowserControlsManager, mTabCreatorManager, mMenuOrKeyboardActionController,
+                mShareDelegateSupplier, mMultiWindowModeStateDispatcher, mContainerView);
         mTasksSurface.getView().setId(R.id.primary_tasks_surface_view);
         initializeOffsetChangedListener();
         addHeaderOffsetChangeListener(mOffsetChangedListenerToGenerateScrollEvents);
@@ -562,9 +609,8 @@ public class StartSurfaceCoordinator implements StartSurface {
 
         PropertyModel propertyModel = new PropertyModel(TasksSurfaceProperties.ALL_KEYS);
         mStartSurfaceMediator.setSecondaryTasksSurfacePropertyModel(propertyModel);
-        mSecondaryTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(
-                mActivity, mScrimCoordinator, propertyModel, TabSwitcherType.GRID,
-                mParentTabSupplier,
+        mSecondaryTasksSurface = createTasksSurface(mActivity, mScrimCoordinator, propertyModel,
+                TabSwitcherType.GRID, mParentTabSupplier,
                 /* hasMVTiles= */ false, /* hasQueryTiles= */ false, mWindowAndroid,
                 mActivityLifecycleDispatcher, mTabModelSelector, mSnackbarManager,
                 mDynamicResourceLoaderSupplier, mTabContentManager, mModalDialogManager,

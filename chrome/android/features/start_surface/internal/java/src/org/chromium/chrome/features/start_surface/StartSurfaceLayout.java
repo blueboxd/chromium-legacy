@@ -21,7 +21,6 @@ import androidx.annotation.VisibleForTesting;
 import androidx.vectordrawable.graphics.drawable.AnimationUtilsCompat;
 
 import org.chromium.base.Log;
-import org.chromium.base.MathUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.jank_tracker.JankScenario;
 import org.chromium.base.jank_tracker.JankTracker;
@@ -42,13 +41,14 @@ import org.chromium.chrome.browser.layouts.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.layouts.animation.CompositorAnimator;
 import org.chromium.chrome.browser.layouts.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
-import org.chromium.chrome.browser.tasks.TasksSurface;
+import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher.TabListDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
+import org.chromium.chrome.features.tasks.TasksSurface;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
@@ -110,7 +110,6 @@ public class StartSurfaceLayout extends Layout {
     private long mLastFrameTime;
     private long mMaxFrameInterval;
     private int mStartFrame;
-    private float mThumbnailAspectRatio;
 
     private boolean mAndroidViewFinishedShowing;
 
@@ -148,10 +147,10 @@ public class StartSurfaceLayout extends Layout {
                 if (!TabUiFeatureUtilities.isTabletGridTabSwitcherPolishEnabled(context)) {
                     doneShowing();
                 }
-
-                // The Tab-to-GTS animation is done, and it's time to renew the thumbnail without
-                // causing janky frames. When animation is off, the thumbnail is already updated
-                // when showing the GTS.
+                // When Tab-to-GTS animation is done, it's time to renew the thumbnail without
+                // causing janky frames. When animation is off or not used, the thumbnail is already
+                // updated when showing the GTS. Tab-to-GTS animation is not invoked for tablet tab
+                // switcher polish.
                 if (isTabGtsAnimationEnabled()) {
                     // Delay thumbnail taking a bit more to make it less likely to happen before the
                     // thumbnail taking triggered by ThumbnailFetcher. See crbug.com/996385 for
@@ -190,10 +189,6 @@ public class StartSurfaceLayout extends Layout {
         };
 
         mController.addOverviewModeObserver(mStartSurfaceObserver);
-        if (TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne()) {
-            mThumbnailAspectRatio = (float) TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO.getValue();
-            mThumbnailAspectRatio = MathUtils.clamp(mThumbnailAspectRatio, 0.5f, 2.0f);
-        }
     }
 
     @Override
@@ -519,7 +514,7 @@ public class StartSurfaceLayout extends Layout {
         animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
                 LayoutTab.MAX_CONTENT_HEIGHT, sourceLayoutTab.getUnclampedOriginalContentHeight(),
                 TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne()
-                        ? Math.min(getWidth() / mThumbnailAspectRatio,
+                        ? Math.min(getWidth() / TabUtils.getTabThumbnailAspectRatio(getContext()),
                                 sourceLayoutTab.getUnclampedOriginalContentHeight())
                         : getWidth(),
                 ZOOMING_DURATION, Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
@@ -575,7 +570,7 @@ public class StartSurfaceLayout extends Layout {
         animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
                 LayoutTab.MAX_CONTENT_HEIGHT,
                 TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne()
-                        ? Math.min(getWidth() / mThumbnailAspectRatio,
+                        ? Math.min(getWidth() / TabUtils.getTabThumbnailAspectRatio(getContext()),
                                 sourceLayoutTab.getUnclampedOriginalContentHeight())
                         : getWidth(),
                 sourceLayoutTab.getUnclampedOriginalContentHeight(), ZOOMING_DURATION,
@@ -626,6 +621,7 @@ public class StartSurfaceLayout extends Layout {
                 // Skip fade-in for tab switcher view, since it will translate in instead.
                 mController.getTabSwitcherContainer().setVisibility(View.VISIBLE);
                 mController.showOverview(false);
+                mController.setSnackbarParentView(mController.getTabSwitcherContainer());
             }
 
             @Override
@@ -656,6 +652,11 @@ public class StartSurfaceLayout extends Layout {
         mTabToSwitcherAnimation = new AnimatorSet();
         mTabToSwitcherAnimation.play(translateDown);
         mTabToSwitcherAnimation.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mController.setSnackbarParentView(null);
+            }
+
             @Override
             public void onAnimationEnd(Animator animation) {
                 mTabToSwitcherAnimation = null;
@@ -716,7 +717,7 @@ public class StartSurfaceLayout extends Layout {
     }
 
     private void postHiding() {
-        if (ReturnToChromeExperimentsUtil.isStartSurfaceEnabled(getContext())) {
+        if (ReturnToChromeUtil.isStartSurfaceEnabled(getContext())) {
             mStartSurface.onHide();
         } else {
             getGridTabListDelegate().postHiding();

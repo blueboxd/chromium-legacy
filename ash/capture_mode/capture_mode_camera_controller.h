@@ -17,6 +17,7 @@
 #include "base/observer_list_types.h"
 #include "base/system/system_monitor.h"
 #include "base/timer/timer.h"
+#include "media/base/video_facing.h"
 #include "media/capture/video/video_capture_device_info.h"
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -79,7 +80,8 @@ struct CameraInfo {
   CameraInfo(CameraId camera_id,
              std::string device_id,
              std::string display_name,
-             const media::VideoCaptureFormats& supported_formats);
+             const media::VideoCaptureFormats& supported_formats,
+             media::VideoFacingMode camera_facing_mode);
   CameraInfo(CameraInfo&&);
   CameraInfo& operator=(CameraInfo&&);
   ~CameraInfo();
@@ -104,6 +106,11 @@ struct CameraInfo {
   // (See `media::VideoCaptureSystemImpl::DevicesInfoReady()`) by the frame size
   // area, then by frame width, then by the *largest* frame rate.
   media::VideoCaptureFormats supported_formats;
+
+  // Whether the camera is facing the user (e.g. for internal front cameras), or
+  // the environment (e.g. internal rear cameras), or unknown (e.g. usually for
+  // external USB cameras).
+  media::VideoFacingMode camera_facing_mode;
 };
 
 using CameraInfoList = std::vector<CameraInfo>;
@@ -183,13 +190,16 @@ class ASH_EXPORT CaptureModeCameraController
   void MaybeReparentPreviewWidget();
 
   // Sets `camera_preview_snap_position_` and updates the preview widget's
-  // bounds accordingly.
-  void SetCameraPreviewSnapPosition(CameraPreviewSnapPosition value);
+  // bounds accordingly. If `animate` is set to true, the camera preview will
+  // animate to its new snap position.
+  void SetCameraPreviewSnapPosition(CameraPreviewSnapPosition value,
+                                    bool animate = false);
 
-  // Updates the bounds of `camera_preview_widget_` to current
-  // GetPreviewWidgetBounds() when necessary. If `animate` is set to true, the
-  // widget will animate to the new target bounds.
-  void MaybeUpdatePreviewWidgetBounds(bool animate = false);
+  // Updates the bounds and visibility of `camera_preview_widget_` according to
+  // the current state of the capture surface within which the camera preview
+  // is confined and snapped to one of its corners. If `animate` is set to true,
+  // the widget will animate to the new target bounds.
+  void MaybeUpdatePreviewWidget(bool animate = false);
 
   // Handles drag events forwarded from `camera_preview_view_`.
   void StartDraggingPreview(const gfx::PointF& screen_location);
@@ -199,11 +209,6 @@ class ASH_EXPORT CaptureModeCameraController
   // Updates the bounds of the preview widget and the value of
   // `is_camera_preview_collapsed_` when the resize button is pressed.
   void ToggleCameraPreviewSize();
-
-  // Fades in or out the `camera_preview_widget_` and updates its visibility
-  // accordingly.
-  void FadeInCameraPreview();
-  void FadeOutCameraPreview();
 
   void OnRecordingStarted(bool is_in_projector_mode);
   void OnRecordingEnded();
@@ -264,24 +269,31 @@ class ASH_EXPORT CaptureModeCameraController
   void OnSelectedCameraDisconnected();
 
   // Returns the bounds of the preview widget which doesn't intersect with
-  // system tray. Always try `camera_preview_snap_position_` first. If camera
-  // preview at all snap positions intersects with system tray, returns the
-  // bounds of `camera_preview_snap_position_`.
-  gfx::Rect CalculatePreviewWidgetTargetBounds();
+  // system tray, which should be confined within the given `confine_bounds`,
+  // and have the given `preview_size`. Always tries the current
+  // `camera_preview_snap_position_` first. Once a snap position with which the
+  // preview has no collisions is found, it will be set in
+  // `camera_preview_snap_position_`. If the camera preview at all possible snap
+  // positions intersects with system tray, returns the bounds for the current
+  // `camera_preview_snap_position_`.
+  gfx::Rect CalculatePreviewWidgetTargetBounds(const gfx::Rect& confine_bounds,
+                                               const gfx::Size& preview_size);
 
-  // Call by `CalculatePreviewWidgetTargetBounds` above. Returns the bounds of
-  // the preview widget that matches the coordinate system of the confine
-  // bounds.
+  // Called by `CalculatePreviewWidgetTargetBounds` above. Returns the bounds of
+  // the preview widget that matches the coordinate system of the given
+  // `confine_bounds` with the given `preview_size` at the given
+  // `snap_position`.
   gfx::Rect GetPreviewWidgetBoundsForSnapPosition(
+      const gfx::Rect& confine_bounds,
+      const gfx::Size& preview_size,
       CameraPreviewSnapPosition snap_position) const;
 
-  // Called by `EndDraggingPreview`, updating `camera_preview_snap_position_`
-  // according to the current position of the `camera_preview_view_`.
-  void UpdateSnapPositionOnDragEnded();
+  // Returns the new snap position of the camera preview on drag ended.
+  CameraPreviewSnapPosition CalculateSnapPositionOnDragEnded() const;
 
   // Returns the current bounds of camemra preview widget that match the
   // coordinate system of the confine bounds.
-  gfx::Rect GetCurrentBoundsMatchingConfineBoundsCoordinates();
+  gfx::Rect GetCurrentBoundsMatchingConfineBoundsCoordinates() const;
 
   // Does post works for camera preview after RefreshCameraPreview(). It
   // triggers a11y alert based on `was_preview_visible_before` and the current
@@ -291,6 +303,21 @@ class ASH_EXPORT CaptureModeCameraController
   // camera preview and floating windows, such as PIP windows and some a11y
   // panels.
   void RunPostRefreshCameraPreview(bool was_preview_visible_before);
+
+  // Sets the visibility of the camera preview to the given `target_visibility`
+  // and returns true only if the `target_visibility` is different than the
+  // current.
+  bool SetCameraPreviewVisibility(bool target_visibility, bool animate);
+
+  // Fades in or out the `camera_preview_widget_` and updates its visibility
+  // accordingly.
+  void FadeInCameraPreview();
+  void FadeOutCameraPreview();
+
+  // Sets the given `target_bounds` on the camera preview widget, potentially
+  // animating to it if `animate` is true. Returns true if the bounds actually
+  // changed from the current.
+  bool SetCameraPreviewBounds(const gfx::Rect& target_bounds, bool animate);
 
   // Owned by CaptureModeController and guaranteed to be not null and to outlive
   // `this`.
@@ -355,6 +382,10 @@ class ASH_EXPORT CaptureModeCameraController
   // the resize button is clicked. The size of the preview widget and the icon
   // of the resize button will be updated based on it.
   bool is_camera_preview_collapsed_ = false;
+
+  // True if it's the first time to update the camera preview's bounds after
+  // it's created.
+  bool is_first_bounds_update_ = false;
 
   // Valid only during recording to track the number of camera disconnections
   // while recording is in progress.

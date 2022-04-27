@@ -100,9 +100,7 @@ ClassicScript* ClassicScript::CreateFromResource(
                            ScriptStreamer::NotStreamingReason::kInvalid);
 
   ParkableString source;
-  const char web_snapshot_prefix[4] = {'+', '+', '+', ';'};
-  if (RuntimeEnabledFeatures::ExperimentalWebSnapshotsEnabled() &&
-      resource->DataHasPrefix(base::span<const char>(web_snapshot_prefix))) {
+  if (resource->IsWebSnapshot()) {
     source = resource->RawSourceText();
   } else {
     source = resource->SourceText();
@@ -177,24 +175,6 @@ ScriptEvaluationResult ClassicScript::RunScriptOnScriptStateAndReturnValue(
     V8ScriptRunner::RethrowErrorsOption rethrow_errors) {
   return V8ScriptRunner::CompileAndRunScript(script_state, this, policy,
                                              std::move(rethrow_errors));
-}
-
-void ClassicScript::RunScript(LocalDOMWindow* window) {
-  return RunScript(window,
-                   ExecuteScriptPolicy::kDoNotExecuteScriptWhenScriptsDisabled);
-}
-
-void ClassicScript::RunScript(LocalDOMWindow* window,
-                              ExecuteScriptPolicy policy) {
-  v8::HandleScope handle_scope(window->GetIsolate());
-  RunScriptAndReturnValue(window, policy);
-}
-
-ScriptEvaluationResult ClassicScript::RunScriptAndReturnValue(
-    LocalDOMWindow* window,
-    ExecuteScriptPolicy policy) {
-  return RunScriptOnScriptStateAndReturnValue(
-      ToScriptStateForMainWorld(window->GetFrame()), policy);
 }
 
 ScriptEvaluationResult ClassicScript::RunScriptInIsolatedWorldAndReturnValue(

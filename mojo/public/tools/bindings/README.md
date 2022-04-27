@@ -438,7 +438,10 @@ interesting attributes supported today.
 * **`[MinVersion=N]`**:
   The `MinVersion` attribute is used to specify the version at which a given
   field, enum value, interface method, or method parameter was introduced.
-  See [Versioning](#Versioning) for more details.
+  See [Versioning](#Versioning) for more details. `MinVersion` does not apply
+  to interfaces, structs or enums, but to the fields of those types.
+  `MinVersion` is not a module-global value, but it is ok to pretend it is by
+  skipping versions when adding fields or parameters.
 
 * **`[Stable]`**:
   The `Stable` attribute specifies that a given mojom type or interface
@@ -484,6 +487,30 @@ interesting attributes supported today.
   applies to `C++` bindings. `value` should match a constant defined in an
   imported `sandbox.mojom.Sandbox` enum (for Chromium this is
   `//sandbox/policy/mojom/sandbox.mojom`), such as `kService`.
+
+* **`[RequireContext=enum]`**:
+  The `RequireContext` attribute is used in Chromium to tag interfaces that
+  should be passed (as remotes or receivers) only to privileged process
+  contexts. The process context must be an enum that is imported into the
+  mojom that defines the tagged interface. `RequireContext` may be used in
+  future to DCHECK or CHECK if remotes are made available in contexts that
+  conflict with the one provided in the interface definition. Process contexts
+  are not the same as the sandbox a process is running in, but will reflect
+  the set of capabilities provided to the service.
+
+* **`[AllowedContext=enum]`**:
+  The `AllowedContext` attribute is used in Chromium to tag methods that pass
+  remotes or receivers of interfaces that are marked with a `RequireContext`
+  attribute. The enum provided on the method must be equal or better (lower
+  numerically) than the one required on the interface being passed. At present
+  failing to specify an adequate `AllowedContext` value will cause mojom
+  generation to fail at compile time. In future DCHECKs or CHECKs might be
+  added to enforce that method is only called from a process context that meets
+  the given `AllowedContext` value. The enum must of the same type as that
+  specified in the interface's `RequireContext` attribute. Adding an
+  `AllowedContext` attribute to a method is a strong indication that you need
+   a detailed security review of your design - please reach out to the security
+   team.
 
 ## Generated Code For Target Languages
 

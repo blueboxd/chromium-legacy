@@ -89,6 +89,7 @@ if (is_win) {
   }
 }
 
+# This does not currently work. See crbug.com/1311822.
 # This target exists above chrome and it's main components in the dependency
 # tree as a central place to put assert_no_deps annotations. Since this depends
 # on Chrome and the main DLLs it uses, it will transitively assert that those
@@ -111,6 +112,7 @@ group("assert_no_deps") {
   # //chrome/installer/util/BUILD.gn.
   assert_no_deps = [ "//chrome/installer/util:strings" ]
 }
+
 if (!is_android && !is_mac) {
   group("chrome") {
     public_deps = [ ":chrome_initial" ]
@@ -313,7 +315,10 @@ if (!is_android && !is_mac) {
       }
 
       if (is_chromeos_lacros) {
-        deps += [ "//chromeos/crosapi/mojom" ]
+        deps += [
+          "//chromeos/crosapi/mojom",
+          "//chromeos/startup",
+        ]
       }
     }
 
@@ -1432,7 +1437,7 @@ group("dependencies") {
   if (is_chromeos_ash) {
     public_deps += [
       "//ash/constants",
-      "//chrome/browser/chromeos",
+      "//chrome/browser/ash",
       "//chromeos",
       "//chromeos/memory",
     ]

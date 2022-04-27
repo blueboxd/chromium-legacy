@@ -36,6 +36,13 @@ export class Resolution {
   }
 
   /**
+   * @return The amount of mega pixels to 1 decimal place.
+   */
+  get mp(): number {
+    return parseFloat((this.area / 1000000).toFixed(1));
+  }
+
+  /**
    * Compares width/height of resolutions, see if they are equal or not.
    *
    * @param resolution Resolution to be compared with.
@@ -43,6 +50,19 @@ export class Resolution {
    */
   equals(resolution: Resolution): boolean {
     return this.width === resolution.width && this.height === resolution.height;
+  }
+
+  /**
+   * Compares width/height of resolutions, see if they are equal or not. It also
+   * returns true if the resolution is rotated.
+   *
+   * @param resolution Resolution to be compared with.
+   * @return Whether width/height of resolutions are equal.
+   */
+  equalsWithRotation(resolution: Resolution): boolean {
+    return (this.width === resolution.width &&
+            this.height === resolution.height) ||
+        (this.width === resolution.height && this.height === resolution.width);
   }
 
   /**
@@ -85,7 +105,6 @@ export enum MimeType {
 export enum Mode {
   PHOTO = 'photo',
   VIDEO = 'video',
-  SQUARE = 'square',
   PORTRAIT = 'portrait',
   SCAN = 'scan',
 }
@@ -111,15 +130,14 @@ export enum ViewName {
   DOCUMENT_MODE_DIALOG = 'view-document-mode-dialog',
   EXPERT_SETTINGS = 'view-expert-settings',
   FLASH = 'view-flash',
-  GRID_SETTINGS = 'view-grid-settings',
   MESSAGE_DIALOG = 'view-message-dialog',
+  OPTION_PANEL = 'view-option-panel',
+  PHOTO_ASPECT_RATIO_SETTINGS = 'view-photo-aspect-ratio-settings',
   PHOTO_RESOLUTION_SETTINGS = 'view-photo-resolution-settings',
   PTZ_PANEL = 'view-ptz-panel',
-  RESOLUTION_SETTINGS = 'view-resolution-settings',
   REVIEW = 'view-review',
   SETTINGS = 'view-settings',
   SPLASH = 'view-splash',
-  TIMER_SETTINGS = 'view-timer-settings',
   VIDEO_RESOLUTION_SETTINGS = 'view-video-resolution-settings',
   WARNING = 'view-warning',
 }
@@ -128,6 +146,35 @@ export enum VideoType {
   MP4 = 'mp4',
   GIF = 'gif',
 }
+
+export enum PhotoResolutionLevel {
+  FULL = 'full',
+  MEDIUM = 'medium',
+  UNKNOWN = 'unknown',
+}
+
+export enum VideoResolutionLevel {
+  FULL = 'full',
+  MEDIUM = 'medium',
+  FOUR_K = '4K',
+  QUAD_HD = 'Quad HD',
+  FULL_HD = 'Full HD',
+  HD = 'HD',
+  UNKNOWN = 'unknown',
+}
+
+export enum AspectRatioSet {
+  RATIO_4_3 = 1.3333,
+  RATIO_16_9 = 1.7778,
+  RATIO_OTHER = 0.0000,
+  RATIO_SQUARE = 1.0000,
+}
+
+export const NON_CROP_ASPECT_RATIO_SETS = [
+  AspectRatioSet.RATIO_4_3,
+  AspectRatioSet.RATIO_16_9,
+  AspectRatioSet.RATIO_OTHER,
+];
 
 export enum Rotation {
   ANGLE_0 = 0,

@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import static org.chromium.chrome.browser.tabmodel.TestTabModelDirectory.M26_GOOGLE_COM;
-import static org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS;
+import static org.chromium.chrome.browser.tasks.ReturnToChromeUtil.TAB_SWITCHER_ON_RETURN_MS;
 import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
 import android.app.Activity;
@@ -65,7 +65,7 @@ import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
 import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
 import org.chromium.chrome.browser.tabpersistence.TabStateFileManager;
-import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
+import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
@@ -98,7 +98,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class StartSurfaceTestUtils {
     public static final String INSTANT_START_TEST_BASE_PARAMS =
             "force-fieldtrial-params=Study.Group:"
-            + ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"
+            + ReturnToChromeUtil.TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"
             + "/start_surface_variation/single";
     public static final String START_SURFACE_TEST_BASE_PARAMS =
             "force-fieldtrial-params=Study.Group:start_surface_variation/single";
@@ -131,8 +131,8 @@ public class StartSurfaceTestUtils {
         }
         if (immediateReturn) {
             TAB_SWITCHER_ON_RETURN_MS.setForTesting(0);
-            assertEquals(0, ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS.getValue());
-            assertTrue(ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(-1));
+            assertEquals(0, ReturnToChromeUtil.TAB_SWITCHER_ON_RETURN_MS.getValue());
+            assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(-1));
 
             // Need to start main activity from launcher for immediate return to be effective.
             // However, need at least one tab for carousel to show, which starting main activity
@@ -143,7 +143,7 @@ public class StartSurfaceTestUtils {
             TabAttributeCache.setTitleForTesting(0, "tab title");
             startMainActivityFromLauncher(activityTestRule);
         } else {
-            assertFalse(ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(-1));
+            assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(-1));
             // Cannot use StartSurfaceTestUtils.startMainActivityFromLauncher().
             // Otherwise tab switcher could be shown immediately if single-pane is enabled.
             activityTestRule.startMainActivityOnBlankPage();
@@ -385,24 +385,23 @@ public class StartSurfaceTestUtils {
      */
     public static void launchFirstMVTile(ChromeTabbedActivity cta, int currentTabCount) {
         TabUiTestHelper.verifyTabModelTabCount(cta, currentTabCount, 0);
-        onViewWaiting(withId(org.chromium.chrome.tab_ui.R.id.mv_tiles_layout))
-                .perform(new ViewAction() {
-                    @Override
-                    public Matcher<View> getConstraints() {
-                        return isDisplayed();
-                    }
+        onViewWaiting(withId(R.id.mv_tiles_layout)).perform(new ViewAction() {
+            @Override
+            public Matcher<View> getConstraints() {
+                return isDisplayed();
+            }
 
-                    @Override
-                    public String getDescription() {
-                        return "Click explore top sites view in MV tiles.";
-                    }
+            @Override
+            public String getDescription() {
+                return "Click explore top sites view in MV tiles.";
+            }
 
-                    @Override
-                    public void perform(UiController uiController, View view) {
-                        ViewGroup mvTilesContainer = (ViewGroup) view;
-                        mvTilesContainer.getChildAt(0).performClick();
-                    }
-                });
+            @Override
+            public void perform(UiController uiController, View view) {
+                ViewGroup mvTilesContainer = (ViewGroup) view;
+                mvTilesContainer.getChildAt(0).performClick();
+            }
+        });
         LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
         CriteriaHelper.pollUiThread(() -> !cta.getLayoutManager().overviewVisible());
         // Verifies a new Tab is created.
@@ -421,10 +420,8 @@ public class StartSurfaceTestUtils {
      * @param position The position of the tab which is clicked.
      */
     public static void clickTabInCarousel(int position) {
-        onViewWaiting(
-                allOf(withParent(withId(
-                              org.chromium.chrome.tab_ui.R.id.carousel_tab_switcher_container)),
-                        withId(org.chromium.chrome.tab_ui.R.id.tab_list_view)))
+        onViewWaiting(allOf(withParent(withId(R.id.carousel_tab_switcher_container)),
+                              withId(R.id.tab_list_view)))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(position, click()));
     }
 
@@ -439,9 +436,7 @@ public class StartSurfaceTestUtils {
         // TODO(crbug.com/1186752): Investigate whether this would be a problem for real users.
         try {
             TestThreadUtils.runOnUiThreadBlocking(
-                    ()
-                            -> cta.findViewById(org.chromium.chrome.tab_ui.R.id.more_tabs)
-                                       .performClick());
+                    () -> cta.findViewById(R.id.more_tabs).performClick());
         } catch (ExecutionException e) {
             fail("Failed to tap 'more tabs' " + e.toString());
         }

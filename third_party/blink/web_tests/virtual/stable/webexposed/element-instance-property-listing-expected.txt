@@ -286,6 +286,7 @@ namespace http://www.w3.org/1999/xhtml
     property replaceWith
     property requestFullscreen
     property requestPointerLock
+    property role
     property scroll
     property scrollBy
     property scrollHeight
@@ -657,7 +658,7 @@ html element img
     property currentSrc
     property decode
     property decoding
-    property fetchpriority
+    property fetchPriority
     property height
     property hspace
     property isMap
@@ -754,7 +755,7 @@ html element link
     property charset
     property crossOrigin
     property disabled
-    property fetchpriority
+    property fetchPriority
     property href
     property hreflang
     property imageSizes
@@ -901,7 +902,7 @@ html element script
     property crossOrigin
     property defer
     property event
-    property fetchpriority
+    property fetchPriority
     property htmlFor
     property integrity
     property noModule
@@ -1447,6 +1448,7 @@ namespace http://www.w3.org/2000/svg
     property replaceWith
     property requestFullscreen
     property requestPointerLock
+    property role
     property scroll
     property scrollBy
     property scrollHeight

@@ -89,6 +89,7 @@
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/pending_animations.h"
 #include "third_party/blink/renderer/core/animation/worklet_animation_controller.h"
+#include "third_party/blink/renderer/core/annotation/annotation_agent_container_impl.h"
 #include "third_party/blink/renderer/core/aom/computed_accessible_node.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
@@ -175,6 +176,7 @@
 #include "third_party/blink/renderer/core/events/visual_viewport_resize_event.h"
 #include "third_party/blink/renderer/core/events/visual_viewport_scroll_event.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
+#include "third_party/blink/renderer/core/fragment_directive/fragment_directive.h"
 #include "third_party/blink/renderer/core/fragment_directive/text_fragment_handler.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/dom_timer.h"
@@ -193,7 +195,6 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
-#include "third_party/blink/renderer/core/html/battery_savings.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_font_cache.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
@@ -221,7 +222,6 @@
 #include "third_party/blink/renderer/core/html/html_meta_element.h"
 #include "third_party/blink/renderer/core/html/html_object_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
-#include "third_party/blink/renderer/core/html/html_popup_element.h"
 #include "third_party/blink/renderer/core/html/html_script_element.h"
 #include "third_party/blink/renderer/core/html/html_title_element.h"
 #include "third_party/blink/renderer/core/html/html_unknown_element.h"
@@ -263,6 +263,7 @@
 #include "third_party/blink/renderer/core/loader/no_state_prefetch_client.h"
 #include "third_party/blink/renderer/core/loader/pending_link_preload.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
+#include "third_party/blink/renderer/core/loader/render_blocking_resource_manager.h"
 #include "third_party/blink/renderer/core/mathml/mathml_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_row_element.h"
 #include "third_party/blink/renderer/core/mathml_element_factory.h"
@@ -829,7 +830,7 @@ Document::Document(const DocumentInit& initializer,
   }
 
   is_vertical_scroll_enforced_ =
-      GetFrame() && !GetFrame()->IsMainFrame() &&
+      GetFrame() && !GetFrame()->IsOutermostMainFrame() &&
       RuntimeEnabledFeatures::ExperimentalPoliciesEnabled() &&
       !dom_window_->IsFeatureEnabled(
           mojom::blink::PermissionsPolicyFeature::kVerticalScroll);
@@ -980,6 +981,10 @@ void Document::ChildrenChanged(const ChildrenChange& change) {
 
 bool Document::IsInMainFrame() const {
   return GetFrame() && GetFrame()->IsMainFrame();
+}
+
+bool Document::IsInOutermostMainFrame() const {
+  return GetFrame() && GetFrame()->IsOutermostMainFrame();
 }
 
 AtomicString Document::ConvertLocalName(const AtomicString& name) {
@@ -2071,24 +2076,7 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
   }
 #endif  // EXPENSIVE_DCHECKS_ARE_ON()
 
-  SCOPED_UMA_AND_UKM_TIMER(View()->EnsureUkmAggregator(),
-                           LocalFrameUkmAggregator::kStyle);
-  FontPerformance::StyleScope font_performance_scope;
-  ENTER_EMBEDDER_STATE(V8PerIsolateData::MainThreadIsolate(), GetFrame(),
-                       BlinkState::STYLE);
-
-  // RecalcSlotAssignments should be done before checking
-  // NeedsLayoutTreeUpdateForThisDocument().
-  GetSlotAssignmentEngine().RecalcSlotAssignments();
-
-  // We can call FlatTreeTraversal::AssertFlatTreeNodeDataUpdated just after
-  // calling RecalcSlotAssignments(), however, it would be better to call it at
-  // least after InStyleRecalc() check below in order to avoid superfluous
-  // check, which would be the cause of web tests timeout when dcheck is on.
-
-  SlotAssignmentRecalcForbiddenScope forbid_slot_recalc(*this);
-
-  if (!NeedsLayoutTreeUpdateForThisDocument()) {
+  auto advance_to_style_clean = [this]() {
     if (Lifecycle().GetState() < DocumentLifecycle::kStyleClean) {
       // NeedsLayoutTreeUpdateForThisDocument may change to false without any
       // actual layout tree update.  For example, NeedsAnimationTimingUpdate
@@ -2101,8 +2089,46 @@ void Document::UpdateStyleAndLayoutTreeForThisDocument() {
     // need a layout tree update, but need to make sure they are not blocking
     // the load event.
     UnblockLoadEventAfterLayoutTreeUpdate();
+  };
+
+  bool needs_slot_assignment = IsSlotAssignmentDirty();
+  bool needs_layout_tree_update = false;
+
+  if (!needs_slot_assignment) {
+    needs_layout_tree_update = NeedsLayoutTreeUpdateForThisDocument();
+    if (!needs_layout_tree_update) {
+      // Early out for no-op calls before the UMA/UKM measurement is set up to
+      // avoid a large number of close-to-zero samples.
+      advance_to_style_clean();
+      return;
+    }
+  }
+
+  SCOPED_UMA_AND_UKM_TIMER(View()->EnsureUkmAggregator(),
+                           LocalFrameUkmAggregator::kStyle);
+  FontPerformance::StyleScope font_performance_scope;
+  ENTER_EMBEDDER_STATE(V8PerIsolateData::MainThreadIsolate(), GetFrame(),
+                       BlinkState::STYLE);
+
+  if (needs_slot_assignment) {
+    // RecalcSlotAssignments should be done before checking
+    // NeedsLayoutTreeUpdateForThisDocument().
+    GetSlotAssignmentEngine().RecalcSlotAssignments();
+    DCHECK(!needs_layout_tree_update) << "Should be postponed above";
+    needs_layout_tree_update = NeedsLayoutTreeUpdateForThisDocument();
+  }
+
+  if (!needs_layout_tree_update) {
+    advance_to_style_clean();
     return;
   }
+
+  // We can call FlatTreeTraversal::AssertFlatTreeNodeDataUpdated just after
+  // calling RecalcSlotAssignments(), however, it would be better to call it at
+  // least after InStyleRecalc() check below in order to avoid superfluous
+  // check, which would be the cause of web tests timeout when dcheck is on.
+
+  SlotAssignmentRecalcForbiddenScope forbid_slot_recalc(*this);
 
   if (InStyleRecalc()) {
     NOTREACHED() << "We should not re-enter style recalc for the same document";
@@ -2609,31 +2635,7 @@ void Document::EnsurePaintLocationDataValidForNode(
   if (!node->InActiveDocument())
     return;
 
-  if (RuntimeEnabledFeatures::DeferredShapingEnabled()) {
-    if (GetDisplayLockDocumentState().LockedDisplayLockCount() !=
-        GetDisplayLockDocumentState().DisplayLockBlockingAllActivationCount()) {
-      // Unlock all prior deferred elements.
-      for (const Node* previous = node; previous;
-           previous = FlatTreeTraversal::Previous(*previous)) {
-        const Element* prior_element = DynamicTo<Element>(previous);
-        if (!prior_element || !prior_element->GetLayoutObject() ||
-            !prior_element->GetLayoutObject()->IsShapingDeferred())
-          continue;
-        prior_element->GetDisplayLockContext()->SetRequestedState(
-            EContentVisibility::kVisible);
-      }
-      // Unlock all descendant deferred elements too.
-      for (const Node* next = FlatTreeTraversal::Next(*node, node); next;
-           next = FlatTreeTraversal::Next(*next, node)) {
-        const auto* element = DynamicTo<Element>(next);
-        if (!element || !element->GetLayoutObject() ||
-            !element->GetLayoutObject()->IsShapingDeferred())
-          continue;
-        element->GetDisplayLockContext()->SetRequestedState(
-            EContentVisibility::kVisible);
-      }
-    }
-  }
+  GetDisplayLockDocumentState().UnlockShapingDeferredElements();
 
   DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(
       node, DisplayLockContext::ForcedPhase::kLayout);
@@ -6695,6 +6697,13 @@ void Document::FinishedParsing() {
 
     frame->Loader().FinishedParsing();
 
+    if (parser) {
+      if (SourceKeyedCachedMetadataHandler* metadata_handler =
+              parser->GetInlineScriptCacheHandler()) {
+        metadata_handler->LogUsageMetrics();
+      }
+    }
+
     if (frame->GetFrameScheduler())
       frame->GetFrameScheduler()->OnDomContentLoaded();
 
@@ -6871,36 +6880,8 @@ void Document::ColorSchemeMetaChanged() {
   GetStyleEngine().SetPageColorSchemes(color_scheme);
 }
 
-void Document::BatterySavingsMetaChanged() {
-  if (!RuntimeEnabledFeatures::BatterySavingsMetaEnabled(GetExecutionContext()))
-    return;
-
-  if (!IsInMainFrame())
-    return;
-
-  UseCounter::Count(GetExecutionContext(), WebFeature::kBatterySavingsMeta);
-  auto* root_element = documentElement();
-  if (!root_element)
-    return;
-
-  BatterySavingsFlags savings = 0;
-  for (HTMLMetaElement& meta_element :
-       Traversal<HTMLMetaElement>::DescendantsOf(*root_element)) {
-    if (EqualIgnoringASCIICase(meta_element.GetName(), "battery-savings")) {
-      SpaceSplitString split_content(
-          AtomicString(meta_element.Content().GetString().LowerASCII()));
-      if (split_content.Contains("allow-reduced-framerate"))
-        savings |= kAllowReducedFrameRate;
-      if (split_content.Contains("allow-reduced-script-speed"))
-        savings |= kAllowReducedScriptSpeed;
-      break;
-    }
-  }
-  GetPage()->GetChromeClient().BatterySavingsChanged(*GetFrame(), savings);
-}
-
 void Document::SupportsReducedMotionMetaChanged() {
-  if (!IsInMainFrame())
+  if (!IsInOutermostMainFrame())
     return;
 
   auto* root_element = documentElement();
@@ -7184,37 +7165,23 @@ bool Document::PopupShowing() const {
   return !popup_element_stack_.IsEmpty();
 }
 
-void Document::HidePopup(Element* popup) {
-  if (auto* popup_element = DynamicTo<HTMLPopupElement>(popup)) {
-    popup_element->hide();
-  } else if (popup->HasValidPopupAttribute()) {
-    popup->hidePopup();
-  } else {
-    NOTREACHED() << "popup should be either a <popup> or have a valid "
-                    "popup attribute";
-  }
-}
-
 void Document::HideTopmostPopupElement() {
-  DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled() ||
-         RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
+  DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
   if (popup_element_stack_.IsEmpty())
     return;
-  HidePopup(popup_element_stack_.back());
+  popup_element_stack_.back()->hidePopup();
 }
 
 void Document::HideAllPopupsUntil(const Element* endpoint) {
-  DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled() ||
-         RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
+  DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
   while (!popup_element_stack_.IsEmpty() &&
          popup_element_stack_.back() != endpoint) {
-    HidePopup(popup_element_stack_.back());
+    popup_element_stack_.back()->hidePopup();
   }
 }
 
 void Document::HidePopupIfShowing(const Element* popup) {
-  DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled() ||
-         RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
+  DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
   if (!popup_element_stack_.Contains(popup))
     return;
   HideAllPopupsUntil(popup);
@@ -7765,7 +7732,7 @@ void Document::FlushAutofocusCandidates() {
       // 11.2. Set topDocument's autofocus processed flag to true.
       FinalizeAutofocus();
       // 11.3. Run the focusing steps for element.
-      element.focus();
+      element.Focus();
     } else {
       // TODO(tkent): Show a console message, and fix LocalNTP*Test.*
       // in browser_tests.

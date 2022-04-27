@@ -5,7 +5,6 @@
 #include "ash/projector/projector_ui_controller.h"
 
 #include "ash/accessibility/caption_bubble_context_ash.h"
-#include "ash/accessibility/magnifier/partial_magnifier_controller.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/constants/ash_features.h"
 #include "ash/projector/projector_annotation_tray.h"
@@ -161,6 +160,14 @@ void ProjectorUiController::ResetTools() {
     annotator_enabled_ = false;
     ash::ProjectorAnnotatorController::Get()->Clear();
   }
+}
+
+void ProjectorUiController::OnCanvasInitialized(bool success) {
+  auto* projector_annotation_tray = Shell::GetPrimaryRootWindowController()
+                                        ->GetStatusAreaWidget()
+                                        ->projector_annotation_tray();
+  DCHECK(projector_annotation_tray);
+  projector_annotation_tray->SetEnabled(success);
 }
 
 void ProjectorUiController::OnProjectorSessionActiveStateChanged(bool active) {

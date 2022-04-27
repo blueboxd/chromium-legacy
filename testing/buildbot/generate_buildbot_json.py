@@ -1583,7 +1583,6 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
         'Optional Win10 x64 Release (Intel HD 630)',
         'Optional Win10 x64 Release (NVIDIA)',
         # chromium.fyi
-        'linux-blink-rel-dummy',
         'linux-blink-optional-highdpi-rel-dummy',
         'mac10.12-blink-rel-dummy',
         'mac10.13-blink-rel-dummy',
@@ -1595,14 +1594,6 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
         'win10.20h2-blink-rel-dummy',
         'win11-blink-rel-dummy',
         'WebKit Linux layout_ng_disabled Builder',
-        # chromium, due to https://crbug.com/878915
-        'win-dbg',
-        'win32-dbg',
-        'win-archive-dbg',
-        'win32-archive-dbg',
-        # TODO crbug.com/1143924: Remove once experimentation is complete
-        'Linux Builder Robocrop',
-        'Linux Tests Robocrop',
     ]
 
   def get_internal_waterfalls(self):

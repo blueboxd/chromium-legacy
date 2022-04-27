@@ -196,8 +196,8 @@ void UpdateAppPermissions(
     auto permission = apps::mojom::Permission::New();
     permission->permission_type =
         GetAppServicePermissionType(new_permission.first);
-    permission->value = apps::mojom::PermissionValue::New();
-    permission->value->set_bool_value(new_permission.second->granted);
+    permission->value = apps::mojom::PermissionValue::NewBoolValue(
+        new_permission.second->granted);
     permission->is_managed = new_permission.second->managed;
 
     permissions->push_back(std::move(permission));
@@ -1666,6 +1666,9 @@ AppPtr ArcApps::CreateApp(ArcAppListPrefs* prefs,
   }
 
   app->resize_locked = GetResizeLocked(prefs, app_id);
+
+  app->app_size_in_bytes = app_info.app_size_in_bytes;
+  app->data_size_in_bytes = app_info.data_size_in_bytes;
 
   // TODO(crbug.com/1253250): Add other fields for the App struct.
   return app;

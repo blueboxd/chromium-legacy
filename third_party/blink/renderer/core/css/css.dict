@@ -715,7 +715,6 @@
 "hsl"
 "hsla"
 "hwb"
-"hwba"
 "-internal-light-dark"
 "matrix"
 "matrix3d"
@@ -934,6 +933,7 @@
 "custom"
 "spelling-error"
 "grammar-error"
+"color-contrast"
 
 # at-rules
 "@charset"

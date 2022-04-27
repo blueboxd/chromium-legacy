@@ -95,6 +95,7 @@ source_set("web_applications") {
     "system_web_apps/system_web_app_manager.cc",
     "system_web_apps/system_web_app_manager.h",
     "system_web_apps/system_web_app_types.h",
+    "user_display_mode.cc",
     "user_display_mode.h",
     "web_app.cc",
     "web_app.h",
@@ -137,16 +138,12 @@ source_set("web_applications") {
     "web_app_install_task.h",
     "web_app_install_utils.cc",
     "web_app_install_utils.h",
-    "web_app_installation_utils.cc",
-    "web_app_installation_utils.h",
     "web_app_internals_utils.cc",
     "web_app_internals_utils.h",
     "web_app_launch_params.cc",
     "web_app_launch_params.h",
     "web_app_launch_queue.cc",
     "web_app_launch_queue.h",
-    "web_app_offline.cc",
-    "web_app_offline.h",
     "web_app_origin_association_manager.cc",
     "web_app_origin_association_manager.h",
     "web_app_origin_association_task.cc",
@@ -255,6 +252,7 @@ source_set("web_applications") {
     "//components/custom_handlers",
     "//components/policy/core/browser:browser",
     "//components/resources:components_resources_grit",
+    "//components/services/storage:lock_manager",
 
     # TODO(crbug.com/1225132): Clean up this legacy crx dependency.
     "//components/crx_file",
@@ -265,6 +263,7 @@ source_set("web_applications") {
     "//components/permissions:permissions",
     "//components/pref_registry",
     "//components/services/app_service/public/cpp:app_file_handling",
+    "//components/services/app_service/public/cpp:app_types",
     "//components/services/app_service/public/cpp:app_update",
     "//components/services/app_service/public/cpp:app_url_handling",
     "//components/services/app_service/public/cpp:protocol_handling",
@@ -499,7 +498,6 @@ source_set("web_applications_unit_tests") {
     "web_app_install_manager_unittest.cc",
     "web_app_install_task_unittest.cc",
     "web_app_install_utils_unittest.cc",
-    "web_app_installation_utils_unittest.cc",
     "web_app_prefs_utils_unittest.cc",
     "web_app_proto_utils_unittest.cc",
     "web_app_registrar_unittest.cc",
@@ -586,7 +584,7 @@ source_set("web_applications_unit_tests") {
       "//ash/components/arc:arc_test_support",
       "//ash/components/arc/mojom",
       "//ash/constants",
-      "//chrome/browser/chromeos",
+      "//chrome/browser/ash",
       "//components/arc:arc_test_support",
     ]
   }
@@ -700,7 +698,7 @@ source_set("web_applications_browser_tests") {
   if (is_chromeos_ash) {
     deps += [
       "//ash:test_support",
-      "//chrome/browser/chromeos",
+      "//chrome/browser/ash",
       "//chrome/browser/ui",
     ]
   }

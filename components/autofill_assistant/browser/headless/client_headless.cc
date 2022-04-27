@@ -74,7 +74,7 @@ std::string ClientHeadless::GetEmailAddressForAccessTokenAccount() const {
   return "";
 }
 
-std::string ClientHeadless::GetChromeSignedInEmailAddress() const {
+std::string ClientHeadless::GetSignedInEmail() const {
   // TODO(b/201964911): return the Chrome signed in user.
   return "";
 }
@@ -151,6 +151,10 @@ bool ClientHeadless::HasHadUI() const {
 
 ScriptExecutorUiDelegate* ClientHeadless::GetScriptExecutorUiDelegate() {
   return headless_ui_controller_.get();
+}
+
+bool ClientHeadless::MustUseBackendData() const {
+  return false;
 }
 
 void ClientHeadless::Shutdown(Metrics::DropOutReason reason) {}

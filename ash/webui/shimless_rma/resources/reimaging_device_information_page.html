@@ -9,7 +9,7 @@
   }
 
   cr-button {
-    border-radius: 20px;
+    border: 0;
   }
 
   .sku-warning {
@@ -20,11 +20,6 @@
     font-weight: var(--shimless-regular-font-weight);
     line-height: var(--shimless-warning-line-height);
     max-width: 400px;
-  }
-
-  iron-icon {
-    height: 10px;
-    width: 50px;
   }
 
   cr-input {
@@ -43,6 +38,28 @@
     font-weight: var(--shimless-medium-font-weight);
     line-height: var(--shimless-hint-line-height);
   }
+
+  cr-input,
+  .md-select {
+    width: 336px;
+  }
+  
+  #skuIconContainer {
+    align-items: center;
+    display: inline-flex;
+    vertical-align: middle;
+  }
+
+  #infoIcon {
+    display: inline-block;
+    height: 18px;
+    margin-inline-start: 6px;
+    width: 18px;
+  }
+
+  #tooltipContent {
+    line-height: var(--shimless-instructions-line-height);
+  }
 </style>
 
 <base-page>
@@ -53,86 +70,94 @@
     </div>
   </div>
   <div slot="right-pane">
-    <div class="input-row">
-      <label id="serialNumberLabel" class="cr-form-field-label">
-        [[i18n('confirmDeviceInfoSerialNumberLabel')]]
-      </label>
-      <div class="input-holder">
-        <cr-input id="serialNumber" placeholder="Enter Serial Number"
-            value="{{serialNumber_}}" aria-labelledby="serialNumberLabel"
-            disabled="[[allButtonsDisabled]]">
-        </cr-input>
-        <cr-button id="resetSerialNumber"
-            on-click="onResetSerialNumberButtonClicked_"
-            disabled="[[disableResetSerialNumber_]]">
-          [[i18n('confirmDeviceInfoResetButtonLabel')]]
-        </cr-button>
+    <div class="input-wrapper">
+      <div class="input-row">
+        <label id="serialNumberLabel" class="cr-form-field-label">
+          [[i18n('confirmDeviceInfoSerialNumberLabel')]]
+        </label>
+        <div class="input-holder">
+          <cr-input id="serialNumber" placeholder="Enter Serial Number"
+              value="{{serialNumber_}}" aria-labelledby="serialNumberLabel"
+              disabled="[[allButtonsDisabled]]">
+          </cr-input>
+          <cr-button id="resetSerialNumber"
+              on-click="onResetSerialNumberButtonClicked_"
+              disabled="[[disableResetSerialNumber_]]">
+            [[i18n('confirmDeviceInfoResetButtonLabel')]]
+          </cr-button>
+        </div>
       </div>
-    </div>
-    <div class="input-row">
-      <label id="dramPartNumberLabel" class="cr-form-field-label">
-        [[i18n('confirmDeviceInfoDramPartNumberLabel')]]
-      </label>
-      <div class="input-holder">
-        <cr-input
-            id="dramPartNumber"
-            placeholder=
-                "[[i18n('confirmDeviceInfoDramPartNumberPlaceholderLabel')]]"
-            value="{{dramPartNumber_}}"
-            aria-labelledby="dramPartNumberLabel"
-            disabled="[[allButtonsDisabled]]">
-        </cr-input>
-        <cr-button id="resetDramPartNumber"
-            on-click="onResetDramPartNumberButtonClicked_"
-            disabled="[[disableResetDramPartNumber_]]">
-          [[i18n('confirmDeviceInfoResetButtonLabel')]]
-        </cr-button>
+      <div class="input-row">
+        <label id="dramPartNumberLabel" class="cr-form-field-label">
+          [[i18n('confirmDeviceInfoDramPartNumberLabel')]]
+        </label>
+        <div class="input-holder">
+          <cr-input
+              id="dramPartNumber"
+              placeholder=
+                  "[[i18n('confirmDeviceInfoDramPartNumberPlaceholderLabel')]]"
+              value="{{dramPartNumber_}}"
+              aria-labelledby="dramPartNumberLabel"
+              disabled="[[allButtonsDisabled]]">
+          </cr-input>
+          <cr-button id="resetDramPartNumber"
+              on-click="onResetDramPartNumberButtonClicked_"
+              disabled="[[disableResetDramPartNumber_]]">
+            [[i18n('confirmDeviceInfoResetButtonLabel')]]
+          </cr-button>
+        </div>
       </div>
-    </div>
-    <div class="input-row">
-      <label id="regionLabel" class="cr-form-field-label">
-        [[i18n('confirmDeviceInfoRegionLabel')]]
-      </label>
-      <div class="input-holder">
-        <select id="regionSelect" class="md-select"
-            on-change="onSelectedRegionChange_" aria-labelledby="regionLabel"
-            disabled="[[allButtonsDisabled]]">
-          <template is="dom-repeat" items="[[regions_]]" as="region">
-            <option value="[[region]]">
-              [[region]]
-            </option>
-          </template>
-        </select>
-        <cr-button id="resetRegion" on-click="onResetRegionButtonClicked_"
-            disabled="[[disableResetRegion_]]">
-          [[i18n('confirmDeviceInfoResetButtonLabel')]]
-        </cr-button>
+      <div class="input-row">
+        <label id="regionLabel" class="cr-form-field-label">
+          [[i18n('confirmDeviceInfoRegionLabel')]]
+        </label>
+        <div class="input-holder">
+          <select id="regionSelect" class="md-select"
+              on-change="onSelectedRegionChange_" aria-labelledby="regionLabel"
+              disabled="[[allButtonsDisabled]]">
+            <template is="dom-repeat" items="[[regions_]]" as="region">
+              <option value="[[region]]">
+                [[region]]
+              </option>
+            </template>
+          </select>
+          <cr-button id="resetRegion" on-click="onResetRegionButtonClicked_"
+              disabled="[[disableResetRegion_]]">
+            [[i18n('confirmDeviceInfoResetButtonLabel')]]
+          </cr-button>
+        </div>
       </div>
-    </div>
-    <div class="input-row">
-      <label id="whiteLabelLabel" class="cr-form-field-label">
-        [[i18n('confirmDeviceInfoWhiteLabelLabel')]]
-      </label>
-      <div class="input-holder">
-        <select id="whiteLabelSelect" class="md-select" 
-            on-change="onSelectedWhiteLabelChange_"
-            aria-labelledby="whiteLabelLabel" disabled="[[allButtonsDisabled]]">
-          <template is="dom-repeat" items="[[whiteLabels_]]" as="whiteLabel">
-            <option value="[[whiteLabel]]">
-              [[whiteLabel]]
-            </option>
-          </template>
-        </select>
-        <cr-button id="resetWhiteLabel" on-click="onResetWhiteLabelButtonClicked_"
-            disabled="[[disableResetWhiteLabel_]]">
-          [[i18n('confirmDeviceInfoResetButtonLabel')]]
-        </cr-button>
+      <div class="input-row">
+        <label id="whiteLabelLabel" class="cr-form-field-label">
+          [[i18n('confirmDeviceInfoWhiteLabelLabel')]]
+        </label>
+        <div class="input-holder">
+          <select id="whiteLabelSelect" class="md-select"
+              on-change="onSelectedWhiteLabelChange_"
+              aria-labelledby="whiteLabelLabel" disabled="[[allButtonsDisabled]]">
+            <template is="dom-repeat" items="[[whiteLabels_]]" as="whiteLabel">
+              <option value="[[whiteLabel]]">
+                [[whiteLabel]]
+              </option>
+            </template>
+          </select>
+          <cr-button id="resetWhiteLabel" on-click="onResetWhiteLabelButtonClicked_"
+              disabled="[[disableResetWhiteLabel_]]">
+            [[i18n('confirmDeviceInfoResetButtonLabel')]]
+          </cr-button>
+        </div>
       </div>
-    </div>
-    <div>
-      <label id="skuLabel" class="cr-form-field-label">
-        [[i18n('confirmDeviceInfoSkuLabel')]]
-      </label>
+      <div id="skuIconContainer">
+        <label id="skuLabel" class="cr-form-field-label">
+          [[i18n('confirmDeviceInfoSkuLabel')]]
+        </label>
+        <iron-icon icon="shimless-icon:info" id="infoIcon"
+            class="cr-form-field-label">
+        </iron-icon>
+        <paper-tooltip for="infoIcon">
+          <div id="tooltipContent">[[i18n('confirmDeviceInfoSkuWarning')]]</div> 
+        </paper-tooltip>
+      </div>
       <div class="input-holder">
         <select id="skuSelect" class="md-select"
             on-change="onSelectedSkuChange_" aria-labelledby="skuLabel"
@@ -148,10 +173,6 @@
           [[i18n('confirmDeviceInfoResetButtonLabel')]]
         </cr-button>
       </div>
-    </div>
-    <div class="sku-warning">
-      <iron-icon icon="shimless-icon:warning"></iron-icon>
-      [[i18n('confirmDeviceInfoSkuWarning')]]
     </div>
   </div>
 </base-page>

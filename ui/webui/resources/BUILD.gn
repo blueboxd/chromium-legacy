@@ -86,11 +86,15 @@ generate_grd("build_grd") {
     deps += [
       ":build_cros_styles_grdp",
       "//ash/webui/common/resources:build_grdp",
+      "//chromeos/components/cros_elements:build_grdp",
+      "//third_party/material_web_components:build_grdp",
       "//third_party/web-animations-js:build_grdp",
     ]
     grdp_files += [
+      "$root_gen_dir/chromeos/components/cros_elements/cros_elements_resources.grdp",
       "$root_gen_dir/ui/webui/resources/cros_styles_resources.grdp",
       "$root_gen_dir/third_party/web-animations-js/web_animations_resources.grdp",
+      "$root_gen_dir/third_party/material_web_components/material_web_components_resources.grdp",
       "$root_gen_dir/ash/webui/common/resources/ash_common_resources.grdp",
     ]
   }
@@ -194,6 +198,17 @@ checked_in_dts_files = [
 
 if (is_chromeos_ash) {
   checked_in_dts_files += [
+    "cr_components/chromeos/bluetooth/bluetooth_base_page.d.ts",
+    "cr_components/chromeos/bluetooth/bluetooth_battery_icon_percentage.d.ts",
+    "cr_components/chromeos/bluetooth/bluetooth_device_battery_info.d.ts",
+    "cr_components/chromeos/bluetooth/bluetooth_icon.d.ts",
+    "cr_components/chromeos/bluetooth/bluetooth_pairing_device_item.d.ts",
+    "cr_components/chromeos/bluetooth/bluetooth_pairing_device_selection_page.d.ts",
+    "cr_components/chromeos/bluetooth/bluetooth_pairing_enter_code_page.d.ts",
+    "cr_components/chromeos/bluetooth/bluetooth_pairing_request_code_page.d.ts",
+    "cr_components/chromeos/bluetooth/bluetooth_pairing_ui.d.ts",
+    "cr_components/chromeos/smb_shares/add_smb_share_dialog.d.ts",
+    "cr_components/chromeos/smb_shares/smb_browser_proxy.d.ts",
     "js/cr/ui/context_menu_handler.m.d.ts",
     "js/cr/ui/dialogs.m.d.ts",
     "js/cr/ui/grid.m.d.ts",
@@ -249,7 +264,24 @@ if (include_polymer) {
 
   if (is_chromeos_ash) {
     generate_definitions_js_files += [
+      "cr_components/chromeos/bluetooth/bluetooth_dialog.js",
+      "cr_components/chromeos/bluetooth/bluetooth_icons.js",
+      "cr_components/chromeos/bluetooth/bluetooth_metrics_utils.js",
+      "cr_components/chromeos/bluetooth/bluetooth_pairing_confirm_code_page.js",
+      "cr_components/chromeos/bluetooth/bluetooth_spinner_page.js",
+      "cr_components/chromeos/bluetooth/bluetooth_types.js",
+      "cr_components/chromeos/bluetooth/bluetooth_utils.js",
+      "cr_components/chromeos/bluetooth/cros_bluetooth_config.js",
+      "cr_components/chromeos/quick_unlock/lock_screen_constants.m.js",
+      "cr_components/chromeos/quick_unlock/pin_keyboard_icon.m.js",
+      "cr_components/chromeos/quick_unlock/pin_keyboard.m.js",
+      "cr_components/chromeos/quick_unlock/setup_pin_keyboard.m.js",
       "cr_elements/chromeos/cros_color_overrides.m.js",
+      "cr_elements/chromeos/cr_picture/cr_camera.js",
+      "cr_elements/chromeos/cr_picture/cr_picture_list.js",
+      "cr_elements/chromeos/cr_picture/cr_picture_pane.js",
+      "cr_elements/chromeos/cr_picture/cr_picture_types.js",
+      "cr_elements/chromeos/cr_picture/icons.js",
       "cr_elements/chromeos/cr_picture/png.js",
       "cr_elements/chromeos/cr_picture/webcam_utils.js",
       "js/cr/ui.m.js",
@@ -332,6 +364,8 @@ ts_library("library") {
   }
 
   definitions = [
+    "//tools/typescript/definitions/bluetooth_private.d.ts",
+    "//tools/typescript/definitions/bluetooth.d.ts",
     "//tools/typescript/definitions/chrome_send.d.ts",
     "//tools/typescript/definitions/pending.d.ts",
     "//tools/typescript/definitions/settings_private.d.ts",

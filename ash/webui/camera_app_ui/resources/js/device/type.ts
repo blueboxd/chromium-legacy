@@ -3,12 +3,25 @@
 // found in the LICENSE file.
 
 import {assert, assertInstanceof} from '../assert.js';
-import {Facing, Mode} from '../type.js';
+import {
+  AspectRatioSet,
+  Facing,
+  Mode,
+  PhotoResolutionLevel,
+  Resolution,
+  VideoResolutionLevel,
+} from '../type.js';
 
 import {Camera3DeviceInfo} from './camera3_device_info.js';
 import {CaptureCandidate} from './capture_candidate.js';
 import {DeviceInfoUpdater} from './device_info_updater.js';
 import {CaptureHandler} from './mode/index.js';
+
+/**
+ * All supported constant fps options of video recording.
+ */
+export const SUPPORTED_CONSTANT_FPS = [30, 60];
+
 
 export interface ModeConstraints {
   kind: 'default'|'exact';
@@ -84,4 +97,51 @@ export interface CameraUI {
   onUpdateConfig?(config: CameraConfig): Promise<void>|void;
   onCameraUnavailable?(): void;
   onCameraAvailable?(): void;
+}
+
+export interface BaseSettingsOptionGroup<T extends BaseSettingsOption> {
+  deviceId: string;
+  facing: Facing;
+  options: T[];
+}
+
+export interface BaseSettingsOption {
+  checked: boolean;
+}
+
+export type PhotoResolutionOptionListener =
+    (groups: PhotoResolutionOptionGroup[]) => void;
+
+export type PhotoResolutionOptionGroup =
+    BaseSettingsOptionGroup<PhotoResolutionOption>;
+
+export interface PhotoResolutionOption extends BaseSettingsOption {
+  resolutionLevel: PhotoResolutionLevel;
+  resolutions: Resolution[];
+}
+
+export type PhotoAspectRatioOptionListener =
+    (groups: PhotoAspectRatioOptionGroup[]) => void;
+
+export type PhotoAspectRatioOptionGroup =
+    BaseSettingsOptionGroup<PhotoAspectRatioOption>;
+
+export interface PhotoAspectRatioOption extends BaseSettingsOption {
+  aspectRatioSet: AspectRatioSet;
+}
+
+export type VideoResolutionOptionListener =
+    (groups: VideoResolutionOptionGroup[]) => void;
+
+export type VideoResolutionOptionGroup =
+    BaseSettingsOptionGroup<VideoResolutionOption>;
+
+export interface VideoResolutionOption extends BaseSettingsOption {
+  resolutionLevel: VideoResolutionLevel;
+  fpsOptions: VideoFpsOption[];
+}
+
+export interface VideoFpsOption extends BaseSettingsOption {
+  constFps: number|null;
+  resolutions: Resolution[];
 }

@@ -53,54 +53,51 @@ const char kEmptyDocumentUrl[] = "data:text/html,";
     }                                                        \
   } while (0)
 
-helpers::RequestCookie ParseRequestCookie(const base::Value::Dict* dict) {
+helpers::RequestCookie ParseRequestCookie(const base::Value::Dict& dict) {
   helpers::RequestCookie result;
-  const std::string* name = dict->FindString(keys::kNameKey);
-  if (name)
+  if (const std::string* name = dict.FindString(keys::kNameKey))
     result.name = *name;
-  const std::string* value = dict->FindString(keys::kValueKey);
-  if (value)
+  if (const std::string* value = dict.FindString(keys::kValueKey))
     result.value = *value;
   return result;
 }
 
-void ParseResponseCookieImpl(const base::DictionaryValue* dict,
+void ParseResponseCookieImpl(const base::Value::Dict& dict,
                              helpers::ResponseCookie* cookie) {
-  std::string string_tmp;
-  if (dict->GetString(keys::kNameKey, &string_tmp))
-    cookie->name = string_tmp;
-  if (dict->GetString(keys::kValueKey, &string_tmp))
-    cookie->value = string_tmp;
-  if (dict->GetString(keys::kExpiresKey, &string_tmp))
-    cookie->expires = string_tmp;
-  if (absl::optional<int> v = dict->FindIntKey(keys::kMaxAgeKey))
+  if (const std::string* v = dict.FindString(keys::kNameKey))
+    cookie->name = *v;
+  if (const std::string* v = dict.FindString(keys::kValueKey))
+    cookie->value = *v;
+  if (const std::string* v = dict.FindString(keys::kExpiresKey))
+    cookie->expires = *v;
+  if (absl::optional<int> v = dict.FindInt(keys::kMaxAgeKey))
     cookie->max_age = *v;
-  if (dict->GetString(keys::kDomainKey, &string_tmp))
-    cookie->domain = string_tmp;
-  if (dict->GetString(keys::kPathKey, &string_tmp))
-    cookie->path = string_tmp;
-  if (absl::optional<bool> v = dict->FindBoolKey(keys::kSecureKey))
+  if (const std::string* v = dict.FindString(keys::kDomainKey))
+    cookie->domain = *v;
+  if (const std::string* v = dict.FindString(keys::kPathKey))
+    cookie->path = *v;
+  if (absl::optional<bool> v = dict.FindBool(keys::kSecureKey))
     cookie->secure = *v;
-  if (absl::optional<bool> v = dict->FindBoolKey(keys::kHttpOnlyKey))
+  if (absl::optional<bool> v = dict.FindBool(keys::kHttpOnlyKey))
     cookie->http_only = *v;
 }
 
-helpers::ResponseCookie ParseResponseCookie(const base::DictionaryValue* dict) {
+helpers::ResponseCookie ParseResponseCookie(const base::Value::Dict& dict) {
   helpers::ResponseCookie result;
   ParseResponseCookieImpl(dict, &result);
   return result;
 }
 
 helpers::FilterResponseCookie ParseFilterResponseCookie(
-    const base::DictionaryValue* dict) {
+    const base::Value::Dict& dict) {
   helpers::FilterResponseCookie result;
   ParseResponseCookieImpl(dict, &result);
 
-  if (absl::optional<int> v = dict->FindIntKey(keys::kAgeUpperBoundKey))
+  if (absl::optional<int> v = dict.FindInt(keys::kAgeUpperBoundKey))
     result.age_upper_bound = *v;
-  if (absl::optional<int> v = dict->FindIntKey(keys::kAgeLowerBoundKey))
+  if (absl::optional<int> v = dict.FindInt(keys::kAgeLowerBoundKey))
     result.age_lower_bound = *v;
-  if (absl::optional<bool> v = dict->FindBoolKey(keys::kSessionCookieKey))
+  if (absl::optional<bool> v = dict.FindBool(keys::kSessionCookieKey))
     result.session_cookie = *v;
   return result;
 }
@@ -110,37 +107,31 @@ helpers::FilterResponseCookie ParseFilterResponseCookie(
 template <class T>
 scoped_refptr<const WebRequestAction> CallConstructorFactoryMethod(
     const std::string& instance_type,
-    const base::Value* value,
+    const base::Value::Dict& value,
     std::string* error,
     bool* bad_message) {
   return base::MakeRefCounted<T>();
 }
 
-// TODO(crbug.com/1315843): Migrate const base::Value* to const
-// base::Value::Dict&.
 scoped_refptr<const WebRequestAction> CreateRedirectRequestAction(
     const std::string& instance_type,
-    const base::Value* value,
+    const base::Value::Dict& value,
     std::string* error,
     bool* bad_message) {
-  const base::Value::Dict& dict = value->GetDict();
   const std::string* redirect_url_string =
-      dict.FindString(keys::kRedirectUrlKey);
+      value.FindString(keys::kRedirectUrlKey);
   INPUT_FORMAT_VALIDATE(redirect_url_string);
   GURL redirect_url(*redirect_url_string);
   return base::MakeRefCounted<WebRequestRedirectAction>(redirect_url);
 }
 
-// TODO(crbug.com/1315843): Migrate const base::Value* to const
-// base::Value::Dict&
 scoped_refptr<const WebRequestAction> CreateRedirectRequestByRegExAction(
     const std::string& instance_type,
-    const base::Value* value,
+    const base::Value::Dict& value,
     std::string* error,
     bool* bad_message) {
-  const base::Value::Dict& dict = value->GetDict();
-  const std::string* from = dict.FindString(keys::kFromKey);
-  const std::string* to = dict.FindString(keys::kToKey);
+  const std::string* from = value.FindString(keys::kFromKey);
+  const std::string* to = value.FindString(keys::kToKey);
   INPUT_FORMAT_VALIDATE(from);
   INPUT_FORMAT_VALIDATE(to);
 
@@ -159,14 +150,11 @@ scoped_refptr<const WebRequestAction> CreateRedirectRequestByRegExAction(
       std::move(from_pattern), re2style_to);
 }
 
-// TODO(crbug.com/1315843): Migrate const base::Value* to const
-// base::Value::Dict&
 scoped_refptr<const WebRequestAction> CreateSetRequestHeaderAction(
     const std::string& instance_type,
-    const base::Value* json_value,
+    const base::Value::Dict& dict,
     std::string* error,
     bool* bad_message) {
-  const base::Value::Dict& dict = json_value->GetDict();
   const std::string* name = dict.FindString(keys::kNameKey);
   const std::string* value = dict.FindString(keys::kValueKey);
   INPUT_FORMAT_VALIDATE(name);
@@ -183,15 +171,12 @@ scoped_refptr<const WebRequestAction> CreateSetRequestHeaderAction(
   return base::MakeRefCounted<WebRequestSetRequestHeaderAction>(*name, *value);
 }
 
-// TODO(crbug.com/1315843): Migrate const base::Value* to const
-// base::Value::Dict&
 scoped_refptr<const WebRequestAction> CreateRemoveRequestHeaderAction(
     const std::string& instance_type,
-    const base::Value* value,
+    const base::Value::Dict& value,
     std::string* error,
     bool* bad_message) {
-  const base::Value::Dict& dict = value->GetDict();
-  const std::string* name = dict.FindString(keys::kNameKey);
+  const std::string* name = value.FindString(keys::kNameKey);
   INPUT_FORMAT_VALIDATE(name);
   if (!net::HttpUtil::IsValidHeaderName(*name)) {
     *error = extension_web_request_api_constants::kInvalidHeaderName;
@@ -200,14 +185,11 @@ scoped_refptr<const WebRequestAction> CreateRemoveRequestHeaderAction(
   return base::MakeRefCounted<WebRequestRemoveRequestHeaderAction>(*name);
 }
 
-// TODO(crbug.com/1315843): Migrate const base::Value* to const
-// base::Value::Dict&
 scoped_refptr<const WebRequestAction> CreateAddResponseHeaderAction(
     const std::string& instance_type,
-    const base::Value* json_value,
+    const base::Value::Dict& dict,
     std::string* error,
     bool* bad_message) {
-  const base::Value::Dict& dict = json_value->GetDict();
   const std::string* name = dict.FindString(keys::kNameKey);
   const std::string* value = dict.FindString(keys::kValueKey);
   INPUT_FORMAT_VALIDATE(name);
@@ -224,14 +206,11 @@ scoped_refptr<const WebRequestAction> CreateAddResponseHeaderAction(
   return base::MakeRefCounted<WebRequestAddResponseHeaderAction>(*name, *value);
 }
 
-// TODO(crbug.com/1315843): Migrate const base::Value* to const
-// base::Value::Dict&
 scoped_refptr<const WebRequestAction> CreateRemoveResponseHeaderAction(
     const std::string& instance_type,
-    const base::Value* json_value,
+    const base::Value::Dict& dict,
     std::string* error,
     bool* bad_message) {
-  const base::Value::Dict& dict = json_value->GetDict();
   const std::string* name = dict.FindString(keys::kNameKey);
   INPUT_FORMAT_VALIDATE(name);
   const std::string* value = dict.FindString(keys::kValueKey);
@@ -250,27 +229,25 @@ scoped_refptr<const WebRequestAction> CreateRemoveResponseHeaderAction(
       *name, value_string, value != nullptr);
 }
 
-// TODO(crbug.com/1315843): Migrate const base::Value* to const
-// base::Value::Dict&
 scoped_refptr<const WebRequestAction> CreateIgnoreRulesAction(
     const std::string& instance_type,
-    const base::Value* value,
+    const base::Value::Dict& value,
     std::string* error,
     bool* bad_message) {
-  CHECK(value->is_dict());
   bool has_parameter = false;
   int minimum_priority = std::numeric_limits<int>::min();
   std::string ignore_tag;
-  if (value->FindKey(keys::kLowerPriorityThanKey)) {
+  if (value.Find(keys::kLowerPriorityThanKey)) {
     absl::optional<int> minimum_priority_value =
-        value->FindIntKey(keys::kLowerPriorityThanKey);
+        value.FindInt(keys::kLowerPriorityThanKey);
     INPUT_FORMAT_VALIDATE(minimum_priority_value);
     minimum_priority = *minimum_priority_value;
     has_parameter = true;
   }
-  if (const base::Value* tag = value->FindKey(keys::kHasTagKey)) {
-    INPUT_FORMAT_VALIDATE(tag->is_string());
-    ignore_tag = tag->GetString();
+  if (value.Find(keys::kHasTagKey)) {
+    const std::string* tag = value.FindString(keys::kHasTagKey);
+    INPUT_FORMAT_VALIDATE(tag);
+    ignore_tag = *tag;
     has_parameter = true;
   }
   if (!has_parameter) {
@@ -281,11 +258,9 @@ scoped_refptr<const WebRequestAction> CreateIgnoreRulesAction(
                                                            ignore_tag);
 }
 
-// TODO(crbug.com/1315843): Migrate const base::Value* to const
-// base::Value::Dict&
 scoped_refptr<const WebRequestAction> CreateRequestCookieAction(
     const std::string& instance_type,
-    const base::Value* value,
+    const base::Value::Dict& value,
     std::string* error,
     bool* bad_message) {
   using extension_web_request_api_helpers::RequestCookieModification;
@@ -302,43 +277,36 @@ scoped_refptr<const WebRequestAction> CreateRequestCookieAction(
   else
     INPUT_FORMAT_VALIDATE(false);
 
-  const base::Value::Dict& dict = value->GetDict();
-
   // Get filter.
   if (modification.type == helpers::EDIT ||
       modification.type == helpers::REMOVE) {
-    const base::Value::Dict* filter = dict.FindDict(keys::kFilterKey);
+    const base::Value::Dict* filter = value.FindDict(keys::kFilterKey);
     INPUT_FORMAT_VALIDATE(filter);
-    modification.filter = ParseRequestCookie(filter);
+    modification.filter = ParseRequestCookie(*filter);
   }
 
   // Get new value.
   if (modification.type == helpers::ADD) {
-    const base::Value::Dict* cookie_dict = dict.FindDict(keys::kCookieKey);
+    const base::Value::Dict* cookie_dict = value.FindDict(keys::kCookieKey);
     INPUT_FORMAT_VALIDATE(cookie_dict);
-    modification.modification = ParseRequestCookie(cookie_dict);
+    modification.modification = ParseRequestCookie(*cookie_dict);
   } else if (modification.type == helpers::EDIT) {
     const base::Value::Dict* modification_dict =
-        dict.FindDict(keys::kModificationKey);
+        value.FindDict(keys::kModificationKey);
     INPUT_FORMAT_VALIDATE(modification_dict);
-    modification.modification = ParseRequestCookie(modification_dict);
+    modification.modification = ParseRequestCookie(*modification_dict);
   }
 
   return base::MakeRefCounted<WebRequestRequestCookieAction>(
       std::move(modification));
 }
 
-// TODO(crbug.com/1315843): Migrate const base::Value* to const
-// base::Value::Dict&
 scoped_refptr<const WebRequestAction> CreateResponseCookieAction(
     const std::string& instance_type,
-    const base::Value* value,
+    const base::Value::Dict& value,
     std::string* error,
     bool* bad_message) {
   using extension_web_request_api_helpers::ResponseCookieModification;
-
-  const base::DictionaryValue* dict = NULL;
-  CHECK(value->GetAsDictionary(&dict));
 
   ResponseCookieModification modification;
 
@@ -355,113 +323,94 @@ scoped_refptr<const WebRequestAction> CreateResponseCookieAction(
   // Get filter.
   if (modification.type == helpers::EDIT ||
       modification.type == helpers::REMOVE) {
-    const base::DictionaryValue* filter = NULL;
-    INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kFilterKey, &filter));
-    modification.filter = ParseFilterResponseCookie(filter);
+    const base::Value::Dict* filter = value.FindDict(keys::kFilterKey);
+    INPUT_FORMAT_VALIDATE(filter);
+    modification.filter = ParseFilterResponseCookie(*filter);
   }
 
   // Get new value.
   if (modification.type == helpers::ADD) {
-    const base::DictionaryValue* dict_value = NULL;
-    INPUT_FORMAT_VALIDATE(dict->GetDictionary(keys::kCookieKey, &dict_value));
-    modification.modification = ParseResponseCookie(dict_value);
+    const base::Value::Dict* dict_value = value.FindDict(keys::kCookieKey);
+    INPUT_FORMAT_VALIDATE(dict_value);
+    modification.modification = ParseResponseCookie(*dict_value);
   } else if (modification.type == helpers::EDIT) {
-    const base::DictionaryValue* dict_value = NULL;
-    INPUT_FORMAT_VALIDATE(
-        dict->GetDictionary(keys::kModificationKey, &dict_value));
-    modification.modification = ParseResponseCookie(dict_value);
+    const base::Value::Dict* dict_value =
+        value.FindDict(keys::kModificationKey);
+    INPUT_FORMAT_VALIDATE(dict_value);
+    modification.modification = ParseResponseCookie(*dict_value);
   }
 
   return base::MakeRefCounted<WebRequestResponseCookieAction>(
       std::move(modification));
 }
 
-// TODO(crbug.com/1315843): Migrate const base::Value* to const
-// base::Value::Dict&
 scoped_refptr<const WebRequestAction> CreateSendMessageToExtensionAction(
     const std::string& name,
-    const base::Value* value,
+    const base::Value::Dict& value,
     std::string* error,
     bool* bad_message) {
-  const base::Value::Dict& dict = value->GetDict();
-  const std::string* message = dict.FindString(keys::kMessageKey);
+  const std::string* message = value.FindString(keys::kMessageKey);
   INPUT_FORMAT_VALIDATE(message);
   return base::MakeRefCounted<WebRequestSendMessageToExtensionAction>(*message);
 }
 
 struct WebRequestActionFactory {
-  DedupingFactory<WebRequestAction> factory;
+  using FactoryT = DedupingFactory<WebRequestAction, const base::Value::Dict&>;
+  FactoryT factory;
 
   WebRequestActionFactory() : factory(5) {
+    factory.RegisterFactoryMethod(keys::kAddRequestCookieType,
+                                  FactoryT::IS_PARAMETERIZED,
+                                  &CreateRequestCookieAction);
+    factory.RegisterFactoryMethod(keys::kAddResponseCookieType,
+                                  FactoryT::IS_PARAMETERIZED,
+                                  &CreateResponseCookieAction);
+    factory.RegisterFactoryMethod(keys::kAddResponseHeaderType,
+                                  FactoryT::IS_PARAMETERIZED,
+                                  &CreateAddResponseHeaderAction);
     factory.RegisterFactoryMethod(
-        keys::kAddRequestCookieType,
-        DedupingFactory<WebRequestAction>::IS_PARAMETERIZED,
-        &CreateRequestCookieAction);
-    factory.RegisterFactoryMethod(
-        keys::kAddResponseCookieType,
-        DedupingFactory<WebRequestAction>::IS_PARAMETERIZED,
-        &CreateResponseCookieAction);
-    factory.RegisterFactoryMethod(
-        keys::kAddResponseHeaderType,
-        DedupingFactory<WebRequestAction>::IS_PARAMETERIZED,
-        &CreateAddResponseHeaderAction);
-    factory.RegisterFactoryMethod(
-        keys::kCancelRequestType,
-        DedupingFactory<WebRequestAction>::IS_NOT_PARAMETERIZED,
+        keys::kCancelRequestType, FactoryT::IS_NOT_PARAMETERIZED,
         &CallConstructorFactoryMethod<WebRequestCancelAction>);
+    factory.RegisterFactoryMethod(keys::kEditRequestCookieType,
+                                  FactoryT::IS_PARAMETERIZED,
+                                  &CreateRequestCookieAction);
+    factory.RegisterFactoryMethod(keys::kEditResponseCookieType,
+                                  FactoryT::IS_PARAMETERIZED,
+                                  &CreateResponseCookieAction);
+    factory.RegisterFactoryMethod(keys::kRedirectByRegExType,
+                                  FactoryT::IS_PARAMETERIZED,
+                                  &CreateRedirectRequestByRegExAction);
+    factory.RegisterFactoryMethod(keys::kRedirectRequestType,
+                                  FactoryT::IS_PARAMETERIZED,
+                                  &CreateRedirectRequestAction);
     factory.RegisterFactoryMethod(
-        keys::kEditRequestCookieType,
-        DedupingFactory<WebRequestAction>::IS_PARAMETERIZED,
-        &CreateRequestCookieAction);
-    factory.RegisterFactoryMethod(
-        keys::kEditResponseCookieType,
-        DedupingFactory<WebRequestAction>::IS_PARAMETERIZED,
-        &CreateResponseCookieAction);
-    factory.RegisterFactoryMethod(
-        keys::kRedirectByRegExType,
-        DedupingFactory<WebRequestAction>::IS_PARAMETERIZED,
-        &CreateRedirectRequestByRegExAction);
-    factory.RegisterFactoryMethod(
-        keys::kRedirectRequestType,
-        DedupingFactory<WebRequestAction>::IS_PARAMETERIZED,
-        &CreateRedirectRequestAction);
-    factory.RegisterFactoryMethod(
-        keys::kRedirectToTransparentImageType,
-        DedupingFactory<WebRequestAction>::IS_NOT_PARAMETERIZED,
+        keys::kRedirectToTransparentImageType, FactoryT::IS_NOT_PARAMETERIZED,
         &CallConstructorFactoryMethod<
             WebRequestRedirectToTransparentImageAction>);
     factory.RegisterFactoryMethod(
-        keys::kRedirectToEmptyDocumentType,
-        DedupingFactory<WebRequestAction>::IS_NOT_PARAMETERIZED,
+        keys::kRedirectToEmptyDocumentType, FactoryT::IS_NOT_PARAMETERIZED,
         &CallConstructorFactoryMethod<WebRequestRedirectToEmptyDocumentAction>);
-    factory.RegisterFactoryMethod(
-        keys::kRemoveRequestCookieType,
-        DedupingFactory<WebRequestAction>::IS_PARAMETERIZED,
-        &CreateRequestCookieAction);
-    factory.RegisterFactoryMethod(
-        keys::kRemoveResponseCookieType,
-        DedupingFactory<WebRequestAction>::IS_PARAMETERIZED,
-        &CreateResponseCookieAction);
-    factory.RegisterFactoryMethod(
-        keys::kSetRequestHeaderType,
-        DedupingFactory<WebRequestAction>::IS_PARAMETERIZED,
-        &CreateSetRequestHeaderAction);
-    factory.RegisterFactoryMethod(
-        keys::kRemoveRequestHeaderType,
-        DedupingFactory<WebRequestAction>::IS_PARAMETERIZED,
-        &CreateRemoveRequestHeaderAction);
-    factory.RegisterFactoryMethod(
-        keys::kRemoveResponseHeaderType,
-        DedupingFactory<WebRequestAction>::IS_PARAMETERIZED,
-        &CreateRemoveResponseHeaderAction);
-    factory.RegisterFactoryMethod(
-        keys::kIgnoreRulesType,
-        DedupingFactory<WebRequestAction>::IS_PARAMETERIZED,
-        &CreateIgnoreRulesAction);
-    factory.RegisterFactoryMethod(
-        keys::kSendMessageToExtensionType,
-        DedupingFactory<WebRequestAction>::IS_PARAMETERIZED,
-        &CreateSendMessageToExtensionAction);
+    factory.RegisterFactoryMethod(keys::kRemoveRequestCookieType,
+                                  FactoryT::IS_PARAMETERIZED,
+                                  &CreateRequestCookieAction);
+    factory.RegisterFactoryMethod(keys::kRemoveResponseCookieType,
+                                  FactoryT::IS_PARAMETERIZED,
+                                  &CreateResponseCookieAction);
+    factory.RegisterFactoryMethod(keys::kSetRequestHeaderType,
+                                  FactoryT::IS_PARAMETERIZED,
+                                  &CreateSetRequestHeaderAction);
+    factory.RegisterFactoryMethod(keys::kRemoveRequestHeaderType,
+                                  FactoryT::IS_PARAMETERIZED,
+                                  &CreateRemoveRequestHeaderAction);
+    factory.RegisterFactoryMethod(keys::kRemoveResponseHeaderType,
+                                  FactoryT::IS_PARAMETERIZED,
+                                  &CreateRemoveResponseHeaderAction);
+    factory.RegisterFactoryMethod(keys::kIgnoreRulesType,
+                                  FactoryT::IS_PARAMETERIZED,
+                                  &CreateIgnoreRulesAction);
+    factory.RegisterFactoryMethod(keys::kSendMessageToExtensionType,
+                                  FactoryT::IS_PARAMETERIZED,
+                                  &CreateSendMessageToExtensionAction);
   }
 };
 
@@ -527,16 +476,16 @@ scoped_refptr<const WebRequestAction> WebRequestAction::Create(
   *error = "";
   *bad_message = false;
 
-  const base::DictionaryValue* action_dict = NULL;
-  INPUT_FORMAT_VALIDATE(json_action.GetAsDictionary(&action_dict));
+  const base::Value::Dict* action_dict = json_action.GetIfDict();
+  INPUT_FORMAT_VALIDATE(action_dict);
 
-  std::string instance_type;
-  INPUT_FORMAT_VALIDATE(
-      action_dict->GetString(keys::kInstanceTypeKey, &instance_type));
+  const std::string* instance_type =
+      action_dict->FindString(keys::kInstanceTypeKey);
+  INPUT_FORMAT_VALIDATE(instance_type);
 
   WebRequestActionFactory& factory = g_web_request_action_factory.Get();
-  return factory.factory.Instantiate(
-      instance_type, action_dict, error, bad_message);
+  return factory.factory.Instantiate(*instance_type, *action_dict, error,
+                                     bad_message);
 }
 
 void WebRequestAction::Apply(const std::string& extension_id,

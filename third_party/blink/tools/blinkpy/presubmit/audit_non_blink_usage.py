@@ -192,9 +192,6 @@ _CONFIG = [
             'base::SafeUnsignedAbs',
             'base::StrictNumeric',
 
-            # //base/strings/char_traits.h.
-            'base::CharTraits',
-
             # //base/synchronization/lock.h.
             'base::AutoLock',
             'base::AutoUnlock',
@@ -675,6 +672,12 @@ _CONFIG = [
             'absl::holds_alternative',
             'absl::variant',
             'absl::visit',
+
+            # 128-bit absl types
+            'absl::MakeInt128',
+            'absl::MakeUint128',
+            'absl::int128',
+            'absl::uint128',
         ],
         'disallowed': [
             ('base::Bind(|Once|Repeating)',
@@ -791,7 +794,7 @@ _CONFIG = [
     },
     {
         'paths': ['third_party/blink/renderer/core/clipboard'],
-        'allowed': ['net::EscapeForHTML'],
+        'allowed': ['base::EscapeForHTML'],
     },
     {
         'paths': ['third_party/blink/renderer/core/css'],
@@ -946,6 +949,14 @@ _CONFIG = [
             'cc::ContentLayerClient',
             'cc::DisplayItemList',
             'cc::DrawRecordOp',
+        ],
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/core/css/properties/css_parsing_utils.cc',
+        ],
+        'allowed': [
+            'color_utils::GetContrastRatio',
         ],
     },
     {

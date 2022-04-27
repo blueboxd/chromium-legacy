@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_features.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/preferred_app.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 
 namespace {
@@ -64,7 +65,7 @@ void SubscriberCrosapi::RegisterAppServiceProxyFromCrosapi(
       &SubscriberCrosapi::OnCrosapiDisconnected, base::Unretained(this)));
 }
 
-void SubscriberCrosapi::OnApps(const std::vector<apps::AppPtr>& deltas) {
+void SubscriberCrosapi::OnApps(const std::vector<AppPtr>& deltas) {
   if (!subscriber_.is_bound()) {
     return;
   }
@@ -80,6 +81,12 @@ void SubscriberCrosapi::OnApps(const std::vector<apps::AppPtr>& deltas) {
   // set initialized status.
   subscriber_->OnApps(std::move(apps), AppType::kUnknown,
                       /*should_notify_initialized=*/false);
+}
+
+void SubscriberCrosapi::InitializePreferredApps(PreferredApps preferred_apps) {
+  if (subscriber_.is_bound()) {
+    subscriber_->InitializePreferredApps(std::move(preferred_apps));
+  }
 }
 
 void SubscriberCrosapi::OnApps(std::vector<apps::mojom::AppPtr> deltas,
@@ -116,7 +123,8 @@ void SubscriberCrosapi::OnPreferredAppsChanged(
   if (!subscriber_.is_bound()) {
     return;
   }
-  subscriber_->OnPreferredAppsChanged(std::move(changes));
+  subscriber_->OnPreferredAppsChanged(
+      ConvertMojomPreferredAppChangesToPreferredAppChanges(changes));
 }
 
 void SubscriberCrosapi::InitializePreferredApps(
@@ -124,7 +132,8 @@ void SubscriberCrosapi::InitializePreferredApps(
   if (!subscriber_.is_bound()) {
     return;
   }
-  subscriber_->InitializePreferredApps(std::move(preferred_apps));
+  subscriber_->InitializePreferredApps(
+      ConvertMojomPreferredAppsToPreferredApps(preferred_apps));
 }
 
 void SubscriberCrosapi::OnCrosapiDisconnected() {

@@ -4,11 +4,10 @@
 
 #include "ash/capture_mode/capture_mode_camera_preview_view.h"
 
-#include "ash/capture_mode/capture_mode_button.h"
-#include "ash/capture_mode/capture_mode_camera_controller.h"
 #include "ash/capture_mode/capture_mode_constants.h"
 #include "ash/capture_mode/capture_mode_util.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "base/bind.h"
@@ -20,6 +19,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -54,24 +54,55 @@ bool IsArrowKeyEvent(const ui::KeyEvent* event) {
 
 }  // namespace
 
+// -----------------------------------------------------------------------------
+// CameraPreviewResizeButton:
+
+CameraPreviewResizeButton::CameraPreviewResizeButton(
+    CameraPreviewView* camera_preview_view,
+    views::Button::PressedCallback callback,
+    const gfx::VectorIcon& icon)
+    : CaptureModeButton(std::move(callback), icon),
+      camera_preview_view_(camera_preview_view) {}
+
+CameraPreviewResizeButton::~CameraPreviewResizeButton() = default;
+
+void CameraPreviewResizeButton::PseudoFocus() {
+  DCHECK(camera_preview_view_->is_collapsible());
+
+  CaptureModeSessionFocusCycler::HighlightableView::PseudoFocus();
+  camera_preview_view_->RefreshResizeButtonVisibility();
+}
+
+void CameraPreviewResizeButton::PseudoBlur() {
+  CaptureModeSessionFocusCycler::HighlightableView::PseudoBlur();
+  camera_preview_view_->ScheduleRefreshResizeButtonVisibility();
+}
+
+BEGIN_METADATA(CameraPreviewResizeButton, CaptureModeButton)
+END_METADATA
+
+// -----------------------------------------------------------------------------
+// CameraPreviewView:
+
 CameraPreviewView::CameraPreviewView(
     CaptureModeCameraController* camera_controller,
     const CameraId& camera_id,
-    const gfx::Size& preferred_size,
     mojo::Remote<video_capture::mojom::VideoSource> camera_video_source,
-    const media::VideoCaptureFormat& capture_format)
+    const media::VideoCaptureFormat& capture_format,
+    bool should_flip_frames_horizontally)
     : camera_controller_(camera_controller),
       camera_id_(camera_id),
-      camera_video_renderer_(std::move(camera_video_source), capture_format),
+      camera_video_renderer_(std::move(camera_video_source),
+                             capture_format,
+                             should_flip_frames_horizontally),
       camera_video_host_view_(
           AddChildView(std::make_unique<views::NativeViewHost>())),
-      resize_button_(AddChildView(std::make_unique<CaptureModeButton>(
+      resize_button_(AddChildView(std::make_unique<CameraPreviewResizeButton>(
+          this,
           base::BindRepeating(&CameraPreviewView::OnResizeButtonPressed,
                               base::Unretained(this)),
           GetIconOfResizeButton(
               camera_controller_->is_camera_preview_collapsed())))) {
-  SetPreferredSize(preferred_size);
-
   resize_button_->SetPaintToLayer();
   resize_button_->layer()->SetFillsBoundsOpaquely(false);
   resize_button_->SetBackground(views::CreateRoundedRectBackground(
@@ -79,17 +110,19 @@ CameraPreviewView::CameraPreviewView(
           AshColorProvider::BaseLayerType::kTransparent80),
       resize_button_->GetPreferredSize().height() / 2.f));
 
-  // Ensure that when `FadeInResizeButton` was called first time, it animates
-  // from 0 to 1.
-  resize_button_->layer()->SetOpacity(0);
-
-  // The resize button should be hidden by default so that it doesn't handle
-  // events.
-  resize_button_->SetVisible(false);
+  accessibility_observation_.Observe(Shell::Get()->accessibility_controller());
+  RefreshResizeButtonVisibility();
   UpdateResizeButtonTooltip();
 }
 
 CameraPreviewView::~CameraPreviewView() = default;
+
+void CameraPreviewView::SetIsCollapsible(bool value) {
+  if (value != is_collapsible_) {
+    is_collapsible_ = value;
+    RefreshResizeButtonVisibility();
+  }
+}
 
 bool CameraPreviewView::MaybeHandleKeyEvent(const ui::KeyEvent* event) {
   if (!has_focus())
@@ -111,11 +144,11 @@ bool CameraPreviewView::MaybeHandleKeyEvent(const ui::KeyEvent* event) {
         current_snap_position, /*going_up=*/key_code == ui::VKEY_UP);
   }
 
-  if (new_snap_position == current_snap_position)
-    return false;
-
-  camera_controller_->SetCameraPreviewSnapPosition(new_snap_position);
-  return true;
+  // Still call `SetCameraPreviewSnapPosition` even if the snap position does
+  // not change. As we still want to trigger a11y alert in this case.
+  camera_controller_->SetCameraPreviewSnapPosition(new_snap_position,
+                                                   /*animate=*/true);
+  return new_snap_position == current_snap_position;
 }
 
 void CameraPreviewView::RefreshResizeButtonVisibility() {
@@ -123,10 +156,13 @@ void CameraPreviewView::RefreshResizeButtonVisibility() {
   if (target_opacity == resize_button_->layer()->GetTargetOpacity())
     return;
 
-  if (target_opacity == 1.f)
+  resize_button_hide_timer_.Stop();
+  if (target_opacity == 1.f) {
     FadeInResizeButton();
-  else
+    ScheduleRefreshResizeButtonVisibility();
+  } else {
     FadeOutResizeButton();
+  }
 }
 
 void CameraPreviewView::AddedToWidget() {
@@ -181,9 +217,9 @@ void CameraPreviewView::OnGestureEvent(ui::GestureEvent* event) {
       }
       break;
     case ui::ET_GESTURE_TAP:
-      resize_button_hide_timer_.Stop();
-      FadeInResizeButton();
-      ScheduleRefreshResizeButtonVisibility();
+      has_been_tapped_ = true;
+      RefreshResizeButtonVisibility();
+      has_been_tapped_ = false;
       break;
     default:
       break;
@@ -194,7 +230,6 @@ void CameraPreviewView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void CameraPreviewView::OnMouseEntered(const ui::MouseEvent& event) {
-  resize_button_hide_timer_.Stop();
   RefreshResizeButtonVisibility();
 }
 
@@ -227,6 +262,13 @@ void CameraPreviewView::Layout() {
       gfx::RoundedCornersF(height() / 2.f));
 }
 
+void CameraPreviewView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  views::View::GetAccessibleNodeData(node_data);
+  node_data->SetName(
+      l10n_util::GetStringUTF16(IDS_ASH_SCREEN_CAPTURE_CAMERA_PREVIEW_FOCUSED));
+  node_data->role = ax::mojom::Role::kVideo;
+}
+
 views::View* CameraPreviewView::GetView() {
   return this;
 }
@@ -235,6 +277,14 @@ std::unique_ptr<views::HighlightPathGenerator>
 CameraPreviewView::CreatePathGenerator() {
   return std::make_unique<views::CircleHighlightPathGenerator>(
       gfx::Insets(views::FocusRing::kDefaultHaloThickness / 2));
+}
+
+void CameraPreviewView::OnAccessibilityStatusChanged() {
+  RefreshResizeButtonVisibility();
+}
+
+void CameraPreviewView::OnAccessibilityControllerShutdown() {
+  accessibility_observation_.Reset();
 }
 
 void CameraPreviewView::OnResizeButtonPressed() {
@@ -308,11 +358,14 @@ void CameraPreviewView::ScheduleRefreshResizeButtonVisibility() {
 }
 
 float CameraPreviewView::CalculateResizeButtonTargetOpacity() {
-  if (camera_controller_->is_drag_in_progress())
+  if (!is_collapsible_ || camera_controller_->is_drag_in_progress())
     return 0.f;
 
-  if (IsMouseHovered() || resize_button_->IsMouseHovered())
+  if (Shell::Get()->accessibility_controller()->IsSwitchAccessRunning() ||
+      IsMouseHovered() || resize_button_->IsMouseHovered() ||
+      resize_button_->has_focus() || has_been_tapped_) {
     return 1.f;
+  }
 
   return 0.f;
 }

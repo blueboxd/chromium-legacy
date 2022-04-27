@@ -38,6 +38,7 @@
 #include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/form_parsing/buildflags.h"
 #include "components/autofill/core/browser/form_parsing/field_candidates.h"
 #include "components/autofill/core/browser/form_parsing/form_field.h"
 #include "components/autofill/core/browser/form_processing/label_processing_util.h"
@@ -539,18 +540,21 @@ void PopulateRandomizedFieldMetadata(
   }
 }
 
-// Creates the type relationship rules map. The keys represent the type that has
-// rules, and the value represents the list of required types for the given
-// key. In order to respect the rule, only one of the required types is needed.
-// For example, for Autofill to support fields of type
-// "PHONE_HOME_COUNTRY_CODE", there would need to be at least one other field
-// of type "PHONE_HOME_NUMBER" or "PHONE_HOME_CITY_AND_NUMBER".
-const auto& GetTypeRelationshipMap() {
-  static const auto rules =
-      base::MakeFixedFlatMap<ServerFieldType, ServerFieldTypeSet>(
-          {{PHONE_HOME_COUNTRY_CODE,
-            {PHONE_HOME_NUMBER, PHONE_HOME_CITY_AND_NUMBER}}});
-  return rules;
+// Defines necessary types for the rationalization logic, meaning that fields of
+// `type` are only filled if at least one field of some `GetNecessaryTypesFor()`
+// is present.
+// TODO(crbug.com/1311937) Cleanup PHONE_HOME_CITY_AND_NUMBER when launched.
+ServerFieldTypeSet GetNecessaryTypesFor(ServerFieldType type) {
+  switch (type) {
+    case PHONE_HOME_COUNTRY_CODE:
+      return {PHONE_HOME_NUMBER,
+              base::FeatureList::IsEnabled(
+                  features::kAutofillEnableSupportForPhoneNumberTrunkTypes)
+                  ? PHONE_HOME_CITY_AND_NUMBER_WITHOUT_TRUNK_PREFIX
+                  : PHONE_HOME_CITY_AND_NUMBER};
+    default:
+      return {};
+  }
 }
 
 LogBufferSubmitter LogRationalization(LogManager* log_manager) {
@@ -683,71 +687,19 @@ FormStructure::~FormStructure() = default;
 void FormStructure::DetermineHeuristicTypes(
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
     LogManager* log_manager) {
-  const auto determine_heuristic_types_start_time =
-      AutofillTickClock::NowTicks();
+  SCOPED_UMA_HISTOGRAM_TIMER("Autofill.Timing.DetermineHeuristicTypes");
 
-  // First, try to detect field types based on each field's |autocomplete|
-  // attribute value.
   ParseFieldTypesFromAutocompleteAttributes();
-
-  // Then if there are enough active fields, and if we are dealing with either a
-  // proper <form> or a <form>-less checkout, run the heuristics and server
-  // prediction routines.
-  FieldCandidatesMap field_type_map;
-  if (ShouldRunHeuristics()) {
-    field_type_map = FormField::ParseFormFields(fields_, current_page_language_,
-                                                is_form_tag_, log_manager);
-  } else if (ShouldRunPromoCodeHeuristics()) {
-    field_type_map = FormField::ParseFormFieldsForPromoCodes(
-        fields_, current_page_language_, is_form_tag_, log_manager);
-  }
-  if (!field_type_map.empty()) {
-    for (const auto& field : fields_) {
-      auto iter = field_type_map.find(field->global_id());
-      if (iter != field_type_map.end()) {
-        const FieldCandidates& candidates = iter->second;
-        field->set_heuristic_type(candidates.BestHeuristicType());
-
-        auto set_hypothetical_type =
-            [&field, &candidates](PredictionSource source) -> void {
-          absl::optional<ServerFieldType> type =
-              candidates.GetHypotheticalType(source);
-          if (type)
-            field->set_prediction(source, *type);
-        };
-        set_hypothetical_type(PredictionSource::kExperimentalHeuristics);
-        set_hypothetical_type(PredictionSource::kNextGenHeuristics);
-      }
-    }
-  }
+  ParseFieldTypesWithPatterns(log_manager);
 
   UpdateAutofillCount();
   IdentifySections(has_author_specified_sections_);
 
-  developer_engagement_metrics_ = 0;
-  if (IsAutofillable()) {
-    AutofillMetrics::DeveloperEngagementMetric metric =
-        has_author_specified_types_
-            ? AutofillMetrics::FILLABLE_FORM_PARSED_WITH_TYPE_HINTS
-            : AutofillMetrics::FILLABLE_FORM_PARSED_WITHOUT_TYPE_HINTS;
-    developer_engagement_metrics_ |= 1 << metric;
-    AutofillMetrics::LogDeveloperEngagementMetric(metric);
-  }
-
-  if (has_author_specified_upi_vpa_hint_) {
-    AutofillMetrics::LogDeveloperEngagementMetric(
-        AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT);
-    developer_engagement_metrics_ |=
-        1 << AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT;
-  }
-
-  if (base::FeatureList::IsEnabled(features::kAutofillPageLanguageDetection)) {
+  if (base::FeatureList::IsEnabled(features::kAutofillPageLanguageDetection))
     RationalizeRepeatedFields(form_interactions_ukm_logger, log_manager);
-  }
   RationalizeFieldTypePredictions(log_manager);
 
-  AutofillMetrics::LogDetermineHeuristicTypesTiming(
-      AutofillTickClock::NowTicks() - determine_heuristic_types_start_time);
+  LogDetermineHeuristicTypesMetrics();
 }
 
 std::vector<AutofillUploadContents> FormStructure::EncodeUploadRequest(
@@ -1230,7 +1182,11 @@ void FormStructure::RetrieveFromCache(
       if (!only_server_and_autofill_state) {
         // Transfer attributes of the cached AutofillField to the newly created
         // AutofillField.
-        field->set_heuristic_type(cached_field->heuristic_type());
+        for (int i = 0; i <= static_cast<int>(PredictionSource::kMaxValue);
+             ++i) {
+          PredictionSource s = static_cast<PredictionSource>(i);
+          field->set_heuristic_type(s, cached_field->heuristic_type(s));
+        }
         field->SetHtmlType(cached_field->html_type(),
                            cached_field->html_mode());
         field->section = cached_field->section;
@@ -1564,6 +1520,25 @@ void FormStructure::LogQualityMetricsBasedOnAutocomplete(
   }
 }
 
+void FormStructure::LogDetermineHeuristicTypesMetrics() {
+  developer_engagement_metrics_ = 0;
+  if (IsAutofillable()) {
+    AutofillMetrics::DeveloperEngagementMetric metric =
+        has_author_specified_types_
+            ? AutofillMetrics::FILLABLE_FORM_PARSED_WITH_TYPE_HINTS
+            : AutofillMetrics::FILLABLE_FORM_PARSED_WITHOUT_TYPE_HINTS;
+    developer_engagement_metrics_ |= 1 << metric;
+    AutofillMetrics::LogDeveloperEngagementMetric(metric);
+  }
+
+  if (has_author_specified_upi_vpa_hint_) {
+    AutofillMetrics::LogDeveloperEngagementMetric(
+        AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT);
+    developer_engagement_metrics_ |=
+        1 << AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT;
+  }
+}
+
 void FormStructure::ParseFieldTypesFromAutocompleteAttributes() {
   if (was_parsed_for_autocomplete_attributes_)
     return;
@@ -1673,6 +1648,44 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes() {
   }
 
   was_parsed_for_autocomplete_attributes_ = true;
+}
+
+void FormStructure::ParseFieldTypesWithPatterns(LogManager* log_manager) {
+  // Then if there are enough active fields, and if we are dealing with either a
+  // proper <form> or a <form>-less checkout, run the heuristics and server
+  // prediction routines.
+  FieldCandidatesMap field_type_map;
+  if (ShouldRunHeuristics()) {
+    field_type_map = FormField::ParseFormFields(
+        fields_, current_page_language_, is_form_tag_,
+        PredictionSource::kDefaultHeuristics, log_manager);
+  } else if (ShouldRunPromoCodeHeuristics()) {
+    field_type_map = FormField::ParseFormFieldsForPromoCodes(
+        fields_, current_page_language_, is_form_tag_,
+        PredictionSource::kDefaultHeuristics, log_manager);
+  }
+  if (!field_type_map.empty()) {
+    for (const auto& field : fields_) {
+      auto iter = field_type_map.find(field->global_id());
+      if (iter != field_type_map.end()) {
+        const FieldCandidates& candidates = iter->second;
+        field->set_heuristic_type(PredictionSource::kDefaultHeuristics,
+                                  candidates.BestHeuristicType());
+
+#if BUILDFLAG(USE_INTERNAL_AUTOFILL_HEADERS)
+        auto set_hypothetical_type =
+            [&field, &candidates](PredictionSource source) -> void {
+          absl::optional<ServerFieldType> type =
+              candidates.GetHypotheticalType(source);
+          if (type)
+            field->set_heuristic_type(source, *type);
+        };
+        set_hypothetical_type(PredictionSource::kExperimentalHeuristics);
+        set_hypothetical_type(PredictionSource::kNextGenHeuristics);
+#endif
+      }
+    }
+  }
 }
 
 const AutofillField* FormStructure::field(size_t index) const {
@@ -2693,7 +2706,7 @@ void FormStructure::ExtractParseableFieldNames() {
   std::vector<base::StringPiece16> names;
   names.reserve(field_count());
   for (const auto& field : *this) {
-    names.push_back(base::StringPiece16(field->name));
+    names.emplace_back(field->name);
   }
 
   // Determine the parseable names and write them into the corresponding field.
@@ -2725,23 +2738,17 @@ void FormStructure::RationalizeTypeRelationships(LogManager* log_manager) {
     types.insert(field->Type().GetStorableType());
   }
 
-  const auto& type_relationship_rules = GetTypeRelationshipMap();
-
   for (const auto& field : fields_) {
     ServerFieldType field_type = field->Type().GetStorableType();
-    const auto* ruleset_iterator = type_relationship_rules.find(field_type);
-    if (ruleset_iterator != type_relationship_rules.end()) {
-      // We have relationship rules for this type. Verify that at least one of
-      // the required related type is present.
-      if (!types.contains_any(ruleset_iterator->second)) {
-        // No required type was found, the current field failed the relationship
-        // requirements for its type. Disabling Autofill for this field.
-        field->SetTypeTo(AutofillType(UNKNOWN_TYPE));
-        LogRationalization(log_manager)
-            << "RationalizeTypeRelationships: Fields of type "
-            << FieldTypeToStringPiece(field_type)
-            << " can only exist if other fields of specific types exist.";
-      }
+    ServerFieldTypeSet necessary_types = GetNecessaryTypesFor(field_type);
+    if (!necessary_types.empty() && !types.contains_any(necessary_types)) {
+      // We have relationship rules for this type, but no `neccessary_type` was
+      // found. Disabling Autofill for this field.
+      field->SetTypeTo(AutofillType(UNKNOWN_TYPE));
+      LogRationalization(log_manager)
+          << "RationalizeTypeRelationships: Fields of type "
+          << FieldTypeToStringPiece(field_type)
+          << " can only exist if other fields of specific types exist.";
     }
   }
 }

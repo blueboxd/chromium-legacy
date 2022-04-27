@@ -19,6 +19,7 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_metrics.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -29,6 +30,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "url/gurl.h"
 
 namespace ash {
 namespace personalization_app {
@@ -62,6 +64,11 @@ class TestAmbientObserver
   void OnTemperatureUnitChanged(
       ash::AmbientModeTemperatureUnit temperature_unit) override {
     temperature_unit_ = temperature_unit;
+  }
+
+  void OnGooglePhotosAlbumsPreviewsFetched(
+      const std::vector<GURL>& previews) override {
+    previews_ = std::move(previews);
   }
 
   mojo::PendingRemote<ash::personalization_app::mojom::AmbientObserver>
@@ -98,6 +105,11 @@ class TestAmbientObserver
     return temperature_unit_;
   }
 
+  std::vector<GURL> google_photos_albums_previews() {
+    ambient_observer_receiver_.FlushForTesting();
+    return previews_;
+  }
+
  private:
   mojo::Receiver<ash::personalization_app::mojom::AmbientObserver>
       ambient_observer_receiver_{this};
@@ -110,6 +122,7 @@ class TestAmbientObserver
   ash::AmbientModeTemperatureUnit temperature_unit_ =
       ash::AmbientModeTemperatureUnit::kFahrenheit;
   std::vector<ash::personalization_app::mojom::AmbientModeAlbumPtr> albums_;
+  std::vector<GURL> previews_;
 };
 
 }  // namespace
@@ -194,6 +207,11 @@ class PersonalizationAppAmbientProviderImplTest : public testing::Test {
   ash::AmbientModeTemperatureUnit ObservedTemperatureUnit() {
     ambient_provider_remote_.FlushForTesting();
     return test_ambient_observer_.temperature_unit();
+  }
+
+  std::vector<GURL> ObservedGooglePhotosAlbumsPreviews() {
+    ambient_provider_remote_.FlushForTesting();
+    return test_ambient_observer_.google_photos_albums_previews();
   }
 
   absl::optional<ash::AmbientSettings>& settings() {
@@ -378,10 +396,16 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
   ambient_provider_remote().FlushForTesting();
   SetAnimationTheme(ash::AmbientAnimationTheme::kSlideshow);
   EXPECT_EQ(ash::AmbientAnimationTheme::kSlideshow, ObservedAnimationTheme());
+  histogram_tester().ExpectBucketCount(kAmbientModeAnimationThemeHistogramName,
+                                       ash::AmbientAnimationTheme::kSlideshow,
+                                       1);
 
   SetAnimationTheme(ash::AmbientAnimationTheme::kFeelTheBreeze);
   EXPECT_EQ(ash::AmbientAnimationTheme::kFeelTheBreeze,
             ObservedAnimationTheme());
+  histogram_tester().ExpectBucketCount(
+      kAmbientModeAnimationThemeHistogramName,
+      ash::AmbientAnimationTheme::kFeelTheBreeze, 1);
 }
 
 TEST_F(PersonalizationAppAmbientProviderImplTest,
@@ -391,6 +415,7 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
   ambient_provider_remote().FlushForTesting();
   ReplyFetchSettingsAndAlbums(/*success=*/true);
   EXPECT_EQ(ash::AmbientModeTopicSource::kGooglePhotos, ObservedTopicSource());
+  EXPECT_FALSE(ObservedGooglePhotosAlbumsPreviews().empty());
 
   SetTopicSource(ash::AmbientModeTopicSource::kArtGallery);
   EXPECT_EQ(ash::AmbientModeTopicSource::kArtGallery, ObservedTopicSource());
@@ -405,6 +430,7 @@ TEST_F(PersonalizationAppAmbientProviderImplTest, ShouldCallOnAlbumsChanged) {
   // The fake albums are set in FakeAmbientBackendControllerImpl. Hidden setting
   // will be sent to JS side.
   EXPECT_EQ(4u, albums.size());
+  EXPECT_FALSE(ObservedGooglePhotosAlbumsPreviews().empty());
 }
 
 TEST_F(PersonalizationAppAmbientProviderImplTest,

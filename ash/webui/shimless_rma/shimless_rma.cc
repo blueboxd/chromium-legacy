@@ -116,18 +116,10 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
        IDS_SHIMLESS_RMA_UPDATE_OS_UNQUALIFIED_COMPONENTS_TOP},
       {"osUpdateUnqualifiedComponentsBottomText",
        IDS_SHIMLESS_RMA_UPDATE_OS_UNQUALIFIED_COMPONENTS_BOTTOM},
-      {"osUpdateVeryOutOfDateDescriptionText",
-       IDS_SHIMLESS_RMA_UPDATE_OS_VERY_OUT_OF_DATE},
       {"osUpdateOutOfDateDescriptionText",
        IDS_SHIMLESS_RMA_UPDATE_OS_OUT_OF_DATE},
-      {"osUpdateNetworkUnavailableText",
-       IDS_SHIMLESS_RMA_UPDATE_OS_NETWORK_UNAVAILABLE},
-      {"osUpdateFailedToStartText", IDS_SHIMLESS_RMA_UPDATE_OS_FAILED_TO_START},
-      {"currentVersionText", IDS_SHIMLESS_RMA_CURRENT_VERSION},
       {"currentVersionOutOfDateText",
        IDS_SHIMLESS_RMA_CURRENT_VERSION_OUT_OF_DATE},
-      {"currentVersionUpToDateText",
-       IDS_SHIMLESS_RMA_CURRENT_VERSION_UP_TO_DATE},
       {"updateVersionRestartLabel",
        IDS_SHIMLESS_RMA_UPDATE_VERSION_AND_RESTART},
       {"updatingOsVersionText", IDS_SHIMLESS_RMA_UPDATING_OS_VERSION},
@@ -190,10 +182,6 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
       {"runCalibrationTitleText", IDS_SHIMLESS_RMA_RUN_CALIBRATION_PAGE_TITLE},
       {"runCalibrationCompleteTitleText",
        IDS_SHIMLESS_RMA_RUN_CALIBRATION_COMPLETE_TITLE},
-      {"runCalibrationCompleteText", IDS_SHIMLESS_RMA_RUN_CALIBRATION_COMPLETE},
-      {"runCalibrationStartingText", IDS_SHIMLESS_RMA_RUN_CALIBRATION_STARTING},
-      {"runCalibrationCalibratingComponent",
-       IDS_SHIMLESS_RMA_RUN_CALIBRATING_COMPONENT},
       // Device provisioning page
       {"provisioningPageTitleText", IDS_SHIMLESS_RMA_PROVISIONING_TITLE},
       {"provisioningPageInProgressText",
@@ -249,8 +237,11 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
        IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_TITLE},
       {"manuallyDisableWpInstructionsText",
        IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_INSTRUCTIONS},
+      {"manuallyDisableWpTitleTextReboot",
+       IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_TITLE_REBOOT},
+      {"manuallyDisableWpInstructionsTextReboot",
+       IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_INSTRUCTIONS_REBOOT},
       // Restock mainboard page
-      {"restockTitleText", IDS_SHIMLESS_RMA_RESTOCK_PAGE_TITLE},
       {"restockInstructionsText", IDS_SHIMLESS_RMA_RESTOCK_INSTRUCTIONS},
       {"restockShutdownButtonText", IDS_SHIMLESS_RMA_RESTOCK_SHUTDOWN_BUTTON},
       {"restockContinueButtonText", IDS_SHIMLESS_RMA_RESTOCK_CONTINUE_BUTTON},
@@ -344,6 +335,9 @@ void AddDevicePlaceholderStrings(content::WebUIDataSource* html_source) {
   html_source->AddString(
       "criticalErrorTitleText",
       ui::SubstituteChromeOSDeviceType(IDS_SHIMLESS_RMA_CRITICAL_ERROR_TITLE));
+  html_source->AddString(
+      "restockTitleText",
+      ui::SubstituteChromeOSDeviceType(IDS_SHIMLESS_RMA_RESTOCK_PAGE_TITLE));
 }
 
 }  // namespace

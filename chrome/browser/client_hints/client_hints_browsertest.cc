@@ -15,6 +15,7 @@
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
+#include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -66,7 +67,6 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
-#include "net/base/escape.h"
 #include "net/base/features.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_request_headers.h"
@@ -247,14 +247,22 @@ void CheckUserAgentMinorVersion(const std::string& user_agent_value,
       "Chrome/[0-9]+\\.([0-9]+\\.[0-9]+\\.[0-9]+)";
   // The minor version in the reduced UA string is always "0.0.0".
   static constexpr char kReducedMinorVersion[] = "0.0.0";
+  // The minor version in the ReduceUserAgentMinorVersion experiment is always
+  // "0.X.0", where X is the frozen build version.
+  const std::string kReduceUserAgentMinorVersion =
+      "0." +
+      std::string(blink::features::kUserAgentFrozenBuildVersion.Get().data()) +
+      ".0";
 
   std::string minor_version;
   EXPECT_TRUE(re2::RE2::PartialMatch(user_agent_value, kChromeVersionRegex,
                                      &minor_version));
-  if (expected_user_agent_reduced ||
-      base::FeatureList::IsEnabled(
-          blink::features::kReduceUserAgentMinorVersion)) {
+
+  if (expected_user_agent_reduced) {
     EXPECT_EQ(minor_version, kReducedMinorVersion);
+  } else if (base::FeatureList::IsEnabled(
+                 blink::features::kReduceUserAgentMinorVersion)) {
+    EXPECT_EQ(minor_version, kReduceUserAgentMinorVersion);
   } else {
     EXPECT_NE(minor_version, kReducedMinorVersion);
   }
@@ -4719,6 +4727,32 @@ IN_PROC_BROWSER_TEST_P(ThirdPartyUaOriginTrialBrowserTest,
   EXPECT_EQ(GetLastRequestedURL()->path(), "/simple.html");
 }
 
+// Tests that headers are not sent to a third-party iframe after script is
+// disabled with content settings.
+IN_PROC_BROWSER_TEST_P(ThirdPartyUaOriginTrialBrowserTest, ScriptDisabled) {
+  SetUaPermissionsPolicy("*");
+  const GURL url = accept_ch_ua_cross_origin_iframe_request_url();
+  NavigateAndCheckHeaders(url,
+                          /*ch_ua_reduced_expected=*/GetParam() ==
+                              UserAgentOriginTrialTestType::UAReduction,
+                          /*ch_ua_exist_expected=*/true);
+
+  // Disable script for first party origin.
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetContentSettingCustomScope(
+          ContentSettingsPattern::FromURL(GURL(kFirstPartyOriginUrl)),
+          ContentSettingsPattern::Wildcard(), ContentSettingsType::JAVASCRIPT,
+          CONTENT_SETTING_BLOCK);
+  // Headers should not be sent in third party iframe.
+  NavigateAndCheckHeaders(url,
+                          /*ch_ua_reduced_expected=*/false,
+                          /*ch_ua_exist_expected=*/false);
+
+  // Make sure the last intercepted URL was the request for the embedded
+  // iframe.
+  EXPECT_EQ(GetLastRequestedURL()->path(), "/simple.html");
+}
+
 IN_PROC_BROWSER_TEST_P(ThirdPartyUaOriginTrialBrowserTest,
                        ThirdPartySubresourceUaWithWildcardPolicy) {
   SetUaPermissionsPolicy("*");  // Allow all third-party sites.
@@ -5181,7 +5215,7 @@ class PartitionedCookiesOriginTrialBrowserTest : public InProcessBrowserTest {
                  const absl::optional<net::CookiePartitionKey>& partition_key) {
     auto cookie = net::CanonicalCookie::CreateUnsafeCookieForTesting(
         name, value, url.host(), "/", base::Time::Now() - base::Days(1),
-        base::Time::Now() + base::Days(1), base::Time::Now(),
+        base::Time::Now() + base::Days(1), base::Time::Now(), base::Time::Now(),
         /*secure=*/true, /*httponly=*/false,
         net::CookieSameSite::NO_RESTRICTION,
         net::CookiePriority::COOKIE_PRIORITY_DEFAULT, /*same_party=*/false,

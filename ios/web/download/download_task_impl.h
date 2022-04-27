@@ -27,21 +27,6 @@ class WebState;
 // behaviour between the different concrete sub-classes.
 class DownloadTaskImpl : public DownloadTask {
  public:
-  class Delegate {
-   public:
-    // Called when download task is about to be destroyed. Delegate should
-    // remove all references to the given DownloadTask and stop using it.
-    virtual void OnTaskDestroyed(DownloadTaskImpl* task) = 0;
-
-    // Creates background NSURLSession with given |identifier|, |cookies|,
-    // |delegate| and |delegate_queue|.
-    virtual NSURLSession* CreateSession(NSString* identifier,
-                                        NSArray<NSHTTPCookie*>* cookies,
-                                        id<NSURLSessionDataDelegate> delegate,
-                                        NSOperationQueue* delegate_queue) = 0;
-    virtual ~Delegate() = default;
-  };
-
   // Constructs a new DownloadTaskImpl objects. |web_state|, |identifier| and
   // |delegate| must be valid.
   DownloadTaskImpl(WebState* web_state,
@@ -50,18 +35,14 @@ class DownloadTaskImpl : public DownloadTask {
                    const std::string& content_disposition,
                    int64_t total_bytes,
                    const std::string& mime_type,
-                   NSString* identifier,
-                   Delegate* delegate);
-
-  // Stops the download operation and clears the delegate.
-  virtual void ShutDown();
+                   NSString* identifier);
 
   // DownloadTask overrides:
   WebState* GetWebState() override;
   DownloadTask::State GetState() const override;
   void Start(const base::FilePath& path, Destination destination_hint) override;
   void Cancel() override;
-  NSString* GetIndentifier() const override;
+  NSString* GetIdentifier() const override;
   const GURL& GetOriginalUrl() const override;
   NSString* GetHttpMethod() const override;
   bool IsDone() const override;
@@ -111,7 +92,6 @@ class DownloadTaskImpl : public DownloadTask {
   bool has_performed_background_download_ = false;
   DownloadResult download_result_;
   WebState* web_state_ = nullptr;
-  Delegate* delegate_ = nullptr;
 
   // Observes UIApplicationWillResignActiveNotification notifications.
   id<NSObject> observer_ = nil;

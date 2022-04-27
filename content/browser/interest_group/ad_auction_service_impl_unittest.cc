@@ -251,6 +251,15 @@ class NetworkResponder {
  private:
   bool RequestHandler(URLLoaderInterceptor::RequestParams* params) {
     base::AutoLock auto_lock(lock_);
+
+    // Cross-origin iframe handling is covered by integration tests, for cases
+    // that request .well-known URLs.
+    if (params->url_request.url.path_piece() ==
+        "/.well-known/interest-group/permissions/") {
+      CHECK(false);
+      return false;
+    }
+
     // Check if this is a non-update error.
     if (params->url_request.url.path() == non_update_error_path_) {
       CHECK(non_update_error_ != net::OK);
@@ -514,41 +523,72 @@ class AdAuctionServiceImplTest : public RenderViewHostTestHarness {
   // AdAuctionServiceImpl only handles one site (cross site navs use
   // different AdAuctionServices, and generally use different
   // RFHs as well).
-  void JoinInterestGroupAndFlushForFrame(
-      const blink::InterestGroup& interest_group,
-      RenderFrameHost* rfh) {
+  //
+  // If `rfh` is nullptr, uses the main frame.
+  void JoinInterestGroupAndFlush(const blink::InterestGroup& interest_group,
+                                 RenderFrameHost* rfh = nullptr) {
     mojo::Remote<blink::mojom::AdAuctionService> interest_service;
     AdAuctionServiceImpl::CreateMojoService(
-        rfh, interest_service.BindNewPipeAndPassReceiver());
+        rfh ? rfh : main_rfh(), interest_service.BindNewPipeAndPassReceiver());
 
     interest_service->JoinInterestGroup(interest_group);
     interest_service.FlushForTesting();
+
+    // Pipe should not have been closed - if it is expected to be closed, use
+    // JoinInterestGroupAndExpectPipeClosed().
+    EXPECT_TRUE(interest_service.is_bound());
+    EXPECT_TRUE(interest_service.is_connected());
   }
 
-  // Like JoinInterestGroupAndFlushForFrame, but uses the render frame host of
-  // the main frame.
-  void JoinInterestGroupAndFlush(const blink::InterestGroup& interest_group) {
-    JoinInterestGroupAndFlushForFrame(interest_group, main_rfh());
-  }
-
-  // Analogous to JoinInterestGroupAndFlushForFrame(), but leaves an interest
-  // group instead of joining one.
-  void LeaveInterestGroupAndFlushForFrame(const url::Origin& owner,
-                                          const std::string& name,
-                                          RenderFrameHost* rfh) {
+  // Attempt to join an interest group and expect the Mojo pipe to be closed.
+  // This happens when an operation should have been rejected in the renderer,
+  // so should only happen if the renderer has been compromised.
+  //
+  // If `rfh` is nullptr, uses the main frame.
+  void JoinInterestGroupAndExpectPipeClosed(
+      const blink::InterestGroup& interest_group,
+      RenderFrameHost* rfh = nullptr) {
     mojo::Remote<blink::mojom::AdAuctionService> interest_service;
     AdAuctionServiceImpl::CreateMojoService(
-        rfh, interest_service.BindNewPipeAndPassReceiver());
+        rfh ? rfh : main_rfh(), interest_service.BindNewPipeAndPassReceiver());
+
+    base::RunLoop run_loop;
+    interest_service.set_disconnect_handler(run_loop.QuitClosure());
+    interest_service->JoinInterestGroup(interest_group);
+    run_loop.Run();
+  }
+
+  // Analogous to JoinInterestGroupAndFlush(), but leaves an interest
+  // group instead of joining one.
+  void LeaveInterestGroupAndFlush(const url::Origin& owner,
+                                  const std::string& name,
+                                  RenderFrameHost* rfh = nullptr) {
+    mojo::Remote<blink::mojom::AdAuctionService> interest_service;
+    AdAuctionServiceImpl::CreateMojoService(
+        rfh ? rfh : main_rfh(), interest_service.BindNewPipeAndPassReceiver());
 
     interest_service->LeaveInterestGroup(owner, name);
     interest_service.FlushForTesting();
+
+    // Pipe should not have been closed - if it is expected to be closed, use
+    // LeaveInterestGroupAndExpectPipeClosed().
+    EXPECT_TRUE(interest_service.is_bound());
+    EXPECT_TRUE(interest_service.is_connected());
   }
 
-  // Like LeaveInterestGroupAndFlushForFrame, but uses the render frame host of
-  // the main frame.
-  void LeaveInterestGroupAndFlush(const url::Origin& owner,
-                                  const std::string& name) {
-    LeaveInterestGroupAndFlushForFrame(owner, name, main_rfh());
+  // Analogous to JoinInterestGroupAndExpectPipeClosed(), but leaves an interest
+  // group instead of joining one.
+  void LeaveInterestGroupAndExpectPipeClosed(const url::Origin& owner,
+                                             const std::string& name,
+                                             RenderFrameHost* rfh = nullptr) {
+    mojo::Remote<blink::mojom::AdAuctionService> interest_service;
+    AdAuctionServiceImpl::CreateMojoService(
+        rfh ? rfh : main_rfh(), interest_service.BindNewPipeAndPassReceiver());
+
+    base::RunLoop run_loop;
+    interest_service.set_disconnect_handler(run_loop.QuitClosure());
+    interest_service->LeaveInterestGroup(owner, name);
+    run_loop.Run();
   }
 
   // Updates registered interest groups according to their registered update
@@ -677,7 +717,8 @@ TEST_F(AdAuctionServiceImplTest, JoinInterestGroupBasic) {
   EXPECT_EQ(1, GetJoinCount(kOriginB, kInterestGroupName));
 }
 
-// Non-HTTPS interest groups should be rejected.
+// Non-HTTPS interest groups should be rejected, and result in the pipe being
+// closed.
 TEST_F(AdAuctionServiceImplTest, JoinInterestGroupOriginNotHttps) {
   // Note that the ContentBrowserClient allows URLs based on hosts, not origins,
   // so it should not block this URL. Instead, it should run into the HTTPS
@@ -687,7 +728,7 @@ TEST_F(AdAuctionServiceImplTest, JoinInterestGroupOriginNotHttps) {
   NavigateAndCommit(kHttpUrlA);
   blink::InterestGroup interest_group = CreateInterestGroup();
   interest_group.owner = kHttpOriginA;
-  JoinInterestGroupAndFlush(interest_group);
+  JoinInterestGroupAndExpectPipeClosed(interest_group);
   EXPECT_EQ(0, GetJoinCount(kHttpOriginA, kInterestGroupName));
 }
 
@@ -701,73 +742,38 @@ TEST_F(AdAuctionServiceImplTest, JoinInterestGroupWrongOwnerOrigin) {
   EXPECT_EQ(0, GetJoinCount(kOriginB, kInterestGroupName));
 }
 
-// Test joining an interest group with a cross-site owner.
-TEST_F(AdAuctionServiceImplTest, JoinInterestFromCrossSiteIFrame) {
-  // Create a subframe and use it to send the join request.
-  content::RenderFrameHostTester* rfh_tester =
-      content::RenderFrameHostTester::For(main_rfh());
-  content::RenderFrameHost* subframe = rfh_tester->AppendChild("subframe");
-  subframe =
-      NavigationSimulator::NavigateAndCommitFromDocument(kUrlC, subframe);
-
-  blink::InterestGroup interest_group = CreateInterestGroup();
-  interest_group.owner = kOriginC;
-  JoinInterestGroupAndFlushForFrame(interest_group, subframe);
-  JoinInterestGroupAndFlushForFrame(CreateInterestGroup(), subframe);
-
-  // Subframes from origin C with a top frame of A should be able to join groups
-  // with C as the owner, but the subframe from C should not be able to join
-  // groups for A.
-  EXPECT_EQ(1, GetJoinCount(kOriginC, kInterestGroupName));
-  EXPECT_EQ(0, GetJoinCount(kOriginA, kInterestGroupName));
-
-  subframe =
-      NavigationSimulator::NavigateAndCommitFromDocument(kUrlB, subframe);
-  interest_group = CreateInterestGroup();
-  interest_group.owner = kOriginB;
-  JoinInterestGroupAndFlushForFrame(interest_group, subframe);
-
-  // Subframes from origin B with a top frame of A should not (by policy) be
-  // allowed to join groups with B as the owner.
-  EXPECT_EQ(0, GetJoinCount(kOriginB, kInterestGroupName));
-  EXPECT_EQ(0, GetJoinCount(kOriginA, kInterestGroupName));
-}
-
-// Test joining an interest group with a disallowed cross-origin URL. Doesn't
+// Test joining an interest group with a disallowed URL. Doesn't
 // exhaustively test all cases, as the validation function has its own unit
 // tests. This is just to make sure those are hooked up.
-//
-// TODO(mmenke): Once ReportBadMessage is called in these cases, make sure Mojo
-// pipe is closed as well.
-TEST_F(AdAuctionServiceImplTest, JoinInterestGroupCrossSiteUrls) {
+TEST_F(AdAuctionServiceImplTest, JoinInterestGroupDisallowedUrls) {
   const GURL kBadUrl = GURL("https://user:pass@a.test/");
 
   // Test `bidding_url`.
   blink::InterestGroup interest_group = CreateInterestGroup();
   interest_group.bidding_url = kBadUrl;
-  JoinInterestGroupAndFlush(interest_group);
+  JoinInterestGroupAndExpectPipeClosed(interest_group);
   EXPECT_EQ(0, GetJoinCount(kOriginA, kInterestGroupName));
 
   // Test `daily_update_url`.
   interest_group = CreateInterestGroup();
   interest_group.daily_update_url = kBadUrl;
-  JoinInterestGroupAndFlush(interest_group);
+  JoinInterestGroupAndExpectPipeClosed(interest_group);
   EXPECT_EQ(0, GetJoinCount(kOriginA, kInterestGroupName));
 
   // Test `trusted_bidding_signals_url`.
   interest_group = CreateInterestGroup();
   interest_group.trusted_bidding_signals_url = kBadUrl;
-  JoinInterestGroupAndFlush(interest_group);
+  JoinInterestGroupAndExpectPipeClosed(interest_group);
   EXPECT_EQ(0, GetJoinCount(kOriginA, kInterestGroupName));
 }
 
 // Attempt to join an interest group whose size is very large. No join should
-// happen -- it should silently fail.
+// happen -- it should fail and close the pipe.
 TEST_F(AdAuctionServiceImplTest, JoinMassiveInterestGroupFails) {
   blink::InterestGroup interest_group = CreateInterestGroup();
   // 1 MiB of '5' characters is over the size limit.
   interest_group.user_bidding_signals = std::string(1024 * 1024, '5');
-  JoinInterestGroupAndFlush(interest_group);
+  JoinInterestGroupAndExpectPipeClosed(interest_group);
 
   EXPECT_EQ(0, GetJoinCount(kOriginA, kInterestGroupName));
   std::vector<StorageInterestGroup> groups =
@@ -775,65 +781,21 @@ TEST_F(AdAuctionServiceImplTest, JoinMassiveInterestGroupFails) {
   ASSERT_EQ(groups.size(), 0u);
 }
 
-// Check that cross-origin leave interest group operations don't work.
-TEST_F(AdAuctionServiceImplTest, LeaveInterestGroupWrongOwnerOrigin) {
-  // https://a.test/ joins an interest group.
-  JoinInterestGroupAndFlush(CreateInterestGroup());
-  EXPECT_EQ(1, GetJoinCount(kOriginA, kInterestGroupName));
-
-  // https://b.test/ cannot leave https://a.test/'s interest group.
-  NavigateAndCommit(kUrlB);
-  LeaveInterestGroupAndFlush(kOriginA, kInterestGroupName);
-  EXPECT_EQ(1, GetJoinCount(kOriginA, kInterestGroupName));
-
-  // https://a.test/ can leave its own interest group.
-  NavigateAndCommit(GURL("https://a.test/"));
-  LeaveInterestGroupAndFlush(kOriginA, kInterestGroupName);
-  EXPECT_EQ(0, GetJoinCount(kOriginA, kInterestGroupName));
-}
-
-// Test leaving an interest group with a cross-site owner.
-TEST_F(AdAuctionServiceImplTest, LeaveInterestFromCrossSiteIFrame) {
-  // Join interest group from c.
-  NavigateAndCommit(kUrlC);
-
-  blink::InterestGroup interest_group = CreateInterestGroup();
-  interest_group.owner = kOriginC;
-  JoinInterestGroupAndFlush(interest_group);
-
-  NavigateAndCommit(kUrlB);
-  interest_group.owner = kOriginB;
-  JoinInterestGroupAndFlush(interest_group);
+// Non-HTTPS interest groups should be rejected, and result in the pipe being
+// closed.
+TEST_F(AdAuctionServiceImplTest, LeaveInterestGroupOriginNotHttps) {
+  const GURL kHttpUrl = GURL("http://a.test/");
+  const url::Origin kHttpOrigin = url::Origin::Create(kHttpUrl);
 
   NavigateAndCommit(kUrlA);
   JoinInterestGroupAndFlush(CreateInterestGroup());
-
-  EXPECT_EQ(1, GetJoinCount(kOriginC, kInterestGroupName));
   EXPECT_EQ(1, GetJoinCount(kOriginA, kInterestGroupName));
 
-  // Create a subframe and use it to send the leave request.
-  content::RenderFrameHostTester* rfh_tester =
-      content::RenderFrameHostTester::For(main_rfh());
-  content::RenderFrameHost* subframe = rfh_tester->AppendChild("subframe");
-  subframe =
-      NavigationSimulator::NavigateAndCommitFromDocument(kUrlC, subframe);
-
-  LeaveInterestGroupAndFlushForFrame(kOriginC, kInterestGroupName, subframe);
-  LeaveInterestGroupAndFlushForFrame(kOriginA, kInterestGroupName, subframe);
-
-  subframe = rfh_tester->AppendChild("subframe");
-  subframe =
-      NavigationSimulator::NavigateAndCommitFromDocument(kUrlB, subframe);
-
-  LeaveInterestGroupAndFlushForFrame(kOriginB, kInterestGroupName, subframe);
-
-  // Subframes from origin C with a top frame of A should be able to leave
-  // groups with C as the owner, but the subframe from C should not be able to
-  // leave groups for A. Pages with a top frame that is not B are not allowed
-  // to leave B's interest groups (controlled by IsInterestGroupAPIAllowed)
-  EXPECT_EQ(0, GetJoinCount(kOriginC, kInterestGroupName));
+  // Navigate to an HTTP origin and try to leave a group with an HTTPS owner.
+  // The request should be rejected.
+  NavigateAndCommit(kHttpUrl);
+  LeaveInterestGroupAndExpectPipeClosed(kOriginA, kInterestGroupName);
   EXPECT_EQ(1, GetJoinCount(kOriginA, kInterestGroupName));
-  EXPECT_EQ(1, GetJoinCount(kOriginB, kInterestGroupName));
 }
 
 // These tests validate the `dailyUpdateUrl` and
@@ -4817,7 +4779,7 @@ TEST_F(AdAuctionServiceImplRestrictedPermissionsPolicyTest,
   blink::InterestGroup interest_group = CreateInterestGroup();
   interest_group.daily_update_url = kUpdateUrlA;
   interest_group.bidding_url = kBiddingLogicUrlA;
-  JoinInterestGroupAndFlushForFrame(std::move(interest_group), subframe);
+  JoinInterestGroupAndFlush(std::move(interest_group), subframe);
   EXPECT_EQ(1, GetJoinCount(kOriginA, kInterestGroupName));
 
   UpdateInterestGroupNoFlushForFrame(subframe);
@@ -4832,13 +4794,13 @@ TEST_F(AdAuctionServiceImplRestrictedPermissionsPolicyTest,
   EXPECT_EQ(group.bidding_url->spec(),
             base::StringPrintf("%s%s", kOriginStringA, kNewBiddingUrlPath));
 
-  LeaveInterestGroupAndFlushForFrame(kOriginA, kInterestGroupName, subframe);
+  LeaveInterestGroupAndFlush(kOriginA, kInterestGroupName, subframe);
   EXPECT_EQ(0, GetJoinCount(kOriginA, kInterestGroupName));
 }
 
 // Permissions policy feature join-ad-interest-group is disabled by default for
 // cross site iframes under restricted permissions policy, so interest group
-// APIs should not work.
+// APIs should not work, and result in the pipe being closed.
 TEST_F(AdAuctionServiceImplRestrictedPermissionsPolicyTest,
        APICallsFromCrossSiteIFrame) {
   network_responder_->RegisterUpdateResponse(
@@ -4865,7 +4827,7 @@ TEST_F(AdAuctionServiceImplRestrictedPermissionsPolicyTest,
   constexpr char kInterestGroupName2[] = "group2";
   interest_group.owner = kOriginC;
   interest_group.name = kInterestGroupName2;
-  JoinInterestGroupAndFlushForFrame(std::move(interest_group_2), subframe);
+  JoinInterestGroupAndExpectPipeClosed(std::move(interest_group_2), subframe);
   EXPECT_EQ(0, GetJoinCount(kOriginC, kInterestGroupName2));
 
   UpdateInterestGroupNoFlushForFrame(subframe);
@@ -4881,7 +4843,7 @@ TEST_F(AdAuctionServiceImplRestrictedPermissionsPolicyTest,
   EXPECT_EQ(group.bidding_url->spec(),
             base::StringPrintf("%s%s", kOriginStringC, kBiddingUrlPath));
 
-  LeaveInterestGroupAndFlushForFrame(kOriginC, kInterestGroupName, subframe);
+  LeaveInterestGroupAndExpectPipeClosed(kOriginC, kInterestGroupName, subframe);
   EXPECT_EQ(1, GetJoinCount(kOriginC, kInterestGroupName));
 }
 

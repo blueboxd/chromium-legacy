@@ -14,6 +14,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -38,7 +39,7 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
-#include "chrome/browser/ui/webui/access_code_cast/access_code_cast_ui.h"
+#include "chrome/browser/ui/webui/access_code_cast/access_code_cast_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
@@ -61,7 +62,6 @@
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/api/vpn_provider/vpn_service.h"
 #include "extensions/browser/api/vpn_provider/vpn_service_factory.h"
-#include "net/base/escape.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/events/event_constants.h"
 #include "url/gurl.h"
@@ -620,11 +620,11 @@ void SystemTrayClientImpl::ShowNetworkSettingsHelper(
     // kWifi*, but it's actually a generic page.
     page = chromeos::settings::mojom::kWifiDetailsSubpagePath;
     page += "?guid=";
-    page += net::EscapeUrlEncodedData(network_id, true);
+    page += base::EscapeUrlEncodedData(network_id, true);
     page += "&name=";
-    page += net::EscapeUrlEncodedData(network_state->name(), true);
+    page += base::EscapeUrlEncodedData(network_state->name(), true);
     page += "&type=";
-    page += net::EscapeUrlEncodedData(
+    page += base::EscapeUrlEncodedData(
         chromeos::network_util::TranslateShillTypeToONC(network_state->type()),
         true);
     page += "&settingId=";
@@ -658,7 +658,7 @@ void SystemTrayClientImpl::SetLocaleAndExit(
 
 void SystemTrayClientImpl::ShowAccessCodeCastingDialog(
     AccessCodeCastDialogOpenLocation open_location) {
-  AccessCodeCastDialog::ShowForDesktopMirroring(open_location);
+  media_router::AccessCodeCastDialog::ShowForDesktopMirroring(open_location);
 }
 
 void SystemTrayClientImpl::ShowCalendarEvent(

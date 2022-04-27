@@ -268,7 +268,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener,
      */
     void startCachedZeroSuggest() {
         if (mNativeInitialized) return;
-        onSuggestionsReceived(CachedZeroSuggestionsManager.readFromCache(), "");
+        onSuggestionsReceived(CachedZeroSuggestionsManager.readFromCache(), "", true);
     }
 
     /** Notify the mediator that a item selection is pending and should be accepted. */
@@ -688,7 +688,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener,
 
     @Override
     public void onSuggestionsReceived(
-            AutocompleteResult autocompleteResult, String inlineAutocompleteText) {
+            AutocompleteResult autocompleteResult, String inlineAutocompleteText, boolean isFinal) {
         if (mShouldPreventOmniboxAutocomplete
                 || getSuggestionVisibilityState() == SuggestionVisibilityState.DISALLOWED) {
             return;
@@ -716,6 +716,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener,
             mDelegate.onSuggestionsChanged(inlineAutocompleteText, defaultMatchIsSearch);
             updateOmniboxSuggestionsVisibility();
         }
+
+        mListPropertyModel.set(SuggestionListProperties.LIST_IS_FINAL, isFinal);
     }
 
     @Override

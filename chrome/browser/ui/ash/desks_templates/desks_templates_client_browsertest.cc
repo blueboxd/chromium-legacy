@@ -53,6 +53,7 @@
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -418,7 +419,7 @@ class DesksTemplatesClientTest : public extensions::PlatformAppBrowserTest {
     web_app_info->start_url = start_url;
     web_app_info->scope = start_url.GetWithoutFilename();
     if (!launch_in_browser)
-      web_app_info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
+      web_app_info->user_display_mode = web_app::UserDisplayMode::kStandalone;
     web_app_info->title = u"A Web App";
     const web_app::AppId app_id =
         web_app::test::InstallWebApp(profile(), std::move(web_app_info));
@@ -603,7 +604,8 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest, LaunchMultipleDeskTemplates) {
   // workflow.
   auto desk_template = std::make_unique<ash::DeskTemplate>(
       kDeskUuid.AsLowercaseString(), ash::DeskTemplateSource::kUser,
-      base::UTF16ToUTF8(kDeskName), base::Time::Now());
+      base::UTF16ToUTF8(kDeskName), base::Time::Now(),
+      ash::DeskTemplateType::kTemplate);
   SetTemplate(std::move(desk_template));
 
   auto check_launch_template_desk_name =

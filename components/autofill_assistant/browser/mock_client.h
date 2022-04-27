@@ -38,7 +38,7 @@ class MockClient : public Client {
   MOCK_CONST_METHOD0(IsAccessibilityEnabled, bool());
   MOCK_CONST_METHOD0(IsSpokenFeedbackAccessibilityServiceEnabled, bool());
   MOCK_CONST_METHOD0(GetEmailAddressForAccessTokenAccount, std::string());
-  MOCK_CONST_METHOD0(GetChromeSignedInEmailAddress, std::string());
+  MOCK_CONST_METHOD0(GetSignedInEmail, std::string());
   MOCK_CONST_METHOD0(GetWebContents, content::WebContents*());
   MOCK_CONST_METHOD0(GetPersonalDataManager, autofill::PersonalDataManager*());
   MOCK_CONST_METHOD0(GetWebsiteLoginManager, WebsiteLoginManager*());
@@ -55,6 +55,7 @@ class MockClient : public Client {
   MOCK_METHOD1(FetchPaymentsClientToken,
                void(base::OnceCallback<void(const std::string&)>));
   MOCK_METHOD0(GetScriptExecutorUiDelegate, ScriptExecutorUiDelegate*());
+  MOCK_CONST_METHOD0(MustUseBackendData, bool());
 
  private:
   std::unique_ptr<MockPersonalDataManager> mock_personal_data_manager_;

@@ -169,6 +169,7 @@ bool ManifestParser::Parse() {
   manifest_->file_handlers = ParseFileHandlers(root_object.get());
   manifest_->protocol_handlers = ParseProtocolHandlers(root_object.get());
   manifest_->url_handlers = ParseUrlHandlers(root_object.get());
+  manifest_->lock_screen = ParseLockScreen(root_object.get());
   manifest_->note_taking = ParseNoteTaking(root_object.get());
   manifest_->related_applications = ParseRelatedApplications(root_object.get());
   manifest_->prefer_related_applications =
@@ -1378,6 +1379,37 @@ ManifestParser::ParseUrlHandler(const JSONObject* object) {
   return std::move(url_handler);
 }
 
+KURL ManifestParser::ParseLockScreenStartUrl(const JSONObject* lock_screen) {
+  if (!lock_screen->Get("start_url")) {
+    return KURL();
+  }
+  KURL start_url = ParseURL(lock_screen, "start_url", manifest_url_,
+                            ParseURLRestrictions::kWithinScope);
+  if (!start_url.IsValid()) {
+    // Error already reported by ParseURL.
+    return KURL();
+  }
+
+  return start_url;
+}
+
+mojom::blink::ManifestLockScreenPtr ManifestParser::ParseLockScreen(
+    const JSONObject* manifest) {
+  if (!manifest->Get("lock_screen")) {
+    return nullptr;
+  }
+
+  const JSONObject* lock_screen_object = manifest->GetJSONObject("lock_screen");
+  if (!lock_screen_object) {
+    AddErrorInfo("property 'lock_screen' ignored, type object expected.");
+    return nullptr;
+  }
+  auto lock_screen = mojom::blink::ManifestLockScreen::New();
+  lock_screen->start_url = ParseLockScreenStartUrl(lock_screen_object);
+
+  return lock_screen;
+}
+
 KURL ManifestParser::ParseNoteTakingNewNoteUrl(const JSONObject* note_taking) {
   if (!note_taking->Get("new_note_url")) {
     return KURL();
@@ -1757,8 +1789,21 @@ mojom::blink::ManifestUserPreferencesPtr ManifestParser::ParseUserPreferences(
     return nullptr;
   }
 
-  result->color_scheme_dark =
-      ParsePreferenceOverrides(user_preferences_map, "color_scheme_dark");
+  if (user_preferences_map->Get("color_scheme")) {
+    JSONObject* color_scheme_map =
+        user_preferences_map->GetJSONObject("color_scheme");
+    if (!color_scheme_map) {
+      AddErrorInfo("property 'color_scheme' ignored, object expected.");
+      return nullptr;
+    }
+    result->color_scheme_dark =
+        ParsePreferenceOverrides(color_scheme_map, "dark");
+  } else {
+    // TODO(crbug.com/1318305): Remove this path once the new format has become
+    // the norm.
+    result->color_scheme_dark =
+        ParsePreferenceOverrides(user_preferences_map, "color_scheme_dark");
+  }
 
   return result;
 }

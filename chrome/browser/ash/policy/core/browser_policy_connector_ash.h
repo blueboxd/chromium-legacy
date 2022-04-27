@@ -130,6 +130,9 @@ class BrowserPolicyConnectorAsh : public ChromeBrowserPolicyConnector,
   // Returns the obfuscated customer's ID or an empty string if it not set.
   std::string GetObfuscatedCustomerID() const;
 
+  // Returns whether device is enrolled in Kiosk SKU.
+  bool IsKioskEnrolled() const;
+
   // Returns the organization logo URL or an empty string if it is not set.
   std::string GetCustomerLogoURL() const;
 
@@ -254,7 +257,7 @@ class BrowserPolicyConnectorAsh : public ChromeBrowserPolicyConnector,
 
  protected:
   // ChromeBrowserPolicyConnector:
-  std::vector<std::unique_ptr<policy::ConfigurationPolicyProvider>>
+  std::vector<std::unique_ptr<ConfigurationPolicyProvider>>
   CreatePolicyProviders() override;
 
  private:
@@ -301,7 +304,7 @@ class BrowserPolicyConnectorAsh : public ChromeBrowserPolicyConnector,
       tpm_auto_update_mode_policy_handler_;
   std::unique_ptr<DeviceScheduledUpdateChecker>
       device_scheduled_update_checker_;
-  std::vector<std::unique_ptr<policy::DeviceCloudExternalDataPolicyHandler>>
+  std::vector<std::unique_ptr<DeviceCloudExternalDataPolicyHandler>>
       device_cloud_external_data_policy_handlers_;
   std::unique_ptr<SystemProxyHandler> system_proxy_handler_;
   std::unique_ptr<AdbSideloadingAllowanceModePolicyHandler>

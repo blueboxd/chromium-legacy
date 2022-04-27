@@ -161,6 +161,10 @@ struct COMPONENT_EXPORT(APP_TYPES) IntentFilter {
   void GetMimeTypesAndExtensions(std::set<std::string>& mime_types,
                                  std::set<std::string>& file_extensions);
 
+  // Returns all of the links that this intent filter would accept, to be used
+  // in listing all of the supported links for a given app.
+  std::set<std::string> GetSupportedLinksForAppManagement();
+
   // Returns true if the filter is a browser filter, i.e. can handle all https
   // or http scheme.
   bool IsBrowserFilter();
@@ -191,6 +195,11 @@ using IntentFilters = std::vector<IntentFilterPtr>;
 // Creates a deep copy of `intent_filters`.
 COMPONENT_EXPORT(APP_TYPES)
 IntentFilters CloneIntentFilters(const IntentFilters& intent_filters);
+
+// Creates a deep copy of `intent_filters` map.
+COMPONENT_EXPORT(APP_TYPES)
+base::flat_map<std::string, apps::IntentFilters> CloneIntentFiltersMap(
+    const base::flat_map<std::string, apps::IntentFilters>& intent_filters_map);
 
 COMPONENT_EXPORT(APP_TYPES)
 bool IsEqual(const IntentFilters& source, const IntentFilters& target);
@@ -241,18 +250,6 @@ IntentFilterPtr ConvertMojomIntentFilterToIntentFilter(
 COMPONENT_EXPORT(APP_TYPES)
 apps::mojom::IntentFilterPtr ConvertIntentFilterToMojomIntentFilter(
     const IntentFilterPtr& intent_filter);
-
-COMPONENT_EXPORT(APP_TYPES)
-base::flat_map<std::string, std::vector<apps::mojom::IntentFilterPtr>>
-ConvertIntentFiltersToMojomIntentFilters(
-    const base::flat_map<std::string, apps::IntentFilters>& intent_filter);
-
-COMPONENT_EXPORT(APP_TYPES)
-base::flat_map<std::string, apps::IntentFilters>
-ConvertMojomIntentFiltersToIntentFilters(
-    const base::flat_map<std::string,
-                         std::vector<apps::mojom::IntentFilterPtr>>&
-        mojom_intent_filter);
 
 }  // namespace apps
 

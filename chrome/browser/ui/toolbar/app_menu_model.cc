@@ -47,6 +47,7 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -756,7 +757,12 @@ bool AppMenuModel::IsCommandIdEnabled(int command_id) const {
   if (error)
     return true;
 
-  return chrome::IsCommandEnabled(browser_, command_id);
+  switch (command_id) {
+    case IDC_NEW_INCOGNITO_WINDOW:
+      return IncognitoModePrefs::IsIncognitoAllowed(browser_->profile());
+    default:
+      return chrome::IsCommandEnabled(browser_, command_id);
+  }
 }
 
 bool AppMenuModel::IsCommandIdVisible(int command_id) const {
@@ -844,8 +850,9 @@ void AppMenuModel::Build() {
                                        ? IDS_NEW_INCOGNITO_TAB
                                        : IDS_NEW_TAB);
   AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
-  if (ShouldShowNewIncognitoWindowMenuItem())
-    AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
+
+  AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
+
   AddSeparator(ui::NORMAL_SEPARATOR);
 
   if (!browser_->profile()->IsOffTheRecord()) {
@@ -886,7 +893,7 @@ void AppMenuModel::Build() {
         web_app::WebAppProvider::GetForLocalAppsUnchecked(browser_->profile());
     // Only applies to apps that open in an app window.
     if (provider->registrar().GetAppUserDisplayMode(*app_id) !=
-        web_app::DisplayMode::kBrowser) {
+        web_app::UserDisplayMode::kBrowser) {
       const std::u16string short_name =
           base::UTF8ToUTF16(provider->registrar().GetAppShortName(*app_id));
       const std::u16string truncated_name = gfx::TruncateString(
@@ -1002,10 +1009,6 @@ void AppMenuModel::UpdateZoomControls() {
         zoom::ZoomController::FromWebContents(web_contents())->GetZoomPercent();
   }
   zoom_label_ = base::FormatPercent(zoom_percent);
-}
-
-bool AppMenuModel::ShouldShowNewIncognitoWindowMenuItem() {
-  return IncognitoModePrefs::IsIncognitoAllowed(browser_->profile());
 }
 
 bool AppMenuModel::AddGlobalErrorMenuItems() {

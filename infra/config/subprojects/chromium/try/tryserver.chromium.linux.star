@@ -298,9 +298,6 @@ try_.orchestrator_builder(
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
     tryjob = try_.job(),
-    experiments = {
-        "remove_src_checkout_experiment": 50,
-    },
 )
 
 try_.compilator_builder(
@@ -391,6 +388,16 @@ try_.builder(
 )
 
 try_.builder(
+    name = "linux_chromium_chromeos_msan_focal",
+    mirrors = [
+        "ci/Linux ChromiumOS MSan Focal",
+    ],
+    goma_jobs = goma.jobs.J150,
+    os = os.LINUX_FOCAL,
+    execution_timeout = 16 * time.hour,
+)
+
+try_.builder(
     name = "linux_chromium_chromeos_msan_rel_ng",
     goma_jobs = goma.jobs.J150,
 )
@@ -448,6 +455,16 @@ try_.builder(
             ".+/[+]/build/.*check_gn_headers.*",
         ],
     ),
+)
+
+try_.builder(
+    name = "linux_chromium_msan_focal",
+    mirrors = [
+        "ci/Linux MSan Focal",
+    ],
+    execution_timeout = 16 * time.hour,
+    goma_jobs = goma.jobs.J150,
+    os = os.LINUX_FOCAL,
 )
 
 try_.builder(

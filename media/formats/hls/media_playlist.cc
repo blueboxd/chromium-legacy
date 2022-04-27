@@ -4,12 +4,24 @@
 
 #include "media/formats/hls/media_playlist.h"
 
+#include <cmath>
+#include <utility>
+#include <vector>
+
+#include "base/check.h"
 #include "base/notreached.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "media/formats/hls/media_segment.h"
+#include "media/formats/hls/multivariant_playlist.h"
+#include "media/formats/hls/parse_status.h"
 #include "media/formats/hls/playlist_common.h"
+#include "media/formats/hls/source_string.h"
+#include "media/formats/hls/tags.h"
 #include "media/formats/hls/types.h"
 #include "media/formats/hls/variable_dictionary.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "url/gurl.h"
 
 namespace media::hls {
@@ -20,9 +32,13 @@ MediaPlaylist& MediaPlaylist::operator=(MediaPlaylist&&) = default;
 
 MediaPlaylist::~MediaPlaylist() = default;
 
-ParseStatus::Or<MediaPlaylist> MediaPlaylist::Parse(base::StringPiece source,
-                                                    GURL uri) {
-  CHECK(uri.is_valid());
+ParseStatus::Or<MediaPlaylist> MediaPlaylist::Parse(
+    base::StringPiece source,
+    GURL uri,
+    const MultivariantPlaylist* parent_playlist) {
+  if (!uri.is_valid()) {
+    return ParseStatusCode::kInvalidUri;
+  }
 
   SourceLineIterator src_iter{source};
 
@@ -36,11 +52,19 @@ ParseStatus::Or<MediaPlaylist> MediaPlaylist::Parse(base::StringPiece source,
 
   CommonParserState common_state;
   VariableDictionary::SubstitutionBuffer sub_buffer;
+  absl::optional<XTargetDurationTag> target_duration_tag;
   absl::optional<InfTag> inf_tag;
   absl::optional<XGapTag> gap_tag;
   absl::optional<XDiscontinuityTag> discontinuity_tag;
   absl::optional<XPlaylistTypeTag> playlist_type_tag;
   std::vector<MediaSegment> segments;
+
+  // If this media playlist was found through a multivariant playlist, it may
+  // import variables from that playlist.
+  if (parent_playlist) {
+    common_state.parent_variable_dict =
+        &parent_playlist->GetVariableDictionary();
+  }
 
   // Get segments out of the playlist
   while (true) {
@@ -82,6 +106,13 @@ ParseStatus::Or<MediaPlaylist> MediaPlaylist::Parse(base::StringPiece source,
       switch (static_cast<MediaPlaylistTagName>(*tag->GetName())) {
         case MediaPlaylistTagName::kInf: {
           auto error = ParseUniqueTag(*tag, inf_tag);
+          if (error.has_value()) {
+            return std::move(error).value();
+          }
+          break;
+        }
+        case MediaPlaylistTagName::kXTargetDuration: {
+          auto error = ParseUniqueTag(*tag, target_duration_tag);
           if (error.has_value()) {
             return std::move(error).value();
           }
@@ -145,22 +176,47 @@ ParseStatus::Or<MediaPlaylist> MediaPlaylist::Parse(base::StringPiece source,
     discontinuity_tag.reset();
   }
 
+  if (!target_duration_tag.has_value()) {
+    return ParseStatusCode::kMediaPlaylistMissingTargetDuration;
+  }
+
+  // Ensure that no segment exceeds the target duration
+  for (const auto& segment : segments) {
+    const auto duration =
+        static_cast<types::DecimalInteger>(std::round(segment.GetDuration()));
+    if (duration > target_duration_tag->duration) {
+      return ParseStatusCode::kMediaSegmentExceedsTargetDuration;
+    }
+  }
+
+  // Multivariant playlists may use the `EXT-X-INDEPENDENT-SEGMENTS` tag to
+  // indicate that every media playlist has independent segments. If that was
+  // the case, apply that to this playlist (this does not go in reverse).
+  // Otherwise, that property depends on whether that tag occurred in this
+  // playlist.
+  const bool independent_segments =
+      common_state.independent_segments_tag.has_value() ||
+      (parent_playlist && parent_playlist->AreSegmentsIndependent());
+
   absl::optional<PlaylistType> playlist_type;
   if (playlist_type_tag) {
     playlist_type = playlist_type_tag->type;
   }
 
   return MediaPlaylist(std::move(uri), common_state.GetVersion(),
-                       common_state.independent_segments_tag.has_value(),
+                       independent_segments,
+                       base::Seconds(target_duration_tag->duration),
                        std::move(segments), playlist_type);
 }
 
 MediaPlaylist::MediaPlaylist(GURL uri,
                              types::DecimalInteger version,
                              bool independent_segments,
+                             base::TimeDelta target_duration,
                              std::vector<MediaSegment> segments,
                              absl::optional<PlaylistType> playlist_type)
     : Playlist(std::move(uri), version, independent_segments),
+      target_duration_(target_duration),
       segments_(std::move(segments)),
       playlist_type_(playlist_type) {
   base::TimeDelta duration;

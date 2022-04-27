@@ -137,13 +137,13 @@
     grid-template-rows: repeat(2, minmax(0,1fr));
   }
 
-  #collageContainer.collage-1 .collage-item:first-child,
-  #collageContainer.collage-2 .collage-item:first-child,
-  #collageContainer.collage-2 .collage-item:nth-child(2) {
+  #collageContainer.collage-1 .collage-item:first-child {
     grid-row: 1 / 3;
   }
 
   #collageContainer.collage-1 .collage-item:first-child,
+  #collageContainer.collage-2 .collage-item:first-child,
+  #collageContainer.collage-2 .collage-item:nth-child(2),
   #collageContainer.collage-3 .collage-item:nth-child(3) {
     grid-column: 1 / 3;
   }
@@ -203,13 +203,15 @@
         <div id="imageContainer" class="preview-image-container" aria-hidden="true">
           <template is="dom-if" if="[[clickable]]">
             <img class="preview-image clickable" is="cr-auto-img"
-                on-click="onClickAmbientModeButton_"
-                on-keypress="onClickAmbientModeButton_"
-                auto-src="[[getPreviewImage_(firstPreviewAlbum_)]]" with-cookies>
+                on-click="onClickPreviewImage_"
+                on-keypress="onClickPreviewImage_"
+                auto-src="[[getPreviewImage_(firstPreviewAlbum_)]]"
+                is-google-photos>
           </template>
           <template is="dom-if" if="[[!clickable]]">
             <img class="preview-image" is="cr-auto-img"
-                auto-src="[[getPreviewImage_(firstPreviewAlbum_)]]" with-cookies>
+                auto-src="[[getPreviewImage_(firstPreviewAlbum_)]]"
+                is-google-photos>
           </template>
         </div>
         <h2 id="textContainer" class="preview-text-container album-info-mainpage album-info-subpage">
@@ -226,10 +228,10 @@
             [[getAlbumDescription_(topicSource_, previewAlbums_)]]
           </span>
         </h2>
-        <div id="collageContainer" class$="[[getContainerClass_(previewAlbums_)]]">
-          <template is="dom-repeat" items="[[getCollageItems_(previewAlbums_)]]">
+        <div id="collageContainer" class$="[[getCollageContainerClass_(collageImages_)]]">
+          <template is="dom-repeat" items="[[collageImages_]]">
             <img class="collage-item" is="cr-auto-img"
-                auto-src="[[getPreviewImage_(item)]]" with-cookies>
+                auto-src="[[item.url]]" is-google-photos>
           </template>
         </div>
       </template>

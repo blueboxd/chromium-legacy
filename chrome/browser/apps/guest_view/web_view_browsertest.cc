@@ -94,6 +94,7 @@
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
+#include "content/public/test/fenced_frame_test_util.h"
 #include "content/public/test/find_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
@@ -2163,11 +2164,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_InterstitialPageRouteEvents) {
 #endif
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_InterstitialPageDetach) {
-  // TODO(crbug.com/1267977): fix this test to work with site isolation for
-  // <webview>.
-  if (content::SiteIsolationPolicy::IsSiteIsolationForGuestsEnabled())
-    return;
-
   InterstitialTestHelper();
 
   content::WebContents* guest_web_contents =
@@ -2176,9 +2172,9 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_InterstitialPageDetach) {
 
   // Navigate to about:blank.
   content::TestNavigationObserver load_observer(guest_web_contents);
-  bool result = ExecuteScript(guest_web_contents,
-                              "window.location.assign('about:blank')");
-  EXPECT_TRUE(result);
+  auto* embedder_web_contents = GetFirstAppWindowWebContents();
+  EXPECT_TRUE(content::ExecuteScript(embedder_web_contents,
+                                     "loadGuestUrl('about:blank');"));
   load_observer.Wait();
 }
 
@@ -5924,4 +5920,41 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessWebViewTest, ContentScriptInOOPIF) {
     ASSERT_EQ(2u, web_view_renderer_state->guest_count_for_testing());
   }
   EXPECT_TRUE(script_listener.WaitUntilSatisfied());
+}
+
+class WebViewFencedFrameTest : public WebViewTest {
+ public:
+  ~WebViewFencedFrameTest() override = default;
+
+  content::test::FencedFrameTestHelper& fenced_frame_test_helper() {
+    return fenced_frame_test_helper_;
+  }
+
+ private:
+  content::test::FencedFrameTestHelper fenced_frame_test_helper_;
+};
+
+INSTANTIATE_TEST_SUITE_P(WebViewTests,
+                         WebViewFencedFrameTest,
+                         testing::Bool(),
+                         WebViewTest::DescribeParams);
+
+IN_PROC_BROWSER_TEST_P(WebViewFencedFrameTest,
+                       FencedFrameInGuestHasGuestSiteInstance) {
+  TestHelper("testAddFencedFrame", "web_view/shim", NEEDS_TEST_SERVER);
+
+  auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  std::vector<content::RenderFrameHost*> rfhs =
+      content::CollectAllRenderFrameHosts(guest_web_contents->GetMainFrame());
+  ASSERT_EQ(rfhs.size(), 2u);
+  ASSERT_EQ(rfhs[0], guest_web_contents->GetMainFrame());
+  content::RenderFrameHostWrapper fenced_frame(rfhs[1]);
+
+  content::SiteInstance* fenced_frame_site_instance =
+      fenced_frame->GetSiteInstance();
+  EXPECT_TRUE(fenced_frame_site_instance->IsGuest());
+  EXPECT_EQ(fenced_frame_site_instance->GetStoragePartitionConfig(),
+            guest_web_contents->GetMainFrame()
+                ->GetSiteInstance()
+                ->GetStoragePartitionConfig());
 }

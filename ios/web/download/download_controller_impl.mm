@@ -12,7 +12,6 @@
 #import "ios/web/download/download_session_task_impl.h"
 #include "ios/web/public/browser_state.h"
 #import "ios/web/public/download/download_controller_delegate.h"
-#import "ios/web/public/web_client.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/http/http_request_headers.h"
 
@@ -42,8 +41,10 @@ DownloadControllerImpl::DownloadControllerImpl() = default;
 
 DownloadControllerImpl::~DownloadControllerImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
-  for (DownloadTaskImpl* task : alive_tasks_)
-    task->ShutDown();
+  for (DownloadTask* task : alive_tasks_) {
+    task->RemoveObserver(this);
+    task->Cancel();
+  }
 
   if (delegate_)
     delegate_->OnDownloadControllerDestroyed(this);
@@ -63,20 +64,15 @@ void DownloadControllerImpl::CreateDownloadTask(
   if (!delegate_)
     return;
 
-  std::unique_ptr<DownloadTaskImpl> task;
   if (original_url.SchemeIs(url::kDataScheme)) {
-    task = std::make_unique<DataUrlDownloadTask>(
+    OnDownloadCreated(std::make_unique<DataUrlDownloadTask>(
         web_state, original_url, http_method, content_disposition, total_bytes,
-        mime_type, identifier, this);
+        mime_type, identifier));
   } else {
-    task = std::make_unique<DownloadSessionTaskImpl>(
+    OnDownloadCreated(std::make_unique<DownloadSessionTaskImpl>(
         web_state, original_url, http_method, content_disposition, total_bytes,
-        mime_type, identifier, this);
+        mime_type, identifier));
   }
-  DCHECK(task);
-
-  alive_tasks_.insert(task.get());
-  delegate_->OnDownloadCreated(this, web_state, std::move(task));
 }
 
 void DownloadControllerImpl::CreateNativeDownloadTask(
@@ -94,11 +90,9 @@ void DownloadControllerImpl::CreateNativeDownloadTask(
     return;
   }
 
-  auto task = std::make_unique<DownloadNativeTaskImpl>(
+  OnDownloadCreated(std::make_unique<DownloadNativeTaskImpl>(
       web_state, original_url, http_method, content_disposition, total_bytes,
-      mime_type, identifier, download, this);
-  alive_tasks_.insert(task.get());
-  delegate_->OnDownloadCreated(this, web_state, std::move(task));
+      mime_type, identifier, download));
 }
 
 void DownloadControllerImpl::SetDelegate(DownloadControllerDelegate* delegate) {
@@ -111,41 +105,23 @@ DownloadControllerDelegate* DownloadControllerImpl::GetDelegate() const {
   return delegate_;
 }
 
-void DownloadControllerImpl::OnTaskDestroyed(DownloadTaskImpl* task) {
+void DownloadControllerImpl::OnDownloadDestroyed(DownloadTask* task) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
   auto it = alive_tasks_.find(task);
   DCHECK(it != alive_tasks_.end());
+  task->RemoveObserver(this);
   alive_tasks_.erase(it);
 }
 
-NSURLSession* DownloadControllerImpl::CreateSession(
-    NSString* identifier,
-    NSArray<NSHTTPCookie*>* cookies,
-    id<NSURLSessionDataDelegate> delegate,
-    NSOperationQueue* delegate_queue) {
-  NSURLSessionConfiguration* configuration = [NSURLSessionConfiguration
-      backgroundSessionConfigurationWithIdentifier:identifier];
-  configuration.HTTPCookieStorage = [[DownloadSessionCookieStorage alloc] init];
-  configuration.HTTPCookieStorage.cookieAcceptPolicy =
-      [NSHTTPCookieStorage sharedHTTPCookieStorage].cookieAcceptPolicy;
-  // Cookies have to be set in session configuration before the session is
-  // created. Once the session is created, the configuration object can't be
-  // edited and configuration property will return a copy of the originally used
-  // configuration.
-  for (NSHTTPCookie* cookie in cookies) {
-    // Cookies copied from the internal WebSiteDataStore cookie store, so
-    // there will be no duplications or invalid cookies.
-    [configuration.HTTPCookieStorage setCookie:cookie];
-  }
-  std::string user_agent = GetWebClient()->GetUserAgent(UserAgentType::MOBILE);
-  configuration.HTTPAdditionalHeaders = @{
-    base::SysUTF8ToNSString(net::HttpRequestHeaders::kUserAgent) :
-        base::SysUTF8ToNSString(user_agent),
-  };
+void DownloadControllerImpl::OnDownloadCreated(
+    std::unique_ptr<DownloadTaskImpl> task) {
+  DCHECK(task);
+  alive_tasks_.insert(task.get());
+  task->AddObserver(this);
 
-  return [NSURLSession sessionWithConfiguration:configuration
-                                       delegate:delegate
-                                  delegateQueue:delegate_queue];
+  DCHECK(task->GetWebState());
+  WebState* web_state = task->GetWebState();
+  delegate_->OnDownloadCreated(this, web_state, std::move(task));
 }
 
 }  // namespace web

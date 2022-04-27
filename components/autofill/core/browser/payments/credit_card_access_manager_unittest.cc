@@ -196,10 +196,10 @@ class CreditCardAccessManagerTest : public testing::Test {
     browser_autofill_manager_ = std::make_unique<TestBrowserAutofillManager>(
         autofill_driver_.get(), &autofill_client_, &personal_data_manager_);
     credit_card_access_manager_ =
-        browser_autofill_manager_->credit_card_access_manager();
+        browser_autofill_manager_->GetCreditCardAccessManager();
 
 #if !BUILDFLAG(IS_IOS)
-    autofill_driver_->SetBrowserAutofillManager(
+    autofill_driver_->set_autofill_manager(
         std::move(browser_autofill_manager_));
     autofill_driver_->SetAuthenticator(new TestInternalAuthenticator());
     auto fido_authenticator = std::make_unique<TestCreditCardFIDOAuthenticator>(
@@ -420,13 +420,11 @@ class CreditCardAccessManagerTest : public testing::Test {
   void WaitForCallbacks() { task_environment_.RunUntilIdle(); }
 
   void SetCreditCardFIDOAuthEnabled(bool enabled) {
-    ::autofill::prefs::SetCreditCardFIDOAuthEnabled(autofill_client_.GetPrefs(),
-                                                    enabled);
+    prefs::SetCreditCardFIDOAuthEnabled(autofill_client_.GetPrefs(), enabled);
   }
 
   bool IsCreditCardFIDOAuthEnabled() {
-    return ::autofill::prefs::IsCreditCardFIDOAuthEnabled(
-        autofill_client_.GetPrefs());
+    return prefs::IsCreditCardFIDOAuthEnabled(autofill_client_.GetPrefs());
   }
 
   UnmaskAuthFlowType getUnmaskAuthFlowType() {
@@ -859,8 +857,7 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOSuccessWithDcvv) {
       {features::kAutofillCreditCardAuthentication,
        features::kAutofillAlwaysReturnCloudTokenizedCard},
       {});
-  ::autofill::prefs::SetCreditCardFIDOAuthEnabled(autofill_client_.GetPrefs(),
-                                                  true);
+  prefs::SetCreditCardFIDOAuthEnabled(autofill_client_.GetPrefs(), true);
 
   // General setup.
   CreateServerCard(kTestGUID, kTestNumber);

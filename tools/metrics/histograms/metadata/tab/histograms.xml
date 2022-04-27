@@ -359,16 +359,38 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Tab.CloseAllTabsDialog.ClosedAllTabs" units="Boolean"
     expires_after="2022-09-11">
+  <obsolete>
+    Removed 4/2022. Replaced with a metric split by incognito and non-incognito
+    usage of the modal dialog as experiments showed possible differences between
+    the groups. The sum of the new .Incognito and .NonIncognito values should be
+    equivalent to what this value reported.
+  </obsolete>
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
-    Records the whether the &quot;Close all tabs&quot; action was taken when
+    Records whether the &quot;Close all tabs&quot; action was taken when the
     close all tabs confirmation dialog was shown through App Menu &gt; Close all
     tabs. This is only recorded for Android.
   </summary>
 </histogram>
 
-<histogram name="Tab.Count.Guest" units="units" expires_after="2022-08-21">
+<histogram name="Tab.CloseAllTabsDialog.ClosedAllTabs.{CloseType}"
+    units="Boolean" expires_after="2022-09-11">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>fredmello@chromium.org</owner>
+  <summary>
+    Records whether the &quot;Close all tabs&quot; action was taken when the
+    close all tabs confirmation dialog was shown through App Menu &gt; Close all
+    tabs. This is only recorded for Android for {CloseType} close all tabs menu
+    actions.
+  </summary>
+  <token key="CloseType">
+    <variant name="Incognito"/>
+    <variant name="NonIncognito"/>
+  </token>
+</histogram>
+
+<histogram name="Tab.Count.Guest" units="units" expires_after="2022-10-23">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -805,7 +827,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="TabGroups.UserCustomizedGroupCountPerLoad" units="groups"
-    expires_after="2022-08-21">
+    expires_after="2022-10-23">
   <owner>connily@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -1106,7 +1128,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="TabManager.Discarding.DiscardCount" units="Discards"
-    expires_after="2022-08-21">
+    expires_after="2022-10-23">
   <owner>chrisha@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -1165,7 +1187,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="TabManager.Discarding.ReloadCount" units="Reloads"
-    expires_after="2022-08-21">
+    expires_after="2022-10-23">
   <owner>chrisha@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -1923,7 +1945,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tabs.SadTab.Reload.Event" enum="SadTabEvent"
-    expires_after="2022-08-21">
+    expires_after="2022-10-23">
   <owner>sonnyrao@chromium.org</owner>
   <owner>jamescook@chromium.org</owner>
   <summary>
@@ -2000,7 +2022,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Tabs.ScrubDuration" units="ms" expires_after="2022-05-01">
+<histogram name="Tabs.ScrubDuration" units="ms" expires_after="2023-04-18">
   <owner>afakhry@chromium.org</owner>
   <owner>tclaiborne@chromium.org</owner>
   <summary>
@@ -2948,7 +2970,7 @@ chromium-metrics-reviews@google.com.
   <token key="BatteryState" variants="BatteryState"/>
 </histogram>
 
-<histogram name="Tabs.WindowWidth" units="DIPs" expires_after="2022-08-21">
+<histogram name="Tabs.WindowWidth" units="DIPs" expires_after="2022-10-23">
   <owner>collinbaker@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>

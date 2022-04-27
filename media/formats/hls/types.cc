@@ -9,6 +9,7 @@
 
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
+#include "media/formats/hls/parse_status.h"
 #include "media/formats/hls/source_string.h"
 #include "third_party/re2/src/re2/re2.h"
 
@@ -199,6 +200,33 @@ ParseStatus::Or<SignedDecimalFloatingPoint> ParseSignedDecimalFloatingPoint(
   return result;
 }
 
+ParseStatus::Or<DecimalResolution> DecimalResolution::Parse(
+    SourceString source_str) {
+  // decimal-resolution values are in the format: DecimalInteger 'x'
+  // DecimalInteger
+  const auto x_index = source_str.Str().find_first_of('x');
+  if (x_index == base::StringPiece::npos) {
+    return ParseStatusCode::kFailedToParseDecimalResolution;
+  }
+
+  // Extract width and height strings
+  const auto width_str = source_str.Consume(x_index);
+  source_str.Consume(1);
+  const auto height_str = source_str;
+
+  auto width = ParseDecimalInteger(width_str);
+  auto height = ParseDecimalInteger(height_str);
+  for (auto* x : {&width, &height}) {
+    if (x->has_error()) {
+      return ParseStatus(ParseStatusCode::kFailedToParseDecimalResolution)
+          .AddCause(std::move(*x).error());
+    }
+  }
+
+  return DecimalResolution{.width = std::move(width).value(),
+                           .height = std::move(height).value()};
+}
+
 ParseStatus::Or<base::StringPiece> ParseQuotedString(
     SourceString source_str,
     const VariableDictionary& variable_dict,
@@ -280,12 +308,6 @@ AttributeMap::AttributeMap(base::span<Item> sorted_items)
   DCHECK(
       std::is_sorted(items_.begin(), items_.end(), AttributeMapComparator()));
 }
-
-AttributeMap::~AttributeMap() = default;
-AttributeMap::AttributeMap(const AttributeMap&) = default;
-AttributeMap::AttributeMap(AttributeMap&&) = default;
-AttributeMap& AttributeMap::operator=(const AttributeMap&) = default;
-AttributeMap& AttributeMap::operator=(AttributeMap&&) = default;
 
 ParseStatus::Or<AttributeListIterator::Item> AttributeMap::Fill(
     AttributeListIterator* iter) {

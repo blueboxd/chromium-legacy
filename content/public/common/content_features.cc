@@ -186,10 +186,6 @@ const base::Feature kBrowserVerifiedUserActivationKeyboard{
 const base::Feature kBrowserVerifiedUserActivationMouse{
     "BrowserVerifiedUserActivationMouse", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables code caching for inline scripts.
-const base::Feature kCacheInlineScriptCode{"CacheInlineScriptCode",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If Canvas2D Image Chromium is allowed, this feature controls whether it is
 // enabled.
 const base::Feature kCanvas2DImageChromium {
@@ -206,9 +202,6 @@ const base::Feature kCanvas2DImageChromium {
 const base::Feature kClearCrossSiteCrossBrowsingContextGroupWindowName{
     "ClearCrossSiteCrossBrowsingContextGroupWindowName",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kCapabilityDelegationPaymentRequest{
-    "CapabilityDelegationPaymentRequest", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kClickPointerEvent{"ClickPointerEvent",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
@@ -546,7 +539,7 @@ const base::Feature kMediaDevicesSystemMonitorCache {
 // Use a custom backend to store media licenses in lieu of the
 // Plugin Private File System.
 const base::Feature kMediaLicenseBackend{"MediaLicenseBackend",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Allow cross-context transfer of MediaStreamTracks.
 const base::Feature kMediaStreamTrackTransfer{
@@ -787,10 +780,6 @@ const base::Feature kSecurePaymentConfirmation {
 #endif
 };
 
-// Enables API V3 changes in Secure Payment Confirmation.
-const base::Feature kSecurePaymentConfirmationAPIV3{
-    "SecurePaymentConfirmationAPIV3", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Used to control whether to remove the restriction that PaymentCredential in
 // WebAuthn and secure payment confirmation method in PaymentRequest API must
 // use a user verifying platform authenticator. When enabled, this allows using
@@ -813,9 +802,6 @@ const base::Feature kServiceWorkerPaymentApps{"ServiceWorkerPaymentApps",
 // will be used to deprecate basic-card eventually: crbug.com/1209835.
 const base::Feature kPaymentRequestBasicCard{"PaymentRequestBasicCard",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kPaymentRequestRequiresUserActivation{
-    "PaymentRequestRequiresUserActivation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Use this feature to experiment terminating a service worker when it doesn't
 // control any clients: https://crbug.com/1043845.
@@ -1182,11 +1168,6 @@ const base::Feature kBackgroundMediaRendererHasModerateBinding{
 // threads on.
 const base::Feature kBigLittleScheduling{"BigLittleScheduling",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
-// If enabled, BindingManager will use Context.BIND_NOT_FOREGROUND to avoid
-// affecting cpu scheduling priority.
-const base::Feature kBindingManagementWaiveCpu{
-    "BindingManagementWaiveCpu", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Tick fling animation independent from the browser compositor.
 const base::Feature kIndependentFlingAnimation{

@@ -15,6 +15,7 @@ namespace arc {
 namespace input_overlay {
 namespace {
 // Json strings.
+constexpr char kID[] = "id";
 constexpr char kName[] = "name";
 constexpr char kInputSources[] = "input_sources";
 constexpr char kLocation[] = "location";
@@ -143,6 +144,14 @@ bool Action::ParseFromJson(const base::Value& value) {
   if (name)
     name_ = *name;
 
+  // Unique ID is required.
+  auto id = value.GetDict().FindInt(kID);
+  if (!id) {
+    LOG(ERROR) << "Must have unique ID for action {" << name_ << "}";
+    return false;
+  }
+  id_ = *id;
+
   // Parse action device source.
   auto* sources = value.FindListKey(kInputSources);
   if (!sources || !sources->is_list()) {
@@ -248,6 +257,14 @@ const InputElement& Action::GetCurrentDisplayedBinding() {
   return pending_binding_ ? *pending_binding_ : *current_binding_;
 }
 
+bool Action::IsOverlapped(const InputElement& input_element) {
+  DCHECK(current_binding_);
+  if (!current_binding_)
+    return false;
+  auto& binding = GetCurrentDisplayedBinding();
+  return binding.IsOverlapped(input_element);
+}
+
 absl::optional<gfx::PointF> Action::CalculateTouchPosition(
     const gfx::RectF& content_bounds) {
   if (locations_.empty())
@@ -337,6 +354,12 @@ void Action::OnTouchCancelled() {
   if (locations_.empty())
     return;
   current_position_index_ = 0;
+}
+
+void Action::PostUnbindProcess() {
+  auto bounds = CalculateWindowContentBounds(target_window_);
+  action_view_->SetViewContent(BindingOption::kPending, bounds);
+  action_view_->SetDisplayMode(DisplayMode::kEditedUnbound);
 }
 
 }  // namespace input_overlay

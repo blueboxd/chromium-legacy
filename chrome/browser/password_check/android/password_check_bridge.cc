@@ -8,14 +8,19 @@
 #include <string>
 
 #include "base/android/jni_string.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_check/android/jni_headers/CompromisedCredential_jni.h"
 #include "chrome/browser/password_check/android/jni_headers/PasswordCheckBridge_jni.h"
 #include "chrome/browser/password_manager/android/password_checkup_launcher_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "components/password_manager/content/browser/password_change_success_tracker_factory.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/password_change_success_tracker.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/ui/insecure_credentials_manager.h"
 #include "url/android/gurl_android.h"
+
+using password_manager::PasswordChangeSuccessTracker;
 
 namespace {
 
@@ -42,6 +47,32 @@ password_manager::CredentialView ConvertJavaObjectToCredentialView(
           env, Java_CompromisedCredential_getPassword(env, credential)),
       base::Time::FromJavaTime(
           Java_CompromisedCredential_getLastUsedTime(env, credential)));
+}
+
+// Checks whether the credential is leaked but not phished. Other compromising
+// states are ignored (e.g. weak or reused).
+constexpr bool IsOnlyLeaked(
+    const password_manager::InsecureCredentialTypeFlags& flags) {
+  using password_manager::InsecureCredentialTypeFlags;
+  if ((flags & InsecureCredentialTypeFlags::kCredentialPhished) !=
+      InsecureCredentialTypeFlags::kSecure) {
+    return false;
+  }
+  return (flags & InsecureCredentialTypeFlags::kCredentialLeaked) !=
+         InsecureCredentialTypeFlags::kSecure;
+}
+
+// Checks whether the credential is phished but not leaked. Other compromising
+// states are ignored (e.g. weak or reused).
+constexpr bool IsOnlyPhished(
+    const password_manager::InsecureCredentialTypeFlags& flags) {
+  using password_manager::InsecureCredentialTypeFlags;
+  if ((flags & InsecureCredentialTypeFlags::kCredentialLeaked) !=
+      InsecureCredentialTypeFlags::kSecure) {
+    return false;
+  }
+  return (flags & InsecureCredentialTypeFlags::kCredentialPhished) !=
+         InsecureCredentialTypeFlags::kSecure;
 }
 
 }  // namespace
@@ -100,10 +131,8 @@ void PasswordCheckBridge::GetCompromisedCredentials(
         base::android::ConvertUTF8ToJavaString(env, credential.package_name),
         credential.create_time.ToJavaTime(),
         credential.last_used_time.ToJavaTime(),
-        (credential.insecure_type ==
-         password_manager::InsecureCredentialTypeFlags::kCredentialLeaked),
-        (credential.insecure_type ==
-         password_manager::InsecureCredentialTypeFlags::kCredentialPhished),
+        IsOnlyLeaked(credential.insecure_type),
+        IsOnlyPhished(credential.insecure_type),
         credential.has_startable_script, credential.has_auto_change_button);
   }
 }
@@ -180,4 +209,31 @@ void PasswordCheckBridge::OnPasswordCheckProgressChanged(
   Java_PasswordCheckBridge_onPasswordCheckProgressChanged(
       base::android::AttachCurrentThread(), java_bridge_, already_processed,
       remaining_in_queue);
+}
+
+void PasswordCheckBridge::OnAutomatedPasswordChangeStarted(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& credential) {
+  password_manager::CredentialView credential_view =
+      ConvertJavaObjectToCredentialView(env, credential);
+  GetPasswordChangeSuccessTracker()->OnChangePasswordFlowStarted(
+      credential_view.url, base::UTF16ToUTF8(credential_view.username),
+      PasswordChangeSuccessTracker::StartEvent::kAutomatedFlow,
+      PasswordChangeSuccessTracker::EntryPoint::kLeakCheckInSettings);
+}
+
+void PasswordCheckBridge::OnManualPasswordChangeStarted(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& credential) {
+  password_manager::CredentialView credential_view =
+      ConvertJavaObjectToCredentialView(env, credential);
+  GetPasswordChangeSuccessTracker()->OnManualChangePasswordFlowStarted(
+      credential_view.url, base::UTF16ToUTF8(credential_view.username),
+      PasswordChangeSuccessTracker::EntryPoint::kLeakCheckInSettings);
+}
+
+password_manager::PasswordChangeSuccessTracker*
+PasswordCheckBridge::GetPasswordChangeSuccessTracker() {
+  return password_manager::PasswordChangeSuccessTrackerFactory::GetInstance()
+      ->GetForBrowserContext(ProfileManager::GetLastUsedProfile());
 }

@@ -3235,6 +3235,87 @@ TEST_F(ManifestParserTest, UrlHandlerParseRules) {
   }
 }
 
+TEST_F(ManifestParserTest, LockScreenParseRules) {
+  KURL manifest_url = KURL("https://foo.com/manifest.json");
+  KURL document_url = KURL("https://foo.com/index.html");
+
+  {
+    // Manifest does not contain a 'lock_screen' field.
+    auto& manifest = ParseManifest("{ }");
+    ASSERT_EQ(0u, GetErrorCount());
+    EXPECT_TRUE(manifest->lock_screen.is_null());
+  }
+
+  {
+    // 'lock_screen' is not an object.
+    auto& manifest = ParseManifest(R"( { "lock_screen": [ ] } )");
+    EXPECT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'lock_screen' ignored, type object expected.",
+              errors()[0]);
+    EXPECT_TRUE(manifest->lock_screen.is_null());
+  }
+
+  {
+    // Contains 'lock_screen' field but no start_url entry.
+    auto& manifest = ParseManifest(R"( { "lock_screen": { } } )");
+    ASSERT_EQ(0u, GetErrorCount());
+    ASSERT_FALSE(manifest->lock_screen.is_null());
+    EXPECT_TRUE(manifest->lock_screen->start_url.IsEmpty());
+  }
+
+  {
+    // 'start_url' entries must be valid URLs.
+    auto& manifest =
+        ParseManifest(R"({ "lock_screen": { "start_url": {} } } )");
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ("property 'start_url' ignored, type string expected.",
+              errors()[0]);
+    ASSERT_FALSE(manifest->lock_screen.is_null());
+    EXPECT_TRUE(manifest->lock_screen->start_url.IsEmpty());
+  }
+
+  {
+    // 'start_url' entries must be within scope.
+    auto& manifest = ParseManifest(
+        R"({ "lock_screen": { "start_url": "https://bar.com" } } )");
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(
+        "property 'start_url' ignored, should be within scope of the manifest.",
+        errors()[0]);
+    ASSERT_FALSE(manifest->lock_screen.is_null());
+    EXPECT_TRUE(manifest->lock_screen->start_url.IsEmpty());
+  }
+
+  {
+    // A valid lock_screen start_url entry.
+    auto& manifest = ParseManifestWithURLs(
+        R"({
+          "lock_screen": {
+            "start_url": "https://foo.com"
+          }
+        })",
+        manifest_url, document_url);
+    ASSERT_EQ(0u, GetErrorCount());
+    ASSERT_FALSE(manifest->lock_screen.is_null());
+    EXPECT_EQ("https://foo.com/", manifest->lock_screen->start_url.GetString());
+  }
+
+  {
+    // A valid lock_screen start_url entry, parsed relative to manifest URL.
+    auto& manifest = ParseManifestWithURLs(
+        R"({
+          "lock_screen": {
+            "start_url": "new_note"
+          }
+        })",
+        manifest_url, document_url);
+    ASSERT_EQ(0u, GetErrorCount());
+    ASSERT_FALSE(manifest->lock_screen.is_null());
+    EXPECT_EQ("https://foo.com/new_note",
+              manifest->lock_screen->start_url.GetString());
+  }
+}
+
 TEST_F(ManifestParserTest, NoteTakingParseRules) {
   KURL manifest_url = KURL("https://foo.com/manifest.json");
   KURL document_url = KURL("https://foo.com/index.html");
@@ -5346,11 +5427,20 @@ TEST_F(ManifestParserTest, UserPreferencesParseRules) {
     ScopedWebAppDarkModeForTest feature(false);
 
     // Feature not enabled, should not be parsed.
-    auto& manifest = ParseManifest(
-        R"({ "user_preferences":
-        {"color_scheme_dark": {"theme_color": "#FF0000"}} })");
-    EXPECT_TRUE(manifest->user_preferences.is_null());
-    EXPECT_EQ(0u, GetErrorCount());
+    {
+      auto& manifest = ParseManifest(
+          R"({ "user_preferences":
+          {"color_scheme_dark": {"theme_color": "#FF0000"}} })");
+      EXPECT_TRUE(manifest->user_preferences.is_null());
+      EXPECT_EQ(0u, GetErrorCount());
+    }
+    {
+      auto& manifest = ParseManifest(
+          R"({ "user_preferences":
+          {"color_scheme": {"dark": {"theme_color": "#FF0000"}}} })");
+      EXPECT_TRUE(manifest->user_preferences.is_null());
+      EXPECT_EQ(0u, GetErrorCount());
+    }
   }
   {
     ScopedWebAppDarkModeForTest feature(true);
@@ -5378,12 +5468,31 @@ TEST_F(ManifestParserTest, UserPreferencesParseRules) {
       EXPECT_TRUE(manifest->user_preferences->color_scheme_dark.is_null());
       EXPECT_EQ(0u, GetErrorCount());
     }
+    {
+      auto& manifest = ParseManifest(
+          R"({ "user_preferences": {"color_scheme": {"dark": {}}} })");
+      EXPECT_FALSE(manifest->user_preferences.is_null());
+      EXPECT_TRUE(manifest->user_preferences->color_scheme_dark.is_null());
+      EXPECT_EQ(0u, GetErrorCount());
+    }
 
     // Valid theme_color and background_color should be parsed
     {
       auto& manifest = ParseManifest(
           R"({ "user_preferences": {"color_scheme_dark":
           {"theme_color": "#FF0000", "background_color": "#FFF"}} })");
+      EXPECT_FALSE(manifest->user_preferences.is_null());
+      EXPECT_FALSE(manifest->user_preferences->color_scheme_dark.is_null());
+      EXPECT_EQ(manifest->user_preferences->color_scheme_dark->theme_color,
+                0xFFFF0000u);
+      EXPECT_EQ(manifest->user_preferences->color_scheme_dark->background_color,
+                0xFFFFFFFFu);
+      EXPECT_EQ(0u, GetErrorCount());
+    }
+    {
+      auto& manifest = ParseManifest(
+          R"({ "user_preferences": {"color_scheme": {"dark":
+          {"theme_color": "#FF0000", "background_color": "#FFF"}}} })");
       EXPECT_FALSE(manifest->user_preferences.is_null());
       EXPECT_FALSE(manifest->user_preferences->color_scheme_dark.is_null());
       EXPECT_EQ(manifest->user_preferences->color_scheme_dark->theme_color,
@@ -5412,12 +5521,42 @@ TEST_F(ManifestParserTest, UserPreferencesParseRules) {
       EXPECT_EQ("preference 'color_scheme_dark' ignored, object expected.",
                 errors()[0]);
     }
+    {
+      auto& manifest = ParseManifest(
+          R"({ "user_preferences": {"color_scheme": {"dark": []}} })");
+      EXPECT_FALSE(manifest->user_preferences.is_null());
+      EXPECT_TRUE(manifest->user_preferences->color_scheme_dark.is_null());
+      EXPECT_EQ(1u, GetErrorCount());
+      EXPECT_EQ("preference 'dark' ignored, object expected.", errors()[0]);
+    }
+
+    // Ignore color_scheme if it isn't an object.
+    {
+      auto& manifest =
+          ParseManifest(R"({ "user_preferences": {"color_scheme": []} })");
+      EXPECT_TRUE(manifest->user_preferences.is_null());
+      EXPECT_EQ(1u, GetErrorCount());
+      EXPECT_EQ("property 'color_scheme' ignored, object expected.",
+                errors()[0]);
+    }
 
     // Preferences overriding a single value should be parsed.
     {
       auto& manifest = ParseManifest(
           R"({ "user_preferences":
           {"color_scheme_dark": {"theme_color": "#FF0000"}} })");
+      EXPECT_FALSE(manifest->user_preferences.is_null());
+      EXPECT_FALSE(manifest->user_preferences->color_scheme_dark.is_null());
+      EXPECT_EQ(manifest->user_preferences->color_scheme_dark->theme_color,
+                0xFFFF0000u);
+      EXPECT_FALSE(
+          manifest->user_preferences->color_scheme_dark->has_background_color);
+      EXPECT_EQ(0u, GetErrorCount());
+    }
+    {
+      auto& manifest = ParseManifest(
+          R"({ "user_preferences":
+          {"color_scheme": {"dark": {"theme_color": "#FF0000"}}} })");
       EXPECT_FALSE(manifest->user_preferences.is_null());
       EXPECT_FALSE(manifest->user_preferences->color_scheme_dark.is_null());
       EXPECT_EQ(manifest->user_preferences->color_scheme_dark->theme_color,
@@ -5433,6 +5572,21 @@ TEST_F(ManifestParserTest, UserPreferencesParseRules) {
           R"({ "user_preferences": {"something": {"theme_color": "#FF0000"}} })");
       EXPECT_FALSE(manifest->user_preferences.is_null());
       EXPECT_TRUE(manifest->user_preferences->color_scheme_dark.is_null());
+      EXPECT_EQ(0u, GetErrorCount());
+    }
+
+    // Manifests with both old and new formats should prefer the new format.
+    {
+      auto& manifest = ParseManifest(
+          R"({ "user_preferences":
+          {"color_scheme_dark": {"theme_color": "#FFFFFF"},
+          "color_scheme": {"dark": {"theme_color": "#FF0000"}}}})");
+      EXPECT_FALSE(manifest->user_preferences.is_null());
+      EXPECT_FALSE(manifest->user_preferences->color_scheme_dark.is_null());
+      EXPECT_EQ(manifest->user_preferences->color_scheme_dark->theme_color,
+                0xFFFF0000u);
+      EXPECT_FALSE(
+          manifest->user_preferences->color_scheme_dark->has_background_color);
       EXPECT_EQ(0u, GetErrorCount());
     }
   }

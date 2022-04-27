@@ -707,7 +707,9 @@ void HangWatcher::WatchStateSnapShot::Init(
 
   // Copy hung thread information.
   for (const auto& watch_state : watch_states) {
-    auto [flags, deadline] = watch_state->GetFlagsAndDeadline();
+    uint64_t flags;
+    TimeTicks deadline;
+    std::tie(flags, deadline) = watch_state->GetFlagsAndDeadline();
 
     if (deadline <= deadline_ignore_threshold) {
       found_deadline_before_ignore_threshold = true;
@@ -736,6 +738,7 @@ void HangWatcher::WatchStateSnapShot::Init(
         any_hung_thread_has_dumping_enabled = true;
       }
 
+#if BUILDFLAG(ENABLE_BASE_TRACING)
       // Emit trace events for monitored threads.
       if (ThreadTypeLoggingLevelGreaterOrEqual(watch_state.get()->thread_type(),
                                                LoggingLevel::kUmaOnly)) {
@@ -745,6 +748,7 @@ void HangWatcher::WatchStateSnapShot::Init(
         TRACE_EVENT_BEGIN("base", "HangWatcher::ThreadHung", track, deadline);
         TRACE_EVENT_END("base", track, now);
       }
+#endif
 
       // Attempt to mark the thread as needing to stay within its current
       // WatchHangsInScope until capture is complete.

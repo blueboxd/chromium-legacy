@@ -97,7 +97,7 @@ constexpr int kTallestFrameHeight = kTallestTabHeight + 19;
 // changed default theme assets, if you need themes to recreate their generated
 // images (which are cached), if you changed how missing values are
 // generated, or if you changed any constants.
-const int kThemePackVersion = 97;
+const int kThemePackVersion = 99;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -266,7 +266,6 @@ constexpr int kNonOverwritableColorTable[] = {
     TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_ACTIVE,
     TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_INACTIVE,
     TP::COLOR_INFOBAR,
-    TP::COLOR_INFOBAR_TEXT,
     TP::COLOR_DOWNLOAD_SHELF,
     TP::COLOR_TOOLBAR_BUTTON_ICON_HOVERED,
     TP::COLOR_TOOLBAR_BUTTON_ICON_PRESSED,
@@ -384,7 +383,7 @@ SkBitmap CreateLowQualityResizedBitmap(
 
 // A ImageSkiaSource that scales 100P image to the target scale factor
 // if the ImageSkiaRep for the target scale factor isn't available.
-class ThemeImageSource: public gfx::ImageSkiaSource {
+class ThemeImageSource : public gfx::ImageSkiaSource {
  public:
   explicit ThemeImageSource(const gfx::ImageSkia& source) : source_(source) {
   }
@@ -497,7 +496,7 @@ class ThemeImagePngSource : public gfx::ImageSkiaSource {
   BitmapMap bitmap_map_;
 };
 
-class TabBackgroundImageSource: public gfx::CanvasImageSource {
+class TabBackgroundImageSource : public gfx::CanvasImageSource {
  public:
   TabBackgroundImageSource(SkColor background_color,
                            const gfx::ImageSkia& image_to_tint,
@@ -588,6 +587,22 @@ bool IsColorGrayscale(SkColor color) {
   auto channels = {SkColorGetR(color), SkColorGetG(color), SkColorGetB(color)};
   const int range = std::max(channels) - std::min(channels);
   return range < kChannelTolerance;
+}
+
+// The minimum contrast the omnibox background must have against the toolbar.
+constexpr float kMinOmniboxToolbarContrast = 1.3f;
+
+ui::ColorTransform ChooseOmniboxBgBlendTarget() {
+  return base::BindRepeating(
+      [](SkColor input_color, const ui::ColorMixer& mixer) {
+        const SkColor toolbar_color = mixer.GetResultColor(kColorToolbar);
+        const SkColor endpoint_color =
+            color_utils::GetEndpointColorWithMinContrast(toolbar_color);
+        return (color_utils::GetContrastRatio(toolbar_color, endpoint_color) >=
+                kMinOmniboxToolbarContrast)
+                   ? endpoint_color
+                   : color_utils::GetColorWithMaxContrast(endpoint_color);
+      });
 }
 
 }  // namespace
@@ -1065,6 +1080,13 @@ bool BrowserThemePack::HasCustomImage(int idr_id) const {
 void BrowserThemePack::AddColorMixers(
     ui::ColorProvider* provider,
     const ui::ColorProviderManager::Key& key) const {
+  ui::ColorMixer& mixer = provider->AddMixer();
+
+  // TODO(http://crbug.com/878664): Enable for all cases.
+  mixer[kColorOmniboxBackground] = ui::BlendForMinContrast(
+      kColorToolbar, kColorToolbar, ChooseOmniboxBgBlendTarget(),
+      kMinOmniboxToolbarContrast);
+
   // A map from theme property IDs to color IDs for use in color mixers.
   constexpr struct {
     int property_id;
@@ -1076,7 +1098,6 @@ void BrowserThemePack::AddColorMixers(
       {TP::COLOR_FRAME_ACTIVE, ui::kColorFrameActive},
       {TP::COLOR_FRAME_INACTIVE, ui::kColorFrameInactive},
       {TP::COLOR_INFOBAR, kColorInfoBarBackground},
-      {TP::COLOR_INFOBAR_TEXT, kColorInfoBarForeground},
       {TP::COLOR_NTP_BACKGROUND, kColorNewTabPageBackground},
       {TP::COLOR_NTP_HEADER, kColorNewTabPageHeader},
       {TP::COLOR_NTP_LINK, kColorNewTabPageLink},
@@ -1124,7 +1145,6 @@ void BrowserThemePack::AddColorMixers(
        kColorTabGroupContextMenuOrange},
   };
 
-  ui::ColorMixer& mixer = provider->AddMixer();
   for (const auto& entry : kThemePropertiesMap) {
     SkColor color;
     if (GetColor(entry.property_id, &color))
@@ -1589,7 +1609,6 @@ void BrowserThemePack::SetFrameAndToolbarRelatedColors() {
   SkColor toolbar_text_color;
   if (GetColor(TP::COLOR_TOOLBAR_TEXT, &toolbar_text_color)) {
     SetColorIfUnspecified(TP::COLOR_BOOKMARK_TEXT, toolbar_text_color);
-    SetColor(TP::COLOR_INFOBAR_TEXT, toolbar_text_color);
     SetColorIfUnspecified(TP::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE,
                           toolbar_text_color);
   }

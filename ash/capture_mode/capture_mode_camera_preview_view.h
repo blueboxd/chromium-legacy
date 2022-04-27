@@ -5,10 +5,14 @@
 #ifndef ASH_CAPTURE_MODE_CAPTURE_MODE_CAMERA_PREVIEW_VIEW_H_
 #define ASH_CAPTURE_MODE_CAPTURE_MODE_CAMERA_PREVIEW_VIEW_H_
 
+#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/accessibility/accessibility_observer.h"
 #include "ash/capture_mode/camera_video_frame_renderer.h"
+#include "ash/capture_mode/capture_mode_button.h"
 #include "ash/capture_mode/capture_mode_camera_controller.h"
 #include "ash/capture_mode/capture_mode_session_focus_cycler.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observation.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/geometry/size.h"
@@ -29,28 +33,57 @@ class NativeViewHost;
 namespace ash {
 
 class CaptureModeCameraController;
-class CaptureModeButton;
+
+// Resize button inside the camera preview view.
+class CameraPreviewResizeButton : public CaptureModeButton {
+ public:
+  METADATA_HEADER(CameraPreviewResizeButton);
+
+  CameraPreviewResizeButton(CameraPreviewView* camera_preview_view,
+                            views::Button::PressedCallback callback,
+                            const gfx::VectorIcon& icon);
+  CameraPreviewResizeButton(const CameraPreviewResizeButton&) = delete;
+  CameraPreviewResizeButton& operator=(const CameraPreviewResizeButton&) =
+      delete;
+  ~CameraPreviewResizeButton() override;
+
+  // CaptureModeSessionFocusCycler::HighlightableView:
+  void PseudoFocus() override;
+  void PseudoBlur() override;
+
+ private:
+  CameraPreviewView* const camera_preview_view_;  // not owned.
+};
 
 // A view that acts as the contents view of the camera preview widget. It will
 // be responsible for painting the latest camera video frame inside its bounds.
 class CameraPreviewView
     : public views::View,
-      public CaptureModeSessionFocusCycler::HighlightableView {
+      public CaptureModeSessionFocusCycler::HighlightableView,
+      public AccessibilityObserver {
  public:
   METADATA_HEADER(CameraPreviewView);
 
   CameraPreviewView(
       CaptureModeCameraController* camera_controller,
       const CameraId& camera_id,
-      const gfx::Size& preferred_size,
       mojo::Remote<video_capture::mojom::VideoSource> camera_video_source,
-      const media::VideoCaptureFormat& capture_format);
+      const media::VideoCaptureFormat& capture_format,
+      bool should_flip_frames_horizontally);
   CameraPreviewView(const CameraPreviewView&) = delete;
   CameraPreviewView& operator=(const CameraPreviewView&) = delete;
   ~CameraPreviewView() override;
 
   const CameraId& camera_id() const { return camera_id_; }
-  CaptureModeButton* resize_button() const { return resize_button_; }
+  CameraPreviewResizeButton* resize_button() const { return resize_button_; }
+  bool is_collapsible() const { return is_collapsible_; }
+  bool should_flip_frames_horizontally() const {
+    return camera_video_renderer_.should_flip_frames_horizontally();
+  }
+
+  // Sets this camera preview collapsability to the given `value`, which will
+  // update the resize button visibility.
+  void SetIsCollapsible(bool value);
 
   // Returns true if the `event` has been handled by CameraPrevieView. It
   // happens if it is control+arrow keys, which will be used to move the camera
@@ -69,16 +102,22 @@ class CameraPreviewView
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   void Layout() override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // CaptureModeSessionFocusCycler::HighlightableView:
   views::View* GetView() override;
   std::unique_ptr<views::HighlightPathGenerator> CreatePathGenerator() override;
+
+  // AccessibilityObserver:
+  void OnAccessibilityStatusChanged() override;
+  void OnAccessibilityControllerShutdown() override;
 
   base::OneShotTimer* resize_button_hide_timer_for_test() {
     return &resize_button_hide_timer_;
   }
 
  private:
+  friend class CameraPreviewResizeButton;
   friend class CaptureModeTestApi;
 
   // Called when the resize button is clicked or touched.
@@ -104,8 +143,9 @@ class CameraPreviewView
   void FadeInResizeButton();
   void FadeOutResizeButton();
 
-  // Called when the mouse exits the camera preview or after the latest tap
-  // inside the camera preview to start the `resize_button_hide_timer_`.
+  // Called when the mouse exits the camera preview, after the latest tap inside
+  // the camera preview or when focus being removed from the resize button to
+  // start the `resize_button_hide_timer_`.
   void ScheduleRefreshResizeButtonVisibility();
 
   // Returns the target opacity for resize button.
@@ -123,12 +163,22 @@ class CameraPreviewView
   // `camera_video_renderer_` into this view's hierarchy.
   views::NativeViewHost* const camera_video_host_view_;
 
-  CaptureModeButton* const resize_button_;
+  CameraPreviewResizeButton* const resize_button_;
 
   // Started when the mouse exits the camera preview or after the latest tap
   // inside the camera preview. Runs RefreshResizeButtonVisibility() to fade out
   // the resize button if possible.
   base::OneShotTimer resize_button_hide_timer_;
+
+  // True if the size of the preview in the expanded state is big enough to
+  // allow it to be collapsible.
+  bool is_collapsible_ = true;
+
+  // True only while handling a gesture tap event on this view.
+  bool has_been_tapped_ = false;
+
+  base::ScopedObservation<AccessibilityControllerImpl, AccessibilityObserver>
+      accessibility_observation_{this};
 
   base::WeakPtrFactory<CameraPreviewView> weak_ptr_factory_{this};
 };

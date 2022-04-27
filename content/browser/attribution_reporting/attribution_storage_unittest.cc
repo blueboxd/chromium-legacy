@@ -133,7 +133,7 @@ class AttributionStorageTest : public testing::Test {
 
   void DeleteReports(const std::vector<AttributionReport>& reports) {
     for (const auto& report : reports) {
-      EXPECT_TRUE(storage_->DeleteReport(*report.ReportId()));
+      EXPECT_TRUE(storage_->DeleteReport(report.ReportId()));
     }
   }
 
@@ -189,7 +189,8 @@ TEST_F(AttributionStorageTest,
       storage()->MaybeCreateAndStoreReport(DefaultTrigger()),
       AllOf(CreateReportEventLevelStatusIs(
                 AttributionTrigger::EventLevelResult::kNoMatchingImpressions),
-            NewReportsAre(IsEmpty())));
+            NewEventLevelReportIs(absl::nullopt),
+            NewAggregatableReportIs(absl::nullopt)));
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Now()), IsEmpty());
 }
 
@@ -1557,9 +1558,8 @@ TEST_F(AttributionStorageTest, NoIDReuse_Conversion) {
   EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
             MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
   auto reports = storage()->GetAttributionReports(base::Time::Max());
-  EXPECT_THAT(reports,
-              ElementsAre(Property(&AttributionReport::ReportId, IsTrue())));
-  const AttributionReport::Id id1 = *reports.front().ReportId();
+  ASSERT_THAT(reports, SizeIs(1));
+  const AttributionReport::Id id1 = reports.front().ReportId();
 
   storage()->ClearData(base::Time::Min(), base::Time::Max(),
                        base::NullCallback());
@@ -1569,9 +1569,8 @@ TEST_F(AttributionStorageTest, NoIDReuse_Conversion) {
   EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
             MaybeCreateAndStoreEventLevelReport(DefaultTrigger()));
   reports = storage()->GetAttributionReports(base::Time::Max());
-  EXPECT_THAT(reports,
-              ElementsAre(Property(&AttributionReport::ReportId, IsTrue())));
-  const AttributionReport::Id id2 = *reports.front().ReportId();
+  ASSERT_THAT(reports, SizeIs(1));
+  const AttributionReport::Id id2 = reports.front().ReportId();
 
   EXPECT_NE(id1, id2);
 }
@@ -1601,9 +1600,9 @@ TEST_F(AttributionStorageTest, UpdateReportForSendFailure) {
   const base::TimeDelta delay = base::Days(2);
   const base::Time new_report_time = actual_reports[0].report_time() + delay;
   EXPECT_TRUE(storage()->UpdateReportForSendFailure(
-      *actual_reports[0].ReportId(), new_report_time));
+      actual_reports[0].ReportId(), new_report_time));
   EXPECT_TRUE(storage()->UpdateReportForSendFailure(
-      *actual_reports[1].ReportId(), new_report_time));
+      actual_reports[1].ReportId(), new_report_time));
 
   task_environment_.FastForwardBy(delay);
 
@@ -1939,12 +1938,13 @@ TEST_F(AttributionStorageTest, AttributionAggregatableSource_RoundTrips) {
 
 TEST_F(AttributionStorageTest, MaybeCreateAndStoreReport_ReturnsNewReport) {
   storage()->StoreSource(SourceBuilder(base::Time::Now()).Build());
-  EXPECT_THAT(
-      storage()->MaybeCreateAndStoreReport(
-          TriggerBuilder().SetTriggerData(123).Build()),
-      AllOf(CreateReportEventLevelStatusIs(
-                AttributionTrigger::EventLevelResult::kSuccess),
-            NewReportsAre(ElementsAre(EventLevelDataIs(TriggerDataIs(123))))));
+  EXPECT_THAT(storage()->MaybeCreateAndStoreReport(
+                  TriggerBuilder().SetTriggerData(123).Build()),
+              AllOf(CreateReportEventLevelStatusIs(
+                        AttributionTrigger::EventLevelResult::kSuccess),
+                    NewEventLevelReportIs(
+                        Optional(EventLevelDataIs(TriggerDataIs(123)))),
+                    NewAggregatableReportIs(absl::nullopt)));
 }
 
 // This is tested more thoroughly by the `RateLimitTable` unit tests. Here just
@@ -2347,8 +2347,7 @@ TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
       blink::mojom::AttributionAggregatableTrigger::New();
   aggregatable_trigger->trigger_data.push_back(
       blink::mojom::AttributionAggregatableTriggerData::New(
-          blink::mojom::AttributionAggregatableKey::New(/*high_bits=*/1,
-                                                        /*low_bits=*/0),
+          absl::MakeUint128(/*high=*/1, /*low=*/0),
           std::vector<std::string>{"0"},
           blink::mojom::AttributionFilterData::New(),
           blink::mojom::AttributionFilterData::New()));
@@ -2405,7 +2404,8 @@ TEST_F(AttributionStorageTest,
           DefaultAggregatableTriggerBuilder().Build()),
       AllOf(CreateReportAggregatableStatusIs(
                 AttributionTrigger::AggregatableResult::kNoMatchingImpressions),
-            NewReportsAre(IsEmpty())));
+            NewEventLevelReportIs(absl::nullopt),
+            NewAggregatableReportIs(absl::nullopt)));
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Now()), IsEmpty());
 }
 
@@ -2427,10 +2427,9 @@ TEST_F(AttributionStorageTest, AggregatableAttribution_ReportsScheduled) {
                 AttributionTrigger::EventLevelResult::kSuccess),
             CreateReportAggregatableStatusIs(
                 AttributionTrigger::AggregatableResult::kSuccess),
-            NewReportsAre(ElementsAre(
-                EventLevelDataIs(TriggerDataIs(5)),
-                AggregatableAttributionDataIs(
-                    AggregatableHistogramContributionsAre(contributions))))));
+            NewEventLevelReportIs(Optional(EventLevelDataIs(TriggerDataIs(5)))),
+            NewAggregatableReportIs(Optional(AggregatableAttributionDataIs(
+                AggregatableHistogramContributionsAre(contributions))))));
 
   const auto source = source_builder.SetDefaultFilterData().BuildStored();
   auto expected_event_level_report =
@@ -2481,19 +2480,21 @@ TEST_F(
   // limit; the event-level report itself shouldn't be stored as we've already
   // reached the maximum number of event-level reports per source, whereas the
   // aggregatable report is still stored.
-  EXPECT_THAT(storage()->MaybeCreateAndStoreReport(
-                  DefaultAggregatableTriggerBuilder(/*histogram_values=*/{5})
-                      .SetTriggerData(5)
-                      .Build()),
-              AllOf(CreateReportEventLevelStatusIs(
-                        AttributionTrigger::EventLevelResult::kPriorityTooLow),
-                    CreateReportAggregatableStatusIs(
-                        AttributionTrigger::AggregatableResult::kSuccess),
-                    ReplacedEventLevelReportIs(absl::nullopt),
-                    NewReportsAre(ElementsAre(AggregatableAttributionDataIs(
-                        AggregatableHistogramContributionsAre(
-                            DefaultAggregatableHistogramContributions(
-                                /*histogram_values=*/{5})))))));
+  EXPECT_THAT(
+      storage()->MaybeCreateAndStoreReport(
+          DefaultAggregatableTriggerBuilder(/*histogram_values=*/{5})
+              .SetTriggerData(5)
+              .Build()),
+      AllOf(CreateReportEventLevelStatusIs(
+                AttributionTrigger::EventLevelResult::kPriorityTooLow),
+            CreateReportAggregatableStatusIs(
+                AttributionTrigger::AggregatableResult::kSuccess),
+            ReplacedEventLevelReportIs(absl::nullopt),
+            NewEventLevelReportIs(absl::nullopt),
+            NewAggregatableReportIs(Optional(AggregatableAttributionDataIs(
+                AggregatableHistogramContributionsAre(
+                    DefaultAggregatableHistogramContributions(
+                        /*histogram_values=*/{5})))))));
   EXPECT_THAT(
       storage()->GetActiveSources(),
       ElementsAre(SourceActiveStateIs(
@@ -2505,8 +2506,7 @@ TEST_F(AttributionStorageTest, AggregatableReportFiltering) {
       blink::mojom::AttributionAggregatableTrigger::New();
   aggregatable_trigger->trigger_data.push_back(
       blink::mojom::AttributionAggregatableTriggerData::New(
-          blink::mojom::AttributionAggregatableKey::New(/*high_bits=*/1,
-                                                        /*low_bits=*/0),
+          absl::MakeUint128(/*high=*/1, /*low=*/0),
           std::vector<std::string>{"0"},
           blink::mojom::AttributionFilterData::New(
               AttributionFilterData::FilterValues{{"abc", {"456"}}}),

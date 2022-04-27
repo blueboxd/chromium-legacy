@@ -702,6 +702,24 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserCacheResetTest, CacheResetTest) {
                                            /*load_only_from_cache=*/true, url),
               net::test::IsError(net::ERR_CACHE_MISS));
 }
+
+#if BUILDFLAG(IS_POSIX)
+IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserCacheResetTest, CacheResetFailure) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  const base::FilePath path = GetNetworkContextCachePath();
+
+  GURL url = embedded_test_server()->GetURL("/echoheadercache");
+
+  ASSERT_TRUE(base::CreateDirectory(path));
+  // Make the directory inaccessible, to see what happens when resetting the
+  // cache fails.
+  ASSERT_TRUE(base::SetPosixFilePermissions(path, /*mode=*/0));
+
+  EXPECT_THAT(MakeNetworkContentAndLoadUrl(/*reset_cache=*/true,
+                                           /*load_only_from_cache=*/true, url),
+              net::test::IsError(net::ERR_CACHE_MISS));
+}
+#endif  // BUILDFLAG(IS_POSIX)
 #endif  // BUILDFLAG(IS_ANDROID)
 
 // Cache data migration is not used for Fuchsia.
@@ -730,9 +748,9 @@ void SetCookie(
   base::Time t = base::Time::Now();
   auto cookie = net::CanonicalCookie::CreateUnsafeCookieForTesting(
       kCookieName, kCookieValue, "example.test", "/", t, t + base::Days(1),
-      base::Time(), true /* secure */, false /* http-only*/,
+      base::Time(), base::Time(), /*secure=*/true, /*http-only=*/false,
       net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT,
-      false /* same_party */);
+      /*=same_party=*/false);
   base::RunLoop run_loop;
   cookie_manager->SetCanonicalCookie(
       *cookie, net::cookie_util::SimulatedCookieSource(*cookie, "https"),

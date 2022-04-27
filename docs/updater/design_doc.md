@@ -544,4 +544,22 @@ strings. `GetLocalizedString()` uses the base id plus the offset based on the
 language to look through the binary's string table to get the correct, localized
 string. The formatted strings utilize GetLocalizedString() to get the string and
 then uses `base::ReplaceStringPlaceholders()` to remove the `$i` placeholders
-within the string.
+within the string. With regards to picking the correct language to utilize for
+the localized string, `base::win::i18n::GetUserPreferredUILanguageList()` is
+used to get the preferred UI languages from MUI. If there are multiple languages
+in the list, the first language in the list is picked.
+
+## Application Commands
+
+The Application Command feature allows installed Updater-managed applications to
+pre-register and then later run command lines (elevated for system
+applications). The command lines can also include replaceable parameters
+substituted at runtime.
+
+For legacy reasons:
+* the interface is called `IAppCommandWeb` because it was meant to be used from
+an ActiveX control on a webpage at one point, and
+* it is derived from `IDispatch` for the same reason, to be used from script.
+
+For more information, please see the
+[functional spec](functional_spec.md#Application-Commands).

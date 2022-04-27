@@ -36,14 +36,15 @@ class SiteAccessMenuItemView : public views::FlexLayoutView {
 
   SiteAccessMenuItemView(
       Browser* browser,
-      std::unique_ptr<ToolbarActionViewController> controller,
-      bool allow_pinning);
+      std::unique_ptr<ToolbarActionViewController> controller);
   SiteAccessMenuItemView(const SiteAccessMenuItemView&) = delete;
   SiteAccessMenuItemView& operator=(const SiteAccessMenuItemView&) = delete;
   ~SiteAccessMenuItemView() override;
 
   // Updates the controller and child views to be on sync with the parent views.
   void Update();
+
+  void SetSiteAccessComboboxVisible(bool visibility);
 
   ToolbarActionViewController* view_controller() { return controller_.get(); }
 

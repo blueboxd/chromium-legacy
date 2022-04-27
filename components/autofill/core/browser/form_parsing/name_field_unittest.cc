@@ -26,7 +26,9 @@ class NameFieldTest : public FormFieldTest {
   std::unique_ptr<FormField> Parse(
       AutofillScanner* scanner,
       const LanguageCode& page_language = LanguageCode("us")) override {
-    return NameField::Parse(scanner, page_language, nullptr);
+    return NameField::Parse(scanner, page_language,
+                            PredictionSource::kDefaultHeuristics,
+                            /*log_manager=*/nullptr);
   }
 };
 
@@ -75,6 +77,18 @@ TEST_F(NameFieldTest, NameSurname) {
       features::kAutofillEnableNameSurenameParsing);
 
   AddTextFormFieldData("name", "name", NAME_FIRST);
+  AddTextFormFieldData("surename", "surname", NAME_LAST);
+
+  ClassifyAndVerify(ParseResult::PARSED);
+}
+
+TEST_F(NameFieldTest, NameSurnameWithMiddleName) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillEnableNameSurenameParsing);
+
+  AddTextFormFieldData("name", "name", NAME_FIRST);
+  AddTextFormFieldData("middlename", "middlename", NAME_MIDDLE);
   AddTextFormFieldData("surename", "surname", NAME_LAST);
 
   ClassifyAndVerify(ParseResult::PARSED);

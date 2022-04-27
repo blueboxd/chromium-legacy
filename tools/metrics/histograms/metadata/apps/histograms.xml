@@ -38,6 +38,7 @@ chromium-metrics-reviews@google.com.
       summary="Chrome apps hosted by lacros."/>
   <variant name="StandaloneBrowserExtension"
       summary="Extension hosted by lacros."/>
+  <variant name="StandaloneBrowserWebApp" summary="Web apps hosted by lacros."/>
   <variant name="SystemWebApp" summary="System web apps"/>
   <variant name="WebApp" summary="Web apps"/>
 </variants>
@@ -58,8 +59,16 @@ chromium-metrics-reviews@google.com.
   <variant name="StandaloneBrowser" summary="Standalone browsers"/>
   <variant name="StandaloneBrowserChromeApp"
       summary="Chrome apps hosted by lacros."/>
+  <variant name="StandaloneBrowserChromeAppTab"
+      summary="Chrome apps opened in Standalone browser tabs."/>
+  <variant name="StandaloneBrowserChromeAppWindow"
+      summary="Chrome apps opened in Standalone browser windows."/>
   <variant name="StandaloneBrowserExtension"
       summary="Extension hosted by lacros."/>
+  <variant name="StandaloneBrowserWebAppTab"
+      summary="Web apps opened in Standalone browser tabs."/>
+  <variant name="StandaloneBrowserWebAppWindow"
+      summary="Web apps opened in Standalone browser windows."/>
   <variant name="SystemWebApp" summary="System web apps"/>
   <variant name="WebAppTab" summary="Web apps opened in tabs"/>
   <variant name="WebAppWindow" summary="Web apps opened in standalone windows"/>
@@ -1529,7 +1538,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppListSearchCommenced" units="searches"
-    expires_after="2022-04-24">
+    expires_after="2022-12-01">
+  <owner>yulunwu@chromium.org</owner>
   <owner>tapted@chromium.org</owner>
   <summary>
     The number of searches that are started in the app list. This is gathered
@@ -1538,9 +1548,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppListSearchQueryLength" units="characters"
-    expires_after="2022-05-01">
+    expires_after="2022-12-01">
 <!-- Name completed by histogram_suffixes name="TabletOrClamshellMode" -->
 
+  <owner>yulunwu@chromium.org</owner>
   <owner>calamity@chromium.org</owner>
   <summary>
     The length of the app list search query when a result is opened. This is
@@ -1637,9 +1648,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Apps.AppListSuggestedChipLaunched" units="indices"
-    expires_after="2022-04-17">
+    expires_after="2022-12-01">
   <owner>newcomer@chromium.org</owner>
   <owner>charleszhao@chromium.org</owner>
+  <owner>yulunwu@chromium.org</owner>
   <summary>
     The number of times suggested chips are launched at each suggested-apps
     tile. An index i, ranged from 0 to kNumStartPageTiles - 1, is logged each

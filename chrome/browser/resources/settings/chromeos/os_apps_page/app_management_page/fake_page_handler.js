@@ -112,6 +112,9 @@ export class FakePageHandler {
       runOnOsLogin: null,
       fileHandlingState: null,
       installSource: InstallSource.kUnknown,
+      appSize: '',
+      dataSize: '',
+      publisherId: '',
     };
 
     if (optConfig) {

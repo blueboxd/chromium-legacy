@@ -36,6 +36,7 @@ namespace app_list {
 namespace {
 
 inline constexpr size_t kMinQueryLength = 3u;
+inline constexpr size_t kNumRequestedResults = 3u;
 
 }  // namespace
 
@@ -83,6 +84,9 @@ PersonalizationProvider::PersonalizationProvider(Profile* profile)
   search_handler_ = ash::personalization_app::PersonalizationAppManagerFactory::
                         GetForBrowserContext(profile_)
                             ->search_handler();
+  DCHECK(search_handler_);
+  search_handler_->AddObserver(
+      search_results_observer_.BindNewPipeAndPassRemote());
 }
 
 PersonalizationProvider::~PersonalizationProvider() = default;
@@ -104,7 +108,7 @@ void PersonalizationProvider::Start(const std::u16string& query) {
 
   current_query_ = query;
   weak_ptr_factory_.InvalidateWeakPtrs();
-  search_handler_->Search(query,
+  search_handler_->Search(query, kNumRequestedResults,
                           base::BindOnce(&PersonalizationProvider::OnSearchDone,
                                          weak_ptr_factory_.GetWeakPtr()));
 }
@@ -115,6 +119,13 @@ ash::AppListSearchResultType PersonalizationProvider::ResultType() const {
 
 void PersonalizationProvider::ViewClosing() {
   current_query_.clear();
+}
+
+void PersonalizationProvider::OnSearchResultsChanged() {
+  if (current_query_.empty()) {
+    return;
+  }
+  Start(current_query_);
 }
 
 void PersonalizationProvider::OnAppUpdate(const apps::AppUpdate& update) {

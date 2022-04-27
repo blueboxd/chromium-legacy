@@ -92,6 +92,7 @@ extern const char kWebKitSerifFontFamily[];
 extern const char kWebKitSansSerifFontFamily[];
 extern const char kWebKitCursiveFontFamily[];
 extern const char kWebKitFantasyFontFamily[];
+extern const char kWebKitMathFontFamily[];
 
 // ISO 15924 four-letter script codes that per-script font prefs are supported
 // for.
@@ -105,6 +106,7 @@ extern const char kWebKitSerifFontFamilyMap[];
 extern const char kWebKitSansSerifFontFamilyMap[];
 extern const char kWebKitCursiveFontFamilyMap[];
 extern const char kWebKitFantasyFontFamilyMap[];
+extern const char kWebKitMathFontFamilyMap[];
 
 // Per-script font prefs that have defaults, for easy reference when registering
 // the defaults.
@@ -207,7 +209,6 @@ extern const char kAttestationExtensionAllowlist[];
 extern const char kPrintingAPIExtensionsAllowlist[];
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-extern const char kAccountManagerNumTimesWelcomeScreenShown[];
 extern const char kTapToClickEnabled[];
 extern const char kEnableTouchpadThreeFingerClick[];
 extern const char kPrimaryMouseButtonRight[];
@@ -394,10 +395,6 @@ extern const char kPluginsAlwaysOpenPdfExternally[];
 extern const char kPluginsShowDetails[];
 #endif
 extern const char kPluginsAllowOutdated[];
-#if BUILDFLAG(ENABLE_PLUGINS)
-extern const char kPluginsMetadata[];
-extern const char kPluginsResourceCacheUpdate[];
-#endif
 extern const char kDefaultBrowserLastDeclined[];
 extern const char kResetCheckDefaultBrowser[];
 extern const char kDefaultBrowserSettingEnabled[];
@@ -522,6 +519,7 @@ extern const char kGCMProductCategoryForSubtypes[];
 
 extern const char kEasyUnlockAllowed[];
 extern const char kEasyUnlockPairing[];
+extern const char kHasSeenSmartLockSignInRemovedNotification[];
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 extern const char kToolbarIconSurfacingBubbleAcknowledged[];
@@ -774,7 +772,6 @@ extern const char kDeviceEnrollmentAutoStart[];
 extern const char kDeviceEnrollmentCanExit[];
 extern const char kDeviceDMToken[];
 extern const char kUsersLastInputMethod[];
-extern const char kEchoCheckedOffers[];
 extern const char kCachedMultiProfileUserBehavior[];
 extern const char kInitialLocale[];
 extern const char kDeviceRegistered[];
@@ -966,6 +963,7 @@ extern const char kBrowserShowProfilePickerOnStartup[];
 extern const char kSigninAllowedOnNextStartup[];
 extern const char kSigninInterceptionEnabled[];
 #if BUILDFLAG(IS_CHROMEOS)
+extern const char kEchoCheckedOffers[];
 extern const char kLacrosSecondaryProfilesAllowed[];
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
@@ -1219,6 +1217,10 @@ extern const char kOriginAgentClusterDefaultEnabled[];
 extern const char kForceMajorVersionToMinorPositionInUserAgent[];
 
 extern const char kSCTAuditingHashdanceReportCount[];
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+extern const char kConsumerAutoUpdateToggle[];
+#endif
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

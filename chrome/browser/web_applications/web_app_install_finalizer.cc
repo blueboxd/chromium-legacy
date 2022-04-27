@@ -26,6 +26,7 @@
 #include "chrome/browser/web_applications/manifest_update_task.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcuts_menu.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
@@ -33,7 +34,6 @@
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
-#include "chrome/browser/web_applications/web_app_installation_utils.h"
 #include "chrome/browser/web_applications/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
@@ -138,7 +138,8 @@ void WebAppInstallFinalizer::FinalizeInstall(
   if (webapps::InstallableMetrics::IsUserInitiatedInstallSource(
           options.install_surface) ||
       !existing_web_app) {
-    web_app->SetUserDisplayMode(web_app_info.user_display_mode);
+    DCHECK(web_app_info.user_display_mode.has_value());
+    web_app->SetUserDisplayMode(*web_app_info.user_display_mode);
   }
 
   // `WebApp::chromeos_data` has a default value already. Only override if the
@@ -166,6 +167,13 @@ void WebAppInstallFinalizer::FinalizeInstall(
   web_app->SetIsFromSyncAndPendingInstallation(false);
   web_app->SetParentAppId(options.parent_app_id);
   web_app->SetInstallSourceForMetrics(options.install_surface);
+
+  DCHECK(!(source == WebAppManagement::Type::kSync &&
+           web_app_info.is_placeholder));
+  if (source != WebAppManagement::Type::kSync) {
+    web_app->AddPlaceholderInfoToManagementExternalConfigMap(
+        source, web_app_info.is_placeholder);
+  }
 
   if (!options.locally_installed) {
     DCHECK(!(options.add_to_applications_menu || options.add_to_desktop ||
@@ -332,7 +340,7 @@ bool WebAppInstallFinalizer::CanReparentTab(const AppId& app_id,
   // Reparent the web contents into its own window only if that is the
   // app's launch type.
   DCHECK(registrar_);
-  if (registrar_->GetAppUserDisplayMode(app_id) == DisplayMode::kBrowser)
+  if (registrar_->GetAppUserDisplayMode(app_id) == UserDisplayMode::kBrowser)
     return false;
 
   return ui_manager_->CanReparentAppTabToWindow(app_id, shortcut_created);

@@ -95,6 +95,9 @@ class PermissionChip : public views::AccessiblePaneView,
   // Returns a newly-created permission prompt bubble.
   [[nodiscard]] virtual views::View* CreateBubble() = 0;
 
+  // Show previously created prompt bubble.
+  virtual void ShowBubble() = 0;
+
   permissions::PermissionPrompt::Delegate* delegate() const {
     return delegate_;
   }
@@ -140,6 +143,8 @@ class PermissionChip : public views::AccessiblePaneView,
   bool should_start_open_ = false;
   bool should_expand_ = true;
   bool should_dismiss_ = false;
+
+  base::WeakPtrFactory<PermissionChip> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_PERMISSION_CHIP_H_

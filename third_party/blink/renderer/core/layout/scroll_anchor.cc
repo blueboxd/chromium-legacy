@@ -253,6 +253,12 @@ static const String ComputeUniqueSelector(Node* anchor_node) {
     return String();
   }
 
+  // When the scroll anchor is a shadow DOM element, the selector may be applied
+  // to the top document. We fail in this case.
+  if (anchor_node->IsInShadowTree()) {
+    return String();
+  }
+
   TRACE_EVENT0("blink", "ScrollAnchor::SerializeAnchor");
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
       "Layout.ScrollAnchor.TimeToComputeAnchorNodeSelector");
@@ -740,7 +746,8 @@ bool ScrollAnchor::RestoreAnchor(const SerializedAnchor& serialized_anchor) {
 
     ScrollOffset desired_offset = desired_point.OffsetFromOrigin();
     ScrollOffset delta =
-        ScrollOffset(ToRoundedVector2d(serialized_anchor.relative_offset));
+        ScrollOffset(serialized_anchor.relative_offset.X().ToFloat(),
+                     serialized_anchor.relative_offset.Y().ToFloat());
     desired_offset -= delta;
     scroller_->SetScrollOffset(desired_offset,
                                mojom::blink::ScrollType::kAnchoring);

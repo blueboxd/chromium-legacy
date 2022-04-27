@@ -48,6 +48,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_back_forward_cache_loader_helper.h"
+#include "third_party/blink/public/platform/web_code_cache_loader.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
@@ -249,6 +250,14 @@ std::unique_ptr<TracedValue> CreateTracedValueForUnusedPreload(
   value->SetString("url", String(url.ElidedString().Utf8()));
   value->SetInteger("status", static_cast<int>(status));
   value->SetString("requestId", request_id);
+  return value;
+}
+
+std::unique_ptr<TracedValue> CreateTracedValueForUnusedEarlyHintsPreload(
+    const KURL& url) {
+  // TODO(https://crbug.com/1317936): Consider adding more trace values.
+  auto value = std::make_unique<TracedValue>();
+  value->SetString("url", String(url.ElidedString().Utf8()));
   return value;
 }
 
@@ -1831,7 +1840,7 @@ void ResourceFetcher::ScheduleWarnUnusedPreloads() {
   // If preloads_ is not empty here, it's full of link
   // preloads, as speculative preloads should have already been cleared when
   // parsing finished.
-  if (preloads_.IsEmpty())
+  if (preloads_.IsEmpty() && early_hints_preloaded_resources_.IsEmpty())
     return;
   unused_preloads_timer_ = PostDelayedCancellableTask(
       *freezable_task_runner_, FROM_HERE,
@@ -1857,6 +1866,29 @@ void ResourceFetcher::WarnUnusedPreloads() {
         CreateTracedValueForUnusedPreload(
             resource->Url(), Resource::MatchStatus::kOk,
             resource->GetResourceRequest().GetDevToolsId().value_or(String())));
+  }
+
+  for (auto& pair : early_hints_preloaded_resources_) {
+    if (pair.value.state == EarlyHintsPreloadEntry::State::kWarnedUnused)
+      continue;
+
+    // TODO(https://crbug.com/1317936): Consider not showing the following
+    // warning message when an Early Hints response requested preloading the
+    // resource but the HTTP cache already had the response and no network
+    // request was made for the resource. In such a situation not using the
+    // resource wouldn't be harmful. We need to plumb information from the
+    // browser process to check whether the resource was already in the HTTP
+    // cache.
+    String message = "The resource " + pair.key.GetString() +
+                     " was preloaded using link preload in Early Hints but not "
+                     "used within a few seconds from the window's load event.";
+    console_logger_->AddConsoleMessage(
+        mojom::blink::ConsoleMessageSource::kJavaScript,
+        mojom::blink::ConsoleMessageLevel::kWarning, message);
+    TRACE_EVENT1("blink,blink.resource",
+                 "ResourceFetcher::WarnUnusedEarlyHintsPreloads", "data",
+                 CreateTracedValueForUnusedEarlyHintsPreload(pair.key));
+    pair.value.state = EarlyHintsPreloadEntry::State::kWarnedUnused;
   }
 }
 
@@ -2303,9 +2335,9 @@ void ResourceFetcher::PopulateAndAddResourceTimingInfo(
           ? resource->GetResourceRequest().GetRedirectInfo()->original_url
           : resource->GetResourceRequest().Url();
 
-  auto it = early_hints_preloaded_resources_.find(initial_url);
-  if (it != early_hints_preloaded_resources_.end()) {
-    early_hints_preloaded_resources_.erase(it);
+  auto pair = early_hints_preloaded_resources_.find(initial_url);
+  if (pair != early_hints_preloaded_resources_.end()) {
+    early_hints_preloaded_resources_.erase(pair);
     const ResourceResponse& response = resource->GetResponse();
     if (!response.NetworkAccessed() &&
         (!response.WasFetchedViaServiceWorker() ||

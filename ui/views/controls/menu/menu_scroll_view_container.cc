@@ -223,10 +223,12 @@ END_METADATA
 // MenuScrollViewContainer ----------------------------------------------------
 
 MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view)
-    : content_view_(content_view) {
+    : content_view_(content_view),
+      use_ash_system_ui_layout_(content_view->GetMenuItem()
+                                    ->GetMenuController()
+                                    ->use_ash_system_ui_layout()) {
   background_view_ = AddChildView(std::make_unique<View>());
-
-  if (UseAshSystemUILayout()) {
+  if (use_ash_system_ui_layout_) {
     // Enable background blur for ChromeOS system context menu.
     background_view_->SetPaintToLayer();
     auto* background_layer = background_view_->layer();
@@ -297,9 +299,8 @@ void MenuScrollViewContainer::OnPaintBackground(gfx::Canvas* canvas) {
   }
 
   // ChromeOS system UI menu uses 'background_view_' to paint background.
-  if (UseAshSystemUILayout() && background_view_->background()) {
+  if (use_ash_system_ui_layout_ && background_view_->background())
     return;
-  }
 
   gfx::Rect bounds(0, 0, width(), height());
   ui::NativeTheme::ExtraParams extra;
@@ -412,23 +413,17 @@ void MenuScrollViewContainer::CreateBubbleBorder() {
   const MenuConfig& menu_config = MenuConfig::instance();
   auto* menu_controller = content_view_->GetMenuItem()->GetMenuController();
   const int border_radius = menu_config.CornerRadiusForMenu(menu_controller);
-  const bool use_ash_system_ui_layout =
-      menu_controller->use_ash_system_ui_layout();
 
   ui::ColorId id = ui::kColorMenuBackground;
   BubbleBorder::Shadow shadow_type = BubbleBorder::STANDARD_SHADOW;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   id = ui::kColorAshSystemUIMenuBackground;
   // For ash system ui, we use chromeos system ui shadow.
-  if (use_ash_system_ui_layout)
+  if (use_ash_system_ui_layout_)
     shadow_type = BubbleBorder::CHROMEOS_SYSTEM_UI_SHADOW;
 #endif
-
-  const SkColor color =
-      GetWidget() ? GetColorProvider()->GetColor(id) : gfx::kPlaceholderColor;
-  auto bubble_border =
-      std::make_unique<BubbleBorder>(arrow_, shadow_type, color);
-  if (use_ash_system_ui_layout || border_radius > 0) {
+  auto bubble_border = std::make_unique<BubbleBorder>(arrow_, shadow_type, id);
+  if (use_ash_system_ui_layout_ || border_radius > 0) {
     bubble_border->SetCornerRadius(border_radius);
 
     const bool is_top_menu = !content_view_->GetMenuItem()->GetParentMenuItem();
@@ -446,11 +441,11 @@ void MenuScrollViewContainer::CreateBubbleBorder() {
   corner_radius_ = bubble_border->corner_radius();
   // If the menu uses Ash system UI layout, use `background_view` to build a
   // blurry background. Otherwise, use default BubbleBackground.
-  if (use_ash_system_ui_layout) {
+  if (use_ash_system_ui_layout_) {
     background_view_->layer()->SetRoundedCornerRadius(
         gfx::RoundedCornersF(corner_radius_));
-    background_view_->SetBackground(CreateRoundedRectBackground(
-        bubble_border->background_color(), corner_radius_));
+    background_view_->SetBackground(
+        CreateThemedRoundedRectBackground(id, corner_radius_));
   } else {
     SetBackground(std::make_unique<BubbleBackground>(bubble_border.get()));
   }
@@ -472,12 +467,6 @@ BubbleBorder::Arrow MenuScrollViewContainer::BubbleBorderTypeFromAnchor(
     case MenuAnchorPosition::kBubbleBottomRight:
       return BubbleBorder::FLOAT;
   }
-}
-
-bool MenuScrollViewContainer::UseAshSystemUILayout() const {
-  return content_view_->GetMenuItem()
-      ->GetMenuController()
-      ->use_ash_system_ui_layout();
 }
 
 BEGIN_METADATA(MenuScrollViewContainer, View)

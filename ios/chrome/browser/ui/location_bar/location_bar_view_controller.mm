@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
+#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 #import "ios/chrome/browser/ui/orchestrator/location_bar_offset_provider.h"
@@ -44,13 +45,8 @@ typedef NS_ENUM(int, TrailingButtonState) {
   kVoiceSearchButton,
 };
 
-// Returns the default configuration for Symbols.
-UIImageConfiguration* SymbolConfiguration() {
-  return [UIImageSymbolConfiguration
-      configurationWithPointSize:18
-                          weight:UIImageSymbolWeightMedium
-                           scale:UIImageSymbolScaleMedium];
-}
+// The size of the symbol image.
+NSInteger kSymbolImagePointSize = 18;
 
 // FullScreen progress threshold in which to toggle between full screen on and
 // off mode for the badge view.
@@ -479,14 +475,10 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
                     action:@selector(shareButtonPressed)
           forControlEvents:UIControlEventTouchUpInside];
 
-      UIImage* shareImage;
-      if (base::FeatureList::IsEnabled(kUseSFSymbolsSamples)) {
-        shareImage = [UIImage systemImageNamed:@"square.and.arrow.up"
-                             withConfiguration:SymbolConfiguration()];
-      } else {
-        shareImage = [UIImage imageNamed:@"location_bar_share"];
-      }
-
+      UIImage* shareImage =
+          UseSymbols() ? DefaultSymbolWithPointSize(@"square.and.arrow.up",
+                                                    kSymbolImagePointSize)
+                       : [UIImage imageNamed:@"location_bar_share"];
       [self.locationBarSteadyView.trailingButton
           setImage:[shareImage imageWithRenderingMode:
                                    UIImageRenderingModeAlwaysTemplate]
@@ -508,14 +500,10 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
                     action:@selector(startVoiceSearch)
           forControlEvents:UIControlEventTouchUpInside];
 
-      UIImage* micImage;
-      if (base::FeatureList::IsEnabled(kUseSFSymbolsSamples)) {
-        micImage = [UIImage systemImageNamed:@"mic.fill"
-                           withConfiguration:SymbolConfiguration()];
-      } else {
-        micImage = [UIImage imageNamed:@"location_bar_voice"];
-      }
-
+      UIImage* micImage =
+          UseSymbols()
+              ? DefaultSymbolWithPointSize(@"mic.fill", kSymbolImagePointSize)
+              : [UIImage imageNamed:@"location_bar_voice"];
       [self.locationBarSteadyView.trailingButton
           setImage:[micImage imageWithRenderingMode:
                                  UIImageRenderingModeAlwaysTemplate]

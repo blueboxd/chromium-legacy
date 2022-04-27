@@ -844,7 +844,8 @@ class FencedFrameTreeBrowserTest
                 ? "shadow_dom"
                 : "mparch"}}},
          {blink::features::kThirdPartyStoragePartitioning, {}},
-         {net::features::kPartitionedCookies, {}}},
+         {net::features::kPartitionedCookies, {}},
+         {features::kPrivacySandboxAdsAPIsOverride, {}}},
         {/* disabled_features */});
   }
 
@@ -2925,8 +2926,8 @@ IN_PROC_BROWSER_TEST_P(FencedFrameTreeBrowserTest, FencedAdSizes) {
       {0, 250, TestType::kScaleWidthConstantHeightApproximate, 0, 250},
 
       // Constant height scaling is only supported on sizes where it is
-      // declared (e.g. not 728x90).
-      {0, 90, TestType::kScaleWidthConstantHeightExact, 0, 100},
+      // declared (e.g. not for height 99).
+      {0, 99, TestType::kScaleWidthConstantHeightExact, 0, 100},
 
       // Exact match between requested size and allowed size that scales with
       // constant aspect ratio.

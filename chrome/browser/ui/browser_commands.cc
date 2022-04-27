@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/escape.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -79,7 +80,7 @@
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
-#include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
+#include "chrome/browser/ui/translate/translate_bubble_ui_action_logger.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/user_education/feature_promo_controller.h"
 #include "chrome/browser/ui/user_education/reopen_tab_in_product_help.h"
@@ -136,7 +137,6 @@
 #include "content/public/common/url_utils.h"
 #include "content/public/common/user_agent.h"
 #include "extensions/buildflags/buildflags.h"
-#include "net/base/escape.h"
 #include "printing/buildflags/buildflags.h"
 #include "rlz/buildflags/buildflags.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
@@ -174,11 +174,6 @@
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chromeos/crosapi/mojom/task_manager.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
-#endif
-
-#if BUILDFLAG(IS_LINUX)
-#include "ui/accessibility/ax_action_data.h"
-#include "ui/accessibility/ax_enums.mojom.h"
 #endif
 
 namespace {
@@ -1861,12 +1856,7 @@ void UnfollowSite(content::WebContents* web_contents) {
 
 #if BUILDFLAG(IS_LINUX)
 void RunScreenAi(Browser* browser) {
-  ui::AXActionData ad;
-  ad.action = ax::mojom::Action::kRunScreenAi;
-  browser->tab_strip_model()
-      ->GetActiveWebContents()
-      ->GetMainFrame()
-      ->AccessibilityPerformAction(ad);
+  browser->RunScreenAIAnnotator();
 }
 #endif  // BUILDFLAG(IS_LINUX)
 

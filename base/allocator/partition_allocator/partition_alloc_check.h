@@ -8,8 +8,8 @@
 #include <cstdint>
 
 #include "base/allocator/buildflags.h"
-#include "base/allocator/partition_allocator/base/debug/alias.h"
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/debug/alias.h"
 #include "base/check.h"
 #include "base/dcheck_is_on.h"
 #include "base/immediate_crash.h"
@@ -39,7 +39,7 @@
 // could operate with inconsistent allocator state.
 #define PA_CHECK(condition)                                                \
   UNLIKELY(!(condition))                                                   \
-  ? logging::RawCheck(                                                     \
+  ? ::logging::RawCheck(                                                   \
         __FILE__ "(" PA_STRINGIFY(__LINE__) ") Check failed: " #condition) \
   : EAT_CHECK_STREAM_PARAMS()
 #endif  // defined(OFFICIAL_BUILD) && defined(NDEBUG)

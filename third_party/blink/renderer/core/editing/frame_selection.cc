@@ -28,6 +28,7 @@
 #include <stdio.h>
 
 #include "base/auto_reset.h"
+#include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/accessibility/blink_ax_event_intent.h"
 #include "third_party/blink/renderer/core/accessibility/scoped_blink_ax_event_intent.h"
@@ -74,6 +75,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/layout/deferred_shaping.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -171,6 +173,14 @@ VisibleSelection FrameSelection::ComputeVisibleSelectionInDOMTreeDeprecated()
     force_locks = DisplayLockUtilities::ScopedForcedUpdate(
         base.AnchorNode(), DisplayLockContext::ForcedPhase::kLayout);
   }
+  // If the following UpdateStyleAndLayout() registered new shaping-deferred
+  // elements, it would be slow because of ScopedForcedUpdate instances.
+  // Without this DeferredShapingDisallowScope, the UpdateStyleAndLayout()
+  // takes 200 seconds in editing/deleting/delete-many-lines-of-text.html
+  // with a debug build.
+  absl::optional<DeferredShapingDisallowScope> disallow_deferred;
+  if (auto* frame_view = GetDocument().View())
+    disallow_deferred.emplace(*frame_view);
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kSelection);
   return ComputeVisibleSelectionInDOMTree();
 }

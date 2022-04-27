@@ -217,6 +217,7 @@ DownloadBubbleRowView::DownloadBubbleRowView(
       row_list_view_(row_list_view),
       bubble_controller_(bubble_controller),
       navigation_handler_(navigation_handler) {
+  SetTriggerableEventFlags(ui::EF_LEFT_MOUSE_BUTTON);
   model_->AddObserver(this);
   set_context_menu_controller(this);
 
@@ -315,10 +316,7 @@ views::View* DownloadBubbleRowView::GetTooltipHandlerForPoint(
 
 void DownloadBubbleRowView::OnMainButtonPressed() {
   if (ui_info_.has_subpage) {
-    SetEnabled(false);
-    model_->RemoveObserver(this);
-    navigation_handler_->OpenSecurityDialog(std::move(model_), ui_info_);
-    // |this| is deleted now.
+    navigation_handler_->OpenSecurityDialog(this);
   } else {
     DownloadCommands(model_->GetWeakPtr())
         .ExecuteCommand(DownloadCommands::OPEN_WHEN_COMPLETE);

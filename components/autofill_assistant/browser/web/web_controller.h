@@ -52,6 +52,8 @@ class WebContents;
 }  // namespace content
 
 namespace autofill_assistant {
+class ElementFinderResult;
+enum class ElementFinderResultType;
 
 // Controller to interact with the web pages.
 //
@@ -106,7 +108,7 @@ class WebController {
   // |start_element|. Returns results or errors based on the |result_type|.
   virtual void RunElementFinder(const ElementFinderResult& start_element,
                                 const Selector& selector,
-                                ElementFinder::ResultType result_type,
+                                ElementFinderResultType result_type,
                                 ElementFinder::Callback callback);
 
   // Find all elements matching |selector|. If there are no matches, the status
@@ -388,8 +390,9 @@ class WebController {
   virtual base::WeakPtr<WebController> GetWeakPtr() const;
 
  private:
-  friend class WebControllerBrowserTest;
   friend class BatchElementCheckerBrowserTest;
+  friend class SemanticElementFinderBrowserTest;
+  friend class WebControllerBrowserTest;
 
   void OnJavaScriptResult(
       base::OnceCallback<void(const ClientStatus&)> callback,

@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/dom/element_data.h"
 #include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
 #include "third_party/blink/renderer/core/dom/focusgroup_flags.h"
+#include "third_party/blink/renderer/core/dom/has_invalidation_flags.h"
 #include "third_party/blink/renderer/core/dom/names_map.h"
 #include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -722,13 +723,15 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   Element* GetFocusableArea() const;
   Element* GetAutofocusDelegate() const;
   // Element focus function called through IDL (i.e. element.focus() in JS)
+  // Delegates to virtual Focus() with focus type set to kScript
   void focusForBindings();
   void focusForBindings(const FocusOptions*);
   // Element focus function called from outside IDL (user focus,
   // accessibility, etc...)
-  virtual void focus(const FocusParams&);
-  void focus();
-  void focus(const FocusOptions*);
+  virtual void Focus(const FocusParams&);
+  // Delegates to virtual Focus() with focus type set to kNone
+  void Focus();
+  void Focus(const FocusOptions*);
 
   void UpdateSelectionOnFocus(SelectionBehaviorOnFocus);
   // This function is called after SetFocused(true) before dispatching 'focus'
@@ -1078,8 +1081,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void SetAffectedByNonSubjectHas();
   bool AncestorsOrAncestorSiblingsAffectedByHas() const;
   void SetAncestorsOrAncestorSiblingsAffectedByHas();
-  bool SiblingsAffectedByHas() const;
-  void SetSiblingsAffectedByHas();
+  unsigned GetSiblingsAffectedByHasFlags() const;
+  bool HasSiblingsAffectedByHasFlags(unsigned flags) const;
+  void SetSiblingsAffectedByHasFlags(unsigned flags);
   bool AffectedByPseudoInHas() const;
   void SetAffectedByPseudoInHas();
   bool AncestorsOrSiblingsAffectedByHoverInHas() const;

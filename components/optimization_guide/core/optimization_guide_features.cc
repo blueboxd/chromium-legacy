@@ -91,14 +91,9 @@ const base::Feature kOptimizationHintsFieldTrials{
 const base::Feature kRemoteOptimizationGuideFetching{
     "OptimizationHintsFetching", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent {
-  "OptimizationHintsFetchingAnonymousDataConsent",
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else   // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif  // BUILDFLAG(IS_ANDROID)
-};
+const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent{
+    "OptimizationHintsFetchingAnonymousDataConsent",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables performance info in the context menu and fetching from a remote
 // Optimization Guide Service.
@@ -165,7 +160,7 @@ const base::Feature kBatchAnnotationsValidation{
     "BatchAnnotationsValidation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPreventLongRunningPredictionModels{
-    "PreventLongRunningPredictionModels", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PreventLongRunningPredictionModels", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature
     kOptimizationGuideUseContinueOnShutdownForPageContentAnnotations{
@@ -430,12 +425,20 @@ base::TimeDelta PredictionModelFetchInterval() {
       kOptimizationTargetPrediction, "fetch_interval_hours", 24));
 }
 
-absl::optional<base::TimeDelta> ModelExecutionTimeout() {
-  if (!base::FeatureList::IsEnabled(kPreventLongRunningPredictionModels)) {
-    return absl::nullopt;
-  }
+bool IsModelExecutionWatchdogEnabled() {
+  return base::FeatureList::IsEnabled(kPreventLongRunningPredictionModels);
+}
+
+base::TimeDelta ModelExecutionWatchdogDefaultTimeout() {
   return base::Milliseconds(GetFieldTrialParamByFeatureAsInt(
-      kPreventLongRunningPredictionModels, "model_execution_timeout_ms", 2000));
+      kPreventLongRunningPredictionModels, "model_execution_timeout_ms",
+#if defined(_DEBUG)
+      // Debug builds take a much longer time to run.
+      60 * 1000
+#else
+      2000
+#endif
+      ));
 }
 
 base::flat_set<uint32_t> FieldTrialNameHashesAllowedForFetch() {

@@ -12,6 +12,7 @@
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
 #include "content/public/browser/download_manager.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
@@ -46,6 +47,10 @@ class DownloadBubbleUIController
   // user's recent tasks. This can only be opened by the browser in the event of
   // new downloads, and user action only creates a main view.
   std::vector<DownloadUIModelPtr> GetPartialView();
+
+  // Get all entries that should be displayed in the UI, including downloads and
+  // offline items.
+  std::vector<DownloadUIModelPtr> GetAllItemsToDisplay();
 
   // The list is needed by DownloadDisplayController to check a few things,
   // for example in progress download count, last completed time, and getting
@@ -145,6 +150,8 @@ class DownloadBubbleUIController
 
   // set of ids to be shown in partial_view.
   std::set<ContentId> partial_view_ids_;
+
+  absl::optional<base::Time> last_partial_view_shown_time_ = absl::nullopt;
 
   base::WeakPtrFactory<DownloadBubbleUIController> weak_factory_{this};
 };

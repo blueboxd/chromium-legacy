@@ -4,7 +4,6 @@
 
 #include "ash/capture_mode/capture_mode_session.h"
 
-#include <string>
 #include <tuple>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
@@ -350,28 +349,6 @@ void UpdateFloatingPanelBoundsIfNeeded() {
   Shell::Get()->accessibility_controller()->UpdateFloatingPanelBoundsIfNeeded();
 }
 
-// Returns true if the camera preview will be shown on entering capture mode.
-bool CameraPreviewWillBeShown(CaptureModeController* controller) {
-  auto* camera_controller = controller->camera_controller();
-  if (!camera_controller || controller->type() != CaptureModeType::kVideo ||
-      !camera_controller->selected_camera().is_valid()) {
-    return false;
-  }
-
-  switch (controller->source()) {
-    // The camera preview will always be shown in `kFullscreen` source with
-    // `kVideo` capture type and valid selected camera.
-    case CaptureModeSource::kFullscreen:
-      return true;
-    case CaptureModeSource::kRegion:
-      return !controller->user_capture_region().IsEmpty();
-    // The camera preview will not be shown for `kWindow` while entering the
-    // capture mode. As the selected window has not been set yet at this point.
-    case CaptureModeSource::kWindow:
-      return false;
-  }
-}
-
 views::Widget* GetCameraPreviewWidget() {
   auto* camera_controller = CaptureModeController::Get()->camera_controller();
   return camera_controller ? camera_controller->camera_preview_widget()
@@ -640,24 +617,14 @@ void CaptureModeSession::Initialize() {
   // Trigger this before creating `capture_mode_bar_widget_` as we want to read
   // out this message before reading out the first view of
   // `capture_mode_bar_widget_`.
-  const std::u16string capture_source =
+  capture_mode_util::TriggerAccessibilityAlert(l10n_util::GetStringFUTF8(
+      IDS_ASH_SCREEN_CAPTURE_ALERT_OPEN,
       l10n_util::GetStringUTF16(GetMessageIdForCaptureSource(
-          controller_->source(), /*for_toggle_alert=*/false));
-  const std::u16string capture_type = l10n_util::GetStringUTF16(
-      controller_->type() == CaptureModeType::kImage
-          ? IDS_ASH_SCREEN_CAPTURE_TYPE_SCREENSHOT
-          : IDS_ASH_SCREEN_CAPTURE_TYPE_SCREEN_RECORDING);
-  if (CameraPreviewWillBeShown(controller_)) {
-    const std::string camera_display_name =
-        controller_->camera_controller()->GetDisplayNameOfSelectedCamera();
-    DCHECK(!camera_display_name.empty());
-    capture_mode_util::TriggerAccessibilityAlert(l10n_util::GetStringFUTF8(
-        IDS_ASH_SCREEN_CAPTURE_ALERT_OPEN_WITH_CAMERA, capture_source,
-        capture_type, base::UTF8ToUTF16(camera_display_name)));
-  } else {
-    capture_mode_util::TriggerAccessibilityAlert(l10n_util::GetStringFUTF8(
-        IDS_ASH_SCREEN_CAPTURE_ALERT_OPEN, capture_source, capture_type));
-  }
+          controller_->source(), /*for_toggle_alert=*/false)),
+      l10n_util::GetStringUTF16(
+          controller_->type() == CaptureModeType::kImage
+              ? IDS_ASH_SCREEN_CAPTURE_TYPE_SCREENSHOT
+              : IDS_ASH_SCREEN_CAPTURE_TYPE_SCREEN_RECORDING)));
 
   // A context menu may have input capture when entering a session. Remove
   // capture from it, otherwise subsequent mouse events will cause it to close,
@@ -1012,6 +979,30 @@ gfx::Rect CaptureModeSession::GetCameraPreviewConfineBounds() const {
   }
 }
 
+bool CaptureModeSession::CalculateCameraPreviewTargetVisibility() const {
+  // A screenshot-only-session opened during recording should not affect the
+  // visibility of a camera preview created for that on-going recording.
+  if (controller_->is_recording_in_progress())
+    return true;
+
+  // For fullscreen and window sources, the visibility of the camera preview is
+  // determined by the preview's size specs, and whether there's a window source
+  // selected. We only care about region sources here, since the visibility of
+  // the preview in this case depends on what's happening to the region during
+  // this session.
+  if (controller_->source() != CaptureModeSource::kRegion)
+    return true;
+
+  if (controller_->user_capture_region().IsEmpty())
+    return false;
+
+  // Adjusting the region from any of its affordance points should result in
+  // hiding the preview. However, dragging it around from its center should not
+  // change the visibility.
+  return !is_drag_in_progress_ ||
+         fine_tune_position_ == FineTunePosition::kCenter;
+}
+
 void CaptureModeSession::OnPaintLayer(const ui::PaintContext& context) {
   // If the drag of camera preview is in progress, we will hide other capture
   // UIs (capture bar, capture label), but we should still paint the layer to
@@ -1044,6 +1035,9 @@ void CaptureModeSession::OnKeyEvent(ui::KeyEvent* event) {
     return;
   }
 
+  if (event->type() != ui::ET_KEY_PRESSED)
+    return;
+
   auto* camera_controller = controller_->camera_controller();
   auto* camera_preview_view =
       camera_controller ? camera_controller->camera_preview_view() : nullptr;
@@ -1051,9 +1045,6 @@ void CaptureModeSession::OnKeyEvent(ui::KeyEvent* event) {
     event->StopPropagation();
     return;
   }
-
-  if (event->type() != ui::ET_KEY_PRESSED)
-    return;
 
   // We create an owned heap-allocated boolean to pass it to `deferred_runner`
   // and hold a pointer to the boolean to be able to change its value to control
@@ -1220,7 +1211,7 @@ void CaptureModeSession::OnDisplayMetricsChanged(
   if (controller_->camera_controller() &&
       controller_->source() == CaptureModeSource::kFullscreen &&
       !controller_->is_recording_in_progress()) {
-    controller_->camera_controller()->MaybeUpdatePreviewWidgetBounds();
+    controller_->camera_controller()->MaybeUpdatePreviewWidget();
   }
 
   if (capture_label_widget_)
@@ -1470,7 +1461,7 @@ void CaptureModeSession::OnCameraPreviewDragEnded(
   UpdateCursor(screen_location, is_touch);
 }
 
-void CaptureModeSession::OnCameraPreviewBoundsChanged() {
+void CaptureModeSession::OnCameraPreviewBoundsOrVisibilityChanged() {
   MaybeUpdateCaptureUisOpacity();
 }
 
@@ -1855,15 +1846,8 @@ void CaptureModeSession::OnLocatedEvent(ui::LocatedEvent* event,
       case ui::ET_TOUCH_PRESSED:
       case ui::ET_TOUCH_MOVED: {
         if (is_capture_window) {
-          // Make sure the capture label widget will not get picked up by the
-          // get topmost window algorithm otherwise a crash will happen since
-          // the snapshot code tries snap a deleted window.
-          std::set<aura::Window*> ignore_windows;
-          if (capture_label_widget_)
-            ignore_windows.insert(capture_label_widget_->GetNativeWindow());
-
           capture_window_observer_->UpdateSelectedWindowAtPosition(
-              screen_location, ignore_windows);
+              screen_location, {});
         }
         UpdateCursor(screen_location, is_touch);
         break;
@@ -2006,7 +1990,7 @@ void CaptureModeSession::OnLocatedEventPressed(
   base::ScopedClosureRunner deferred_runner;
   if (!is_event_on_capture_bar_or_menu) {
     UpdateCaptureBarWidgetOpacity(0.f, /*on_release=*/false);
-    // Run `MaybeUpdateCameraPreviewVisibility` at the exit of this function's
+    // Run `MaybeUpdateCameraPreviewBounds` at the exit of this function's
     // scope if the user presses anywhere outside of the capture bar or menu,
     // since the camera preview should be hidden if user is dragging to update
     // the capture region. The reason we want to run it at the exit of this
@@ -2014,7 +1998,7 @@ void CaptureModeSession::OnLocatedEventPressed(
     // `fine_tune_position_` to be updated first since it can affect whether we
     // should hide camera preview or not.
     deferred_runner.ReplaceClosure(
-        base::BindOnce(&CaptureModeSession::MaybeUpdateCameraPreviewVisibility,
+        base::BindOnce(&CaptureModeSession::MaybeUpdateCameraPreviewBounds,
                        weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -2115,7 +2099,7 @@ void CaptureModeSession::OnLocatedEventReleased(
   // Do a repaint to show the affordance circles.
   RepaintRegion();
 
-  // Run `MaybeUpdateCameraPreviewVisibility` when user releases the drag at
+  // Run `MaybeUpdateCameraPreviewBounds` when user releases the drag at
   // the exit of this function's scope to show the camera preview which may have
   // been hidden in `OnLocatedEventPressed`. Please notice, we should call
   // `MaybeReparentCameraPreviewWidget` no matter if the event is on the capture
@@ -2126,7 +2110,7 @@ void CaptureModeSession::OnLocatedEventReleased(
   // updated since capture label's opacity may need to be updated based on if
   // it's overlapped with camera preview or not.
   base::ScopedClosureRunner deferred_runner(
-      base::BindOnce(&CaptureModeSession::MaybeUpdateCameraPreviewVisibility,
+      base::BindOnce(&CaptureModeSession::MaybeUpdateCameraPreviewBounds,
                      weak_ptr_factory_.GetWeakPtr()));
 
   if (!is_selecting_region_)
@@ -2757,42 +2741,10 @@ void CaptureModeSession::MaybeReparentCameraPreviewWidget() {
     camera_controller->MaybeReparentPreviewWidget();
 }
 
-void CaptureModeSession::MaybeUpdateCameraPreviewVisibility() {
+void CaptureModeSession::MaybeUpdateCameraPreviewBounds() {
   auto* camera_controller = controller_->camera_controller();
-  if (!camera_controller)
-    return;
-
-  auto* camera_preview_widget = camera_controller->camera_preview_widget();
-  if (!camera_preview_widget)
-    return;
-
-  const bool target_visibility =
-      (!is_drag_in_progress_ ||
-       (fine_tune_position_ == FineTunePosition::kCenter)) &&
-      !controller_->user_capture_region().IsEmpty();
-
-  // Please notice here we should check preview's native window's visibility
-  // instead of the widget's visibility. Because when capture region is empty,
-  // preview widget is parented to an unparented container which makes it
-  // already invisible, `FadeOutCameraPreview` won't be triggered at the
-  // beginning of drag.
-  const bool current_visibility =
-      camera_preview_widget->GetNativeWindow()->TargetVisibility() &&
-      camera_preview_widget->GetLayer()->GetTargetOpacity() > 0.f;
-
-  if (target_visibility == current_visibility)
-    return;
-
-  if (target_visibility)
-    camera_controller->FadeInCameraPreview();
-  else
-    camera_controller->FadeOutCameraPreview();
-
-  // Capture UIs' opacity may need to be updated after camera preview's
-  // visibility is changed. For example, capture label should be fully
-  // opaque when camera preview is hidden at the beginning of dragging capture
-  // selection region.
-  MaybeUpdateCaptureUisOpacity();
+  if (camera_controller && !controller_->is_recording_in_progress())
+    camera_controller->MaybeUpdatePreviewWidget(/*animate=*/false);
 }
 
 }  // namespace ash

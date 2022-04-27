@@ -440,8 +440,17 @@ void DOMWindow::focus(v8::Isolate* isolate) {
   if (!page)
     return;
 
-  if (!frame->ShouldAllowScriptFocus())
-    return;
+  if (!frame->ShouldAllowScriptFocus()) {
+    // Disallow script focus that crosses a fenced frame boundary on a
+    // frame that doesn't have transient user activation. Note: all calls to
+    // DOMWindow::focus come from JavaScript calls in the web platform
+    if (!frame->HasTransientUserActivation())
+      return;
+    // Fenced frames should consume user activation when attempting to pull
+    // focus across a fenced boundary into itself.
+    if (frame->IsInFencedFrameTree())
+      LocalFrame::ConsumeTransientUserActivation(DynamicTo<LocalFrame>(frame));
+  }
 
   RecordWindowProxyAccessMetrics(
       WebFeature::kWindowProxyCrossOriginAccessFocus,
@@ -571,7 +580,11 @@ void DOMWindow::ReportCoopAccess(const char* property_name) {
 
   // Iframes are allowed to trigger reports, only when they are same-origin with
   // their top-level document.
-  if (accessing_frame->IsCrossOriginToMainFrame())
+  // TODO(crbug.com/1318055): With MPArch there may be multiple main frames
+  // so we should use IsCrossOriginToOutermostMainFrame when we intend to check
+  // if any embedded frame (eg, iframe or fenced frame) is cross-origin with
+  // respect to the outermost main frame. Follow up to confirm correctness.
+  if (accessing_frame->IsCrossOriginToOutermostMainFrame())
     return;
 
   // See https://crbug.com/1183571
@@ -749,15 +762,21 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
     user_activation = UserActivation::CreateSnapshot(source);
 
   // TODO(mustaq): This is an ad-hoc mechanism to support delegating a single
-  // capability.  We need to add a structure to support passing other
+  // capability.  We need to add a structure to support passing multiple
   // capabilities.  An explainer for the general delegation API is here:
   // https://github.com/mustaqahmed/capability-delegation
-  bool delegate_payment_request = false;
+  mojom::blink::DelegatedCapability delegated_capability =
+      mojom::blink::DelegatedCapability::kNone;
   if (LocalFrame::HasTransientUserActivation(source_frame) &&
       options->hasDelegate()) {
     Vector<String> capability_list;
     options->delegate().Split(' ', capability_list);
-    delegate_payment_request = capability_list.Contains("payment");
+    if (capability_list.Contains("payment")) {
+      delegated_capability = mojom::blink::DelegatedCapability::kPaymentRequest;
+    } else if (capability_list.Contains("fullscreen")) {
+      delegated_capability =
+          mojom::blink::DelegatedCapability::kFullscreenRequest;
+    }
   }
 
   PostedMessage* posted_message = MakeGarbageCollected<PostedMessage>();
@@ -767,7 +786,7 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
   posted_message->channels = std::move(channels);
   posted_message->source = source;
   posted_message->user_activation = user_activation;
-  posted_message->delegate_payment_request = delegate_payment_request;
+  posted_message->delegated_capability = delegated_capability;
   SchedulePostMessage(posted_message);
 }
 
@@ -829,7 +848,7 @@ DOMWindow::PostedMessage::ToBlinkTransferableMessage() && {
   }
 
   // Capability delegation
-  result.delegate_payment_request = delegate_payment_request;
+  result.delegated_capability = delegated_capability;
 
   return result;
 }

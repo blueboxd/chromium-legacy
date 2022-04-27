@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/i18n/timezone.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_discovery_service/game_extras.h"
 #include "chrome/browser/apps/app_provisioning_service/app_provisioning_data_manager.h"
@@ -20,13 +21,26 @@
 namespace {
 extern const char kDefaultLocale[] = "en-US";
 
+bool AvailableInCurrentTimezoneLocale(
+    const apps::proto::LocaleAvailability& app_with_locale) {
+  auto local_country_code = base::CountryCodeForCurrentTimezone();
+  if (local_country_code.empty()) {
+    return false;
+  }
+  for (const auto& country_code : app_with_locale.available_country_codes()) {
+    if (country_code == local_country_code) {
+      return true;
+    }
+  }
+  return false;
+}
+
 bool AvailableInCurrentLocale(
     const apps::proto::LocaleAvailability& app_with_locale) {
   int current_country_id = country_codes::GetCurrentCountryID();
-  // TODO(melzhang) : This should not be returning -1. Return true for now so
-  // that we have data during development.
   if (current_country_id == -1) {
-    return true;
+    // Try using the timezone to get the country as a fallback.
+    return AvailableInCurrentTimezoneLocale(app_with_locale);
   }
   for (const auto& country_code : app_with_locale.available_country_codes()) {
     int country_id = country_codes::CountryStringToCountryID(country_code);
@@ -68,6 +82,19 @@ std::u16string GetLocalisedName(
   return base::UTF8ToUTF16(localised_name);
 }
 
+absl::optional<std::vector<std::u16string>> GetPlatforms(
+    const apps::proto::App& app) {
+  if (app.available_stores_size() == 0) {
+    return absl::nullopt;
+  }
+
+  std::vector<std::u16string> store_names;
+  for (const auto& store : app.available_stores()) {
+    store_names.push_back(base::UTF8ToUTF16(store.store_label()));
+  }
+  return store_names;
+}
+
 }  // namespace
 
 namespace apps {
@@ -103,7 +130,9 @@ std::vector<Result> GameFetcher::GetAppsForCurrentLocale(
       continue;
     }
     auto extras = std::make_unique<GameExtras>(
-        absl::nullopt, GameExtras::Source::kTestSource, GURL());
+        GetPlatforms(app_with_locale.app()),
+        base::UTF8ToUTF16(app_with_locale.app().source_name()),
+        base::UTF8ToUTF16(app_with_locale.app().publisher_name()), GURL());
     results.push_back(Result(
         AppSource::kGames, app_with_locale.app().app_id_for_platform(),
         GetLocalisedName(app_with_locale.locale_availability(), profile_),

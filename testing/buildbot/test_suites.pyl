@@ -1898,7 +1898,6 @@
       },
       'content_browsertests': {
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_browsertests.filter',
           '--',
           '--disable-gpu',
           '--headless',
@@ -4136,7 +4135,7 @@
         ],
         # TODO(crbug.com/1195974): Decides whether we want to run this on CQ.
         # This target is heavy, which currently takes ~1 hour to run.
-        'ci_only': True,
+        'experiment_percentage': 5,
         'test': 'browser_tests',
         'swarming': {
           'shards': 4,
@@ -4254,6 +4253,17 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter',
         ],
+      },
+    },
+
+    'linux_lacros_chrome_interactive_ui_tests_version_skew': {
+      'interactive_ui_tests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter',
+        ],
+        'swarming': {
+          'shards': 3,
+        },
       },
     },
 
@@ -4605,9 +4615,21 @@
         'args': [
           '--browser-ui-tests-verify-pixels',
           '--enable-pixel-output-in-tests',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/pixel_browser_tests.filter',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/pixel_tests.filter',
         ],
         'test': 'browser_tests',
+        'mixins': [
+          'skia_gold_test',
+        ],
+      },
+      'pixel_interactive_ui_tests': {
+        'name': 'pixel_interactive_ui_tests',
+        'args': [
+          '--browser-ui-tests-verify-pixels',
+          '--enable-pixel-output-in-tests',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/pixel_tests.filter',
+        ],
+        'test': 'interactive_ui_tests',
         'mixins': [
           'skia_gold_test',
         ],
@@ -4673,6 +4695,10 @@
     },
 
     'rust_native_tests': {
+      'autocxx_tests': {
+        'swarming': {},
+        'test': 'autocxx_tests',
+      },
       'build_rust_tests': {
         'swarming': {},
         'test': 'build_rust_tests',
@@ -6425,6 +6451,40 @@
       'gpu_skia_renderer_vulkan_passthrough_telemetry_tests',
     ],
 
+    # The same as gpu_fyi_mac_debug_gtests but with validating tests removed
+    # due to capacity issues on AMD Macbooks.
+    'gpu_fyi_mac_amd_debug_gtests': [
+      'gpu_angle_unit_gtests',
+      'gpu_common_gtests_passthrough',
+      'gpu_fyi_and_optional_non_linux_gtests',
+      'gpu_fyi_mac_specific_gtests',
+      'gpu_gles2_conform_gtests',
+    ],
+
+    # The same as gpu_fyi_mac_release_gtests but with validating tests removed
+    # due to capacity issues on AMD Macbooks.
+    'gpu_fyi_mac_amd_release_gtests': [
+      'gpu_angle_unit_gtests',
+      'gpu_common_gtests_passthrough',
+      'gpu_desktop_specific_gtests',
+      'gpu_fyi_and_optional_non_linux_gtests',
+      'gpu_fyi_mac_specific_gtests',
+      'gpu_gles2_conform_gtests',
+    ],
+
+    # The same as gpu_fyi_mac_release_telemetry_tests but with validating
+    # tests removed due to capacity issues on AMD Macbooks.
+    'gpu_fyi_mac_amd_release_telemetry_tests': [
+      'gpu_common_and_optional_telemetry_tests',
+      'gpu_mediapipe_passthrough_telemetry_tests',
+      'gpu_passthrough_telemetry_tests',
+      'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
+      'gpu_webgl2_conformance_metal_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_metal_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests',
+    ],
+
     'gpu_fyi_mac_debug_gtests': [
       'gpu_angle_unit_gtests',
       'gpu_common_gtests_passthrough',
@@ -6434,12 +6494,14 @@
       'gpu_gles2_conform_gtests',
     ],
 
+    # Validating tests removed since this group is only used on AMD Macbooks and
+    # we don't want to run those tests there due to capacity issues.
     'gpu_fyi_mac_debug_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
-      'gpu_validating_telemetry_tests',
+      # 'gpu_validating_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_validating_telemetry_tests',
+      # 'gpu_webgl_conformance_validating_telemetry_tests',
     ],
 
     'gpu_fyi_mac_optional_gtests': [
@@ -7120,7 +7182,7 @@
     'ios_clang_tot_device_tests': {
       'ios_clang_tests': {
         'variants': [
-          'IPHONE_6S_12_3_1',
+          'IPHONE_7_15_4_1',
         ],
       }
     },
@@ -7511,7 +7573,7 @@
     },
 
     'linux_lacros_version_skew_tests': {
-      'linux_lacros_chrome_browsertests_version_skew': {
+      'linux_lacros_chrome_interactive_ui_tests_version_skew': {
         'variants': [
           'LACROS_VERSION_SKEW_CANARY',
           'LACROS_VERSION_SKEW_DEV',

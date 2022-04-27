@@ -1590,18 +1590,12 @@ void NGInlineNode::ShapeTextIncludingFirstLine(
   // Because |ElapsedTimer| causes notable speed regression on Android and
   // ChromeOS, we don't use it. See http://crbug.com/1261519
 #else
-  struct ShapeTextTimingScope final {
-    ~ShapeTextTimingScope() {
-      FontPerformance::AddShapingTime(shaping_timer.Elapsed());
-    }
-    base::ElapsedTimer shaping_timer;
-  };
-
-  ShapeTextTimingScope shape_text_timing_scope;
+  FontPerformance::ShapeTextTimingScope shape_text_timing_scope;
 #endif
 
   ShapeText(data, previous_text, previous_items);
-  ShapeTextForFirstLineIfNeeded(data);
+  if (new_state == NGInlineNodeData::kShapingDone)
+    ShapeTextForFirstLineIfNeeded(data);
 }
 
 void NGInlineNode::AssociateItemsWithInlines(NGInlineNodeData* data) const {
@@ -1639,13 +1633,14 @@ void NGInlineNode::AssociateItemsWithInlines(NGInlineNodeData* data) const {
 const NGLayoutResult* NGInlineNode::Layout(
     const NGConstraintSpace& constraint_space,
     const NGBreakToken* break_token,
+    const NGColumnSpannerPath* column_spanner_path,
     NGInlineChildLayoutContext* context) const {
   PrepareLayoutIfNeeded();
   ShapeTextOrDefer(constraint_space);
 
   const auto* inline_break_token = To<NGInlineBreakToken>(break_token);
   NGInlineLayoutAlgorithm algorithm(*this, constraint_space, inline_break_token,
-                                    context);
+                                    column_spanner_path, context);
   return algorithm.Layout();
 }
 
@@ -1710,10 +1705,10 @@ static LayoutUnit ComputeContentSize(
   NGPositionedFloatVector empty_leading_floats;
   NGLineLayoutOpportunity line_opportunity(available_inline_size);
   LayoutUnit result;
-  NGLineBreaker line_breaker(node, mode, space, line_opportunity,
-                             empty_leading_floats,
-                             /* handled_leading_floats_index */ 0u,
-                             /* break_token */ nullptr, &empty_exclusion_space);
+  NGLineBreaker line_breaker(
+      node, mode, space, line_opportunity, empty_leading_floats,
+      /* handled_leading_floats_index */ 0u, /* break_token */ nullptr,
+      /* column_spanner_path */ nullptr, &empty_exclusion_space);
   line_breaker.SetIntrinsicSizeOutputs(max_size_cache,
                                        depends_on_block_constraints_out);
   const NGInlineItemsData& items_data = line_breaker.ItemsData();

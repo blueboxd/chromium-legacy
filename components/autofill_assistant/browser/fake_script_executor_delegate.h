@@ -69,6 +69,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
       ConfigureUiStateProto::OverlayBehavior overlay_behavior) override;
   void SetBrowseModeInvisible(bool invisible) override;
   ProcessedActionStatusDetailsProto& GetLogInfo() override;
+  bool MustUseBackendData() const override;
 
   bool ShouldShowWarning() override;
 
@@ -80,6 +81,10 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
 
   void SetWebController(WebController* web_controller) {
     web_controller_ = web_controller;
+  }
+
+  void SetWebContents(content::WebContents* web_contents) {
+    web_contents_ = web_contents;
   }
 
   void SetTriggerContext(std::unique_ptr<TriggerContext> trigger_context) {
@@ -109,11 +114,16 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
 
   std::vector<std::string>* GetCurrentBrowseDomainsList();
 
+  void SetMustUseBackendData(bool must_use_backend_data) {
+    must_use_backend_data_ = must_use_backend_data;
+  }
+
  private:
   ClientSettings client_settings_;
   GURL current_url_;
   raw_ptr<Service> service_ = nullptr;
   raw_ptr<WebController> web_controller_ = nullptr;
+  raw_ptr<content::WebContents> web_contents_ = nullptr;
   std::unique_ptr<TriggerContext> trigger_context_;
   std::vector<AutofillAssistantState> state_history_;
   std::vector<ElementAreaProto> touchable_element_area_history_;
@@ -126,6 +136,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   std::vector<std::string> browse_domains_;
   raw_ptr<UserModel> user_model_ = nullptr;
   ProcessedActionStatusDetailsProto log_info_;
+  bool must_use_backend_data_ = false;
 
   bool require_ui_ = false;
 };

@@ -17,7 +17,8 @@ enum class PredictionSource {
   kDefaultHeuristics,
   kExperimentalHeuristics,
   kNextGenHeuristics,
-  kMaxValue = kNextGenHeuristics
+  kFallbackHeuristics,
+  kMaxValue = kFallbackHeuristics
 };
 
 // Represents a possible type for a given field.
@@ -37,7 +38,8 @@ struct FieldCandidate {
 class FieldCandidates {
  public:
   FieldCandidates();
-  FieldCandidates(const FieldCandidates& other);
+  FieldCandidates(FieldCandidates&& other);
+  FieldCandidates& operator=(FieldCandidates&& other);
   ~FieldCandidates();
 
   // Includes a possible |type| for a given field.

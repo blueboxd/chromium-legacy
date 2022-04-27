@@ -57,6 +57,16 @@ extern const char kAutofillPruneSuggestionsDescription[];
 extern const char kAutofillSaveCardDismissOnNavigationName[];
 extern const char kAutofillSaveCardDismissOnNavigationDescription[];
 
+// Title and description for the flag to control allowing credit card upload
+// save for accounts from common email providers.
+extern const char kAutofillUpstreamAllowAdditionalEmailDomainsName[];
+extern const char kAutofillUpstreamAllowAdditionalEmailDomainsDescription[];
+
+// Title and description for the flag to control allowing credit card upload
+// save for all accounts, regardless of the email domain.
+extern const char kAutofillUpstreamAllowAllEmailDomainsName[];
+extern const char kAutofillUpstreamAllowAllEmailDomainsDescription[];
+
 // Title and description for the flag that controls whether Autofill's
 // suggestions' labels are formatting with a mobile-friendly approach.
 extern const char kAutofillUseMobileLabelDisambiguationName[];
@@ -363,6 +373,15 @@ extern const char kOmniboxNewImplementationDescription[];
 extern const char kIOSOmniboxUpdatedPopupUIName[];
 extern const char kIOSOmniboxUpdatedPopupUIDescription[];
 
+// Title and description for the flag to enable TFLite model downloading.
+extern const char kOptimizationGuideModelDownloadingName[];
+extern const char kOptimizationGuideModelDownloadingDescription[];
+
+// Title and description for the flag to enable the prediction of optimization
+// targets.
+extern const char kOptimizationTargetPredictionDescription[];
+extern const char kOptimizationTargetPredictionName[];
+
 // Title and description for the flag to enable PhishGuard password reuse
 // detection.
 extern const char kPasswordReuseDetectionName[];
@@ -466,6 +485,10 @@ extern const char kTabsSearchDescription[];
 // suggested actions feature.
 extern const char kTabsSearchRegularResultsSuggestedActionsName[];
 extern const char kTabsSearchRegularResultsSuggestedActionsDescription[];
+
+// Title and description for the flag to enable TFLite for language detection.
+extern const char kTFLiteLanguageDetectionName[];
+extern const char kTFLiteLanguageDetectionDescription[];
 
 // Title and description for the flag to enable the toolbar container
 // implementation.

@@ -45,6 +45,9 @@ suite('AppSettingsAppTest', () => {
         learnMoreUrl: {url: 'https://google.com/'},
       },
       installSource: InstallSource.kUnknown,
+      appSize: '',
+      dataSize: '',
+      publisherId: '',
     };
 
     const permissionTypes = [

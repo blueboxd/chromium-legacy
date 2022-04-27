@@ -2439,10 +2439,6 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
   // to recompute the bit once scrollbars have been updated.
   UpdateSelfPaintingLayer();
 
-  // HasAlphaChanged can affect whether a composited layer is opaque.
-  if (diff.NeedsLayout() || diff.HasAlphaChanged())
-    MarkAncestorChainForFlagsUpdate();
-
   // A scroller that changes background color might become opaque or not
   // opaque, which in turn affects whether it can be composited on low-DPI
   // screens.

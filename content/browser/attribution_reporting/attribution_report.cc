@@ -4,6 +4,7 @@
 
 #include "content/browser/attribution_reporting/attribution_report.h"
 
+#include <algorithm>
 #include <string>
 #include <utility>
 
@@ -40,7 +41,7 @@ AttributionReport::EventLevelData::EventLevelData(
     uint64_t trigger_data,
     int64_t priority,
     double randomized_trigger_rate,
-    absl::optional<Id> id)
+    Id id)
     : trigger_data(trigger_data),
       priority(priority),
       randomized_trigger_rate(randomized_trigger_rate),
@@ -65,7 +66,7 @@ AttributionReport::EventLevelData::~EventLevelData() = default;
 
 AttributionReport::AggregatableAttributionData::AggregatableAttributionData(
     std::vector<AggregatableHistogramContribution> contributions,
-    absl::optional<Id> id,
+    Id id,
     base::Time initial_report_time)
     : contributions(std::move(contributions)),
       id(id),
@@ -224,9 +225,8 @@ base::Value::Dict AttributionReport::ReportBody() const {
   return absl::visit(Visitor{.report = this}, data_);
 }
 
-absl::optional<AttributionReport::Id> AttributionReport::ReportId() const {
-  return absl::visit([](const auto& v) { return absl::optional<Id>(v.id); },
-                     data_);
+AttributionReport::Id AttributionReport::ReportId() const {
+  return absl::visit([](const auto& v) { return Id(v.id); }, data_);
 }
 
 std::string AttributionReport::PrivacyBudgetKey() const {
@@ -271,6 +271,19 @@ void AttributionReport::SetExternalReportIdForTesting(
     base::GUID external_report_id) {
   DCHECK(external_report_id.is_valid());
   external_report_id_ = std::move(external_report_id);
+}
+
+// static
+absl::optional<base::Time> AttributionReport::MinReportTime(
+    absl::optional<base::Time> a,
+    absl::optional<base::Time> b) {
+  if (!a.has_value())
+    return b;
+
+  if (!b.has_value())
+    return a;
+
+  return std::min(*a, *b);
 }
 
 }  // namespace content

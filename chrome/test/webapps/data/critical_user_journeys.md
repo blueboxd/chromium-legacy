@@ -6,6 +6,8 @@ Existing documentation lives [here](/docs/webapps/integration-testing-framework.
 
 TODO(dmurph): Move more documentation here. https://crbug.com/1314822
 
+[[TOC]]
+
 ## How this file is parsed
 
 The tables are parsed in this file as critical user journeys. Lines are considered a CUJ if:
@@ -199,13 +201,13 @@ The tables are parsed in this file as critical user journeys. Lines are consider
 | WMLC | install_by_user_windowed | close_pwa | manifest_update_display_browser | launch | check_window_created | 
 | WMLC | install_by_user_windowed | close_pwa | manifest_update_display_browser | launch | check_window_display_minimal | 
 | WMLC | install_by_user_windowed | close_pwa | manifest_update_display_minimal | launch | check_window_display_minimal | 
-| WMLC | install_by_user_windowed(SiteAFoo) | manifest_update_scope_site_a_foo_to(SiteA) | close_pwa | launch_from_platform_shortcut(SiteAFoo) | close_pwa | navigate_browser(SiteA) | check_install_icon_not_shown | 
-| WMLC | install_by_user_windowed(SiteAFoo) | manifest_update_scope_site_a_foo_to(SiteA) | close_pwa | launch_from_platform_shortcut(SiteAFoo) | close_pwa | navigate_browser(SiteA) | check_launch_icon_shown | 
-| WMLC | install_by_user_windowed(SiteAFoo) | close_pwa | manifest_update_scope_site_a_foo_to(SiteA) | launch(SiteAFoo) | navigate_pwa_site_a_foo_to(SiteABar) | check_no_toolbar |
-| WMLC | install_by_user_windowed(SiteAFoo) | close_pwa | manifest_update_scope_site_a_foo_to(SiteA) | navigate_browser(SiteABar) | check_install_icon_not_shown | 
-| WMLC | install_by_user_windowed(SiteAFoo) | close_pwa | manifest_update_scope_site_a_foo_to(SiteA) | navigate_browser(SiteABar) | check_launch_icon_shown | 
-| WMLC | install_by_user_windowed(SiteAFoo) | close_pwa | manifest_update_scope_site_a_foo_to(SiteA) | navigate_browser(SiteAFoo) | check_install_icon_not_shown | 
-| WMLC | install_by_user_windowed(SiteAFoo) | close_pwa | manifest_update_scope_site_a_foo_to(SiteA) | navigate_browser(SiteAFoo) | check_launch_icon_shown | 
+| WMLC | install_by_user_windowed(SiteAFoo) | manifest_update_scope_site_a_foo_to(SiteARoot) | close_pwa | launch_from_platform_shortcut(SiteAFoo) | close_pwa | navigate_browser(SiteA) | check_install_icon_not_shown | 
+| WMLC | install_by_user_windowed(SiteAFoo) | manifest_update_scope_site_a_foo_to(SiteARoot) | close_pwa | launch_from_platform_shortcut(SiteAFoo) | close_pwa | navigate_browser(SiteA) | check_launch_icon_shown | 
+| WMLC | install_by_user_windowed(SiteAFoo) | close_pwa | manifest_update_scope_site_a_foo_to(SiteARoot) | launch(SiteAFoo) | navigate_pwa_site_a_foo_to(SiteABar) | check_no_toolbar |
+| WMLC | install_by_user_windowed(SiteAFoo) | close_pwa | manifest_update_scope_site_a_foo_to(SiteARoot) | navigate_browser(SiteABar) | check_install_icon_not_shown | 
+| WMLC | install_by_user_windowed(SiteAFoo) | close_pwa | manifest_update_scope_site_a_foo_to(SiteARoot) | navigate_browser(SiteABar) | check_launch_icon_shown | 
+| WMLC | install_by_user_windowed(SiteAFoo) | close_pwa | manifest_update_scope_site_a_foo_to(SiteARoot) | navigate_browser(SiteAFoo) | check_install_icon_not_shown | 
+| WMLC | install_by_user_windowed(SiteAFoo) | close_pwa | manifest_update_scope_site_a_foo_to(SiteARoot) | navigate_browser(SiteAFoo) | check_launch_icon_shown | 
 
 ## Browser UX with edge cases
 | #Platforms | Test -> | | | | | | | | | | | | | | | | |
@@ -259,3 +261,27 @@ The tables are parsed in this file as critical user journeys. Lines are consider
 | #WMLC | install_windowed(SiteB) | manifest_update_display(SiteB, WCO) | await_manifest_update(SiteB) | launch(SiteB) | enable_window_controls_overlay(SiteB) | check_window_controls_overlay_toggle(SiteB, Shown) |
 | #WMLC | install_windowed(SiteWCO) | manifest_update_display(SiteWCO, Standalone) | await_manifest_update(SiteWCO) | launch(SiteWCO) | check_window_controls_overlay_toggle(SiteWCO, NotShown) | 
 | #WMLC | install_windowed(SiteWCO) | manifest_update_display(SiteWCO, Standalone) | await_manifest_update(SiteWCO) | launch(SiteWCO) | check_window_controls_overlay(SiteWCO, Off) | 
+
+## File Handling
+
+| #Platforms | Test -> | | | | | | | | | | | | | | | | |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| WMLC | install(SiteB) | check_site_handles_file(SiteB, Txt) | check_site_handles_file(SiteB, Png) |
+| # Single open & multiple open behavior |
+| WMLC | install(SiteB) | launch_file(OneTextFile) | check_file_handling_dialog(Shown) |
+| WMLC | install(SiteB) | launch_file(OneTextFile) | file_handling_dialog(Allow, AskAgain) | check_pwa_window_created(SiteB, One) | check_files_loaded_in_site(SiteB, OneTextFile) |
+| WMLC | install(SiteB) | launch_file(MultipleTextFiles) | check_file_handling_dialog(Shown)
+| WMLC | install(SiteB) | launch_file(MultipleTextFiles) | file_handling_dialog(Allow, AskAgain) | check_pwa_window_created(SiteB, One) | check_files_loaded_in_site(SiteB, MultipleTextFiles) |
+| WMLC | install(SiteB) | launch_file(OnePngFile) | check_file_handling_dialog(Shown) |
+| WMLC | install(SiteB) | launch_file(OnePngFile) | file_handling_dialog(Allow, AskAgain) | check_pwa_window_created(SiteB, One) | check_files_loaded_in_site(SiteB, OnePngFile) |
+| WMLC | install(SiteB) | launch_file(MultiplePngFiles) | check_file_handling_dialog(Shown) |
+| WMLC | install(SiteB) | launch_file(MultiplePngFiles) | file_handling_dialog(Allow, AskAgain) | check_pwa_window_created(SiteB, Two) | check_files_loaded_in_site(SiteB, MultiplePngFiles) |
+| # Dialog options |
+| WMLC | install(SiteB) | launch_file(OneTextFile) | file_handling_dialog(Allow, Remember) | launch_file(OneTextFile) | check_file_handling_dialog(NotShown) | check_pwa_window_created(SiteB, One) | 
+| WMLC | install(SiteB) | launch_file(OneTextFile) | file_handling_dialog(Allow, AskAgain) | launch_file(OneTextFile) | check_file_handling_dialog(Shown) |
+| WMLC | install(SiteB) | launch_file(OneTextFile) | file_handling_dialog(Deny, AskAgain) | check_window_not_created | check_site_handles_file(SiteB, Txt) | check_site_handles_file(SiteB, Png) | 
+| WMLC | install(SiteB) | launch_file(OneTextFile) | file_handling_dialog(Deny, AskAgain) | launch_file(OneTextFile) | check_file_handling_dialog(Shown) |
+| WMLC | install(SiteB) | launch_file(OneTextFile) | file_handling_dialog(Deny, Remember) | check_window_not_created | check_site_not_handles_file(SiteB, Txt) | check_site_not_handles_file(SiteB, Png) |
+| # Policy approval |
+| WMLC | install(SiteB) | add_file_handling_policy_approval(SiteB) | launch_file(OneTextFile) | check_file_handling_dialog(NotShown) | check_pwa_window_created(SiteB, One) | 
+| WMLC | install(SiteB) | add_file_handling_policy_approval(SiteB) | remove_file_handling_policy_approval(SiteB) | launch_file(OneTextFile) | check_file_handling_dialog(Shown) |

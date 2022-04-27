@@ -674,13 +674,13 @@ ReportBuilder& ReportBuilder::SetRandomizedTriggerRate(double rate) {
 }
 
 ReportBuilder& ReportBuilder::SetReportId(
-    absl::optional<AttributionReport::EventLevelData::Id> id) {
+    AttributionReport::EventLevelData::Id id) {
   report_id_ = id;
   return *this;
 }
 
 ReportBuilder& ReportBuilder::SetReportId(
-    absl::optional<AttributionReport::AggregatableAttributionData::Id> id) {
+    AttributionReport::AggregatableAttributionData::Id id) {
   aggregatable_attribution_report_id_ = id;
   return *this;
 }
@@ -712,8 +712,8 @@ AggregatableSourceMojoBuilder::~AggregatableSourceMojoBuilder() = default;
 
 AggregatableSourceMojoBuilder& AggregatableSourceMojoBuilder::AddKey(
     std::string key_id,
-    blink::mojom::AttributionAggregatableKeyPtr key) {
-  aggregatable_source_.keys.emplace(std::move(key_id), std::move(key));
+    absl::uint128 key) {
+  aggregatable_source_.keys.emplace(std::move(key_id), key);
   return *this;
 }
 
@@ -1133,8 +1133,7 @@ std::ostream& operator<<(std::ostream& out,
   return out << "{trigger_data=" << data.trigger_data
              << ",priority=" << data.priority
              << ",randomized_trigger_rate=" << data.randomized_trigger_rate
-             << ",id=" << (data.id ? base::NumberToString(**data.id) : "null")
-             << "}";
+             << ",id=" << *data.id << "}";
 }
 
 std::ostream& operator<<(
@@ -1148,7 +1147,7 @@ std::ostream& operator<<(
     separator = ", ";
   }
 
-  return out << "],id=" << (data.id ? base::NumberToString(**data.id) : "null")
+  return out << "],id=" << *data.id
              << ",initial_report_time=" << data.initial_report_time << "}";
 }
 
@@ -1387,8 +1386,7 @@ TriggerBuilder DefaultAggregatableTriggerBuilder(
     std::string key_id = base::NumberToString(i);
     trigger_mojo->trigger_data.push_back(
         blink::mojom::AttributionAggregatableTriggerData::New(
-            blink::mojom::AttributionAggregatableKey::New(/*high_bits=*/i,
-                                                          /*low_bits=*/0),
+            absl::MakeUint128(/*high=*/i, /*low=*/0),
             std::vector<std::string>{key_id},
             blink::mojom::AttributionFilterData::New(),
             blink::mojom::AttributionFilterData::New()));

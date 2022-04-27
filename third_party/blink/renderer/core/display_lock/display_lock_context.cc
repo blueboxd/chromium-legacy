@@ -372,7 +372,8 @@ bool DisplayLockContext::ShouldPrePaintChildren() const {
 bool DisplayLockContext::ShouldPaintChildren() const {
   // Note that forced updates should never require us to paint, so we don't
   // check |forced_info_| here.
-  return !is_locked_;
+  return !is_locked_ || (element_->GetLayoutObject() &&
+                         element_->GetLayoutObject()->IsShapingDeferred());
 }
 // End Should* and Did* functions ==============================================
 
@@ -899,6 +900,12 @@ void DisplayLockContext::ScheduleTopLayerCheck() {
   has_pending_top_layer_check_ = true;
   UpdateLifecycleNotificationRegistration();
   ScheduleAnimation();
+}
+
+bool DisplayLockContext::IsShapingDeferred() const {
+  if (const auto* layout_object = element_->GetLayoutObject())
+    return layout_object->IsShapingDeferred();
+  return false;
 }
 
 void DisplayLockContext::ScheduleAnimation() {

@@ -953,24 +953,27 @@ namespace {
 class CapabilityDelegationMessageListener final : public NativeEventListener {
  public:
   void Invoke(ExecutionContext*, Event* event) override {
-    delegate_payment_request_ =
-        static_cast<MessageEvent*>(event)->delegatePaymentRequest();
+    delegated_capability_ =
+        static_cast<MessageEvent*>(event)->delegatedCapability();
   }
 
-  bool DelegatePaymentRequest() {
-    bool value = delegate_payment_request_.value();
-    delegate_payment_request_.reset();
-    return value;
+  bool DelegateCapability() {
+    if (delegated_capability_ == mojom::blink::DelegatedCapability::kNone)
+      return false;
+    delegated_capability_ = mojom::blink::DelegatedCapability::kNone;
+    return true;
   }
 
  private:
-  absl::optional<bool> delegate_payment_request_;
+  mojom::blink::DelegatedCapability delegated_capability_ =
+      mojom::blink::DelegatedCapability::kNone;
 };
 
 }  // namespace
 
 TEST_F(WebFrameTest, CapabilityDelegationMessageEventTest) {
-  ScopedCapabilityDelegationPaymentRequestForTest capability_delegation(true);
+  ScopedCapabilityDelegationFullscreenRequestForTest fullscreen_delegation(
+      true);
 
   RegisterMockedHttpURLLoad("single_iframe.html");
   RegisterMockedHttpURLLoad("visible_iframe.html");
@@ -993,19 +996,25 @@ TEST_F(WebFrameTest, CapabilityDelegationMessageEventTest) {
   ScriptExecutionCallbackHelper callback_helper(
       web_view_helper.LocalMainFrame()->MainWorldScriptContext());
 
-  String post_message_wo_payment_request(
+  String post_message_wo_request(
       "window.frames[0].postMessage('0', {targetOrigin: '*'});");
   String post_message_w_payment_request(
       "window.frames[0].postMessage("
       "'1', {targetOrigin: '*', delegate: 'payment'});");
+  String post_message_w_fullscreen_request(
+      "window.frames[0].postMessage("
+      "'1', {targetOrigin: '*', delegate: 'fullscreen'});");
+  String post_message_w_unknown_request(
+      "window.frames[0].postMessage("
+      "'1', {targetOrigin: '*', delegate: 'foo'});");
 
   // The delegation info is not passed through a postMessage that is sent
   // without either user activation or the delegation option.
   ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                           post_message_wo_payment_request, &callback_helper);
+                           post_message_wo_request, &callback_helper);
   RunPendingTasks();
   EXPECT_TRUE(callback_helper.DidComplete());
-  EXPECT_FALSE(message_event_listener->DelegatePaymentRequest());
+  EXPECT_FALSE(message_event_listener->DelegateCapability());
 
   // The delegation info is not passed through a postMessage that is sent
   // without user activation but with the delegation option.
@@ -1013,16 +1022,16 @@ TEST_F(WebFrameTest, CapabilityDelegationMessageEventTest) {
                            post_message_w_payment_request, &callback_helper);
   RunPendingTasks();
   EXPECT_TRUE(callback_helper.DidComplete());
-  EXPECT_FALSE(message_event_listener->DelegatePaymentRequest());
+  EXPECT_FALSE(message_event_listener->DelegateCapability());
 
   // The delegation info is not passed through a postMessage that is sent with
   // user activation but without the delegation option.
   ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
-                           post_message_wo_payment_request, &callback_helper,
+                           post_message_wo_request, &callback_helper,
                            /*wait_for_promise=*/true, /*user_gesture=*/true);
   RunPendingTasks();
   EXPECT_TRUE(callback_helper.DidComplete());
-  EXPECT_FALSE(message_event_listener->DelegatePaymentRequest());
+  EXPECT_FALSE(message_event_listener->DelegateCapability());
 
   // The delegation info is passed through a postMessage that is sent with both
   // user activation and the delegation option.
@@ -1031,7 +1040,25 @@ TEST_F(WebFrameTest, CapabilityDelegationMessageEventTest) {
                            /*wait_for_promise=*/true, /*user_gesture=*/true);
   RunPendingTasks();
   EXPECT_TRUE(callback_helper.DidComplete());
-  EXPECT_TRUE(message_event_listener->DelegatePaymentRequest());
+  EXPECT_TRUE(message_event_listener->DelegateCapability());
+
+  // The delegation info is passed through a postMessage that is sent with both
+  // user activation and the delegation option for another known capability.
+  ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
+                           post_message_w_fullscreen_request, &callback_helper,
+                           /*wait_for_promise=*/true, /*user_gesture=*/true);
+  RunPendingTasks();
+  EXPECT_TRUE(callback_helper.DidComplete());
+  EXPECT_TRUE(message_event_listener->DelegateCapability());
+
+  // The delegation info is not passed through a postMessage that is sent with
+  // user activation and the delegation option for an unknown capability.
+  ExecuteScriptInMainWorld(web_view_helper.GetWebView()->MainFrameImpl(),
+                           post_message_w_unknown_request, &callback_helper,
+                           /*wait_for_promise=*/true, /*user_gesture=*/true);
+  RunPendingTasks();
+  EXPECT_TRUE(callback_helper.DidComplete());
+  EXPECT_FALSE(message_event_listener->DelegateCapability());
 }
 
 TEST_F(WebFrameTest, FormWithNullFrame) {
@@ -6785,7 +6812,7 @@ TEST_F(WebFrameTest, ReplaceMisspelledRange) {
   web_view_helper.GetWebView()->GetSettings()->SetEditingBehavior(
       mojom::EditingBehavior::kEditingWindowsBehavior);
 
-  element->focus();
+  element->Focus();
   NonThrowableExceptionState exception_state;
   document->execCommand("InsertText", false, "_wellcome_.", exception_state);
   EXPECT_FALSE(exception_state.HadException());
@@ -6831,7 +6858,7 @@ TEST_F(WebFrameTest, RemoveSpellingMarkers) {
   web_view_helper.GetWebView()->GetSettings()->SetEditingBehavior(
       mojom::EditingBehavior::kEditingWindowsBehavior);
 
-  element->focus();
+  element->Focus();
   NonThrowableExceptionState exception_state;
   document->execCommand("InsertText", false, "_wellcome_.", exception_state);
   EXPECT_FALSE(exception_state.HadException());
@@ -6882,7 +6909,7 @@ TEST_F(WebFrameTest, RemoveSpellingMarkersUnderWords) {
   web_view_helper.GetWebView()->GetSettings()->SetEditingBehavior(
       mojom::EditingBehavior::kEditingWindowsBehavior);
 
-  element->focus();
+  element->Focus();
   NonThrowableExceptionState exception_state;
   document->execCommand("InsertText", false, " wellcome ", exception_state);
   EXPECT_FALSE(exception_state.HadException());
@@ -6956,7 +6983,7 @@ TEST_F(WebFrameTest, SlowSpellcheckMarkerPosition) {
   web_view_helper.GetWebView()->GetSettings()->SetEditingBehavior(
       mojom::EditingBehavior::kEditingWindowsBehavior);
 
-  element->focus();
+  element->Focus();
   NonThrowableExceptionState exception_state;
   document->execCommand("InsertText", false, "wellcome ", exception_state);
   EXPECT_FALSE(exception_state.HadException());
@@ -6990,7 +7017,7 @@ TEST_F(WebFrameTest, SpellcheckResultErasesMarkers) {
   web_view_helper.GetWebView()->GetSettings()->SetEditingBehavior(
       mojom::EditingBehavior::kEditingWindowsBehavior);
 
-  element->focus();
+  element->Focus();
   NonThrowableExceptionState exception_state;
   document->execCommand("InsertText", false, "welcome ", exception_state);
 
@@ -7026,7 +7053,7 @@ TEST_F(WebFrameTest, SpellcheckResultsSavedInDocument) {
   web_view_helper.GetWebView()->GetSettings()->SetEditingBehavior(
       mojom::EditingBehavior::kEditingWindowsBehavior);
 
-  element->focus();
+  element->Focus();
   NonThrowableExceptionState exception_state;
   document->execCommand("InsertText", false, "wellcome ", exception_state);
   EXPECT_FALSE(exception_state.HadException());
@@ -7856,40 +7883,6 @@ TEST_F(WebFrameTest, PushStateStartsAndStops) {
       web_view_helper.LocalMainFrame());
   EXPECT_EQ(client.StartLoadingCount(), 2);
   EXPECT_EQ(client.StopLoadingCount(), 2);
-}
-
-TEST_F(WebFrameTest, IPAddressSpace) {
-  frame_test_helpers::WebViewHelper web_view_helper;
-  WebViewImpl* web_view =
-      web_view_helper.InitializeAndLoad("data:text/html,ip_address_space");
-
-  network::mojom::IPAddressSpace values[] = {
-      network::mojom::IPAddressSpace::kUnknown,
-      network::mojom::IPAddressSpace::kLocal,
-      network::mojom::IPAddressSpace::kPrivate,
-      network::mojom::IPAddressSpace::kPublic};
-
-  for (auto value : values) {
-    auto params = std::make_unique<WebNavigationParams>();
-    params->url = url_test_helpers::ToKURL("about:blank");
-    params->navigation_timings.navigation_start = base::TimeTicks::Now();
-    params->navigation_timings.fetch_start = base::TimeTicks::Now();
-    params->is_browser_initiated = true;
-    MockPolicyContainerHost mock_policy_container_host;
-    params->policy_container = std::make_unique<WebPolicyContainer>(
-        WebPolicyContainerPolicies(),
-        mock_policy_container_host.BindNewEndpointAndPassDedicatedRemote());
-    params->policy_container->policies.ip_address_space = value;
-    params->sandbox_flags = network::mojom::WebSandboxFlags::kNone;
-    web_view_helper.LocalMainFrame()->CommitNavigation(std::move(params),
-                                                       nullptr);
-    frame_test_helpers::PumpPendingRequestsForFrameToLoad(
-        web_view_helper.LocalMainFrame());
-
-    ExecutionContext* context =
-        web_view->MainFrameImpl()->GetFrame()->DomWindow();
-    EXPECT_EQ(value, context->AddressSpace());
-  }
 }
 
 TEST_F(WebFrameTest,
@@ -12810,7 +12803,7 @@ TEST_F(WebFrameSimTest, ScrollFocusedEditableIntoViewNoLayoutObject) {
   Compositor().BeginFrame();
 
   Element* input = GetDocument().getElementById("target");
-  input->focus();
+  input->Focus();
 
   ScrollableArea* area = GetDocument().View()->LayoutViewport();
   area->SetScrollOffset(ScrollOffset(0, 0),

@@ -191,12 +191,6 @@ class NET_EXPORT HostResolverManager
   void RegisterResolveContext(ResolveContext* context);
   void DeregisterResolveContext(const ResolveContext* context);
 
-  // ContextHostResolvers should call this after associating a ResolveContext
-  // with a URLRequestContext.
-  // TODO(stefanoduo): Remove once MustRegisterForInvalidations becomes an
-  // invariant.
-  void RemoveResolveContextRegistrationIfNeeded(const ResolveContext* context);
-
   void set_proc_params_for_test(const ProcTaskParams& proc_params) {
     proc_params_ = proc_params;
   }
@@ -242,6 +236,10 @@ class NET_EXPORT HostResolverManager
   size_t num_jobs_for_testing() const { return jobs_.size(); }
 
   bool check_ipv6_on_wifi_for_testing() const { return check_ipv6_on_wifi_; }
+
+  NetworkChangeNotifier::NetworkHandle target_network_for_testing() const {
+    return target_network_;
+  }
 
   // Public to be called from std::make_unique. Not to be called directly.
   HostResolverManager(base::PassKey<HostResolverManager>,

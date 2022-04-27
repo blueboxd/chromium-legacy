@@ -25,6 +25,7 @@ import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.LayoutInflaterUtils;
 import org.chromium.url.GURL;
 
 /**
@@ -39,6 +40,10 @@ public class PageInfoAboutThisSiteController implements PageInfoSubpageControlle
     private final PageInfoControllerDelegate mDelegate;
     private final WebContents mWebContents;
     private @Nullable SiteInfo mSiteInfo;
+
+    static boolean isFeatureEnabled() {
+        return PageInfoAboutThisSiteControllerJni.get().isFeatureEnabled();
+    }
 
     public PageInfoAboutThisSiteController(PageInfoMainController mainController,
             PageInfoRowView rowView, PageInfoControllerDelegate delegate, WebContents webContents) {
@@ -67,16 +72,23 @@ public class PageInfoAboutThisSiteController implements PageInfoSubpageControlle
         assert mSiteInfo != null;
         assert mSiteInfo.hasDescription();
         assert !mDelegate.isIncognito();
-        AboutThisSiteView view = new AboutThisSiteView(parent.getContext(), null);
-        view.setSiteInfo(mSiteInfo, () -> {
-            mMainController.recordAction(
-                    PageInfoAction.PAGE_INFO_ABOUT_THIS_SITE_SOURCE_LINK_CLICKED);
-            new TabDelegate(/*incognito=*/false)
-                    .createNewTab(
-                            new LoadUrlParams(mSiteInfo.getDescription().getSource().getUrl()),
-                            TabLaunchType.FROM_CHROME_UI, TabUtils.fromWebContents(mWebContents));
-        });
+        AboutThisSiteView view = (AboutThisSiteView) LayoutInflaterUtils.inflate(
+                parent.getContext(), R.layout.page_info_about_this_site_view, parent, false);
+        view.setSiteInfo(mSiteInfo,
+                ()
+                        -> openUrl(mSiteInfo.getDescription().getSource().getUrl(),
+                                PageInfoAction.PAGE_INFO_ABOUT_THIS_SITE_SOURCE_LINK_CLICKED),
+                ()
+                        -> openUrl(mSiteInfo.getMoreAbout().getUrl(),
+                                PageInfoAction.PAGE_INFO_ABOUT_THIS_SITE_MORE_ABOUT_CLICKED));
         return view;
+    }
+
+    private void openUrl(String url, @PageInfoAction int action) {
+        mMainController.recordAction(action);
+        new TabDelegate(/*incognito=*/false)
+                .createNewTab(new LoadUrlParams(url), TabLaunchType.FROM_CHROME_UI,
+                        TabUtils.fromWebContents(mWebContents));
     }
 
     @Override
@@ -137,6 +149,7 @@ public class PageInfoAboutThisSiteController implements PageInfoSubpageControlle
 
     @NativeMethods
     interface Natives {
+        boolean isFeatureEnabled();
         byte[] getSiteInfo(BrowserContextHandle browserContext, GURL url, WebContents webContents);
     }
 }

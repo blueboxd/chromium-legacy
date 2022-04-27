@@ -7,6 +7,7 @@
 
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
+#include "net/socket/connection_attempts.h"
 #include "net/socket/stream_socket.h"
 
 namespace net {
@@ -49,6 +50,21 @@ class NET_EXPORT TransportClientSocket : public StreamSocket {
   // should always be ready after successful connection or slightly earlier
   // during BeforeConnect handlers.
   virtual bool SetKeepAlive(bool enable, int delay_secs);
+
+  // Sets a callback that returns a TransportClientSocket. Used in tests for
+  // TCPClientSocketBrokered to create a MockTCPClientSocket.
+  virtual void SetSocketCreatorForTesting(
+      base::RepeatingCallback<std::unique_ptr<net::TransportClientSocket>(void)>
+          socket_creator);
+
+  // Returns the connection attempts made in the process of connecting this
+  // socket.
+  //
+  // TODO(crbug.com/1291352): This only exists to capture all the connection
+  // attempts made if TCPClientSocket tried multiple addresses and each failed.
+  // Once that loop is moved to TransportConnectJob, this method can be removed
+  // altogether.
+  virtual ConnectionAttempts GetConnectionAttempts() const = 0;
 };
 
 }  // namespace net

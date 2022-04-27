@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/escape.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -69,7 +70,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
-#include "net/base/escape.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
@@ -442,10 +442,6 @@ DevToolsWindow::~DevToolsWindow() {
   if (throttle_)
     throttle_->ResumeThrottle();
 
-  if (reattach_complete_callback_) {
-    std::move(reattach_complete_callback_).Run();
-  }
-
   life_stage_ = kClosing;
 
   UpdateBrowserWindow();
@@ -467,6 +463,13 @@ DevToolsWindow::~DevToolsWindow() {
   if (owned_main_web_contents_) {
     base::SequencedTaskRunnerHandle::Get()->DeleteSoon(
         FROM_HERE, std::move(owned_main_web_contents_));
+  }
+
+  // This should be run after we remove |this| from
+  // |g_devtools_window_instances| as |reattach_complete_callback| may try to
+  // access it.
+  if (reattach_complete_callback_) {
+    std::move(reattach_complete_callback_).Run();
   }
 }
 

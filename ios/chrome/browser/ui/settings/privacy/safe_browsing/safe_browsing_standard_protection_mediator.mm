@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/privacy/safe_browsing/safe_browsing_standard_protection_mediator.h"
 
+#include "base/mac/foundation_util.h"
 #include "base/notreached.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -12,7 +13,7 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
+#import "ios/chrome/browser/ui/settings/cells/safe_browsing_header_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/privacy/safe_browsing/safe_browsing_constants.h"
 #import "ios/chrome/browser/ui/settings/privacy/safe_browsing/safe_browsing_standard_protection_consumer.h"
@@ -53,9 +54,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Authentication service.
 @property(nonatomic, assign, readonly) AuthenticationService* authService;
 
+// Returns YES if the user has selected Standard Protection for the Safe
+// Browsing choice.
+@property(nonatomic, assign, readonly) BOOL inSafeBrowsingStandardProtection;
+
+// Preference value for the Safe Browsing Enhanced Protection feature.
+@property(nonatomic, strong, readonly)
+    PrefBackedBoolean* safeBrowsingEnhancedProtectionPreference;
+
 // Preference value for the "Safe Browsing" feature.
 @property(nonatomic, strong, readonly)
     PrefBackedBoolean* safeBrowsingStandardProtectionPreference;
+
+// Preference value for Safe Browsing Extended Reporting.
+@property(nonatomic, strong, readonly)
+    PrefBackedBoolean* safeBrowsingExtendedReportingPreference;
 
 // The observable boolean that binds to the password leak check settings
 // state.
@@ -66,6 +79,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // setting.
 @property(nonatomic, strong, null_resettable)
     TableViewSwitchItem* passwordLeakCheckItem;
+
+// Header that has shield icon.
+@property(nonatomic, strong) SafeBrowsingHeaderItem* shieldIconHeader;
+
+// Second header which has a metric icon.
+@property(nonatomic, strong) SafeBrowsingHeaderItem* metricIconHeader;
 
 // All the items for the standard safe browsing section.
 @property(nonatomic, strong, readonly)
@@ -88,9 +107,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _userPrefService = userPrefService;
     _localPrefService = localPrefService;
     _authService = authService;
+    _safeBrowsingEnhancedProtectionPreference = [[PrefBackedBoolean alloc]
+        initWithPrefService:userPrefService
+                   prefName:prefs::kSafeBrowsingEnhanced];
     _safeBrowsingStandardProtectionPreference = [[PrefBackedBoolean alloc]
         initWithPrefService:userPrefService
                    prefName:prefs::kSafeBrowsingEnabled];
+    _safeBrowsingExtendedReportingPreference = [[PrefBackedBoolean alloc]
+        initWithPrefService:userPrefService
+                   prefName:prefs::kSafeBrowsingScoutReportingEnabled];
     _passwordLeakCheckPreference = [[PrefBackedBoolean alloc]
         initWithPrefService:userPrefService
                    prefName:password_manager::prefs::
@@ -104,26 +129,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (ItemArray)safeBrowsingStandardProtectionItems {
   if (!_safeBrowsingStandardProtectionItems) {
     NSMutableArray* items = [NSMutableArray array];
-    SettingsImageDetailTextItem* shieldIconItem = [self
-             detailItemWithType:ItemTypeShieldIcon
-                     detailText:
-                         IDS_IOS_SAFE_BROWSING_STANDARD_PROTECTION_BULLET_ONE
-                          image:[[UIImage imageNamed:@"shield"]
-                                    imageWithRenderingMode:
-                                        UIImageRenderingModeAlwaysTemplate]
-        accessibilityIdentifier:kSafeBrowsingStandardProtectionShieldCellId];
-    [items addObject:shieldIconItem];
-
-    SettingsImageDetailTextItem* metricIconItem = [self
-             detailItemWithType:ItemTypeMetricIcon
-                     detailText:
-                         IDS_IOS_SAFE_BROWSING_STANDARD_PROTECTION_BULLET_TWO
-                          image:[[UIImage imageNamed:@"bar_chart"]
-                                    imageWithRenderingMode:
-                                        UIImageRenderingModeAlwaysTemplate]
-        accessibilityIdentifier:kSafeBrowsingStandardProtectionMetricCellId];
-    [items addObject:metricIconItem];
-
     if (self.userPrefService->IsManagedPreference(
             prefs::kSafeBrowsingEnabled)) {
       TableViewInfoButtonItem* safeBrowsingStandardProtectionManagedItem = [self
@@ -142,7 +147,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
                     textStringID:
                         IDS_IOS_SAFE_BROWSING_STANDARD_PROTECTION_EXTENDED_REPORTING_TITLE
                   detailStringID:
-                      IDS_IOS_SAFE_BROWSING_STANDARD_PROTECTION_EXTENDED_REPORTING_SUMMARY];
+                      IDS_IOS_SAFE_BROWSING_STANDARD_PROTECTION_EXTENDED_REPORTING_SUMMARY
+                    defaultState:safe_browsing::IsExtendedReportingEnabled(
+                                     *self.userPrefService)
+                         enabled:self.inSafeBrowsingStandardProtection];
       safeBrowsingStandardProtectionItem.accessibilityIdentifier =
           kSafeBrowsingExtendedReportingCellId;
       [items addObject:safeBrowsingStandardProtectionItem];
@@ -154,6 +162,36 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return _safeBrowsingStandardProtectionItems;
 }
 
+- (SafeBrowsingHeaderItem*)shieldIconHeader {
+  if (!_shieldIconHeader) {
+    SafeBrowsingHeaderItem* shieldIconItem = [self
+             detailItemWithType:ItemTypeShieldIcon
+                     detailText:
+                         IDS_IOS_SAFE_BROWSING_STANDARD_PROTECTION_BULLET_ONE
+                          image:[[UIImage imageNamed:@"shield"]
+                                    imageWithRenderingMode:
+                                        UIImageRenderingModeAlwaysTemplate]
+        accessibilityIdentifier:kSafeBrowsingStandardProtectionShieldCellId];
+    _shieldIconHeader = shieldIconItem;
+  }
+  return _shieldIconHeader;
+}
+
+- (SafeBrowsingHeaderItem*)metricIconHeader {
+  if (!_metricIconHeader) {
+    SafeBrowsingHeaderItem* metricIconItem = [self
+             detailItemWithType:ItemTypeMetricIcon
+                     detailText:
+                         IDS_IOS_SAFE_BROWSING_STANDARD_PROTECTION_BULLET_TWO
+                          image:[[UIImage imageNamed:@"bar_chart"]
+                                    imageWithRenderingMode:
+                                        UIImageRenderingModeAlwaysTemplate]
+        accessibilityIdentifier:kSafeBrowsingStandardProtectionMetricCellId];
+    _metricIconHeader = metricIconItem;
+  }
+  return _metricIconHeader;
+}
+
 - (TableViewSwitchItem*)passwordLeakCheckItem {
   if (!_passwordLeakCheckItem) {
     TableViewSwitchItem* passwordLeakCheckItem = [[TableViewSwitchItem alloc]
@@ -163,9 +201,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
     passwordLeakCheckItem.detailText = l10n_util::GetNSString(
         IDS_IOS_SAFE_BROWSING_STANDARD_PROTECTION_LEAK_CHECK_SUMMARY);
     passwordLeakCheckItem.on = [self passwordLeakCheckItemOnState];
+    if (self.safeBrowsingStandardProtectionPreference.value &&
+        self.passwordLeakCheckPreference.value &&
+        ![self isPasswordLeakCheckEnabled]) {
+      // If the user is signed out and the sync preference is enabled, this
+      // informs that it will be turned on on sign in. Also disables the button.
+      passwordLeakCheckItem.detailText =
+          l10n_util::GetNSString(IDS_IOS_LEAK_CHECK_SIGNED_OUT_ENABLED_DESC);
+      passwordLeakCheckItem.on = NO;
+    }
     passwordLeakCheckItem.accessibilityIdentifier =
         kSafeBrowsingStandardProtectionPasswordLeakCellId;
-    passwordLeakCheckItem.enabled = [self isPasswordLeakCheckEnabled];
+    passwordLeakCheckItem.enabled = self.inSafeBrowsingStandardProtection &&
+                                    [self isPasswordLeakCheckEnabled];
     _passwordLeakCheckItem = passwordLeakCheckItem;
   }
   return _passwordLeakCheckItem;
@@ -177,19 +225,26 @@ typedef NS_ENUM(NSInteger, ItemType) {
   _consumer = consumer;
   [_consumer setSafeBrowsingStandardProtectionItems:
                  self.safeBrowsingStandardProtectionItems];
+  [_consumer setShieldIconHeader:self.shieldIconHeader];
+  [_consumer setMetricIconHeader:self.metricIconHeader];
+}
+
+- (BOOL)inSafeBrowsingStandardProtection {
+  return safe_browsing::GetSafeBrowsingState(*self.userPrefService) ==
+         safe_browsing::SafeBrowsingState::STANDARD_PROTECTION;
 }
 
 #pragma mark - Private
 
-// Creates item in Standard Protection view.
-- (SettingsImageDetailTextItem*)detailItemWithType:(NSInteger)type
-                                        detailText:(NSInteger)detailText
-                                             image:(UIImage*)image
-                           accessibilityIdentifier:
-                               (NSString*)accessibilityIdentifier {
-  SettingsImageDetailTextItem* detailItem =
-      [[SettingsImageDetailTextItem alloc] initWithType:type];
-  detailItem.detailText = l10n_util::GetNSString(detailText);
+// Creates header in Standard Protection view.
+- (SafeBrowsingHeaderItem*)detailItemWithType:(NSInteger)type
+                                   detailText:(NSInteger)detailText
+                                        image:(UIImage*)image
+                      accessibilityIdentifier:
+                          (NSString*)accessibilityIdentifier {
+  SafeBrowsingHeaderItem* detailItem =
+      [[SafeBrowsingHeaderItem alloc] initWithType:type];
+  detailItem.text = l10n_util::GetNSString(detailText);
   detailItem.image = image;
   detailItem.imageViewTintColor = [UIColor colorNamed:kGrey600Color];
   detailItem.accessibilityIdentifier = accessibilityIdentifier;
@@ -227,11 +282,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Creates an item with a switch toggle.
 - (SyncSwitchItem*)switchItemWithItemType:(NSInteger)itemType
                              textStringID:(int)textStringID
-                           detailStringID:(int)detailStringID {
+                           detailStringID:(int)detailStringID
+                             defaultState:(BOOL)defaultState
+                                  enabled:(BOOL)enabled {
   SyncSwitchItem* switchItem = [[SyncSwitchItem alloc] initWithType:itemType];
   switchItem.text = l10n_util::GetNSString(textStringID);
   if (detailStringID)
     switchItem.detailText = l10n_util::GetNSString(detailStringID);
+  switchItem.on = defaultState;
+  switchItem.enabled = enabled;
   return switchItem;
 }
 
@@ -243,30 +302,33 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 // Returns a boolean indicating if the switch should appear as "On" or "Off"
-// based on the sync preference and the sign in status.
+// based on the sync preference, the sign in status, and if the user has
+// selected Standard Protection as the Safe Browsing option.
 - (BOOL)passwordLeakCheckItemOnState {
-  return self.safeBrowsingStandardProtectionPreference.value &&
-         self.passwordLeakCheckPreference.value &&
-         [self isPasswordLeakCheckEnabled];
+  return self.safeBrowsingEnhancedProtectionPreference.value ||
+         (self.safeBrowsingStandardProtectionPreference.value &&
+          self.passwordLeakCheckPreference.value &&
+          [self isPasswordLeakCheckEnabled]);
 }
 
-// Updates the detail text and on state of the leak check item based on the
-// state.
-- (void)updateLeakCheckItem {
-  self.passwordLeakCheckItem.enabled =
-      self.safeBrowsingStandardProtectionPreference.value &&
-      [self isPasswordLeakCheckEnabled];
-  self.passwordLeakCheckItem.on = [self passwordLeakCheckItemOnState];
+#pragma mark - SafeBrowsingStandardProtectionViewControllerDelegate
 
-  if (self.passwordLeakCheckPreference.value &&
-      ![self isPasswordLeakCheckEnabled]) {
-    // If the user is signed out and the sync preference is enabled, this
-    // informs that it will be turned on on sign in.
-    self.passwordLeakCheckItem.detailText =
-        l10n_util::GetNSString(IDS_IOS_LEAK_CHECK_SIGNED_OUT_ENABLED_DESC);
-    return;
+- (void)toggleSwitchItem:(TableViewItem*)item withValue:(BOOL)value {
+  SyncSwitchItem* syncSwitchItem = base::mac::ObjCCast<SyncSwitchItem>(item);
+  syncSwitchItem.on = value;
+  ItemType type = static_cast<ItemType>(item.type);
+  switch (type) {
+    case ItemTypeSafeBrowsingExtendedReporting:
+      self.safeBrowsingExtendedReportingPreference.value = value;
+      break;
+    case ItemTypePasswordLeakCheckSwitch:
+      self.passwordLeakCheckPreference.value = value;
+      break;
+    default:
+      // Not a switch.
+      NOTREACHED();
+      break;
   }
-  self.passwordLeakCheckItem.detailText = nil;
 }
 
 @end

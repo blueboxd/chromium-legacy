@@ -73,7 +73,7 @@ static void SetFocusForDialog(HTMLDialogElement* dialog) {
 
   // 3. Run the focusing steps for control.
   if (control->IsFocusable())
-    control->focus();
+    control->Focus();
   else
     dialog->GetDocument().ClearFocusedElement();
 
@@ -155,7 +155,7 @@ void HTMLDialogElement::close(const String& return_value) {
     focus_options->setPreventScroll(true);
     Element* previously_focused_element = previously_focused_element_;
     previously_focused_element_ = nullptr;
-    previously_focused_element->focus(focus_options);
+    previously_focused_element->Focus(focus_options);
   }
 
   if (close_watcher_)
@@ -180,8 +180,7 @@ void HTMLDialogElement::show() {
   SetBooleanAttribute(html_names::kOpenAttr, true);
 
   // Showing a <dialog> should hide all open popups.
-  if (RuntimeEnabledFeatures::HTMLPopupElementEnabled() ||
-      RuntimeEnabledFeatures::HTMLPopupAttributeEnabled()) {
+  if (RuntimeEnabledFeatures::HTMLPopupAttributeEnabled()) {
     GetDocument().HideAllPopupsUntil(nullptr);
   }
 
@@ -200,7 +199,8 @@ class DialogCloseWatcherEventListener : public NativeEventListener {
       : dialog_(dialog) {}
 
   void Invoke(ExecutionContext*, Event* event) override {
-    DCHECK(dialog_);
+    if (!dialog_)
+      return;
     if (event->type() == event_type_names::kCancel)
       dialog_->CloseWatcherFiredCancel();
     if (event->type() == event_type_names::kClose)
@@ -240,8 +240,7 @@ void HTMLDialogElement::showModal(ExceptionState& exception_state) {
   }
 
   // Showing a <dialog> should hide all open popups.
-  if (RuntimeEnabledFeatures::HTMLPopupElementEnabled() ||
-      RuntimeEnabledFeatures::HTMLPopupAttributeEnabled()) {
+  if (RuntimeEnabledFeatures::HTMLPopupAttributeEnabled()) {
     document.HideAllPopupsUntil(nullptr);
   }
 

@@ -28,6 +28,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/platform_shared_memory_region.h"
+#include "base/memory/shared_memory_mapper.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
@@ -123,9 +124,11 @@ ClientBase* CastToClientBase(void* data) {
 class MemfdMemoryMapping : public base::SharedMemoryMapping {
  public:
   MemfdMemoryMapping(base::span<uint8_t> mapped_span)
-      : base::SharedMemoryMapping(mapped_span,
-                                  mapped_span.size(),
-                                  base::UnguessableToken::Create()) {}
+      : base::SharedMemoryMapping(
+            mapped_span,
+            mapped_span.size(),
+            base::UnguessableToken::Create(),
+            base::SharedMemoryMapper::GetDefaultInstance()) {}
 };
 
 void RegistryHandler(void* data,
@@ -563,11 +566,14 @@ bool ClientBase::Init(const InitParams& params) {
     make_current_ = std::make_unique<ui::ScopedMakeCurrent>(gl_context_.get(),
                                                             gl_surface_.get());
 
-    if (gl::GLSurfaceEGL::HasEGLExtension("EGL_EXT_image_flush_external") ||
-        gl::GLSurfaceEGL::HasEGLExtension("EGL_ARM_implicit_external_sync")) {
+    if (gl::GLSurfaceEGL::GetGLDisplayEGL()->HasEGLExtension(
+            "EGL_EXT_image_flush_external") ||
+        gl::GLSurfaceEGL::GetGLDisplayEGL()->HasEGLExtension(
+            "EGL_ARM_implicit_external_sync")) {
       egl_sync_type_ = EGL_SYNC_FENCE_KHR;
     }
-    if (gl::GLSurfaceEGL::HasEGLExtension("EGL_ANDROID_native_fence_sync")) {
+    if (gl::GLSurfaceEGL::GetGLDisplayEGL()->HasEGLExtension(
+            "EGL_ANDROID_native_fence_sync")) {
       egl_sync_type_ = EGL_SYNC_NATIVE_FENCE_ANDROID;
     }
 

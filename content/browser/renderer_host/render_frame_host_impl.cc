@@ -42,6 +42,7 @@
 #include "base/threading/sequence_bound.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/trace_event/optional_trace_event.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_url_parameters.h"
@@ -201,12 +202,14 @@
 #include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/schemeful_site.h"
+#include "net/net_buildflags.h"
 #include "services/device/public/mojom/screen_orientation.mojom.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "services/network/public/cpp/network_service_buildflags.h"
 #include "services/network/public/cpp/not_implemented_url_loader_factory.h"
 #include "services/network/public/cpp/trust_token_operation_authorization.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
@@ -274,11 +277,6 @@
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
-#endif
-
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-#include "content/browser/accessibility/ax_screen_ai_annotator.h"
-#include "ui/accessibility/accessibility_features.h"
 #endif
 
 namespace content {
@@ -1426,14 +1424,14 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       code_cache_host_receivers_(
           GetProcess()->GetStoragePartition()->GetGeneratedCodeCacheContext()),
       fenced_frame_status_(
-          IsInFencedFrameTree()
-              ? (IsFencedFrameRootNoStatus()
+          frame_tree_node_->IsInFencedFrameTree()
+              ? (frame_tree_node_->IsFencedFrameRoot()
                      ? FencedFrameStatus::kFencedFrameRoot
                      : FencedFrameStatus::kIframeNestedWithinFencedFrame)
               : FencedFrameStatus::kNotNestedInFencedFrame) {
   TRACE_EVENT_BEGIN("navigation", "RenderFrameHostImpl",
                     perfetto::Track::FromPointer(this),
-                    "render_frame_host_when_created", GetGlobalId());
+                    "render_frame_host_when_created", this);
   DCHECK(delegate_);
   DCHECK(lifecycle_state_ == LifecycleStateImpl::kSpeculative ||
          lifecycle_state_ == LifecycleStateImpl::kPrerendering ||
@@ -1775,6 +1773,9 @@ void RenderFrameHostImpl::DidEnterBackForwardCache() {
 
   DedicatedWorkerHostsForDocument::GetOrCreateForCurrentDocument(this)
       ->OnEnterBackForwardCache();
+#if BUILDFLAG(IS_P2P_ENABLED)
+  GetProcess()->PauseSocketManagerForRenderFrameHost(GetGlobalId());
+#endif  // BUILDFLAG(IS_P2P_ENABLED)
 }
 
 // The frame as been restored from the BackForwardCache.
@@ -1794,6 +1795,9 @@ void RenderFrameHostImpl::WillLeaveBackForwardCache() {
 
   DedicatedWorkerHostsForDocument::GetOrCreateForCurrentDocument(this)
       ->OnRestoreFromBackForwardCache();
+#if BUILDFLAG(IS_P2P_ENABLED)
+  GetProcess()->ResumeSocketManagerForRenderFrameHost(GetGlobalId());
+#endif  // BUILDFLAG(IS_P2P_ENABLED)
 }
 
 mojom::DidCommitProvisionalLoadParamsPtr
@@ -1954,57 +1958,6 @@ bool RenderFrameHostImpl::IsDescendantOfWithinFrameTree(
 
 bool RenderFrameHostImpl::IsFencedFrameRoot() {
   return fenced_frame_status_ == FencedFrameStatus::kFencedFrameRoot;
-}
-
-bool RenderFrameHostImpl::IsFencedFrameRootNoStatus() {
-  if (!blink::features::IsFencedFramesEnabled())
-    return false;
-
-  switch (blink::features::kFencedFramesImplementationTypeParam.Get()) {
-    case blink::features::FencedFramesImplementationType::kMPArch: {
-      return is_main_frame() &&
-             frame_tree()->type() == FrameTree::Type::kFencedFrame;
-    }
-    case blink::features::FencedFramesImplementationType::kShadowDOM: {
-      // Different from the MPArch case, the ShadowDOM implementation of fenced
-      // frame lives in the same FrameTree as its parent, so we need to check
-      // its effective frame policy instead.
-      return browsing_context_state_->effective_frame_policy().is_fenced;
-    }
-    default:
-      return false;
-  }
-}
-
-bool RenderFrameHostImpl::IsInFencedFrameTree() {
-  if (!blink::features::IsFencedFramesEnabled())
-    return false;
-
-  switch (blink::features::kFencedFramesImplementationTypeParam.Get()) {
-    case blink::features::FencedFramesImplementationType::kMPArch:
-      return frame_tree()->type() == FrameTree::Type::kFencedFrame;
-    case blink::features::FencedFramesImplementationType::kShadowDOM: {
-      // FrameTreeNode may not necessarily be initialized in which case,
-      // determining fenced frame information will require a valid
-      // RenderFrameHost.
-      if (browsing_context_state_->effective_frame_policy().is_fenced) {
-        return true;
-      }
-
-      RenderFrameHostImpl* node = GetParent();
-      while (node) {
-        if (node->browsing_context_state()
-                ->effective_frame_policy()
-                .is_fenced) {
-          return true;
-        }
-        node = node->GetParent() ? node->GetParent() : nullptr;
-      }
-      return false;
-    }
-    default:
-      return false;
-  }
 }
 
 bool RenderFrameHostImpl::IsNestedWithinFencedFrame() const {
@@ -2661,27 +2614,8 @@ void RenderFrameHostImpl::AccessibilityPerformAction(
       view->SetLastPointerType(ui::EventPointerType::kTouch);
   }
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-  if (action_data.action == ax::mojom::Action::kRunScreenAi) {
-    RunScreenAIAnnotator();
-    return;
-  }
-#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-
   render_accessibility_->PerformAction(action_data);
 }
-
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-void RenderFrameHostImpl::RunScreenAIAnnotator() {
-  if (!features::IsScreenAIEnabled())
-    return;
-  if (!ax_screen_ai_annotator_) {
-    ax_screen_ai_annotator_ =
-        std::make_unique<AXScreenAIAnnotator>(this, GetBrowserContext());
-  }
-  ax_screen_ai_annotator_->Run();
-}
-#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
 bool RenderFrameHostImpl::AccessibilityViewHasFocus() {
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
@@ -2901,9 +2835,38 @@ void RenderFrameHostImpl::InitializePrivateNetworkRequestPolicy() {
       DerivePrivateNetworkRequestPolicy(policy_container_host_->policies());
 }
 
-void RenderFrameHostImpl::RenderProcessExited(
-    RenderProcessHost* host,
+void RenderFrameHostImpl::RenderProcessGone(
+    SiteInstanceGroup* site_instance_group,
     const ChildProcessTerminationInfo& info) {
+  DCHECK_EQ(site_instance_->group(), site_instance_group);
+
+  if (IsInBackForwardCache()) {
+    EvictFromBackForwardCacheWithReason(
+        info.status == base::TERMINATION_STATUS_PROCESS_CRASHED
+            ? BackForwardCacheMetrics::NotRestoredReason::
+                  kRendererProcessCrashed
+            : BackForwardCacheMetrics::NotRestoredReason::
+                  kRendererProcessKilled);
+  }
+
+  CancelPrerendering(info.status == base::TERMINATION_STATUS_PROCESS_CRASHED
+                         ? PrerenderHost::FinalStatus::kRendererProcessCrashed
+                         : PrerenderHost::FinalStatus::kRendererProcessKilled);
+
+  if (owned_render_widget_host_)
+    owned_render_widget_host_->RendererExited();
+
+  // The renderer process is gone, so this frame can no longer be loading.
+  ResetNavigationRequests();
+  ResetLoadingState();
+
+  // Any future UpdateState or UpdateTitle messages from this or a recreated
+  // process should be ignored until the next commit.
+  set_nav_entry_id(0);
+
+  if (is_audible_)
+    OnAudibleStateChanged(false);
+
   ++renderer_exit_count_;
 
   if (base::FeatureList::IsEnabled(features::kCrashReporting))
@@ -2977,41 +2940,6 @@ void RenderFrameHostImpl::RenderProcessExited(
   // Note: don't add any more code at this point in the function because
   // |this| may be deleted. Any additional cleanup should happen before
   // the last block of code here.
-}
-
-void RenderFrameHostImpl::RenderProcessGone(
-    SiteInstanceGroup* site_instance_group,
-    const ChildProcessTerminationInfo& info) {
-  DCHECK_EQ(site_instance_->group(), site_instance_group);
-
-  if (IsInBackForwardCache()) {
-    EvictFromBackForwardCacheWithReason(
-        info.status == base::TERMINATION_STATUS_PROCESS_CRASHED
-            ? BackForwardCacheMetrics::NotRestoredReason::
-                  kRendererProcessCrashed
-            : BackForwardCacheMetrics::NotRestoredReason::
-                  kRendererProcessKilled);
-  }
-
-  CancelPrerendering(info.status == base::TERMINATION_STATUS_PROCESS_CRASHED
-                         ? PrerenderHost::FinalStatus::kRendererProcessCrashed
-                         : PrerenderHost::FinalStatus::kRendererProcessKilled);
-
-  if (owned_render_widget_host_)
-    owned_render_widget_host_->RendererExited();
-
-  // The renderer process is gone, so this frame can no longer be loading.
-  ResetNavigationRequests();
-  ResetLoadingState();
-
-  // Any future UpdateState or UpdateTitle messages from this or a recreated
-  // process should be ignored until the next commit.
-  set_nav_entry_id(0);
-
-  if (is_audible_)
-    OnAudibleStateChanged(false);
-
-  RenderProcessExited(site_instance_group->process(), info);
 }
 
 void RenderFrameHostImpl::PerformAction(const ui::AXActionData& data) {
@@ -4550,6 +4478,9 @@ void RenderFrameHostImpl::UndoCommitNavigation(RenderFrameProxyHost& proxy,
                                                bool is_loading) {
   TRACE_EVENT("navigation", "RenderFrameHostImpl::UndoCommitNavigation",
               "render_frame_host", this);
+  base::UmaHistogramBoolean(
+      "Navigation.UndoCommit.IsSpeculativeRenderFrameLive",
+      IsRenderFrameLive());
 
   DCHECK_EQ(lifecycle_state_, LifecycleStateImpl::kPendingCommit);
 
@@ -5755,35 +5686,6 @@ void RenderFrameHostImpl::SetVirtualKeyboardOverlayPolicy(
   GetPage().set_virtual_keyboard_overlays_content(vk_overlays_content);
 }
 
-void RenderFrameHostImpl::NotifyVirtualKeyboardOverlayRect(
-    const gfx::Rect& keyboard_rect) {
-  DCHECK(GetPage().virtual_keyboard_overlays_content());
-
-  // Notify each SiteInstance a single time. Renderer will take care of ensuring
-  // the event is dispatched to all relevant listeners in the grouping of frames
-  // for the SiteInstance.
-  // TODO(snianu): Transform from the main frame's coordinates to each
-  // individual frame client coordinates so that these are more usable from
-  // within iframes.
-  std::set<SiteInstance*> notified_instances;
-  for (RenderFrameHostImpl* node = this; node; node = node->GetParent()) {
-    SiteInstance* site_instance = node->GetSiteInstance();
-    if (base::Contains(notified_instances, site_instance))
-      continue;
-
-    node->GetAssociatedLocalFrame()->NotifyVirtualKeyboardOverlayRect(
-        keyboard_rect);
-    notified_instances.insert(site_instance);
-  }
-}
-
-// Returns the keyboard layout mapping.
-base::flat_map<std::string, std::string>
-RenderFrameHostImpl::GetKeyboardLayoutMap() {
-  // Fetch the keyboard layout from the main frame.
-  return GetMainFrame()->GetRenderWidgetHost()->GetKeyboardLayoutMap();
-}
-
 void RenderFrameHostImpl::VisibilityChanged(
     blink::mojom::FrameVisibility visibility) {
   visibility_ = visibility;
@@ -6135,29 +6037,23 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReason(
 void RenderFrameHostImpl::EvictFromBackForwardCacheWithFlattenedReasons(
     BackForwardCacheCanStoreDocumentResult can_store_flat) {
   // Create a NotRestoredReasons tree that has |can_store_flat| as a reason
-  // for |this| render frame host.
-  std::unique_ptr<BackForwardCacheCanStoreTreeResult> can_store_tree =
+  // for |this| RenderFrameHost.
+  auto can_store =
       BackForwardCacheImpl::CreateEvictionBackForwardCacheCanStoreTreeResult(
           *this, can_store_flat);
-  BackForwardCacheCanStoreDocumentResultWithTree can_store(
-      can_store_flat, std::move(can_store_tree));
   EvictFromBackForwardCacheWithFlattenedAndTreeReasons(can_store);
 }
 
 void RenderFrameHostImpl::EvictFromBackForwardCacheWithFlattenedAndTreeReasons(
     BackForwardCacheCanStoreDocumentResultWithTree& can_store) {
-  BackForwardCacheCanStoreDocumentResult& can_store_flattened =
-      can_store.flattened_reasons;
-  std::unique_ptr<BackForwardCacheCanStoreTreeResult> can_store_tree =
-      std::move(can_store.tree_reasons);
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::EvictFromBackForwardCache",
-               "can_store", can_store_flattened.ToString(), "rfh",
+               "can_store", can_store.flattened_reasons.ToString(), "rfh",
                static_cast<void*>(this));
   TRACE_EVENT("navigation",
               "RenderFrameHostImpl::"
               "EvictFromBackForwardCacheWithFlattenedAndTreeReasons",
               ChromeTrackEvent::kBackForwardCacheCanStoreDocumentResult,
-              can_store_flattened);
+              can_store.flattened_reasons);
   DCHECK(IsBackForwardCacheEnabled());
 
   if (is_evicted_from_back_forward_cache_)
@@ -6175,8 +6071,7 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithFlattenedAndTreeReasons(
   // |in_back_forward_cache| is false.
   BackForwardCacheMetrics* metrics = top_document->GetBackForwardCacheMetrics();
   if (in_back_forward_cache && metrics) {
-    metrics->FinalizeNotRestoredReasons(can_store_flattened,
-                                        std::move(can_store_tree));
+    metrics->SetNotRestoredReasons(can_store);
   }
 
   if (!in_back_forward_cache) {
@@ -7156,8 +7051,9 @@ void RenderFrameHostImpl::CreatePortal(
     return;
   }
 
-  // We don't support attaching a portal inside a nested browsing context.
-  if (!is_main_frame()) {
+  // We don't support attaching a portal inside a nested browsing context or
+  // inside a fenced frame.
+  if (!is_main_frame() || IsFencedFrameRoot()) {
     frame_host_associated_receiver_.ReportBadMessage(
         "RFHI::CreatePortal called in a nested browsing context");
     return;
@@ -8387,7 +8283,7 @@ void RenderFrameHostImpl::CommitNavigation(
   // The renderer can exit view source mode when any error or cancellation
   // happen. When reusing the same renderer, overwrite to recover the mode.
   if (commit_params->is_view_source && IsActive()) {
-    DCHECK(!GetParent());
+    DCHECK(!GetParentOrOuterDocument());
     GetAssociatedLocalFrame()->EnableViewSourceMode();
   }
 
@@ -13516,7 +13412,7 @@ RenderFrameHostImpl::DocumentAssociatedData::~DocumentAssociatedData() {
     // DocumentServiceBase unregisters itself at destruction time.
     services.back()->WillBeDestroyed(
         DocumentServiceDestructionReason::kEndOfDocumentLifetime);
-    delete services.back();
+    services.back()->ResetAndDeleteThis();
   }
 
   // Explicitly clear all user data here, so that the other fields of

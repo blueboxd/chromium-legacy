@@ -12,6 +12,9 @@
 
 namespace blink {
 
+static constexpr char kShown[] = "shown";
+static constexpr char kHidden[] = "hidden";
+
 CrosWindow::CrosWindow(CrosWindowManagement* manager,
                        mojom::blink::CrosWindowPtr window)
     : window_management_(manager), window_(std::move(window)) {}
@@ -33,12 +36,25 @@ bool CrosWindow::isFullscreen() {
   return window_->is_fullscreen;
 }
 
-bool CrosWindow::isMinimised() {
+bool CrosWindow::isMaximized() {
+  return window_->is_maximized;
+}
+
+bool CrosWindow::isMinimized() {
   return window_->is_minimized;
 }
 
-bool CrosWindow::isVisible() {
-  return window_->is_visible;
+bool CrosWindow::isFocused() {
+  return window_->is_focused;
+}
+
+String CrosWindow::visibilityState() {
+  switch (window_->is_visible) {
+    case mojom::blink::VisibilityState::kShown:
+      return kShown;
+    case mojom::blink::VisibilityState::kHidden:
+      return kHidden;
+  }
 }
 
 String CrosWindow::id() {

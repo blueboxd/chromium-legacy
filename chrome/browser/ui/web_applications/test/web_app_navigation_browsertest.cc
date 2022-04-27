@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/strings/escape.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
@@ -21,7 +23,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "net/base/escape.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -96,7 +97,7 @@ std::string WebAppNavigationBrowserTest::CreateServerRedirect(
     const GURL& target_url) {
   const char* const kServerRedirectBase = "/server-redirect?";
   return kServerRedirectBase +
-         net::EscapeQueryParamValue(target_url.spec(), false);
+         base::EscapeQueryParamValue(target_url.spec(), false);
 }
 
 // static
@@ -240,7 +241,7 @@ AppId WebAppNavigationBrowserTest::InstallTestWebApp(
   web_app_info->scope = https_server_.GetURL(app_host, app_scope);
   web_app_info->title = base::UTF8ToUTF16(GetAppName());
   web_app_info->description = u"Test description";
-  web_app_info->user_display_mode = blink::mojom::DisplayMode::kStandalone;
+  web_app_info->user_display_mode = web_app::UserDisplayMode::kStandalone;
 
   return test::InstallWebApp(profile(), std::move(web_app_info));
 }

@@ -32,7 +32,7 @@ class ScriptState;
 // full instance.
 class MODULES_EXPORT TransferredMediaStreamTrack : public MediaStreamTrack {
  public:
-  TransferredMediaStreamTrack() = default;
+  explicit TransferredMediaStreamTrack(const TransferredValues& data);
 
   // MediaStreamTrack.idl
   String kind() const override;
@@ -53,7 +53,8 @@ class MODULES_EXPORT TransferredMediaStreamTrack : public MediaStreamTrack {
   ScriptPromise applyConstraints(ScriptState*,
                                  const MediaTrackConstraints*) override;
 
-  void setImplementation(MediaStreamTrack* track);
+  bool HasImplementation() const { return !!track_; }
+  void SetImplementation(MediaStreamTrack* track);
 
   void SetConstraints(const MediaConstraints&) override;
 
@@ -101,6 +102,7 @@ class MODULES_EXPORT TransferredMediaStreamTrack : public MediaStreamTrack {
 
  private:
   Member<MediaStreamTrack> track_;
+  TransferredValues data_;
 };
 
 }  // namespace blink

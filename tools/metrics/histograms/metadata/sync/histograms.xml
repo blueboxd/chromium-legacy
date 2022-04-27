@@ -351,7 +351,8 @@ chromium-metrics-reviews@google.com.
   <summary>
     Histogram of the run failures for the different sync datatypes. These are
     failures that occur after startup while the datatype is syncing. This is one
-    of the base sync health metrics.
+    of the base sync health metrics. The Sync.ModelTypeStoreBackendError
+    histograms may help diagnosing the problem.
   </summary>
 </histogram>
 
@@ -366,7 +367,8 @@ chromium-metrics-reviews@google.com.
     For USS datatypes, these errors are caused by failures in reading metadata
     (or data) from the DB or by another failure in interaction with the model.
     For Directory datatypes, startup errors are due to missing top level sync
-    nodes or model association. This is one of the base sync health metrics.
+    nodes or model association. This is one of the base sync health metrics. The
+    Sync.ModelTypeStoreBackendError histograms may help diagnosing the problem.
   </summary>
 </histogram>
 
@@ -512,7 +514,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.LocalDeviceInfoDeletionReuploaded" enum="Boolean"
-    expires_after="2022-05-31">
+    expires_after="2022-11-30">
   <owner>rushans@google.com</owner>
   <owner>treib@chromium.org</owner>
   <component>Services&gt;Sync</component>
@@ -692,7 +694,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.ModelTypeStoreBackendError.{Operation}"
-    enum="LevelDBStatus" expires_after="2022-05-28">
+    enum="LevelDBStatus" expires_after="2023-05-28">
   <owner>treib@chromium.org</owner>
   <owner>rushans@google.com</owner>
   <component>Services&gt;Sync</component>
@@ -714,7 +716,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.ModelTypeTimeUntilEncryptionKeyFound2{SyncModelType}"
-    units="GetUpdates" expires_after="2022-04-06">
+    units="GetUpdates" expires_after="2022-06-06">
   <owner>victorvianna@google.com</owner>
   <owner>mastiz@chromium.org</owner>
   <component>Services&gt;Sync</component>
@@ -735,7 +737,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Sync.ModelTypeUndecryptablePendingUpdatesDropped{SyncModelType}"
-    units="SyncEntity" expires_after="2022-04-24">
+    units="SyncEntity" expires_after="2022-06-24">
   <owner>victorvianna@google.com</owner>
   <owner>mastiz@chromium.org</owner>
   <component>Services&gt;Sync</component>
@@ -819,7 +821,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.PostedClientToServerMessage"
-    enum="SyncClientToServerMessageContents" expires_after="2022-08-21">
+    enum="SyncClientToServerMessageContents" expires_after="2022-10-23">
   <owner>mastiz@chromium.org</owner>
   <component>Services&gt;Sync</component>
   <summary>
@@ -829,7 +831,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.PostedClientToServerMessageError2" enum="SyncErrorType"
-    expires_after="2022-08-21">
+    expires_after="2022-10-23">
   <owner>mastiz@chromium.org</owner>
   <owner>treib@chromium.org</owner>
   <component>Services&gt;Sync</component>
@@ -890,7 +892,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.ProblematicServerSideBookmarks"
-    enum="RemoteBookmarkUpdateError" expires_after="2022-08-21">
+    enum="RemoteBookmarkUpdateError" expires_after="2022-10-23">
   <owner>mastiz@chromium.org</owner>
   <owner>rushans@google.com</owner>
   <component>Services&gt;Sync</component>
@@ -965,17 +967,21 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.Startup.PolicyLoadStartupDelay" units="ms"
-    expires_after="2022-04-17">
+    expires_after="2022-10-17">
   <owner>ydago@chromium.org</owner>
   <owner>treib@chromium.org</owner>
   <component>Services&gt;Sync</component>
   <summary>
     The time spent waiting for policies to load before starting the sync engine.
+    This is recorded every time the sync engine is started after having to wait
+    for the browser policies from all sources to be loaded. In case the policy
+    service already had all of its policies loaded by the time the sync ending
+    starts, this records base::TimeDelta().
   </summary>
 </histogram>
 
-<histogram name="Sync.Startup.PolicyLoadTimeout2" enum="Boolean"
-    expires_after="2022-04-17">
+<histogram name="Sync.Startup.PolicyLoadTimeout2" enum="BooleanTimedOut"
+    expires_after="2022-10-17">
   <owner>ydago@chromium.org</owner>
   <owner>treib@chromium.org</owner>
   <component>Services&gt;Sync</component>

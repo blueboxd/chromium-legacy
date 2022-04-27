@@ -12,6 +12,8 @@
 
   #contentContainer {
     flex-grow: 1;
+    /* TODO(longbowei): Update max-height, min-height later with specs. */
+    max-height: 385px;
   }
 
   .shimless-content {
@@ -46,6 +48,11 @@
   .busy-icon {
     height: 20px;
     width: 20px;
+  }
+
+  .button-icon {
+    height: var(--cr-icon-size);
+    width: var(--cr-icon-size);
   }
 
   #cancelButtonSpinner,
@@ -84,9 +91,9 @@
       <paper-spinner-lite id="backButtonSpinner" class="busy-icon"
           hidden$="[[!backButtonClicked_]]" active>
       </paper-spinner-lite>
-      <span id="backButtonCaret" hidden$="[[backButtonClicked_]]">
-        &#60;
-      </span>
+      <iron-icon id="backButtonCaret" icon="cr:chevron-left"
+          class="button-icon" hidden$="[[backButtonClicked_]]">
+      </iron-icon>
       <span id="backButtonLabel">
         [[i18n('backButtonLabel')]]
       </span>
@@ -115,9 +122,9 @@
       <paper-spinner-lite id="nextButtonSpinner" class="busy-icon"
           hidden$="[[!nextButtonClicked_]]" active>
       </paper-spinner-lite>
-      <span id="nextButtonCaret" hidden$="[[nextButtonClicked_]]">
-        &#62;
-      </span>
+      <iron-icon id="nextButtonCaret" icon="cr:chevron-right"
+          class="button-icon" hidden$="[[nextButtonClicked_]]">
+      </iron-icon>
     </cr-button>
   </div>
 </div>

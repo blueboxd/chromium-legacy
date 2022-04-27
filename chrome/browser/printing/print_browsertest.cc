@@ -206,7 +206,7 @@ void UpdatePrintSettingsReplyOnIO(
     RenderParamsFromPrintSettings(printer_query->settings(),
                                   params->params.get());
     params->params->document_cookie = printer_query->cookie();
-    params->pages = PageRange::GetPages(printer_query->settings().ranges());
+    params->pages = printer_query->settings().ranges();
     snooped_settings =
         std::make_unique<PrintSettings>(printer_query->settings());
   }
@@ -2116,12 +2116,20 @@ class PrintFencedFrameBrowserTest
       fenced_frame_helper_ =
           std::make_unique<content::test::FencedFrameTestHelper>();
     } else {
-      feature_list_.InitAndEnableFeatureWithParameters(
-          blink::features::kFencedFrames,
-          {{"implementation_type", "shadow_dom"}});
+      feature_list_.InitWithFeaturesAndParameters(
+          {{blink::features::kFencedFrames,
+            {{"implementation_type", "shadow_dom"}}},
+           {::features::kPrivacySandboxAdsAPIsOverride, {}}},
+          {/* disabled_features */});
     }
   }
   ~PrintFencedFrameBrowserTest() override = default;
+
+  void SetUpOnMainThread() override {
+    PrintBrowserTest::SetUpOnMainThread();
+    https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+    ASSERT_TRUE(https_server_.Start());
+  }
 
   PrintFencedFrameBrowserTest(const PrintFencedFrameBrowserTest&) = delete;
   PrintFencedFrameBrowserTest& operator=(const PrintFencedFrameBrowserTest&) =
@@ -2161,12 +2169,11 @@ class PrintFencedFrameBrowserTest
 
   void RunPrintTest(const std::string& print_command) {
     // Navigate to an initial page.
-    const GURL url(embedded_test_server()->GetURL("/empty.html"));
+    const GURL url(https_server_.GetURL("/empty.html"));
     ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
     // Load a fenced frame.
-    GURL fenced_frame_url =
-        embedded_test_server()->GetURL("/fenced_frames/title1.html");
+    GURL fenced_frame_url = https_server_.GetURL("/fenced_frames/title1.html");
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     content::RenderFrameHost* fenced_frame_host =
@@ -2205,6 +2212,7 @@ class PrintFencedFrameBrowserTest
  private:
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<content::test::FencedFrameTestHelper> fenced_frame_helper_;
+  net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
 };
 
 IN_PROC_BROWSER_TEST_P(PrintFencedFrameBrowserTest, ScriptedPrint) {

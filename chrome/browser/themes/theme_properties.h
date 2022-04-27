@@ -102,15 +102,6 @@ class ThemeProperties {
     COLOR_LOCATION_BAR_BORDER = 1000,
     COLOR_LOCATION_BAR_BORDER_OPAQUE,
 
-    COLOR_APP_MENU_HIGHLIGHT_SEVERITY_LOW,
-    COLOR_APP_MENU_HIGHLIGHT_SEVERITY_HIGH,
-    COLOR_APP_MENU_HIGHLIGHT_SEVERITY_MEDIUM,
-    COLOR_AVATAR_BUTTON_HIGHLIGHT_NORMAL,
-    COLOR_AVATAR_BUTTON_HIGHLIGHT_SYNC_ERROR,
-    COLOR_AVATAR_BUTTON_HIGHLIGHT_SYNC_PAUSED,
-    COLOR_READ_LATER_BUTTON_HIGHLIGHT,
-
-    COLOR_TOOLBAR_BUTTON_BACKGROUND,
     COLOR_TOOLBAR_BUTTON_BORDER,
     COLOR_TOOLBAR_BUTTON_ICON_HOVERED,
     COLOR_TOOLBAR_BUTTON_ICON_INACTIVE,
@@ -120,8 +111,6 @@ class ThemeProperties {
     // The color of the line separating the bottom of the toolbar from the
     // contents.
     COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR,
-
-    COLOR_TOOLBAR_FEATURE_PROMO_HIGHLIGHT,
 
     // Opaque base color for toolbar button ink drops.
     COLOR_TOOLBAR_INK_DROP,
@@ -143,15 +132,11 @@ class ThemeProperties {
     // Colors used for various 'shelves' and 'bars'.
     // Download shelf colors.
     COLOR_DOWNLOAD_SHELF,
-    COLOR_DOWNLOAD_SHELF_BUTTON_BACKGROUND,
-    COLOR_DOWNLOAD_SHELF_BUTTON_TEXT,
     COLOR_DOWNLOAD_SHELF_CONTENT_AREA_SEPARATOR,
-    COLOR_DOWNLOAD_SHELF_FOREGROUND,
 
     // Infobar colors.
     COLOR_INFOBAR,
     COLOR_INFOBAR_CONTENT_AREA_SEPARATOR,
-    COLOR_INFOBAR_TEXT,
 
     COLOR_SIDE_PANEL_CONTENT_AREA_SEPARATOR,
 
@@ -322,7 +307,6 @@ class ThemeProperties {
 
     // Colors used for the Bookmark bar
     COLOR_BOOKMARK_BAR_BACKGROUND,
-    COLOR_BOOKMARK_BUTTON_ICON,
     // If COLOR_TOOLBAR_BUTTON_ICON is defined in the custom theme, that color
     // will be returned, otherwise it will be transparent so the default
     // favicon color is retained.

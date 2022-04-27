@@ -166,8 +166,13 @@
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/lacros/account_manager/account_profile_mapper.h"
+#include "chrome/browser/ui/startup/first_run_lacros.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/chromeos/extensions/contact_center_insights/contact_center_insights_extension_manager.h"
 #endif
 
 using base::UserMetricsAction;
@@ -1632,6 +1637,15 @@ void ProfileManager::DoFinalInit(ProfileInfo* profile_info,
     browsing_data_lifetime_manager->ClearBrowsingDataForOnExitPolicy(
         /*keep_browser_alive=*/false);
   }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Check if we should turn Sync on from the background and skip the FRE.
+  if (ShouldOpenPrimaryProfileFirstRun() && profile->IsMainProfile()) {
+    // If we don't manage to set it, we will just have to defer silent or visual
+    // handling of the FRE to when the user attempts to open a browser UI.
+    TryMarkFirstRunAlreadyFinished(profile);
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
 void ProfileManager::DoFinalInitForServices(Profile* profile,
@@ -1665,6 +1679,17 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
         ->extension_service()
         ->BlockAllExtensions();
   }
+
+#if BUILDFLAG(IS_CHROMEOS)
+  // Ensure that the `ContactCenterInsightsExtensionManager` is instantiated
+  // after other systems are set up and only when extensions are enabled for the
+  // given profile. This is done in `ProfileManager` so we can repurpose the
+  // same pre-conditional checks that are being used with other extension
+  // components and we can maintain said order.
+  if (extensions_enabled) {
+    ::chromeos::ContactCenterInsightsExtensionManager::GetForProfile(profile);
+  }
+#endif
 
 #endif
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -2355,6 +2380,12 @@ void ProfileManager::OnBrowserOpened(Browser* browser) {
   DCHECK(browser);
   Profile* profile = browser->profile();
   DCHECK(profile);
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // No browser should be opened before the FRE is finished.
+  DCHECK(!ShouldOpenPrimaryProfileFirstRun());
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
   if (!profile->IsOffTheRecord() && !IsEphemeral(profile) &&
       !browser->is_type_app() && ++browser_counts_[profile] == 1) {
     active_profiles_.push_back(profile);

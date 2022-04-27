@@ -328,8 +328,6 @@ ShelfAppButton::ShelfAppButton(ShelfView* shelf_view,
   views::InstallEmptyHighlightPathGenerator(this);
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetInstallFocusRingOnFocus(true);
-  views::FocusRing::Get(this)->SetColor(
-      ShelfConfig::Get()->shelf_focus_border_color());
   // The focus ring should have an inset of half the focus border thickness, so
   // the parent view won't clip it.
   views::FocusRing::Get(this)->SetPathGenerator(
@@ -445,13 +443,18 @@ void ShelfAppButton::OnMenuClosed() {
             views::InkDrop::Get(this)->GetInkDrop()->GetTargetInkDropState());
   views::InkDrop::Get(this)->GetInkDrop()->AnimateToState(
       views::InkDropState::DEACTIVATED);
+  context_menu_target_visibility_ = false;
 }
 
 void ShelfAppButton::ShowContextMenu(const gfx::Point& p,
                                      ui::MenuSourceType source_type) {
-  if (!context_menu_controller())
+  // Return early if:
+  // 1. the context menu controller is not set; or
+  // 2. `context_menu_target_visibility_` is already true.
+  if (!context_menu_controller() || context_menu_target_visibility_)
     return;
 
+  context_menu_target_visibility_ = true;
   auto weak_this = weak_factory_.GetWeakPtr();
 
   ShelfButton::ShowContextMenu(p, source_type);
@@ -538,6 +541,12 @@ bool ShelfAppButton::IsIconSizeCurrent() {
       GetIconBounds().width() + insets_shadows.left() + insets_shadows.right();
 
   return icon_width == shelf_view_->GetButtonIconSize();
+}
+
+void ShelfAppButton::OnContextMenuModelRequestCanceled() {
+  // The request for the context menu model gets canceled so reset the context
+  // menu target visibility.
+  context_menu_target_visibility_ = false;
 }
 
 bool ShelfAppButton::FireDragTimerForTest() {
@@ -766,15 +775,7 @@ void ShelfAppButton::OnGestureEvent(ui::GestureEvent* event) {
         // on a shelf app button, the button's inkdrop could be in the pending
         // state while the button's context menu is hidden. In this case, we
         // have to hide the inkdrop explicitly.
-
-        // Note that the ET_GESTURE_END event may be received during the
-        // building of the context menu by triggering the synthesized gesture
-        // end event. Therefore we have to wait until the context menu is
-        // completely built.
-        base::SequencedTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE,
-            base::BindOnce(&ShelfAppButton::MaybeHideInkDropWhenGestureEnds,
-                           weak_factory_.GetWeakPtr()));
+        MaybeHideInkDropWhenGestureEnds();
       }
 
       ClearDragStateOnGestureEnd();
@@ -958,16 +959,23 @@ void ShelfAppButton::SetNotificationBadgeColor(SkColor color) {
 }
 
 void ShelfAppButton::MaybeHideInkDropWhenGestureEnds() {
-  if (shelf_view_->IsShowingMenuForView(this) ||
+  if (context_menu_target_visibility_ ||
       views::InkDrop::Get(this)->GetInkDrop()->GetTargetInkDropState() ==
           views::InkDropState::HIDDEN) {
-    // Return early if the shelf app button's context menu is showing or
-    // the button's inkdrop has been hidden.
+    // Return early if the shelf app button's context menu should show or
+    // the button's inkdrop has already been hidden.
     return;
   }
 
   views::InkDrop::Get(this)->GetInkDrop()->AnimateToState(
       views::InkDropState::HIDDEN);
+}
+
+void ShelfAppButton::OnThemeChanged() {
+  ShelfButton::OnThemeChanged();
+  views::FocusRing::Get(this)->SetColor(
+      AshColorProvider::Get()->GetControlsLayerColor(
+          AshColorProvider::ControlsLayerType::kFocusRingColor));
 }
 
 }  // namespace ash

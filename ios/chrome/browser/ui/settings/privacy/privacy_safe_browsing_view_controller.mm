@@ -10,9 +10,11 @@
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
+#import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_constants.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_safe_browsing_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_cell.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "net/base/mac/url_conversions.h"
@@ -31,10 +33,14 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 };
 }  // namespace
 
-@interface PrivacySafeBrowsingViewController ()
+@interface PrivacySafeBrowsingViewController () <
+    PopoverLabelViewControllerDelegate>
 
 // All the items for the safe browsing section.
 @property(nonatomic, strong) ItemArray safeBrowsingItems;
+
+// Boolean to detect if enterprise is enabled.
+@property(nonatomic, assign, readonly) BOOL enterpriseEnabled;
 
 @end
 
@@ -64,16 +70,21 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 
 #pragma mark - PrivacySafeBrowsingConsumer
 
-- (void)reconfigureItems {
+- (void)reloadCellsForItems {
   if (!self.tableViewModel) {
     // No need to reconfigure since the model has not been loaded yet.
     return;
   }
-  [self reconfigureCellsForItems:self.safeBrowsingItems];
+  [self reloadCellsForItems:self.safeBrowsingItems
+           withRowAnimation:UITableViewRowAnimationNone];
 }
 
 - (void)setSafeBrowsingItems:(ItemArray)safeBrowsingItems {
   _safeBrowsingItems = safeBrowsingItems;
+}
+
+- (void)setEnterpriseEnabled:(BOOL)enterpriseEnabled {
+  _enterpriseEnabled = enterpriseEnabled;
 }
 
 - (void)selectItem:(TableViewItem*)item {
@@ -81,6 +92,24 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   [self.tableView selectRowAtIndexPath:indexPath
                               animated:YES
                         scrollPosition:UITableViewScrollPositionNone];
+}
+
+- (void)showEnterprisePopUp:(UIButton*)buttonView {
+  EnterpriseInfoPopoverViewController* bubbleViewController =
+      [[EnterpriseInfoPopoverViewController alloc] initWithEnterpriseName:nil];
+
+  bubbleViewController.delegate = self;
+  // Disable the button when showing the bubble.
+  buttonView.enabled = NO;
+
+  // Set the anchor and arrow direction of the bubble.
+  bubbleViewController.popoverPresentationController.sourceView = buttonView;
+  bubbleViewController.popoverPresentationController.sourceRect =
+      buttonView.bounds;
+  bubbleViewController.popoverPresentationController.permittedArrowDirections =
+      UIPopoverArrowDirectionAny;
+
+  [self presentViewController:bubbleViewController animated:YES completion:nil];
 }
 
 #pragma mark - CollectionViewController
@@ -111,6 +140,36 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   // TODO(crbug.com/1307428): Add UMA recording
 }
 
+#pragma mark - Actions
+
+// Called when the user clicks on a information button.
+- (void)didTapUIInfoButton:(UIButton*)buttonView {
+  CGPoint hitPoint = [buttonView convertPoint:CGPointZero
+                                       toView:self.tableView];
+  NSIndexPath* indexPath = [self.tableView indexPathForRowAtPoint:hitPoint];
+  TableViewModel* model = self.tableViewModel;
+  TableViewItem* selectedItem = [model itemAtIndexPath:indexPath];
+
+  [self.modelDelegate didTapInfoButton:buttonView onItem:selectedItem];
+}
+
+#pragma mark - UITableViewDataSource
+
+- (UITableViewCell*)tableView:(UITableView*)tableView
+        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  UITableViewCell* cell = [super tableView:tableView
+                     cellForRowAtIndexPath:indexPath];
+  cell.selectionStyle = UITableViewCellSelectionStyleBlue;
+
+  TableViewInfoButtonCell* infoCell =
+      base::mac::ObjCCastStrict<TableViewInfoButtonCell>(cell);
+  [infoCell.trailingButton addTarget:self
+                              action:@selector(didTapUIInfoButton:)
+                    forControlEvents:UIControlEventTouchUpInside];
+
+  return cell;
+}
+
 #pragma mark - UITableViewDelegate
 
 - (void)tableView:(UITableView*)tableView
@@ -121,11 +180,18 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   [self.modelDelegate didSelectItem:selectedItem];
 }
 
-- (void)tableView:(UITableView*)tableView
-    accessoryButtonTappedForRowWithIndexPath:(NSIndexPath*)indexPath {
-  TableViewModel* model = self.tableViewModel;
-  TableViewItem* selectedItem = [model itemAtIndexPath:indexPath];
-  [self.modelDelegate didTapAccessoryView:selectedItem];
+- (BOOL)tableView:(UITableView*)tableView
+    shouldHighlightRowAtIndexPath:(NSIndexPath*)indexPath {
+  if (self.enterpriseEnabled) {
+    return NO;
+  }
+  return YES;
+}
+
+#pragma mark - PopoverLabelViewControllerDelegate
+
+- (void)didTapLinkURL:(NSURL*)URL {
+  [self view:nil didTapLinkURL:[[CrURL alloc] initWithNSURL:URL]];
 }
 
 @end

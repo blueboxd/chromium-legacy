@@ -108,11 +108,14 @@ base::TimeDelta ProfilerGroup::GetBaseSampleInterval() {
 }
 
 ProfilerGroup::ProfilerGroup(v8::Isolate* isolate)
-    : isolate_(isolate), cpu_profiler_(nullptr), num_active_profilers_(0) {}
+    : isolate_(isolate),
+      cpu_profiler_(nullptr),
+      next_profiler_id_(0),
+      num_active_profilers_(0) {}
 
 void DiscardedSamplesDelegate::Notify() {
   if (profiler_group_) {
-    profiler_group_->DispatchSampleBufferFullEvent(GetId());
+    profiler_group_->DispatchSampleBufferFullEvent(profiler_id_);
   }
 }
 
@@ -129,7 +132,7 @@ void ProfilerGroup::OnProfilingContextAdded(ExecutionContext* context) {
   }
 }
 
-void ProfilerGroup::DispatchSampleBufferFullEvent(v8::ProfilerId profiler_id) {
+void ProfilerGroup::DispatchSampleBufferFullEvent(String profiler_id) {
   for (const auto& profiler : profilers_) {
     if (profiler->ProfilerId() == profiler_id) {
       profiler->DispatchEvent(
@@ -164,14 +167,17 @@ Profiler* ProfilerGroup::CreateProfiler(ScriptState* script_state,
     return nullptr;
   }
 
+  String profiler_id = NextProfilerId();
+
   v8::CpuProfilingOptions options(
       v8::kLeafNodeLineNumbers, init_options.maxBufferSize(),
       static_cast<int>(sample_interval_us), script_state->GetContext());
 
-  v8::CpuProfilingResult result = cpu_profiler_->Start(
-      options, std::make_unique<DiscardedSamplesDelegate>(this));
+  v8::CpuProfilingStatus status = cpu_profiler_->StartProfiling(
+      V8String(isolate_, profiler_id), options,
+      std::make_unique<DiscardedSamplesDelegate>(this, profiler_id));
 
-  switch (result.status) {
+  switch (status) {
     case v8::CpuProfilingStatus::kErrorTooManyProfilers: {
       exception_state.ThrowTypeError(
           "Reached maximum concurrent amount of profilers");
@@ -204,7 +210,7 @@ Profiler* ProfilerGroup::CreateProfiler(ScriptState* script_state,
       }
 
       auto* profiler = MakeGarbageCollected<Profiler>(
-          this, script_state, result.id, effective_sample_interval_ms,
+          this, script_state, profiler_id, effective_sample_interval_ms,
           source_origin, time_origin);
       profilers_.insert(profiler);
       num_active_profilers_++;
@@ -227,6 +233,8 @@ void ProfilerGroup::WillBeDestroyed() {
     DCHECK(profiler->stopped());
     DCHECK(!profilers_.Contains(profiler));
   }
+
+  StopDetachedProfilers();
 
   if (cpu_profiler_)
     TeardownV8Profiler();
@@ -275,7 +283,9 @@ void ProfilerGroup::StopProfiler(ScriptState* script_state,
   DCHECK(cpu_profiler_);
   DCHECK(!profiler->stopped());
 
-  auto* profile = cpu_profiler_->Stop(profiler->ProfilerId());
+  v8::Local<v8::String> profiler_id =
+      V8String(isolate_, profiler->ProfilerId());
+  auto* profile = cpu_profiler_->StopProfiling(profiler_id);
   auto* trace = ProfilerTraceBuilder::FromProfile(
       script_state, profile, profiler->SourceOrigin(), profiler->TimeOrigin());
   resolver->Resolve(trace);
@@ -294,15 +304,67 @@ void ProfilerGroup::CancelProfiler(Profiler* profiler) {
   CancelProfilerImpl(profiler->ProfilerId());
 }
 
-void ProfilerGroup::CancelProfilerImpl(v8::ProfilerId profiler_id) {
+void ProfilerGroup::CancelProfilerAsync(ScriptState* script_state,
+                                        Profiler* profiler) {
+  DCHECK(IsMainThread());
+  DCHECK(cpu_profiler_);
+  DCHECK(!profiler->stopped());
+  profilers_.erase(profiler);
+
+  // register the profiler to be cleaned up in case its associated context
+  // gets destroyed before the cleanup task is executed.
+  detached_profiler_ids_.push_back(profiler->ProfilerId());
+
+  // Since it's possible for the profiler to get destructed along with its
+  // associated context, dispatch a task to cleanup context-independent isolate
+  // resources (rather than use the context's task runner).
+  ThreadScheduler::Current()->V8TaskRunner()->PostTask(
+      FROM_HERE, WTF::Bind(&ProfilerGroup::StopDetachedProfiler,
+                           WrapPersistent(this), profiler->ProfilerId()));
+}
+
+void ProfilerGroup::StopDetachedProfiler(String profiler_id) {
+  DCHECK(IsMainThread());
+
+  // we use a vector instead of a map because the expected number of profiler
+  // is expected to be very small
+  auto* it = std::find(detached_profiler_ids_.begin(),
+                       detached_profiler_ids_.end(), profiler_id);
+
+  if (it == detached_profiler_ids_.end()) {
+    // Profiler already stopped
+    return;
+  }
+
+  CancelProfilerImpl(profiler_id);
+  detached_profiler_ids_.erase(it);
+}
+
+void ProfilerGroup::StopDetachedProfilers() {
+  DCHECK(IsMainThread());
+
+  for (auto& detached_profiler_id : detached_profiler_ids_) {
+    CancelProfilerImpl(detached_profiler_id);
+  }
+  detached_profiler_ids_.clear();
+}
+
+void ProfilerGroup::CancelProfilerImpl(String profiler_id) {
   if (!cpu_profiler_)
     return;
 
   v8::HandleScope scope(isolate_);
-  auto* profile = cpu_profiler_->Stop(profiler_id);
+  v8::Local<v8::String> v8_profiler_id = V8String(isolate_, profiler_id);
+  auto* profile = cpu_profiler_->StopProfiling(v8_profiler_id);
 
   profile->Delete();
   --num_active_profilers_;
+}
+
+String ProfilerGroup::NextProfilerId() {
+  auto id = String::Format("blink::Profiler[%d]", next_profiler_id_);
+  ++next_profiler_id_;
+  return id;
 }
 
 }  // namespace blink

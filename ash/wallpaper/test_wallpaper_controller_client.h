@@ -10,6 +10,7 @@
 #include <unordered_map>
 
 #include "ash/public/cpp/wallpaper/wallpaper_controller_client.h"
+#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "components/account_id/account_id.h"
 
@@ -72,8 +73,10 @@ class TestWallpaperControllerClient : public WallpaperControllerClient {
   // WallpaperControllerClient:
   void OpenWallpaperPicker() override;
   void MaybeClosePreviewWallpaper() override;
-  void SetDefaultWallpaper(const AccountId& account_id,
-                           bool show_wallpaper) override;
+  void SetDefaultWallpaper(
+      const AccountId& account_id,
+      bool show_wallpaper,
+      base::OnceCallback<void(bool success)> callback) override;
   void MigrateCollectionIdFromChromeApp(
       const AccountId& account_id,
       base::OnceCallback<void(const std::string&)> result_callback) override;
@@ -86,6 +89,11 @@ class TestWallpaperControllerClient : public WallpaperControllerClient {
   void FetchGooglePhotosPhoto(const AccountId& account_id,
                               const std::string& id,
                               FetchGooglePhotosPhotoCallback callback) override;
+  void FetchDailyGooglePhotosPhoto(
+      const AccountId& account_id,
+      const std::string& album_id,
+      const absl::optional<std::string>& current_photo_id,
+      FetchGooglePhotosPhotoCallback callback) override;
   void SaveWallpaperToDriveFs(
       const AccountId& account_id,
       const base::FilePath& origin,

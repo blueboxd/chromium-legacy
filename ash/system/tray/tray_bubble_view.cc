@@ -289,11 +289,15 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
     // NativeViewHost and may steal events.
     SetPaintToLayer(ui::LAYER_NOT_DRAWN);
 
-    if (features::IsDarkLightModeEnabled()) {
+    if (features::IsDarkLightModeEnabled() && !init_params.transparent) {
       SetPaintToLayer();
       layer()->SetRoundedCornerRadius(
           gfx::RoundedCornersF{static_cast<float>(params_.corner_radius)});
     }
+  }
+
+  if (init_params.transparent) {
+    set_color(SK_ColorTRANSPARENT);
   }
 
   auto layout = std::make_unique<BottomAlignedBoxLayout>(this);
@@ -429,10 +433,10 @@ ui::LayerType TrayBubbleView::GetLayerType() const {
 std::unique_ptr<NonClientFrameView> TrayBubbleView::CreateNonClientFrameView(
     Widget* widget) {
   // Create the customized bubble border.
-  std::unique_ptr<BubbleBorder> bubble_border = std::make_unique<BubbleBorder>(
-      arrow(), BubbleBorder::NO_SHADOW,
-      params_.bg_color.value_or(gfx::kPlaceholderColor));
-  bubble_border->set_use_theme_background_color(!params_.bg_color);
+  std::unique_ptr<BubbleBorder> bubble_border =
+      std::make_unique<BubbleBorder>(arrow(), BubbleBorder::NO_SHADOW);
+  if (params_.bg_color.has_value())
+    bubble_border->SetColor(params_.bg_color.value());
   if (params_.corner_radius)
     bubble_border->SetCornerRadius(params_.corner_radius);
   bubble_border->set_avoid_shadow_overlap(true);
@@ -509,6 +513,8 @@ void TrayBubbleView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void TrayBubbleView::OnThemeChanged() {
   views::BubbleDialogDelegateView::OnThemeChanged();
+  if (params_.transparent)
+    return;
 
   if (features::IsDarkLightModeEnabled()) {
     SetBorder(std::make_unique<HighlightBorder>(

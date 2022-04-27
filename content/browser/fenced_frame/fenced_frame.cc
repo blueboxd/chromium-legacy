@@ -6,11 +6,10 @@
 
 #include "base/notreached.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
-#include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "third_party/blink/public/common/fenced_frame/fenced_frame_utils.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "url/gurl.h"
 
@@ -55,8 +54,16 @@ FencedFrame::FencedFrame(
                                       /*page_delegate=*/web_contents_,
                                       FrameTree::Type::kFencedFrame)),
       mode_(mode) {
-  scoped_refptr<SiteInstance> site_instance =
-      SiteInstance::Create(web_contents_->GetBrowserContext());
+  scoped_refptr<SiteInstance> site_instance;
+  if (owner_render_frame_host->GetSiteInstance()->IsGuest()) {
+    site_instance = SiteInstance::CreateForGuest(
+        owner_render_frame_host->GetBrowserContext(),
+        owner_render_frame_host->GetSiteInstance()
+            ->GetStoragePartitionConfig());
+  } else {
+    site_instance =
+        SiteInstance::Create(owner_render_frame_host->GetBrowserContext());
+  }
   // Note that even though this is happening in response to an event in the
   // renderer (i.e., the creation of a <fencedframe> element), we are still
   // putting `renderer_initiated_creation` as false. This is because that
@@ -90,10 +97,16 @@ void FencedFrame::Navigate(const GURL& url,
             owner_render_frame_host_->GetLifecycleState());
 
   if (mode_ == blink::mojom::FencedFrameMode::kDefault &&
-      !network::IsUrlPotentiallyTrustworthy(url)) {
-    bad_message::ReceivedBadMessage(
-        owner_render_frame_host_->GetProcess(),
-        bad_message::FF_NAVIGATION_UNTRUSTWORTHY_URL);
+      !blink::IsValidFencedFrameURL(url)) {
+    bad_message::ReceivedBadMessage(owner_render_frame_host_->GetProcess(),
+                                    bad_message::FF_NAVIGATION_INVALID_URL);
+    return;
+  }
+
+  if (mode_ == blink::mojom::FencedFrameMode::kOpaqueAds &&
+      !blink::IsValidUrnUuidURL(url) && !blink::IsValidFencedFrameURL(url)) {
+    bad_message::ReceivedBadMessage(owner_render_frame_host_->GetProcess(),
+                                    bad_message::FF_NAVIGATION_INVALID_URL);
     return;
   }
 
@@ -130,7 +143,7 @@ void FencedFrame::Navigate(const GURL& url,
       /*blob_url_loader_factory=*/nullptr,
       network::mojom::SourceLocation::New(), /*has_user_gesture=*/false,
       /*impression=*/absl::nullopt, navigation_start_time,
-      FencedFrameURLMapping::IsValidUrnUuidURL(url));
+      blink::IsValidUrnUuidURL(url));
 }
 
 bool FencedFrame::IsHidden() {

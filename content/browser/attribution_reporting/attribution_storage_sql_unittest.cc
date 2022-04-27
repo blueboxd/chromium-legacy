@@ -4,7 +4,10 @@
 
 #include "content/browser/attribution_reporting/attribution_storage_sql.h"
 
+#include <stdint.h>
+
 #include <functional>
+#include <limits>
 #include <memory>
 
 #include "base/bind.h"
@@ -36,6 +39,25 @@ using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::SizeIs;
+
+struct AggregatableReportMetadataRecord {
+  int64_t aggregation_id;
+  int64_t source_id;
+  base::Time trigger_time;
+  absl::optional<int64_t> debug_key;
+  std::string external_report_id;
+  base::Time report_time;
+  int failed_send_attempts = 0;
+  base::Time initial_report_time;
+};
+
+struct AggregatableContributionRecord {
+  int64_t contribution_id;
+  int64_t aggregation_id;
+  int64_t key_high_bits;
+  int64_t key_low_bits;
+  int64_t value;
+};
 
 class AttributionStorageSqlTest : public testing::Test {
  public:
@@ -105,6 +127,47 @@ class AttributionStorageSqlTest : public testing::Test {
   AttributionTrigger::EventLevelResult MaybeCreateAndStoreEventLevelReport(
       const AttributionTrigger& conversion) {
     return storage_->MaybeCreateAndStoreReport(conversion).event_level_status();
+  }
+
+  void StoreAggregatableReportMetadata(
+      const AggregatableReportMetadataRecord& record) {
+    sql::Database raw_db;
+    ASSERT_TRUE(raw_db.Open(db_path()));
+
+    static constexpr char kStoreMetadataSql[] =
+        "INSERT INTO aggregatable_report_metadata "
+        "VALUES(?,?,?,?,?,?,?,?)";
+    sql::Statement statement(raw_db.GetUniqueStatement(kStoreMetadataSql));
+    statement.BindInt64(0, record.aggregation_id);
+    statement.BindInt64(1, record.source_id);
+    statement.BindTime(2, record.trigger_time);
+    if (record.debug_key) {
+      statement.BindInt64(3, *record.debug_key);
+    } else {
+      statement.BindNull(3);
+    }
+    statement.BindString(4, record.external_report_id);
+    statement.BindTime(5, record.report_time);
+    statement.BindInt(6, record.failed_send_attempts);
+    statement.BindTime(7, record.initial_report_time);
+    ASSERT_TRUE(statement.Run());
+  }
+
+  void StoreAggregatableContribution(
+      const AggregatableContributionRecord& record) {
+    sql::Database raw_db;
+    ASSERT_TRUE(raw_db.Open(db_path()));
+
+    static constexpr char kStoreContributionSql[] =
+        "INSERT INTO aggregatable_contributions "
+        "VALUES(?,?,?,?,?)";
+    sql::Statement statement(raw_db.GetUniqueStatement(kStoreContributionSql));
+    statement.BindInt64(0, record.contribution_id);
+    statement.BindInt64(1, record.aggregation_id);
+    statement.BindInt64(2, record.key_high_bits);
+    statement.BindInt64(3, record.key_low_bits);
+    statement.BindInt64(4, record.value);
+    ASSERT_TRUE(statement.Run());
   }
 
  protected:
@@ -721,8 +784,7 @@ TEST_F(AttributionStorageSqlTest, ExpiredImpressionWithSentConversion_Deleted) {
   std::vector<AttributionReport> reports =
       storage()->GetAttributionReports(base::Time::Now());
   EXPECT_THAT(reports, SizeIs(1));
-  EXPECT_TRUE(storage()->DeleteReport(
-      *(absl::get<AttributionReport::EventLevelData>(reports[0].data()).id)));
+  EXPECT_TRUE(storage()->DeleteReport(reports[0].ReportId()));
   // Store another impression to trigger the expiry logic.
   storage()->StoreSource(
       SourceBuilder().SetExpiry(base::Milliseconds(3)).Build());
@@ -830,8 +892,8 @@ TEST_F(AttributionStorageSqlTest,
 
   task_environment_.FastForwardBy(base::Milliseconds(3));
 
-  EXPECT_TRUE(storage()->DeleteReport(*reports[0].ReportId()));
-  EXPECT_TRUE(storage()->DeleteReport(*reports[1].ReportId()));
+  EXPECT_TRUE(storage()->DeleteReport(reports[0].ReportId()));
+  EXPECT_TRUE(storage()->DeleteReport(reports[1].ReportId()));
 
   // Store another source to trigger the expiry logic.
   storage()->StoreSource(
@@ -870,6 +932,55 @@ TEST_F(AttributionStorageSqlTest,
 
     OpenDatabase();
     ASSERT_THAT(storage()->GetActiveSources(), IsEmpty()) << update_sql;
+    storage()->ClearData(base::Time::Min(), base::Time::Max(),
+                         base::NullCallback());
+    CloseDatabase();
+  }
+}
+
+TEST_F(AttributionStorageSqlTest,
+       InvalidAggregatableValue_FailsDeserialization) {
+  const struct {
+    int64_t value;
+    int64_t budget;
+    bool valid;
+  } kTestCases[] = {
+      {-1, 10, false},
+      {0, 10, false},
+      {10, 10, true},
+      {11, 10, false},
+      {std::numeric_limits<uint32_t>::max(),
+       std::numeric_limits<int64_t>::max(), true},
+      {std::numeric_limits<uint32_t>::max() + 1,
+       std::numeric_limits<int64_t>::max(), false},
+  };
+
+  for (auto test_case : kTestCases) {
+    OpenDatabase();
+    storage()->StoreSource(SourceBuilder().Build());
+    auto sources = storage()->GetActiveSources();
+    ASSERT_THAT(sources, SizeIs(1));
+    CloseDatabase();
+
+    StoreAggregatableReportMetadata(AggregatableReportMetadataRecord{
+        .aggregation_id = 1,
+        .source_id = *sources.front().source_id(),
+        .external_report_id = DefaultExternalReportID().AsLowercaseString(),
+    });
+
+    StoreAggregatableContribution(
+        AggregatableContributionRecord{.contribution_id = 1,
+                                       .aggregation_id = 1,
+                                       .key_high_bits = 0,
+                                       .key_low_bits = 0,
+                                       .value = test_case.value});
+
+    OpenDatabase();
+    delegate()->set_aggregatable_budget_per_source(test_case.budget);
+    EXPECT_THAT(
+        storage()->GetAttributionReports(/*max_report_time=*/base::Time::Max()),
+        SizeIs(test_case.valid))
+        << test_case.value << "," << test_case.budget;
     storage()->ClearData(base::Time::Min(), base::Time::Max(),
                          base::NullCallback());
     CloseDatabase();

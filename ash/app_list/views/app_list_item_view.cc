@@ -765,13 +765,13 @@ void AppListItemView::ShowContextMenuForViewImpl(
     return;
   waiting_for_context_menu_options_ = true;
 
-  // If this item view is in the AppsGridView with the app sort feature enabled,
-  // request the context menu model to add sort options that can sort the app
-  // list.
-  bool add_sort_options = features::IsLauncherAppSortEnabled() &&
-                          context_ == Context::kAppsGridView;
+  // When the context menu comes from the apps grid it has sorting options. When
+  // it comes from recent apps it has an option to hide the continue section.
+  AppListItemContext item_context = context_ == Context::kAppsGridView
+                                        ? AppListItemContext::kAppsGrid
+                                        : AppListItemContext::kRecentApps;
   view_delegate_->GetContextMenuModel(
-      item_weak_->id(), add_sort_options,
+      item_weak_->id(), item_context,
       base::BindOnce(&AppListItemView::OnContextMenuModelReceived,
                      weak_ptr_factory_.GetWeakPtr(), point, source_type));
 }
@@ -1103,6 +1103,31 @@ bool AppListItemView::IsNotificationIndicatorShownForTest() const {
 void AppListItemView::SetContextMenuShownCallbackForTest(
     base::RepeatingClosure closure) {
   context_menu_shown_callback_ = std::move(closure);
+}
+
+void AppListItemView::SetMostRecentGridIndex(GridIndex new_grid_index,
+                                             int columns) {
+  if (new_grid_index == most_recent_grid_index_) {
+    has_pending_row_change_ = false;
+    return;
+  }
+
+  if (most_recent_grid_index_.IsValid()) {
+    // Set row change only for items which move to a new row and a new column.
+    // This is done because row change animations should not be shown when
+    // animating items up from the next page into a new row but on the same
+    // column, which could happen when closing a reorder toast.
+    if ((most_recent_grid_index_.slot / columns !=
+         new_grid_index.slot / columns) &&
+        (most_recent_grid_index_.slot % columns !=
+         new_grid_index.slot % columns)) {
+      has_pending_row_change_ = true;
+    } else {
+      has_pending_row_change_ = false;
+    }
+  }
+
+  most_recent_grid_index_ = new_grid_index;
 }
 
 void AppListItemView::AnimationProgressed(const gfx::Animation* animation) {

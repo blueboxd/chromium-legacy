@@ -15,27 +15,21 @@
   /* The kColorAppMenuHighlightSeverityLow color id is used in */ \
   /* color_provider_css_colors_test.ts. If changing the variable name, the */ \
   /* variable name in the test needs to be changed as well. */ \
-  E(kColorAppMenuHighlightSeverityLow, \
-    ThemeProperties::COLOR_APP_MENU_HIGHLIGHT_SEVERITY_LOW, \
-    kChromeColorsStart) \
-  E(kColorAppMenuHighlightSeverityHigh, \
-    ThemeProperties::COLOR_APP_MENU_HIGHLIGHT_SEVERITY_HIGH) \
-  E(kColorAppMenuHighlightSeverityMedium, \
-    ThemeProperties::COLOR_APP_MENU_HIGHLIGHT_SEVERITY_MEDIUM) \
+  E_CPONLY(kColorAppMenuHighlightSeverityLow, kChromeColorsStart, \
+           kChromeColorsStart) \
+  E_CPONLY(kColorAppMenuHighlightSeverityHigh) \
+  E_CPONLY(kColorAppMenuHighlightSeverityMedium) \
   /* Avatar colors. */ \
-  E(kColorAvatarButtonHighlightNormal, \
-    ThemeProperties::COLOR_AVATAR_BUTTON_HIGHLIGHT_NORMAL) \
-  E(kColorAvatarButtonHighlightSyncError, \
-    ThemeProperties::COLOR_AVATAR_BUTTON_HIGHLIGHT_SYNC_ERROR) \
-  E(kColorAvatarButtonHighlightSyncPaused, \
-    ThemeProperties::COLOR_AVATAR_BUTTON_HIGHLIGHT_SYNC_PAUSED) \
+  E_CPONLY(kColorAvatarButtonHighlightNormal) \
+  E_CPONLY(kColorAvatarButtonHighlightSyncError) \
+  E_CPONLY(kColorAvatarButtonHighlightSyncPaused) \
   E_CPONLY(kColorAvatarStrokeLight) \
   /* Bookmark bar colors. */ \
   E(kColorBookmarkBarBackground, \
     ThemeProperties::COLOR_BOOKMARK_BAR_BACKGROUND) \
   E(kColorBookmarkBarForeground, ThemeProperties::COLOR_BOOKMARK_TEXT) \
   E(kColorBookmarkBarSeparator, ThemeProperties::COLOR_BOOKMARK_SEPARATOR) \
-  E(kColorBookmarkButtonIcon, ThemeProperties::COLOR_BOOKMARK_BUTTON_ICON) \
+  E_CPONLY(kColorBookmarkButtonIcon) \
   E_CPONLY(kColorBookmarkDragImageBackground) \
   E_CPONLY(kColorBookmarkDragImageCountBackground) \
   E_CPONLY(kColorBookmarkDragImageCountForeground) \
@@ -59,16 +53,13 @@
   E_CPONLY(kColorDownloadItemProgressRingBackground) \
   E_CPONLY(kColorDownloadItemProgressRingForeground) \
   E(kColorDownloadShelfBackground, ThemeProperties::COLOR_DOWNLOAD_SHELF) \
-  E(kColorDownloadShelfButtonBackground, \
-    ThemeProperties::COLOR_DOWNLOAD_SHELF_BUTTON_BACKGROUND) \
-  E(kColorDownloadShelfButtonText, \
-    ThemeProperties::COLOR_DOWNLOAD_SHELF_BUTTON_TEXT) \
+  E_CPONLY(kColorDownloadShelfButtonBackground) \
+  E_CPONLY(kColorDownloadShelfButtonText) \
   E_CPONLY(kColorDownloadShelfButtonIcon) \
   E_CPONLY(kColorDownloadShelfButtonIconDisabled) \
   E(kColorDownloadShelfContentAreaSeparator, \
     ThemeProperties::COLOR_DOWNLOAD_SHELF_CONTENT_AREA_SEPARATOR) \
-  E(kColorDownloadShelfForeground, \
-    ThemeProperties::COLOR_DOWNLOAD_SHELF_FOREGROUND) \
+  E_CPONLY(kColorDownloadShelfForeground) \
   E_CPONLY(kColorDownloadStartedAnimationForeground) \
   E_CPONLY(kColorDownloadToolbarButtonActive) \
   E_CPONLY(kColorDownloadToolbarButtonInactive) \
@@ -125,7 +116,7 @@
   E_CPONLY(kColorInfoBarButtonIconDisabled) \
   E(kColorInfoBarContentAreaSeparator, \
     ThemeProperties::COLOR_INFOBAR_CONTENT_AREA_SEPARATOR) \
-  E(kColorInfoBarForeground, ThemeProperties::COLOR_INFOBAR_TEXT) \
+  E_CPONLY(kColorInfoBarForeground) \
   /* Location bar colors. */ \
   E(kColorLocationBarBorder, ThemeProperties::COLOR_LOCATION_BAR_BORDER) \
   E(kColorLocationBarBorderOpaque, \
@@ -136,6 +127,12 @@
   E_CPONLY(kColorMediaRouterIconActive) \
   E_CPONLY(kColorMediaRouterIconError) \
   E_CPONLY(kColorMediaRouterIconWarning) \
+  /* New tab button colors. */ \
+  E_CPONLY(kColorNewTabButtonBackgroundFrameActive) \
+  E_CPONLY(kColorNewTabButtonBackgroundFrameInactive) \
+  E_CPONLY(kColorNewTabButtonFocusRing) \
+  E_CPONLY(kColorNewTabButtonInkDropFrameActive) \
+  E_CPONLY(kColorNewTabButtonInkDropFrameInactive) \
   /* New Tab Page colors. */ \
   E(kColorNewTabPageBackground, ThemeProperties::COLOR_NTP_BACKGROUND) \
   E(kColorNewTabPageHeader, ThemeProperties::COLOR_NTP_HEADER) \
@@ -234,6 +231,8 @@
   E_CPONLY(kColorPipWindowHangUpButtonForeground) \
   E_CPONLY(kColorPipWindowSkipAdButtonBackground) \
   E_CPONLY(kColorPipWindowSkipAdButtonBorder) \
+  /* Profiles colors. */ \
+  E_CPONLY(kColorProfilesReauthDialogBorder) \
   /* PWA colors. */ \
   E_CPONLY(kColorPwaBackground) \
   E_CPONLY(kColorPwaMenuButtonIcon) \
@@ -253,9 +252,6 @@
   /* Quick Answers colors. */ \
   E_CPONLY(kColorQuickAnswersReportQueryButtonBackground) \
   E_CPONLY(kColorQuickAnswersReportQueryButtonForeground) \
-  /* Read Later button colors. */ \
-  E(kColorReadLaterButtonHighlight, \
-    ThemeProperties::COLOR_READ_LATER_BUTTON_HIGHLIGHT) \
   /* Screenshot captured bubble colors. */ \
   E_CPONLY(kColorScreenshotCapturedImageBackground) \
   E_CPONLY(kColorScreenshotCapturedImageBorder) \
@@ -292,6 +288,10 @@
     ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE) \
   E(kColorTabBackgroundInactiveFrameInactive, \
     ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE) \
+  E_CPONLY(kColorTabCloseButtonFocusRingActive) \
+  E_CPONLY(kColorTabCloseButtonFocusRingInactive) \
+  E_CPONLY(kColorTabFocusRingActive) \
+  E_CPONLY(kColorTabFocusRingInactive) \
   E_CPONLY(kColorTabForegroundActiveFrameActive) \
   E_CPONLY(kColorTabForegroundActiveFrameInactive) \
   E_CPONLY(kColorTabForegroundInactiveFrameActive) \
@@ -400,8 +400,6 @@
   E_CPONLY(kColorThumbnailTabForeground) \
   /* Toolbar colors. */ \
   E(kColorToolbar, ThemeProperties::COLOR_TOOLBAR) \
-  E(kColorToolbarButtonBackground, \
-    ThemeProperties::COLOR_TOOLBAR_BUTTON_BACKGROUND) \
   E_CPONLY(kColorToolbarButtonBackgroundHighlightedDefault) \
   E(kColorToolbarButtonBorder, ThemeProperties::COLOR_TOOLBAR_BUTTON_BORDER) \
   E(kColorToolbarButtonIcon, ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON) \
@@ -416,8 +414,7 @@
   E(kColorToolbarButtonText, ThemeProperties::COLOR_TOOLBAR_BUTTON_TEXT) \
   E(kColorToolbarContentAreaSeparator, \
     ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR) \
-  E(kColorToolbarFeaturePromoHighlight, \
-    ThemeProperties::COLOR_TOOLBAR_FEATURE_PROMO_HIGHLIGHT) \
+  E_CPONLY(kColorToolbarFeaturePromoHighlight) \
   E(kColorToolbarInkDrop, ThemeProperties::COLOR_TOOLBAR_INK_DROP) \
   E(kColorToolbarSeparator, \
     ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR) \
@@ -467,6 +464,8 @@
     E_CPONLY(kColorCaptionCloseButtonForegroundHovered) \
     E_CPONLY(kColorCaptionForegroundActive) \
     E_CPONLY(kColorCaptionForegroundInactive) \
+    /* Tab search caption button colors. */ \
+    E_CPONLY(kColorTabSearchCaptionButtonFocusRing) \
     /* Try Chrome dialog colors. */ \
     E_CPONLY(kColorTryChromeBackground) \
     E_CPONLY(kColorTryChromeBorder) \

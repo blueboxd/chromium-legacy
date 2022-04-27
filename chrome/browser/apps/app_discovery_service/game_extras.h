@@ -16,13 +16,9 @@ namespace apps {
 
 class GameExtras : public SourceExtras {
  public:
-  enum class Source {
-    // TODO(crbug.com/1305880): Rename to real source once finalized.
-    kTestSource,
-  };
-
   GameExtras(const absl::optional<std::vector<std::u16string>>& platforms,
-             Source source,
+             const std::u16string& source,
+             const std::u16string& publisher,
              const GURL& icon_url);
   GameExtras(const GameExtras&);
   GameExtras& operator=(const GameExtras&) = delete;
@@ -30,17 +26,22 @@ class GameExtras : public SourceExtras {
 
   std::unique_ptr<SourceExtras> Clone() override;
 
+  // Platform(s) that host the game.
   const absl::optional<std::vector<std::u16string>>& GetPlatforms() const;
-  Source GetSource() const;
+  // The source from which the game is being pulled from.
+  const std::u16string& GetSource() const;
+  // The company that published the game.
+  const std::u16string& GetPublisher() const;
   const GURL& GetIconUrl() const;
 
   // Result::SourceExtras:
   GameExtras* AsGameExtras() override;
 
  private:
-  const absl::optional<std::vector<std::u16string>> platforms_;
-  const Source source_;
-  const GURL icon_url_;
+  absl::optional<std::vector<std::u16string>> platforms_;
+  std::u16string source_;
+  std::u16string publisher_;
+  GURL icon_url_;
 };
 
 }  // namespace apps

@@ -522,11 +522,6 @@ const ThreadedInputHandler& LayerTreeHostImpl::GetInputHandler() const {
   return static_cast<const ThreadedInputHandler&>(*input_delegate_.get());
 }
 
-void LayerTreeHostImpl::WillSendBeginMainFrame() {
-  if (scheduling_client_)
-    scheduling_client_->DidScheduleBeginMainFrame();
-}
-
 void LayerTreeHostImpl::DidSendBeginMainFrame(const viz::BeginFrameArgs& args) {
   frame_trackers_.NotifyBeginMainFrame(args);
 }
@@ -1020,19 +1015,6 @@ void LayerTreeHostImpl::StartPageScaleAnimation(const gfx::Point& target_offset,
                                                 bool anchor_point,
                                                 float page_scale,
                                                 base::TimeDelta duration) {
-  // Temporary crash logging for https://crbug.com/845097.
-  static bool has_dumped_without_crashing = false;
-  if (settings().is_layer_tree_for_subframe && !has_dumped_without_crashing) {
-    has_dumped_without_crashing = true;
-    static auto* psf_oopif_animation_error =
-        base::debug::AllocateCrashKeyString("psf_oopif_animation_error",
-                                            base::debug::CrashKeySize::Size32);
-    base::debug::SetCrashKeyString(
-        psf_oopif_animation_error,
-        base::StringPrintf("%p", InnerViewportScrollNode()));
-    base::debug::DumpWithoutCrashing();
-  }
-
   if (!InnerViewportScrollNode())
     return;
 
@@ -1750,7 +1732,9 @@ void LayerTreeHostImpl::EvictTexturesForTesting() {
   UpdateTileManagerMemoryPolicy(ManagedMemoryPolicy(0));
 }
 
-void LayerTreeHostImpl::BlockNotifyReadyToActivateForTesting(bool block) {
+void LayerTreeHostImpl::BlockNotifyReadyToActivateForTesting(
+    bool block,
+    bool notify_if_blocked) {
   NOTREACHED();
 }
 
@@ -5150,6 +5134,10 @@ void LayerTreeHostImpl::RequestInvalidationForAnimatedImages() {
   // before a new tree is activated.
   bool needs_first_draw_on_activation = true;
   client_->NeedsImplSideInvalidation(needs_first_draw_on_activation);
+}
+
+bool LayerTreeHostImpl::IsReadyToActivate() const {
+  return client_->IsReadyToActivate();
 }
 
 base::WeakPtr<LayerTreeHostImpl> LayerTreeHostImpl::AsWeakPtr() {

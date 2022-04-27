@@ -2525,15 +2525,6 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Android.Bookmarks.BottomSheet.Open">
-  <owner>shaktisahu@chromium.org</owner>
-  <description>
-    User tapped on the star icon from the app menu to bookmark a page. This
-    resulted in opening the bookmarks bottom sheet that presents a list of
-    destination folders to choose from for saving the bookmark.
-  </description>
-</action>
-
 <action name="Android.ChromeHome.AcceptedSurvey">
   <obsolete>
     Deprecated 1/2018. Replaced with the
@@ -17391,6 +17382,17 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileFreUMALinkTapped">
+  <owner>arthurmilchior@google.com</owner>
+  <owner>jlebel@google.com</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    User tapped on the UMA link on the first run welcome view. This metric is
+    only recorded if and after the TOS are accepted. This metric is specific to
+    iOS.
+  </description>
+</action>
+
 <action name="MobileGoogleServicesSettingsBack">
   <owner>gambard@chromium.org</owner>
   <owner>sczs@chromium.org</owner>
@@ -18581,6 +18583,30 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileRecentTabManagerRecentBulkEventOpened">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>fredmello@chromium.org</owner>
+  <description>
+    A recently closed bulk event entry was opened from the recent tabs manager
+    on Android. This corresponds to a set of tabs and/or groups that are being
+    restored together. This does not count single tabs which are counted in
+    MobileRecentTabManagerRecentTabOpened or single groups which are counted in
+    MobileRecentTabManagerRecentGroupOpened.
+  </description>
+</action>
+
+<action name="MobileRecentTabManagerRecentGroupOpened">
+  <owner>ckitagawa@chromium.org</owner>
+  <owner>fredmello@chromium.org</owner>
+  <description>
+    A recently closed group entry was opened from the recent tabs manager on.
+    Android. This corresponds to a group of tabs that are being restored
+    together. This does not count single tabs which is counted in
+    MobileRecentTabManagerRecentTabOpened or bulk entries multiple tabs and/or
+    groups which are counted in MobileRecentTabManagerRecentBulkEventOpened.
+  </description>
+</action>
+
 <action name="MobileRecentTabManagerRecentTabOpened">
   <owner>finkm@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
@@ -19167,7 +19193,7 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="MobileTabGridOpenRegularTabDuringSearch">
+<action name="MobileTabGridOpenRegularTabSearchResult">
   <owner>michaeldo@chromium.org</owner>
   <owner>mrefaat@chromium.org</owner>
   <description>
@@ -27498,6 +27524,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_Impression_FromManageCardsBubble"
     not_user_triggered="true">
+  <obsolete>Removed in M103.</obsolete>
   <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <description>
@@ -27547,6 +27574,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_Impression_FromSaveCardBubble" not_user_triggered="true">
+  <obsolete>Removed in M103.</obsolete>
   <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <description>
@@ -27634,6 +27662,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithAccount_FromManageCardsBubble"
     not_user_triggered="true">
+  <obsolete>Removed in M103.</obsolete>
   <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <description>
@@ -27674,6 +27703,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithAccount_FromSaveCardBubble"
     not_user_triggered="true">
+  <obsolete>Removed in M103.</obsolete>
   <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <description>
@@ -27743,6 +27773,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithNoAccount_FromManageCardsBubble"
     not_user_triggered="true">
+  <obsolete>Removed in M103.</obsolete>
   <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <description>
@@ -27784,6 +27815,7 @@ should be able to be added at any place in this file.
 
 <action name="Signin_ImpressionWithNoAccount_FromSaveCardBubble"
     not_user_triggered="true">
+  <obsolete>Removed in M103.</obsolete>
   <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <description>
@@ -28046,6 +28078,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_Signin_FromManageCardsBubble">
+  <obsolete>Removed in M103.</obsolete>
   <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <description>
@@ -28103,6 +28136,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_Signin_FromSaveCardBubble">
+  <obsolete>Removed in M103.</obsolete>
   <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <description>
@@ -28390,6 +28424,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountExistingAccount_FromManageCardsBubble">
+  <obsolete>Removed in M103.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jsaul@google.com</owner>
   <owner>msarda@chromium.org</owner>
@@ -28433,6 +28468,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountExistingAccount_FromSaveCardBubble">
+  <obsolete>Removed in M103.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jsaul@google.com</owner>
   <owner>msarda@chromium.org</owner>
@@ -28509,6 +28545,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountNoExistingAccount_FromManageCardsBubble">
+  <obsolete>Removed in M103.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jsaul@google.com</owner>
   <owner>msarda@chromium.org</owner>
@@ -28554,6 +28591,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountNoExistingAccount_FromSaveCardBubble">
+  <obsolete>Removed in M103.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jsaul@google.com</owner>
   <owner>msarda@chromium.org</owner>
@@ -28759,6 +28797,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNotDefault_FromManageCardsBubble">
+  <obsolete>Removed in M103.</obsolete>
   <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <description>
@@ -28800,6 +28839,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNotDefault_FromSaveCardBubble">
+  <obsolete>Removed in M103.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jsaul@google.com</owner>
   <owner>msarda@chromium.org</owner>
@@ -28885,6 +28925,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninWithDefault_FromManageCardsBubble">
+  <obsolete>Removed in M103.</obsolete>
   <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <description>
@@ -28926,6 +28967,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninWithDefault_FromSaveCardBubble">
+  <obsolete>Removed in M103.</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jsaul@google.com</owner>
   <owner>msarda@chromium.org</owner>
@@ -31229,6 +31271,18 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="TabletTabStrip.UndoCloseTab">
+  <owner>gauravjj@google.com</owner>
+  <owner>skavuluru@google.com</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <description>
+    User clicked on the undo close tab snackbar to undo a tab closure on tablet
+    done from the tab strip. This does not include undo tab closures from the
+    grid tab switcher.
+  </description>
+</action>
+
 <action name="TabMediaIndicator_Clicked">
   <obsolete>Replaced with &quot;TabAlertIndicator_Clicked&quot;.</obsolete>
   <owner>miu@chromium.org</owner>
@@ -32945,6 +32999,7 @@ should be able to be added at any place in this file.
       label="For ContextualSearchWebSearch feature."/>
   <suffix name="ContextualSuggestions"
       label="For ContextualSuggestions feature."/>
+  <suffix name="Crow" label="For Crow feature."/>
   <suffix name="DataSaverDetail" label="For DataSaverDetail feature."/>
   <suffix name="DataSaverMilestonePromo"
       label="For DataSaverMilestonePromo feature."/>

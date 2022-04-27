@@ -28,6 +28,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_conversion_helper.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -139,6 +140,7 @@
 #include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/fenced_frame/fenced_frame_utils.h"
 #include "third_party/blink/public/common/frame/fenced_frame_sandbox_flags.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/navigation/navigation_params_mojom_traits.h"
@@ -966,7 +968,9 @@ void RemoveOriginTrialHintsFromAcceptCH(
     }
   }
   if (need_update_storage) {
-    PersistAcceptCH(url::Origin::Create(url), delegate, client_hints);
+    PersistAcceptCH(url::Origin::Create(url),
+                    frame_tree_node->GetParentOrOuterDocument(), delegate,
+                    client_hints);
   }
 
   if (auto* cookie_manager = frame_tree_node->current_frame_host()
@@ -1954,7 +1958,7 @@ bool NavigationRequest::NeedFencedFrameURLMapping() {
        blink::features::IsAllowURNsInIframeEnabled());
 
   return need_convert_urn_uuid_urls &&
-         FencedFrameURLMapping::IsValidUrnUuidURL(common_params_->url);
+         blink::IsValidUrnUuidURL(common_params_->url);
 }
 
 void NavigationRequest::OnFencedFrameURLMappingComplete(
@@ -4544,10 +4548,10 @@ void NavigationRequest::AddOldPageInfoToCommitParamsIfNeeded() {
   // will send our best guess by checking if the page can be persisted at this
   // point.
   bool can_store_old_page_in_bfcache =
-      frame_tree_node_->frame_tree()
-          ->controller()
-          .GetBackForwardCache()
-          .CanPotentiallyStorePageLater(old_frame_host);
+      static_cast<bool>(frame_tree_node_->frame_tree()
+                            ->controller()
+                            .GetBackForwardCache()
+                            .CanPotentiallyStorePageLater(old_frame_host));
   commit_params_->old_page_info = blink::mojom::OldPageInfo::New();
   commit_params_->old_page_info->routing_id_for_old_main_frame =
       old_frame_host->GetRoutingID();

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/components/drivefs/mojom/drivefs.mojom.h"
+#include "ash/projector/projector_metrics.h"
 #include "ash/public/cpp/projector/projector_controller.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -117,8 +118,12 @@ ash::PendingScreencastSet ProcessAndGenerateNewScreencasts(
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   // The valid screencasts set.
   ash::PendingScreencastSet screencasts;
-  if (!base::PathExists(drivefs_mounted_point))
+
+  if (!base::PathExists(drivefs_mounted_point) ||
+      (pending_webm_or_projector_events.empty() &&
+       error_syncing_file.empty())) {
     return screencasts;
+  }
 
   // A map of container directory path to pending screencast. Each screencast
   // has a unique container directory path in DriveFS.
@@ -243,6 +248,14 @@ void PendingScreencastManager::OnSyncingStatusUpdate(
         drivefs::mojom::ItemEvent(*event.get()));
   }
 
+  // If the `pending_webm_or_projector_events`, `error_syncing_files_` and
+  // `pending_screencast_cache_` are empty, return early because the syncing may
+  // be triggered by files that are not related to Projector.
+  if (pending_webm_or_projector_events.empty() &&
+      error_syncing_files_.empty() && pending_screencast_cache_.empty()) {
+    return;
+  }
+
   // The `task` is a blocking I/O operation while `reply` runs on current
   // thread.
   // TODO(b/223668878) OnSyncingStatusUpdate might get called multiple times
@@ -255,7 +268,8 @@ void PendingScreencastManager::OnSyncingStatusUpdate(
                      drivefs_integration->GetMountPointPath()),
       base::BindOnce(
           &PendingScreencastManager::OnProcessAndGenerateNewScreencastsFinished,
-          weak_ptr_factory_.GetWeakPtr()));
+          weak_ptr_factory_.GetWeakPtr(),
+          /*task_start_tick=*/base::TimeTicks::Now()));
 }
 
 // Observes the Drive OnError event and add the related files to
@@ -281,7 +295,11 @@ PendingScreencastManager::GetPendingScreencasts() const {
 }
 
 void PendingScreencastManager::OnProcessAndGenerateNewScreencastsFinished(
+    const base::TimeTicks task_start_tick,
     const ash::PendingScreencastSet& screencasts) {
+  ash::RecordPendingScreencastBatchIOTaskDuration(base::TimeTicks::Now() -
+                                                  task_start_tick);
+
   // Returns if pending screencasts didn't change.
   if (screencasts == pending_screencast_cache_)
     return;

@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/devtools/protocol/devtools_protocol_test_support.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -18,6 +19,11 @@ class FontPreferencesBrowserTest : public DevToolsProtocolTest {
  public:
   FontPreferencesBrowserTest() = default;
   ~FontPreferencesBrowserTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "CSSFontFamilyMath");
+  }
 
  protected:
   std::string GetFirstPlatformFontForBody() {
@@ -76,6 +82,15 @@ class FontPreferencesBrowserTest : public DevToolsProtocolTest {
     const std::string non_default_system_font = "Lucida Console";
 #elif BUILDFLAG(IS_MAC)
     const std::string non_default_system_font = "Monaco";
+#elif BUILDFLAG(IS_FUCHSIA)
+    // Fuchsia platforms don't seem to have many pre-installed fonts besides the
+    // default Roboto families. Let's instead choose the default monospace
+    // family or, if 'monospace' is tested, the default sans-serif family.
+    const char* default_system_font_sans_serif = "Roboto";
+    const char* default_system_font_monospace = "Roboto Mono";
+    const std::string non_default_system_font =
+        generic_family == "monospace" ? default_system_font_sans_serif
+                                      : default_system_font_monospace;
 #else
     const std::string non_default_system_font = "Ahem";
 #endif
@@ -125,6 +140,8 @@ IN_PROC_BROWSER_TEST_F(FontPreferencesBrowserTest, GenericFamilies) {
                               default_preferences.fantasy_font_family_map);
   TestGenericFamilyPreference("monospace", default_preferences,
                               default_preferences.fixed_font_family_map);
+  TestGenericFamilyPreference("math", default_preferences,
+                              default_preferences.math_font_family_map);
 }
 
 }  // namespace content

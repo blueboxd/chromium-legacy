@@ -77,7 +77,7 @@ NSString* const kMetricsConsentCheckboxAccessibilityIdentifier =
       l10n_util::GetNSString(IDS_IOS_FIRST_RUN_WELCOME_SCREEN_ACCEPT_BUTTON);
 
   self.metricsConsentButton = [self createMetricsConsentButton];
-  UIView* footerTopAnchor = nil;
+  UIView* footerView = nil;
   BOOL showUMAReportingCheckBox =
       fre_field_trial::GetNewMobileIdentityConsistencyFRE() ==
       NewMobileIdentityConsistencyFRE::kOld;
@@ -95,11 +95,11 @@ NSString* const kMetricsConsentCheckboxAccessibilityIdentifier =
   ]];
 
   if (!showUMAReportingCheckBox) {
-    footerTopAnchor = self.footerTextView;
+    footerView = self.footerTextView;
   } else {
     self.metricsConsentButton = [self createMetricsConsentButton];
     [self.specificContentView addSubview:self.metricsConsentButton];
-    footerTopAnchor = self.metricsConsentButton;
+    footerView = self.metricsConsentButton;
     [NSLayoutConstraint activateConstraints:@[
       [self.metricsConsentButton.centerXAnchor
           constraintEqualToAnchor:self.specificContentView.centerXAnchor],
@@ -111,10 +111,7 @@ NSString* const kMetricsConsentCheckboxAccessibilityIdentifier =
     ]];
   }
 
-  UIView* headerBottomAnchor = nil;
-  if (![self isBrowserManaged]) {
-    headerBottomAnchor = self.specificContentView;
-  } else {
+  if ([self isBrowserManaged]) {
     UILabel* managedLabel = [self createManagedLabel];
     UIView* managedIcon = [self createManagedIcon];
     [self.specificContentView addSubview:managedLabel];
@@ -134,11 +131,19 @@ NSString* const kMetricsConsentCheckboxAccessibilityIdentifier =
       [managedIcon.centerXAnchor
           constraintEqualToAnchor:self.specificContentView.centerXAnchor],
     ]];
-    headerBottomAnchor = managedIcon;
+
+    // Put the footer below the header in the content area with a margin, when
+    // the header is not empty.
+    [footerView.topAnchor
+        constraintGreaterThanOrEqualToAnchor:managedIcon.bottomAnchor
+                                    constant:kDefaultMargin]
+        .active = YES;
+  } else {
+    // Put the footer at the top of the content area when there is no header.
+    [footerView.topAnchor
+        constraintGreaterThanOrEqualToAnchor:self.specificContentView.topAnchor]
+        .active = YES;
   }
-  [footerTopAnchor.topAnchor
-      constraintGreaterThanOrEqualToAnchor:headerBottomAnchor.topAnchor]
-      .active = YES;
   [super viewDidLoad];
 }
 
@@ -244,7 +249,10 @@ NSString* const kMetricsConsentCheckboxAccessibilityIdentifier =
 // formatted link to the full text of the terms of service.
 - (UITextView*)createFooterTextViewWithUMAReportingLink:
     (BOOL)UMAReportingLink {
-  NSAttributedString* termsOfServiceString = [self createTermsOfServiceString];
+  UIFontTextStyle fontTextStyle =
+      (UMAReportingLink) ? UIFontTextStyleCaption2 : UIFontTextStyleFootnote;
+  NSAttributedString* termsOfServiceString =
+      [self createTermsOfServiceStringWithFontTextStyle:fontTextStyle];
   NSMutableAttributedString* footerString = [[NSMutableAttributedString alloc]
       initWithAttributedString:termsOfServiceString];
   if (UMAReportingLink) {
@@ -263,18 +271,19 @@ NSString* const kMetricsConsentCheckboxAccessibilityIdentifier =
       @{NSForegroundColorAttributeName : [UIColor colorNamed:kBlueColor]};
   textView.translatesAutoresizingMaskIntoConstraints = NO;
   textView.attributedText = footerString;
+
   return textView;
 }
 
-- (NSAttributedString*)createTermsOfServiceString {
+- (NSAttributedString*)createTermsOfServiceStringWithFontTextStyle:
+    (UIFontTextStyle)fontTextStyle {
   NSMutableParagraphStyle* paragraphStyle =
       [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
   paragraphStyle.alignment = NSTextAlignmentCenter;
 
   NSDictionary* textAttributes = @{
     NSForegroundColorAttributeName : [UIColor colorNamed:kTextSecondaryColor],
-    NSFontAttributeName :
-        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote],
+    NSFontAttributeName : [UIFont preferredFontForTextStyle:fontTextStyle],
     NSParagraphStyleAttributeName : paragraphStyle
   };
   NSDictionary* linkAttributes =
@@ -293,7 +302,7 @@ NSString* const kMetricsConsentCheckboxAccessibilityIdentifier =
   NSDictionary* textAttributes = @{
     NSForegroundColorAttributeName : [UIColor colorNamed:kTextSecondaryColor],
     NSFontAttributeName :
-        [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote],
+        [UIFont preferredFontForTextStyle:UIFontTextStyleCaption2],
     NSParagraphStyleAttributeName : paragraphStyle
   };
   NSDictionary* linkAttributes =

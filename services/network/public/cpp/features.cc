@@ -257,7 +257,7 @@ const base::Feature kURLLoaderSyncClient{"URLLoaderSyncClient",
 
 // Combine URLLoaderClient::OnReceiveResponse and OnStartLoadingResponseBody.
 const base::Feature kCombineResponseBody{"CombineResponseBody",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Don't wait for database write before responding to
 // RestrictedCookieManager::SetCookieFromString.
@@ -274,5 +274,8 @@ const base::Feature kBatchSimpleURLLoader{"BatchSimpleURLLoader",
 const base::Feature kOmitCorsClientCert{"OmitCorsClientCert",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Read as much of the net::URLRequest as there is space in the Mojo data pipe.
+const base::Feature kOptimizeNetworkBuffers{"OptimizeNetworkBuffers",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace features
 }  // namespace network

@@ -151,9 +151,9 @@
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
-#include "chrome/browser/web_applications/web_app_offline.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/webapps/web_app_offline.h"
 #include "chrome/browser/webauthn/webauthn_pref_names.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
@@ -187,7 +187,6 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/custom_handlers/protocol_handler_throttle.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/embedder_support/content_settings_utils.h"
@@ -2524,7 +2523,8 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
   ThreadProfilerConfiguration::Get()->AppendCommandLineSwitchForChildProcess(
       command_line);
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
+  // TODO(https://crbug.com/1316129): Re-enable for Lacros.
   // Processes may only query perf_event_open with the BPF sandbox disabled.
   if (browser_command_line.HasSwitch(switches::kEnableThreadInstructionCount) &&
       command_line->HasSwitch(sandbox::policy::switches::kNoSandbox)) {
@@ -3370,6 +3370,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   FontFamilyCache::FillFontFamilyMap(profile,
                                      prefs::kWebKitFantasyFontFamilyMap,
                                      &web_prefs->fantasy_font_family_map);
+  FontFamilyCache::FillFontFamilyMap(profile, prefs::kWebKitMathFontFamilyMap,
+                                     &web_prefs->math_font_family_map);
 
   web_prefs->default_font_size =
       prefs->GetInteger(prefs::kWebKitDefaultFontSize);
@@ -6497,9 +6499,16 @@ ChromeContentBrowserClient::GetAlternativeErrorPageOverrideInfo(
     const GURL& url,
     content::BrowserContext* browser_context,
     int32_t error_code) {
+  if (error_code != net::ERR_INTERNET_DISCONNECTED)
+    return nullptr;
+
 #if BUILDFLAG(IS_ANDROID)
-  return nullptr;
+  if (!base::FeatureList::IsEnabled(features::kAndroidPWAsDefaultOfflinePage)) {
 #else
-  return web_app::GetOfflinePageInfo(url, browser_context, error_code);
+  if (!base::FeatureList::IsEnabled(features::kDesktopPWAsDefaultOfflinePage)) {
 #endif  //  BUILDFLAG(IS_ANDROID)
+    return nullptr;
+  }
+
+  return web_app::GetOfflinePageInfo(url, browser_context);
 }

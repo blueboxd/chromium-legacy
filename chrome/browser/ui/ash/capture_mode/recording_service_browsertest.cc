@@ -17,6 +17,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/capture_mode/chrome_capture_mode_delegate.h"
@@ -287,8 +288,8 @@ IN_PROC_BROWSER_TEST_F(RecordingServiceBrowserTest,
   VerifyVideoFileAndDelete(video_path);
 }
 
-// TODO(crbug.com/1313907): Fails on ash-chrome w/ SwANGLE.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+// TODO(crbug.com/1313907): Flaky on ash-chrome w/ SwANGLE and MSAN
+#if defined(MEMORY_SANITIZER)
 #define MAYBE_RecordingServiceClientEndpointDropped \
   DISABLED_RecordingServiceClientEndpointDropped
 #else
@@ -331,8 +332,8 @@ IN_PROC_BROWSER_TEST_F(RecordingServiceBrowserTest, MAYBE_SuccessiveRecording) {
   FinishVideoRecordingTest(&test_api);
 }
 
-// TODO(crbug.com/1313907): Fails on ash-chrome w/ SwANGLE.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+// TODO(crbug.com/1313907): Flaky on ash-chrome w/ SwANGLE and MSAN
+#if defined(MEMORY_SANITIZER)
 #define MAYBE_RecordingInterruptedOnCaptureLocked \
   DISABLED_RecordingInterruptedOnCaptureLocked
 #else

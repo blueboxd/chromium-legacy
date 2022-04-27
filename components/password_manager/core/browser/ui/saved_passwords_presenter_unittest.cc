@@ -286,6 +286,54 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyUsername) {
   presenter().RemoveObserver(&observer);
 }
 
+TEST_F(SavedPasswordsPresenterTest, EditOnlyUsernameClearsPartialIssues) {
+  PasswordForm form =
+      CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
+  // Make sure the form has some issues and expect that only phished and leaked
+  // are cleared because of the username change.
+  form.password_issues = {
+      {InsecureType::kLeaked,
+       InsecurityMetadata(base::Time::FromTimeT(1), IsMuted(false))},
+      {InsecureType::kPhished,
+       InsecurityMetadata(base::Time::FromTimeT(1), IsMuted(false))},
+      {InsecureType::kReused,
+       InsecurityMetadata(base::Time::FromTimeT(1), IsMuted(false))},
+      {InsecureType::kWeak,
+       InsecurityMetadata(base::Time::FromTimeT(1), IsMuted(false))}};
+
+  StrictMockSavedPasswordsPresenterObserver observer;
+  presenter().AddObserver(&observer);
+
+  EXPECT_CALL(observer, OnSavedPasswordsChanged);
+  store().AddLogin(form);
+  RunUntilIdle();
+  EXPECT_FALSE(store().IsEmpty());
+
+  std::vector<PasswordForm> forms = {form};
+
+  const std::u16string new_username = u"new_username";
+  // The result of the update should have a new username and weak and reused
+  // password issues.
+  PasswordForm updated_username = form;
+  updated_username.username_value = new_username;
+  updated_username.password_issues = {
+      {InsecureType::kReused,
+       InsecurityMetadata(base::Time::FromTimeT(1), IsMuted(false))},
+      {InsecureType::kWeak,
+       InsecurityMetadata(base::Time::FromTimeT(1), IsMuted(false))}};
+
+  EXPECT_CALL(observer, OnEdited(updated_username));
+  EXPECT_CALL(observer, OnSavedPasswordsChanged(ElementsAre(updated_username)));
+  EXPECT_TRUE(
+      presenter().EditSavedPasswords(forms, new_username, form.password_value));
+  RunUntilIdle();
+  EXPECT_THAT(
+      store().stored_passwords(),
+      ElementsAre(Pair(form.signon_realm, ElementsAre(updated_username))));
+
+  presenter().RemoveObserver(&observer);
+}
+
 TEST_F(SavedPasswordsPresenterTest, EditOnlyPassword) {
   PasswordForm form =
       CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
@@ -333,6 +381,31 @@ TEST_F(SavedPasswordsPresenterTest, EditOnlyPassword) {
 TEST_F(SavedPasswordsPresenterTest, EditOnlyNoteFirstTime) {
   PasswordForm form =
       CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
+
+  store().AddLogin(form);
+  RunUntilIdle();
+  std::vector<PasswordForm> forms = {form};
+
+  const std::u16string kNewNoteValue = u"new note";
+
+  EXPECT_TRUE(presenter().EditSavedPasswords(
+      forms, form.username_value, form.password_value, kNewNoteValue));
+  RunUntilIdle();
+
+  PasswordForm expected_updated_form = form;
+  expected_updated_form.note = PasswordNote(kNewNoteValue, base::Time::Now());
+  EXPECT_THAT(
+      store().stored_passwords(),
+      ElementsAre(Pair(form.signon_realm, ElementsAre(expected_updated_form))));
+}
+
+TEST_F(SavedPasswordsPresenterTest, EditingNotesShouldNotResetPasswordIssues) {
+  PasswordForm form =
+      CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
+
+  form.password_issues.insert(
+      {InsecureType::kLeaked,
+       InsecurityMetadata(base::Time(), IsMuted(false))});
 
   store().AddLogin(form);
   RunUntilIdle();
@@ -779,8 +852,8 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest,
 TEST_F(SavedPasswordsPresenterWithTwoStoresTest, EditUsername) {
   PasswordForm profile_store_form =
       CreateTestPasswordForm(PasswordForm::Store::kProfileStore, /*index=*/0);
-  // Make sure the form has some issues and expect that they are cleared
-  // because of the password change.
+  // Make sure the form has a leaked issue and expect that it is cleared
+  // because of a username change.
   profile_store_form.password_issues = {
       {InsecureType::kLeaked,
        InsecurityMetadata(base::Time::FromTimeT(1), IsMuted(false))}};
@@ -1021,6 +1094,12 @@ TEST_F(SavedPasswordsPresenterWithTwoStoresTest, EditPasswordBothStores) {
   // because of the password change.
   profile_store_form.password_issues = {
       {InsecureType::kLeaked,
+       InsecurityMetadata(base::Time::FromTimeT(1), IsMuted(false))},
+      {InsecureType::kReused,
+       InsecurityMetadata(base::Time::FromTimeT(1), IsMuted(false))},
+      {InsecureType::kWeak,
+       InsecurityMetadata(base::Time::FromTimeT(1), IsMuted(false))},
+      {InsecureType::kPhished,
        InsecurityMetadata(base::Time::FromTimeT(1), IsMuted(false))}};
 
   PasswordForm account_store_form = profile_store_form;

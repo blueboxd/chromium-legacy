@@ -69,7 +69,7 @@ PermissionChip::PermissionChip(
       std::make_unique<views::Button::DefaultButtonControllerDelegate>(
           chip_button_)));
   chip_button_->SetExpandAnimationEndedCallback(base::BindRepeating(
-      &PermissionChip::ExpandAnimationEnded, base::Unretained(this)));
+      &PermissionChip::ExpandAnimationEnded, weak_factory_.GetWeakPtr()));
 
   Show(should_start_open_);
 }
@@ -90,6 +90,7 @@ void PermissionChip::OpenBubble() {
   DCHECK(!IsBubbleShowing());
 
   prompt_bubble_tracker_.SetView(CreateBubble());
+  ShowBubble();
   delegate_->SetBubbleShown();
 }
 

@@ -60,6 +60,7 @@
 #include "net/der/parse_values.h"
 #include "net/der/parser.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/url_constants.h"
 #include "url/url_util.h"
 
@@ -116,17 +117,32 @@ std::string Base64UrlEncode(const base::span<const uint8_t> input) {
 // Returns the App ID to use for the request, or absl::nullopt if the origin
 // is not authorized to use the provided value.
 absl::optional<std::string> ProcessAppIdExtension(
+    content::BrowserContext* browser_context,
     std::string appid,
-    const url::Origin& caller_origin) {
+    url::Origin caller_origin,
+    const blink::mojom::RemoteDesktopClientOverridePtr&
+        remote_desktop_client_override) {
   // The CryptoToken U2F extension checks the appid before calling the WebAuthn
   // API so there is no need to validate it here.
   if (WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(
           caller_origin)) {
+    DCHECK(!remote_desktop_client_override);
     if (!GURL(appid).is_valid()) {
       DCHECK(false) << "cryptotoken request did not set a valid App ID";
       return absl::nullopt;
     }
     return appid;
+  }
+
+  if (remote_desktop_client_override) {
+    if (!GetContentClient()
+             ->browser()
+             ->GetWebAuthenticationDelegate()
+             ->OriginMayUseRemoteDesktopClientOverride(browser_context,
+                                                       caller_origin)) {
+      return absl::nullopt;
+    }
+    caller_origin = remote_desktop_client_override->origin;
   }
 
   // Step 1: "If the AppID is not an HTTPS URL, and matches the FacetID of the
@@ -284,8 +300,9 @@ void AppendUniqueTransportsFromCertificate(
 
   const net::der::Input contents_der(contents);
   net::der::Parser contents_parser(contents_der);
-  net::der::BitString transport_bits;
-  if (!contents_parser.ReadBitString(&transport_bits)) {
+  absl::optional<net::der::BitString> transport_bits =
+      contents_parser.ReadBitString();
+  if (!transport_bits) {
     return;
   }
 
@@ -305,7 +322,7 @@ void AppendUniqueTransportsFromCertificate(
   };
 
   for (const auto& mapping : kTransportMapping) {
-    if (transport_bits.AssertsBit(mapping.bit_index) &&
+    if (transport_bits->AssertsBit(mapping.bit_index) &&
         !base::Contains(*out_transports, mapping.transport)) {
       out_transports->push_back(mapping.transport);
     }
@@ -591,19 +608,23 @@ bool AuthenticatorCommon::IsFocused() const {
 }
 
 void AuthenticatorCommon::OnLargeBlobCompressed(
+    uint64_t original_size,
     data_decoder::DataDecoder::ResultOrError<mojo_base::BigBuffer> result) {
-  ctap_get_assertion_request_->large_blob_write =
-      device::fido_parsing_utils::MaterializeOrNull(result.value);
+  if (result.value) {
+    ctap_get_assertion_request_->large_blob_write = device::LargeBlob(
+        device::fido_parsing_utils::Materialize(*result.value), original_size);
+  }
   StartGetAssertionRequest(/*allow_skipping_pin_touch=*/true);
 }
 
 void AuthenticatorCommon::OnLargeBlobUncompressed(
     device::AuthenticatorGetAssertionResponse response,
     data_decoder::DataDecoder::ResultOrError<mojo_base::BigBuffer> result) {
-  response.large_blob =
-      device::fido_parsing_utils::MaterializeOrNull(result.value);
-  CompleteGetAssertionRequest(blink::mojom::AuthenticatorStatus::SUCCESS,
-                              CreateGetAssertionResponse(std::move(response)));
+  CompleteGetAssertionRequest(
+      blink::mojom::AuthenticatorStatus::SUCCESS,
+      CreateGetAssertionResponse(
+          std::move(response),
+          device::fido_parsing_utils::MaterializeOrNull(result.value)));
 }
 
 // mojom::Authenticator
@@ -732,8 +753,9 @@ void AuthenticatorCommon::MakeCredential(
 
   absl::optional<std::string> appid_exclude;
   if (options->appid_exclude) {
-    appid_exclude =
-        ProcessAppIdExtension(*options->appid_exclude, caller_origin);
+    appid_exclude = ProcessAppIdExtension(
+        GetRenderFrameHost()->GetBrowserContext(), *options->appid_exclude,
+        caller_origin, options->remote_desktop_client_override);
     if (!appid_exclude) {
       CompleteMakeCredentialRequest(
           blink::mojom::AuthenticatorStatus::INVALID_DOMAIN);
@@ -1095,7 +1117,9 @@ void AuthenticatorCommon::GetAssertion(
 
   if (options->appid) {
     requested_extensions_.insert(RequestExtension::kAppID);
-    app_id_ = ProcessAppIdExtension(*options->appid, caller_origin_);
+    app_id_ = ProcessAppIdExtension(GetRenderFrameHost()->GetBrowserContext(),
+                                    *options->appid, caller_origin_,
+                                    options->remote_desktop_client_override);
     if (!app_id_) {
       CompleteGetAssertionRequest(
           blink::mojom::AuthenticatorStatus::INVALID_DOMAIN);
@@ -1175,10 +1199,11 @@ void AuthenticatorCommon::GetAssertion(
   ctap_get_assertion_request_->is_u2f_only = origin_is_crypto_token_extension;
 
   if (options->large_blob_write) {
-    data_decoder_.GzipCompress(
+    data_decoder_.Deflate(
         *options->large_blob_write,
         base::BindOnce(&AuthenticatorCommon::OnLargeBlobCompressed,
-                       weak_factory_.GetWeakPtr()));
+                       weak_factory_.GetWeakPtr(),
+                       options->large_blob_write->size()));
     return;
   }
 
@@ -1621,10 +1646,11 @@ void AuthenticatorCommon::OnSignResponse(
 void AuthenticatorCommon::OnAccountSelected(
     device::AuthenticatorGetAssertionResponse response) {
   if (response.large_blob) {
-    std::vector<uint8_t> blob = std::move(*response.large_blob);
-    data_decoder_.GzipUncompress(
-        blob, base::BindOnce(&AuthenticatorCommon::OnLargeBlobUncompressed,
-                             weak_factory_.GetWeakPtr(), std::move(response)));
+    device::LargeBlob large_blob = std::move(*response.large_blob);
+    data_decoder_.Inflate(
+        std::move(large_blob.compressed_data), large_blob.original_size,
+        base::BindOnce(&AuthenticatorCommon::OnLargeBlobUncompressed,
+                       weak_factory_.GetWeakPtr(), std::move(response)));
     return;
   }
   CompleteGetAssertionRequest(blink::mojom::AuthenticatorStatus::SUCCESS,
@@ -1855,7 +1881,8 @@ void AuthenticatorCommon::CompleteMakeCredentialRequest(
 
 blink::mojom::GetAssertionAuthenticatorResponsePtr
 AuthenticatorCommon::CreateGetAssertionResponse(
-    device::AuthenticatorGetAssertionResponse response_data) {
+    device::AuthenticatorGetAssertionResponse response_data,
+    absl::optional<std::vector<uint8_t>> large_blob) {
   auto response = blink::mojom::GetAssertionAuthenticatorResponse::New();
   auto common_info = blink::mojom::CommonCredentialInfo::New();
   common_info->client_data_json.assign(client_data_json_.begin(),
@@ -1906,7 +1933,7 @@ AuthenticatorCommon::CreateGetAssertionResponse(
       }
       case RequestExtension::kLargeBlobRead:
         response->echo_large_blob = true;
-        response->large_blob = response_data.large_blob;
+        response->large_blob = large_blob;
         break;
       case RequestExtension::kLargeBlobWrite:
         response->echo_large_blob = true;

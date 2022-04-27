@@ -47,6 +47,8 @@ static_library("test_support") {
     "../browser/aggregation_service/aggregation_service_test_utils.h",
     "../browser/attribution_reporting/attribution_insecure_random_generator.cc",
     "../browser/attribution_reporting/attribution_insecure_random_generator.h",
+    "../browser/attribution_reporting/attribution_parser_test_utils.cc",
+    "../browser/attribution_reporting/attribution_parser_test_utils.h",
     "../browser/attribution_reporting/attribution_test_utils.cc",
     "../browser/attribution_reporting/attribution_test_utils.h",
     "../browser/background_fetch/background_fetch_test_base.cc",
@@ -111,6 +113,7 @@ static_library("test_support") {
     "../public/test/accessibility_notification_waiter.cc",
     "../public/test/accessibility_notification_waiter.h",
     "../public/test/attribution_simulator.h",
+    "../public/test/attribution_simulator_environment.h",
     "../public/test/audio_service_test_helper.cc",
     "../public/test/audio_service_test_helper.h",
     "../public/test/back_forward_cache_util.cc",
@@ -299,6 +302,7 @@ static_library("test_support") {
     "../public/test/web_ui_browsertest_util.h",
     "../renderer/mock_agent_scheduling_group.cc",
     "../renderer/mock_agent_scheduling_group.h",
+    "attribution_simulator_environment.cc",
     "attribution_simulator_impl.cc",
     "attribution_simulator_input_parser.cc",
     "attribution_simulator_input_parser.h",
@@ -484,7 +488,6 @@ static_library("test_support") {
     "//net:quic_test_tools",
     "//net:simple_quic_tools",
     "//net:test_support",
-    "//ppapi/c:c",
     "//services/audio",
     "//services/audio/public/mojom",
     "//services/data_decoder/public/cpp:test_support",
@@ -581,6 +584,7 @@ static_library("test_support") {
     ]
     deps += [
       "//content/ppapi_plugin",
+      "//ppapi/c",
       "//ppapi/host",
       "//ppapi/proxy",
       "//ppapi/proxy:test_support",
@@ -698,6 +702,7 @@ static_library("test_support") {
   if (is_chromeos_lacros) {
     deps += [
       "//chromeos/crosapi/cpp",
+      "//chromeos/crosapi/cpp:crosapi_constants",
       "//chromeos/lacros",
       "//chromeos/lacros:test_support",
       "//chromeos/startup:constants",
@@ -863,6 +868,8 @@ static_library("browsertest_support") {
   sources = [
     "../browser/browsing_data/browsing_data_browsertest_utils.cc",
     "../browser/browsing_data/browsing_data_browsertest_utils.h",
+    "../browser/browsing_data/shared_storage_clear_site_data_tester.cc",
+    "../browser/browsing_data/shared_storage_clear_site_data_tester.h",
     "../public/test/content_browser_test.cc",
     "../public/test/content_browser_test.h",
     "../public/test/content_browser_test_shell_main_delegate.cc",
@@ -886,6 +893,7 @@ static_library("browsertest_support") {
     "//base/test:test_support",
     "//build:chromeos_buildflags",
     "//components/network_session_configurator/common:common",
+    "//components/services/storage:storage",
     "//content/app:for_content_tests",
     "//content/browser:for_content_tests",
     "//content/shell:content_shell_app",
@@ -1494,7 +1502,6 @@ test("content_browsertests") {
     "//net:simple_quic_tools",
     "//net:test_support",
     "//ppapi/buildflags",
-    "//ppapi/c:c",
     "//services/audio/public/cpp",
     "//services/cert_verifier/public/mojom",
     "//services/data_decoder/public/cpp",
@@ -1565,13 +1572,33 @@ test("content_browsertests") {
   ]
 
   if (enable_plugins) {
+    sources += [
+      "../browser/plugin_service_impl_browsertest.cc",
+      "../renderer/pepper/mock_renderer_ppapi_host.cc",
+      "../renderer/pepper/mock_renderer_ppapi_host.h",
+      "../renderer/pepper/pepper_device_enumeration_host_helper_unittest.cc",
+      "../renderer/pepper/pepper_file_chooser_host_unittest.cc",
+      "../renderer/pepper/pepper_graphics_2d_host_unittest.cc",
+      "../renderer/pepper/pepper_url_request_unittest.cc",
+      "../renderer/pepper/pepper_webplugin_impl_browsertest.cc",
+      "../test/ppapi/ppapi_browsertest.cc",
+      "../test/ppapi/ppapi_test.cc",
+      "../test/ppapi/ppapi_test.h",
+    ]
     deps += [
+      "//ppapi/c",
       "//ppapi/host",
       "//ppapi/proxy",
       "//ppapi/proxy:ipc",
+      "//ppapi/proxy:test_support",
       "//ppapi/shared_impl:test_support",
     ]
     data_deps += [ "//ppapi:ppapi_tests" ]
+    data += [
+      "//ppapi/tests/test_case.html",
+      "//ppapi/tests/test_page.css",
+      "//ppapi/tests/test_url_loader_data/",
+    ]
     if (is_mac) {
       data += [ "$root_out_dir/ppapi_tests.plugin/" ]
     }
@@ -1606,9 +1633,6 @@ test("content_browsertests") {
     deps += [ "//third_party/libyuv" ]
     data += [
       "//net/tools/testserver/",
-      "//ppapi/tests/test_case.html",
-      "//ppapi/tests/test_page.css",
-      "//ppapi/tests/test_url_loader_data/",
       "//third_party/pywebsocket3/src/mod_pywebsocket/",
     ]
   }
@@ -1803,24 +1827,6 @@ test("content_browsertests") {
   if (use_aura) {
     sources +=
         [ "../browser/compositor/image_transport_factory_browsertest.cc" ]
-  }
-
-  if (enable_plugins) {
-    sources += [
-      "../browser/plugin_service_impl_browsertest.cc",
-      "../renderer/pepper/mock_renderer_ppapi_host.cc",
-      "../renderer/pepper/mock_renderer_ppapi_host.h",
-      "../renderer/pepper/pepper_device_enumeration_host_helper_unittest.cc",
-      "../renderer/pepper/pepper_file_chooser_host_unittest.cc",
-      "../renderer/pepper/pepper_graphics_2d_host_unittest.cc",
-      "../renderer/pepper/pepper_url_request_unittest.cc",
-      "../renderer/pepper/pepper_webplugin_impl_browsertest.cc",
-      "../test/ppapi/ppapi_browsertest.cc",
-      "../test/ppapi/ppapi_test.cc",
-      "../test/ppapi/ppapi_test.h",
-    ]
-    deps += [ "//ppapi/proxy:test_support" ]
-    data_deps += [ "//ppapi:ppapi_tests" ]
   }
 
   if (enable_vr) {
@@ -2119,6 +2125,7 @@ test("content_unittests") {
     "../browser/interest_group/auction_runner_unittest.cc",
     "../browser/interest_group/auction_url_loader_factory_proxy_unittest.cc",
     "../browser/interest_group/auction_worklet_manager_unittest.cc",
+    "../browser/interest_group/interest_group_permissions_checker_unittest.cc",
     "../browser/interest_group/interest_group_storage_unittest.cc",
     "../browser/loader/cors_origin_pattern_setter_unittest.cc",
     "../browser/loader/file_url_loader_factory_unittest.cc",
@@ -2173,7 +2180,6 @@ test("content_unittests") {
     "../browser/permissions/permission_controller_impl_unittest.cc",
     "../browser/picture_in_picture/picture_in_picture_service_impl_unittest.cc",
     "../browser/plugin_list_unittest.cc",
-    "../browser/ppapi_plugin_sandboxed_process_launcher_delegate_unittest.cc",
     "../browser/prerender/prerender_host_registry_unittest.cc",
     "../browser/prerender/prerender_host_unittest.cc",
     "../browser/presentation/presentation_service_impl_unittest.cc",
@@ -2467,6 +2473,11 @@ test("content_unittests") {
     ]
   }
 
+  if (is_win) {
+    sources +=
+        [ "../renderer/media/win/overlay_state_observer_impl_unittest.cc" ]
+  }
+
   if (is_linux || is_chromeos) {
     sources += [
       "../browser/compute_pressure/cpu_probe_linux_unittest.cc",
@@ -2571,7 +2582,6 @@ test("content_unittests") {
     "//net:extras",
     "//net:test_support",
     "//ppapi/buildflags",
-    "//ppapi/c",
     "//services/audio/public/cpp:test_support",
     "//services/audio/public/mojom",
     "//services/data_decoder/public/cpp:test_support",
@@ -2666,6 +2676,7 @@ test("content_unittests") {
 
   if (enable_plugins) {
     sources += [
+      "../browser/ppapi_plugin_sandboxed_process_launcher_delegate_unittest.cc",
       "../browser/renderer_host/pepper/browser_ppapi_host_test.cc",
       "../browser/renderer_host/pepper/browser_ppapi_host_test.h",
       "../browser/renderer_host/pepper/pepper_file_system_browser_host_unittest.cc",
@@ -2679,6 +2690,7 @@ test("content_unittests") {
       "../renderer/pepper/v8_var_converter_unittest.cc",
     ]
     deps += [
+      "//ppapi/c",
       "//ppapi/host",
       "//ppapi/proxy:test_support",
       "//ppapi/shared_impl:test_support",

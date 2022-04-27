@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -22,6 +23,10 @@
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/interaction/element_tracker.h"
 #include "ui/base/interaction/framework_specific_implementation.h"
+
+namespace views {
+class WebView;
+}
 
 class Browser;
 
@@ -122,18 +127,19 @@ class InteractionSequenceBrowserUtil : private content::WebContentsObserver,
                           ui::ElementIdentifier page_identifier,
                           absl::optional<int> tab_index = absl::nullopt);
 
-  // Creates a util object associated with a WebContents, which may be in a tab
-  // or a non-tab WebView (such as tab search, touch tabstrip, etc.). The
-  // associated TrackedElementWebContents will be assigned `page_identifier` and
-  // context from `browser` if specified.
-  //
-  // The `browser` parameter need only be supplied if `web_contents` is not in a
-  // tab. If it is, and you do specify it, then the browser must contain the tab
-  // or an error will be generated.
-  static std::unique_ptr<InteractionSequenceBrowserUtil> ForWebContents(
+  // Creates a util object associated with a WebContents, which must be in a
+  // tab. The associated TrackedElementWebContents will be assigned
+  // `page_identifier`.
+  static std::unique_ptr<InteractionSequenceBrowserUtil> ForTabWebContents(
       content::WebContents* web_contents,
-      ui::ElementIdentifier page_identifier,
-      Browser* browser = nullptr);
+      ui::ElementIdentifier page_identifier);
+
+  // Creates a util object associated with a WebView in a secondary UI (e.g. the
+  // touch tabstrip, tab search box, side panel, etc.) The associated
+  // TrackedElementWebContents will be assigned `page_identifier`.
+  static std::unique_ptr<InteractionSequenceBrowserUtil> ForNonTabWebView(
+      views::WebView* web_view,
+      ui::ElementIdentifier page_identifier);
 
   // Creates a util object that becomes valid (and creates an element with
   // identifier `page_identifier`) when the next tab is created in the Browser
@@ -161,6 +167,52 @@ class InteractionSequenceBrowserUtil : private content::WebContentsObserver,
 
   // Returns whether the given value is "truthy" in the Javascript sense.
   static bool IsTruthy(const base::Value& value);
+
+  // Takes a screenshot based on the contents of `element` and compares with
+  // Skia Gold. Not all element types may be supported. On platforms where
+  // screenshots are unsupported or flaky, may trivially return true.
+  //
+  // If `element` is a TrackedElementWebPage that corresponds to a tab, the tab
+  // must be the active tab in the browser window.
+  //
+  // The name of the screenshot will be composed as follows:
+  //   TestFixture_TestName[_screenshot_name]_baseline
+  // If you are taking more than one screenshot per test, then `screenshot_name`
+  // must be specified and unique within the test; otherwise you may leave it
+  // empty.
+  //
+  // IMPORTANT USAGE NOTES:
+  //
+  // In order to actually take screenshots:
+  // - Your test must be in browser_tests rather than interactive_ui_tests
+  // - Your test must be included in pixel_browser_tests.filter
+  //
+  // Note that test in browser_tests (when not running in the
+  // pixel_browser_tests CQ task) may run at the same time as other tests, which
+  // can result in flakiness for interaction tests (especially if mouse
+  // position, window activation, or occlusion could change the behavior of a
+  // test). So if you need to both test complex interaction and take screenshots
+  // you have several options:
+  //  1. Make a detailed test for interactive_ui_tests and one or more simple
+  //     tests that just verify the UI visuals in browser_tests (downside: code
+  //     duplication)
+  //  2. Put a test in browser_tests that only runs when the command line flag
+  //     for pixel tests is set (downside: won't run on platforms that don't
+  //     support pixel tests)
+  //  3. Put the full test in browser_tests and harden it against activation and
+  //     focus changes, mouse position, etc. - e.g. by using things like
+  //     BubbleDialogDelegate::PreventCloseOnDeactivate() (downside: more
+  //     complicated test, still potential for flaking)
+  //
+  // In general, if (3) is possible and you can be sure your test won't flake,
+  // it's probably the best choice, followed by (1) if you can't guarantee
+  // stability in non-single-process tests.
+  //
+  // We are currently considering enabling pixel tests in interactive_ui_tests,
+  // which would solve the problem by providing a single safe place for both.
+  static bool CompareScreenshot(ui::TrackedElement* element,
+                                const std::string& screenshot_name,
+                                const std::string& baseline);
 
   // Allow access to the associated WebContents.
   content::WebContents* web_contents() const {
@@ -265,13 +317,17 @@ class InteractionSequenceBrowserUtil : private content::WebContentsObserver,
       const TabStripSelectionChange& selection) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(InteractionSequenceBrowserUtilInteractiveUiTest,
+                           OpenTabSearchMenuAndTestVisibility);
   class NewTabWatcher;
   class Poller;
   struct PollerData;
+  class WebViewData;
 
   InteractionSequenceBrowserUtil(content::WebContents* web_contents,
                                  ui::ElementIdentifier page_identifier,
-                                 absl::optional<Browser*> browser);
+                                 absl::optional<Browser*> browser,
+                                 views::WebView* web_view);
 
   void MaybeCreateElement(bool force = false);
   void DiscardCurrentElement();
@@ -290,8 +346,8 @@ class InteractionSequenceBrowserUtil : private content::WebContentsObserver,
   // We'll ignore those events.
   GURL navigating_away_from_;
 
-  // Specifies that context to use for WebUI that are not tabs.
-  ui::ElementContext force_context_;
+  // Tracks the WebView that hosts a non-tab WebContents; null otherwise.
+  std::unique_ptr<WebViewData> web_view_data_;
 
   // Virtual element representing the currently-loaded webpage; null if none.
   std::unique_ptr<TrackedElementWebPage> current_element_;

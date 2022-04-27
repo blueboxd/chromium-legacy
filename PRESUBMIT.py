@@ -659,6 +659,8 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
        '^chromecast/cast_core/grpc',
        '^chromecast/cast_core/runtime/browser',
        # Fuchsia provides C++ libraries that use std::shared_ptr<>.
+       '^base/fuchsia/filtered_service_directory\.(cc|h)',
+       '^base/fuchsia/service_directory_test_base\.h',
        '.*fuchsia.*test\.(cc|h)',
        # Needed for clang plugin tests
        '^tools/clang/plugins/tests/',
@@ -1463,7 +1465,17 @@ def CheckForgettingMAYBEInTests(input_api, output_api):
     # false positives with macros wrapping the actual tests name.
     define_maybe_pattern = input_api.re.compile(
         r'^\#define MAYBE_(?P<test_name>\w*[a-z]\w*)')
-    test_maybe_pattern = r'^\s*\w*TEST[^(]*\(\s*\w+,\s*MAYBE_{test_name}\)'
+    # The test_maybe_pattern needs to handle all of these forms. The standard:
+    #   IN_PROC_TEST_F(SyncTest, MAYBE_Start) {
+    # With a wrapper macro around the test name:
+    #   IN_PROC_TEST_F(SyncTest, E2E_ENABLED(MAYBE_Start)) {
+    # And the odd-ball NACL_BROWSER_TEST_f format:
+    #    NACL_BROWSER_TEST_F(NaClBrowserTest, SimpleLoad, {
+    # The optional E2E_ENABLED-style is handled with (\w*\()?
+    # The NACL_BROWSER_TEST_F pattern is handled by allowing a trailing comma or
+    # trailing ')'.
+    test_maybe_pattern = (
+        r'^\s*\w*TEST[^(]*\(\s*\w+,\s*(\w*\()?MAYBE_{test_name}[\),]')
     suite_maybe_pattern = r'^\s*\w*TEST[^(]*\(\s*MAYBE_{test_name}[\),]'
     warnings = []
 
@@ -2581,6 +2593,10 @@ def _GetJSONParseError(input_api, filename, eat_comments=True):
 def _GetIDLParseError(input_api, filename):
     try:
         contents = input_api.ReadFile(filename)
+        for i, char in enumerate(contents):
+          if not char.isascii():
+            return ('Non-ascii character "%s" (ord %d) found at offset %d.'
+                    % (char, ord(char), i))
         idl_schema = input_api.os_path.join(input_api.PresubmitLocalPath(),
                                             'tools', 'json_schema_compiler',
                                             'idl_schema.py')
@@ -5079,9 +5095,6 @@ def CheckChangeOnCommit(input_api, output_api):
     results.extend(
         input_api.canned_checks.CheckChangeHasNoUnwantedTags(
             input_api, output_api))
-    results.extend(
-        input_api.canned_checks.CheckChangeHasDescription(
-            input_api, output_api))
     return results
 
 
@@ -5658,13 +5671,13 @@ def CheckMPArchApiUsage(input_api, output_api):
     presence of MPArch features such as bfcache, prerendering, and fenced frames.
     """
 
-    # Only consider top-level directories that (1) can use content APIs, (2)
-    # apply to desktop or android chrome, and (3) are known to have a significant
-    # number of uses of the APIs of concern.
+    # Only consider top-level directories that (1) can use content APIs or
+    # problematic blink APIs, (2) apply to desktop or android chrome, and (3)
+    # are known to have a significant number of uses of the APIs of concern.
     files_to_check = (
-        r'^(chrome|components|content|extensions)[\\/].+%s' %
+        r'^(chrome|components|content|extensions|third_party[\\/]blink[\\/]renderer)[\\/].+%s' %
         _IMPLEMENTATION_EXTENSIONS,
-        r'^(chrome|components|content|extensions)[\\/].+%s' %
+        r'^(chrome|components|content|extensions|third_party[\\/]blink[\\/]renderer)[\\/].+%s' %
         _HEADER_EXTENSIONS,
     )
     files_to_skip = (_EXCLUDED_PATHS + _TEST_CODE_EXCLUDED_PATHS +
@@ -5714,11 +5727,15 @@ def CheckMPArchApiUsage(input_api, output_api):
     concerning_ftn_methods = [
         'IsMainFrame',
     ]
+    concerning_blink_frame_methods = [
+        'IsCrossOriginToMainFrame',
+    ]
     concerning_method_pattern = input_api.re.compile(r'(' + r'|'.join(
         item for sublist in [
             concerning_wco_methods, concerning_nav_handle_methods,
             concerning_web_contents_methods, concerning_rfh_methods,
             concerning_rfhi_methods, concerning_ftn_methods,
+            concerning_blink_frame_methods,
         ] for item in sublist) + r')\(')
 
     used_apis = set()

@@ -53,6 +53,10 @@
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
 #include "url/origin.h"
 
+namespace absl {
+class uint128;
+}  // namespace absl
+
 namespace mojo {
 
 template <typename Interface>
@@ -162,7 +166,7 @@ class MockDataHostManager : public AttributionDataHostManager {
       (override));
 
   MOCK_METHOD(
-      void,
+      bool,
       RegisterNavigationDataHost,
       (mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
        const blink::AttributionSrcToken& attribution_src_token),
@@ -583,11 +587,10 @@ class ReportBuilder {
 
   ReportBuilder& SetRandomizedTriggerRate(double rate);
 
-  ReportBuilder& SetReportId(
-      absl::optional<AttributionReport::EventLevelData::Id> id);
+  ReportBuilder& SetReportId(AttributionReport::EventLevelData::Id id);
 
   ReportBuilder& SetReportId(
-      absl::optional<AttributionReport::AggregatableAttributionData::Id> id);
+      AttributionReport::AggregatableAttributionData::Id id);
 
   ReportBuilder& SetAggregatableHistogramContributions(
       std::vector<AggregatableHistogramContribution> contributions);
@@ -603,9 +606,9 @@ class ReportBuilder {
   int64_t priority_ = 0;
   base::GUID external_report_id_;
   double randomized_trigger_rate_ = 0;
-  absl::optional<AttributionReport::EventLevelData::Id> report_id_;
-  absl::optional<AttributionReport::AggregatableAttributionData::Id>
-      aggregatable_attribution_report_id_;
+  AttributionReport::EventLevelData::Id report_id_{0};
+  AttributionReport::AggregatableAttributionData::Id
+      aggregatable_attribution_report_id_{0};
   std::vector<AggregatableHistogramContribution> contributions_;
 };
 
@@ -616,9 +619,7 @@ class AggregatableSourceMojoBuilder {
   AggregatableSourceMojoBuilder();
   ~AggregatableSourceMojoBuilder();
 
-  AggregatableSourceMojoBuilder& AddKey(
-      std::string key_id,
-      blink::mojom::AttributionAggregatableKeyPtr key);
+  AggregatableSourceMojoBuilder& AddKey(std::string key_id, absl::uint128 key);
 
   blink::mojom::AttributionAggregatableSourcePtr Build() const;
 
@@ -903,8 +904,14 @@ MATCHER_P(DeactivatedSourceIs, matcher, "") {
                             result_listener);
 }
 
-MATCHER_P(NewReportsAre, matcher, "") {
-  return ExplainMatchResult(matcher, arg.new_reports(), result_listener);
+MATCHER_P(NewEventLevelReportIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.new_event_level_report(),
+                            result_listener);
+}
+
+MATCHER_P(NewAggregatableReportIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.new_aggregatable_report(),
+                            result_listener);
 }
 
 struct EventTriggerDataMatcherConfig {

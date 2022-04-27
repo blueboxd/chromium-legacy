@@ -168,10 +168,12 @@
 <!-- Chrome OS does not allow switching users for sync. -->
 <if expr="not chromeos_ash">
         <cr-icon-button class="icon-arrow-dropdown cr-button-gap"
-            hidden="[[syncStatus.signedIn]]" on-click="onMenuButtonTap_"
-            id="dropdown-arrow" aria-label="$i18n{useAnotherAccount}">
+            hidden="[[!shouldAllowAccountSwitch_(syncStatus.signedIn)]]"
+            on-click="onMenuButtonTap_" id="dropdown-arrow"
+            aria-label="$i18n{useAnotherAccount}">
         </cr-icon-button>
-        <div class="separator" hidden="[[syncStatus.signedIn]]"></div>
+        <div class="separator"
+            hidden="[[!shouldAllowAccountSwitch_(syncStatus.signedIn)]]"></div>
 </if>
         <cr-button id="sync-button" class="action-button cr-button-gap"
             hidden="[[syncStatus.signedIn]]" on-click="onSyncButtonTap_"
@@ -197,11 +199,9 @@
         </cr-button>
         <div id="setup-buttons" hidden="[[!showSetupButtons_]]"
             class="cr-button-gap">
-          <if expr="not chromeos_lacros">
-            <!-- On Lacros, turning off sync is not supported yet. -->
-            <!--  TODO(https://crbug.com/1217645): Add this button on Lacros -->
-            <cr-button on-click="onSetupCancel_">$i18n{cancel}</cr-button>
-          </if>
+          <cr-button on-click="onSetupCancel_"
+              hidden="[[!isNonSyncingProfilesSupported_()]]">$i18n{cancel}
+          </cr-button>
           <cr-button class="action-button cr-button-gap"
               on-click="onSetupConfirm_">
             $i18n{confirm}
@@ -210,7 +210,8 @@
       </div>
 <!-- Chrome OS does not allow switching users for sync. -->
 <if expr="not chromeos_ash">
-      <template is="dom-if" if="[[!syncStatus.signedIn]]" restamp>
+      <template is="dom-if"
+          if="[[shouldAllowAccountSwitch_(syncStatus.signedIn)]]" restamp>
         <cr-action-menu id="menu" auto-reposition
             role-description="$i18n{menu}">
           <template is="dom-repeat" items="[[storedAccounts_]]">

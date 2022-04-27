@@ -19,6 +19,7 @@
 #include "ash/capture_mode/capture_mode_test_util.h"
 #include "ash/capture_mode/capture_mode_toggle_button.h"
 #include "ash/capture_mode/capture_mode_types.h"
+#include "ash/capture_mode/capture_mode_util.h"
 #include "ash/capture_mode/fake_camera_device.h"
 #include "ash/capture_mode/fake_video_source_provider.h"
 #include "ash/capture_mode/test_capture_mode_delegate.h"
@@ -38,6 +39,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/system_monitor.h"
 #include "base/test/bind.h"
@@ -45,6 +47,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/timer/timer.h"
 #include "cc/paint/skia_paint_canvas.h"
+#include "media/base/video_facing.h"
 #include "media/base/video_frame.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -61,6 +64,7 @@
 #include "ui/views/view_observer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
@@ -203,10 +207,12 @@ class CaptureModeCameraTest : public AshTestBase {
 
   void AddFakeCamera(const std::string& device_id,
                      const std::string& display_name,
-                     const std::string& model_id) {
+                     const std::string& model_id,
+                     media::VideoFacingMode camera_facing_mode =
+                         media::MEDIA_VIDEO_FACING_NONE) {
     CameraDevicesChangeWaiter waiter;
     GetTestDelegate()->video_source_provider()->AddFakeCamera(
-        device_id, display_name, model_id);
+        device_id, display_name, model_id, camera_facing_mode);
     waiter.Wait();
   }
 
@@ -370,6 +376,65 @@ class CaptureModeCameraTest : public AshTestBase {
   base::SystemMonitor system_monitor_;
   std::unique_ptr<aura::Window> window_;
 };
+
+TEST_F(CaptureModeCameraTest, SizeSpecsBigEnoughRegion) {
+  gfx::Size confine_bounds_size(800, 700);
+  {
+    auto specs = capture_mode_util::CalculateCameraPreviewSizeSpecs(
+        confine_bounds_size,
+        /*is_collapsed=*/false);
+    EXPECT_TRUE(specs.is_collapsible);
+    EXPECT_TRUE(specs.should_be_visible);
+    EXPECT_EQ(specs.size.width(), specs.size.height());
+    EXPECT_EQ(specs.size.width(),
+              700 / capture_mode::kCaptureSurfaceShortSideDivider);
+  }
+
+  // Transposing the confine bounds (e.g. due to rotation) should have no effect
+  // since we always consider the shorter side.
+  confine_bounds_size.Transpose();
+  {
+    auto specs = capture_mode_util::CalculateCameraPreviewSizeSpecs(
+        confine_bounds_size,
+        /*is_collapsed=*/false);
+    EXPECT_TRUE(specs.is_collapsible);
+    EXPECT_TRUE(specs.should_be_visible);
+    EXPECT_EQ(specs.size.width(),
+              700 / capture_mode::kCaptureSurfaceShortSideDivider);
+  }
+
+  {
+    auto specs = capture_mode_util::CalculateCameraPreviewSizeSpecs(
+        confine_bounds_size,
+        /*is_collapsed=*/true);
+    EXPECT_TRUE(specs.is_collapsible);
+    EXPECT_TRUE(specs.should_be_visible);
+    EXPECT_EQ(specs.size.width(), capture_mode::kMinCameraPreviewDiameter);
+  }
+}
+
+TEST_F(CaptureModeCameraTest, SizeSpecsNotCollapsible) {
+  gfx::Size confine_bounds_size(800, 500);
+  auto specs = capture_mode_util::CalculateCameraPreviewSizeSpecs(
+      confine_bounds_size,
+      /*is_collapsed=*/false);
+  EXPECT_FALSE(specs.is_collapsible);
+  EXPECT_TRUE(specs.should_be_visible);
+  EXPECT_EQ(specs.size.width(), specs.size.height());
+  EXPECT_EQ(specs.size.width(),
+            500 / capture_mode::kCaptureSurfaceShortSideDivider);
+}
+
+TEST_F(CaptureModeCameraTest, SizeSpecsHiddenPreview) {
+  gfx::Size confine_bounds_size(800, 170);
+  auto specs = capture_mode_util::CalculateCameraPreviewSizeSpecs(
+      confine_bounds_size,
+      /*is_collapsed=*/false);
+  EXPECT_FALSE(specs.is_collapsible);
+  EXPECT_FALSE(specs.should_be_visible);
+  EXPECT_EQ(specs.size.width(), specs.size.height());
+  EXPECT_EQ(specs.size.width(), capture_mode::kMinCameraPreviewDiameter);
+}
 
 TEST_F(CaptureModeCameraTest, CameraDevicesChanges) {
   auto* camera_controller = GetCameraController();
@@ -546,6 +611,27 @@ TEST_F(CaptureModeCameraTest, MissingCameraModelId) {
         base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE);
     loop.Run();
     EXPECT_EQ(0, observer.camera_change_event_count());
+  }
+}
+
+TEST_F(CaptureModeCameraTest, CameraFramesFlipping) {
+  StartCaptureSession(CaptureModeSource::kFullscreen, CaptureModeType::kVideo);
+  auto* camera_controller = GetCameraController();
+  int index = 0;
+  for (const auto facing_mode :
+       {media::MEDIA_VIDEO_FACING_NONE, media::MEDIA_VIDEO_FACING_USER,
+        media::MEDIA_VIDEO_FACING_ENVIRONMENT}) {
+    const std::string device_id = base::StringPrintf("/dev/video%d", index);
+    const std::string display_name = base::StringPrintf("Camera %d", index);
+    AddFakeCamera(device_id, display_name, display_name, facing_mode);
+    camera_controller->SetSelectedCamera(CameraId(display_name, 1));
+    EXPECT_TRUE(camera_controller->camera_preview_widget());
+    const bool should_be_flipped =
+        facing_mode != media::MEDIA_VIDEO_FACING_ENVIRONMENT;
+    EXPECT_EQ(should_be_flipped, camera_controller->camera_preview_view()
+                                     ->should_flip_frames_horizontally())
+        << "Failed for facing mode: " << facing_mode;
+    ++index;
   }
 }
 
@@ -870,6 +956,7 @@ TEST_F(CaptureModeCameraTest, CameraPreviewWidgetStackingInRegion) {
 // Tests that camera preview widget is shown, hidden and parented correctly
 // while moving, dragging and updating the user selection region.
 TEST_F(CaptureModeCameraTest, CameraPreviewWhileUpdatingCaptureRegion) {
+  UpdateDisplay("800x700");
   auto* controller =
       StartCaptureSession(CaptureModeSource::kRegion, CaptureModeType::kVideo);
   auto* camera_controller = GetCameraController();
@@ -881,7 +968,9 @@ TEST_F(CaptureModeCameraTest, CameraPreviewWhileUpdatingCaptureRegion) {
   EXPECT_TRUE(camera_preview_widget);
   auto* preview_window = camera_preview_widget->GetNativeWindow();
 
-  const gfx::Rect capture_region(10, 20, 300, 300);
+  const int min_region_length =
+      capture_mode::kMinCaptureSurfaceShortSideLengthForVisibleCamera;
+  const gfx::Rect capture_region(10, 20, min_region_length, min_region_length);
   controller->SetUserCaptureRegion(capture_region, /*by_user=*/true);
 
   // After user capture region is set, parent of the preview should be the
@@ -1142,13 +1231,15 @@ TEST_F(CaptureModeCameraTest, CameraPreviewWidgetAfterTypeSwitched) {
   const auto* camera_preview_widget =
       camera_controller->camera_preview_widget();
   EXPECT_TRUE(camera_preview_widget);
-  auto* parent = camera_preview_widget->GetNativeWindow()->parent();
+  auto* camera_preview_window = camera_preview_widget->GetNativeWindow();
   const auto* selected_window =
       controller->capture_mode_session()->GetSelectedWindow();
-  ASSERT_EQ(parent, selected_window);
+  ASSERT_EQ(camera_preview_window->parent(), selected_window);
 
   // Verify that camera preview is at the bottom right corner of the window.
   VerifyPreviewAlignment(selected_window->GetBoundsInScreen());
+  // `camera_preview_window` should not have a transient parent.
+  EXPECT_FALSE(wm::GetTransientParent(camera_preview_window));
 }
 
 // Tests that audio and camera menu groups should be hidden from the settings
@@ -1354,7 +1445,15 @@ TEST_F(CaptureModeCameraTest,
 
   // Update capture region smaller to make capture label overlap with camera
   // preview. Verify capture label is `kOverlapOpacity`.
-  const gfx::Vector2d delta(-500, -600);
+  // Make sure to resize the region to a value that won't cause the camera to be
+  // hidden according to the camera size specs.
+  const int delta_x =
+      capture_mode::kMinCaptureSurfaceShortSideLengthForVisibleCamera -
+      capture_region.width();
+  const int delta_y =
+      capture_mode::kMinCaptureSurfaceShortSideLengthForVisibleCamera -
+      capture_region.height();
+  const gfx::Vector2d delta(delta_x, delta_y);
   auto* event_generator = GetEventGenerator();
   event_generator->set_current_screen_location(capture_region.bottom_right());
   event_generator->PressLeftButton();
@@ -1373,7 +1472,7 @@ TEST_F(CaptureModeCameraTest,
       camera_preview_widget->GetWindowBoundsInScreen()));
   EXPECT_EQ(capture_label_layer->GetTargetOpacity(), 1.0f);
 
-  // Mouse mouse to the outside of capture label, verify it's updated to
+  // Move mouse to the outside of capture label, verify it's updated to
   // `kOverlapOpacity`.
   const gfx::Vector2d delta1(50, 50);
   event_generator->MoveMouseTo(capture_lable_bounds.bottom_right() + delta1);
@@ -1490,7 +1589,9 @@ TEST_F(CaptureModeCameraTest, CaptureLabelOpacityChangeOnCaptureSourceChange) {
 
   // Select capture region to make sure capture label is overlapped with
   // camera preview. Verify capture label is `kOverlapOpacity`.
-  SelectCaptureRegion({100, 100, 200, 100});
+  const int min_region_length =
+      capture_mode::kMinCaptureSurfaceShortSideLengthForVisibleCamera;
+  SelectCaptureRegion({100, 100, min_region_length, min_region_length});
   EXPECT_TRUE(capture_label_widget->GetWindowBoundsInScreen().Intersects(
       camera_preview_widget->GetWindowBoundsInScreen()));
   EXPECT_EQ(capture_label_layer->GetTargetOpacity(), kOverlapOpacity);
@@ -1509,7 +1610,10 @@ TEST_F(CaptureModeCameraTest,
   AddDefaultCamera();
   camera_controller->SetSelectedCamera(CameraId(kDefaultCameraModelId, 1));
   auto* camera_preview_widget = camera_controller->camera_preview_widget();
-  controller->SetUserCaptureRegion({100, 100, 200, 100}, /*by_user=*/true);
+  const int min_region_length =
+      capture_mode::kMinCaptureSurfaceShortSideLengthForVisibleCamera;
+  controller->SetUserCaptureRegion(
+      {100, 100, min_region_length, min_region_length}, /*by_user=*/true);
 
   StartVideoRecordingImmediately();
   EXPECT_FALSE(controller->IsActive());
@@ -1528,6 +1632,7 @@ TEST_F(CaptureModeCameraTest,
 }
 
 TEST_F(CaptureModeCameraTest, FocusableCameraPreviewInFullscreen) {
+  UpdateDisplay("800x700");
   auto* controller = StartCaptureSession(CaptureModeSource::kFullscreen,
                                          CaptureModeType::kVideo);
   AddDefaultCamera();
@@ -1541,13 +1646,19 @@ TEST_F(CaptureModeCameraTest, FocusableCameraPreviewInFullscreen) {
   // Tests that the camera preview is focusable in fullscreen capture.
   auto* camera_preview_view = camera_controller->camera_preview_view();
   auto* resize_button = GetPreviewResizeButton();
-  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, /*count=*/6);
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/6);
   EXPECT_EQ(FocusGroup::kCameraPreview, test_api.GetCurrentFocusGroup());
   EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
   EXPECT_TRUE(camera_preview_view->has_focus());
+
+  // Press tab again should advance the focus on the resize button. And the
+  // resize button should be invisible before and visible after being focused.
+  EXPECT_FALSE(resize_button->GetVisible());
   SendKey(ui::VKEY_TAB, event_generator);
   EXPECT_EQ(1u, test_api.GetCurrentFocusIndex());
   EXPECT_TRUE(resize_button->has_focus());
+  EXPECT_TRUE(resize_button->GetVisible());
+
   // Press space when the resize button is focused should collapse the camera
   // preview.
   EXPECT_TRUE(resize_button->has_focus());
@@ -1564,17 +1675,57 @@ TEST_F(CaptureModeCameraTest, FocusableCameraPreviewInFullscreen) {
   EXPECT_EQ(FocusGroup::kSettingsClose, test_api.GetCurrentFocusGroup());
   EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
 
+  // The resize button should fade out and become invisible in
+  // `kResizeButtonShowDuration` after removing focus from it.
+  base::OneShotTimer* hide_timer =
+      camera_preview_view->resize_button_hide_timer_for_test();
+  EXPECT_FALSE(resize_button->has_focus());
+  EXPECT_TRUE(hide_timer->IsRunning());
+  EXPECT_EQ(hide_timer->GetCurrentDelay(),
+            capture_mode::kResizeButtonShowDuration);
+  {
+    ViewVisibilityChangeWaiter waiter(resize_button);
+    EXPECT_TRUE(resize_button->GetVisible());
+    hide_timer->FireNow();
+    waiter.Wait();
+    EXPECT_FALSE(resize_button->GetVisible());
+  }
+
   // Shift tab should advance the focus from the settings button back to the
   // resize button inside the camera preview.
   SendKey(ui::VKEY_TAB, event_generator, ui::EF_SHIFT_DOWN);
   EXPECT_EQ(FocusGroup::kCameraPreview, test_api.GetCurrentFocusGroup());
   EXPECT_EQ(1u, test_api.GetCurrentFocusIndex());
   EXPECT_TRUE(resize_button->has_focus());
+
+  // The resize button should keep visible when it is focused, even trigger
+  // `resize_button_hide_timer_` to refresh its visibility.
+  hide_timer = camera_preview_view->resize_button_hide_timer_for_test();
+  EXPECT_TRUE(hide_timer->IsRunning());
+  EXPECT_TRUE(resize_button->GetVisible());
+  hide_timer->FireNow();
+  EXPECT_TRUE(resize_button->GetVisible());
+
   // Continue shift tab should move the focus from the resize button to the
   // camera preview.
   SendKey(ui::VKEY_TAB, event_generator, ui::EF_SHIFT_DOWN);
   EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
   EXPECT_TRUE(camera_preview_view->has_focus());
+
+  // The resize button should fade out and become invisible again in
+  // `kResizeButtonShowDuration` after removing focus from it.
+  hide_timer = camera_preview_view->resize_button_hide_timer_for_test();
+  EXPECT_FALSE(resize_button->has_focus());
+  EXPECT_TRUE(hide_timer->IsRunning());
+  EXPECT_EQ(hide_timer->GetCurrentDelay(),
+            capture_mode::kResizeButtonShowDuration);
+  {
+    ViewVisibilityChangeWaiter waiter(resize_button);
+    EXPECT_TRUE(resize_button->GetVisible());
+    hide_timer->FireNow();
+    waiter.Wait();
+    EXPECT_FALSE(resize_button->GetVisible());
+  }
 
   // Tests moving the camera preview through the keyboard when it is focused.
   EXPECT_TRUE(camera_controller->camera_preview_view()->has_focus());
@@ -1614,8 +1765,9 @@ TEST_F(CaptureModeCameraTest, FocusableCameraPreviewInFullscreen) {
 }
 
 TEST_F(CaptureModeCameraTest, FocusableCameraPreviewInRegion) {
+  UpdateDisplay("1366x768");
   auto* controller = CaptureModeController::Get();
-  controller->SetUserCaptureRegion(gfx::Rect(10, 10, 400, 550),
+  controller->SetUserCaptureRegion(gfx::Rect(10, 10, 800, 700),
                                    /*by_user=*/true);
 
   StartCaptureSession(CaptureModeSource::kRegion, CaptureModeType::kVideo);
@@ -1630,7 +1782,7 @@ TEST_F(CaptureModeCameraTest, FocusableCameraPreviewInRegion) {
   // Tests that the camera preview is focusable in region capture.
   auto* camera_preview_view = camera_controller->camera_preview_view();
   auto* resize_button = GetPreviewResizeButton();
-  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, /*count=*/15);
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/15);
   EXPECT_EQ(FocusGroup::kCameraPreview, test_api.GetCurrentFocusGroup());
   EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
   EXPECT_TRUE(camera_preview_view->has_focus());
@@ -1671,12 +1823,30 @@ TEST_F(CaptureModeCameraTest, FocusableCameraPreviewInRegion) {
   SendKey(ui::VKEY_TAB, event_generator, ui::EF_SHIFT_DOWN, /*count=*/10);
   EXPECT_EQ(FocusGroup::kTypeSource, test_api.GetCurrentFocusGroup());
   EXPECT_EQ(4u, test_api.GetCurrentFocusIndex());
+
+  // Update the capture region to test when the resize button is not focusable.
+  controller->SetUserCaptureRegion(gfx::Rect(10, 10, 400, 550),
+                                   /*by_user=*/true);
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/10);
+  EXPECT_EQ(FocusGroup::kCameraPreview, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
+  EXPECT_TRUE(camera_preview_view->has_focus());
+  // Press tab should advance the focus on the capture button instead of the
+  // resize button. As the resize button is forced to be hidden, which is not
+  // focusable in this case.
+  EXPECT_FALSE(camera_preview_view->is_collapsible());
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(FocusGroup::kCaptureButton, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
 }
 
 TEST_F(CaptureModeCameraTest, FocusableCameraPreviewInWindow) {
+  UpdateDisplay("1366x768");
   // Create one more window besides `window_`.
   std::unique_ptr<aura::Window> window2(
-      CreateTestWindow(gfx::Rect(150, 150, 420, 450)));
+      CreateTestWindow(gfx::Rect(150, 50, 800, 700)));
+  window()->SetBounds(gfx::Rect(30, 40, 800, 700));
+
   auto* controller =
       StartCaptureSession(CaptureModeSource::kWindow, CaptureModeType::kVideo);
   AddDefaultCamera();
@@ -1696,7 +1866,7 @@ TEST_F(CaptureModeCameraTest, FocusableCameraPreviewInWindow) {
   // be shown inside it.
   auto* camera_preview_view = camera_controller->camera_preview_view();
   auto* resize_button = GetPreviewResizeButton();
-  SendKey(ui::VKEY_TAB, event_generator, /*shift_down=*/false, /*count=*/6);
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/6);
   EXPECT_EQ(FocusGroup::kCaptureWindow, test_api.GetCurrentFocusGroup());
   EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
   EXPECT_TRUE(test_api.GetHighlightableWindow(window2.get())->has_focus());
@@ -1832,7 +2002,7 @@ TEST_F(CaptureModeCameraTest, CaptureBarOpacityChangeOnKeyboardNavigation) {
   // Update display size and update window with customized size to make sure
   // camera preview overlap with capture bar with capture source `kWindow`.
   UpdateDisplay("1366x768");
-  window()->SetBounds({0, 195, 903, 492});
+  window()->SetBounds({0, 0, 903, 700});
 
   auto* controller =
       StartCaptureSession(CaptureModeSource::kWindow, CaptureModeType::kVideo);
@@ -1911,7 +2081,9 @@ TEST_F(CaptureModeCameraTest, CaptureLabelOpacityChangeOnKeyboardNavigation) {
 
   // Select capture region to make sure capture label is overlapped with
   // camera preview. Verify capture label is `kOverlapOpacity`.
-  SelectCaptureRegion({100, 100, 200, 100});
+  const int min_region_length =
+      capture_mode::kMinCaptureSurfaceShortSideLengthForVisibleCamera;
+  SelectCaptureRegion({100, 100, min_region_length, min_region_length});
   EXPECT_TRUE(capture_label_widget->GetWindowBoundsInScreen().Intersects(
       camera_preview_widget->GetWindowBoundsInScreen()));
   EXPECT_EQ(capture_label_layer->GetTargetOpacity(), kOverlapOpacity);
@@ -1928,13 +2100,12 @@ TEST_F(CaptureModeCameraTest, CaptureLabelOpacityChangeOnKeyboardNavigation) {
   // `kOverlapOpacity`.
   SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/2);
   EXPECT_EQ(FocusGroup::kSelection, test_api.GetCurrentFocusGroup());
-  LOG(ERROR) << test_api.GetCurrentFocusIndex();
   EXPECT_EQ(capture_label_layer->GetTargetOpacity(), kOverlapOpacity);
 
   // Tab eleven times to focus on cpature label, verify capture label is updated
   // to fully opaque.
-  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/11);
-  LOG(ERROR) << test_api.GetCurrentFocusIndex();
+  EXPECT_FALSE(camera_controller->camera_preview_view()->is_collapsible());
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/10);
   EXPECT_EQ(FocusGroup::kCaptureButton, test_api.GetCurrentFocusGroup());
   EXPECT_EQ(capture_label_layer->GetTargetOpacity(), 1.0f);
 
@@ -1943,6 +2114,42 @@ TEST_F(CaptureModeCameraTest, CaptureLabelOpacityChangeOnKeyboardNavigation) {
   SendKey(ui::VKEY_TAB, event_generator);
   EXPECT_EQ(FocusGroup::kSettingsClose, test_api.GetCurrentFocusGroup());
   EXPECT_EQ(capture_label_layer->GetTargetOpacity(), kOverlapOpacity);
+}
+
+// Tests that when switching capture source from `kRegion` to `kFullscreen`,
+// camera preview should be shown.
+// Regression test for https://crbug.com/1316911.
+TEST_F(CaptureModeCameraTest, CameraPreviewVisibilityOnCaptureSourceChanged) {
+  StartCaptureSession(CaptureModeSource::kFullscreen, CaptureModeType::kVideo);
+  AddDefaultCamera();
+  CaptureModeTestApi().SelectCameraAtIndex(0);
+  auto* camera_preview_widget = GetCameraController()->camera_preview_widget();
+  auto* preview_window = camera_preview_widget->GetNativeWindow();
+
+  // Verify that camera preview is visible.
+  EXPECT_EQ(preview_window->parent(),
+            preview_window->GetRootWindow()->GetChildById(
+                kShellWindowId_MenuContainer));
+  EXPECT_TRUE(camera_preview_widget->IsVisible());
+  EXPECT_TRUE(preview_window->TargetVisibility());
+
+  // Click on the region source button, verify that camera preview is parented
+  // to UnparentedContainer and becomes invisible.
+  auto* event_generator = GetEventGenerator();
+  ClickOnView(GetRegionToggleButton(), event_generator);
+  EXPECT_EQ(preview_window->parent(),
+            preview_window->GetRootWindow()->GetChildById(
+                kShellWindowId_UnparentedContainer));
+  EXPECT_FALSE(camera_preview_widget->IsVisible());
+
+  // Now switch capture source to `kFullscreen`, verify that camera preview is
+  // parented to MenuContainer and becomes visible again.
+  ClickOnView(GetFullscreenToggleButton(), event_generator);
+  EXPECT_EQ(preview_window->parent(),
+            preview_window->GetRootWindow()->GetChildById(
+                kShellWindowId_MenuContainer));
+  EXPECT_TRUE(preview_window->TargetVisibility());
+  EXPECT_TRUE(camera_preview_widget->IsVisible());
 }
 
 // Tests that the recording starts with camera metrics are recorded correctly
@@ -2060,6 +2267,8 @@ TEST_F(CaptureModeCameraTest, RecordCameraReconnectDurationHistogramTest) {
 // Tests that the camera size on start is recorded correctly in the metrics both
 // in clamshell and tablet mode.
 TEST_F(CaptureModeCameraTest, RecordingCameraSizeOnStartHistogramTest) {
+  UpdateDisplay("1366x768");
+
   constexpr char kHistogramNameBase[] =
       "Ash.CaptureModeController.RecordingCameraSizeOnStart";
   base::HistogramTester histogram_tester;
@@ -2163,6 +2372,20 @@ class CaptureModeCameraPreviewTest
     : public CaptureModeCameraTest,
       public testing::WithParamInterface<CaptureModeSource> {
  public:
+  enum class CameraPreviewState {
+    // The camera preview is shown inside an area that makes its expanded size
+    // big enough so it can collapse to a smaller size.
+    kCollapsible,
+
+    // The camera preview is shown inside an area that is small enough to
+    // disable its collapsability without causing it to hide.
+    kNotCollapsible,
+
+    // The camera preview is shown inside an area that is too small for it to
+    // show at all.
+    kHidden,
+  };
+
   CaptureModeCameraPreviewTest() = default;
   CaptureModeCameraPreviewTest(const CaptureModeCameraPreviewTest&) = delete;
   CaptureModeCameraPreviewTest& operator=(const CaptureModeCameraPreviewTest&) =
@@ -2184,9 +2407,66 @@ class CaptureModeCameraPreviewTest
       GetEventGenerator()->MoveMouseToCenterOf(window());
   }
 
+  gfx::Size GetMinSurfaceSizeForCollapsibleCamera() const {
+    const int min_length = capture_mode::kMinCollapsibleCameraPreviewDiameter *
+                           capture_mode::kCaptureSurfaceShortSideDivider;
+    return gfx::Size(min_length, min_length);
+  }
+
+  gfx::Size GetMinSurfaceSizeSoCameraBecomes(
+      CameraPreviewState preview_state) const {
+    gfx::Size min_size = GetMinSurfaceSizeForCollapsibleCamera();
+    switch (preview_state) {
+      case CameraPreviewState::kCollapsible:
+        min_size.Enlarge(10, 20);
+        break;
+      case CameraPreviewState::kNotCollapsible:
+        min_size.Enlarge(-10, -20);
+        break;
+      case CameraPreviewState::kHidden:
+        const int length_for_hidden =
+            capture_mode::kMinCaptureSurfaceShortSideLengthForVisibleCamera - 5;
+        min_size.SetSize(length_for_hidden, length_for_hidden - 5);
+        break;
+    }
+    return min_size;
+  }
+
+  void ResizeDisplaySoCameraPreviewBecomes(CameraPreviewState preview_state) {
+    gfx::Size min_size = GetMinSurfaceSizeSoCameraBecomes(preview_state);
+    const int shelf_size = ShelfConfig::Get()->shelf_size();
+    min_size.Enlarge(shelf_size, shelf_size);
+    UpdateDisplay(min_size.ToString());
+  }
+
+  void ResizeRegionSoCameraPreviewBecomes(CameraPreviewState preview_state) {
+    CaptureModeController::Get()->SetUserCaptureRegion(
+        gfx::Rect(GetMinSurfaceSizeSoCameraBecomes(preview_state)),
+        /*by_user=*/true);
+  }
+
+  void ResizeWindowSoCameraPreviewBecomes(CameraPreviewState preview_state) {
+    window()->SetBounds(
+        gfx::Rect(GetMinSurfaceSizeSoCameraBecomes(preview_state)));
+  }
+
+  void ResizeSurfaceSoCameraPreviewBecomes(CameraPreviewState preview_state) {
+    switch (GetParam()) {
+      case CaptureModeSource::kFullscreen:
+        ResizeDisplaySoCameraPreviewBecomes(preview_state);
+        break;
+      case CaptureModeSource::kRegion:
+        ResizeRegionSoCameraPreviewBecomes(preview_state);
+        break;
+      case CaptureModeSource::kWindow:
+        ResizeWindowSoCameraPreviewBecomes(preview_state);
+        break;
+    }
+  }
+
   // Based on the `CaptureModeSource`, it returns the current capture region's
   // bounds in screen.
-  gfx::Rect GetCaptureBoundsInScreen() {
+  gfx::Rect GetCaptureBoundsInScreen() const {
     auto* controller = CaptureModeController::Get();
     auto* root = GetCurrentRoot();
 
@@ -2212,9 +2492,15 @@ class CaptureModeCameraPreviewTest
     }
   }
 
+  gfx::Size GetExpectedPreviewSize(bool collapsed) const {
+    return capture_mode_util::CalculateCameraPreviewSizeSpecs(
+               GetCaptureBoundsInScreen().size(), collapsed)
+        .size;
+  }
+
   // Returns the cursor type when cursor is on top of the current capture
   // surface.
-  ui::mojom::CursorType GetCursorTypeOnCaptureSurface() {
+  ui::mojom::CursorType GetCursorTypeOnCaptureSurface() const {
     DCHECK(CaptureModeController::Get()->IsActive());
 
     switch (GetParam()) {
@@ -2282,6 +2568,15 @@ TEST_P(CaptureModeCameraPreviewTest, CameraPreviewDragToSnap) {
 
   // Verify that by default the snap position should be `kBottomRight` and
   // camera preview is placed at the correct position.
+  EXPECT_EQ(CameraPreviewSnapPosition::kBottomRight,
+            camera_controller->camera_preview_snap_position());
+  VerifyPreviewAlignment(GetCaptureBoundsInScreen());
+
+  // Drag the camera preview for a small distance. Tests that even though the
+  // snap position does not change, the preview should be snapped back to its
+  // previous position.
+  DragPreviewToPoint(preview_widget, {capture_bounds_center_point.x() + 20,
+                                      capture_bounds_center_point.y() + 20});
   EXPECT_EQ(CameraPreviewSnapPosition::kBottomRight,
             camera_controller->camera_preview_snap_position());
   VerifyPreviewAlignment(GetCaptureBoundsInScreen());
@@ -2591,6 +2886,7 @@ TEST_P(CaptureModeCameraPreviewTest, CursorTypeUpdates) {
 // it. It also tests the ability to restore to previous resize button settings
 // if any when initiating a new capture mode session.
 TEST_P(CaptureModeCameraPreviewTest, ResizePreviewWidget) {
+  UpdateDisplay("800x700");
   StartCaptureSessionWithParam();
   auto* controller = CaptureModeController::Get();
   auto* camera_controller = GetCameraController();
@@ -2600,7 +2896,8 @@ TEST_P(CaptureModeCameraPreviewTest, ResizePreviewWidget) {
   views::Widget* preview_widget = camera_controller->camera_preview_widget();
   DCHECK(preview_widget);
   const auto default_preview_bounds = preview_widget->GetWindowBoundsInScreen();
-  EXPECT_EQ(default_preview_bounds.size(), capture_mode::kCameraPreviewSize);
+  EXPECT_EQ(default_preview_bounds.size(),
+            GetExpectedPreviewSize(/*collapsed=*/false));
 
   auto* resize_button = GetPreviewResizeButton();
   auto* event_generator = GetEventGenerator();
@@ -2614,7 +2911,7 @@ TEST_P(CaptureModeCameraPreviewTest, ResizePreviewWidget) {
   // changed to expanded related contents accordingly.
   ClickOnView(resize_button, event_generator);
   EXPECT_EQ(preview_widget->GetWindowBoundsInScreen().size(),
-            capture_mode::kCollapsedPreviewSize);
+            GetExpectedPreviewSize(/*collapsed=*/true));
   VerifyResizeButton(camera_controller->is_camera_preview_collapsed(),
                      resize_button);
 
@@ -2631,7 +2928,7 @@ TEST_P(CaptureModeCameraPreviewTest, ResizePreviewWidget) {
   // resize button will be restored.
   ClickOnView(resize_button, event_generator);
   EXPECT_EQ(preview_widget->GetWindowBoundsInScreen().size(),
-            capture_mode::kCollapsedPreviewSize);
+            GetExpectedPreviewSize(/*collapsed=*/true));
   VerifyResizeButton(camera_controller->is_camera_preview_collapsed(),
                      resize_button);
   const auto collapsed_preview_bounds =
@@ -2691,7 +2988,7 @@ TEST_P(CaptureModeCameraPreviewTest, MultiDisplayResize) {
 
 // Tests the visibility of the resize button on mouse events.
 TEST_P(CaptureModeCameraPreviewTest, ResizeButtonVisibilityOnMouseEvents) {
-  UpdateDisplay("1380x768");
+  UpdateDisplay("1366x768");
 
   StartCaptureSessionWithParam();
   CaptureModeCameraController* camera_controller = GetCameraController();
@@ -2740,6 +3037,7 @@ TEST_P(CaptureModeCameraPreviewTest, ResizeButtonVisibilityOnMouseEvents) {
 
 // Tests the visibility of the resize button on tap events.
 TEST_P(CaptureModeCameraPreviewTest, ResizeButtonVisibilityOnTapEvents) {
+  UpdateDisplay("800x700");
   StartCaptureSessionWithParam();
   CaptureModeCameraController* camera_controller = GetCameraController();
   AddDefaultCamera();
@@ -2775,6 +3073,7 @@ TEST_P(CaptureModeCameraPreviewTest, ResizeButtonVisibilityOnTapEvents) {
 // Tests the visibility of the resize button on camera preview drag to snap.
 TEST_P(CaptureModeCameraPreviewTest,
        ResizeButtonVisibilityOnCameraPreviewDragToSnap) {
+  UpdateDisplay("1366x768");
   StartCaptureSessionWithParam();
   CaptureModeCameraController* camera_controller = GetCameraController();
   AddDefaultCamera();
@@ -2816,7 +3115,7 @@ TEST_P(CaptureModeCameraPreviewTest,
 }
 
 TEST_P(CaptureModeCameraPreviewTest, CameraPreviewDeintersectsWithSystemTray) {
-  UpdateDisplay("1380x768");
+  UpdateDisplay("1366x768");
 
   // Open system tray.
   ui::test::EventGenerator* event_generator = GetEventGenerator();
@@ -2852,7 +3151,7 @@ TEST_P(CaptureModeCameraPreviewTest,
        CameraPreviewDeintersectsWithSystemTrayWhileVideoRecordingInProgress) {
   // Update display size big enough to make sure when capture source is
   // `kWindow`, the selected window is not system tray.
-  UpdateDisplay("1380x768");
+  UpdateDisplay("1366x768");
 
   StartCaptureSessionWithParam();
   auto* camera_controller = GetCameraController();
@@ -2964,7 +3263,7 @@ TEST_P(CaptureModeCameraPreviewTest,
        CameraPreviewDeintersectsWithAutoclickBar) {
   // Update display size big enough to make sure when capture source is
   // `kWindow`, the selected window is not system tray.
-  UpdateDisplay("1380x768");
+  UpdateDisplay("1366x768");
   // Enable autoclick bar.
   auto* autoclick_controller = Shell::Get()->autoclick_controller();
   autoclick_controller->SetEnabled(true, /*show_confirmation_dialog=*/false);
@@ -3003,7 +3302,7 @@ TEST_P(CaptureModeCameraPreviewTest,
   // can stay in the same side with it when camera preview is collapsed,
   // otherwise, camera preview should be snapped to the other side of the
   // display.
-  UpdateDisplay("1380x650");
+  UpdateDisplay("1366x700");
 
   StartCaptureSessionWithParam();
   auto* camera_controller = GetCameraController();
@@ -3040,20 +3339,170 @@ TEST_P(CaptureModeCameraPreviewTest,
       system_tray->GetBoundsInScreen()));
 
   // Click on the resize button to enlarge camera preview. Verify that camera
-  // preview is snapped to the top left corner to avoid overlap with system
-  // tray.
+  // preview remains snapped to the top right corner, since there's no overlap.
   ClickOnView(resize_button, event_generator);
-  // Please notice, when capture source is `kWindow`, once clicking on the
-  // resize button, system tray will be closed. In this use case we just need to
-  // verify camera preview still stays at the top right corner.
-  if (system_tray->IsBubbleShown()) {
-    EXPECT_EQ(camera_controller->camera_preview_snap_position(),
-              CameraPreviewSnapPosition::kTopLeft);
-    EXPECT_FALSE(preview_widget->GetWindowBoundsInScreen().Intersects(
-        system_tray->GetBoundsInScreen()));
-  } else {
-    EXPECT_EQ(camera_controller->camera_preview_snap_position(),
-              CameraPreviewSnapPosition::kTopRight);
+  EXPECT_FALSE(preview_widget->GetWindowBoundsInScreen().Intersects(
+      system_tray->GetBoundsInScreen()));
+  EXPECT_EQ(camera_controller->camera_preview_snap_position(),
+            CameraPreviewSnapPosition::kTopRight);
+}
+
+TEST_P(CaptureModeCameraPreviewTest, CameraPreviewSpecs) {
+  AddDefaultCamera();
+  CaptureModeTestApi().SelectCameraAtIndex(0);
+  auto* camera_controller = GetCameraController();
+
+  struct {
+    CameraPreviewState preview_state;
+    std::string scope_trace;
+  } kTestCases[] = {
+      {CameraPreviewState::kCollapsible, "Collapsible Preview"},
+      {CameraPreviewState::kNotCollapsible, "Not Collapsible Preview"},
+      {CameraPreviewState::kHidden, "Hidden Preview"},
+  };
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(test_case.scope_trace);
+
+    UpdateDisplay("1366x700");
+    StartCaptureSessionWithParam();
+    auto* camera_preview_widget = camera_controller->camera_preview_widget();
+    auto* camera_preview_view = camera_controller->camera_preview_view();
+    EXPECT_TRUE(camera_preview_widget);
+    EXPECT_TRUE(camera_preview_widget->IsVisible());
+    EXPECT_TRUE(camera_preview_view->is_collapsible());
+
+    ResizeSurfaceSoCameraPreviewBecomes(test_case.preview_state);
+    const auto preview_screen_bounds =
+        camera_preview_widget->GetWindowBoundsInScreen();
+    switch (test_case.preview_state) {
+      case CameraPreviewState::kCollapsible:
+        EXPECT_TRUE(camera_preview_widget->IsVisible());
+        EXPECT_TRUE(camera_preview_view->is_collapsible());
+        EXPECT_EQ(preview_screen_bounds.size(),
+                  GetExpectedPreviewSize(/*collapsed=*/false));
+        break;
+
+      case CameraPreviewState::kNotCollapsible:
+        EXPECT_TRUE(camera_preview_widget->IsVisible());
+        EXPECT_FALSE(camera_preview_view->is_collapsible());
+        EXPECT_EQ(preview_screen_bounds.size(),
+                  GetExpectedPreviewSize(/*collapsed=*/false));
+        break;
+
+      case CameraPreviewState::kHidden:
+        EXPECT_FALSE(camera_preview_widget->IsVisible());
+        EXPECT_FALSE(camera_preview_view->is_collapsible());
+        break;
+    }
+  }
+}
+
+// Tests that the resize button will stay visible after mouse exiting the
+// preview and time exceeding the predefined duration on mouse event when switch
+// access is enabled. And the resize button will behave in a default way if
+// switch access is not enabled.
+TEST_P(CaptureModeCameraPreviewTest,
+       ResizeButtonSwitchAccessVisibilityTestOnMouseEvent) {
+  UpdateDisplay("1366x768");
+
+  CaptureModeCameraController* camera_controller = GetCameraController();
+  AddDefaultCamera();
+  camera_controller->SetSelectedCamera(CameraId(kDefaultCameraModelId, 1));
+  auto* event_generator = GetEventGenerator();
+
+  for (const bool switch_access_enabled : {false, true}) {
+    AccessibilityControllerImpl* a11y_controller =
+        Shell::Get()->accessibility_controller();
+    a11y_controller->switch_access().SetEnabled(switch_access_enabled);
+    EXPECT_EQ(switch_access_enabled, a11y_controller->IsSwitchAccessRunning());
+
+    StartCaptureSessionWithParam();
+    views::Widget* preview_widget = camera_controller->camera_preview_widget();
+    DCHECK(preview_widget);
+    gfx::Rect preview_bounds = preview_widget->GetWindowBoundsInScreen();
+    CaptureModeButton* resize_button = GetPreviewResizeButton();
+
+    // Tests the default visibility of the resize button based on whether switch
+    // access is enabled or not.
+    EXPECT_EQ(resize_button->GetVisible(),
+              switch_access_enabled ? true : false);
+
+    event_generator->MoveMouseTo(preview_bounds.CenterPoint());
+    EXPECT_TRUE(resize_button->GetVisible());
+
+    auto outside_point = preview_bounds.origin();
+    outside_point.Offset(-1, -1);
+    event_generator->MoveMouseTo(outside_point);
+    base::OneShotTimer* timer = camera_controller->camera_preview_view()
+                                    ->resize_button_hide_timer_for_test();
+    timer->FireNow();
+    EXPECT_EQ(resize_button->GetVisible(),
+              switch_access_enabled ? true : false);
+
+    // Tests that the resize button will be hidden when start dragging the
+    // camera preview regardless of whether the switch access is enabled or not.
+    event_generator->MoveMouseTo(preview_bounds.CenterPoint());
+    EXPECT_TRUE(resize_button->GetVisible());
+    event_generator->PressLeftButton();
+    EXPECT_FALSE(resize_button->GetVisible());
+    event_generator->MoveMouseBy(-100, -100);
+    EXPECT_FALSE(resize_button->GetVisible());
+
+    // Tests that the resize button will be visible if the switch access is
+    // enabled after releasing the drag and not visible otherwise.
+    event_generator->ReleaseLeftButton();
+    EXPECT_EQ(resize_button->GetVisible(),
+              switch_access_enabled ? true : false);
+
+    CaptureModeController::Get()->Stop();
+  }
+}
+
+// Tests that the resize button will stay visible after tapping on the preview
+// and time exceeding the predefined duration on tap event when switch access is
+// enabled. And the resize button will behave in a default way if switch
+// access is not enabled.
+TEST_P(CaptureModeCameraPreviewTest,
+       ResizeButtonSwitchAccessVisibilityTestOnTapEvent) {
+  UpdateDisplay("1366x768");
+
+  SwitchToTabletMode();
+  EXPECT_TRUE(Shell::Get()->IsInTabletMode());
+
+  CaptureModeCameraController* camera_controller = GetCameraController();
+  AddDefaultCamera();
+  camera_controller->SetSelectedCamera(CameraId(kDefaultCameraModelId, 1));
+  auto* event_generator = GetEventGenerator();
+
+  for (const bool switch_access_enabled : {false, true}) {
+    AccessibilityControllerImpl* a11y_controller =
+        Shell::Get()->accessibility_controller();
+    a11y_controller->switch_access().SetEnabled(switch_access_enabled);
+    EXPECT_EQ(switch_access_enabled, a11y_controller->IsSwitchAccessRunning());
+
+    StartCaptureSessionWithParam();
+    views::Widget* preview_widget = camera_controller->camera_preview_widget();
+    DCHECK(preview_widget);
+    gfx::Rect preview_bounds = preview_widget->GetWindowBoundsInScreen();
+    CaptureModeButton* resize_button = GetPreviewResizeButton();
+
+    // Tests the default visibility of the resize button based on whether switch
+    // access is enabled or not.
+    EXPECT_EQ(resize_button->GetVisible(),
+              switch_access_enabled ? true : false);
+
+    event_generator->GestureTapAt(preview_bounds.CenterPoint());
+    EXPECT_TRUE(resize_button->GetVisible());
+
+    base::OneShotTimer* timer = camera_controller->camera_preview_view()
+                                    ->resize_button_hide_timer_for_test();
+    if (timer->IsRunning())
+      timer->FireNow();
+
+    EXPECT_EQ(resize_button->GetVisible(),
+              switch_access_enabled ? true : false);
+    CaptureModeController::Get()->Stop();
   }
 }
 

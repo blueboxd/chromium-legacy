@@ -268,23 +268,27 @@ void NavigationApi::CloneFromPrevious(NavigationApi& previous) {
   DCHECK(entries_.IsEmpty());
   entries_.ReserveCapacity(previous.entries_.size());
   for (wtf_size_t i = 0; i < previous.entries_.size(); i++) {
-    // It's possible that |old_item| is indirectly holding a reference to
-    // the old Document. Also, it has a bunch of state we don't need for a
-    // non-current entry. Clone a subset of its state to a |new_item|.
-    // NOTE: values copied here should also be copied in GetEntryForRestore().
-    HistoryItem* old_item = previous.entries_[i]->GetItem();
-    HistoryItem* new_item = MakeGarbageCollected<HistoryItem>();
-    new_item->SetItemSequenceNumber(old_item->ItemSequenceNumber());
-    new_item->SetDocumentSequenceNumber(old_item->DocumentSequenceNumber());
-    new_item->SetURL(old_item->Url());
-    new_item->SetNavigationApiKey(old_item->GetNavigationApiKey());
-    new_item->SetNavigationApiId(old_item->GetNavigationApiId());
-    new_item->SetNavigationApiState(old_item->GetNavigationApiState());
     entries_.emplace_back(MakeGarbageCollected<NavigationHistoryEntry>(
-        GetSupplementable(), new_item));
+        GetSupplementable(),
+        CloneNonCurrentItem(previous.entries_[i]->GetItem())));
   }
   current_entry_index_ = previous.current_entry_index_;
   PopulateKeySet();
+}
+
+HistoryItem* NavigationApi::CloneNonCurrentItem(HistoryItem* old_item) {
+  // It's possible that |old_item| is indirectly holding a reference to
+  // the old Document. Also, it has a bunch of state we don't need for a
+  // non-current entry. Clone a subset of its state.
+  // NOTE: values copied here should also be copied in GetEntryForRestore().
+  HistoryItem* new_item = MakeGarbageCollected<HistoryItem>();
+  new_item->SetItemSequenceNumber(old_item->ItemSequenceNumber());
+  new_item->SetDocumentSequenceNumber(old_item->DocumentSequenceNumber());
+  new_item->SetURL(old_item->Url());
+  new_item->SetNavigationApiKey(old_item->GetNavigationApiKey());
+  new_item->SetNavigationApiId(old_item->GetNavigationApiId());
+  new_item->SetNavigationApiState(old_item->GetNavigationApiState());
+  return new_item;
 }
 
 void NavigationApi::UpdateForNavigation(HistoryItem& item,
@@ -294,6 +298,8 @@ void NavigationApi::UpdateForNavigation(HistoryItem& item,
   // |entries_|. The navigation API considers this a no-op.
   if (entries_.IsEmpty())
     return;
+  // Temporary debugging for https://crbug.com/1319341
+  CHECK(GetSupplementable()->GetFrame());
 
   NavigationHistoryEntry* old_current = currentEntry();
 
@@ -304,11 +310,25 @@ void NavigationApi::UpdateForNavigation(HistoryItem& item,
     // keys_to_indices_.
     DCHECK(keys_to_indices_.Contains(item.GetNavigationApiKey()));
     current_entry_index_ = keys_to_indices_.at(item.GetNavigationApiKey());
+    // For WebFrameLoadType::kBackForward, don't create a new
+    // NavigationHistoryEntry. Just replace its underlying stub HistoryItem with
+    // the current |item|, since the current NavigationHistoryEntry always needs
+    // to have a non-stub HistoryItem.
+    entries_[current_entry_index_]->SetItem(&item);
   } else if (type == WebFrameLoadType::kStandard) {
+    // Before changing which entry is current, prune state from the entry we're
+    // navigating away from to minimize memory usage.
+    entries_[current_entry_index_]->SetItem(
+        CloneNonCurrentItem(entries_[current_entry_index_]->GetItem()));
+
     // For a new back/forward entry, truncate any forward entries and prepare
     // to append.
     current_entry_index_++;
     for (wtf_size_t i = current_entry_index_; i < entries_.size(); i++) {
+      // Temporary debugging for https://crbug.com/1319341
+      CHECK(GetSupplementable()->GetFrame());
+      CHECK_EQ(GetSupplementable(), entries_[i]->DomWindow());
+      CHECK(!entries_[i]->key().IsNull());
       keys_to_indices_.erase(entries_[i]->key());
       disposed_entries.push_back(entries_[i]);
     }
@@ -326,6 +346,10 @@ void NavigationApi::UpdateForNavigation(HistoryItem& item,
     entries_[current_entry_index_] =
         MakeGarbageCollected<NavigationHistoryEntry>(GetSupplementable(),
                                                      &item);
+    // Temporary debugging for https://crbug.com/1319341
+    CHECK(GetSupplementable()->GetFrame());
+    CHECK_EQ(GetSupplementable(), entries_[current_entry_index_]->DomWindow());
+    CHECK(!entries_[current_entry_index_]->key().IsNull());
     keys_to_indices_.insert(entries_[current_entry_index_]->key(),
                             current_entry_index_);
   }

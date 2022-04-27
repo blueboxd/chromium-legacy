@@ -18,10 +18,10 @@
 #include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/safe_browsing/content/common/visual_utils.h"
 #include "components/safe_browsing/content/renderer/phishing_classifier/features.h"
 #include "components/safe_browsing/core/common/proto/client_model.pb.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
-#include "components/safe_browsing/core/common/visual_utils.h"
 #include "content/public/renderer/render_thread.h"
 #include "crypto/sha2.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -100,7 +100,8 @@ double ProtobufModelScorer::ComputeScore(const FeatureMap& features) const {
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
 void ProtobufModelScorer::ApplyVisualTfLiteModel(
     const SkBitmap& bitmap,
-    base::OnceCallback<void(std::vector<double>)> callback) const {
+    base::OnceCallback<void(base::flat_map<std::string, double>)> callback)
+    const {
   DCHECK(content::RenderThread::IsMainThread());
   if (visual_tflite_model_.IsValid()) {
     base::Time start_post_task_time = base::Time::Now();
@@ -118,7 +119,7 @@ void ProtobufModelScorer::ApplyVisualTfLiteModel(
         "SBClientPhishing.TfLiteModelLoadTime.ProtobufScorer",
         base::Time::Now() - start_post_task_time);
   } else {
-    std::move(callback).Run(std::vector<double>());
+    std::move(callback).Run(base::flat_map<std::string, double>());
   }
 }
 #endif

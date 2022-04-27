@@ -16,11 +16,8 @@
 #include "base/values.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/attribution_reporting.h"
-#include "content/public/common/network_service_util.h"
 #include "content/public/test/attribution_simulator.h"
-#include "content/public/test/content_test_suite_base.h"
-#include "content/public/test/test_content_client_initializer.h"
-#include "mojo/core/embedder/embedder.h"
+#include "content/public/test/attribution_simulator_environment.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -44,6 +41,7 @@ constexpr char kSwitchRandomizedResponseRateNavigation[] =
 constexpr char kSwitchRandomizedResponseRateEvent[] =
     "randomized_response_rate_event";
 constexpr char kSwitchRemoveAssembledReport[] = "remove_assembled_report";
+constexpr char kSwitchSkipDebugCookieChecks[] = "skip_debug_cookie_checks";
 
 constexpr const char* kAllowedSwitches[] = {
     kSwitchHelp,
@@ -60,6 +58,7 @@ constexpr const char* kAllowedSwitches[] = {
     kSwitchReportTimeFormat,
     kSwitchRandomizedResponseRateNavigation,
     kSwitchRandomizedResponseRateEvent,
+    kSwitchSkipDebugCookieChecks,
 };
 
 constexpr char kHelpMsg[] = R"(
@@ -74,6 +73,7 @@ attribution_reporting_simulator
   [--remove_report_ids]
   [--report_time_format=<format>]
   [--remove_assembled_report]
+  [--skip_debug_cookie_checks]
 
 attribution_reporting_simulator is a command-line tool that simulates the
 Attribution Reporting API for for sources and triggers specified in an input
@@ -169,6 +169,9 @@ Switches:
                               generated. Use this switch to make the tool's
                               output more deterministic.
 
+  --skip_debug_cookie_checks
+                            - Optional. If present, skips debug cookie checks.
+
   --version                 - Outputs the tool version and exits.
 
 See //content/test/data/attribution_reporting/simulator/README.md
@@ -241,24 +244,6 @@ int ProcessJsonString(const std::string& json_input,
   *out = rate;
   return true;
 }
-
-// Required for setting up the test environment.
-class TestSuite : public content::ContentTestSuiteBase {
- public:
-  TestSuite(int argc, char** argv) : content::ContentTestSuiteBase(argc, argv) {
-    Initialize();
-    content::ForceInProcessNetworkService(true);
-    // This initialization depends on the call to `Initialize()`, so we use a
-    // `unique_ptr` to defer initialization instead of storing the field
-    // directly.
-    test_content_initializer_ =
-        std::make_unique<content::TestContentClientInitializer>();
-  }
-
- private:
-  std::unique_ptr<content::TestContentClientInitializer>
-      test_content_initializer_;
-};
 
 }  // namespace
 
@@ -390,11 +375,11 @@ int main(int argc, char* argv[]) {
       .report_time_format = report_time_format,
       .remove_assembled_report =
           command_line.HasSwitch(kSwitchRemoveAssembledReport),
+      .skip_debug_cookie_checks =
+          command_line.HasSwitch(kSwitchSkipDebugCookieChecks),
   });
 
-  // Required for setting up the test environment.
-  TestSuite test_suite(argc, argv);
-  mojo::core::Init();
+  content::AttributionSimulatorEnvironment env(argc, argv);
 
   switch (input_mode) {
     case InputMode::kSingle: {

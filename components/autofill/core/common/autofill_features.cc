@@ -124,7 +124,7 @@ const base::Feature kAutofillDisableFilling{"AutofillDisableFilling",
 // AutofillManager.
 // TODO(crbug.com/1215333): Remove the feature when the experiment is completed.
 const base::Feature kAutofillDisplaceRemovedForms{
-    "AutofillDisplaceRemovedForms", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutofillDisplaceRemovedForms", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Kill switch for Autofill address import.
 const base::Feature kAutofillDisableAddressImport{
@@ -183,6 +183,21 @@ const base::Feature kAutofillEnableImportWhenMultiplePhoneNumbers{
     "AutofillEnableImportWhenMultiplePhoneNumbers",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, candidate profiles are temporary stored on import, and merged
+// with future candidate profiles, to create an importable profile. This makes
+// importing from multi-step input flows possible.
+const base::Feature kAutofillEnableMultiStepImports{
+    "AutofillEnableMultiStepImports", base::FEATURE_DISABLED_BY_DEFAULT};
+// When enabled, imported profiles are stored as multi-step candidates too,
+// which enables complementing a recently imported profile during later steps of
+// a multi-step input flow.
+const base::FeatureParam<bool> kAutofillEnableMultiStepImportComplements{
+    &kAutofillEnableMultiStepImports, "enable_multistep_complement", false};
+// Configures the TTL of multi-step import candidates.
+const base::FeatureParam<base::TimeDelta> kAutofillMultiStepImportCandidateTTL{
+    &kAutofillEnableMultiStepImports, "multistep_candidate_ttl",
+    base::Minutes(30)};
+
 // When enabled, the precedence is given to the field label over the name when
 // they match different types. Applied only for parsing of address forms in
 // Turkish.
@@ -228,7 +243,8 @@ const base::Feature kAutofillEnableSupportForHonorificPrefixes{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, trunk prefix-related phone number types are added to the
-// supported and matching types of |PhoneNumber|.
+// supported and matching types of |PhoneNumber|. Local heuristics for these
+// types are enabled as well.
 const base::Feature kAutofillEnableSupportForPhoneNumberTrunkTypes{
     "AutofillEnableSupportForPhoneNumberTrunkTypes",
     base::FEATURE_DISABLED_BY_DEFAULT};

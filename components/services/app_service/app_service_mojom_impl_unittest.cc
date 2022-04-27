@@ -234,9 +234,8 @@ class FakeSubscriber : public apps::mojom::Subscriber {
 
   void InitializePreferredApps(
       std::vector<apps::mojom::PreferredAppPtr> mojom_preferred_apps) override {
-    auto preferred_apps =
-        ConvertMojomPreferredAppsToPreferredApps(mojom_preferred_apps);
-    preferred_apps_.Init(preferred_apps);
+    preferred_apps_.Init(
+        ConvertMojomPreferredAppsToPreferredApps(mojom_preferred_apps));
   }
 
   mojo::ReceiverSet<apps::mojom::Subscriber> receivers_;
@@ -394,7 +393,8 @@ TEST_F(AppServiceMojomImplTest, PreferredApps) {
   GURL filter_url = GURL("https://www.google.com/abc");
   auto intent_filter = apps_util::CreateIntentFilterForUrlScope(filter_url);
 
-  impl.GetPreferredAppsListForTesting().AddPreferredApp(kAppId1, intent_filter);
+  impl.GetPreferredAppsListForTesting().AddPreferredApp(
+      kAppId1, ConvertMojomIntentFilterToIntentFilter(intent_filter));
 
   // Add one subscriber.
   FakeSubscriber sub0(&impl);

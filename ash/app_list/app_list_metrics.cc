@@ -453,6 +453,7 @@ bool IsCommandIdAnAppLaunch(int command_id_number) {
     case CommandId::REORDER_BY_NAME_ALPHABETICAL:
     case CommandId::REORDER_BY_NAME_REVERSE_ALPHABETICAL:
     case CommandId::REORDER_BY_COLOR:
+    case CommandId::HIDE_CONTINUE_SECTION:
     case CommandId::SHUTDOWN_GUEST_OS:
     case CommandId::EXTENSIONS_CONTEXT_CUSTOM_FIRST:
     case CommandId::EXTENSIONS_CONTEXT_CUSTOM_LAST:
@@ -523,6 +524,10 @@ void RecordMetricsOnSessionEnd() {
 void RecordCumulativeContinueSectionResultRemovedNumber() {
   base::UmaHistogramCounts100(kContinueSectionFilesRemovedInSessionHistogram,
                               ++g_continue_file_removals_in_session);
+}
+
+void ResetContinueSectionFileRemovedCountForTest() {
+  g_continue_file_removals_in_session = 0;
 }
 
 }  // namespace ash

@@ -280,6 +280,56 @@ TEST(RuleSetTest, findBestRuleSetAndAdd_PartPseudoElements) {
   ASSERT_EQ(2u, rules->size());
 }
 
+TEST(RuleSetTest, findBestRuleSetAndAdd_IsSingleArg) {
+  css_test_helpers::TestStyleSheet sheet;
+
+  sheet.AddCSSRules(":is(.a) { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
+  const HeapVector<Member<const RuleData>>* rules = rule_set.ClassRules("a");
+  ASSERT_TRUE(rules);
+  ASSERT_EQ(1u, rules->size());
+}
+
+TEST(RuleSetTest, findBestRuleSetAndAdd_WhereSingleArg) {
+  css_test_helpers::TestStyleSheet sheet;
+
+  sheet.AddCSSRules(":where(.a) { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
+  const HeapVector<Member<const RuleData>>* rules = rule_set.ClassRules("a");
+  ASSERT_TRUE(rules);
+  ASSERT_EQ(1u, rules->size());
+}
+
+TEST(RuleSetTest, findBestRuleSetAndAdd_WhereSingleArgNested) {
+  css_test_helpers::TestStyleSheet sheet;
+
+  sheet.AddCSSRules(":where(:is(.a)) { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
+  const HeapVector<Member<const RuleData>>* rules = rule_set.ClassRules("a");
+  ASSERT_TRUE(rules);
+  ASSERT_EQ(1u, rules->size());
+}
+
+TEST(RuleSetTest, findBestRuleSetAndAdd_IsMultiArg) {
+  css_test_helpers::TestStyleSheet sheet;
+
+  sheet.AddCSSRules(":is(.a, .b) { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
+  const HeapVector<Member<const RuleData>>* rules = rule_set.UniversalRules();
+  ASSERT_TRUE(rules);
+  ASSERT_EQ(1u, rules->size());
+}
+
+TEST(RuleSetTest, findBestRuleSetAndAdd_WhereMultiArg) {
+  css_test_helpers::TestStyleSheet sheet;
+
+  sheet.AddCSSRules(":where(.a, .b) { }");
+  RuleSet& rule_set = sheet.GetRuleSet();
+  const HeapVector<Member<const RuleData>>* rules = rule_set.UniversalRules();
+  ASSERT_TRUE(rules);
+  ASSERT_EQ(1u, rules->size());
+}
+
 TEST(RuleSetTest, SelectorIndexLimit) {
   // It's not feasible to run this test for a large number of bits. If the
   // number of bits have increased to a large number, consider removing this
@@ -312,13 +362,14 @@ TEST(RuleSetTest, RuleDataSelectorIndexLimit) {
   AddRuleFlags flags = kRuleHasNoSpecialState;
   const unsigned position = 0;
   EXPECT_TRUE(RuleData::MaybeCreate(rule, 0, position, flags,
-                                    nullptr /* container_query */));
-  EXPECT_FALSE(RuleData::MaybeCreate(rule, (1 << RuleData::kSelectorIndexBits),
-                                     position, flags,
-                                     nullptr /* container_query */));
-  EXPECT_FALSE(
-      RuleData::MaybeCreate(rule, (1 << RuleData::kSelectorIndexBits) + 1,
-                            position, flags, nullptr /* container_query */));
+                                    nullptr /* container_query */,
+                                    nullptr /* scope */));
+  EXPECT_FALSE(RuleData::MaybeCreate(
+      rule, (1 << RuleData::kSelectorIndexBits), position, flags,
+      nullptr /* container_query */, nullptr /* scope */));
+  EXPECT_FALSE(RuleData::MaybeCreate(
+      rule, (1 << RuleData::kSelectorIndexBits) + 1, position, flags,
+      nullptr /* container_query */, nullptr /* scope */));
 }
 
 TEST(RuleSetTest, RuleDataPositionLimit) {
@@ -326,13 +377,14 @@ TEST(RuleSetTest, RuleDataPositionLimit) {
   AddRuleFlags flags = kRuleHasNoSpecialState;
   const unsigned selector_index = 0;
   EXPECT_TRUE(RuleData::MaybeCreate(rule, selector_index, 0, flags,
-                                    nullptr /* container_query */));
-  EXPECT_FALSE(RuleData::MaybeCreate(rule, selector_index,
-                                     (1 << RuleData::kPositionBits), flags,
-                                     nullptr /* container_query */));
-  EXPECT_FALSE(RuleData::MaybeCreate(rule, selector_index,
-                                     (1 << RuleData::kPositionBits) + 1, flags,
-                                     nullptr /* container_query */));
+                                    nullptr /* container_query */,
+                                    nullptr /* scope */));
+  EXPECT_FALSE(RuleData::MaybeCreate(
+      rule, selector_index, (1 << RuleData::kPositionBits), flags,
+      nullptr /* container_query */, nullptr /* scope */));
+  EXPECT_FALSE(RuleData::MaybeCreate(
+      rule, selector_index, (1 << RuleData::kPositionBits) + 1, flags,
+      nullptr /* container_query */, nullptr /* scope */));
 }
 
 TEST(RuleSetTest, RuleCountNotIncreasedByInvalidRuleData) {
@@ -344,13 +396,68 @@ TEST(RuleSetTest, RuleCountNotIncreasedByInvalidRuleData) {
 
   // Add with valid selector_index=0.
   rule_set->AddRule(rule, 0, flags, nullptr /* container_query */,
-                    nullptr /* cascade_layer */);
+                    nullptr /* cascade_layer */, nullptr /* scope */);
   EXPECT_EQ(1u, rule_set->RuleCount());
 
   // Adding with invalid selector_index should not lead to a change in count.
   rule_set->AddRule(rule, 1 << RuleData::kSelectorIndexBits, flags,
-                    nullptr /* container_query */, nullptr /* cascade_layer */);
+                    nullptr /* container_query */, nullptr /* cascade_layer */,
+                    nullptr /* scope */);
   EXPECT_EQ(1u, rule_set->RuleCount());
+}
+
+TEST(RuleSetTest, NoStyleScope) {
+  css_test_helpers::TestStyleSheet sheet;
+
+  sheet.AddCSSRules("#b {}");
+  RuleSet& rule_set = sheet.GetRuleSet();
+  const HeapVector<Member<const RuleData>>* rules = rule_set.IdRules("b");
+  ASSERT_TRUE(rules);
+  ASSERT_EQ(1u, rules->size());
+  EXPECT_FALSE(rules->at(0)->GetStyleScope());
+}
+
+TEST(RuleSetTest, StyleScope) {
+  css_test_helpers::TestStyleSheet sheet;
+
+  sheet.AddCSSRules("@scope (.a) { #b {} }");
+  RuleSet& rule_set = sheet.GetRuleSet();
+  const HeapVector<Member<const RuleData>>* rules = rule_set.IdRules("b");
+  ASSERT_TRUE(rules);
+  ASSERT_EQ(1u, rules->size());
+  EXPECT_TRUE(rules->at(0)->GetStyleScope());
+}
+
+TEST(RuleSetTest, NestedStyleScope) {
+  css_test_helpers::TestStyleSheet sheet;
+
+  sheet.AddCSSRules(R"CSS(
+    @scope (.a) {
+      #a {}
+      @scope (.b) {
+        #b {}
+      }
+    }
+  )CSS");
+  RuleSet& rule_set = sheet.GetRuleSet();
+  const HeapVector<Member<const RuleData>>* a_rules = rule_set.IdRules("a");
+  const HeapVector<Member<const RuleData>>* b_rules = rule_set.IdRules("b");
+
+  ASSERT_TRUE(a_rules);
+  ASSERT_TRUE(b_rules);
+
+  ASSERT_EQ(1u, a_rules->size());
+  ASSERT_EQ(1u, b_rules->size());
+
+  EXPECT_TRUE(a_rules->at(0)->GetStyleScope());
+  EXPECT_FALSE(a_rules->at(0)->GetStyleScope()->Parent());
+
+  EXPECT_TRUE(b_rules->at(0)->GetStyleScope());
+  EXPECT_EQ(a_rules->at(0)->GetStyleScope(),
+            b_rules->at(0)->GetStyleScope()->Parent());
+
+  ASSERT_TRUE(b_rules->at(0)->GetStyleScope()->Parent());
+  EXPECT_FALSE(b_rules->at(0)->GetStyleScope()->Parent()->Parent());
 }
 
 class RuleSetCascadeLayerTest : public SimTest {

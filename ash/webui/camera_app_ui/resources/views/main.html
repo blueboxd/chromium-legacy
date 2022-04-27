@@ -22,7 +22,7 @@
     <link rel="stylesheet" href="/css/views/settings.css">
     <script type="module" src="/js/init.js"></script>
   </head>
-  <body class="sound mirror mic grid-3x3 view-splash">
+  <body class="sound mirror mic view-splash">
     <div id="view-camera">
       <div id="preview-box">
         <div id="preview-viewport">
@@ -166,13 +166,6 @@
             <span i18n-text="label_switch_take_photo_button"
                   aria-hidden="true"></span>
           </div>
-          <div class="mode-item">
-            <input type="radio" name="mode"
-                 data-mode="square" tabindex="0"
-                 i18n-aria="switch_take_square_photo_button">
-            <span i18n-text="label_switch_take_square_photo_button"
-                  aria-hidden="true"></span>
-          </div>
           <div class="mode-item" i18n-new-feature="new_document_scan_toast">
             <input type="radio" name="mode"
                  data-mode="scan" tabindex="0"
@@ -232,18 +225,9 @@
         <button id="open-ptz-panel" tabindex="0" aria-haspopup="true"
                 i18n-label="open_ptz_panel_button"
                 i18n-new-feature="new_control_toast">
-        </button>
-        <input type="checkbox" id="toggle-timer" tabindex="0"
-               data-state="timer" data-key="toggleTimer">
-        <input type="checkbox" id="toggle-grid" tabindex="0"
-               i18n-label="toggle_grid_button" data-state="grid"
-               data-key="toggleGrid">
-        <input type="checkbox" id="toggle-mirror" tabindex="0"
-               i18n-label="toggle_mirror_button" data-state="mirror" checked>
-        <input type="checkbox" id="toggle-fps" tabindex="0"
-               i18n-label="toggle_60fps_button"
-               i18n-tooltip-true="label_60fps"
-               i18n-tooltip-false="label_30fps">
+        <button id="open-timer-panel" tabindex="0" aria-haspopup="true">
+        <button id="open-grid-panel" tabindex="0" aria-haspopup="true">
+        <button id="open-mirror-panel" tabindex="0" aria-haspopup="true">
       </div>
       <div class="top-stripe left-stripe buttons circle">
         <button id="open-settings" tabindex="0"
@@ -291,15 +275,21 @@
           i18n-aria="rotate_counterclockwise_button" tabindex="0"></button>
       </div>
     </div>
+    <div id="view-option-panel">
+      <div id="option-panel" class="panel">
+        <div id="option-title" class="text"></div>
+        <div id="options-container"></div>
+      </div>
+    </div>
     <div id="view-ptz-panel">
       <div id="ptz-panel">
-        <div id="reset-all-container">
+        <div id="reset-all-container" class="panel">
           <button id="ptz-reset-all" class="inkdrop" tabindex="0">
             <div class="icon"></div>
             <div class="text" i18n-text="ptz_reset_all_button"></div>
           </button>
         </div>
-        <div id="panel-container">
+        <div id="ptz-panel-container" class="panel">
           <button id="tilt-up" class="inkdrop" i18n-label="tilt_up_button"
             tabindex="0"></button>
           <button id="pan-right" class="inkdrop" i18n-label="pan_right_button"
@@ -342,39 +332,40 @@
       </div>
     </div>
 
-    <div id="view-settings">
+    <div id="view-settings" class="settings">
       <div class="menu">
         <div class="menu-header circle">
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
           <div id="settings-header" i18n-text="settings_button"></div>
         </div>
-        <button id="settings-gridtype" class="menu-item inkdrop expandable"
-                tabindex="0" aria-describedby="gridtype-desc">
+        <button id="settings-photo-resolution"class="menu-item inkdrop
+                expandable" tabindex="0">
           <div class="icon"></div>
           <div>
-            <div i18n-text="grid_type_button"></div>
-            <div id="gridtype-desc" class="description" aria-hidden="true">
-              <span i18n-text="label_grid_3x3" i18n-aria="aria_grid_3x3"></span>
-              <span i18n-text="label_grid_4x4" i18n-aria="aria_grid_4x4"></span>
-              <span i18n-text="label_grid_golden"></span>
+            <div i18n-text="photo_resolution_button"></div>
+            <div class="description">
+              <span></span>
             </div>
           </div>
         </button>
-        <button id="settings-timerdur" class="menu-item inkdrop expandable"
-                tabindex="0" aria-describedby="timerdur-desc">
+        <button id="settings-video-resolution" class="menu-item inkdrop
+                expandable" tabindex="0">
           <div class="icon"></div>
           <div>
-            <div i18n-text="timer_duration_button"></div>
-            <div id="timerdur-desc" class="description" aria-hidden="true">
-              <span i18n-text="label_timer_3s"></span>
-              <span i18n-text="label_timer_10s"></span>
+            <div i18n-text="video_resolution_button"></div>
+            <div class="description">
+              <span></span>
             </div>
           </div>
         </button>
-        <button id="settings-resolution" class="menu-item inkdrop expandable"
-                tabindex="0">
+        <button id="settings-photo-aspect-ratio" class="menu-item inkdrop
+                expandable" tabindex="0">
           <div class="icon"></div>
-          <div i18n-text="camera_resolution_button">
+          <div>
+            <div i18n-text="photo_aspect_ratio_button"></div>
+            <div class="description">
+              <span></span>
+            </div>
           </div>
         </button>
         <button id="settings-expert" class="menu-item inkdrop expandable"
@@ -393,113 +384,15 @@
         </button>
       </div>
     </div>
-    <div id="view-grid-settings">
+    <div id="view-photo-resolution-settings" class="settings">
       <div class="menu">
-        <div class="menu-header circle">
-          <button class="icon" tabindex="0" i18n-aria="back_button"></button>
-          <div i18n-text="grid_type_button"></div>
-        </div>
-        <label class="menu-item circle inkdrop">
-          <input id="grid-3x3" class="icon" type="radio" tabindex="0"
-                 name="gridtype" data-state="grid-3x3" data-key="toggle3x3"
-                 checked>
-          <span i18n-text="label_grid_3x3" i18n-aria="aria_grid_3x3"></span>
-        </label>
-        <label class="menu-item circle inkdrop">
-          <input id="grid-4x4" class="icon" type="radio" tabindex="0"
-                 name="gridtype" data-state="grid-4x4" data-key="toggle4x4">
-          <span i18n-text="label_grid_4x4" i18n-aria="aria_grid_4x4"></span>
-        </label>
-        <label class="menu-item circle inkdrop">
-          <input id="grid-golden" class="icon" type="radio" tabindex="0"
-                 name="gridtype" data-state="grid-golden"
-                 data-key="toggleGolden">
-          <span i18n-text="label_grid_golden"></span>
-        </label>
-      </div>
-    </div>
-    <div id="view-timer-settings">
-      <div class="menu">
-        <div class="menu-header circle">
-          <button class="icon" tabindex="0" i18n-aria="back_button"></button>
-          <div i18n-text="timer_duration_button"></div>
-        </div>
-        <label class="menu-item circle inkdrop">
-          <input id="timer-3s" class="icon" type="radio" tabindex="0"
-                 name="timerdur" data-state="timer-3s" data-key="toggle3sec"
-                 checked>
-          <span i18n-text="label_timer_3s"></span>
-        </label>
-        <label class="menu-item circle inkdrop">
-          <input id="timer-10s" class="icon" type="radio" tabindex="0"
-                 name="timerdur" data-state="timer-10s" data-key="toggle10sec">
-          <span i18n-text="label_timer_10s"></span>
-        </label>
-      </div>
-    </div>
-    <div id="view-resolution-settings">
-      <div class="menu">
-        <div class="menu-header circle">
-          <button class="icon" tabindex="0" i18n-aria="back_button"></button>
-          <div i18n-text="camera_resolution_button"></div>
-        </div>
-        <div id="builtin-photo-header" class="menu-item"
-          i18n-text="label_switch_take_photo_button"></div>
-        <button id="settings-front-photores" class="menu-item resol-item
-                photo-item inkdrop expandable" tabindex="0"
-                aria-describedby="front-photores-desc">
-          <div>
-            <div i18n-text="label_front_camera"></div>
-            <div id="front-photores-desc" class="description"
-                 aria-hidden="true">
-              <span></span>
-            </div>
-          </div>
-        </button>
-        <button id="settings-back-photores"
-                class="menu-item resol-item photo-item inkdrop expandable"
-                tabindex="0" aria-describedby="back-photores-desc">
-          <div>
-            <div i18n-text="label_back_camera"></div>
-            <div id="back-photores-desc" class="description" aria-hidden="true">
-              <span></span>
-            </div>
-          </div>
-        </button>
-        <div id="builtin-video-header" class="menu-item"
-          i18n-text="label_switch_record_video_button"></div>
-        <button id="settings-front-videores"
-                class="menu-item resol-item video-item inkdrop expandable"
-                tabindex="0" aria-describedby="front-videores-desc">
-          <div>
-            <div i18n-text="label_front_camera"></div>
-            <div id="front-videores-desc" class="description"
-                 aria-hidden="true">
-              <span></span>
-            </div>
-          </div>
-        </button>
-        <button id="settings-back-videores"
-                class="menu-item resol-item video-item inkdrop expandable"
-                tabindex="0" aria-describedby="back-videores-desc">
-          <div>
-            <div i18n-text="label_back_camera"></div>
-            <div id="back-videores-desc" class="description" aria-hidden="true">
-              <span></span>
-            </div>
-          </div>
-        </button>
-      </div>
-    </div>
-    <div id="view-photo-resolution-settings">
-      <div class="menu" data-name="photores">
         <div class="menu-header circle">
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
           <div i18n-text="photo_resolution_button"></div>
         </div>
       </div>
     </div>
-    <div id="view-video-resolution-settings">
+    <div id="view-video-resolution-settings" class="settings">
       <div class="menu" data-name="videores">
         <div class="menu-header circle">
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
@@ -507,7 +400,15 @@
         </div>
       </div>
     </div>
-    <div id="view-expert-settings">
+    <div id="view-photo-aspect-ratio-settings" class="settings">
+      <div class="menu" data-name="aspectratios">
+        <div class="menu-header circle">
+          <button class="icon" tabindex="0" i18n-aria="back_button"></button>
+          <div i18n-text="photo_aspect_ratio_button"></div>
+        </div>
+      </div>
+    </div>
+    <div id="view-expert-settings" class="settings">
       <div class="menu">
         <div class="menu-header circle">
           <button class="icon" tabindex="0" i18n-aria="back_button"></button>
@@ -599,33 +500,33 @@
       <video id="preview-video" class="preview-content" aria-hidden="true"
         muted></video>
     </template>
+    <template id="resolution-label-template">
+      <div class="label-item">
+        <span></span>
+      </div>
+    </template>
+    <template id="resolution-text-template">
+      <div class="text-item">
+        <span></span>
+      </div>
+    </template>
     <template id="resolution-item-template">
       <label class="menu-item circle resolution-option inkdrop">
         <input class="icon" type="radio" tabindex="0">
         <span></span>
       </label>
     </template>
-    <template id="extcam-resolution-item-template">
-        <div class="menu-item external-camera title-item"
-          i18n-text="label_external_camera"></div>
-        <button class="menu-item external-camera resol-item photo-item inkdrop
-                expandable" tabindex="0">
-          <div>
-            <div i18n-text="photo_resolution_button"></div>
-            <div class="description" aria-hidden="true">
-              <span></span>
-            </div>
-          </div>
-        </button>
-        <button class="menu-item external-camera resol-item video-item inkdrop
-                expandable" tabindex="0">
-          <div>
-            <div i18n-text="video_resolution_button"></div>
-            <div class="description" aria-hidden="true">
-              <span></span>
-            </div>
-          </div>
-        </button>
+    <template id="video-resolution-item-template">
+      <label class="menu-item circle resolution-option inkdrop">
+        <input class="icon" type="radio" tabindex="0">
+        <span></span>
+        <div class="fps-buttons">
+          <button class="fps-button fps-30" i18n-aria="label_30fps"
+                  tabindex="0">
+          <button class="fps-button fps-60" i18n-aria="label_60fps"
+                  tabindex="0">
+        </div>
+      </label>
     </template>
     <template id="video-profile-option-template">
       <option></option>
@@ -671,6 +572,12 @@
     </template>
     <template id="review-intent-button-template">
       <button tabindex="0"></button>
+    </template>
+    <template id="state-option-template">
+      <label class="menu-item circle inkdrop">
+        <input class="icon" type="radio" tabindex="0">
+        <span></span>
+      </label>
     </template>
   </body>
 </html>

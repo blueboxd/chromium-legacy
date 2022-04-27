@@ -13,6 +13,7 @@
 #include "base/synchronization/atomic_flag.h"
 #include "base/values.h"
 #include "chrome/browser/ash/crosapi/migration_progress_tracker.h"
+#include "components/sync/base/model_type.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
@@ -183,8 +184,13 @@ constexpr const char* const kLacrosDataPaths[]{
 // The base names of files/dirs that are required by both ash and lacros and
 // thus should be copied to lacros while keeping the original files/dirs in ash
 // data dir.
-constexpr const char* const kNeedCopyDataPaths[]{
+constexpr const char* const kNeedCopyForMoveDataPaths[]{
     "DNR Extension Rules", "Extension Cookies", "Policy", "shared_proto_db"};
+
+// The same as `kNeedCopyDataPathsForMove` + "Preferences".
+constexpr const char* const kNeedCopyForCopyDataPaths[]{
+    "DNR Extension Rules", "Extension Cookies", "Policy", "Preferences",
+    "shared_proto_db"};
 
 // List of extension ids to be kept in Ash.
 // TODO(crbug.com/1302613): make sure this is the complete list.
@@ -221,6 +227,10 @@ constexpr char kIndexedDBFilePath[] = "IndexedDB";
 // `Local Storage` paths.
 constexpr char kLocalStorageFilePath[] = "Local Storage";
 constexpr char kLocalStorageLeveldbName[] = "leveldb";
+
+// `Sync Data` path.
+constexpr char kSyncDataFilePath[] = "Sync Data";
+constexpr char kSyncDataLeveldbName[] = "LevelDB";
 
 // State Store paths.
 constexpr const char* const kStateStorePaths[] = {
@@ -277,6 +287,15 @@ constexpr const char* kAshOnlyPreferencesKeys[] = {
 // Preferences's key that has to be moved to Lacros, and cleared in Ash.
 constexpr const char* kLacrosOnlyPreferencesKeys[] = {
     "sync.cache_guid",
+};
+
+// List of data types in Sync Data that have to be migrated to Lacros.
+// TODO(andreaorru): fill this in with the complete list.
+static_assert(38 == syncer::GetNumModelTypes(),
+              "If adding a new sync data type, update the list below below if"
+              " you want to migrate the new data type to Lacros.");
+constexpr syncer::ModelType kLacrosSyncDataTypes[] = {
+    syncer::ModelType::WEB_APPS,
 };
 
 constexpr char kTotalSize[] = "Ash.UserDataStatsRecorder.DataSize.TotalSize";
@@ -344,8 +363,11 @@ struct TargetItems {
 enum class ItemType {
   kLacros = 0,       // Item that should be moved to lacros profile directory.
   kRemainInAsh = 1,  // Item that should remain in ash.
-  kNeedCopy = 2,     // Item that should be copied to lacros.
-  kDeletable = 3,    // Item that can be deleted to free up space i.e. cache.
+  kNeedCopyForMove =
+      2,  // Item that should be copied to lacros during move migration.
+  kNeedCopyForCopy = 3,  // Item that should be copied to lacros during copy
+                         // migration. This is kNeedCopyForMove + "Preferences".
+  kDeletable = 4,  // Item that can be deleted to free up space i.e. cache.
 };
 
 // It enumerates the file/dirs in the given directory and returns items of
@@ -452,6 +474,13 @@ IndexedDBPaths GetIndexedDBPaths(const base::FilePath& profile_path,
 bool MigrateLevelDB(const base::FilePath& original_path,
                     const base::FilePath& target_path,
                     const LevelDBType leveldb_type);
+
+// Migrate Sync Data's LevelDB instance at `original_path` to Ash and Lacros.
+// For Ash, filter out the data types that are not meant to be ported to Lacros.
+// For Lacros, filter out the data types that are meant to stay in Ash.
+bool MigrateSyncData(const base::FilePath& original_path,
+                     const base::FilePath& ash_target_path,
+                     const base::FilePath& lacros_target_path);
 
 // Manipulates the given representation of Preferences (`root_dict`)
 // so that the given key only contains values relevant to Ash or

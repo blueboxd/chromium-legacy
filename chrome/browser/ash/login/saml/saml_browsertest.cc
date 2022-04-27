@@ -722,7 +722,13 @@ IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, ScrapedMultiple) {
 }
 
 // Tests the no password scraped flow.
-IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, ScrapedNone) {
+// TODO(crbug.com/1315447): Disabled for debug builds.
+#if !defined(NDEBUG)
+#define MAYBE_ScrapedNone DISABLED_ScrapedNone
+#else
+#define MAYBE_ScrapedNone ScrapedNone
+#endif
+IN_PROC_BROWSER_TEST_P(SamlTestWithFeatures, MAYBE_ScrapedNone) {
   base::HistogramTester histogram_tester;
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login_no_passwords.html");
 

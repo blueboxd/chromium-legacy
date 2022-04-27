@@ -32,7 +32,9 @@
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/loader/render_blocking_resource_manager.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
 #include "third_party/blink/renderer/core/script/script_runner.h"
 #include "third_party/blink/renderer/core/script_type_names.h"
@@ -101,7 +103,7 @@ void HTMLScriptElement::ParseAttribute(
   } else if (params.name == html_names::kFetchpriorityAttr &&
              RuntimeEnabledFeatures::PriorityHintsEnabled(
                  GetExecutionContext())) {
-    // The only thing we need to do for the the fetchpriority attribute/Priority
+    // The only thing we need to do for the the fetchPriority attribute/Priority
     // Hints is count usage upon parsing. Processing the value happens when the
     // element loads.
     UseCounter::Count(GetDocument(), WebFeature::kPriorityHints);
@@ -110,6 +112,11 @@ void HTMLScriptElement::ParseAttribute(
     blocking_attribute_->DidUpdateAttributeValue(params.old_value,
                                                  params.new_value);
     blocking_attribute_->CountTokenUsage();
+    if (GetDocument().GetRenderBlockingResourceManager() &&
+        !blocking_attribute_->IsRenderBlocking()) {
+      GetDocument().GetRenderBlockingResourceManager()->RemovePendingScript(
+          *this);
+    }
   } else {
     HTMLElement::ParseAttribute(params);
   }

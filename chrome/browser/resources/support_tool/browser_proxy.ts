@@ -25,6 +25,17 @@ export type PIIDataItem = {
   expandDetails: boolean,
 };
 
+export type StartDataCollectionResult = {
+  success: boolean,
+  errorMessage: string,
+};
+
+export type UrlGenerationResult = {
+  success: boolean,
+  url: string,
+  errorMessage: string,
+};
+
 export interface BrowserProxy {
   /**
    * Gets the list of email addresses that are logged in from C++ side.
@@ -36,14 +47,17 @@ export interface BrowserProxy {
   getAllDataCollectors(): Promise<DataCollectorItem[]>;
 
   startDataCollection(
-      issueDetails: IssueDetails,
-      selectedDataCollectors: DataCollectorItem[]): void;
+      issueDetails: IssueDetails, selectedDataCollectors: DataCollectorItem[]):
+      Promise<StartDataCollectionResult>;
 
   cancelDataCollection(): void;
 
   startDataExport(piiItems: PIIDataItem[]): void;
 
   showExportedDataInFolder(): void;
+
+  generateCustomizedURL(caseId: string, dataCollectors: DataCollectorItem[]):
+      Promise<UrlGenerationResult>;
 }
 
 export class BrowserProxyImpl implements BrowserProxy {
@@ -61,7 +75,7 @@ export class BrowserProxyImpl implements BrowserProxy {
 
   startDataCollection(
       issueDetails: IssueDetails, dataCollectors: DataCollectorItem[]) {
-    chrome.send('startDataCollection', [issueDetails, dataCollectors]);
+    return sendWithPromise('startDataCollection', issueDetails, dataCollectors);
   }
 
   cancelDataCollection() {
@@ -74,6 +88,10 @@ export class BrowserProxyImpl implements BrowserProxy {
 
   showExportedDataInFolder() {
     chrome.send('showExportedDataInFolder');
+  }
+
+  generateCustomizedURL(caseId: string, dataCollectors: DataCollectorItem[]) {
+    return sendWithPromise('generateCustomizedURL', caseId, dataCollectors);
   }
 
   static getInstance(): BrowserProxy {

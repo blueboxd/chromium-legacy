@@ -85,7 +85,9 @@ std::unique_ptr<protocol::Audits::SourceCodeLocation> CreateProtocolLocation(
                                .setLineNumber(location.LineNumber() - 1)
                                .setColumnNumber(location.ColumnNumber())
                                .build();
-  protocol_location->setScriptId(WTF::String::Number(location.ScriptId()));
+  if (location.ScriptId()) {
+    protocol_location->setScriptId(WTF::String::Number(location.ScriptId()));
+  }
   return protocol_location;
 }
 
@@ -417,7 +419,7 @@ void AuditsIssue::ReportSharedArrayBufferIssue(
 
 // static
 void AuditsIssue::ReportDeprecationIssue(ExecutionContext* execution_context,
-                                         const DeprecationIssueType& type_enum,
+                                         DeprecationIssueType type_enum,
                                          const String& legacy_message,
                                          const String& legacy_type) {
   // We currently support two modes: untranslated with legacy message and type
@@ -428,13 +430,253 @@ void AuditsIssue::ReportDeprecationIssue(ExecutionContext* execution_context,
     type = protocol::Audits::DeprecationIssueTypeEnum::Untranslated;
   } else {
     CHECK(legacy_message.IsEmpty() && legacy_type.IsEmpty());
+    // Please keep this alphabetized.
     switch (type_enum) {
+      case DeprecationIssueType::kAuthorizationCoveredByWildcard:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            AuthorizationCoveredByWildcard;
+        break;
+      case DeprecationIssueType::kBatteryStatusInsecureOrigin:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            BatteryStatusInsecureOrigin;
+        break;
+      case DeprecationIssueType::kCanRequestURLHTTPContainingNewline:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            CanRequestURLHTTPContainingNewline;
+        break;
+      case DeprecationIssueType::kChromeLoadTimesConnectionInfo:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            ChromeLoadTimesConnectionInfo;
+        break;
+      case DeprecationIssueType::kChromeLoadTimesFirstPaintAfterLoadTime:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            ChromeLoadTimesFirstPaintAfterLoadTime;
+        break;
+      case DeprecationIssueType::kChromeLoadTimesWasAlternateProtocolAvailable:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            ChromeLoadTimesWasAlternateProtocolAvailable;
+        break;
+      case DeprecationIssueType::kCookieWithTruncatingChar:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            CookieWithTruncatingChar;
+        break;
+      case DeprecationIssueType::kCrossOriginAccessBasedOnDocumentDomain:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            CrossOriginAccessBasedOnDocumentDomain;
+        break;
+      case DeprecationIssueType::kCrossOriginWindowAlert:
+        type =
+            protocol::Audits::DeprecationIssueTypeEnum::CrossOriginWindowAlert;
+        break;
+      case DeprecationIssueType::kCrossOriginWindowConfirm:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            CrossOriginWindowConfirm;
+        break;
+      case DeprecationIssueType::
+          kCSSSelectorInternalMediaControlsOverlayCastButton:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            CSSSelectorInternalMediaControlsOverlayCastButton;
+        break;
+      case DeprecationIssueType::kCustomCursorIntersectsViewport:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            CustomCursorIntersectsViewport;
+        break;
       case DeprecationIssueType::kDeprecationExample:
         type = protocol::Audits::DeprecationIssueTypeEnum::DeprecationExample;
         break;
-      default:
-        LOG(FATAL) << "Feature " << static_cast<int>(type_enum)
-                   << " is not translated.";
+      case DeprecationIssueType::
+          kDocumentDomainSettingWithoutOriginAgentClusterHeader:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            DocumentDomainSettingWithoutOriginAgentClusterHeader;
+        break;
+      case DeprecationIssueType::kEventPath:
+        type = protocol::Audits::DeprecationIssueTypeEnum::EventPath;
+        break;
+      case DeprecationIssueType::kGeolocationInsecureOrigin:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            GeolocationInsecureOrigin;
+        break;
+      case DeprecationIssueType::kGeolocationInsecureOriginDeprecatedNotRemoved:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            GeolocationInsecureOriginDeprecatedNotRemoved;
+        break;
+      case DeprecationIssueType::kGetUserMediaInsecureOrigin:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            GetUserMediaInsecureOrigin;
+        break;
+      case DeprecationIssueType::kHostCandidateAttributeGetter:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            HostCandidateAttributeGetter;
+        break;
+      case DeprecationIssueType::kInsecurePrivateNetworkSubresourceRequest:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            InsecurePrivateNetworkSubresourceRequest;
+        break;
+      case DeprecationIssueType::kLegacyConstraintGoogCpuOveruseDetection:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            LegacyConstraintGoogCpuOveruseDetection;
+        break;
+      case DeprecationIssueType::kLegacyConstraintGoogIPv6:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            LegacyConstraintGoogIPv6;
+        break;
+      case DeprecationIssueType::kLegacyConstraintGoogScreencastMinBitrate:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            LegacyConstraintGoogScreencastMinBitrate;
+        break;
+      case DeprecationIssueType::kLegacyConstraintGoogSuspendBelowMinBitrate:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            LegacyConstraintGoogSuspendBelowMinBitrate;
+        break;
+      case DeprecationIssueType::kLocalCSSFileExtensionRejected:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            LocalCSSFileExtensionRejected;
+        break;
+      case DeprecationIssueType::kMediaElementAudioSourceNode:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            MediaElementAudioSourceNode;
+        break;
+      case DeprecationIssueType::kMediaSourceAbortRemove:
+        type =
+            protocol::Audits::DeprecationIssueTypeEnum::MediaSourceAbortRemove;
+        break;
+      case DeprecationIssueType::kMediaSourceDurationTruncatingBuffered:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            MediaSourceDurationTruncatingBuffered;
+        break;
+      case DeprecationIssueType::kNoSysexWebMIDIWithoutPermission:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            NoSysexWebMIDIWithoutPermission;
+        break;
+      case DeprecationIssueType::kNotificationInsecureOrigin:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            NotificationInsecureOrigin;
+        break;
+      case DeprecationIssueType::kNotificationPermissionRequestedIframe:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            NotificationPermissionRequestedIframe;
+        break;
+      case DeprecationIssueType::kObsoleteWebRtcCipherSuite:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            ObsoleteWebRtcCipherSuite;
+        break;
+      case DeprecationIssueType::kPaymentRequestBasicCard:
+        type =
+            protocol::Audits::DeprecationIssueTypeEnum::PaymentRequestBasicCard;
+        break;
+      case DeprecationIssueType::kPaymentRequestShowWithoutGesture:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            PaymentRequestShowWithoutGesture;
+        break;
+      case DeprecationIssueType::kPictureSourceSrc:
+        type = protocol::Audits::DeprecationIssueTypeEnum::PictureSourceSrc;
+        break;
+      case DeprecationIssueType::kPrefixedCancelAnimationFrame:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            PrefixedCancelAnimationFrame;
+        break;
+      case DeprecationIssueType::kPrefixedRequestAnimationFrame:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            PrefixedRequestAnimationFrame;
+        break;
+      case DeprecationIssueType::kPrefixedStorageInfo:
+        type = protocol::Audits::DeprecationIssueTypeEnum::PrefixedStorageInfo;
+        break;
+      case DeprecationIssueType::kPrefixedVideoDisplayingFullscreen:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            PrefixedVideoDisplayingFullscreen;
+        break;
+      case DeprecationIssueType::kPrefixedVideoEnterFullScreen:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            PrefixedVideoEnterFullScreen;
+        break;
+      case DeprecationIssueType::kPrefixedVideoEnterFullscreen:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            PrefixedVideoEnterFullscreen;
+        break;
+      case DeprecationIssueType::kPrefixedVideoExitFullScreen:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            PrefixedVideoExitFullScreen;
+        break;
+      case DeprecationIssueType::kPrefixedVideoExitFullscreen:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            PrefixedVideoExitFullscreen;
+        break;
+      case DeprecationIssueType::kPrefixedVideoSupportsFullscreen:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            PrefixedVideoSupportsFullscreen;
+        break;
+      case DeprecationIssueType::kRangeExpand:
+        type = protocol::Audits::DeprecationIssueTypeEnum::RangeExpand;
+        break;
+      case DeprecationIssueType::kRequestedSubresourceWithEmbeddedCredentials:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            RequestedSubresourceWithEmbeddedCredentials;
+        break;
+      case DeprecationIssueType::kRTCConstraintEnableDtlsSrtpFalse:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            RTCConstraintEnableDtlsSrtpFalse;
+        break;
+      case DeprecationIssueType::kRTCConstraintEnableDtlsSrtpTrue:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            RTCConstraintEnableDtlsSrtpTrue;
+        break;
+      case DeprecationIssueType::
+          kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            RTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics;
+        break;
+      case DeprecationIssueType::
+          kRTCPeerConnectionLegacyCreateWithMediaConstraints:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            RTCPeerConnectionLegacyCreateWithMediaConstraints;
+        break;
+      case DeprecationIssueType::kRTCPeerConnectionSdpSemanticsPlanB:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            RTCPeerConnectionSdpSemanticsPlanB;
+        break;
+      case DeprecationIssueType::kRtcpMuxPolicyNegotiate:
+        type =
+            protocol::Audits::DeprecationIssueTypeEnum::RtcpMuxPolicyNegotiate;
+        break;
+      case DeprecationIssueType::kRTPDataChannel:
+        type = protocol::Audits::DeprecationIssueTypeEnum::RTPDataChannel;
+        break;
+      case DeprecationIssueType::kSelectionAddRangeIntersect:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            SelectionAddRangeIntersect;
+        break;
+      case DeprecationIssueType::kSharedArrayBufferConstructedWithoutIsolation:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            SharedArrayBufferConstructedWithoutIsolation;
+        break;
+      case DeprecationIssueType::kTextToSpeech_DisallowedByAutoplay:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            TextToSpeech_DisallowedByAutoplay;
+        break;
+      case DeprecationIssueType::kUntranslated:
+        LOG(FATAL) << "Feature " << legacy_type << " is not translated.";
+        break;
+      case DeprecationIssueType::
+          kV8SharedArrayBufferConstructedInExtensionWithoutIsolation:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            V8SharedArrayBufferConstructedInExtensionWithoutIsolation;
+        break;
+      case DeprecationIssueType::kWebCodecsVideoFrameDefaultTimestamp:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            WebCodecsVideoFrameDefaultTimestamp;
+        break;
+      case DeprecationIssueType::kXHRJSONEncodingDetection:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            XHRJSONEncodingDetection;
+        break;
+      case DeprecationIssueType::
+          kXMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload:
+        type = protocol::Audits::DeprecationIssueTypeEnum::
+            XMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload;
+        break;
+      case DeprecationIssueType::kXRSupportsSession:
+        type = protocol::Audits::DeprecationIssueTypeEnum::XRSupportsSession;
         break;
     }
   }
@@ -613,19 +855,8 @@ AuditsIssue AuditsIssue::CreateContentSecurityPolicyIssue(
     cspDetails->setFrameAncestor(std::move(affected_frame));
   }
 
-  if (violation_data.sourceFile() && violation_data.lineNumber()) {
-    std::unique_ptr<protocol::Audits::SourceCodeLocation> source_code_location =
-        protocol::Audits::SourceCodeLocation::create()
-            .setUrl(violation_data.sourceFile())
-            // The frontend expects 0-based line numbers.
-            .setLineNumber(violation_data.lineNumber() - 1)
-            .setColumnNumber(violation_data.columnNumber())
-            .build();
-    if (source_location) {
-      source_code_location->setScriptId(
-          WTF::String::Number(source_location->ScriptId()));
-    }
-    cspDetails->setSourceCodeLocation(std::move(source_code_location));
+  if (source_location) {
+    cspDetails->setSourceCodeLocation(CreateProtocolLocation(*source_location));
   }
 
   if (element) {

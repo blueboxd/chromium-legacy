@@ -43,26 +43,6 @@ class MockDownloadTaskObserver : public DownloadTaskObserver {
   }
 };
 
-// Mocks DownloadTaskImpl::Delegate's OnTaskUpdated and OnTaskDestroyed
-// methods and stubs DownloadTaskImpl::Delegate::CreateSession with session
-// mock.
-class FakeDownloadNativeTaskImplDelegate : public DownloadTaskImpl::Delegate {
- public:
-  FakeDownloadNativeTaskImplDelegate() {}
-
-  MOCK_METHOD1(OnTaskDestroyed, void(DownloadTaskImpl* task));
-
-  // Returns mock, which can be accessed via session() method.
-  NSURLSession* CreateSession(NSString* identifier,
-                              NSArray<NSHTTPCookie*>* cookies,
-                              id<NSURLSessionDataDelegate> delegate,
-                              NSOperationQueue* delegate_queue) {
-    // Make sure this method isn't called at all
-    ADD_FAILURE();
-    return nil;
-  }
-};
-
 }  //  namespace
 
 // Test fixture for testing DownloadTaskImplTest class.
@@ -79,15 +59,13 @@ class DownloadNativeTaskImplTest : public PlatformTest {
                                                        /*total_bytes=*/-1,
                                                        kMimeType,
                                                        @(kIdentifier),
-                                                       fake_task_bridge_,
-                                                       &task_delegate_)) {
+                                                       fake_task_bridge_)) {
     task_->AddObserver(&task_observer_);
   }
 
   web::WebTaskEnvironment task_environment_;
   FakeBrowserState browser_state_;
   FakeWebState web_state_;
-  testing::StrictMock<FakeDownloadNativeTaskImplDelegate> task_delegate_;
   WKDownload* fake_download_ API_AVAILABLE(ios(15)) = nil;
   id<DownloadNativeTaskBridgeDelegate> fake_delegate_ = nil;
   FakeNativeTaskBridge* fake_task_bridge_;
@@ -99,7 +77,7 @@ class DownloadNativeTaskImplTest : public PlatformTest {
 TEST_F(DownloadNativeTaskImplTest, DefaultState) {
   EXPECT_EQ(&web_state_, task_->GetWebState());
   EXPECT_EQ(DownloadTask::State::kNotStarted, task_->GetState());
-  EXPECT_NSEQ(@(kIdentifier), task_->GetIndentifier());
+  EXPECT_NSEQ(@(kIdentifier), task_->GetIdentifier());
   EXPECT_EQ(kUrl, task_->GetOriginalUrl());
   EXPECT_FALSE(task_->IsDone());
   EXPECT_EQ(0, task_->GetErrorCode());
@@ -116,8 +94,6 @@ TEST_F(DownloadNativeTaskImplTest, DefaultState) {
   EXPECT_EQ(kMimeType, task_->GetMimeType());
   EXPECT_EQ(kMimeType, task_->GetOriginalMimeType());
   EXPECT_EQ("file.test", base::UTF16ToUTF8(task_->GetSuggestedFilename()));
-
-  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 
 TEST_F(DownloadNativeTaskImplTest, SuccessfulDownload) {
@@ -129,7 +105,6 @@ TEST_F(DownloadNativeTaskImplTest, SuccessfulDownload) {
     EXPECT_TRUE(fake_task_bridge_.calledStartDownloadBlock == YES);
     EXPECT_EQ(fake_task_bridge_.progress.totalUnitCount, 100);
   }
-  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 
 TEST_F(DownloadNativeTaskImplTest, CancelledDownload) {
@@ -143,7 +118,6 @@ TEST_F(DownloadNativeTaskImplTest, CancelledDownload) {
     EXPECT_EQ(fake_task_bridge_.progress.totalUnitCount, 0);
     EXPECT_TRUE(fake_task_bridge_.download == nil);
   }
-  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 
 }  // namespace web

@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/install_bounce_metric.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_data_retriever.h"
@@ -113,7 +114,7 @@ void WebAppInstallManager::LoadWebAppAndCheckManifest(
   if (!started_)
     return;
 
-  auto task = std::make_unique<WebAppInstallTask>(profile_, this, finalizer_,
+  auto task = std::make_unique<WebAppInstallTask>(profile_, finalizer_,
                                                   data_retriever_factory_.Run(),
                                                   registrar_, install_surface);
 
@@ -135,7 +136,7 @@ void WebAppInstallManager::InstallWebAppFromManifest(
   if (!started_)
     return;
 
-  auto task = std::make_unique<WebAppInstallTask>(profile_, this, finalizer_,
+  auto task = std::make_unique<WebAppInstallTask>(profile_, finalizer_,
                                                   data_retriever_factory_.Run(),
                                                   registrar_, install_surface);
   task->InstallWebAppFromManifest(
@@ -155,7 +156,7 @@ void WebAppInstallManager::InstallWebAppFromManifestWithFallback(
   if (!started_)
     return;
 
-  auto task = std::make_unique<WebAppInstallTask>(profile_, this, finalizer_,
+  auto task = std::make_unique<WebAppInstallTask>(profile_, finalizer_,
                                                   data_retriever_factory_.Run(),
                                                   registrar_, install_surface);
   task->InstallWebAppFromManifestWithFallback(
@@ -177,14 +178,14 @@ void WebAppInstallManager::InstallSubApp(const AppId& parent_app_id,
   // app_id is made available.
 
   auto task = std::make_unique<WebAppInstallTask>(
-      profile_, this, finalizer_, data_retriever_factory_.Run(), registrar_,
+      profile_, finalizer_, data_retriever_factory_.Run(), registrar_,
       webapps::WebappInstallSource::SUB_APP);
 
   WebAppInstallParams params;
   params.parent_app_id = parent_app_id;
   params.require_manifest = true;
   params.add_to_quick_launch_bar = false;
-  params.user_display_mode = blink::mojom::DisplayMode::kStandalone;
+  params.user_display_mode = UserDisplayMode::kStandalone;
   params.fallback_start_url = install_url;
   // Don't want to allow devs to force manifest updates with the API.
   params.force_reinstall = false;
@@ -223,7 +224,7 @@ void WebAppInstallManager::InstallWebAppFromInfo(
   if (!started_)
     return;
 
-  auto task = std::make_unique<WebAppInstallTask>(profile_, this, finalizer_,
+  auto task = std::make_unique<WebAppInstallTask>(profile_, finalizer_,
                                                   data_retriever_factory_.Run(),
                                                   registrar_, install_surface);
   if (install_params) {
@@ -245,7 +246,7 @@ void WebAppInstallManager::InstallWebAppWithParams(
   if (!started_)
     return;
 
-  auto task = std::make_unique<WebAppInstallTask>(profile_, this, finalizer_,
+  auto task = std::make_unique<WebAppInstallTask>(profile_, finalizer_,
                                                   data_retriever_factory_.Run(),
                                                   registrar_, install_surface);
   task->InstallWebAppWithParams(
@@ -284,7 +285,7 @@ void WebAppInstallManager::EnqueueInstallAppFromSync(
   GURL start_url = web_application_info->start_url;
 
   auto task = std::make_unique<WebAppInstallTask>(
-      profile_, this, finalizer_, data_retriever_factory_.Run(), registrar_,
+      profile_, finalizer_, data_retriever_factory_.Run(), registrar_,
       webapps::WebappInstallSource::SYNC);
 
   task->ExpectAppId(sync_app_id);
@@ -432,7 +433,7 @@ void WebAppInstallManager::
 
   // Install failed. Do the fallback install from info fetching just icon URLs.
   auto task = std::make_unique<WebAppInstallTask>(
-      profile_, this, finalizer_, data_retriever_factory_.Run(), registrar_,
+      profile_, finalizer_, data_retriever_factory_.Run(), registrar_,
       webapps::WebappInstallSource::SYNC);
   // Set the expect app id for fallback install too. This can avoid duplicate
   // installs.

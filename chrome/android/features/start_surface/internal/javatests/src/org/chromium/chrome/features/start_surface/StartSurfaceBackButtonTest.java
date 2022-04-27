@@ -58,17 +58,23 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.layouts.LayoutTestUtils;
 import org.chromium.chrome.browser.layouts.LayoutType;
+import org.chromium.chrome.browser.native_page.ContextMenuManager;
+import org.chromium.chrome.browser.suggestions.tile.MostVisitedTilesCarouselLayout;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorTestingRobot;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
+import org.chromium.chrome.start_surface.R;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeApplicationTestUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
+import org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.IOException;
@@ -94,6 +100,8 @@ public class StartSurfaceBackButtonTest {
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+    @Rule
+    public SuggestionsDependenciesRule mSuggestionsDeps = new SuggestionsDependenciesRule();
 
     /**
      * Whether feature {@link ChromeFeatureList#INSTANT_START} is enabled.
@@ -110,6 +118,8 @@ public class StartSurfaceBackButtonTest {
     private LayoutStateProvider.LayoutStateObserver mLayoutObserver;
     @LayoutType
     private int mCurrentlyActiveLayout;
+    private FakeMostVisitedSites mMostVisitedSites;
+
     public StartSurfaceBackButtonTest(boolean useInstantStart, boolean immediateReturn) {
         CachedFeatureFlags.setForTesting(ChromeFeatureList.INSTANT_START, useInstantStart);
 
@@ -145,6 +155,8 @@ public class StartSurfaceBackButtonTest {
                 manager.addObserver(mLayoutObserver);
             });
         });
+
+        mMostVisitedSites = StartSurfaceTestUtils.setMVTiles(mSuggestionsDeps);
     }
 
     @Test
@@ -175,7 +187,7 @@ public class StartSurfaceBackButtonTest {
         // surface.
         StartSurfaceTestUtils.launchFirstMVTile(cta, /* currentTabCount = */ 1);
         StartSurfaceTestUtils.pressHomePageButton(cta);
-        onViewWaiting(withId(org.chromium.chrome.start_surface.R.id.primary_tasks_surface_view));
+        onViewWaiting(withId(R.id.primary_tasks_surface_view));
         onView(allOf(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view), isDisplayed()));
 
         // Launches the new tab from the carousel tab switcher, and press back button.
@@ -184,7 +196,7 @@ public class StartSurfaceBackButtonTest {
                 cta.getTabModelSelector().getCurrentTab().getLaunchType());
         CriteriaHelper.pollUiThread(() -> !cta.getLayoutManager().overviewVisible());
         StartSurfaceTestUtils.pressBack(mActivityTestRule);
-        onViewWaiting(withId(org.chromium.chrome.start_surface.R.id.primary_tasks_surface_view));
+        onViewWaiting(withId(R.id.primary_tasks_surface_view));
         // Verifies the tab isn't auto deleted from the TabModel.
         TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
     }
@@ -238,9 +250,9 @@ public class StartSurfaceBackButtonTest {
         // Enters the tab switcher, and choose the new tab. After the tab is opening, press back.
         waitForView(withId(org.chromium.chrome.tab_ui.R.id.tab_switcher_button));
         TabUiTestHelper.enterTabSwitcher(cta);
-        waitForView(withId(org.chromium.chrome.start_surface.R.id.secondary_tasks_surface_view));
+        waitForView(withId(R.id.secondary_tasks_surface_view));
         waitForView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view));
-        onView(allOf(withParent(withId(org.chromium.chrome.tab_ui.R.id.tasks_surface_body)),
+        onView(allOf(withParent(withId(R.id.tasks_surface_body)),
                        withId(org.chromium.chrome.tab_ui.R.id.tab_list_view)))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(1, click()));
         CriteriaHelper.pollUiThread(() -> !cta.getLayoutManager().overviewVisible());
@@ -293,10 +305,8 @@ public class StartSurfaceBackButtonTest {
         StartSurfaceTestUtils.waitForTabModel(cta);
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
 
-        onViewWaiting(withId(org.chromium.chrome.start_surface.R.id.search_box_text))
-                .perform(replaceText("about:blank"));
-        onView(withId(org.chromium.chrome.start_surface.R.id.url_bar))
-                .perform(pressKey(KeyEvent.KEYCODE_ENTER));
+        onViewWaiting(withId(R.id.search_box_text)).perform(replaceText("about:blank"));
+        onView(withId(R.id.url_bar)).perform(pressKey(KeyEvent.KEYCODE_ENTER));
         LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
         TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
 
@@ -310,8 +320,7 @@ public class StartSurfaceBackButtonTest {
 
         StartSurfaceTestUtils.pressBack(mActivityTestRule);
         waitForView(withId(org.chromium.chrome.tab_ui.R.id.dialog_container_view), VIEW_GONE);
-        onView(withId(org.chromium.chrome.start_surface.R.id.primary_tasks_surface_view))
-                .check(matches(isDisplayed()));
+        onView(withId(R.id.primary_tasks_surface_view)).check(matches(isDisplayed()));
     }
 
     @Test
@@ -341,7 +350,7 @@ public class StartSurfaceBackButtonTest {
         StartSurfaceTestUtils.waitForOverviewVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
         StartSurfaceTestUtils.waitForTabModel(cta);
-        onViewWaiting(withId(org.chromium.chrome.start_surface.R.id.logo));
+        onViewWaiting(withId(R.id.logo));
 
         // Launches the first site in mv tiles.
         StartSurfaceTestUtils.launchFirstMVTile(cta, /* currentTabCount = */ 1);
@@ -357,7 +366,7 @@ public class StartSurfaceBackButtonTest {
         onViewWaiting(withId(org.chromium.chrome.tab_ui.R.id.tab_switcher_button));
         TabUiTestHelper.enterTabSwitcher(cta);
 
-        waitForView(withId(org.chromium.chrome.start_surface.R.id.secondary_tasks_surface_view));
+        waitForView(withId(R.id.secondary_tasks_surface_view));
         StartSurfaceCoordinator startSurfaceCoordinator =
                 StartSurfaceTestUtils.getStartSurfaceFromUIThread(cta);
         TestThreadUtils.runOnUiThreadBlocking(
@@ -375,7 +384,7 @@ public class StartSurfaceBackButtonTest {
         // Verifies that tapping the back button will close the TabSelectionEditor.
         StartSurfaceTestUtils.pressBack(mActivityTestRule);
         robot.resultRobot.verifyTabSelectionEditorIsHidden();
-        onViewWaiting(withId(org.chromium.chrome.start_surface.R.id.secondary_tasks_surface_view));
+        onViewWaiting(withId(R.id.secondary_tasks_surface_view));
 
         // Groups the two tabs.
         TestThreadUtils.runOnUiThreadBlocking(
@@ -388,8 +397,7 @@ public class StartSurfaceBackButtonTest {
         robot.resultRobot.verifyTabSelectionEditorIsHidden();
 
         // Opens the TabGridDialog by clicking the first group card.
-        onViewWaiting(Matchers.allOf(withParent(withId(
-                                             org.chromium.chrome.tab_ui.R.id.tasks_surface_body)),
+        onViewWaiting(Matchers.allOf(withParent(withId(R.id.tasks_surface_body)),
                               withId(org.chromium.chrome.tab_ui.R.id.tab_list_view)))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
         CriteriaHelper.pollUiThread(() -> isTabGridDialogShown(cta));
@@ -397,7 +405,7 @@ public class StartSurfaceBackButtonTest {
         // Verifies that the TabGridDialog is closed by tapping back button.
         StartSurfaceTestUtils.pressBack(mActivityTestRule);
         CriteriaHelper.pollUiThread(() -> isTabGridDialogHidden(cta));
-        onViewWaiting(withId(org.chromium.chrome.start_surface.R.id.secondary_tasks_surface_view));
+        onViewWaiting(withId(R.id.secondary_tasks_surface_view));
     }
 
     @Test
@@ -427,7 +435,7 @@ public class StartSurfaceBackButtonTest {
         StartSurfaceTestUtils.waitForOverviewVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
         StartSurfaceTestUtils.waitForTabModel(cta);
-        onViewWaiting(withId(org.chromium.chrome.start_surface.R.id.logo));
+        onViewWaiting(withId(R.id.logo));
 
         // Launches the first site in MV tiles to create the second tab for grouping.
         StartSurfaceTestUtils.launchFirstMVTile(cta, /* currentTabCount = */ 1);
@@ -441,13 +449,13 @@ public class StartSurfaceBackButtonTest {
             return;
         }
         TabUiTestHelper.enterTabSwitcher(cta);
-        waitForView(withId(org.chromium.chrome.start_surface.R.id.secondary_tasks_surface_view));
+        waitForView(withId(R.id.secondary_tasks_surface_view));
         List<Tab> tabs = getTabsInCurrentTabModel(cta.getCurrentTabModel());
         TabSelectionEditorTestingRobot robot = new TabSelectionEditorTestingRobot();
 
         // Enters the homepage, and shows the TabSelectionEditor dialog.
         StartSurfaceTestUtils.pressHomePageButton(cta);
-        waitForView(withId(org.chromium.chrome.start_surface.R.id.primary_tasks_surface_view));
+        waitForView(withId(R.id.primary_tasks_surface_view));
 
         StartSurfaceCoordinator startSurfaceCoordinator =
                 StartSurfaceTestUtils.getStartSurfaceFromUIThread(cta);
@@ -466,7 +474,7 @@ public class StartSurfaceBackButtonTest {
         // Verifies that tapping the back button will close the TabSelectionEditor.
         StartSurfaceTestUtils.pressBack(mActivityTestRule);
         robot.resultRobot.verifyTabSelectionEditorIsHidden();
-        onViewWaiting(withId(org.chromium.chrome.start_surface.R.id.primary_tasks_surface_view));
+        onViewWaiting(withId(R.id.primary_tasks_surface_view));
     }
 
     @Test
@@ -543,6 +551,59 @@ public class StartSurfaceBackButtonTest {
         // Back gesture on the tab should take us back to the start surface homepage.
         StartSurfaceTestUtils.waitForOverviewVisible(
                 mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
+    @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS})
+    public void testBackButtonOnIncognitoTabOpenedFromStart() throws ExecutionException {
+        // This is a test for crbug.com/1315915 to make sure when clicking back button on the
+        // incognito tab opened from Start, the non-incognito homepage should show.
+        Assume.assumeTrue(mImmediateReturn && !mUseInstantStart);
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        StartSurfaceTestUtils.waitForTabModel(cta);
+        onViewWaiting(withId(R.id.logo));
+
+        // Open an incognito tab from Start.
+        MostVisitedTilesCarouselLayout mvTilesLayout = mActivityTestRule.getActivity().findViewById(
+                org.chromium.chrome.tab_ui.R.id.mv_tiles_layout);
+        View tileView =
+                mvTilesLayout.findTileViewForTesting(mMostVisitedSites.getCurrentSites().get(1));
+        openMvTileInAnIncognitoTab(cta, tileView, 1);
+
+        // Go back to Start homepage.
+        TestThreadUtils.runOnUiThreadBlocking(() -> cta.getTabCreator(false).launchNTP());
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+
+        // Open an incognito tab from Start again.
+        mvTilesLayout = mActivityTestRule.getActivity().findViewById(
+                org.chromium.chrome.tab_ui.R.id.mv_tiles_layout);
+        tileView = mvTilesLayout.findTileViewForTesting(mMostVisitedSites.getCurrentSites().get(1));
+        openMvTileInAnIncognitoTab(cta, tileView, 2);
+
+        // Press back button and Start homepage should show.
+        StartSurfaceTestUtils.pressBack(mActivityTestRule);
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 1);
+        StartSurfaceTestUtils.waitForOverviewVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout);
+        onViewWaiting(
+                allOf(withId(org.chromium.chrome.tab_ui.R.id.mv_tiles_layout), isDisplayed()));
+    }
+
+    private void openMvTileInAnIncognitoTab(
+            ChromeTabbedActivity cta, View tileView, int incognitoTabs) throws ExecutionException {
+        TestTouchUtils.performLongClickOnMainSync(
+                InstrumentationRegistry.getInstrumentation(), tileView);
+        Assert.assertTrue(InstrumentationRegistry.getInstrumentation().invokeContextMenuAction(
+                mActivityTestRule.getActivity(),
+                ContextMenuManager.ContextMenuItemId.OPEN_IN_INCOGNITO_TAB, 0));
+        CriteriaHelper.pollUiThread(() -> !cta.getLayoutManager().overviewVisible());
+        // Verifies a new incognito tab is created.
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, incognitoTabs);
     }
 
     /**

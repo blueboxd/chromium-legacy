@@ -33,6 +33,16 @@ import SwiftUI
     return suggestion.supportsDeletion
   }
 
+  /// Some suggestions are answers that are displayed inline, such as for weather or calculator.
+  var hasAnswer: Bool {
+    return suggestion.hasAnswer
+  }
+
+  /// Suggested number of lines to format |detailText|.
+  var numberOfLines: Int {
+    return suggestion.numberOfLines
+  }
+
   /// The pedal for this suggestion.
   var pedal: OmniboxPedal? {
     return suggestion.pedal
@@ -114,6 +124,7 @@ extension PopupMatch {
       pedal: OmniboxPedalData(
         title: "Click here", subtitle: "PAR → NYC",
         accessibilityHint: "a11y hint", imageName: "pedal_dino",
+        incognito: false,
         action: { print("dino pedal clicked") })))
   static let appendable = PopupMatch(
     suggestion: FakeAutocompleteSuggestion(
@@ -129,7 +140,7 @@ extension PopupMatch {
       text: "New Match",
       pedal: OmniboxPedalData(
         title: "Click here", subtitle: "NYC → PAR",
-        accessibilityHint: "a11y hint", imageName: "pedal_dino", action: {})))
+        accessibilityHint: "a11y hint", imageName: "pedal_dino", incognito: false, action: {})))
   static let supportsDeletion = PopupMatch(
     suggestion: FakeAutocompleteSuggestion(
       text: "supports deletion",

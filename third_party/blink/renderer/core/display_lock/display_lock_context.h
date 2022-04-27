@@ -90,9 +90,12 @@ class CORE_EXPORT DisplayLockContext final
   bool ShouldStyleChildren() const;
   void DidStyleSelf();
   void DidStyleChildren();
+  // This returns |true| for an IsShapingDeferred element.
   bool ShouldLayoutChildren() const;
   void DidLayoutChildren();
+  // This returns |true| for an IsShapingDeferred element.
   bool ShouldPrePaintChildren() const;
+  // This returns |true| for an IsShapingDeferred element.
   bool ShouldPaintChildren() const;
 
   // Returns true if the last style recalc traversal was blocked at this
@@ -213,6 +216,8 @@ class CORE_EXPORT DisplayLockContext final
   void ClearHasTopLayerElement();
 
   void ScheduleTopLayerCheck();
+
+  bool IsShapingDeferred() const;
 
  private:
   // Give access to |NotifyForcedUpdateScopeStarted()| and

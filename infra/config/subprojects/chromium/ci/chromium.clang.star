@@ -223,7 +223,7 @@ ci.builder(
         consoles.console_view_entry(
             branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
-            category = "misc",
+            category = "fyi",
             short_name = "clang-x64",
         ),
     ],
@@ -239,7 +239,7 @@ ci.builder(
         consoles.console_view_entry(
             branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
-            category = "misc",
+            category = "fyi",
             short_name = "clang-off",
         ),
     ],
@@ -394,7 +394,7 @@ ci.builder(
         short_name = "sim",
     ),
     cores = None,
-    os = os.MAC_11,
+    os = os.MAC_12,
     ssd = True,
     xcode = xcode.x13main,
 )
@@ -407,7 +407,7 @@ ci.builder(
         short_name = "dev",
     ),
     cores = None,
-    os = os.MAC_11,
+    os = os.MAC_12,
     ssd = True,
     xcode = xcode.x13main,
 )

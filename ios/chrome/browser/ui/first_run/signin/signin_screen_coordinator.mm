@@ -44,8 +44,6 @@
 @property(nonatomic, strong) SigninScreenViewController* viewController;
 // Sign-in screen mediator.
 @property(nonatomic, strong) SigninScreenMediator* mediator;
-// Whether the user tapped on the TOS link.
-@property(nonatomic, assign) BOOL TOSLinkWasTapped;
 // Account manager service.
 @property(nonatomic, assign) ChromeAccountManagerService* accountManagerService;
 // Authentication service.
@@ -123,6 +121,7 @@
 }
 
 - (void)stop {
+  [self.identityChooserCoordinator stop];
   self.delegate = nil;
   self.viewController = nil;
   [self.mediator disconnect];
@@ -262,6 +261,7 @@
 
 - (void)showUMADialog {
   DCHECK(!self.UMACoordinator);
+  self.mediator.UMALinkWasTapped = YES;
   self.UMACoordinator = [[UMACoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser
@@ -274,7 +274,7 @@
 
 - (void)showTOSPage {
   DCHECK(!self.TOSCoordinator);
-  self.TOSLinkWasTapped = YES;
+  self.mediator.TOSLinkWasTapped = YES;
   self.TOSCoordinator =
       [[TOSCoordinator alloc] initWithBaseViewController:self.viewController
                                                  browser:self.browser];

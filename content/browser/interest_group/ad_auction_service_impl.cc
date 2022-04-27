@@ -39,6 +39,7 @@
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/fenced_frame/fenced_frame_utils.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -210,28 +211,27 @@ void AdAuctionServiceImpl::JoinInterestGroup(
   // Policy, do nothing
   if (!render_frame_host()->IsFeatureEnabled(
           blink::mojom::PermissionsPolicyFeature::kJoinAdInterestGroup)) {
-    mojo::ReportBadMessage("Unexpected request");
+    ReportBadMessageAndDeleteThis("Unexpected request");
     return;
   }
-  // If the interest group API is not allowed for this origin do nothing.
+
+  // If the interest group API is not allowed for this origin do nothing. This
+  // is not considered a bad message because the renderer cannot currently check
+  // for this state.
   if (!IsInterestGroupAPIAllowed(
           ContentBrowserClient::InterestGroupApiOperation::kJoin,
           group.owner)) {
     return;
   }
 
-  // Disallow setting interest groups for another origin. Eventually, this will
-  // need to perform a fetch to check for cross-origin permissions to add an
-  // interest group.
-  if (origin() != group.owner)
-    return;
-
   blink::InterestGroup updated_group = group;
   base::Time max_expiry = base::Time::Now() + kMaxExpiry;
   if (updated_group.expiry > max_expiry)
     updated_group.expiry = max_expiry;
-  GetInterestGroupManager().JoinInterestGroup(std::move(updated_group),
-                                              main_frame_url_);
+
+  GetInterestGroupManager().CheckPermissionsAndJoinInterestGroup(
+      std::move(group), main_frame_url_, origin(),
+      GetFrame()->GetNetworkIsolationKey(), *GetFrameURLLoaderFactory());
 }
 
 void AdAuctionServiceImpl::LeaveInterestGroup(const url::Origin& owner,
@@ -240,27 +240,29 @@ void AdAuctionServiceImpl::LeaveInterestGroup(const url::Origin& owner,
   // Policy, do nothing
   if (!render_frame_host()->IsFeatureEnabled(
           blink::mojom::PermissionsPolicyFeature::kJoinAdInterestGroup)) {
-    mojo::ReportBadMessage(
+    ReportBadMessageAndDeleteThis(
         "Unexpected request: JoinAdInterestGroup feature disabled");
     return;
   }
-  // If the interest group API is not allowed for this origin do nothing.
+
+  // If the interest group API is not allowed for this origin do nothing. This
+  // is not considered a bad message because the renderer cannot currently check
+  // for this state.
   if (!IsInterestGroupAPIAllowed(
-          ContentBrowserClient::InterestGroupApiOperation::kLeave, origin())) {
+          ContentBrowserClient::InterestGroupApiOperation::kLeave, owner)) {
     return;
   }
 
   if (origin().scheme() != url::kHttpsScheme) {
-    mojo::ReportBadMessage(
+    ReportBadMessageAndDeleteThis(
         "Unexpected request: JoinAdInterestGroup only supported for secure "
         "origins");
     return;
   }
 
-  if (owner != origin())
-    return;
-
-  GetInterestGroupManager().LeaveInterestGroup(owner, name);
+  GetInterestGroupManager().CheckPermissionsAndLeaveInterestGroup(
+      owner, name, origin(), GetFrame()->GetNetworkIsolationKey(),
+      *GetFrameURLLoaderFactory());
 }
 
 void AdAuctionServiceImpl::LeaveInterestGroupForDocument() {
@@ -274,14 +276,14 @@ void AdAuctionServiceImpl::LeaveInterestGroupForDocument() {
   }
 
   if (origin().scheme() != url::kHttpsScheme) {
-    mojo::ReportBadMessage(
+    ReportBadMessageAndDeleteThis(
         "Unexpected request: JoinAdInterestGroupForDocument only supported for "
         "secure origins");
     return;
   }
 
   if (!render_frame_host()->IsNestedWithinFencedFrame()) {
-    mojo::ReportBadMessage(
+    ReportBadMessageAndDeleteThis(
         "Unexpected request: JoinAdInterestGroupForDocument only supported "
         "within fenced frames");
     return;
@@ -318,7 +320,7 @@ void AdAuctionServiceImpl::UpdateAdInterestGroups() {
   // Policy, do nothing
   if (!render_frame_host()->IsFeatureEnabled(
           blink::mojom::PermissionsPolicyFeature::kJoinAdInterestGroup)) {
-    mojo::ReportBadMessage("Unexpected request");
+    ReportBadMessageAndDeleteThis("Unexpected request");
     return;
   }
   // If the interest group API is not allowed for this origin do nothing.
@@ -336,7 +338,7 @@ void AdAuctionServiceImpl::RunAdAuction(blink::mojom::AuctionAdConfigPtr config,
   // Policy, do nothing
   if (!render_frame_host()->IsFeatureEnabled(
           blink::mojom::PermissionsPolicyFeature::kRunAdAuction)) {
-    mojo::ReportBadMessage("Unexpected request");
+    ReportBadMessageAndDeleteThis("Unexpected request");
     return;
   }
   if (!IsAuctionValid(*config, /*is_top_level_auction=*/true)) {
@@ -387,7 +389,7 @@ class FencedFrameURLMappingObserver
 void AdAuctionServiceImpl::DeprecatedGetURLFromURN(
     const GURL& urn_url,
     DeprecatedGetURLFromURNCallback callback) {
-  if (!FencedFrameURLMapping::IsValidUrnUuidURL(urn_url)) {
+  if (!blink::IsValidUrnUuidURL(urn_url)) {
     std::move(callback).Run(absl::nullopt);
     return;
   }
@@ -461,11 +463,11 @@ AdAuctionServiceImpl::GetTrustedURLLoaderFactory() {
         render_frame_host()->GetSiteInstance()->GetBrowserContext(),
         render_frame_host(), render_frame_host()->GetProcess()->GetID(),
         ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
-        url::Origin(), absl::nullopt /* navigation_id */,
+        url::Origin(), /*navigation_id=*/absl::nullopt,
         ukm::SourceIdObj::FromInt64(render_frame_host()->GetPageUkmSourceId()),
-        &factory_receiver, nullptr /* header_client */,
-        nullptr /* bypass_redirect_checks */, nullptr /* disable_secure_dns */,
-        nullptr /* factory_override */);
+        &factory_receiver, /*header_client=*/nullptr,
+        /*bypass_redirect_checks=*/nullptr, /*disable_secure_dns=*/nullptr,
+        /*factory_override=*/nullptr);
 
     render_frame_host()
         ->GetStoragePartition()
@@ -544,6 +546,7 @@ void AdAuctionServiceImpl::OnAuctionComplete(
     return;
   }
   DCHECK(winning_group_id);  // Should always be present with a render_url
+  DCHECK(blink::IsValidFencedFrameURL(*render_url));
   FencedFrameURLMapping& fenced_frame_urls_map =
       GetFrame()->GetPage().fenced_frame_urls_map();
   render_url = fenced_frame_urls_map.AddFencedFrameURLWithInterestGroupInfo(

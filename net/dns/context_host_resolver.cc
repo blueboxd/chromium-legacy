@@ -130,7 +130,6 @@ void ContextHostResolver::SetRequestContext(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   resolve_context_->set_url_request_context(request_context);
-  manager_->RemoveResolveContextRegistrationIfNeeded(resolve_context_.get());
 }
 
 HostResolverManager* ContextHostResolver::GetManagerForTesting() {
@@ -139,6 +138,12 @@ HostResolverManager* ContextHostResolver::GetManagerForTesting() {
 
 const URLRequestContext* ContextHostResolver::GetContextForTesting() const {
   return resolve_context_ ? resolve_context_->url_request_context() : nullptr;
+}
+
+NetworkChangeNotifier::NetworkHandle
+ContextHostResolver::GetTargetNetworkForTesting() const {
+  return resolve_context_ ? resolve_context_->GetTargetNetwork()
+                          : NetworkChangeNotifier::kInvalidNetworkHandle;
 }
 
 size_t ContextHostResolver::LastRestoredCacheSize() const {

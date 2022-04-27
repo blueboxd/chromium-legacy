@@ -3,32 +3,42 @@
 // found in the LICENSE file.
 
 var video;
+var abort = false;
 
-// Some videos are less than 60 fps, so actual video frame presentations
-// could be much less than 30.
-var g_swaps_before_success = 30
+function logOutput(s) {
+  if (window.domAutomationController)
+    window.domAutomationController.log(s);
+  else
+    console.log(s);
+}
 
 function main() {
-  video = document.getElementById("video");
+  video = document.getElementById('video');
   video.loop = true;
-  video.addEventListener('timeupdate', waitForVideoToPlay);
+  video.muted = true;  // No need to exercise audio paths.
+
+  video.onerror = e => {
+    logOutput(`Test failed: ${e.message}`);
+    abort = true;
+    domAutomationController.send('FAIL');
+  };
+
+  logOutput('Playback started.');
   video.play();
-}
 
-function waitForVideoToPlay() {
-  if (video.currentTime > 0) {
-    video.removeEventListener('timeupdate', waitForVideoToPlay);
-    chrome.gpuBenchmarking.addSwapCompletionEventListener(
-        waitForSwapsToComplete);
-  }
-}
+  // These tests expect playback, so we intentionally don't request the frame
+  // callback before starting playback. Since these videos loop there should
+  // always be frames being generated.
+  video.requestVideoFrameCallback((_, f) => {
+    logOutput(`First frame: ${f.width}x${f.height}, ts: ${f.mediaTime}`);
 
-function waitForSwapsToComplete() {
-  g_swaps_before_success--;
-  if (g_swaps_before_success > 0) {
-    chrome.gpuBenchmarking.addSwapCompletionEventListener(
-        waitForSwapsToComplete);
-  } else {
-    domAutomationController.send("SUCCESS");
-  }
+    // Trace tests on Windows need some time to collect statistics from the
+    // overlay system, so allow for a 500ms delay (~30 swaps at 60Hz).
+    setTimeout(_ => {
+      if (abort)
+        return;
+      logOutput('Test complete.');
+      domAutomationController.send('SUCCESS');
+    }, 500);
+  });
 }

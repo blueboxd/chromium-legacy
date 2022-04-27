@@ -126,21 +126,6 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
             Platform::Current()->GetIOTaskRunner());
   }
 
-  // TODO(mkwst): This really needs to be piped through from the requesting
-  // document, like we're doing for SharedWorkers. That turns out to be
-  // incredibly convoluted, and since ServiceWorkers are locked to the same
-  // origin as the page which requested them, the only time it would come
-  // into play is a DNS poisoning attack after the page load. It's something
-  // we should fix, but we're taking this shortcut for the prototype.
-  //
-  // https://crbug.com/590714
-  KURL script_url = worker_start_data->script_url;
-  worker_start_data->address_space = network::mojom::IPAddressSpace::kPublic;
-  if (network_utils::IsReservedIPAddress(script_url.Host()))
-    worker_start_data->address_space = network::mojom::IPAddressSpace::kPrivate;
-  if (SecurityOrigin::Create(script_url)->IsLocalhost())
-    worker_start_data->address_space = network::mojom::IPAddressSpace::kLocal;
-
   StartWorkerThread(
       std::move(worker_start_data), std::move(installed_scripts_manager),
       std::make_unique<ServiceWorkerContentSettingsProxy>(
@@ -217,9 +202,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
       Vector<network::mojom::blink::ContentSecurityPolicyPtr>(),
       network::mojom::ReferrerPolicy::kDefault, starter_origin.get(),
       starter_secure_context, starter_https_state, nullptr /* worker_clients */,
-      std::move(content_settings_proxy),
-      absl::nullopt /* response_address_space */,
-      nullptr /* inherited_trial_features */,
+      std::move(content_settings_proxy), nullptr /* inherited_trial_features */,
       worker_start_data->devtools_worker_token, std::move(worker_settings),
       // Generate the full code cache in the first execution of the script.
       mojom::blink::V8CacheOptions::kFullCodeWithoutHeatCheck,
@@ -256,7 +239,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
   std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
       fetch_client_setting_object_data = CreateFetchClientSettingsObjectData(
           worker_start_data->script_url, starter_origin.get(),
-          starter_https_state, worker_start_data->address_space,
+          starter_https_state,
           worker_start_data->outside_fetch_client_settings_object);
 
   // > Switching on job's worker type, run these substeps with the following
@@ -299,7 +282,6 @@ WebEmbeddedWorkerImpl::CreateFetchClientSettingsObjectData(
     const KURL& script_url,
     const SecurityOrigin* security_origin,
     const HttpsState& https_state,
-    network::mojom::IPAddressSpace address_space,
     const WebFetchClientSettingsObject& passed_settings_object) {
   // TODO(crbug.com/967265): Currently |passed_settings_object| doesn't contain
   // enough parameters to create a complete outside settings object. Pass
@@ -322,7 +304,7 @@ WebEmbeddedWorkerImpl::CreateFetchClientSettingsObjectData(
       KURL::CreateIsolated(
           passed_settings_object.outgoing_referrer.GetString()),
       https_state, AllowedByNosniff::MimeTypeCheck::kLaxForWorker,
-      address_space, insecure_requests_policy,
+      insecure_requests_policy,
       FetchClientSettingsObject::InsecureNavigationsSet());
 }
 

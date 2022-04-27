@@ -42,11 +42,13 @@ group("resources") {
       "new_tab_page_instant:resources",
       "new_tab_page_third_party:resources",
       "privacy_sandbox:resources",
+      "profile_internals:resources",
       "settings:resources",
       "side_panel:resources",
       "signin:resources",
       "support_tool:resources",
       "tab_search:resources",
+      "webui_gallery:resources",
       "whats_new:resources",
     ]
     if (is_chrome_branded) {
@@ -123,7 +125,6 @@ if (enable_js_type_check) {
       "engagement:closure_compile",
       "media:closure_compile",
       "memory_internals:closure_compile",
-      "predictors:closure_compile",
       "reset_password:closure_compile",
     ]
     if (is_linux || is_chromeos || is_win || is_mac) {
@@ -180,6 +181,9 @@ if (enable_js_type_check) {
     if (is_linux || is_chromeos) {
       deps += [ "certificate_viewer:closure_compile" ]
     }
+    if (is_chromeos) {
+      deps += [ "chromeos/contact_center_insights:closure_compile" ]
+    }
   }
 }
 
@@ -190,6 +194,12 @@ if (!is_android) {
     defines = chrome_grit_defines
     if (enable_hangout_services_extension) {
       defines += [ "enable_hangout_services_extension" ]
+    }
+
+    # Some resources within component_extension_resources.grd are generated at
+    # build time so we include them as explicit dependencies here
+    if (is_chromeos) {
+      deps = [ "chromeos/contact_center_insights:generate_ccaas_deps" ]
     }
 
     outputs = [

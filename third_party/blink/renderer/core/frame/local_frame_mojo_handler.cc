@@ -14,6 +14,7 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
@@ -641,7 +642,7 @@ void LocalFrameMojoHandler::Collapse(bool collapsed) {
 }
 
 void LocalFrameMojoHandler::EnableViewSourceMode() {
-  DCHECK(!frame_->Tree().Parent());
+  DCHECK(frame_->IsOutermostMainFrame());
   frame_->SetInViewSourceMode(true);
 }
 
@@ -773,7 +774,7 @@ void LocalFrameMojoHandler::AdvanceFocusForIME(
     return;
 
   next_element->scrollIntoViewIfNeeded(true /*centerIfNeeded*/);
-  next_element->focus();
+  next_element->Focus();
 }
 
 void LocalFrameMojoHandler::ReportContentSecurityPolicyViolation(

@@ -245,6 +245,12 @@ extern const char kAutofillSaveAndFillVPADescription[];
 extern const char kAutofillSuggestVirtualCardsOnIncompleteFormName[];
 extern const char kAutofillSuggestVirtualCardsOnIncompleteFormDescription[];
 
+extern const char kAutofillUpstreamAllowAdditionalEmailDomainsName[];
+extern const char kAutofillUpstreamAllowAdditionalEmailDomainsDescription[];
+
+extern const char kAutofillUpstreamAllowAllEmailDomainsName[];
+extern const char kAutofillUpstreamAllowAllEmailDomainsDescription[];
+
 extern const char kAutofillUseConsistentPopupSettingsIconsName[];
 extern const char kAutofillUseConsistentPopupSettingsIconsDescription[];
 
@@ -328,9 +334,6 @@ extern const char kContextMenuTranslateWithGoogleLensDescription[];
 
 extern const char kClientStorageAccessContextAuditingName[];
 extern const char kClientStorageAccessContextAuditingDescription[];
-
-extern const char kCloseAllTabsModalDialogName[];
-extern const char kCloseAllTabsModalDialogDescription[];
 
 extern const char kClosedTabCacheName[];
 extern const char kClosedTabCacheDescription[];
@@ -463,6 +466,9 @@ extern const char kEnableDelegatedCompositingDescription[];
 
 extern const char kEnableRemovingAllThirdPartyCookiesName[];
 extern const char kEnableRemovingAllThirdPartyCookiesDescription[];
+
+extern const char kEnableBrowsingDataLifetimeManagerName[];
+extern const char kEnableBrowsingDataLifetimeManagerDescription[];
 
 extern const char kColorProviderRedirectionForThemeProviderName[];
 extern const char kColorProviderRedirectionForThemeProviderDescription[];
@@ -1017,6 +1023,9 @@ extern const char kOmniboxSiteSearchStarterPackDescription[];
 extern const char kOmniboxSpareRendererName[];
 extern const char kOmniboxSpareRendererDescription[];
 
+extern const char kOmniboxRetainSuggestionsWithHeadersName[];
+extern const char kOmniboxRetainSuggestionsWithHeadersDescription[];
+
 extern const char kOmniboxTabSwitchSuggestionsName[];
 extern const char kOmniboxTabSwitchSuggestionsDescription[];
 
@@ -1335,9 +1344,6 @@ extern const char kSplitCacheByNetworkIsolationKeyDescription[];
 extern const char kStoragePressureEventName[];
 extern const char kStoragePressureEventDescription[];
 
-extern const char kStoreHoursAndroidName[];
-extern const char kStoreHoursAndroidDescription[];
-
 extern const char kStrictOriginIsolationName[];
 extern const char kStrictOriginIsolationDescription[];
 
@@ -1626,6 +1632,9 @@ extern const char kReduceUserAgentMinorVersionDescription[];
 extern const char kWebSQLAccessName[];
 extern const char kWebSQLAccessDescription[];
 
+extern const char kDmTokenDeletionName[];
+extern const char kDmTokenDeletionDescription[];
+
 // Android --------------------------------------------------------------------
 
 #if BUILDFLAG(IS_ANDROID)
@@ -1669,8 +1678,8 @@ extern const char kAutofillUseMobileLabelDisambiguationDescription[];
 extern const char kAppMenuMobileSiteOptionName[];
 extern const char kAppMenuMobileSiteOptionDescription[];
 
-extern const char kBookmarkBottomSheetName[];
-extern const char kBookmarkBottomSheetDescription[];
+extern const char kBackGestureRefactorAndroidName[];
+extern const char kBackGestureRefactorAndroidDescription[];
 
 extern const char kCCTIncognitoName[];
 extern const char kCCTIncognitoDescription[];
@@ -1762,9 +1771,6 @@ extern const char kAutofillManualFallbackAndroidDescription[];
 extern const char kEnableAutofillRefreshStyleName[];
 extern const char kEnableAutofillRefreshStyleDescription[];
 
-extern const char kChromeManagementPageAndroidName[];
-extern const char kChromeManagementPageAndroidDescription[];
-
 extern const char kEnableCommandLineOnNonRootedName[];
 extern const char kEnableCommandLineOnNoRootedDescription[];
 
@@ -1798,9 +1804,6 @@ extern const char kInstanceSwitcherDescription[];
 
 extern const char kInstantStartName[];
 extern const char kInstantStartDescription[];
-
-extern const char kIntentBlockExternalFormRedirectsNoGestureName[];
-extern const char kIntentBlockExternalFormRedirectsNoGestureDescription[];
 
 extern const char kInterestFeedV2Name[];
 extern const char kInterestFeedV2Description[];
@@ -2537,6 +2540,9 @@ extern const char kFastPairSoftwareScanningDescription[];
 extern const char kFastPairSubsequentPairingUXName[];
 extern const char kFastPairSubsequentPairingUXDescription[];
 
+extern const char kFastPairSavedDevicesName[];
+extern const char kFastPairSavedDevicesDescription[];
+
 extern const char kUseHDRTransferFunctionName[];
 extern const char kUseHDRTransferFunctionDescription[];
 
@@ -2620,6 +2626,9 @@ extern const char kEnableNeuralPalmAdaptiveHoldDescription[];
 
 extern const char kEnableNeuralPalmRejectionModelV2Name[];
 extern const char kEnableNeuralPalmRejectionModelV2Description[];
+
+extern const char kEnableFakeKeyboardHeuristicName[];
+extern const char kEnableFakeKeyboardHeuristicDescription[];
 
 extern const char kEnableNeuralStylusPalmRejectionName[];
 extern const char kEnableNeuralStylusPalmRejectionDescription[];
@@ -2790,6 +2799,9 @@ extern const char kFullRestoreForLacrosDescription[];
 extern const char kFuseBoxName[];
 extern const char kFuseBoxDescription[];
 
+extern const char kFuseBoxDebugName[];
+extern const char kFuseBoxDebugDescription[];
+
 extern const char kGuestOsFilesName[];
 extern const char kGuestOsFilesDescription[];
 
@@ -2882,6 +2894,9 @@ extern const char kLacrosSupportDescription[];
 extern const char kLauncherLacrosIntegrationName[];
 extern const char kLauncherLacrosIntegrationDescription[];
 
+extern const char kLauncherPlayStoreSearchName[];
+extern const char kLauncherPlayStoreSearchDescription[];
+
 extern const char kLimitShelfItemsToActiveDeskName[];
 extern const char kLimitShelfItemsToActiveDeskDescription[];
 
@@ -2896,9 +2911,6 @@ extern const char kEnableHardwareMirrorModeDescription[];
 
 extern const char kLockScreenNotificationName[];
 extern const char kLockScreenNotificationDescription[];
-
-extern const char kMediaAppHandlesAudioName[];
-extern const char kMediaAppHandlesAudioDescription[];
 
 extern const char kMediaAppHandlesPdfName[];
 extern const char kMediaAppHandlesPdfDescription[];

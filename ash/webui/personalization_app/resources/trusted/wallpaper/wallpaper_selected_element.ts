@@ -195,6 +195,9 @@ export class WallpaperSelected extends WithPersonalizationStore {
     if (!image) {
       return this.i18n('unknownImageAttribution');
     }
+    if (image.type === WallpaperType.kDefault) {
+      return this.i18n('defaultWallpaper');
+    }
     if (isNonEmptyArray(image.attribution)) {
       const title = image.attribution[0];
       return dailyRefreshCollectionId ?
@@ -330,18 +333,32 @@ export class WallpaperSelected extends WithPersonalizationStore {
     return (!loading || !!error) && !image;
   }
 
-  private getAriaLabel_(image: CurrentWallpaper|null): string {
+  private getAriaLabel_(
+      image: CurrentWallpaper|null, dailyRefreshCollectionId: string): string {
     if (!image) {
       return this.i18n('currentlySet') + ' ' +
           this.i18n('unknownImageAttribution');
     }
+    if (image.type === WallpaperType.kDefault) {
+      return `${this.i18n('currentlySet')} ${this.i18n('defaultWallpaper')}`;
+    }
     if (isNonEmptyArray(image.attribution)) {
-      return [this.i18n('currentlySet'), ...image.attribution].join(' ');
+      return dailyRefreshCollectionId ?
+          [
+            this.i18n('currentlySet'), this.i18n('dailyRefresh'),
+            ...image.attribution
+          ].join(' ') :
+          [this.i18n('currentlySet'), ...image.attribution].join(' ');
     }
     // Fallback to cached attribution.
     const attribution = this.getLocalStorageAttribution(image.key);
     if (isNonEmptyArray(attribution)) {
-      return [this.i18n('currentlySet'), ...attribution].join(' ');
+      return dailyRefreshCollectionId ?
+          [
+            this.i18n('currentlySet'), this.i18n('dailyRefresh'),
+            ...image.attribution
+          ].join(' ') :
+          [this.i18n('currentlySet'), ...attribution].join(' ');
     }
     return this.i18n('currentlySet') + ' ' +
         this.i18n('unknownImageAttribution');

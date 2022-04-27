@@ -10,6 +10,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/new_tab_page/chrome_colors/selected_colors_info.h"
@@ -55,7 +56,6 @@ Browser* EnsureBrowser(Browser* browser, Profile* profile) {
   return browser;
 }
 
-#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 // Converts SigninEmailConfirmationDialog::Action to
 // TurnSyncOnHelper::SigninChoice and invokes |callback| on it.
 void OnEmailConfirmation(signin::SigninChoiceCallback callback,
@@ -74,7 +74,6 @@ void OnEmailConfirmation(signin::SigninChoiceCallback callback,
   }
   NOTREACHED();
 }
-#endif
 
 }  // namespace
 
@@ -143,15 +142,10 @@ void TurnSyncOnHelperDelegateImpl::ShowMergeSyncDataConfirmation(
     const std::string& new_email,
     signin::SigninChoiceCallback callback) {
   DCHECK(callback);
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // TODO(https://crbug.com/1260291): add support for signed out profiles.
-  NOTREACHED() << "Lacros doesn't support signed-out profiles yet.";
-#else
   browser_ = EnsureBrowser(browser_, profile_);
   browser_->signin_view_controller()->ShowModalSigninEmailConfirmationDialog(
       previous_email, new_email,
       base::BindOnce(&OnEmailConfirmation, std::move(callback)));
-#endif
 }
 
 void TurnSyncOnHelperDelegateImpl::ShowSyncSettings() {

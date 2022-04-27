@@ -63,7 +63,7 @@ bool WordMatchesURLContent(
       url.scheme().length() + strlen(url::kStandardSchemeSeparator);
   DCHECK_GE(url.spec().length(), prefix_length);
   const std::u16string& formatted_url = url_formatter::FormatUrl(
-      url, url_formatter::kFormatUrlOmitNothing, net::UnescapeRule::NORMAL,
+      url, url_formatter::kFormatUrlOmitNothing, base::UnescapeRule::NORMAL,
       nullptr, nullptr, &prefix_length);
   if (prefix_length == std::u16string::npos)
     return false;
@@ -93,11 +93,6 @@ bool RichAutocompletionApplicable(bool enabled_all_providers,
          input_text.size() >= min_char &&
          (!no_inputs_with_spaces ||
           base::ranges::none_of(input_text, &base::IsAsciiWhitespace<char>));
-}
-
-bool IsQuickHistoryMatch(const AutocompleteMatch& match) {
-  return match.type == AutocompleteMatchType::HISTORY_TITLE ||
-         match.type == AutocompleteMatchType::HISTORY_URL;
 }
 
 }  // namespace
@@ -511,12 +506,12 @@ bool AutocompleteMatch::BetterDuplicate(const AutocompleteMatch& match1,
     return false;
   }
 
-  // Prefer open tab matches over quick history matches.
+  // Prefer open tab matches over other types of matches.
   if (match1.type == AutocompleteMatchType::OPEN_TAB &&
-      IsQuickHistoryMatch(match2)) {
+      match2.type != AutocompleteMatchType::OPEN_TAB) {
     return true;
   }
-  if (IsQuickHistoryMatch(match1) &&
+  if (match1.type != AutocompleteMatchType::OPEN_TAB &&
       match2.type == AutocompleteMatchType::OPEN_TAB) {
     return false;
   }

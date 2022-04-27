@@ -144,7 +144,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientDownload.DownloadRequestDuration" units="ms"
-    expires_after="2022-08-23">
+    expires_after="2022-10-23">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <owner>mattm@chromium.org</owner>
@@ -444,7 +444,11 @@ chromium-metrics-reviews@google.com.
         summary="extracting the model input data from the page screenshot"/>
     <variant name="ModelCopy"
         summary="copying the model data into a separate string for the TfLite
-                 runtime"/>
+                 runtime">
+      <obsolete>
+        Removed 04-2022 since this operation is no longer performed.
+      </obsolete>
+    </variant>
   </token>
 </histogram>
 
@@ -598,7 +602,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SBClientPhishing.MainFrameRemoteExists" enum="BooleanExists"
-    expires_after="2022-05-29">
+    expires_after="2022-08-29">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>

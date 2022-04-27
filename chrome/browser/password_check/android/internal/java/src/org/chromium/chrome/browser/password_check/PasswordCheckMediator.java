@@ -321,6 +321,7 @@ class PasswordCheckMediator
         PasswordCheckMetricsRecorder.recordCheckResolutionAction(
                 PasswordCheckResolutionAction.OPENED_SITE, credential);
         mCctIsOpened = true;
+        mDelegate.onManualPasswordChangeStarted(credential);
         mChangePasswordDelegate.launchAppOrCctWithChangePasswordUrl(credential);
     }
 
@@ -346,6 +347,7 @@ class PasswordCheckMediator
         PasswordCheckMetricsRecorder.recordCheckResolutionAction(
                 PasswordCheckResolutionAction.STARTED_SCRIPT, credential);
         mCctIsOpened = true;
+        mDelegate.onAutomatedPasswordChangeStarted(credential);
         mChangePasswordDelegate.launchCctWithScript(credential);
     }
 
@@ -424,8 +426,8 @@ class PasswordCheckMediator
 
         Collections.sort(credentials, (CompromisedCredential lhs, CompromisedCredential rhs) -> {
             // Phished credentials should always appear first.
-            if (lhs.isPhished() != rhs.isPhished()) {
-                return lhs.isPhished() ? -1 : 1;
+            if (lhs.isOnlyPhished() != rhs.isOnlyPhished()) {
+                return lhs.isOnlyPhished() ? -1 : 1;
             }
 
             boolean lhsInitial = mPreCheckSet.contains(lhs);

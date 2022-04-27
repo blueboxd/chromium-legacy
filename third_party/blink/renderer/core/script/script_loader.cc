@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/loader/fetch_priority_attribute.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
+#include "third_party/blink/renderer/core/loader/render_blocking_resource_manager.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/loader/web_bundle/script_web_bundle.h"
 #include "third_party/blink/renderer/core/script/classic_pending_script.h"
@@ -543,7 +544,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       RuntimeEnabledFeatures::BlockingAttributeEnabled() &&
       element_->IsRenderBlocking();
   RenderBlockingBehavior render_blocking_behavior =
-      !has_render_blocking_attr && (non_blocking_ || dynamic_async_)
+      !has_render_blocking_attr && (non_blocking_ || dynamic_async_ ||
+                                    element_->DeferAttributeValue())
           ? RenderBlockingBehavior::kNonBlocking
           : RenderBlockingBehavior::kBlocking;
 
@@ -801,21 +803,19 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
                 script_web_bundle_or_error)) {
           ScriptWebBundleError error =
               absl::get<ScriptWebBundleError>(script_web_bundle_or_error);
-          // errors with type kSystemError should fire an error event silently
-          // for the user, while kParseError should report an exception.
-          switch (error.GetType()) {
-            case ScriptWebBundleError::Type::kSystemError:
-              element_->DispatchErrorEvent();
-              break;
-            case ScriptWebBundleError::Type::kParseError: {
-              ScriptState* script_state = ToScriptStateForMainWorld(
-                  To<LocalDOMWindow>(element_->GetExecutionContext())
-                      ->GetFrame());
-              if (script_state->ContextIsValid()) {
-                ScriptState::Scope scope(script_state);
-                V8ScriptRunner::ReportException(script_state->GetIsolate(),
-                                                error.ToV8(script_state));
-              }
+          // Errors with type kSystemError should fire an error event silently
+          // for the user, while the other error types should report an
+          // exception.
+          if (error.GetType() == ScriptWebBundleError::Type::kSystemError) {
+            element_->DispatchErrorEvent();
+          } else {
+            ScriptState* script_state = ToScriptStateForMainWorld(
+                To<LocalDOMWindow>(element_->GetExecutionContext())
+                    ->GetFrame());
+            if (script_state->ContextIsValid()) {
+              ScriptState::Scope scope(script_state);
+              V8ScriptRunner::ReportException(script_state->GetIsolate(),
+                                              error.ToV8(script_state));
             }
           }
         }

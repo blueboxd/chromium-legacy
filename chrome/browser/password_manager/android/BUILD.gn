@@ -170,12 +170,16 @@ junit_binary("password_manager_junit_tests") {
     "//third_party/android_deps:guava_android_java",
     "//third_party/android_deps:protobuf_lite_runtime_java",
     "//third_party/androidx:androidx_fragment_fragment_java",
+    "//third_party/androidx:androidx_test_core_java",
     "//third_party/junit",
   ]
 }
 
 android_resources("java_resources") {
-  sources = [ "java/res/layout/confirmation_dialog_view.xml" ]
+  sources = [
+    "java/res/drawable/ic_vpn_key_blue.xml",
+    "java/res/layout/confirmation_dialog_view.xml",
+  ]
   deps = [
     "//chrome/browser/ui/android/strings:ui_strings_grd",
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
@@ -240,6 +244,7 @@ android_library("backend_interface_java") {
 android_library("password_manager_resource_provider_java") {
   sources = [
     "java/src/org/chromium/chrome/browser/password_manager/PasswordManagerResourceProvider.java",
+    "java/src/org/chromium/chrome/browser/password_manager/PasswordManagerResourceProviderFactory.java",
     "java/src/org/chromium/chrome/browser/password_manager/PasswordManagerResourceProviderImpl.java",
   ]
 
@@ -287,6 +292,8 @@ source_set("unit_tests") {
     "all_passwords_bottom_sheet_helper_unittest.cc",
     "auto_signin_first_run_dialog_android_unittest.cc",
     "credential_leak_controller_android_unittest.cc",
+    "fake_password_manager_lifecycle_helper.cc",
+    "fake_password_manager_lifecycle_helper.h",
     "generated_password_saved_message_delegate_unittest.cc",
     "mock_password_sync_controller_delegate_bridge.cc",
     "mock_password_sync_controller_delegate_bridge.h",

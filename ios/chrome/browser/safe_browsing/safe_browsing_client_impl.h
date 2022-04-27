@@ -16,20 +16,26 @@ class SafeBrowsingClientImpl : public SafeBrowsingClient {
       safe_browsing::RealTimeUrlLookupService* lookup_service,
       PrerenderService* prerender_service);
 
+  ~SafeBrowsingClientImpl() override;
+
   // SafeBrowsingClient implementation.
+  base::WeakPtr<SafeBrowsingClient> AsWeakPtr() override;
   SafeBrowsingService* GetSafeBrowsingService() override;
   safe_browsing::RealTimeUrlLookupService* GetRealTimeUrlLookupService()
       override;
   bool ShouldBlockUnsafeResource(
       const security_interstitials::UnsafeResource& resource) const override;
   void OnMainFrameUrlQueryCancellationDecided(web::WebState* web_state,
-                                              const GURL& url) const override;
+                                              const GURL& url) override;
   bool OnSubFrameUrlQueryCancellationDecided(web::WebState* web_state,
-                                             const GURL& url) const override;
+                                             const GURL& url) override;
 
  private:
   safe_browsing::RealTimeUrlLookupService* lookup_service_;
   PrerenderService* prerender_service_;
+
+  // Must be last.
+  base::WeakPtrFactory<SafeBrowsingClientImpl> weak_factory_{this};
 };
 
 #endif  // IOS_CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_CLIENT_IMPL_H_

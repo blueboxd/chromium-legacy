@@ -22,6 +22,9 @@ int ModifierDomCodeToEventFlag(ui::DomCode code) {
     case ui::DomCode::SHIFT_LEFT:
     case ui::DomCode::SHIFT_RIGHT:
       return ui::EF_SHIFT_DOWN;
+    case ui::DomCode::CONTROL_LEFT:
+    case ui::DomCode::CONTROL_RIGHT:
+      return ui::EF_CONTROL_DOWN;
     default:
       return ui::EF_NONE;
   }
@@ -121,6 +124,13 @@ bool InputElement::IsOverlapped(const InputElement& input_element) const {
     return false;
   }
   return mouse_action_ == input_element.mouse_action();
+}
+
+void InputElement::SetKey(int index, ui::DomCode code) {
+  DCHECK(index < keys_.size());
+  if (index >= keys_.size())
+    return;
+  keys_[index] = code;
 }
 
 bool InputElement::operator==(const InputElement& other) const {

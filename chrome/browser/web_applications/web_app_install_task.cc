@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -16,14 +17,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/web_applications/install_bounce_metric.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
-#include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_task.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
-#include "chrome/browser/web_applications/web_app_installation_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_system_web_app_data.h"
 #include "chrome/browser/web_applications/web_app_url_loader.h"
@@ -94,6 +94,8 @@ bool IsEmptyIconBitmapsForIconUrl(const IconsMap& icons_map,
   return true;
 }
 
+const char* kHistogramInstallResult = "WebApp.Install.Result";
+
 #if BUILDFLAG(IS_CHROMEOS)
 struct PlayStoreIntent {
   std::string app_id;
@@ -161,13 +163,11 @@ mojo::Remote<crosapi::mojom::Arc>* GetArcRemoteWithMinVersion(
 
 WebAppInstallTask::WebAppInstallTask(
     Profile* profile,
-    WebAppInstallManager* install_manager,
     WebAppInstallFinalizer* install_finalizer,
     std::unique_ptr<WebAppDataRetriever> data_retriever,
     WebAppRegistrar* registrar,
     webapps::WebappInstallSource install_surface)
     : data_retriever_(std::move(data_retriever)),
-      install_manager_(install_manager),
       install_finalizer_(install_finalizer),
       profile_(profile),
       registrar_(registrar),
@@ -477,6 +477,7 @@ void WebAppInstallTask::CallInstallCallback(const AppId& app_id,
   }
 
   DCHECK(install_callback_);
+  base::UmaHistogramBoolean(kHistogramInstallResult, webapps::IsSuccess(code));
   std::move(install_callback_).Run(app_id, code);
 }
 
@@ -607,8 +608,8 @@ void WebAppInstallTask::OnGetWebAppInstallInfo(
 void WebAppInstallTask::ApplyParamsToWebAppInstallInfo(
     const WebAppInstallParams& install_params,
     WebAppInstallInfo& web_app_info) {
-  if (install_params.user_display_mode != DisplayMode::kUndefined)
-    web_app_info.user_display_mode = install_params.user_display_mode;
+  if (install_params.user_display_mode.has_value())
+    web_app_info.user_display_mode = *install_params.user_display_mode;
 
   if (!install_params.override_manifest_id.has_value())
     web_app_info.manifest_id = install_params.override_manifest_id;
@@ -924,9 +925,8 @@ void WebAppInstallTask::OnDialogCompleted(
 
     UpdateFinalizerClientData(install_params_, &finalize_options);
 
-    if (install_params_->user_display_mode != DisplayMode::kUndefined)
+    if (install_params_->user_display_mode.has_value())
       web_app_info_copy.user_display_mode = install_params_->user_display_mode;
-
     finalize_options.add_to_applications_menu =
         install_params_->add_to_applications_menu;
     finalize_options.add_to_desktop = install_params_->add_to_desktop;
@@ -991,7 +991,7 @@ void WebAppInstallTask::OnInstallFinalizedMaybeReparentTab(
         install_finalizer_->CanReparentTab(app_id, !error);
 
     if (can_reparent_tab &&
-        (web_app_info->user_display_mode != DisplayMode::kBrowser)) {
+        (web_app_info->user_display_mode != UserDisplayMode::kBrowser)) {
       install_finalizer_->ReparentTab(app_id, !error, web_contents());
     }
   }

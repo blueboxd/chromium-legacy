@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//ios/web/js_compile.gni")
+import("//ios/web/public/js_messaging/optimize_js.gni")
 
 source_set("browser") {
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -25,6 +25,7 @@ source_set("browser") {
     "//components/language/ios/browser",
     "//components/prefs",
     "//components/translate/core/browser",
+    "//components/translate/core/browser:translate_model_service",
     "//components/translate/core/common",
     "//components/translate/core/language_detection",
     "//components/ukm/ios:ukm_url_recorder",
@@ -39,15 +40,10 @@ source_set("browser") {
   ]
 }
 
-js_compile_checked("injected_js") {
+optimize_js("injected_js") {
   visibility = [ ":browser" ]
+  primary_script = "resources/translate_ios.js"
   sources = [ "resources/translate_ios.js" ]
-
-  js_modules = [
-    "//ios/web/web_state/js/resources/base.js",
-    "//ios/web/web_state/js/resources/common.js",
-    "//ios/web/js_messaging/resources/message.js",
-  ]
 }
 
 source_set("unit_tests") {

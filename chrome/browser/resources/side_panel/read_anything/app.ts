@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 import '../strings.m.js';
+import './heading_element.js';
 
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {ReadAnythingApiProxy} from './read_anything_api_proxy.js';
+import {ContentNode, ContentType} from './read_anything.mojom-webui.js';
+import {ReadAnythingApiProxy, ReadAnythingApiProxyImpl} from './read_anything_api_proxy.js';
 
 const ReadAnythingElementBase = WebUIListenerMixin(PolymerElement);
 
@@ -22,7 +24,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
   static get properties() {
     return {
-      paragraphs_: {
+      content_: {
         type: Array,
         value: () => [],
       },
@@ -33,9 +35,10 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     };
   }
 
-  private apiProxy_: ReadAnythingApiProxy = ReadAnythingApiProxy.getInstance();
+  private apiProxy_: ReadAnythingApiProxy =
+      ReadAnythingApiProxyImpl.getInstance();
   private listenerIds_: number[];
-  private paragraphs_: string[];
+  private content_: ContentNode[];
   private fontName_: string;
 
   // Defines the valid font names that can be passed to front-end and maps
@@ -56,9 +59,8 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
     const callbackRouter = this.apiProxy_.getCallbackRouter();
     this.listenerIds_ = [
-      callbackRouter.onEssentialContent.addListener(
-          (essentialContent: string[]) =>
-              this.showEssentialContent_(essentialContent)),
+      callbackRouter.showContent.addListener(
+          (contentNodes: ContentNode[]) => this.showContent_(contentNodes)),
 
       callbackRouter.onFontNameChange.addListener(
           (newFontName: string) => this.updateFontName_(newFontName))
@@ -73,8 +75,24 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
         id => this.apiProxy_.getCallbackRouter().removeListener(id));
   }
 
-  showEssentialContent_(essentialContent: string[]) {
-    this.paragraphs_ = essentialContent;
+  /////////////////////////
+  // Called by app.html. //
+  /////////////////////////
+
+  private isParagraph_(contentNode: ContentNode): boolean {
+    return contentNode.type === ContentType.kParagraph;
+  }
+
+  private isHeading_(contentNode: ContentNode): boolean {
+    return contentNode.type === ContentType.kHeading;
+  }
+
+  ////////////////////////////////////////////////////////////
+  // Called by ReadAnythingPageHandler via callback router. //
+  ////////////////////////////////////////////////////////////
+
+  showContent_(contentNodes: ContentNode[]) {
+    this.content_ = contentNodes;
   }
 
   updateFontName_(newFontName: string) {
@@ -88,4 +106,11 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     }
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'read-anything-app': ReadAnythingElement;
+  }
+}
+
 customElements.define(ReadAnythingElement.is, ReadAnythingElement);

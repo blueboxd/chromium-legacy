@@ -985,6 +985,7 @@
               "external/wpt/accessibility/crashtests/aria-hidden-with-select.html",
               "external/wpt/accessibility/crashtests/aria-owns-destroyed-by-content-replacement.html",
               "external/wpt/accessibility/crashtests/aria-owns-reparent.html",
+              "external/wpt/accessibility/crashtests/bdo-table-cell.html",
               "external/wpt/accessibility/crashtests/content-visibility-generated-content-removal.html",
               "external/wpt/accessibility/crashtests/included-descendant-dom-removal.html",
               "external/wpt/accessibility/crashtests/included-descendant-layout-removal.html",
@@ -1018,12 +1019,6 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [],
     "args": ["--stable-release-mode"]
-  },
-  {
-    "prefix": "selectmenu-new-popup",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": [],
-    "args": ["--enable-blink-features=HTMLSelectMenuElementUsesPopupAttribute"]
   },
   {
     "prefix": "dialogfocus-old-behavior",
@@ -1113,7 +1108,7 @@
     "bases": [
       "wpt_internal/shared_storage"
     ],
-    "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch"]
+    "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride"]
   },
   {
     "prefix": "shared-storage-fenced-frame-shadow-dom",
@@ -1121,7 +1116,7 @@
     "bases": [
       "wpt_internal/shared_storage"
     ],
-    "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/shadow_dom"]
+    "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/shadow_dom,PrivacySandboxAdsAPIsOverride"]
   },
   {
     "prefix": "task-tracking",
@@ -1140,7 +1135,7 @@
       "http/tests/inspector-protocol/fenced-frame",
       "external/wpt/html/anonymous-iframe"
     ],
-    "args": ["--enable-features=FencedFrames:implementation_type/mparch,SharedStorageAPI,Prerender2,NoncedPartitionedCookies"]
+    "args": ["--enable-features=FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,Prerender2,NoncedPartitionedCookies"]
   },
   {
     "prefix": "fenced-frame-shadow-dom",
@@ -1150,7 +1145,7 @@
       "wpt_internal/fenced_frame",
       "external/wpt/html/anonymous-iframe"
     ],
-    "args": ["--enable-features=FencedFrames:implementation_type/shadow_dom,SharedStorageAPI,Prerender2,NoncedPartitionedCookies"]
+    "args": ["--enable-features=FencedFrames:implementation_type/shadow_dom,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,Prerender2,NoncedPartitionedCookies"]
   },
   {
     "prefix": "disable-custom-element-default-style",
@@ -1228,8 +1223,16 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [ "external/wpt/webauthn/remote-desktop-client-override.tentative.https.html" ],
     "args": [
-      "--webauthn-remote-desktop-support",
-      "--enable-blink-features=WebAuthenticationRemoteDesktopSupport"
+      "--webauthn-remote-desktop-support"
+    ]
+  },
+  {
+    "prefix": "mediastreamtrack-transfer",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [ "external/wpt/mediacapture-streams/MediaStreamTrack-iframe-transfer.https.html" ],
+    "args": [
+      "--enable-blink-features=MediaStreamTrackTransfer",
+      "--enable-features=MediaStreamTrackTransfer"
     ]
   }
 ]

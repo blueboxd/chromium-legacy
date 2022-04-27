@@ -223,9 +223,9 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
       const std::vector<mojom::ResourceDataUpdatePtr>& resources) override;
   void UpdateFrameCpuTiming(content::RenderFrameHost* rfh,
                             const mojom::CpuTiming& timing) override;
-  void OnFrameIntersectionUpdate(
+  void OnMainFrameIntersectionRectChanged(
       content::RenderFrameHost* rfh,
-      const mojom::FrameIntersectionUpdate& frame_intersection_update) override;
+      const gfx::Rect& main_frame_intersection_rect) override;
   void SetUpSharedMemoryForSmoothness(
       base::ReadOnlySharedMemoryRegion shared_memory) override;
 
@@ -436,6 +436,11 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // Returns nullopt if and only if the |time| passed is nullopt.
   absl::optional<base::TimeDelta> DurationSinceNavigationStartForTime(
       const absl::optional<base::TimeTicks>& time) const;
+
+  using InvokeCallback =
+      base::RepeatingCallback<PageLoadMetricsObserver::ObservePolicy(
+          PageLoadMetricsObserver*)>;
+  void InvokeAndPruneObservers(const char* trace_name, InvokeCallback callback);
 
   // Whether we stopped tracking this navigation after it was initiated. We may
   // stop tracking a navigation if it doesn't meet the criteria for tracking

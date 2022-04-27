@@ -25,11 +25,9 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.FeatureList;
 import org.chromium.base.metrics.UmaRecorder;
 import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -124,17 +122,19 @@ public class CloseAllTabsDialogUnitTest {
                 model.get(ModalDialogProperties.BUTTON_STYLES));
     }
 
-    private void verifyDismissed(boolean positiveAction) {
+    private void verifyDismissed(boolean positiveAction, boolean isIncognito) {
         assertNull(mMockModalDialogManager.getDialogModel());
         assertEquals(-1, mMockModalDialogManager.getDialogType());
         verify(mUmaRecorder, times(1))
-                .recordBooleanHistogram("Tab.CloseAllTabsDialog.ClosedAllTabs", positiveAction);
+                .recordBooleanHistogram(isIncognito
+                                ? "Tab.CloseAllTabsDialog.ClosedAllTabs.Incognito"
+                                : "Tab.CloseAllTabsDialog.ClosedAllTabs.NonIncognito",
+                        positiveAction);
     }
 
     @Test
     @SmallTest
     public void testDialog() {
-        enableFeature(true);
         final boolean isIncognito = false;
         CloseAllTabsDialog.show(mContext, this::getModalDialogManager,
                 () -> { mRunnableCalled = true; }, isIncognito);
@@ -142,13 +142,12 @@ public class CloseAllTabsDialogUnitTest {
 
         mMockModalDialogManager.simulateButtonClick(ModalDialogProperties.ButtonType.POSITIVE);
         assertTrue(mRunnableCalled);
-        verifyDismissed(true);
+        verifyDismissed(true, isIncognito);
     }
 
     @Test
     @SmallTest
     public void testDismissButton() {
-        enableFeature(true);
         final boolean isIncognito = true;
         CloseAllTabsDialog.show(mContext, this::getModalDialogManager,
                 () -> { mRunnableCalled = true; }, isIncognito);
@@ -156,13 +155,12 @@ public class CloseAllTabsDialogUnitTest {
 
         mMockModalDialogManager.simulateButtonClick(ModalDialogProperties.ButtonType.NEGATIVE);
         assertFalse(mRunnableCalled);
-        verifyDismissed(false);
+        verifyDismissed(false, isIncognito);
     }
 
     @Test
     @SmallTest
     public void testDismissNoButton() {
-        enableFeature(true);
         final boolean isIncognito = false;
         CloseAllTabsDialog.show(mContext, this::getModalDialogManager,
                 () -> { mRunnableCalled = true; }, isIncognito);
@@ -171,24 +169,6 @@ public class CloseAllTabsDialogUnitTest {
         mMockModalDialogManager.dismissDialog(mMockModalDialogManager.getDialogModel(),
                 DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE);
         assertFalse(mRunnableCalled);
-        verifyDismissed(false);
-    }
-
-    @Test
-    @SmallTest
-    public void testDialogInactive() {
-        enableFeature(false);
-        final boolean isIncognito = false;
-        CloseAllTabsDialog.show(mContext, this::getModalDialogManager,
-                () -> { mRunnableCalled = true; }, isIncognito);
-
-        assertNull(mMockModalDialogManager.getDialogModel());
-        assertTrue(mRunnableCalled);
-    }
-
-    private void enableFeature(boolean enable) {
-        FeatureList.TestValues values = new FeatureList.TestValues();
-        values.addFeatureFlagOverride(ChromeFeatureList.CLOSE_ALL_TABS_MODAL_DIALOG, enable);
-        FeatureList.setTestValues(values);
+        verifyDismissed(false, isIncognito);
     }
 }

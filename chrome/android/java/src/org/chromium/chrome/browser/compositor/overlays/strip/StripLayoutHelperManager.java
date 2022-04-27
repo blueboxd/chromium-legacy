@@ -93,6 +93,7 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
 
     private final StripScrim mStripScrim;
     private boolean mBrowserScrimShowing;
+    private boolean mTabSwitcherActive;
     private ValueAnimator mScrimFadeAnimation;
 
     private TabStripSceneLayer mTabStripTreeProvider;
@@ -187,6 +188,18 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
         }
 
         @Override
+        public void onFinishedShowing(int layoutType) {
+            if (layoutType != LayoutType.TAB_SWITCHER) return;
+            mTabSwitcherActive = true;
+        }
+
+        @Override
+        public void onFinishedHiding(int layoutType) {
+            if (layoutType != LayoutType.TAB_SWITCHER) return;
+            mTabSwitcherActive = false;
+        }
+
+        @Override
         public void onStartedHiding(
                 @LayoutType int layoutType, boolean showToolbar, boolean delayAnimation) {
             if (layoutType != LayoutType.TAB_SWITCHER) return;
@@ -202,7 +215,7 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
 
             if (!isGridTabSwitcherNonPolishEnabled()) return;
 
-            if (mScrimFadeAnimation != null) {
+            if (mScrimFadeAnimation != null && mScrimFadeAnimation.isRunning()) {
                 mScrimFadeAnimation.cancel();
             }
 
@@ -294,6 +307,9 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
      * Cleans up internal state.
      */
     public void destroy() {
+        if (mScrimFadeAnimation != null) {
+            mScrimFadeAnimation.cancel();
+        }
         mTabStripTreeProvider.destroy();
         mTabStripTreeProvider = null;
         mIncognitoHelper.destroy();
@@ -566,13 +582,14 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
             @Override
             public void willCloseTab(Tab tab, boolean animate) {
                 if (!tab.isIncognito()) {
-                    getStripLayoutHelper(tab.isIncognito()).willCloseTab(tab.getId());
+                    getStripLayoutHelper(tab.isIncognito())
+                            .willCloseTab(tab.getId(), mTabSwitcherActive);
                 }
             }
 
             @Override
             public void willCloseAllTabs(boolean incognito) {
-                getStripLayoutHelper(incognito).willCloseAllTabs();
+                getStripLayoutHelper(incognito).willCloseAllTabs(mTabSwitcherActive);
                 updateModelSwitcherButton();
             }
 

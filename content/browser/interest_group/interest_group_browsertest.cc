@@ -14,6 +14,7 @@
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
+#include "base/strings/escape.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/test/bind.h"
@@ -45,7 +46,6 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/fenced_frame_test_utils.h"
 #include "content/test/test_content_browser_client.h"
-#include "net/base/escape.h"
 #include "net/base/isolation_info.h"
 #include "net/base/network_isolation_key.h"
 #include "net/dns/mock_host_resolver.h"
@@ -221,6 +221,39 @@ function generateBid(
   net::test_server::ControllableHttpResponse controllable_response_;
 };
 
+// Handle well-known requests. Frame origins are expected to be of the form
+// "allow-join..." or "allow-leave...", and are only allowed to join or leave
+// cross-origin interest groups respectively.
+std::unique_ptr<net::test_server::HttpResponse> HandleWellKnownRequest(
+    const net::test_server::HttpRequest& request) {
+  if (!base::StartsWith(request.relative_url,
+                        "/.well-known/interest-group/permissions/?origin=")) {
+    return nullptr;
+  }
+
+  // .well-known requests should advertise they accept JSON responses.
+  const auto accept_header =
+      request.headers.find(net::HttpRequestHeaders::kAccept);
+  DCHECK(accept_header != request.headers.end());
+  EXPECT_EQ(accept_header->second, "application/json");
+
+  auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+  response->set_content_type("application/json");
+  response->set_content("{}");
+  response->AddCustomHeader("Access-Control-Allow-Origin", "*");
+
+  const auto host_header = request.headers.find(net::HttpRequestHeaders::kHost);
+  DCHECK(host_header != request.headers.end());
+  if (base::StartsWith(host_header->second, "allow-join.")) {
+    response->set_content(R"({"joinAdInterestGroup" : true})");
+  } else if (base::StartsWith(host_header->second, "allow-leave.")) {
+    response->set_content(R"({"leaveAdInterestGroup" : true})");
+  } else {
+    NOTREACHED();
+  }
+  return response;
+}
+
 class InterestGroupTestObserver
     : public InterestGroupManagerImpl::InterestGroupObserverInterface {
  public:
@@ -263,6 +296,8 @@ class InterestGroupBrowserTest : public ContentBrowserTest {
     https_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::test_server::EmbeddedTestServer::TYPE_HTTPS);
     https_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+    https_server_->RegisterRequestHandler(
+        base::BindRepeating(&HandleWellKnownRequest));
     https_server_->AddDefaultHandlers(GetTestDataFilePath());
     https_server_->RegisterRequestMonitor(base::BindRepeating(
         &InterestGroupBrowserTest::OnHttpsTestServerRequestMonitor,
@@ -277,23 +312,27 @@ class InterestGroupBrowserTest : public ContentBrowserTest {
             ->GetInterestGroupManager());
     observer_ = std::make_unique<InterestGroupTestObserver>();
     content_browser_client_.SetAllowList(
-        {url::Origin::Create(https_server_->GetURL("a.test", "/")),
-         url::Origin::Create(https_server_->GetURL("b.test", "/")),
-         url::Origin::Create(https_server_->GetURL("c.test", "/")),
+        {https_server_->GetOrigin("a.test"), https_server_->GetOrigin("b.test"),
+         https_server_->GetOrigin("c.test"),
+         // Magic interest group origins used in cross-site tests that allow
+         // other origins to join/leave the group.
+         https_server_->GetOrigin("allow-join.a.test"),
+         https_server_->GetOrigin("allow-leave.a.test"),
          // HTTP origins like those below aren't supported for FLEDGE -- some
          // tests verify that HTTP origins are rejected, even if somehow they
          // are allowed by the allowlist.
-         url::Origin::Create(embedded_test_server()->GetURL("a.test", "/")),
-         url::Origin::Create(embedded_test_server()->GetURL("b.test", "/")),
-         url::Origin::Create(embedded_test_server()->GetURL("c.test", "/"))});
+         https_server_->GetOrigin("a.test"), https_server_->GetOrigin("b.test"),
+         https_server_->GetOrigin("c.test")});
     old_content_browser_client_ =
         SetBrowserClientForTesting(&content_browser_client_);
   }
 
-  [[nodiscard]] bool JoinInterestGroupInJS(url::Origin owner,
-                                           std::string name) {
+  [[nodiscard]] bool JoinInterestGroupInJS(
+      url::Origin owner,
+      std::string name,
+      absl::optional<ToRenderFrameHost> execution_target = absl::nullopt) {
     return "done" ==
-           EvalJs(shell(),
+           EvalJs(execution_target ? *execution_target : shell(),
                   base::StringPrintf(R"(
     (function() {
       navigator.joinAdInterestGroup(
@@ -466,20 +505,26 @@ class InterestGroupBrowserTest : public ContentBrowserTest {
       absl::optional<GURL> bidding_url = absl::nullopt,
       absl::optional<std::vector<blink::InterestGroup::Ad>> ads = absl::nullopt,
       absl::optional<std::vector<blink::InterestGroup::Ad>> ad_components =
-          absl::nullopt) {
-    return JoinInterestGroupAndWaitInJs(blink::InterestGroup(
-        /*expiry=*/base::Time(), owner, name, priority, std::move(bidding_url),
-        /*bidding_wasm_helper_url=*/absl::nullopt,
-        /*daily_update_url=*/absl::nullopt,
-        /*trusted_bidding_signals_url=*/absl::nullopt,
-        /*trusted_bidding_signals_keys=*/absl::nullopt,
-        /*user_bidding_signals=*/absl::nullopt, std::move(ads),
-        std::move(ad_components)));
+          absl::nullopt,
+      absl::optional<ToRenderFrameHost> execution_target = absl::nullopt) {
+    return JoinInterestGroupAndWaitInJs(
+        blink::InterestGroup(
+            /*expiry=*/base::Time(), owner, name, priority,
+            std::move(bidding_url),
+            /*bidding_wasm_helper_url=*/absl::nullopt,
+            /*daily_update_url=*/absl::nullopt,
+            /*trusted_bidding_signals_url=*/absl::nullopt,
+            /*trusted_bidding_signals_keys=*/absl::nullopt,
+            /*user_bidding_signals=*/absl::nullopt, std::move(ads),
+            std::move(ad_components)),
+        execution_target);
   }
 
-  bool LeaveInterestGroupAndWait(const url::Origin& owner,
-                                 const std::string& name) {
-    if (!LeaveInterestGroupInJS(owner, name)) {
+  bool LeaveInterestGroupAndWait(
+      const url::Origin& owner,
+      const std::string& name,
+      absl::optional<ToRenderFrameHost> execution_target = absl::nullopt) {
+    if (!LeaveInterestGroupInJS(owner, name, execution_target)) {
       return false;
     }
     while (GetJoinCount(owner, name) != 0) {
@@ -781,9 +826,10 @@ class InterestGroupBrowserTest : public ContentBrowserTest {
     manager_->AddInterestGroupObserver(observer_.get());
   }
 
-  void ExpectAccessObserved(
+  void WaitForAccessObservered(
       const std::vector<InterestGroupTestObserver::Entry>& expected) {
-    EXPECT_EQ(expected, observer_->accesses);
+    while (observer_->accesses != expected)
+      ;
   }
 
   WebContentsImpl* web_contents() const {
@@ -816,9 +862,11 @@ class InterestGroupFencedFrameBrowserTest
   InterestGroupFencedFrameBrowserTest() {
     // Tests are run with both the ShadowDOM and MPArch ("Multi-Page
     // Architecture") fenced frames implementations.
-    feature_list_.InitAndEnableFeatureWithParameters(
-        blink::features::kFencedFrames,
-        {{"implementation_type", GetFencedFrameFeatureParam()}});
+    feature_list_.InitWithFeaturesAndParameters(
+        {{blink::features::kFencedFrames,
+          {{"implementation_type", GetFencedFrameFeatureParam()}}},
+         {features::kPrivacySandboxAdsAPIsOverride, {}}},
+        {/* disabled_features */});
   }
 
   const char* GetFencedFrameFeatureParam() const {
@@ -1156,7 +1204,8 @@ INSTANTIATE_TEST_SUITE_P(
         blink::features::FencedFramesImplementationType::kShadowDOM,
         blink::features::FencedFramesImplementationType::kMPArch));
 
-IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, JoinLeaveInterestGroup) {
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       SameOriginJoinLeaveInterestGroup) {
   GURL test_url_a = https_server_->GetURL("a.test", "/echo");
   url::Origin test_origin_a = url::Origin::Create(test_url_a);
   ASSERT_TRUE(test_url_a.SchemeIs(url::kHttpsScheme));
@@ -1164,13 +1213,8 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, JoinLeaveInterestGroup) {
 
   AttachInterestGroupObserver();
 
-  // This join should succeed and be added to the database.
+  // This join should succeed.
   EXPECT_TRUE(JoinInterestGroupAndWaitInJs(test_origin_a, "cars"));
-
-  // This join should fail and throw an exception since a.test is not the same
-  // origin as foo.a.test.
-  EXPECT_FALSE(JoinInterestGroupInJS(
-      url::Origin::Create(GURL("https://foo.a.test")), "cars"));
 
   // This join should fail and throw an exception since a.test is not the same
   // origin as the bidding_url, bid.a.test.
@@ -1265,7 +1309,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, JoinLeaveInterestGroup) {
       test_origin_d.GetURL());
 
   ASSERT_TRUE(NavigateToURL(shell(), test_url_d));
-  // This leave should do nothing because origin_d is not allowed by privacy
+  // This leave should do nothing because `origin_d` is not allowed by privacy
   // sandbox.
   EXPECT_TRUE(LeaveInterestGroupInJS(test_origin_d, "candy"));
 
@@ -1274,25 +1318,222 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, JoinLeaveInterestGroup) {
   // name.
   EXPECT_TRUE(LeaveInterestGroupInJS(test_origin_b, "cars"));
 
-  // This leave should silently fail because it is cross-origin.
-  ASSERT_TRUE(NavigateToURL(shell(), test_url_a));
-  EXPECT_TRUE(LeaveInterestGroupInJS(test_origin_b, "trucks"));
-
   // This leave should succeed.
+  ASSERT_TRUE(NavigateToURL(shell(), test_url_a));
   EXPECT_TRUE(LeaveInterestGroupAndWait(test_origin_a, "cars"));
 
-  // We expect that test_origin_b and the (injected) test_origin_d's interest
+  // We expect that `test_origin_b` and the (injected) `test_origin_d` interest
   // groups remain.
   expected_groups = {{test_origin_b, "trucks"}, {test_origin_d, "candy"}};
   received_groups = GetAllInterestGroups();
   EXPECT_THAT(received_groups,
               testing::UnorderedElementsAreArray(expected_groups));
-  ExpectAccessObserved(
+  WaitForAccessObservered(
       {{InterestGroupTestObserver::kJoin, test_origin_a.Serialize(), "cars"},
        {InterestGroupTestObserver::kJoin, test_origin_b.Serialize(), "trucks"},
        {InterestGroupTestObserver::kJoin, test_origin_d.Serialize(), "candy"},
        {InterestGroupTestObserver::kLeave, test_origin_b.Serialize(), "cars"},
        {InterestGroupTestObserver::kLeave, test_origin_a.Serialize(), "cars"}});
+}
+
+// Test the case of a cross-origin iframe joining and leaving same-origin
+// interest groups. This should succeed without any .well-known fetches needed.
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       SameOriginIframeJoinLeaveInterestGroup) {
+  const char kGroup[] = "goats";
+
+  // b.test iframes a.test. The iframe should be able to successfully join and
+  // leave a.test interest group without needing any .well-known fetches.
+  GURL main_url =
+      https_server_->GetURL("b.test",
+                            "/cross_site_iframe_factory.html?b.test("
+                            "a.test{allow-join-ad-interest-group}"
+                            ")");
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+
+  url::Origin group_origin = https_server_->GetOrigin("a.test");
+
+  FrameTreeNode* parent = FrameTreeNode::From(web_contents()->GetMainFrame());
+  ASSERT_GT(parent->child_count(), 0u);
+  RenderFrameHost* iframe = parent->child_at(0)->current_frame_host();
+
+  // Both joining and leaving should work.
+  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(
+      group_origin, kGroup,
+      /*priority=*/0, /*bidding_url=*/absl::nullopt, /*ads=*/absl::nullopt,
+      /*ad_components=*/absl::nullopt, iframe));
+  EXPECT_TRUE(LeaveInterestGroupInJS(group_origin, kGroup, iframe));
+}
+
+// Test cross-origin joining/leaving of interest groups, in the case an IG owner
+// only allows cross-origin joining. Only allow joining to make sure join and
+// leave permissions are tracked separately.
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       CrossOriginJoinAllowedByWellKnownFetch) {
+  const char kGroup[] = "aardvarks";
+  const char kOtherGroup[] = "wombats";
+
+  url::Origin allow_join_origin = url::Origin::Create(
+      GURL(https_server_->GetURL("allow-join.a.test", "/")));
+
+  // Navigate to a cross-origin URL.
+  ASSERT_TRUE(NavigateToURL(shell(), https_server_->GetURL("b.test", "/echo")));
+
+  // Joining a group cross-origin should succeed.
+  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(allow_join_origin, kGroup));
+
+  // Leaving the group should fail. The renderer is not currently informed of
+  // the failure, nor is there any way to wait until we can be completely sure
+  // the join failed.
+  EXPECT_TRUE(LeaveInterestGroupInJS(allow_join_origin, kGroup));
+
+  // Join another cross-origin group. This is to wait long enough that the
+  // previous leave operation likely would have succeeded, if there's a
+  // regression.
+  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(allow_join_origin, kOtherGroup));
+
+  // Make sure the leave operation still hasn't complete successfully. This is
+  // more likely to fail than not on regression, but could potentially succeed
+  // flakily.
+  EXPECT_EQ(1, GetJoinCount(allow_join_origin, kGroup));
+}
+
+// Test cross-origin joining/leaving of interest groups, in the case an IG owner
+// only allows cross-origin leaving. Only allow leaving to make sure leave and
+// leave permissions are tracked separately.
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       CrossOriginLeaveAllowedByWellKnownFetch) {
+  // Group that's joined with a same-origin request.
+  const char kJoinSucceedsGroup[] = "join-succeeds-group";
+  // Group where joining fails due to the request being cross-origin, and
+  // cross-origin joins being blocked.
+  const char kJoinFailsGroup[] = "join-fails-group";
+
+  GURL allow_leave_url =
+      GURL(https_server_->GetURL("allow-leave.a.test", "/echo"));
+  url::Origin allow_leave_origin = url::Origin::Create(allow_leave_url);
+
+  // Navigate to the origin that allows leaving only, and join one of its
+  // groups, which should succeed.
+  ASSERT_TRUE(NavigateToURL(shell(), allow_leave_url));
+  EXPECT_TRUE(
+      JoinInterestGroupAndWaitInJs(allow_leave_origin, kJoinSucceedsGroup));
+
+  // Navigate to a cross-origin URL.
+  ASSERT_TRUE(NavigateToURL(shell(), https_server_->GetURL("b.test", "/echo")));
+
+  // Try to join an `allow_leave_origin` group, which should fail. The renderer
+  // is not currently informed of the failure, nor is there any way to wait
+  // until we can be completely sure the join failed.
+  EXPECT_TRUE(JoinInterestGroupInJS(allow_leave_origin, kJoinFailsGroup));
+
+  // Leaving the group that was successfully joined earlier should succeed.
+  EXPECT_TRUE(
+      LeaveInterestGroupAndWait(allow_leave_origin, kJoinSucceedsGroup));
+
+  // Make sure the second join operation still hasn't completed successfully.
+  // This is more likely to fail than not on regression, but could potentially
+  // succeed flakily.
+  EXPECT_EQ(0, GetJoinCount(allow_leave_origin, kJoinFailsGroup));
+}
+
+// Test cross-origin joining/leaving of interest groups from an iframe, in the
+// case an IG owner only allows cross-origin joining. Only allow joining to make
+// sure join and leave permissions are tracked separately.
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       CrossOriginIframeJoinAllowedByWellKnownFetch) {
+  const char kGroup[] = "aardvarks";
+  const char kOtherGroup[] = "wombats";
+
+  url::Origin allow_join_origin = url::Origin::Create(
+      GURL(https_server_->GetURL("allow-join.a.test", "/")));
+
+  // allow-join.a.test iframes b.test. The iframe should require preflights to
+  // be able to join or leave allow-join.a.test's interest groups. In this test,
+  // the preflights only allow joins.
+  GURL main_url =
+      https_server_->GetURL("allow-join.a.test",
+                            "/cross_site_iframe_factory.html?allow-join.a.test("
+                            "b.test{allow-join-ad-interest-group}"
+                            ")");
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* parent = FrameTreeNode::From(web_contents()->GetMainFrame());
+  ASSERT_GT(parent->child_count(), 0u);
+  RenderFrameHost* iframe = parent->child_at(0)->current_frame_host();
+
+  // Joining a group cross-origin should succeed.
+  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(
+      allow_join_origin, kGroup,
+      /*priority=*/0, /*bidding_url=*/absl::nullopt, /*ads=*/absl::nullopt,
+      /*ad_components=*/absl::nullopt, iframe));
+
+  // Leaving the group should fail.  The renderer is not currently informed of
+  // the failure, nor is there any way to wait until we can be completely sure
+  // the join failed.
+  EXPECT_TRUE(LeaveInterestGroupInJS(allow_join_origin, kGroup, iframe));
+
+  // Join another cross-origin group. This is to wait long enough that the
+  // previous leave operation likely would have succeeded, if there's a
+  // regression.
+  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(
+      allow_join_origin, kOtherGroup,
+      /*priority=*/0, /*bidding_url=*/absl::nullopt, /*ads=*/absl::nullopt,
+      /*ad_components=*/absl::nullopt, iframe));
+
+  // Make sure the leave operation still hasn't complete successfully. This is
+  // more likely to fail than not on regression, but could potentially succeed
+  // flakily.
+  EXPECT_EQ(1, GetJoinCount(allow_join_origin, kGroup));
+}
+
+// Test cross-origin joining/leaving of interest groups from an iframe, in the
+// case an IG owner only allows cross-origin leaving. Only allow leaving to make
+// sure join and leave permissions are tracked separately.
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       CrossOriginIframeLeaveAllowedByWellKnownFetch) {
+  // Group that's joined with a same-origin request.
+  const char kJoinSucceedsGroup[] = "join-succeeds-group";
+  // Group where joining fails due to the request being cross-origin, and
+  // cross-origin joins being blocked.
+  const char kJoinFailsGroup[] = "join-fails-group";
+
+  url::Origin allow_leave_origin =
+      https_server_->GetOrigin("allow-leave.a.test");
+
+  // allow-leave.a.test iframes b.test. The iframe should require preflights to
+  // be able to join or leave allow-leave.a.test's interest groups. In this
+  // test, the preflights only allow leaves.
+  GURL main_url = https_server_->GetURL(
+      "allow-leave.a.test",
+      "/cross_site_iframe_factory.html?allow-leave.a.test("
+      "b.test{allow-join-ad-interest-group}"
+      ")");
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+
+  // The main frame joins kJoinSucceedsGroup, which should succeed.
+  EXPECT_TRUE(
+      JoinInterestGroupAndWaitInJs(allow_leave_origin, kJoinSucceedsGroup));
+
+  FrameTreeNode* parent = FrameTreeNode::From(web_contents()->GetMainFrame());
+  ASSERT_GT(parent->child_count(), 0u);
+  RenderFrameHost* iframe = parent->child_at(0)->current_frame_host();
+
+  // Try to join an `allow_leave_origin` group from the iframe, which should
+  // fail. The renderer is not currently informed of the failure, nor is there
+  // any way to wait until we can be completely sure the join failed.
+  EXPECT_TRUE(
+      JoinInterestGroupInJS(allow_leave_origin, kJoinFailsGroup, iframe));
+
+  // Leaving the group from the iframe that was successfully joined earlier
+  // should succeed.
+  EXPECT_TRUE(LeaveInterestGroupAndWait(allow_leave_origin, kJoinSucceedsGroup,
+                                        iframe));
+
+  // Make sure the second join operation still hasn't completed successfully.
+  // This is more likely to fail than not on regression, but could potentially
+  // succeed flakily.
+  EXPECT_EQ(0, GetJoinCount(allow_leave_origin, kJoinFailsGroup));
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -1317,35 +1558,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   }
   return 'done';
 })())"));
-  ExpectAccessObserved({});
-}
-
-IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
-                       JoinInterestGroupOwnerDoesntMatchFrame) {
-  const GURL page_url = https_server_->GetURL("a.test", "/echo");
-  ASSERT_TRUE(NavigateToURL(shell(), page_url));
-
-  EXPECT_EQ(
-      base::StringPrintf(
-          "TypeError: Failed to execute 'joinAdInterestGroup' on 'Navigator': "
-          "owner 'https://test.com' for AuctionAdInterestGroup with name "
-          "'cars' match frame origin '%s'.",
-          url::Origin::Create(page_url).Serialize().c_str()),
-      EvalJs(shell(), R"(
-(function() {
-  try {
-    navigator.joinAdInterestGroup(
-        {
-          name: 'cars',
-          owner: 'https://test.com',
-        },
-        /*joinDurationSec=*/1);
-  } catch (e) {
-    return e.toString();
-  }
-  return 'done';
-})())"));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -1376,7 +1589,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   return 'done';
 })())",
                                 origin_string.c_str())));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -1438,7 +1651,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   return 'done';
 })())",
                                 origin_string.c_str())));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -1469,7 +1682,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   return 'done';
 })())",
                                       origin_string.c_str())));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -1500,7 +1713,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   return 'done';
 })())",
                                 origin_string.c_str())));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -1531,7 +1744,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   return 'done';
 })())",
                                 origin_string.c_str())));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -1566,7 +1779,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   return 'done';
 })())",
                                 origin_string.c_str())));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -1591,7 +1804,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   }
   return 'done';
 })())"));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionInvalidSeller) {
@@ -1604,7 +1817,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionInvalidSeller) {
       seller: 'https://invalid^&',
       decisionLogicUrl: 'https://test.com/decision_logic'
   })"));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionHttpSeller) {
@@ -1617,7 +1830,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionHttpSeller) {
       seller: 'http://test.com',
       decisionLogicUrl: 'https://test.com/decision_logic'
   })"));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -1632,7 +1845,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       seller: 'https://test.com',
       decisionLogicUrl: 'https://invalid^&'
   })"));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -1653,7 +1866,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       trustedScoringSignalsUrl: 'https://invalid^&'
   })",
                                   origin, url)));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -1688,7 +1901,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
                          test_origin,
                          https_server_->GetURL(
                              "b.test", "/interest_group/decision_logic.js"))));
-  ExpectAccessObserved({
+  WaitForAccessObservered({
       {InterestGroupTestObserver::kJoin, test_origin.Serialize(), "cars"},
   });
 }
@@ -1706,7 +1919,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       decisionLogicUrl: 'https://test.com',
       interestGroupBuyers: ['https://invalid^&'],
   })"));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -1722,7 +1935,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       decisionLogicUrl: 'https://test.com',
       interestGroupBuyers: 'not an array',
   })"));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -1733,7 +1946,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       seller: 'https://test.com',
       decisionLogicUrl: 'https://test.com',
   })"));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -1745,7 +1958,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       decisionLogicUrl: 'https://test.com',
       interestGroupBuyers: [],
   })"));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -1761,7 +1974,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       decisionLogicUrl: 'https://test.com',
       auctionSignals: alert
   })"));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -1777,7 +1990,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       decisionLogicUrl: 'https://test.com',
       sellerSignals: function() {}
   })"));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -1793,7 +2006,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       decisionLogicUrl: 'https://test.com',
       perBuyerSignals: {'https://invalid^&': {a:1}}
   })"));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -1810,7 +2023,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       decisionLogicUrl: 'https://test.com',
       perBuyerTimeouts: {'https://invalid^&': 100}
   })"));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -1826,7 +2039,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       decisionLogicUrl: 'https://test.com',
       perBuyerGroupLimits: {'https://test.com': 0}
   })"));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -1843,7 +2056,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       decisionLogicUrl: 'https://test.com',
       perBuyerGroupLimits: {'https://invalid^&': 100}
   })"));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -1928,7 +2141,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       decisionLogicUrl: 'https://test.com',
       perBuyerSignals: {'https://test.com': function() {}}
   })"));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -1946,7 +2159,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
                          url::Origin::Create(test_url),
                          https_server_->GetURL(
                              "a.test", "/interest_group/decision_logic.js"))));
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 }
 
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
@@ -2005,7 +2218,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   EXPECT_FALSE(base::Contains(
       received_https_test_server_requests_,
       https_server_->GetURL("/interest_group/decision_logic.js")));
-  ExpectAccessObserved({
+  WaitForAccessObservered({
       {InterestGroupTestObserver::kJoin, test_origin_a.Serialize(), "cars"},
   });
 }
@@ -2074,7 +2287,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       received_https_test_server_requests_,
       https_server_->GetURL(
           "/interest_group/bidding_logic_stop_bidding_after_win.js")));
-  ExpectAccessObserved({
+  WaitForAccessObservered({
       {InterestGroupTestObserver::kJoin, disabled_origin.Serialize(), "candy"},
       {InterestGroupTestObserver::kJoin, test_origin.Serialize(), "cars"},
       {InterestGroupTestObserver::kBid, test_origin.Serialize(), "cars"},
@@ -2123,7 +2336,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionWithWinner) {
   RunAuctionAndWaitForURLAndNavigateIframe(auction_config, ad_url);
 
   // InterestGroupAccessObserver never was activated, so nothing was observed.
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 
   // Check ResourceRequest structs of requests issued by the worklet process.
   const struct ExpectedRequest {
@@ -2253,7 +2466,7 @@ IN_PROC_BROWSER_TEST_F(
           test_origin,
           https_server_->GetURL("a.test", "/interest_group/decision_logic.js")),
       ad_url);
-  ExpectAccessObserved(
+  WaitForAccessObservered(
       {{InterestGroupTestObserver::kJoin, test_origin.Serialize(), "cars"},
        {InterestGroupTestObserver::kBid, test_origin.Serialize(), "cars"},
        {InterestGroupTestObserver::kWin, test_origin.Serialize(), "cars"}});
@@ -2553,7 +2766,7 @@ perBuyerSignals: {$1: {even: 'more', x: 4.5}}
                                         "/interest_group/decision_logic.js"))));
 
   // InterestGroupAccessObserver never was activated, so nothing was observed.
-  ExpectAccessObserved({});
+  WaitForAccessObservered({});
 
   // Check ResourceRequest structs of requests issued by the worklet process.
   const struct ExpectedRequest {
@@ -2657,12 +2870,12 @@ IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
       "a.test",
       base::StringPrintf(
           "/cross_site_iframe_factory.html?a(%s,%s)",
-          net::EscapeUrlEncodedData(
+          base::EscapeUrlEncodedData(
               https_server_->GetURL("a.test", "/fenced_frames/opaque_ads.html")
                   .spec(),
               /*use_plus=*/false)
               .c_str(),
-          net::EscapeUrlEncodedData(
+          base::EscapeUrlEncodedData(
               https_server_->GetURL("b.test", "/fenced_frames/opaque_ads.html")
                   .spec(),
               /*use_plus=*/false)
@@ -2756,7 +2969,7 @@ perBuyerSignals: {$1: {even: 'more', x: 4.5}}
   // InterestGroupAccessObserver should see the join, auction, and implicit
   // leave. Note that the implicit leave for "trucks" does not succeed because
   // leaveAdInterestGroup is not called from the Interest Group owner's frame.
-  ExpectAccessObserved(
+  WaitForAccessObservered(
       {{InterestGroupTestObserver::kJoin, test_origin.Serialize(), "cars"},
        {InterestGroupTestObserver::kJoin, test_origin.Serialize(), "trucks"},
        {InterestGroupTestObserver::kBid, test_origin.Serialize(), "cars"},
@@ -2790,7 +3003,7 @@ IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
   GURL ad_url = https_server_->GetURL(
       "b.test", "/fenced_frames/outer_inner_frame_as_param.html");
   GURL::Replacements rep;
-  std::string query = "innerFrame=" + net::EscapeUrlEncodedData(
+  std::string query = "innerFrame=" + base::EscapeUrlEncodedData(
                                           inner_url.spec(), /*use_plus=*/false);
   rep.SetQueryStr(query);
   ad_url = ad_url.ReplaceComponents(rep);
@@ -2828,7 +3041,7 @@ perBuyerSignals: {$1: {even: 'more', x: 4.5}}
 
   // InterestGroupAccessObserver should see the join, auction, and implicit
   // leave.
-  ExpectAccessObserved(
+  WaitForAccessObservered(
       {{InterestGroupTestObserver::kJoin, test_origin.Serialize(), "cars"},
        {InterestGroupTestObserver::kBid, test_origin.Serialize(), "cars"},
        {InterestGroupTestObserver::kWin, test_origin.Serialize(), "cars"},
@@ -2872,7 +3085,7 @@ IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
   ASSERT_NO_FATAL_FAILURE(NavigateFencedFrameAndWait(ad_url, ad_url, shell()));
 
   // InterestGroupAccessObserver should see the join.
-  ExpectAccessObserved(
+  WaitForAccessObservered(
       {{InterestGroupTestObserver::kJoin, test_origin.Serialize(), "cars"}});
 
   // The ad should not have left the interest group when the page was shown.
@@ -2955,7 +3168,7 @@ function reportResult(
                     kSeller, "/interest_group/trusted_scoring_signals.json"),
                 bidder_origin)));
 
-  ExpectAccessObserved({
+  WaitForAccessObservered({
       {InterestGroupTestObserver::kJoin, bidder_origin.Serialize(), "cars"},
       {InterestGroupTestObserver::kBid, bidder_origin.Serialize(), "cars"},
       {InterestGroupTestObserver::kWin, bidder_origin.Serialize(), "cars"},
@@ -3012,7 +3225,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       https_server_->GetURL("a.test", "/interest_group/decision_logic.js"));
   RunAuctionAndWaitForURLAndNavigateIframe(auction_config, ad_url);
 
-  ExpectAccessObserved({
+  WaitForAccessObservered({
       {InterestGroupTestObserver::kJoin, test_origin.Serialize(), "cars"},
       {InterestGroupTestObserver::kBid, test_origin.Serialize(), "cars"},
       {InterestGroupTestObserver::kWin, test_origin.Serialize(), "cars"},
@@ -3310,7 +3523,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionAllGroupsLimited) {
       https_server_->GetURL("a.test", "/interest_group/decision_logic.js"));
   RunAuctionAndWaitForURLAndNavigateIframe(auction_config, ad1_url);
 
-  ExpectAccessObserved({
+  WaitForAccessObservered({
       {InterestGroupTestObserver::kJoin, test_origin.Serialize(), "cars"},
       {InterestGroupTestObserver::kJoin, test_origin.Serialize(), "bikes"},
       {InterestGroupTestObserver::kJoin, test_origin.Serialize(), "shoes"},
@@ -3433,7 +3646,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionOneGroupLimited) {
       test_origin2);
   RunAuctionAndWaitForURLAndNavigateIframe(auction_config, ad1_url);
 
-  ExpectAccessObserved({
+  WaitForAccessObservered({
       {InterestGroupTestObserver::kJoin, test_origin.Serialize(), "cars"},
       {InterestGroupTestObserver::kJoin, test_origin.Serialize(), "bikes"},
       {InterestGroupTestObserver::kJoin, test_origin.Serialize(), "shoes"},
@@ -3562,7 +3775,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       test_origin2);
   RunAuctionAndWaitForURLAndNavigateIframe(auction_config, ad1_url);
 
-  ExpectAccessObserved({
+  WaitForAccessObservered({
       {InterestGroupTestObserver::kJoin, test_origin.Serialize(), "cars"},
       {InterestGroupTestObserver::kJoin, test_origin.Serialize(), "bikes"},
       {InterestGroupTestObserver::kJoin, test_origin.Serialize(), "shoes"},
@@ -3727,7 +3940,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionMultipleAuctions) {
   EXPECT_EQ(storage_interest_groups2.front().bidding_browser_signals->bid_count,
             3);
   // Observer was not active for joins and first auction.
-  ExpectAccessObserved({
+  WaitForAccessObservered({
       {InterestGroupTestObserver::kBid, origin2.Serialize(), "shoes"},
       {InterestGroupTestObserver::kWin, origin2.Serialize(), "shoes"},
       {InterestGroupTestObserver::kBid, origin2.Serialize(), "shoes"},
@@ -3995,7 +4208,7 @@ IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest, AdComponentsLeave) {
 
   // InterestGroupAccessObserver should see the join and auction, but not the
   // implicit leave since it was blocked.
-  ExpectAccessObserved(
+  WaitForAccessObservered(
       {{InterestGroupTestObserver::kJoin, test_origin.Serialize(), "cars"},
        {InterestGroupTestObserver::kBid, test_origin.Serialize(), "cars"},
        {InterestGroupTestObserver::kWin, test_origin.Serialize(), "cars"}});
@@ -5475,6 +5688,8 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, FinalizeAdWorks) {
 // public network. The auction should fail.
 IN_PROC_BROWSER_TEST_F(InterestGroupPrivateNetworkBrowserTest,
                        BidderOnPrivateNetwork) {
+  URLLoaderMonitor url_loader_monitor;
+
   // Learn the bidder IG, served from the local server.
   GURL bidder_url =
       https_server_->GetURL("b.test", "/interest_group/bidding_logic.js");
@@ -5485,7 +5700,6 @@ IN_PROC_BROWSER_TEST_F(InterestGroupPrivateNetworkBrowserTest,
       /*name=*/"Cthulhu", /*priority=*/0.0, bidder_url,
       /*ads=*/
       {{{GURL("https://example.com/render"), /*metadata=*/absl::nullopt}}}));
-  URLLoaderMonitor url_loader_monitor;
 
   // Use `remote_test_server_` for all other URLs.
   GURL test_url = remote_test_server_.GetURL("a.test", "/echo");
@@ -5533,6 +5747,10 @@ IN_PROC_BROWSER_TEST_F(InterestGroupPrivateNetworkBrowserTest,
   ASSERT_TRUE(NavigateToURL(shell(), test_url));
   url::Origin test_origin = url::Origin::Create(test_url);
 
+  // Need to set this up before the join, since joining instantiates the
+  // AdAuctionServiceImpl's URLLoaderFactory.
+  URLLoaderMonitor url_loader_monitor;
+
   EXPECT_TRUE(JoinInterestGroupAndWaitInJs(
       /*owner=*/test_origin,
       /*name=*/"Cthulhu",
@@ -5542,7 +5760,6 @@ IN_PROC_BROWSER_TEST_F(InterestGroupPrivateNetworkBrowserTest,
       /*ads=*/
       {{{GURL("https://example.com/render"), /*metadata=*/absl::nullopt}}}));
 
-  URLLoaderMonitor url_loader_monitor;
   EXPECT_EQ(nullptr,
             RunAuctionAndWait(JsReplace(
                 R"(

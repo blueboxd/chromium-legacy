@@ -210,6 +210,7 @@ extern const char kChromeUIWelcomeHost[];
 extern const char kChromeUIWelcomeURL[];
 extern const char kChromeUIWhatsNewHost[];
 extern const char kChromeUIWhatsNewURL[];
+extern const char kChromeUIWebuiGalleryHost[];
 
 #if BUILDFLAG(IS_WIN)
 // TODO(crbug.com/1003960): Remove when issue is resolved.
@@ -236,6 +237,7 @@ extern const char kChromeUIReadAnythingSidePanelHost[];
 extern const char kChromeUIReadAnythingSidePanelURL[];
 extern const char kChromeUIReadLaterHost[];
 extern const char kChromeUIReadLaterURL[];
+extern const char kChromeUIUntrustedFeedURL[];
 extern const char kChromeUIWebAppInternalsHost[];
 extern const char kChromeUIWebUITestHost[];
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -250,8 +252,6 @@ extern const char kChromeUIHistogramsURL[];
 // IsSystemWebUIHost().
 extern const char kChromeUIAccountManagerErrorHost[];
 extern const char kChromeUIAccountManagerErrorURL[];
-extern const char kChromeUIAccountManagerWelcomeHost[];
-extern const char kChromeUIAccountManagerWelcomeURL[];
 extern const char kChromeUIAccountMigrationWelcomeHost[];
 extern const char kChromeUIAccountMigrationWelcomeURL[];
 extern const char kChromeUIActivationMessageHost[];
@@ -341,7 +341,6 @@ extern const char kChromeUIVmHost[];
 extern const char kChromeUIVmUrl[];
 
 extern const char kOsUIAccountManagerErrorURL[];
-extern const char kOsUIAccountManagerWelcomeURL[];
 extern const char kOsUIAccountMigrationWelcomeURL[];
 extern const char kOsUIAddSupervisionURL[];
 extern const char kOsUIAppDisabledURL[];

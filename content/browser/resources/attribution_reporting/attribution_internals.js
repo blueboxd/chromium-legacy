@@ -633,7 +633,7 @@ class Report extends Selectable {
     this.reportTime = new Date(mojo.reportTime);
 
     // Only pending reports are selectable.
-    if (this.id === null || mojo.status.pending === undefined) {
+    if (mojo.status.pending === undefined) {
       this.input.disabled = true;
     }
 
@@ -646,7 +646,8 @@ class Report extends Selectable {
     } else if (mojo.status.pending !== undefined) {
       this.status = 'Pending';
     } else if (mojo.status.replacedByHigherPriorityReport !== undefined) {
-      this.status = 'Replaced by higher-priority report';
+      this.status = `Replaced by higher-priority report: ${
+          mojo.status.replacedByHigherPriorityReport}`;
     } else if (mojo.status.prohibitedByBrowserPolicy !== undefined) {
       this.status = 'Prohibited by browser policy';
     } else if (mojo.status.networkError !== undefined) {
@@ -793,7 +794,7 @@ class ReportTableModel extends TableModel {
   sendReports() {
     const ids = [];
     this.storedReports.forEach((report) => {
-      if (!report.input.disabled && report.input.checked && report.id !== null) {
+      if (!report.input.disabled && report.input.checked) {
         ids.push(report.id);
       }
     });

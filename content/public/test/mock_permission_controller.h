@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_TEST_MOCK_PERMISSION_CONTROLLER_H_
 
 #include "content/public/browser/permission_controller.h"
+#include "content/public/browser/permission_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class GURL;
@@ -15,8 +16,6 @@ class Origin;
 }
 
 namespace content {
-
-enum class PermissionType;
 
 // Mock of the permission controller for unit tests.
 class MockPermissionController : public PermissionController {
@@ -58,6 +57,13 @@ class MockPermissionController : public PermissionController {
       RenderFrameHost* render_frame_host,
       bool user_gesture,
       base::OnceCallback<void(blink::mojom::PermissionStatus)> callback)
+      override;
+  void RequestPermissionsFromCurrentDocument(
+      const std::vector<PermissionType>& permission,
+      RenderFrameHost* render_frame_host,
+      bool user_gesture,
+      base::OnceCallback<
+          void(const std::vector<blink::mojom::PermissionStatus>&)> callback)
       override;
 };
 

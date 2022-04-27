@@ -7,6 +7,7 @@
 <translation id="1185134272377778587">За Chromium</translation>
 <translation id="1257458525759135959">За да ги зачувате сликите, допрете на „Поставки“ за да овозможите Chromium да додава фотографии</translation>
 <translation id="1289216811211435351">Префрлете на Chromium</translation>
+<translation id="1311799238113893680">Користете ја лозинката што сте ја зачувале во Chromium за да се најавите побрзо</translation>
 <translation id="1361748954329991663">Chromium е застарен. Ако нема достапно ажурирање во <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, можно е уредот веќе да не поддржува нови верзии на Chromium.</translation>
 <translation id="1431818719585918472">Дозволете Chromium да ги заклучи вашите картички „Инкогнито“.</translation>
 <translation id="1472013873724362412">Сметката не работи на Chromium. Контактирајте го администраторот на доменот или употребете обична сметка на Google за да се најавите.</translation>
@@ -21,6 +22,7 @@
 <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
 <translation id="1867772173333403444">4. Изберете Chromium</translation>
 <translation id="2006345422933397527">Chromium не може да провери дали има ажурирања. Проверете ја интернет-врската.</translation>
+<translation id="2052320862053429062">Chromium повремено ги споредува лозинките со списоци објавени онлајн. Кога го прави ова, вашите лозинки и кориснички имиња се шифрирани, па нив не може да ги прочита никој, вклучително и Google.</translation>
 <translation id="2054703085270098503">Останете безбедни со Chromium</translation>
 <translation id="2168108852149185974">Некои додатоци предизвикуваат пад на Chromium. Деинсталирајте:</translation>
 <translation id="2178608107313874732">Chromium не може да ја користи камерата сега</translation>
@@ -48,6 +50,7 @@
 <translation id="3805899903892079518">Chromium нема пристап до фотографиите или видеата. Овозможете пристап во Поставки на iOS &gt; Приватност &gt; Фотографии.</translation>
 <translation id="4043291146360695975">Лозинките се зачувани во „Управникот со лозинки“ само на уредов.</translation>
 <translation id="4099085513035183040">Не е поддржана на Chromium Beta</translation>
+<translation id="4432744876818348753">Најавете се за да извадите максимум од Chromium.</translation>
 <translation id="4555020257205549924">Кога е вклучена функцијава, Chromium ќе нуди да преведува страници што се напишани на други јазици користејќи го „Преведи на Google“. <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
 <translation id="4585809515399340748">Сега може да го користите Chromium секогаш кога ќе допрете линкови во пораки, документи и други апликации.</translation>
 <translation id="4654936625574199632">За да се подобри апликацијата, Chromium испраќа податоци за користењето и падовите во Google. <ph name="BEGIN_LINK" />Управувајте<ph name="END_LINK" /></translation>

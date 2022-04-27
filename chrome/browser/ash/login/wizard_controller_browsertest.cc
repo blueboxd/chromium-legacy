@@ -88,11 +88,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/dbus/system_clock/system_clock_client.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/shill/fake_shill_manager_client.h"
-#include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/dbus/userdataauth/fake_install_attributes_client.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -605,7 +605,6 @@ class WizardControllerFlowTest : public WizardControllerTest {
 
     mock_enable_adb_sideloading_screen_view_ =
         std::make_unique<MockEnableAdbSideloadingScreenView>();
-    ExpectBindUnbind(mock_enable_adb_sideloading_screen_view_.get());
     mock_enable_adb_sideloading_screen_ = MockScreenExpectLifecycle(
         std::make_unique<MockEnableAdbSideloadingScreen>(
             mock_enable_adb_sideloading_screen_view_->AsWeakPtr(),

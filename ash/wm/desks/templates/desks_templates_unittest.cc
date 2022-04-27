@@ -103,9 +103,8 @@ class DesksTemplatesTest : public OverviewTestBase {
                 DeskTemplateType type,
                 std::unique_ptr<app_restore::RestoreData> restore_data) {
     auto desk_template = std::make_unique<DeskTemplate>(
-        uuid.AsLowercaseString(), source, name, created_time);
+        uuid.AsLowercaseString(), source, name, created_time, type);
     desk_template->set_desk_restore_data(std::move(restore_data));
-    desk_template->set_type(type);
 
     AddEntry(std::move(desk_template));
   }
@@ -875,6 +874,7 @@ TEST_F(DesksTemplatesTest, SaveDeskButtonContainerAligned) {
         save_desk_button_container->GetBoundsInScreen().x());
     EXPECT_EQ(std::round(window_list.front()->target_bounds().y()) - 40,
               save_desk_button_container->GetBoundsInScreen().y());
+    EXPECT_EQ(16, save_desk_button_container->GetBetweenChildSpacing());
   };
 
   verify_save_desk_widget_bounds();
@@ -2870,7 +2870,8 @@ TEST_F(DesksTemplatesTest, SaveDeskRecordsWindowAndTabCountMetrics) {
 
   auto desk_template = std::make_unique<DeskTemplate>(
       base::GUID::GenerateRandomV4().AsLowercaseString(),
-      DeskTemplateSource::kUser, "template_1", base::Time::Now());
+      DeskTemplateSource::kUser, "template_1", base::Time::Now(),
+      DeskTemplateType::kTemplate);
   desk_template->set_desk_restore_data(std::move(restore_data));
 
   // Record histogram.
@@ -3362,7 +3363,8 @@ TEST_F(DesksTemplatesTest, VisibleOnAllDesksWindowShownProperly) {
 
 // Test save same desk as template won't create name with number on the template
 // view for the second template.
-TEST_F(DesksTemplatesTest, NoDuplicateDisplayedName) {
+// crbug/1318777: the test is flaky.
+TEST_F(DesksTemplatesTest, DISABLED_NoDuplicateDisplayedName) {
   // There are no saved template entries and one test window initially.
   auto test_window = CreateAppWindow();
   ToggleOverview();

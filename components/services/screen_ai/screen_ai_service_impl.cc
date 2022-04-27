@@ -22,7 +22,7 @@ namespace screen_ai {
 
 ScreenAIService::ScreenAIService(
     mojo::PendingReceiver<mojom::ScreenAIService> receiver)
-    : library_(screen_ai::GetLibraryFilePath()),
+    : library_(screen_ai::GetPreloadedLibraryFilePath()),
       init_function_(reinterpret_cast<ScreenAIInitFunction>(
           library_.GetFunctionPointer("Init"))),
       annotator_function_(reinterpret_cast<ScreenAIAnnotateFunction>(
@@ -57,11 +57,7 @@ void ScreenAIService::Annotate(const SkBitmap& image,
     std::string annotation_text;
     // TODO(https://crbug.com/1278249): Consider adding a signature that
     // verifies the data integrity and source.
-    // TODO(https://crbug.com/1278249): Consider replacing the input with a data
-    // item that includes data size.
-    if (annotator_function_(
-            static_cast<const unsigned char*>(image.getPixels()), image.width(),
-            image.height(), annotation_text)) {
+    if (annotator_function_(image, annotation_text)) {
       updates = DecodeProto(annotation_text);
     } else {
       VLOG(1) << "Screen AI library could not process snapshot.";

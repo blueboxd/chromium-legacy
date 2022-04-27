@@ -272,14 +272,6 @@ bool IsResumableOobeScreen(OobeScreenId screen_id) {
   return false;
 }
 
-bool IsResumablePostLoginScreen(OobeScreenId screen_id) {
-  for (const auto& resumable_screen : kResumablePostLoginScreens) {
-    if (screen_id == resumable_screen)
-      return true;
-  }
-  return false;
-}
-
 bool ShouldHideStatusArea(OobeScreenId screen_id) {
   for (const auto& s : kScreensWithHiddenStatusArea) {
     if (screen_id == s)
@@ -556,6 +548,10 @@ WizardController::CreateScreens() {
         base::BindRepeating(&WizardController::OnDemoPreferencesScreenExit,
                             weak_factory_.GetWeakPtr())));
 
+    append(std::make_unique<EulaScreen>(
+        oobe_ui->GetView<EulaScreenHandler>(),
+        base::BindRepeating(&WizardController::OnEulaScreenExit,
+                            weak_factory_.GetWeakPtr())));
     if (ash::features::IsOobeQuickStartEnabled()) {
       append(std::make_unique<QuickStartScreen>(
           oobe_ui->GetView<QuickStartScreenHandler>(),
@@ -567,10 +563,6 @@ WizardController::CreateScreens() {
   append(std::make_unique<NetworkScreen>(
       oobe_ui->GetView<NetworkScreenHandler>(),
       base::BindRepeating(&WizardController::OnNetworkScreenExit,
-                          weak_factory_.GetWeakPtr())));
-  append(std::make_unique<EulaScreen>(
-      oobe_ui->GetView<EulaScreenHandler>(),
-      base::BindRepeating(&WizardController::OnEulaScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<UpdateScreen>(
       oobe_ui->GetView<UpdateScreenHandler>(), oobe_ui->GetErrorScreen(),
@@ -1158,10 +1150,6 @@ void WizardController::OnConsolidatedConsentScreenExit(
     ConsolidatedConsentScreen::Result result) {
   OnScreenExit(ConsolidatedConsentScreenView::kScreenId,
                ConsolidatedConsentScreen::GetResultString(result));
-  if (wizard_context_->is_cloud_ready_update_flow) {
-    AdvanceToScreen(HWDataCollectionView::kScreenId);
-    return;
-  }
   switch (result) {
     case ConsolidatedConsentScreen::Result::ACCEPTED:
     case ConsolidatedConsentScreen::Result::NOT_APPLICABLE:
@@ -1237,10 +1225,6 @@ void WizardController::OnHWDataCollectionScreenExit(
     HWDataCollectionScreen::Result result) {
   OnScreenExit(HWDataCollectionView::kScreenId,
                HWDataCollectionScreen::GetResultString(result));
-  if (wizard_context_->is_cloud_ready_update_flow) {
-    OnOobeFlowFinished();
-    return;
-  }
   ShowFingerprintSetupScreen();
 }
 
@@ -1447,10 +1431,6 @@ void WizardController::OnEulaAccepted(bool usage_statistics_reporting_enabled) {
       usage_statistics_reporting_enabled,
       base::BindOnce(&WizardController::OnChangedMetricsReportingState,
                      weak_factory_.GetWeakPtr()));
-  if (wizard_context_->is_cloud_ready_update_flow) {
-    AdvanceToScreen(HWDataCollectionView::kScreenId);
-    return;
-  }
   PerformPostEulaActions();
 
   if (arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
@@ -1469,6 +1449,7 @@ void WizardController::OnUpdateScreenExit(UpdateScreen::Result result) {
   switch (result) {
     case UpdateScreen::Result::UPDATE_NOT_REQUIRED:
     case UpdateScreen::Result::UPDATE_SKIPPED:
+    case UpdateScreen::Result::UPDATE_OPT_OUT_INFO_SHOWN:
       OnUpdateCompleted();
       break;
     case UpdateScreen::Result::UPDATE_ERROR:
@@ -2034,7 +2015,6 @@ void WizardController::SetCurrentScreen(BaseScreen* new_current) {
     if (is_out_of_box_ && IsResumableOobeScreen(current_screen_->screen_id())) {
       StartupUtils::SaveOobePendingScreen(current_screen_->screen_id().name);
     } else if (IsResumablePostLoginScreen(current_screen_->screen_id()) &&
-               !wizard_context_->is_cloud_ready_update_flow &&
                wizard_context_->screen_after_managed_tos !=
                    ash::OOBE_SCREEN_UNKNOWN) {
       // If screen_after_managed_tos == SCREEN_UNKNOWN means that the onboarding
@@ -2354,6 +2334,15 @@ void WizardController::SkipPostLoginScreensForTesting() {
     LOG(WARNING) << "SkipPostLoginScreensForTesting(): Ignore screen "
                  << current_screen_id.name;
   }
+}
+
+// statis
+bool WizardController::IsResumablePostLoginScreen(OobeScreenId screen_id) {
+  for (const auto& resumable_screen : kResumablePostLoginScreens) {
+    if (screen_id == resumable_screen)
+      return true;
+  }
+  return false;
 }
 
 // static

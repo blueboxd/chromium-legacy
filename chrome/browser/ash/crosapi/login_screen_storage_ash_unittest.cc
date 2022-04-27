@@ -52,7 +52,7 @@ void EvaluateRetrieveResult(base::OnceClosure closure,
                             mojom::LoginScreenStorageRetrieveResultPtr found) {
   ASSERT_EQ(expected->which(), found->which());
   if (expected->which() ==
-      mojom::LoginScreenStorageRetrieveResult::Tag::ERROR_MESSAGE) {
+      mojom::LoginScreenStorageRetrieveResult::Tag::kErrorMessage) {
     ASSERT_EQ(expected->get_error_message(), found->get_error_message());
   } else {
     ASSERT_EQ(expected->get_data(), found->get_data());
@@ -222,8 +222,7 @@ TEST_F(LoginScreenStorageAshTest, RetrieveSuccess) {
       .WillOnce(WithArgs<1>(Invoke(LoginScreenStorageRetrieveSuccess)));
 
   mojom::LoginScreenStorageRetrieveResultPtr expected_result_ptr =
-      mojom::LoginScreenStorageRetrieveResult::New();
-  expected_result_ptr->set_data(kData);
+      mojom::LoginScreenStorageRetrieveResult::NewData(kData);
 
   base::RunLoop run_loop;
   login_screen_storage_remote_->Retrieve(
@@ -237,8 +236,7 @@ TEST_F(LoginScreenStorageAshTest, RetrieveError) {
       .WillOnce(WithArgs<1>(Invoke(LoginScreenStorageRetrieveError)));
 
   mojom::LoginScreenStorageRetrieveResultPtr expected_result_ptr =
-      mojom::LoginScreenStorageRetrieveResult::New();
-  expected_result_ptr->set_error_message(kError);
+      mojom::LoginScreenStorageRetrieveResult::NewErrorMessage(kError);
 
   base::RunLoop run_loop;
   login_screen_storage_remote_->Retrieve(

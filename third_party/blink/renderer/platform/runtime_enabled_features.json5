@@ -167,9 +167,6 @@
       implied_by: ["Fledge", "Parakeet"],
     },
     {
-      name: "AdInterestGroupAPIRestrictedPolicyByDefault",
-    },
-    {
       name: "AdTagging",
       status: "test",
     },
@@ -274,12 +271,6 @@
       },
     },
     {
-      // https://github.com/chrishtr/battery-savings/blob/master/explainer.md
-      name: "BatterySavingsMeta",
-      origin_trial_feature_name: "BatterySavingsMeta",
-      status: "experimental",
-    },
-    {
       // https://github.com/WICG/display-locking/blob/master/explainer-beforematch.md
       name: "BeforeMatchEvent",
       origin_trial_feature_name: "BeforeMatchEvent",
@@ -318,12 +309,13 @@
       name: "BrowserVerifiedUserActivationMouse",
     },
     {
-      name: "CacheInlineScriptCode"
-    },
-    {
       name: "CacheStorageCodeCacheHint",
       origin_trial_feature_name: "CacheStorageCodeCacheHint",
       status: "experimental",
+    },
+    {
+      name: "CancelFormSubmissionInDefaultHandler",
+      status: "stable",
     },
     {
       name: "Canvas2dImageChromium",
@@ -357,14 +349,7 @@
       status: "experimental",
     },
     {
-      name: "CapabilityDelegation",
-      implied_by: ["CapabilityDelegationPaymentRequest"],
-      origin_trial_feature_name: "CapabilityDelegationPaymentRequest",
-    },
-    {
-      name: "CapabilityDelegationPaymentRequest",
-      origin_trial_feature_name: "CapabilityDelegationPaymentRequest",
-      status: "stable",
+      name: "CapabilityDelegationFullscreenRequest",
     },
     {
       name: "CaptureHandle",
@@ -536,6 +521,10 @@
       // https://drafts.csswg.org/selectors-4/#attribute-case
       name: "CSSCaseSensitiveSelector",
       status: "test",
+    },
+    {
+      name: "CSSColorContrast",
+      status: "experimental",
     },
     {
       // Support the 'only' keyword for the color-scheme property.
@@ -749,6 +738,11 @@
       name: "CSSPseudoPlayingPaused",
       status: "test",
     },
+    {
+      // https://drafts.csswg.org/css-cascade-6/#scoped-styles
+      name: "CSSScope",
+      status: "test",
+    },
     // Scrollbar styling.
     // https://drafts.csswg.org/css-scrollbars/
     {
@@ -794,6 +788,11 @@
       // https://drafts.csswg.org/css-pseudo/#selectordef-target-text
       name: "CSSTargetTextPseudoElement",
       status: "stable",
+    },
+    // Support for CSS Toggles, https://tabatkins.github.io/css-toggle/
+    {
+      name: "CSSToggles",
+      status: "test",
     },
     // Support for registered custom properties with <image> syntax.
     {
@@ -842,6 +841,10 @@
       name: "DeferredShaping",
       depends_on: ["LayoutNG"],
       // The status is managed by the corresponding base::Feature.
+    },
+    {
+      name: "DeflateRawCompressionFormat",
+      status: "experimental",
     },
     {
       name: "DelegatedInkTrails",
@@ -999,19 +1002,6 @@
       name: "ExperimentalContentSecurityPolicyFeatures",
       status: "experimental",
     },
-    // Enables navigator.scheduling.isFramePending, allowing long-running JS to
-    // be able to yield itself when a display update is scheduled.
-    {
-      name: "ExperimentalIsFramePending",
-      status: "experimental"
-    },
-    // Enables navigator.scheduling.isInputPending, allowing long-running JS to
-    // be able to yield itself when user input is queued (crbug.com/910421).
-    {
-      name: "ExperimentalIsInputPending",
-      origin_trial_feature_name: "ExperimentalIsInputPending",
-      status: "stable"
-    },
     // Enables a DOM-exposed interface to profile client JS.
     // https://github.com/WICG/js-self-profiling
     {
@@ -1083,7 +1073,8 @@
       // Portals, as we require the support of the browser process to fully
       // enable the feature. Enabling this runtime enabled feature alone has no
       // effect.
-      origin_trial_feature_name: "FencedFrames",
+      origin_trial_feature_name: "PrivacySandboxAdsAPIs",
+      origin_trial_allows_third_party: true,
     },
     {
       name: "FetchUploadStreaming",
@@ -1098,7 +1089,7 @@
       depends_on: ["FileSystemAccess"],
       status: {"Android": "test", "default": "experimental"},
       origin_trial_feature_name: "FileHandling",
-      origin_trial_os: ["win", "mac", "linux", "chromeos"],
+      origin_trial_os: ["win", "mac", "linux", "fuchsia", "chromeos"],
     },
     {
       name: "FileHandlingIcons",
@@ -1115,8 +1106,7 @@
     },
     {
       name: "FileSystemAccessAccessHandle",
-      origin_trial_feature_name: "FileSystemAccessAccessHandle",
-      status: "experimental",
+      status: "stable",
     },
     {
       // In-development features for the File System Access API.
@@ -1272,20 +1262,11 @@
     {
       name: "HTMLPopupAttribute",
       status: "experimental",
-      implied_by: ["HTMLSelectMenuElement","HTMLSelectMenuElementUsesPopupAttribute"],
-    },
-    {
-      name: "HTMLPopupElement",
-      status: "experimental",
       implied_by: ["HTMLSelectMenuElement"],
     },
     {
       name: "HTMLSelectMenuElement",
       status: "experimental",
-      implied_by: ["HTMLSelectMenuElementUsesPopupAttribute"],
-    },
-    {
-      name: "HTMLSelectMenuElementUsesPopupAttribute",
     },
     {
       name: "IDBBatchGetAll",
@@ -1303,6 +1284,11 @@
     {
       name: "InertAttribute",
       status: "stable",
+    },
+    {
+      // If a painting bug no longer reproduces with this feature enabled, then
+      // the bug is caused by incorrect cull rects.
+      name: "InfiniteCullRect",
     },
     {
       name: "InputMultipleFieldsUI",
@@ -1341,7 +1327,7 @@
     },
     {
       name: "LayoutNGBlockFragmentation",
-      implied_by: ["LayoutNGFlexFragmentation", "LayoutNGGridFragmentation", "LayoutNGPrinting", "LayoutNGTableFragmentation"],
+      implied_by: ["LayoutNGPrinting", "LayoutNGTableFragmentation"],
       status: "stable",
     },
     {
@@ -1353,15 +1339,15 @@
       // Block fragmentation support in the flex layout algorithm.
       // https://drafts.csswg.org/css-flexbox-1/#pagination
       name: "LayoutNGFlexFragmentation",
-      depends_on: ["LayoutNG"],
-      status: "test",
+      depends_on: ["LayoutNG", "LayoutNGBlockFragmentation"],
+      status: "stable",
     },
     {
       // Block fragmentation support in the grid layout algorithm.
       // https://drafts.csswg.org/css-grid-1/#pagination
       name: "LayoutNGGridFragmentation",
-      depends_on: ["LayoutNG"],
-      status: "test",
+      depends_on: ["LayoutNG","LayoutNGBlockFragmentation"],
+      status: "stable",
     },
     {
       name: "LayoutNGPrinting",
@@ -1813,10 +1799,6 @@
       status: "experimental",
     },
     {
-      name: "PaymentRequestRequiresUserActivation",
-      status: "stable",
-    },
-    {
       name: "PaymentRetry",
       status: "stable",
     },
@@ -1949,7 +1931,7 @@
       status: "stable",
     },
     // The RTE feature encompasses multiple APIs, including: Attribution
-    // Reporting, FLEDGE, and Topics.
+    // Reporting, FLEDGE, Topics and Fenced Frames.
     {
       name: "PrivacySandboxAdsAPIs",
       origin_trial_feature_name: "PrivacySandboxAdsAPIs",
@@ -2137,10 +2119,6 @@
       status: "test",
     },
     {
-      name: "SecurePaymentConfirmationAPIV3",
-      status: "test",
-    },
-    {
       name: "SecurePaymentConfirmationDebug",
     },
     {
@@ -2162,6 +2140,10 @@
     },
     {
       name: "Serial",
+      status: {"Android": "", "default": "stable"},
+    },
+    {
+      name: "SerialPortForget",
       status: {"Android": "", "default": "stable"},
     },
     {
@@ -2398,7 +2380,7 @@
     {
       name: "UnrestrictedSharedArrayBuffer",
       origin_trial_feature_name: "UnrestrictedSharedArrayBuffer",
-      origin_trial_os: ["win", "mac", "linux", "chromeos"],
+      origin_trial_os: ["win", "mac", "linux", "fuchsia", "chromeos"],
     },
     {
       name: "URLPattern",

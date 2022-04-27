@@ -30,6 +30,13 @@ bool SearchPrefetchServicePrefetchingIsEnabled() {
              3000);
 }
 
+const base::Feature kSearchPrefetchUsesNetworkCache{
+    "SearchPrefetchUsesNetworkCache", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool SearchPrefetchUsesNetworkCache() {
+  return base::FeatureList::IsEnabled(kSearchPrefetchUsesNetworkCache);
+}
+
 base::TimeDelta SearchPrefetchCachingLimit() {
   return base::Milliseconds(base::GetFieldTrialParamByFeatureAsInt(
       kSearchPrefetchServicePrefetching, "prefetch_caching_limit_ms", 60000));
@@ -54,4 +61,11 @@ size_t SearchPrefetchMaxCacheEntries() {
 base::TimeDelta SearchPrefetchBlockHeadStart() {
   return base::Milliseconds(base::GetFieldTrialParamByFeatureAsInt(
       kSearchPrefetchBlockBeforeHeaders, "block_head_start_ms", 0));
+}
+
+const base::Feature kSearchNavigationPrefetch{
+    "SearchNavigationPrefetch", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsSearchNavigationPrefetchEnabled() {
+  return base::FeatureList::IsEnabled(kSearchNavigationPrefetch);
 }

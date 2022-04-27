@@ -821,6 +821,35 @@ TEST_P(ScrollAnchorTest, SerializeAnchorFailsForPseudoElement) {
   EXPECT_FALSE(GetScrollAnchor(LayoutViewport()).AnchorObject());
 }
 
+TEST_P(ScrollAnchorTest, SerializeAnchorFailsForShadowDOMElement) {
+  SetBodyInnerHTML(R"HTML(
+      <style>
+        body { height: 5000px; margin: 0; }
+        div { height: 200px; }
+      </style>
+      <div id='host'></div>
+      <div></div>
+      <div></div>)HTML");
+  auto* host = GetElementById("host");
+  auto& shadow_root = host->AttachShadowRootInternal(ShadowRootType::kOpen);
+  shadow_root.setInnerHTML(R"HTML(
+      <style>
+        div { height: 100px; }
+      </style>
+      <div></div>)HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  ScrollLayoutViewport(ScrollOffset(0, 50));
+
+  SerializedAnchor serialized =
+      GetScrollAnchor(LayoutViewport()).GetSerializedAnchor();
+  EXPECT_FALSE(serialized.IsValid());
+
+  LayoutObject* anchor_object =
+      GetScrollAnchor(LayoutViewport()).AnchorObject();
+  EXPECT_TRUE(anchor_object->GetNode()->IsInShadowTree());
+}
+
 TEST_P(ScrollAnchorTest, RestoreAnchorSimple) {
   SetBodyInnerHTML(
       "<style> body { height: 1000px; margin: 0; } div { height: 100px } "
@@ -1181,7 +1210,7 @@ TEST_F(ScrollAnchorFindInPageTest, FocusPrioritizedOverFindInPage) {
   Find(search_text, client);
   ASSERT_EQ(1, client.Count());
 
-  GetDocument().getElementById("focus_target")->focus();
+  GetDocument().getElementById("focus_target")->Focus();
 
   // Save the old bounds for comparison.
   auto* old_focus_bounds =
@@ -1232,7 +1261,7 @@ TEST_F(ScrollAnchorFindInPageTest, FocusedUnderStickyIsSkipped) {
   LayoutViewport()->SetScrollOffset(ScrollOffset(0, 150),
                                     mojom::blink::ScrollType::kUser);
 
-  GetDocument().getElementById("target")->focus();
+  GetDocument().getElementById("target")->Focus();
 
   // Save the old bounds for comparison. Use #check, since sticky won't move
   // regardless of scroll anchoring.

@@ -147,7 +147,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Launch.WebAppDisplayMode" enum="WebAppDisplayMode"
-    expires_after="2022-08-21">
+    expires_after="2022-10-23">
   <owner>peter@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -240,7 +240,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.CheckServiceWorker.Status"
-    enum="ServiceWorkerOfflineCapability" expires_after="2022-08-21">
+    enum="ServiceWorkerOfflineCapability" expires_after="2022-10-23">
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -252,7 +252,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.CheckServiceWorker.Time" units="ms"
-    expires_after="2022-08-21">
+    expires_after="2022-10-23">
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -427,6 +427,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="WebApp.Install.Result" enum="BooleanSuccess"
+    expires_after="M110">
+  <owner>phillis@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    This is recorded when a web app installation is completed. This tracks all
+    kinds of web app installations, e.g. user installs from install icon or
+    admin installs from WebAppInstallForcelist.
+  </summary>
+</histogram>
+
 <histogram name="Webapp.Install.UninstallEvent" enum="WebappUninstallSource"
     expires_after="2022-08-14">
   <owner>dmurph@chromium.org</owner>
@@ -452,6 +463,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="WebApp.InstallIphPromo.Result" enum="WebAppInstallIphResult"
     expires_after="2022-05-22">
+  <obsolete>
+    Deprecated on 2022-04. Collected metrics on IPH usage and no longer needed.
+  </obsolete>
   <owner>phillis@chromium.org</owner>
   <owner>dmurph@chromium.org</owner>
   <summary>
@@ -543,7 +557,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Preinstalled.AppToReplaceStillInstalledCount"
-    units="apps" expires_after="2022-08-21">
+    units="apps" expires_after="2022-10-23">
   <owner>alancutter@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -560,7 +574,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Preinstalled.AppToReplaceStillInstalledInShelfCount"
-    units="apps" expires_after="2022-08-21">
+    units="apps" expires_after="2022-10-23">
   <owner>alancutter@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -587,7 +601,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Preinstalled.DisabledCount" units="apps"
-    expires_after="2022-08-21">
+    expires_after="2022-10-23">
   <owner>alancutter@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -662,7 +676,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Preinstalled.UninstallAndReplaceCount" units="apps"
-    expires_after="2022-08-21">
+    expires_after="2022-10-23">
   <owner>alancutter@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>

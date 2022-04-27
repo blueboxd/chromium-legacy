@@ -223,6 +223,7 @@ const char kChromeUIWelcomeHost[] = "welcome";
 const char kChromeUIWelcomeURL[] = "chrome://welcome/";
 const char kChromeUIWhatsNewHost[] = "whats-new";
 const char kChromeUIWhatsNewURL[] = "chrome://whats-new/";
+const char kChromeUIWebuiGalleryHost[] = "webui-gallery";
 
 #if BUILDFLAG(IS_WIN)
 // TODO(crbug.com/1003960): Remove when issue is resolved.
@@ -255,6 +256,7 @@ const char kChromeUIReadAnythingSidePanelURL[] =
     "chrome://read-anything-side-panel.top-chrome/";
 const char kChromeUIReadLaterHost[] = "read-later.top-chrome";
 const char kChromeUIReadLaterURL[] = "chrome://read-later.top-chrome/";
+const char kChromeUIUntrustedFeedURL[] = "chrome-untrusted://feed/";
 const char kChromeUIWebAppInternalsHost[] = "web-app-internals";
 const char kChromeUIWebUITestHost[] = "webui-test";
 #endif
@@ -273,9 +275,6 @@ const char kChromeUIHistogramsURL[] = "chrome://histograms";
 // Keep alphabetized.
 const char kChromeUIAccountManagerErrorHost[] = "account-manager-error";
 const char kChromeUIAccountManagerErrorURL[] = "chrome://account-manager-error";
-const char kChromeUIAccountManagerWelcomeHost[] = "account-manager-welcome";
-const char kChromeUIAccountManagerWelcomeURL[] =
-    "chrome://account-manager-welcome";
 const char kChromeUIAccountMigrationWelcomeHost[] = "account-migration-welcome";
 const char kChromeUIAccountMigrationWelcomeURL[] =
     "chrome://account-migration-welcome";
@@ -372,7 +371,6 @@ const char kChromeUIUrgentPasswordExpiryNotificationUrl[] =
     "chrome://urgent-password-expiry-notification/";
 
 const char kOsUIAccountManagerErrorURL[] = "os://account-manager-error";
-const char kOsUIAccountManagerWelcomeURL[] = "os://account-manager-welcome";
 const char kOsUIAccountMigrationWelcomeURL[] = "os://account-migration-welcome";
 const char kOsUIAddSupervisionURL[] = "os://add-supervision";
 const char kOsUIAppDisabledURL[] = "os://app-disabled";
@@ -402,7 +400,6 @@ bool IsSystemWebUIHost(base::StringPiece host) {
   // shorter).
   static const char* const kHosts[] = {
     kChromeUIAccountManagerErrorHost,
-    kChromeUIAccountManagerWelcomeHost,
     kChromeUIAccountMigrationWelcomeHost,
     kChromeUIActivationMessageHost,
     kChromeUIAddSupervisionHost,

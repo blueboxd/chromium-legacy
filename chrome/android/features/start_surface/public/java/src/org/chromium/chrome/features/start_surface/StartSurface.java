@@ -13,8 +13,8 @@ import com.google.android.material.appbar.AppBarLayout;
 
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ntp.NewTabPageLaunchOrigin;
-import org.chromium.chrome.browser.tasks.TasksSurface;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
+import org.chromium.chrome.features.tasks.TasksSurface;
 
 /** Interface to communicate with the start surface. */
 public interface StartSurface {
@@ -199,6 +199,14 @@ public interface StartSurface {
          * @return The Tab switcher container view.
          */
         ViewGroup getTabSwitcherContainer();
+
+        /**
+         * Sets the parent view for snackbars. If <code>null</code> is given, the original parent
+         * view is restored.
+         *
+         * @param parentView The {@link ViewGroup} to attach snackbars to.
+         */
+        void setSnackbarParentView(ViewGroup parentView);
 
         /*
          * Returns whether start surface homepage is showing.

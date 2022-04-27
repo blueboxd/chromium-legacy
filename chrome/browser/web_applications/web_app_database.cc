@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
+#include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
@@ -660,21 +661,25 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     }
   }
 
-  local_data->set_is_placeholder(web_app.is_placeholder());
-
-  if (!web_app.management_to_install_urls_map_without_sync().empty()) {
-    for (const auto& entry :
-         web_app.management_to_install_urls_map_without_sync()) {
-      ManagementToInstallURLsInfoProto* management_urls_proto =
-          local_data->add_management_to_install_urls_map_without_sync();
-      management_urls_proto->set_management(
+  if (!web_app.management_to_external_config_map().empty()) {
+    for (const auto& entry : web_app.management_to_external_config_map()) {
+      ManagementToExternalConfigInfo* management_config_proto =
+          local_data->add_management_to_external_config_info();
+      management_config_proto->set_management(
           WebAppManagementToProto(entry.first));
-      for (const auto& url : entry.second) {
+      management_config_proto->set_is_placeholder(entry.second.is_placeholder);
+      for (const auto& url : entry.second.install_urls) {
         DCHECK(url.is_valid());
-        management_urls_proto->add_install_urls(url.spec());
+        management_config_proto->add_install_urls(url.spec());
       }
     }
   }
+
+  if (web_app.app_size_in_bytes().has_value())
+    local_data->set_app_size_in_bytes(web_app.app_size_in_bytes().value());
+
+  if (web_app.data_size_in_bytes().has_value())
+    local_data->set_data_size_in_bytes(web_app.data_size_in_bytes().value());
 
   return local_data;
 }
@@ -741,7 +746,8 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     return nullptr;
   }
   web_app->SetUserDisplayMode(
-      ToMojomDisplayMode(sync_data.user_display_mode()));
+      CreateUserDisplayModeFromWebAppSpecificsUserDisplayMode(
+          sync_data.user_display_mode()));
 
   // Ordinals used for chrome://apps page.
   syncer::StringOrdinal page_ordinal =
@@ -1222,13 +1228,13 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     web_app->SetPermissionsPolicy(policy);
   }
 
-  web_app->SetIsPlaceholder(local_data.is_placeholder());
-
-  WebAppManagementToInstallURLsMap management_install_urls_map;
-  for (const auto& management_data_proto :
-       local_data.management_to_install_urls_map_without_sync()) {
+  base::flat_map<WebAppManagement::Type, WebApp::ExternalManagementConfig>
+      management_to_external_config;
+  for (const auto& management_proto :
+       local_data.management_to_external_config_info()) {
+    WebApp::ExternalManagementConfig config;
     base::flat_set<GURL> install_urls;
-    for (const auto& install_url_proto : management_data_proto.install_urls()) {
+    for (const auto& install_url_proto : management_proto.install_urls()) {
       GURL install_url(install_url_proto);
       if (install_url.is_empty() || !install_url.is_valid()) {
         DLOG(ERROR) << "WebApp proto install_url parse error: "
@@ -1237,11 +1243,21 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
       }
       install_urls.emplace(install_url);
     }
-    management_install_urls_map.insert_or_assign(
-        ProtoToWebAppManagement(management_data_proto.management()),
-        install_urls);
+    config.is_placeholder = management_proto.is_placeholder();
+    config.install_urls = install_urls;
+    management_to_external_config.insert_or_assign(
+        ProtoToWebAppManagement(management_proto.management()),
+        std::move(config));
   }
-  web_app->SetManagementToInstallURLsMap(management_install_urls_map);
+  web_app->SetWebAppManagementExternalConfigMap(management_to_external_config);
+
+  if (local_data.has_app_size_in_bytes()) {
+    web_app->SetAppSizeInBytes(local_data.app_size_in_bytes());
+  }
+
+  if (local_data.has_data_size_in_bytes()) {
+    web_app->SetDataSizeInBytes(local_data.data_size_in_bytes());
+  }
 
   return web_app;
 }

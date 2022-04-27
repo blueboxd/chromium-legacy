@@ -206,7 +206,6 @@
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/plugin_info_host_impl.h"
-#include "chrome/browser/plugins/plugins_resource_service.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -267,6 +266,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/apps/intent_helper/supported_links_infobar_prefs_service.h"
+#include "chrome/browser/chromeos/extensions/echo_private/echo_private_api.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_impl.h"
 #include "chrome/browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.h"
 #include "chrome/browser/policy/networking/policy_cert_service.h"
@@ -371,7 +371,6 @@
 #include "chrome/browser/ash/system/automatic_reboot_manager.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
 #include "chrome/browser/ash/web_applications/help_app/help_app_notification_controller.h"
-#include "chrome/browser/chromeos/extensions/echo_private_api.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login/prefs.h"
 #include "chrome/browser/device_identity/chromeos/device_oauth2_token_store_chromeos.h"
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
@@ -443,6 +442,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/lacros/account_manager/account_cache.h"
+#include "chrome/browser/lacros/app_mode/kiosk_session_service_lacros.h"
 #include "chrome/browser/lacros/lacros_prefs.h"
 #include "chrome/browser/lacros/net/proxy_config_service_lacros.h"
 #endif
@@ -747,6 +747,20 @@ const char kStabilityExtensionRendererLaunchCount[] =
     "user_experience_metrics.stability.extension_renderer_launch_count";
 const char kShowReadingListInBookmarkBar[] = "bookmark_bar.show_reading_list";
 
+// Deprecated 04/2022.
+#if BUILDFLAG(ENABLE_PLUGINS)
+const char kPluginsMetadata[] = "plugins.metadata";
+const char kPluginsResourceCacheUpdate[] = "plugins.resource_cache_update";
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const char kAccountManagerNumTimesWelcomeScreenShown[] =
+    "account_manager.num_times_welcome_screen_shown";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_ANDROID)
+const char kStabilityRendererLaunchCount[] =
+    "user_experience_metrics.stability.renderer_launch_count";
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -775,7 +789,7 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
   // Deprecated 02/2022.
   registry->RegisterBooleanPref(kWebSQLInThirdPartyContextEnabled, false);
 
-  // Deprecated 03/2002.
+  // Deprecated 03/2022.
   registry->RegisterIntegerPref(kStabilityChildProcessCrashCount, 0);
   registry->RegisterIntegerPref(kStabilityRendererFailedLaunchCount, 0);
   registry->RegisterIntegerPref(kStabilityExtensionRendererFailedLaunchCount,
@@ -787,6 +801,15 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kStabilityLaunchCount, 0);
 #endif
   registry->RegisterIntegerPref(kStabilityExtensionRendererLaunchCount, 0);
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  // Deprecated 04/2022.
+  registry->RegisterDictionaryPref(kPluginsMetadata);
+  registry->RegisterStringPref(kPluginsResourceCacheUpdate, "0");
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
+#if !BUILDFLAG(IS_ANDROID)
+  registry->RegisterIntegerPref(kStabilityRendererLaunchCount, 0);
+#endif  // !BUILDFLAG(IS_ANDROID)
 }
 
 // Register prefs used only for migration (clearing or moving to a new key).
@@ -972,6 +995,10 @@ void RegisterProfilePrefsForMigration(
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   registry->RegisterBooleanPref(kShowReadingListInBookmarkBar, true);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterIntegerPref(kAccountManagerNumTimesWelcomeScreenShown, 0);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 }  // namespace
@@ -1050,10 +1077,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   BackgroundModeManager::RegisterPrefs(registry);
 #endif
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-  PluginsResourceService::RegisterPrefs(registry);
-#endif
-
 #if BUILDFLAG(IS_ANDROID)
   ::android::RegisterPrefs(registry);
 
@@ -1064,6 +1087,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   IntranetRedirectDetector::RegisterPrefs(registry);
   media_router::RegisterLocalStatePrefs(registry);
   metrics::TabStatsTracker::RegisterPrefs(registry);
+  performance_manager::user_tuning::prefs::RegisterLocalStatePrefs(registry);
   RegisterBrowserPrefs(registry);
   speech::SodaInstaller::RegisterLocalStatePrefs(registry);
   StartupBrowserCreator::RegisterLocalStatePrefs(registry);
@@ -1096,7 +1120,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::DeviceOAuth2TokenStoreChromeOS::RegisterPrefs(registry);
   ash::device_settings_cache::RegisterPrefs(registry);
   ash::EasyUnlockService::RegisterPrefs(registry);
-  chromeos::echo_offer::RegisterPrefs(registry);
   ash::EnableAdbSideloadingScreen::RegisterPrefs(registry);
   ash::device_activity::DeviceActivityController::RegisterPrefs(registry);
   chromeos::EnableDebuggingScreenHandler::RegisterPrefs(registry);
@@ -1157,6 +1180,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
+  chromeos::echo_offer::RegisterPrefs(registry);
   policy::SystemFeaturesDisableListPolicyHandler::RegisterPrefs(registry);
   policy::DlpRulesManagerImpl::RegisterPrefs(registry);
 #endif  // BUILDFLAG(IS_CHROMEOS)
@@ -1171,6 +1195,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   AccountCache::RegisterLocalStatePrefs(registry);
   lacros_prefs::RegisterLocalStatePrefs(registry);
+  KioskSessionServiceLacros::RegisterLocalStatePrefs(registry);
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -1629,6 +1654,15 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
 #endif
   local_state->ClearPref(kStabilityExtensionRendererLaunchCount);
 
+  // Added 04/2022.
+#if BUILDFLAG(ENABLE_PLUGINS)
+  local_state->ClearPref(kPluginsMetadata);
+  local_state->ClearPref(kPluginsResourceCacheUpdate);
+#endif
+#if !BUILDFLAG(IS_ANDROID)
+  local_state->ClearPref(kStabilityRendererLaunchCount);
+#endif  // !BUILDFLAG(IS_ANDROID)
+
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS
 
@@ -1911,6 +1945,11 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 03/2022
   profile_prefs->ClearPref(kShowReadingListInBookmarkBar);
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Added 04/2022
+  profile_prefs->ClearPref(kAccountManagerNumTimesWelcomeScreenShown);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

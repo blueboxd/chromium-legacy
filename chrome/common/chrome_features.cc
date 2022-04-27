@@ -21,7 +21,7 @@ namespace features {
 // User, Kiosks, Managed Guest Sessions) to the device status report.
 const base::Feature kActivityReportingSessionType{
     "ActivityReportingSessionType", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables or disables logging for adaptive screen brightness on Chrome OS.
@@ -33,7 +33,7 @@ const base::Feature kAdaptiveScreenBrightnessLogging{
 // Shows settings to adjust and disable touchpad haptic feedback.
 const base::Feature kAllowDisableTouchpadHapticFeedback{
     "AllowDisableTouchpadHapticFeedback", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Shows settings to adjust the touchpad haptic click settings.
@@ -317,6 +317,11 @@ const base::Feature kChromeAppsDeprecation{"ChromeAppsDeprecation",
 const base::Feature kKeepForceInstalledPreinstalledApps{
     "KeepForceInstalledPreinstalledApps", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
+
+// Causes the DMToken to be deleted (rather than invalidated) when a browser is
+// deleted from CBCM.
+const base::Feature kDmTokenDeletion{"DmTokenDeletion",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable DNS over HTTPS (DoH).
 const base::Feature kDnsOverHttps {

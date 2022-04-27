@@ -156,11 +156,23 @@ ci.builder(
         consoles.console_view_entry(
             branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
-            category = "fyi",
+            category = "fuchsia ci",
             short_name = "a64-dbg",
         ),
     ],
     notifies = ["cr-fuchsia"],
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+)
+
+ci.builder(
+    name = "fuchsia-fyi-arm64-emu-arg",
+    console_view_entry = [
+        consoles.console_view_entry(
+            category = "fuchsia|a64",
+            short_name = "emu-arg",
+        ),
+    ],
+    notifies = ["cr-fuchsia-engprod"],
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
@@ -204,7 +216,7 @@ ci.builder(
         consoles.console_view_entry(
             branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
-            category = "fyi",
+            category = "fuchsia ci",
             short_name = "asan",
         ),
     ],
@@ -222,7 +234,7 @@ ci.builder(
         consoles.console_view_entry(
             branch_selector = branches.MAIN,
             console_view = "sheriff.fuchsia",
-            category = "fyi",
+            category = "fuchsia ci",
             short_name = "x64-dbg",
         ),
     ],
@@ -499,12 +511,11 @@ ci.builder(
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
-ci.builder(
+ci.thin_tester(
     name = "linux-lacros-tester-fyi-rel",
     console_view_entry = consoles.console_view_entry(
         category = "linux",
     ),
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     triggered_by = ["linux-lacros-builder-fyi-rel"],
 )
 
@@ -516,12 +527,11 @@ ci.builder(
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
-ci.builder(
+ci.thin_tester(
     name = "linux-lacros-dbg-tests-fyi",
     console_view_entry = consoles.console_view_entry(
         category = "linux",
     ),
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     triggered_by = ["linux-lacros-dbg-fyi"],
 )
 
@@ -588,7 +598,7 @@ ci.builder(
 
 # This is launching & collecting entirely isolated tests.
 # OS shouldn't matter.
-ci.builder(
+ci.thin_tester(
     name = "mac-osxbeta-rel",
     builder_spec = builder_config.builder_spec(
         execution_mode = builder_config.execution_mode.TEST,
@@ -603,6 +613,7 @@ ci.builder(
             ],
             build_config = builder_config.build_config.RELEASE,
             target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
         ),
         test_results_config = builder_config.test_results_config(
             config = "staging_server",
@@ -613,9 +624,7 @@ ci.builder(
         category = "mac",
         short_name = "beta",
     ),
-    goma_backend = goma.backend.RBE_PROD,
     main_console_view = None,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     triggered_by = ["ci/Mac Builder"],
 )
 
@@ -695,12 +704,11 @@ ci.builder(
     reclient_instance = rbe_instance.DEFAULT,
 )
 
-ci.builder(
+ci.thin_tester(
     name = "win-pixel-tester-rel",
     console_view_entry = consoles.console_view_entry(
         category = "win10",
     ),
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     triggered_by = ["win-pixel-builder-rel"],
 )
 
@@ -1373,6 +1381,61 @@ fyi_ios_builder(
     xcode = xcode.x13betabots,
 )
 
+ci.builder(
+    # An FYI version of the following builders that runs on Focal:
+    # https://ci.chromium.org/p/chromium/builders/ci/Linux%20MSan%20Builder
+    # https://ci.chromium.org/p/chromium/builders/ci/Linux%20MSan%20Tests
+    # TODO(crbug.com/1260217): Remove this builder when the main MSAN builder
+    # has migrated to focal.
+    name = "Linux MSan Focal",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium_msan",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+        ),
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "msan",
+        short_name = "lin",
+    ),
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
+    os = os.LINUX_FOCAL,
+    execution_timeout = 16 * time.hour,
+)
+
+ci.builder(
+    # An FYI version of the following builders that runs on Focal:
+    # https://ci.chromium.org/p/chromium/builders/ci/Linux%20ChromiumOS%20MSan%20Builder
+    # https://ci.chromium.org/p/chromium/builders/ci/Linux%20ChromiumOS%20MSan%20Tests
+    # TODO(crbug.com/1260217): Remove this builder when the main MSAN builder
+    # has migrated to focal.
+    name = "Linux ChromiumOS MSan Focal",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = ["chromeos"],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium_msan",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+        ),
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "msan",
+        short_name = "crs",
+    ),
+    goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
+    os = os.LINUX_FOCAL,
+    execution_timeout = 16 * time.hour,
+)
+
 fyi_mac_builder(
     name = "Mac Builder Next",
     console_view_entry = consoles.console_view_entry(
@@ -1454,6 +1517,8 @@ ci.builder(
     ),
     goma_backend = None,
     main_console_view = None,
+    # TODO(gbeaty) Investigate if this needs to run on windows, if not switch to
+    # ci.thin_tester
     os = os.WINDOWS_10,
     triggered_by = ["ci/Win x64 Builder"],
 )

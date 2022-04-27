@@ -37,12 +37,13 @@ namespace features {
 const base::Feature kAdpf{"Adpf", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Target duration used for power hint on Android.
+// `0` indicates use hard coded default.
 const base::FeatureParam<int> kAdpfTargetDurationMs{&kAdpf,
-                                                    "AdpfTargetDurationMs", 12};
+                                                    "AdpfTargetDurationMs", 0};
 
 const base::Feature kEnableOverlayPrioritization {
   "EnableOverlayPrioritization",
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -198,7 +199,12 @@ bool IsClipPrewalkDamageEnabled() {
 }
 
 bool IsOverlayPrioritizationEnabled() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // DelegatedCompositing in Lacros makes this feature a no-op.
+  return false;
+#else
   return base::FeatureList::IsEnabled(kEnableOverlayPrioritization);
+#endif
 }
 
 bool IsDelegatedCompositingEnabled() {

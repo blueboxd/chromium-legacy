@@ -3,11 +3,18 @@
 // found in the LICENSE file.
 
 #include "media/formats/hls/tags.h"
+
+#include <utility>
+
 #include "base/location.h"
+#include "base/strings/string_piece.h"
 #include "media/formats/hls/items.h"
+#include "media/formats/hls/parse_status.h"
 #include "media/formats/hls/source_string.h"
 #include "media/formats/hls/test_util.h"
+#include "media/formats/hls/variable_dictionary.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace media::hls {
 
@@ -38,7 +45,7 @@ void ErrorTest(absl::optional<base::StringPiece> content,
   auto result = T::Parse(tag, variable_dict, sub_buffer);
   ASSERT_TRUE(result.has_error()) << from.ToString();
   auto error = std::move(result).error();
-  EXPECT_EQ(error.code(), expected_status);
+  EXPECT_EQ(error.code(), expected_status) << from.ToString();
 }
 
 template <typename T>
@@ -114,7 +121,7 @@ VariableDictionary CreateBasicDictionary(
 
 }  // namespace
 
-TEST(HlsFormatParserTest, TagNameIdentifyTest) {
+TEST(HlsTagsTest, TagNameIdentity) {
   std::set<base::StringPiece> names;
 
   for (TagName name = kMinTagName; name <= kMaxTagName; ++name) {
@@ -129,12 +136,12 @@ TEST(HlsFormatParserTest, TagNameIdentifyTest) {
   }
 }
 
-TEST(HlsFormatParserTest, ParseM3uTagTest) {
+TEST(HlsTagsTest, ParseM3uTag) {
   RunTagIdenficationTest<M3uTag>("#EXTM3U\n", absl::nullopt);
   RunEmptyTagTest<M3uTag>();
 }
 
-TEST(HlsFormatParserTest, ParseXVersionTagTest) {
+TEST(HlsTagsTest, ParseXVersionTag) {
   RunTagIdenficationTest<XVersionTag>("#EXT-X-VERSION:123\n", "123");
 
   // Test valid versions
@@ -175,7 +182,7 @@ TEST(HlsFormatParserTest, ParseXVersionTagTest) {
   ErrorTest<XVersionTag>("  1 ", ParseStatusCode::kMalformedTag);
 }
 
-TEST(HlsFormatParserTest, ParseInfTagTest) {
+TEST(HlsTagsTest, ParseInfTag) {
   RunTagIdenficationTest<InfTag>("#EXTINF:123,\t\n", "123,\t");
 
   // Test some valid tags
@@ -210,35 +217,35 @@ TEST(HlsFormatParserTest, ParseInfTagTest) {
   ErrorTest<InfTag>("asdf,", ParseStatusCode::kMalformedTag);
 }
 
-TEST(HlsFormatParserTest, ParseXIndependentSegmentsTest) {
+TEST(HlsTagsTest, ParseXIndependentSegmentsTag) {
   RunTagIdenficationTest<XIndependentSegmentsTag>(
       "#EXT-X-INDEPENDENT-SEGMENTS\n", absl::nullopt);
   RunEmptyTagTest<XIndependentSegmentsTag>();
 }
 
-TEST(HlsFormatParserTest, ParseXEndListTagTest) {
+TEST(HlsTagsTest, ParseXEndListTag) {
   RunTagIdenficationTest<XEndListTag>("#EXT-X-END-LIST\n", absl::nullopt);
   RunEmptyTagTest<XEndListTag>();
 }
 
-TEST(HlsFormatParserTest, ParseXIFramesOnlyTagTest) {
+TEST(HlsTagsTest, ParseXIFramesOnlyTag) {
   RunTagIdenficationTest<XIFramesOnlyTag>("#EXT-X-I-FRAMES-ONLY\n",
                                           absl::nullopt);
   RunEmptyTagTest<XIFramesOnlyTag>();
 }
 
-TEST(HlsFormatParserTest, ParseXDiscontinuityTagTest) {
+TEST(HlsTagsTest, ParseXDiscontinuityTag) {
   RunTagIdenficationTest<XDiscontinuityTag>("#EXT-X-DISCONTINUITY\n",
                                             absl::nullopt);
   RunEmptyTagTest<XDiscontinuityTag>();
 }
 
-TEST(HlsFormatParserTest, ParseXGapTagTest) {
+TEST(HlsTagsTest, ParseXGapTag) {
   RunTagIdenficationTest<XGapTag>("#EXT-X-GAP\n", absl::nullopt);
   RunEmptyTagTest<XGapTag>();
 }
 
-TEST(HlsFormatParserTest, ParseXDefineTagTest) {
+TEST(HlsTagsTest, ParseXDefineTag) {
   RunTagIdenficationTest<XDefineTag>(
       "#EXT-X-DEFINE:NAME=\"FOO\",VALUE=\"Bar\",\n",
       "NAME=\"FOO\",VALUE=\"Bar\",");
@@ -295,7 +302,7 @@ TEST(HlsFormatParserTest, ParseXDefineTagTest) {
                         ParseStatusCode::kMalformedTag);
 }
 
-TEST(HlsFormatParserTest, ParseXPlaylistTypeTagTest) {
+TEST(HlsTagsTest, ParseXPlaylistTypeTag) {
   RunTagIdenficationTest<XPlaylistTypeTag>("#EXT-X-PLAYLIST-TYPE:VOD\n", "VOD");
   RunTagIdenficationTest<XPlaylistTypeTag>("#EXT-X-PLAYLIST-TYPE:EVENT\n",
                                            "EVENT");
@@ -313,7 +320,7 @@ TEST(HlsFormatParserTest, ParseXPlaylistTypeTagTest) {
   ErrorTest<XPlaylistTypeTag>(absl::nullopt, ParseStatusCode::kMalformedTag);
 }
 
-TEST(HlsFormatParserTest, ParseXStreamInfTest) {
+TEST(HlsTagsTest, ParseXStreamInfTag) {
   RunTagIdenficationTest<XStreamInfTag>(
       "#EXT-X-STREAM-INF:BANDWIDTH=1010,CODECS=\"foo,bar\"\n",
       "BANDWIDTH=1010,CODECS=\"foo,bar\"");
@@ -385,6 +392,39 @@ TEST(HlsFormatParserTest, ParseXStreamInfTest) {
   EXPECT_EQ(tag.average_bandwidth, absl::nullopt);
   EXPECT_EQ(tag.score, absl::nullopt);
   EXPECT_EQ(tag.codecs, "bar,baz");
+}
+
+TEST(HlsTagsTest, ParseXTargetDurationTag) {
+  RunTagIdenficationTest<XTargetDurationTag>("#EXT-X-TARGETDURATION:10\n",
+                                             "10");
+
+  // Content is required
+  ErrorTest<XTargetDurationTag>(absl::nullopt, ParseStatusCode::kMalformedTag);
+  ErrorTest<XTargetDurationTag>("", ParseStatusCode::kMalformedTag);
+
+  // Content must be a valid decimal-integer
+  ErrorTest<XTargetDurationTag>("-1", ParseStatusCode::kMalformedTag);
+  ErrorTest<XTargetDurationTag>("-1.5", ParseStatusCode::kMalformedTag);
+  ErrorTest<XTargetDurationTag>("-.5", ParseStatusCode::kMalformedTag);
+  ErrorTest<XTargetDurationTag>(".5", ParseStatusCode::kMalformedTag);
+  ErrorTest<XTargetDurationTag>("0.5", ParseStatusCode::kMalformedTag);
+  ErrorTest<XTargetDurationTag>("9999999999999999999999",
+                                ParseStatusCode::kMalformedTag);
+  ErrorTest<XTargetDurationTag>("one", ParseStatusCode::kMalformedTag);
+  ErrorTest<XTargetDurationTag>(" 1 ", ParseStatusCode::kMalformedTag);
+  ErrorTest<XTargetDurationTag>("1,", ParseStatusCode::kMalformedTag);
+  ErrorTest<XTargetDurationTag>("{$X}", ParseStatusCode::kMalformedTag);
+
+  auto tag = OkTest<XTargetDurationTag>("0");
+  EXPECT_EQ(tag.duration, 0u);
+  tag = OkTest<XTargetDurationTag>("1");
+  EXPECT_EQ(tag.duration, 1u);
+  tag = OkTest<XTargetDurationTag>("10");
+  EXPECT_EQ(tag.duration, 10u);
+  tag = OkTest<XTargetDurationTag>("14");
+  EXPECT_EQ(tag.duration, 14u);
+  tag = OkTest<XTargetDurationTag>("999999999999999999");
+  EXPECT_EQ(tag.duration, 999999999999999999u);
 }
 
 }  // namespace media::hls

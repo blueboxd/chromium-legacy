@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//chromeos/components/chromebox_for_meetings/buildflags/buildflags.gni")
 import("//testing/test.gni")
 import("//third_party/protobuf/proto_library.gni")
 
@@ -67,11 +66,6 @@ component("dbus") {
     "dbus_clients_browser.h",
     "dbus_thread_manager.cc",
     "dbus_thread_manager.h",
-    "usb/fake_usbguard_client.cc",
-    "usb/fake_usbguard_client.h",
-    "usb/usbguard_client.cc",
-    "usb/usbguard_client.h",
-    "usb/usbguard_observer.h",
   ]
 }
 
@@ -113,10 +107,7 @@ source_set("unit_tests") {
     "//chromeos/dbus/oobe_config:unit_tests",
     "//chromeos/dbus/power:power_manager_proto",
     "//chromeos/dbus/power:test_support",
-    "//chromeos/dbus/rmad:rmad_proto",
-    "//chromeos/dbus/rmad:test_support",
     "//chromeos/dbus/shill:test_support",
-    "//chromeos/dbus/system_clock:unit_tests",
     "//chromeos/dbus/tpm_manager",
     "//chromeos/dbus/tpm_manager:tpm_manager_proto",
     "//chromeos/dbus/u2f",
@@ -131,9 +122,6 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//third_party/icu",
   ]
-  if (is_cfm) {
-    deps += [ "//chromeos/dbus/chromebox_for_meetings:unit_tests" ]
-  }
   sources = [
     "audio/cras_audio_client_unittest.cc",
     "blocking_method_caller_unittest.cc",

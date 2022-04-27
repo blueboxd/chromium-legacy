@@ -34,9 +34,9 @@ class WebLayerDependencies : public ::autofill_assistant::Dependencies {
   password_manager::PasswordManagerClient* GetPasswordManagerClient(
       content::WebContents* web_contents) const override;
 
-  variations::VariationsService* GetVariationsService() const override;
+  std::string GetCountryCode() const override;
 
-  std::string GetChromeSignedInEmailAddress(
+  std::string GetSignedInEmail(
       content::WebContents* web_contents) const override;
 
   ::autofill_assistant::AnnotateDomModelService*

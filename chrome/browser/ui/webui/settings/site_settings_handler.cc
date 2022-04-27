@@ -814,7 +814,29 @@ void SiteSettingsHandler::HandleClearUnpartitionedUsage(
 
   RemoveMatchingNodes(cookies_tree_model_.get(), origin_string, absl::nullopt);
 
-  RemoveNonTreeModelData({origin});
+  // The scheme for some sites detail page is http on
+  // chrome://settings/content/all. Cookies or site data might not cleared if
+  // the existing cookie scheme was https when users click the site detail link
+  // to clear data. Hence, we need only additionally clear the HTTPS version if
+  // an origin scheme is HTTP.
+  std::vector<url::Origin> affected_origins = {origin};
+  if (origin.GetURL().SchemeIs(url::kHttpScheme)) {
+    GURL https_url = origin.GetURL();
+    GURL::Replacements replacements;
+    replacements.SetSchemeStr(url::kHttpsScheme);
+    https_url = https_url.ReplaceComponents(replacements);
+    auto https_origin = url::Origin::Create(https_url);
+
+    // Also remove matching cookies node with HTTPS scheme if it exists to
+    // avoid confusion when cookies already exist when refreshing clear site
+    // data page. Notes: this also means HTTPS sites cookie will be cleared when
+    // user clear HTTP scheme Cookie.
+    RemoveMatchingNodes(cookies_tree_model_.get(), https_origin.GetURL().spec(),
+                        absl::nullopt);
+    affected_origins.emplace_back(https_origin);
+  }
+
+  RemoveNonTreeModelData(affected_origins);
 }
 
 void SiteSettingsHandler::HandleClearPartitionedUsage(
@@ -1792,10 +1814,7 @@ void SiteSettingsHandler::RemoveNonTreeModelData(
   }
   remover->RemoveWithFilter(
       base::Time::Min(), base::Time::Max(),
-      content::BrowsingDataRemover::DATA_TYPE_INTEREST_GROUPS |
-          content::BrowsingDataRemover::DATA_TYPE_AGGREGATION_SERVICE |
-          content::BrowsingDataRemover::DATA_TYPE_CONVERSIONS |
-          content::BrowsingDataRemover::DATA_TYPE_TRUST_TOKENS,
+      content::BrowsingDataRemover::DATA_TYPE_PRIVACY_SANDBOX,
       content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
       std::move(filter));
 

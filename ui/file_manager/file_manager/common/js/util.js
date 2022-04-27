@@ -1324,14 +1324,6 @@ util.isSinglePartitionFormatEnabled = () => {
 };
 
 /**
- * Returns true if  flag is enabled.
- * @return {boolean}
- */
-util.isVideoPlayerJsModulesEnabled = () => {
-  return loadTimeData.getBoolean('VIDEO_PLAYER_JS_MODULES_ENABLED');
-};
-
-/**
  * Returns true if FilesExtractArchive flag is enabled.
  * @return {boolean}
  */
@@ -1345,6 +1337,16 @@ util.isExtractArchiveEnabled = () => {
  */
 util.isFuseBoxEnabled = () => {
   return loadTimeData.getBoolean('FUSEBOX');
+};
+
+/**
+ * Returns true if FuseBoxDebug flag is enabled.
+ * @return {boolean}
+ */
+util.isFuseBoxDebugEnabled = () => {
+  return loadTimeData.isInitialized() &&
+      loadTimeData.valueExists('FUSEBOX_DEBUG') &&
+      loadTimeData.getBoolean('FUSEBOX_DEBUG');
 };
 
 /**

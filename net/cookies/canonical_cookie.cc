@@ -408,6 +408,7 @@ CanonicalCookie::CanonicalCookie(
     base::Time creation,
     base::Time expiration,
     base::Time last_access,
+    base::Time last_update,
     bool secure,
     bool httponly,
     CookieSameSite same_site,
@@ -423,6 +424,7 @@ CanonicalCookie::CanonicalCookie(
       creation_date_(creation),
       expiry_date_(expiration),
       last_access_date_(last_access),
+      last_update_date_(last_update),
       secure_(secure),
       httponly_(httponly),
       same_site_(same_site),
@@ -494,8 +496,7 @@ Time CanonicalCookie::ParseExpiration(const ParsedCookie& pc,
   // Try the Expires attribute.
   if (pc.HasExpires() && !pc.Expires().empty()) {
     // Adjust for clock skew between server and host.
-    base::Time parsed_expiry =
-        cookie_util::ParseCookieExpirationTime(pc.Expires());
+    Time parsed_expiry = cookie_util::ParseCookieExpirationTime(pc.Expires());
     if (!parsed_expiry.is_null()) {
       // Record metrics related to prevalence of clock skew.
       int clock_skew = (current - server_time).magnitude().InMinutes();
@@ -509,7 +510,13 @@ Time CanonicalCookie::ParseExpiration(const ParsedCookie& pc,
                                     -1 * clock_skew, 1, kMinutesInTwelveHours,
                                     100);
       }
-      return parsed_expiry + (current - server_time);
+      Time adjusted_expiry = parsed_expiry + (current - server_time);
+      // Record if we were going to expire the cookie before we added the clock
+      // skew.
+      UMA_HISTOGRAM_BOOLEAN(
+          "Cookie.ClockSkew.ExpiredWithoutSkew",
+          parsed_expiry <= Time::Now() && adjusted_expiry > Time::Now());
+      return adjusted_expiry;
     }
   }
 
@@ -620,7 +627,8 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
 
   std::unique_ptr<CanonicalCookie> cc = base::WrapUnique(new CanonicalCookie(
       parsed_cookie.Name(), parsed_cookie.Value(), cookie_domain, cookie_path,
-      creation_time, cookie_expires, creation_time, parsed_cookie.IsSecure(),
+      creation_time, cookie_expires, creation_time,
+      /*last_update=*/base::Time::Now(), parsed_cookie.IsSecure(),
       parsed_cookie.IsHttpOnly(), samesite, parsed_cookie.Priority(),
       parsed_cookie.IsSameParty(), cookie_partition_key, source_scheme,
       source_port));
@@ -807,8 +815,9 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateSanitizedCookie(
 
   std::unique_ptr<CanonicalCookie> cc = base::WrapUnique(new CanonicalCookie(
       name, value, cookie_domain, encoded_cookie_path, creation_time,
-      expiration_time, last_access_time, secure, http_only, same_site, priority,
-      same_party, partition_key, source_scheme, source_port));
+      expiration_time, last_access_time, /*last_update=*/base::Time::Now(),
+      secure, http_only, same_site, priority, same_party, partition_key,
+      source_scheme, source_port));
   DCHECK(cc->IsCanonical());
 
   return cc;
@@ -823,6 +832,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::FromStorage(
     base::Time creation,
     base::Time expiration,
     base::Time last_access,
+    base::Time last_update,
     bool secure,
     bool httponly,
     CookieSameSite same_site,
@@ -841,8 +851,9 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::FromStorage(
 
   std::unique_ptr<CanonicalCookie> cc = base::WrapUnique(new CanonicalCookie(
       std::move(name), std::move(value), std::move(domain), std::move(path),
-      creation, expiration, last_access, secure, httponly, same_site, priority,
-      same_party, partition_key, source_scheme, validated_port));
+      creation, expiration, last_access, last_update, secure, httponly,
+      same_site, priority, same_party, partition_key, source_scheme,
+      validated_port));
 
   if (cc->IsCanonicalForFromStorage()) {
     // This will help capture the number of times a cookie is canonical but does
@@ -866,6 +877,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateUnsafeCookieForTesting(
     const base::Time& creation,
     const base::Time& expiration,
     const base::Time& last_access,
+    const base::Time& last_update,
     bool secure,
     bool httponly,
     CookieSameSite same_site,
@@ -875,9 +887,9 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateUnsafeCookieForTesting(
     CookieSourceScheme source_scheme,
     int source_port) {
   return base::WrapUnique(new CanonicalCookie(
-      name, value, domain, path, creation, expiration, last_access, secure,
-      httponly, same_site, priority, same_party, partition_key, source_scheme,
-      source_port));
+      name, value, domain, path, creation, expiration, last_access, last_update,
+      secure, httponly, same_site, priority, same_party, partition_key,
+      source_scheme, source_port));
 }
 
 std::string CanonicalCookie::DomainWithoutDot() const {

@@ -285,6 +285,10 @@
 #include "chrome/browser/ui/color_chooser.h"
 #endif  // BUILDFLAG(IS_MAC)
 
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/accessibility/ax_screen_ai_annotator.h"
+#endif
+
 using base::UserMetricsAction;
 using content::NativeWebKeyboardEvent;
 using content::NavigationController;
@@ -1916,6 +1920,11 @@ void Browser::EnumerateDirectory(
 bool Browser::CanEnterFullscreenModeForTab(
     content::RenderFrameHost* requesting_frame,
     const blink::mojom::FullscreenOptions& options) {
+  // If the tab strip isn't editable then a drag session is in progress, and it
+  // is not safe to enter fullscreen. https://crbug.com/1315080
+  if (!tab_strip_model_delegate_->IsTabStripEditable())
+    return false;
+
   return exclusive_access_manager_->fullscreen_controller()
       ->CanEnterFullscreenModeForTab(requesting_frame, options.display_id);
 }
@@ -3086,3 +3095,13 @@ BackgroundContents* Browser::CreateBackgroundContents(
 
   return contents;
 }
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+void Browser::RunScreenAIAnnotator() {
+  if (!screen_ai_annotator_) {
+    screen_ai_annotator_ =
+        std::make_unique<screen_ai::AXScreenAIAnnotator>(this);
+  }
+  screen_ai_annotator_->Run();
+}
+#endif

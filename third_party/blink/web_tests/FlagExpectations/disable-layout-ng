@@ -13,6 +13,7 @@
 # Tests that fail in legacy but pass in NG
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-039.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-multicol/column-fill-balance-orthog-block-001.html [ Failure ]
 crbug.com/626703 virtual/prerender/wpt_internal/prerender/unload-on-prerender-cross-origin-subframe-navigation.html [ Timeout ]
 crbug.com/626703 virtual/prerender/wpt_internal/prerender/unload-on-prerender-main-frame-navigation.html [ Timeout ]
@@ -269,6 +270,12 @@ crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-073.html 
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-079.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-080.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-081.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-085.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-086.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-087.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-088.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-089.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/out-of-flow-in-multicolumn-090.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/overflow-clip-000.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/overflow-clip-001.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/overflow-clip-010.html [ Failure ]
@@ -499,6 +506,7 @@ crbug.com/829028 external/wpt/css/css-multicol/multicol-fill-balance-013.html [ 
 crbug.com/829028 external/wpt/css/css-multicol/multicol-fill-balance-014.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/multicol-fill-balance-021.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/multicol-fill-balance-022.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/multicol-fill-balance-023.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/multicol-nested-007.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/multicol-nested-008.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-multicol/multicol-nested-009.html [ Failure ]
@@ -517,6 +525,9 @@ crbug.com/1246602 external/wpt/css/css-multicol/multicol-oof-inline-cb-002.html 
 crbug.com/1277976 external/wpt/css/css-multicol/multicol-overflow-positioned-transform-001.html [ Failure Pass ]
 crbug.com/1277976 external/wpt/css/css-multicol/multicol-overflow-transform-001.html [ Failure Pass ]
 crbug.com/990240 external/wpt/css/css-multicol/multicol-rule-nested-balancing-004.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/multicol-span-all-children-height-009.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/multicol-span-all-children-height-010.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-multicol/multicol-span-all-children-height-012.html [ Failure ]
 crbug.com/874051 external/wpt/css/css-multicol/multicol-span-all-fieldset-001.html [ Failure ]
 crbug.com/874051 external/wpt/css/css-multicol/multicol-span-all-fieldset-002.html [ Failure ]
 crbug.com/874051 external/wpt/css/css-multicol/multicol-span-all-fieldset-003.html [ Failure ]
@@ -1414,6 +1425,9 @@ crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-gi
 crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-003.html [ Failure ]
 crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-005.html [ Failure ]
 crbug.com/353580 external/wpt/css/css-tables/height-distribution/percentage-sizing-of-table-cell-children-005.html [ Failure ]
+
+### external/wpt/css/css-tables/paint/
+crbug.com/591099 external/wpt/css/css-tables/paint/col-paint-vrl-rtl.html [ Failure ]
 
 ### external/wpt/css/css-tables/tentative/
 crbug.com/958381 external/wpt/css/css-tables/tentative/baseline-table.html [ Failure ]

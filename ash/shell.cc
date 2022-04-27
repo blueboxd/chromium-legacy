@@ -74,7 +74,6 @@
 #include "ash/keyboard/ui/keyboard_ui_factory.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login_status.h"
-#include "ash/marker/marker_controller.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/metrics/feature_discovery_duration_reporter_impl.h"
 #include "ash/metrics/login_unlock_throughput_recorder.h"
@@ -118,7 +117,7 @@
 #include "ash/system/diagnostics/diagnostics_log_controller.h"
 #include "ash/system/firmware_update/firmware_update_notification_controller.h"
 #include "ash/system/geolocation/geolocation_controller.h"
-#include "ash/system/hps/hps_orientation_controller.h"
+#include "ash/system/human_presence/human_presence_orientation_controller.h"
 #include "ash/system/keyboard_brightness/keyboard_brightness_controller.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
 #include "ash/system/locale/locale_update_controller_impl.h"
@@ -147,7 +146,7 @@
 #include "ash/system/system_notification_controller.h"
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/system/unified/hps_notify_controller.h"
+#include "ash/system/unified/snooping_protection_controller.h"
 #include "ash/system/usb_peripheral/usb_peripheral_notification_controller.h"
 #include "ash/touch/ash_touch_transform_controller.h"
 #include "ash/touch/touch_devices_controller.h"
@@ -193,9 +192,9 @@
 #include "base/notreached.h"
 #include "base/system/sys_info.h"
 #include "base/trace_event/trace_event.h"
+#include "chromeos/ash/components/dbus/usb/usbguard_client.h"
 #include "chromeos/dbus/init/initialize_dbus_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
-#include "chromeos/dbus/usb/usbguard_client.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/system/devicemode.h"
 #include "chromeos/ui/wm/features.h"
@@ -890,13 +889,10 @@ Shell::~Shell() {
   display_color_manager_.reset();
   projecting_observer_.reset();
 
-  // Depends on MarkerController, LaserPointerController and
-  // PartialMagnifierController.
   projector_controller_.reset();
 
   partial_magnifier_controller_.reset();
 
-  marker_controller_.reset();
   laser_pointer_controller_.reset();
 
   if (display_change_observer_)
@@ -953,10 +949,10 @@ Shell::~Shell() {
 
   shell_delegate_.reset();
 
-  chromeos::UsbguardClient::Shutdown();
+  UsbguardClient::Shutdown();
 
   // Must be shut down after detachable_base_handler_.
-  chromeos::HammerdClient::Shutdown();
+  HammerdClient::Shutdown();
 
   for (auto& observer : shell_observers_)
     observer.OnShellDestroyed();
@@ -974,9 +970,9 @@ void Shell::Init(
       std::make_unique<LoginUnlockThroughputRecorder>();
 
   // Required by DetachableBaseHandler.
-  chromeos::InitializeDBusClient<chromeos::HammerdClient>(dbus_bus.get());
+  chromeos::InitializeDBusClient<HammerdClient>(dbus_bus.get());
 
-  chromeos::InitializeDBusClient<chromeos::UsbguardClient>(dbus_bus.get());
+  chromeos::InitializeDBusClient<UsbguardClient>(dbus_bus.get());
 
   local_state_ = local_state;
 
@@ -1013,7 +1009,7 @@ void Shell::Init(
 
   tablet_mode_controller_ = std::make_unique<TabletModeController>();
 
-  if (::features::IsRgbKeyboardEnabled()) {
+  if (features::IsRgbKeyboardEnabled()) {
     rgb_keyboard_manager_ =
         std::make_unique<RgbKeyboardManager>(ime_controller_.get());
   }
@@ -1403,10 +1399,8 @@ void Shell::Init(
         std::make_unique<DisplayAlignmentController>();
   }
 
-  if (chromeos::features::IsProjectorEnabled()) {
-    marker_controller_ = std::make_unique<MarkerController>();
+  if (chromeos::features::IsProjectorEnabled())
     projector_controller_ = std::make_unique<ProjectorControllerImpl>();
-  }
 
   if (chromeos::wm::features::IsFloatWindowEnabled())
     float_controller_ = std::make_unique<FloatController>();

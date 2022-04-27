@@ -847,8 +847,7 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
     // "fr" instead of "en").
     feature_list_.InitWithFeatures(
         /*enabled_features=*/{blink::features::kAutofillShadowDOM},
-        /*disabled_features=*/{
-            autofill::features::kAutofillPageLanguageDetection});
+        /*disabled_features=*/{features::kAutofillPageLanguageDetection});
   }
   ~AutofillInteractiveTestBase() override = default;
 
@@ -858,8 +857,7 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
 
   std::vector<FieldValue> GetFormValues(
       const ElementExpr& form = GetElementById("shipping")) {
-    return ::autofill::GetFieldValues(ElementExpr(*form + ".elements"),
-                                      GetWebContents());
+    return GetFieldValues(ElementExpr(*form + ".elements"), GetWebContents());
   }
 
   base::RepeatingClosure ExpectValues(
@@ -1236,7 +1234,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestWithHistogramTester,
                                 kEmptyAddress, {"firstname", "M"}))}));
   EXPECT_THAT(GetFormValues(), ValuesAre(kDefaultAddress));
 
-  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  ::metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   // Assert that the network isolation key is populated for 2 requests:
   // - Navigation: /internal/test_url_path
   // - Autofill query: https://clients1.google.com/tbproxy/af/query?...
@@ -2819,7 +2817,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, NoAutocomplete) {
 
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this));
 
-  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  ::metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   // If only some form fields are tagged with autocomplete types, then the
   // number of input elements will not match the number of fields when autofill
@@ -2849,7 +2847,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, SomeAutocomplete) {
 
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this));
 
-  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  ::metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   // If only some form fields are tagged with autocomplete types, then the
   // number of input elements will not match the number of fields when autofill
@@ -2877,7 +2875,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestBase, AllAutocomplete) {
 
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this));
 
-  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  ::metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   // If all form fields are tagged with autocomplete types, we make them all
   // available to be filled.
@@ -2902,7 +2900,7 @@ class AutofillInteractiveIsolationTest : public AutofillInteractiveTestBase {
     return !!static_cast<ChromeAutofillClient*>(
                  ContentAutofillDriverFactory::FromWebContents(GetWebContents())
                      ->DriverForFrame(GetWebContents()->GetMainFrame())
-                     ->browser_autofill_manager()
+                     ->autofill_manager()
                      ->client())
                  ->popup_controller_for_testing();
   }
@@ -2942,7 +2940,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest, SimpleCrossSiteFill) {
       ContentAutofillDriverFactory::FromWebContents(GetWebContents())
           ->DriverForFrame(cross_frame);
   ASSERT_TRUE(cross_driver);
-  cross_driver->browser_autofill_manager()->SetTestDelegate(test_delegate());
+  static_cast<BrowserAutofillManager*>(cross_driver->autofill_manager())
+      ->SetTestDelegate(test_delegate());
 
   ASSERT_TRUE(AutofillFlow(GetElementById("NAME_FIRST"), this,
                            {.execution_target = cross_frame}));
@@ -2970,7 +2969,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, CrossSitePaymentForms) {
       ContentAutofillDriverFactory::FromWebContents(GetWebContents())
           ->DriverForFrame(cross_frame);
   ASSERT_TRUE(cross_driver);
-  cross_driver->browser_autofill_manager()->SetTestDelegate(test_delegate());
+  static_cast<BrowserAutofillManager*>(cross_driver->autofill_manager())
+      ->SetTestDelegate(test_delegate());
 
   auto Wait = [this]() { DoNothingAndWait(base::Seconds(2)); };
   ASSERT_TRUE(AutofillFlow(GetElementById("CREDIT_CARD_NUMBER"), this,
@@ -3005,7 +3005,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
       ContentAutofillDriverFactory::FromWebContents(GetWebContents())
           ->DriverForFrame(cross_frame);
   ASSERT_TRUE(cross_driver);
-  cross_driver->browser_autofill_manager()->SetTestDelegate(test_delegate());
+  static_cast<BrowserAutofillManager*>(cross_driver->autofill_manager())
+      ->SetTestDelegate(test_delegate());
 
   // Focus the form in the iframe and simulate choosing a suggestion via
   // keyboard.

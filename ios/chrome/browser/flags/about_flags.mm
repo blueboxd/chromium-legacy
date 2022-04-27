@@ -47,7 +47,6 @@
 #import "components/policy/core/common/policy_loader_ios_constants.h"
 #include "components/policy/policy_constants.h"
 #include "components/safe_browsing/core/common/features.h"
-#include "components/security_state/core/features.h"
 #import "components/send_tab_to_self/features.h"
 #include "components/shared_highlighting/core/common/shared_highlighting_features.h"
 #include "components/signin/core/browser/account_reconcilor.h"
@@ -58,10 +57,12 @@
 #include "components/sync/base/features.h"
 #include "components/sync/base/pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
+#include "components/translate/core/common/translate_util.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/crash_report/features.h"
 #include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
+#import "ios/chrome/browser/ntp/features.h"
 #include "ios/chrome/browser/policy/cloud/user_policy_switch.h"
 #include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/policy/policy_util.h"
@@ -850,6 +851,34 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"uiview-window-observing", flag_descriptions::kUIViewWindowObservingName,
      flag_descriptions::kUIViewWindowObservingDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUIViewWindowObserving)},
+    {"autofill-upstream-allow-additional-email-domains",
+     flag_descriptions::kAutofillUpstreamAllowAdditionalEmailDomainsName,
+     flag_descriptions::kAutofillUpstreamAllowAdditionalEmailDomainsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillUpstreamAllowAdditionalEmailDomains)},
+    {"autofill-upstream-allow-all-email-domains",
+     flag_descriptions::kAutofillUpstreamAllowAllEmailDomainsName,
+     flag_descriptions::kAutofillUpstreamAllowAllEmailDomainsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillUpstreamAllowAllEmailDomains)},
+    {"enable-tflite-language-detection",
+     flag_descriptions::kTFLiteLanguageDetectionName,
+     flag_descriptions::kTFLiteLanguageDetectionDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(translate::kTFLiteLanguageDetectionEnabled)},
+    {"optimization-guide-model-downloading",
+     flag_descriptions::kOptimizationGuideModelDownloadingName,
+     flag_descriptions::kOptimizationGuideModelDownloadingDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         optimization_guide::features::kOptimizationGuideModelDownloading)},
+    {"optimization-target-prediction",
+     flag_descriptions::kOptimizationTargetPredictionName,
+     flag_descriptions::kOptimizationTargetPredictionDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         optimization_guide::features::kOptimizationTargetPrediction)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

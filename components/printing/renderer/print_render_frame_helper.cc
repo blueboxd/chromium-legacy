@@ -25,6 +25,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
@@ -36,10 +37,10 @@
 #include "content/public/renderer/render_thread.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "net/base/escape.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/metafile_skia.h"
 #include "printing/mojom/print.mojom.h"
+#include "printing/page_number.h"
 #include "printing/print_job_constants.h"
 #include "printing/units.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -1692,7 +1693,6 @@ PrintRenderFrameHelper::CreatePreviewDocument() {
 #endif
 
   const mojom::PrintParams& print_params = *print_pages_params_->params;
-  const std::vector<uint32_t>& pages = print_pages_params_->pages;
 
   bool require_document_metafile =
       print_params.printed_doc_type != mojom::SkiaDocumentType::kMSKP;
@@ -1701,10 +1701,18 @@ PrintRenderFrameHelper::CreatePreviewDocument() {
 #endif
 
   if (!print_preview_context_.CreatePreviewDocument(
-          std::move(prep_frame_view_), pages, print_params.printed_doc_type,
-          print_params.document_cookie, require_document_metafile)) {
+          std::move(prep_frame_view_), print_pages_params_->pages,
+          print_params.printed_doc_type, print_params.document_cookie,
+          require_document_metafile)) {
     return CREATE_FAIL;
   }
+
+  // If tagged PDF exporting is enabled, we also need to capture an
+  // accessibility tree. AXTreeSnapshotter should stay alive through the end of
+  // the scope of printing, because text drawing commands are only annotated
+  // with a DOMNodeId if accessibility is enabled.
+  if (delegate_->ShouldGenerateTaggedPDF())
+    snapshotter_ = render_frame()->CreateAXTreeSnapshotter(ui::AXMode::kPDF);
 
   double scale_factor =
       GetScaleFactor(print_params.scale_factor,
@@ -2097,9 +2105,13 @@ void PrintRenderFrameHelper::DidFinishPrinting(PrintingResult result) {
       DCHECK(!notify_browser_of_print_failure_);
       break;
 
+    case INVALID_PAGE_RANGE:
     case FAIL_PRINT:
       if (notify_browser_of_print_failure_ && print_pages_params_) {
-        GetPrintManagerHost()->PrintingFailed(cookie);
+        GetPrintManagerHost()->PrintingFailed(
+            cookie, result == INVALID_PAGE_RANGE
+                        ? mojom::PrintFailureReason::kInvalidPageRange
+                        : mojom::PrintFailureReason::kGeneralFailure);
       }
       break;
 
@@ -2148,38 +2160,35 @@ void PrintRenderFrameHelper::PrintPages() {
     return DidFinishPrinting(FAIL_PRINT);
   }
 
-  const mojom::PrintPagesParams& params = *print_pages_params_;
-  const mojom::PrintParams& print_params = *params.params;
-
   // TODO(vitalybuka): should be page_count or valid pages from params.pages.
   // See http://crbug.com/161576
-  GetPrintManagerHost()->DidGetPrintedPagesCount(print_params.document_cookie,
-                                                 page_count);
+  GetPrintManagerHost()->DidGetPrintedPagesCount(
+      print_pages_params_->params->document_cookie, page_count);
 
-  if (print_params.preview_ui_id < 0) {
-    // Printing for system dialog.
-    int printed_count = params.pages.empty() ? page_count : params.pages.size();
-    base::UmaHistogramCounts1M("PrintPreview.PageCount.SystemDialog",
-                               printed_count);
-  }
-
-  bool is_pdf =
-      IsPrintingPdfFrame(prep_frame_view_->frame(), prep_frame_view_->node());
-  if (!PrintPagesNative(prep_frame_view_->frame(), page_count, is_pdf)) {
+  std::vector<uint32_t> pages_to_print =
+      PageNumber::GetPages(print_pages_params_->pages, page_count);
+  if (pages_to_print.empty())
+    return DidFinishPrinting(INVALID_PAGE_RANGE);
+  if (!PrintPagesNative(prep_frame_view_->frame(), page_count,
+                        pages_to_print)) {
     LOG(ERROR) << "Printing failed.";
     return DidFinishPrinting(FAIL_PRINT);
   }
 }
 
-bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
-                                              uint32_t page_count,
-                                              bool is_pdf) {
+bool PrintRenderFrameHelper::PrintPagesNative(
+    blink::WebLocalFrame* frame,
+    uint32_t page_count,
+    const std::vector<uint32_t>& printed_pages) {
   const mojom::PrintPagesParams& params = *print_pages_params_;
   const mojom::PrintParams& print_params = *params.params;
 
-  std::vector<uint32_t> printed_pages = GetPrintedPages(params, page_count);
-  if (printed_pages.empty())
-    return false;
+  DCHECK(!printed_pages.empty());
+  if (print_params.preview_ui_id < 0) {
+    // Printing for system dialog.
+    base::UmaHistogramCounts1M("PrintPreview.PageCount.SystemDialog",
+                               printed_pages.size());
+  }
 
   ContentProxySet typeface_content_info;
   MetafileSkia metafile(print_params.printed_doc_type,
@@ -2214,6 +2223,8 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   page_size_in_dpi = nullptr;
   content_area_in_dpi = nullptr;
 #endif
+  bool is_pdf =
+      IsPrintingPdfFrame(prep_frame_view_->frame(), prep_frame_view_->node());
   PrintPageInternal(print_params, printed_pages[0], page_count,
                     GetScaleFactor(print_params.scale_factor, is_pdf), frame,
                     &metafile, page_size_in_dpi, content_area_in_dpi);
@@ -2260,25 +2271,6 @@ PrintRenderFrameHelper::ComputePageLayoutInPointsForCss(
       frame, page_index, page_params, ignore_css_margins,
       IsPrintScalingOptionFitToPage(page_params), scale_factor);
   return CalculatePageLayoutFromPrintParams(*params, input_scale_factor);
-}
-
-// static - Not anonymous so that platform implementations can use it.
-std::vector<uint32_t> PrintRenderFrameHelper::GetPrintedPages(
-    const mojom::PrintPagesParams& params,
-    uint32_t page_count) {
-  std::vector<uint32_t> printed_pages;
-  if (params.pages.empty()) {
-    for (uint32_t i = 0; i < page_count; ++i) {
-      printed_pages.push_back(i);
-    }
-  } else {
-    for (uint32_t page : params.pages) {
-      if (page != kInvalidPageIndex && page < page_count) {
-        printed_pages.push_back(page);
-      }
-    }
-  }
-  return printed_pages;
 }
 
 void PrintRenderFrameHelper::IPCReceived() {
@@ -2606,13 +2598,6 @@ void PrintRenderFrameHelper::RequestPrintPreview(PrintPreviewRequestType type,
   const bool is_modifiable = print_preview_context_.IsModifiable();
   const bool has_selection = print_preview_context_.HasSelection();
 
-  // If tagged PDF exporting is enabled, we also need to capture an
-  // accessibility tree. AXTreeSnapshotter should stay alive through the end of
-  // the scope of printing, because text drawing commands are only annotated
-  // with a DOMNodeId if accessibility is enabled.
-  if (delegate_->ShouldGenerateTaggedPDF())
-    snapshotter_ = render_frame()->CreateAXTreeSnapshotter(ui::AXMode::kPDF);
-
   auto params = mojom::RequestPrintPreviewParams::New();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   params->is_from_arc = is_from_arc;
@@ -2818,7 +2803,7 @@ void PrintRenderFrameHelper::PrintPreviewContext::OnPrintPreview() {
 
 bool PrintRenderFrameHelper::PrintPreviewContext::CreatePreviewDocument(
     std::unique_ptr<PrepareFrameAndViewForPrint> prepared_frame,
-    const std::vector<uint32_t>& pages,
+    const PageRanges& pages,
     mojom::SkiaDocumentType doc_type,
     int document_cookie,
     bool require_document_metafile) {
@@ -2843,24 +2828,7 @@ bool PrintRenderFrameHelper::PrintPreviewContext::CreatePreviewDocument(
   }
 
   current_page_index_ = 0;
-  pages_to_render_ = pages;
-  // Sort and make unique.
-  std::sort(pages_to_render_.begin(), pages_to_render_.end());
-  pages_to_render_.resize(
-      std::unique(pages_to_render_.begin(), pages_to_render_.end()) -
-      pages_to_render_.begin());
-  // Remove invalid pages.
-  pages_to_render_.resize(std::lower_bound(pages_to_render_.begin(),
-                                           pages_to_render_.end(),
-                                           total_page_count_) -
-                          pages_to_render_.begin());
-
-  if (pages_to_render_.empty()) {
-    // Render all pages.
-    pages_to_render_.reserve(total_page_count_);
-    for (uint32_t i = 0; i < total_page_count_; ++i)
-      pages_to_render_.push_back(i);
-  }
+  pages_to_render_ = PageNumber::GetPages(pages, total_page_count_);
   print_ready_metafile_page_count_ = pages_to_render_.size();
 
   document_render_time_ = base::TimeDelta();

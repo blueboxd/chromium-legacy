@@ -274,7 +274,7 @@ MoveMigrator::TaskResult MoveMigrator::PreMigrationCleanUp(
   browser_data_migrator_util::TargetItems need_copy_items =
       browser_data_migrator_util::GetTargetItems(
           original_profile_dir,
-          browser_data_migrator_util::ItemType::kNeedCopy);
+          browser_data_migrator_util::ItemType::kNeedCopyForMove);
 
   const int64_t extra_bytes_required_to_be_freed =
       browser_data_migrator_util::ExtraBytesRequiredToBeFreed(
@@ -343,7 +343,7 @@ MoveMigrator::TaskResult MoveMigrator::SetupLacrosDir(
   browser_data_migrator_util::TargetItems need_copy_items =
       browser_data_migrator_util::GetTargetItems(
           original_profile_dir,
-          browser_data_migrator_util::ItemType::kNeedCopy);
+          browser_data_migrator_util::ItemType::kNeedCopyForMove);
 
   progress_tracker->SetTotalSizeToCopy(need_copy_items.total_size);
 
@@ -496,6 +496,25 @@ MoveMigrator::TaskResult MoveMigrator::SetupAshSplitDir(
           tmp_profile_dir.Append(chrome::kPreferencesFilename))) {
     LOG(ERROR) << "MigratePreferences() failed.";
     return {TaskStatus::kSetupAshDirMigratePreferencesFailed};
+  }
+
+  // Split Sync Data.
+  if (base::PathExists(
+          original_profile_dir
+              .Append(browser_data_migrator_util::kSyncDataFilePath)
+              .Append(browser_data_migrator_util::kSyncDataLeveldbName))) {
+    if (!browser_data_migrator_util::MigrateSyncData(
+            original_profile_dir
+                .Append(browser_data_migrator_util::kSyncDataFilePath)
+                .Append(browser_data_migrator_util::kSyncDataLeveldbName),
+            tmp_split_dir.Append(browser_data_migrator_util::kSyncDataFilePath)
+                .Append(browser_data_migrator_util::kSyncDataLeveldbName),
+            tmp_profile_dir
+                .Append(browser_data_migrator_util::kSyncDataFilePath)
+                .Append(browser_data_migrator_util::kSyncDataLeveldbName))) {
+      LOG(ERROR) << "MigrateSyncData() failed";
+      return {TaskStatus::kSetupAshDirMigrateSyncDataFailed};
+    }
   }
 
   return {TaskStatus::kSucceeded};
@@ -773,6 +792,7 @@ MoveMigrator::ToBrowserDataMigratorMigrationResult(TaskResult result) {
     case TaskStatus::kSetupAshDirCreateDirFailed:
     case TaskStatus::kSetupAshDirCopyExtensionsFailed:
     case TaskStatus::kSetupAshDirCopyIndexedDBFailed:
+    case TaskStatus::kSetupAshDirMigrateSyncDataFailed:
       return {BrowserDataMigratorImpl::DataWipeResult::kSucceeded,
               {BrowserDataMigratorImpl::ResultKind::kFailed}};
   }
@@ -819,6 +839,7 @@ std::string MoveMigrator::TaskStatusToString(TaskStatus task_status) {
     MAPPING(SetupAshDirCreateDirFailed);
     MAPPING(SetupAshDirCopyExtensionsFailed);
     MAPPING(SetupAshDirCopyIndexedDBFailed);
+    MAPPING(SetupAshDirMigrateSyncDataFailed);
 #undef MAPPING
   }
 }

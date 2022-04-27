@@ -102,6 +102,7 @@
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/chrome_untrusted_web_ui_configs.h"
+#include "chrome/browser/ui/webui/chrome_web_ui_configs.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
@@ -761,6 +762,22 @@ int ChromeBrowserMainParts::PreEarlyInitialization() {
     // message loop is running).
     return content::RESULT_CODE_NORMAL_EXIT;
   }
+
+#if BUILDFLAG(IS_WIN)
+  // On Windows, we use our startup as an opportunity to do upgrade/uninstall
+  // tasks.  Those care whether the browser is already running.  On Linux/Mac,
+  // upgrade/uninstall happen separately.
+  already_running_ = browser_util::IsBrowserAlreadyRunning();
+
+  // Do the tasks if chrome has been upgraded while it was last running.
+  if (!already_running_ &&
+      upgrade_util::DoUpgradeTasks(parsed_command_line())) {
+    // Note, cannot return RESULT_CODE_NORMAL_EXIT here as this code needs to
+    // result in browser startup bailing.
+    return chrome::RESULT_CODE_NORMAL_EXIT_UPGRADE_RELAUNCHED;
+  }
+#endif  // BUILDFLAG(IS_WIN)
+
   return load_local_state_result;
 }
 
@@ -1347,15 +1364,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   browser_shutdown::ReadLastShutdownInfo();
 
 #if BUILDFLAG(IS_WIN)
-  // On Windows, we use our startup as an opportunity to do upgrade/uninstall
-  // tasks.  Those care whether the browser is already running.  On Linux/Mac,
-  // upgrade/uninstall happen separately.
-  bool already_running = browser_util::IsBrowserAlreadyRunning();
-
   // If the command line specifies 'uninstall' then we need to work here
   // unless we detect another chrome browser running.
   if (parsed_command_line().HasSwitch(switches::kUninstall)) {
-    return DoUninstallTasks(already_running);
+    return DoUninstallTasks(already_running_);
   }
 
   if (parsed_command_line().HasSwitch(switches::kHideIcons) ||
@@ -1526,10 +1538,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_WIN)
-  // Do the tasks if chrome has been upgraded while it was last running.
-  if (!already_running && upgrade_util::DoUpgradeTasks(parsed_command_line()))
-    return content::RESULT_CODE_NORMAL_EXIT;
-
   // Check if there is any machine level Chrome installed on the current
   // machine. If yes and the current Chrome process is user level, we do not
   // allow the user level Chrome to run. So we notify the user and uninstall
@@ -1585,6 +1593,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // called inside PostProfileInit.
   content::WebUIControllerFactory::RegisterFactory(
       ChromeWebUIControllerFactory::GetInstance());
+  RegisterChromeWebUIConfigs();
   RegisterChromeUntrustedWebUIConfigs();
 
 #if BUILDFLAG(IS_ANDROID)

@@ -38,6 +38,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace autofill_assistant {
+class ElementFinderResult;
 class ElementStore;
 class UserModel;
 class WaitForDomOperation;
@@ -264,6 +265,7 @@ class ScriptExecutor : public ActionDelegate,
       const CollectUserDataOptions& options,
       base::OnceCallback<void(bool, const GetUserDataResponseProto&)> callback)
       override;
+  bool MustUseBackendData() const override;
 
  private:
   // TODO(b/220079189): remove this friend declaration.

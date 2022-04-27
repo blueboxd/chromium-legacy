@@ -14,12 +14,12 @@
 
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_profile_import_process.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
-#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/browser/metrics/form_events/form_events.h"
@@ -27,12 +27,18 @@
 #include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/common/dense_set.h"
-#include "components/autofill/core/common/form_field_data.h"
-#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-forward.h"
 #include "components/autofill/core/common/signatures.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "components/security_state/core/security_state.h"
-#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
+
+class GURL;
+
+namespace ukm::builders {
+class Autofill_CreditCardFill;
+}
 
 namespace autofill {
 
@@ -1839,10 +1845,6 @@ class AutofillMetrics {
   static void LogCreditCardSeamlessnessAtSubmissionTime(
       const ServerFieldTypeSet& autofilled_types);
 
-  // This should be called when determining the heuristic types for a form's
-  // fields.
-  static void LogDetermineHeuristicTypesTiming(const base::TimeDelta& duration);
-
   // This should be called when parsing each form.
   static void LogParseFormTiming(const base::TimeDelta& duration);
 
@@ -2045,14 +2047,12 @@ class AutofillMetrics {
       int number_of_affected_fields,
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
-  // Records if at least one setting-inaccessible field was removed on import.
+  // Logs if at least one setting-inaccessible field was removed on import.
   static void LogRemovedSettingInaccessibleFields(bool did_remove);
 
-  // Records that |field| was removed in a profile of |country| on import,
-  // because |field| is inaccessible in the |country|-specific settings.
-  static void LogRemovedSettingInaccessibleField(
-      const std::string& country_code,
-      ServerFieldType field);
+  // Logs that |field| was removed from a profile on import, because it is
+  // setting-inaccessible in the profile's country.
+  static void LogRemovedSettingInaccessibleField(ServerFieldType field);
 
   // Logs when the virtual card metadata for one card have been updated.
   static void LogVirtualCardMetadataSynced(bool existing_card);

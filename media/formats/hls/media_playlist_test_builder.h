@@ -8,11 +8,14 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/time/time.h"
 #include "media/formats/hls/media_playlist.h"
 #include "media/formats/hls/media_segment.h"
 #include "media/formats/hls/playlist_test_builder.h"
 
 namespace media::hls {
+
+class MultivariantPlaylist;
 
 // Helper for building media playlist test cases that allows writing assertions
 // next to the playlist lines they check, as well as "forking" test cases via
@@ -25,6 +28,9 @@ class MediaPlaylistTestBuilder : public PlaylistTestBuilder<MediaPlaylist> {
   MediaPlaylistTestBuilder(MediaPlaylistTestBuilder&&);
   MediaPlaylistTestBuilder& operator=(const MediaPlaylistTestBuilder&);
   MediaPlaylistTestBuilder& operator=(MediaPlaylistTestBuilder&&);
+
+  // Sets the referring multivariant playlist.
+  void SetParent(const MultivariantPlaylist* parent) { parent_ = parent; }
 
   // Increments the number of segments that are expected to be contained in the
   // playlist.
@@ -41,13 +47,13 @@ class MediaPlaylistTestBuilder : public PlaylistTestBuilder<MediaPlaylist> {
   }
 
   void ExpectOk(const base::Location& from = base::Location::Current()) const {
-    PlaylistTestBuilder::ExpectOk(from);
+    PlaylistTestBuilder::ExpectOk(from, parent_);
   }
 
   void ExpectError(
       ParseStatusCode code,
       const base::Location& from = base::Location::Current()) const {
-    PlaylistTestBuilder::ExpectError(code, from);
+    PlaylistTestBuilder::ExpectError(code, from, parent_);
   }
 
  private:
@@ -66,6 +72,7 @@ class MediaPlaylistTestBuilder : public PlaylistTestBuilder<MediaPlaylist> {
   void VerifyExpectations(const MediaPlaylist& playlist,
                           const base::Location& from) const override;
 
+  const MultivariantPlaylist* parent_ = nullptr;
   std::vector<SegmentExpectations> segment_expectations_;
 };
 
@@ -74,6 +81,13 @@ inline void HasType(absl::optional<PlaylistType> type,
                     const base::Location& from,
                     const MediaPlaylist& playlist) {
   EXPECT_EQ(playlist.GetPlaylistType(), type) << from.ToString();
+}
+
+// Checks that the media playlist has the given Target Duration.
+inline void HasTargetDuration(base::TimeDelta value,
+                              const base::Location& from,
+                              const MediaPlaylist& playlist) {
+  EXPECT_EQ(playlist.GetTargetDuration(), value) << from.ToString();
 }
 
 // Checks that the latest media segment has the given duration.

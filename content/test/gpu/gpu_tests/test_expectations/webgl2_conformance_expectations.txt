@@ -244,6 +244,9 @@ crbug.com/949249 [ linux passthrough angle-opengl ] conformance2/extensions/ovr_
 # New validation was not implemented on the validating command decoder.
 crbug.com/angleproject/6358 [ no-passthrough ] conformance/programs/program-test.html [ Failure ]
 
+# Flaky timeouts on multiple platforms - at least Linux/Mac/Win
+crbug.com/1254497 conformance/misc/type-conversion-test.html [ RetryOnFailure ]
+
 ####################
 # Win failures     #
 ####################
@@ -281,6 +284,8 @@ crbug.com/844483 [ angle-d3d11 win amd ] conformance2/textures/canvas_sub_rectan
 crbug.com/1297265 [ win7 passthrough amd-0x6613 angle-d3d11 ] conformance2/renderbuffers/multisampled-stencil-renderbuffer-initialization.html [ RetryOnFailure ]
 crbug.com/1298096 [ win7 passthrough amd-0x6613 angle-d3d11 ] conformance2/textures/canvas_sub_rectangle/tex-3d-r16f-red-half_float.html [ RetryOnFailure ]
 
+# Test regression and potential driver bug on AMD RX 5500 XT with recent BlendState refactoring
+crbug.com/angleproject/7200 [ win amd-0x7340 angle-d3d11 ] conformance2/textures/misc/angle-stuck-depth-textures.html [ Failure ]
 
 # Recent AMD drivers seem to have a regression with 3D textures.
 # (Some of these tests seem to occasionally pass unexpectedly.)
@@ -334,11 +339,12 @@ crbug.com/angleproject/6430 [ mac passthrough angle-metal ] WebglExtension_WEBGL
 crbug.com/angleproject/6430 [ mac passthrough angle-metal ] WebglExtension_WEBGL_multi_draw_instanced_base_vertex_base_instance [ Failure ]
 crbug.com/angleproject/6430 [ mac passthrough angle-metal ] conformance/ogles/GL/build/build_009_to_016.html [ Failure ]
 crbug.com/angleproject/6430 [ mac passthrough angle-metal ] conformance2/rendering/fs-color-type-mismatch-color-buffer-type.html [ Failure ]
-crbug.com/angleproject/6430 [ mac passthrough angle-metal ] deqp/functional/gles3/fboinvalidate/sub.html [ Failure ]
-crbug.com/angleproject/6430 [ mac passthrough angle-metal ] deqp/functional/gles3/fboinvalidate/whole.html [ Failure ]
-crbug.com/angleproject/6430 [ mac passthrough angle-metal ] deqp/functional/gles3/fbomultisample.2_samples.html [ Failure ]
-crbug.com/angleproject/6430 [ mac passthrough angle-metal ] deqp/functional/gles3/fbomultisample.4_samples.html [ Failure ]
-crbug.com/angleproject/6430 [ mac passthrough angle-metal ] deqp/functional/gles3/fbomultisample.8_samples.html [ Failure ]
+crbug.com/angleproject/7079 [ mac passthrough angle-metal ] deqp/functional/gles3/fboinvalidate/sub.html [ Failure ]
+crbug.com/angleproject/7079 [ mac passthrough angle-metal ] deqp/functional/gles3/fboinvalidate/whole.html [ Failure ]
+crbug.com/angleproject/7079 [ mac passthrough angle-metal ] deqp/functional/gles3/fbomultisample.2_samples.html [ Failure ]
+crbug.com/angleproject/7079 [ mac passthrough angle-metal ] deqp/functional/gles3/fbomultisample.4_samples.html [ Failure ]
+crbug.com/angleproject/7079 [ mac passthrough angle-metal ] deqp/functional/gles3/fbomultisample.8_samples.html [ Failure ]
+crbug.com/angleproject/7234 [ mac passthrough angle-metal ] conformance2/textures/misc/integer-cubemap-texture-sampling.html [ Failure ]
 
 # Metal AMD
 crbug.com/angleproject/6430 [ mac passthrough angle-metal amd ] conformance2/textures/misc/tex-srgb-mipmap.html [ Failure ]

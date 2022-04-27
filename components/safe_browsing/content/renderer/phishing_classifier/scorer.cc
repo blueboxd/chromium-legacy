@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "base/logging.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/metrics/histogram_functions.h"
@@ -18,10 +19,10 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
+#include "components/safe_browsing/content/common/visual_utils.h"
 #include "components/safe_browsing/content/renderer/phishing_classifier/features.h"
 #include "components/safe_browsing/core/common/proto/client_model.pb.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
-#include "components/safe_browsing/core/common/visual_utils.h"
 #include "content/public/renderer/render_thread.h"
 #include "crypto/sha2.h"
 #include "skia/ext/image_operations.h"
@@ -126,7 +127,7 @@ void OnModelInputCreated(
     int input_height,
     std::unique_ptr<tflite::task::vision::ImageClassifier> classifier,
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
-    base::OnceCallback<void(std::vector<double>)> callback) {
+    base::OnceCallback<void(base::flat_map<std::string, double>)> callback) {
   base::Time before_operation = base::Time::Now();
   tflite::task::vision::FrameBuffer::Plane plane{
       reinterpret_cast<const tflite::uint8*>(model_input.data()),
@@ -141,15 +142,15 @@ void OnModelInputCreated(
   if (!statusor_result.ok()) {
     VLOG(1) << statusor_result.status().ToString();
     callback_task_runner->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), std::vector<double>()));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  base::flat_map<std::string, double>()));
     return;
   }
 
-  std::vector<double> scores(
-      statusor_result->classifications(0).classes().size());
+  base::flat_map<std::string, double> scores;
   for (const tflite::task::vision::Class& clas :
        statusor_result->classifications(0).classes()) {
-    scores[clas.index()] = clas.score();
+    scores[clas.class_name()] = clas.score();
   }
 
   callback_task_runner->PostTask(
@@ -162,12 +163,13 @@ void OnClassifierCreated(
     int input_height,
     std::unique_ptr<tflite::task::vision::ImageClassifier> classifier,
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
-    base::OnceCallback<void(std::vector<double>)> callback) {
+    base::OnceCallback<void(base::flat_map<std::string, double>)> callback) {
   base::Time before_operation = base::Time::Now();
   std::string model_input = GetModelInput(bitmap, input_width, input_height);
   if (model_input.empty()) {
     callback_task_runner->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), std::vector<double>()));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  base::flat_map<std::string, double>()));
     return;
   }
   base::UmaHistogramTimes("SBClientPhishing.ApplyTfliteTime.GetModelInput",
@@ -189,22 +191,20 @@ void Scorer::ApplyVisualTfLiteModelHelper(
     const SkBitmap& bitmap,
     int input_width,
     int input_height,
-    const std::string& model_data,
+    std::string model_data,
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
-    base::OnceCallback<void(std::vector<double>)> callback) {
+    base::OnceCallback<void(base::flat_map<std::string, double>)> callback) {
   TRACE_EVENT0("safe_browsing", "ApplyVisualTfLiteModel");
   base::Time before_operation = base::Time::Now();
-  std::string model_data_copy = model_data;
-  base::UmaHistogramTimes("SBClientPhishing.ApplyTfliteTime.ModelCopy",
-                          base::Time::Now() - before_operation);
   before_operation = base::Time::Now();
   std::unique_ptr<tflite::task::vision::ImageClassifier> classifier =
-      CreateClassifier(std::move(model_data_copy));
+      CreateClassifier(std::move(model_data));
   base::UmaHistogramTimes("SBClientPhishing.ApplyTfliteTime.CreateClassifier",
                           base::Time::Now() - before_operation);
   if (!classifier) {
     callback_task_runner->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), std::vector<double>()));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  base::flat_map<std::string, double>()));
     return;
   }
 

@@ -33,6 +33,8 @@ source_set("unit_tests") {
 
   deps = [
     ":print_to_pdf",
+    "//printing",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }

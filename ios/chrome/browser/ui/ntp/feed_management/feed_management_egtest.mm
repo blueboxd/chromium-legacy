@@ -5,9 +5,9 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
+#import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -82,7 +82,14 @@ void DismissSignOut() {
   DismissSignOut();
 }
 
-- (void)testSignedInOpenAndCloseFeedMenu {
+// TODO(crbug.com/1277545): Test fails on device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testSignedInOpenAndCloseFeedMenu testSignedInOpenAndCloseFeedMenu
+#else
+#define MAYBE_testSignedInOpenAndCloseFeedMenu \
+  DISABLED_testSignedInOpenAndCloseFeedMenu
+#endif
+- (void)MAYBE_testSignedInOpenAndCloseFeedMenu {
   // Sign into a fake identity.
   FakeChromeIdentity* fakeIdentity1 = [FakeChromeIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity1];
@@ -101,7 +108,14 @@ void DismissSignOut() {
   DismissSignOut();
 }
 
-- (void)testOpenFeedManagementSurface {
+// TODO(crbug.com/1277545): Test fails on device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testOpenFeedManagementSurface testOpenFeedManagementSurface
+#else
+#define MAYBE_testOpenFeedManagementSurface \
+  DISABLED_testOpenFeedManagementSurface
+#endif
+- (void)MAYBE_testOpenFeedManagementSurface {
   // Sign into a fake identity.
   FakeChromeIdentity* fakeIdentity1 = [FakeChromeIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity1];

@@ -55,47 +55,6 @@ class MockDownloadTaskObserver : public DownloadTaskObserver {
   }
 };
 
-// Mocks DownloadTaskImpl::Delegate's OnTaskUpdated and OnTaskDestroyed methods
-// and stubs DownloadTaskImpl::Delegate::CreateSession with session mock.
-class FakeDownloadTaskImplDelegate : public DownloadTaskImpl::Delegate {
- public:
-  FakeDownloadTaskImplDelegate()
-      : configuration_([NSURLSessionConfiguration
-            backgroundSessionConfigurationWithIdentifier:
-                [NSUUID UUID].UUIDString]),
-        session_(OCMStrictClassMock([NSURLSession class])) {
-    OCMStub([session_ configuration]).andReturn(configuration_);
-  }
-
-  MOCK_METHOD1(OnTaskDestroyed, void(DownloadTaskImpl* task));
-
-  // Returns mock, which can be accessed via session() method.
-  NSURLSession* CreateSession(NSString* identifier,
-                              NSArray<NSHTTPCookie*>* cookies,
-                              id<NSURLSessionDataDelegate> delegate,
-                              NSOperationQueue* delegate_queue) {
-    // Make sure this method is called only once.
-    EXPECT_FALSE(session_delegate_);
-    session_delegate_ = delegate;
-    cookies_ = [cookies copy];
-    return session_;
-  }
-
-  // These methods return session objects injected into DownloadTaskImpl.
-  NSURLSessionConfiguration* configuration() { return configuration_; }
-  id session() { return session_; }
-  id<NSURLSessionDataDelegate> session_delegate() { return session_delegate_; }
-
-  // Returns the cookies passed to Create session method.
-  NSArray<NSHTTPCookie*>* cookies() { return cookies_; }
-
- private:
-  id<NSURLSessionDataDelegate> session_delegate_;
-  id configuration_;
-  NSArray<NSHTTPCookie*>* cookies_ = nil;
-  id session_;
-};
-
 }  //  namespace
 
 // Creates a non-virtual class to use for testing
@@ -107,16 +66,14 @@ class FakeDownloadTaskImpl : public DownloadTaskImpl {
                        const std::string& content_disposition,
                        int64_t total_bytes,
                        const std::string& mime_type,
-                       NSString* identifier,
-                       Delegate* delegate)
+                       NSString* identifier)
       : DownloadTaskImpl(web_state,
                          original_url,
                          http_method,
                          content_disposition,
                          total_bytes,
                          mime_type,
-                         identifier,
-                         delegate) {}
+                         identifier) {}
 
   NSData* GetResponseData() const override { return response_data_; }
 
@@ -140,28 +97,21 @@ class DownloadTaskImplTest : public PlatformTest {
             kContentDisposition,
             /*total_bytes=*/-1,
             kMimeType,
-            task_delegate_.configuration().identifier,
-            &task_delegate_)),
-        session_delegate_callbacks_queue_(
-            dispatch_queue_create(nullptr, DISPATCH_QUEUE_SERIAL)) {
+            [[NSUUID UUID] UUIDString])) {
     task_->AddObserver(&task_observer_);
   }
 
   web::WebTaskEnvironment task_environment_;
   FakeWebState web_state_;
-  testing::StrictMock<FakeDownloadTaskImplDelegate> task_delegate_;
   std::unique_ptr<FakeDownloadTaskImpl> task_;
   MockDownloadTaskObserver task_observer_;
-  // NSURLSessionDataDelegate callbacks are called on background serial queue.
-  dispatch_queue_t session_delegate_callbacks_queue_ = 0;
 };
 
 // Tests DownloadTaskImpl default state after construction.
 TEST_F(DownloadTaskImplTest, DefaultState) {
   EXPECT_EQ(&web_state_, task_->GetWebState());
   EXPECT_EQ(DownloadTask::State::kNotStarted, task_->GetState());
-  EXPECT_NSEQ(task_delegate_.configuration().identifier,
-              task_->GetIndentifier());
+  EXPECT_NSNE(@"", task_->GetIdentifier());
   EXPECT_EQ(kUrl, task_->GetOriginalUrl());
   EXPECT_FALSE(task_->IsDone());
   EXPECT_EQ(0, task_->GetErrorCode());
@@ -173,8 +123,6 @@ TEST_F(DownloadTaskImplTest, DefaultState) {
   EXPECT_EQ(kMimeType, task_->GetMimeType());
   EXPECT_EQ(kMimeType, task_->GetOriginalMimeType());
   EXPECT_EQ("file.test", base::UTF16ToUTF8(task_->GetSuggestedFilename()));
-
-  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 
 // Tests that DownloadTaskImpl methods are overloaded
@@ -187,7 +135,5 @@ TEST_F(DownloadTaskImplTest, SuccessfulInitialization) {
   // Tests that Cancel() is overloaded
   task_->Cancel();
   EXPECT_EQ(DownloadTask::State::kCancelled, task_->GetState());
-
-  EXPECT_CALL(task_delegate_, OnTaskDestroyed(task_.get()));
 }
 }  // namespace web

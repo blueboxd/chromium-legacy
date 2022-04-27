@@ -390,14 +390,8 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
       section_counters->AddIntStat("Updates Downloaded");
   Stat<int>* tombstone_updates =
       section_counters->AddIntStat("Tombstone Updates");
-  Stat<int>* reflected_updates =
-      section_counters->AddIntStat("Reflected Updates");
   Stat<int>* successful_commits =
       section_counters->AddIntStat("Successful Commits");
-  Stat<int>* conflicts_resolved_local_wins =
-      section_counters->AddIntStat("Conflicts Resolved: Client Wins");
-  Stat<int>* conflicts_resolved_server_wins =
-      section_counters->AddIntStat("Conflicts Resolved: Server Wins");
 
   Section* section_this_cycle = section_list.AddSection(
       "Transient Counters (this cycle)", /*is_sensitive=*/false);
@@ -561,11 +555,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     notifications_received->Set(full_status.notifications_received);
     updates_received->Set(full_status.updates_received);
     tombstone_updates->Set(full_status.tombstone_updates_received);
-    reflected_updates->Set(full_status.reflected_updates_received);
     successful_commits->Set(full_status.num_commits_total);
-    conflicts_resolved_local_wins->Set(full_status.num_local_overwrites_total);
-    conflicts_resolved_server_wins->Set(
-        full_status.num_server_overwrites_total);
   }
 
   // Transient Counters (this cycle).

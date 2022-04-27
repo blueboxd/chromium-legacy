@@ -33,6 +33,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/language/core/browser/language_usage_metrics.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 
 namespace autofill {
 
@@ -2678,12 +2679,6 @@ void AutofillMetrics::LogCreditCardSeamlessnessAtSubmissionTime(
 }
 
 // static
-void AutofillMetrics::LogDetermineHeuristicTypesTiming(
-    const base::TimeDelta& duration) {
-  UMA_HISTOGRAM_TIMES("Autofill.Timing.DetermineHeuristicTypes", duration);
-}
-
-// static
 void AutofillMetrics::LogParseFormTiming(const base::TimeDelta& duration) {
   UMA_HISTOGRAM_TIMES("Autofill.Timing.ParseForm", duration);
 }
@@ -3414,10 +3409,9 @@ void AutofillMetrics::LogRemovedSettingInaccessibleFields(bool did_remove) {
 
 // static
 void AutofillMetrics::LogRemovedSettingInaccessibleField(
-    const std::string& country_code,
     ServerFieldType field) {
   base::UmaHistogramEnumeration(
-      "Autofill.ProfileImport.InaccessibleFieldsRemoved." + country_code,
+      "Autofill.ProfileImport.InaccessibleFieldsRemoved.ByFieldType",
       ConvertSettingsVisibleFieldTypeForMetrics(field));
 }
 

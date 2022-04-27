@@ -12,6 +12,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/permissions/permission_context_base.h"
 #include "components/permissions/permission_manager.h"
+#include "components/permissions/permission_util.h"
 #include "components/webrtc/media_stream_device_enumerator_impl.h"
 #include "content/public/browser/permission_type.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-shared.h"
@@ -118,14 +119,14 @@ permissions::PermissionManager::PermissionContextMap CreatePermissionContexts(
 
   // For now, all requests are denied. As features are added, their permission
   // contexts can be added here instead of DeniedPermissionContext.
-  for (content::PermissionType type : content::GetAllPermissionTypes()) {
+  for (content::PermissionType type : blink::GetAllPermissionTypes()) {
 #if !BUILDFLAG(IS_ANDROID)
     // PROTECTED_MEDIA_IDENTIFIER is only supported on Android.
     if (type == content::PermissionType::PROTECTED_MEDIA_IDENTIFIER)
       continue;
 #endif
     ContentSettingsType content_settings_type =
-        permissions::PermissionManager::PermissionTypeToContentSetting(type);
+        permissions::PermissionUtil::PermissionTypeToContentSetting(type);
     if (permission_contexts.find(content_settings_type) ==
         permission_contexts.end()) {
       permission_contexts[content_settings_type] =

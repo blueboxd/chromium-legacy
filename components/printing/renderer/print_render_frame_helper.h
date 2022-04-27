@@ -190,6 +190,7 @@ class PrintRenderFrameHelper
     OK,
     FAIL_PRINT_INIT,
     FAIL_PRINT,
+    INVALID_PAGE_RANGE,
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     FAIL_PREVIEW,
     INVALID_SETTINGS,
@@ -367,7 +368,7 @@ class PrintRenderFrameHelper
   void PrintPages();
   bool PrintPagesNative(blink::WebLocalFrame* frame,
                         uint32_t page_count,
-                        bool is_pdf);
+                        const std::vector<uint32_t>& pages_to_print);
   void FinishFramePrinting();
   // Render the frame for printing.
   bool RenderPagesForPrint(blink::WebLocalFrame* frame,
@@ -409,12 +410,6 @@ class PrintRenderFrameHelper
       const mojom::PrintParams& default_params,
       bool ignore_css_margins,
       double* scale_factor);
-
-  // Return an array of pages to print given the print |params| and an expected
-  // |page_count|. Page numbers are zero-based.
-  static std::vector<uint32_t> GetPrintedPages(
-      const mojom::PrintPagesParams& params,
-      uint32_t page_count);
 
   // Given the |device| and |canvas| to draw on, prints the appropriate headers
   // and footers using strings from |header_footer_info| on to the canvas.
@@ -532,7 +527,7 @@ class PrintRenderFrameHelper
     // Create the print preview document. |pages| is empty to print all pages.
     bool CreatePreviewDocument(
         std::unique_ptr<PrepareFrameAndViewForPrint> prepared_frame,
-        const std::vector<uint32_t>& pages,
+        const PageRanges& pages,
         mojom::SkiaDocumentType doc_type,
         int document_cookie,
         bool require_document_metafile);

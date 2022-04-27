@@ -10,13 +10,12 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/permissions/permission_service_context.h"
+#include "content/public/browser/permission_type.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 #include "url/origin.h"
 
 namespace content {
-
-enum class PermissionType;
 
 // Implements the PermissionService Mojo interface.
 // This service can be created from a RenderFrameHost or a RenderProcessHost.
@@ -25,6 +24,7 @@ enum class PermissionType;
 // to have some information about the current context. That enables the service
 // to know whether it can show UI and have knowledge of the associated
 // WebContents for example.
+// TODO(crbug.com/1312212): Use url::Origin instead of GURL.
 class PermissionServiceImpl : public blink::mojom::PermissionService {
  public:
   PermissionServiceImpl(PermissionServiceContext* context,

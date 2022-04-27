@@ -964,6 +964,7 @@ void StyleResolver::ApplyInheritance(Element& element,
     // the element has rules but no matched properties, we currently clone.
 
     state.SetStyle(ComputedStyle::Clone(*state.ParentStyle()));
+    state.Style()->SetInsideLink(state.ElementLinkState());
   } else {
     scoped_refptr<ComputedStyle> style = CreateComputedStyle();
     style->InheritFrom(
@@ -1222,11 +1223,46 @@ void StyleResolver::ApplyBaseStyleNoCache(
   if (tracker_)
     AddMatchedRulesToTracker(collector);
 
-  if (style_request.IsPseudoStyleRequest() &&
-      !collector.MatchedResult().HasMatchedProperties()) {
-    StyleAdjuster::AdjustComputedStyle(state, nullptr /* element */);
-    state.SetHadNoMatchedProperties();
-    return;
+  if (style_request.IsPseudoStyleRequest()) {
+    if (!collector.MatchedResult().HasMatchedProperties()) {
+      StyleAdjuster::AdjustComputedStyle(state, nullptr /* element */);
+      state.SetHadNoMatchedProperties();
+      return;
+    }
+
+    bool skip_apply_highlight = false;
+
+    // Highlight pseudos inherit all properties from the corresponding highlight
+    // in the parent, but virtually all existing content uses universal rules
+    // like *::selection. To ensure copy-on-write inheritance still works, avoid
+    // reapplying styles if both parent and child only matched universal rules.
+    if (RuntimeEnabledFeatures::HighlightInheritanceEnabled() &&
+        IsHighlightPseudoElement(style_request.pseudo_id)) {
+      // If the parent matched any non-universal highlight rules, then we need
+      // to apply, in case there are universal highlight rules.
+      bool parent_non_universal =
+          state.Style()->DidMatchNonUniversalHighlights();
+
+      // If we matched any non-universal highlight rules, then we need to apply
+      // and our children also need to apply (see above).
+      bool self_non_universal =
+          collector.MatchedResult().MatchesNonUniversalHighlights();
+
+      if (parent_non_universal || self_non_universal) {
+        // Set or reset the did-match-non-universal flag only if necessary.
+        state.Style()->SetDidMatchNonUniversalHighlights(self_non_universal);
+      } else if (element->parentNode() !=
+                 element->ContainingTreeScope().RootNode()) {
+        // The root node of the tree scope needs to apply, in case there are
+        // only universal highlight rules.
+        skip_apply_highlight = true;
+      }
+    }
+
+    if (skip_apply_highlight) {
+      StyleAdjuster::AdjustComputedStyle(state, nullptr /* element */);
+      return;
+    }
   }
 
   // Preserve the text autosizing multiplier on style recalc. Autosizer will
@@ -1449,16 +1485,21 @@ scoped_refptr<ComputedStyle> StyleResolver::CreateComputedStyle() const {
   return ComputedStyle::Clone(*initial_style_);
 }
 
+float StyleResolver::InitialZoom() const {
+  const Document& document = GetDocument();
+  if (const LocalFrame* frame = document.GetFrame())
+    return !document.Printing() ? frame->PageZoomFactor() : 1;
+  return 1;
+}
+
 scoped_refptr<ComputedStyle> StyleResolver::InitialStyleForElement() const {
-  const LocalFrame* frame = GetDocument().GetFrame();
   StyleEngine& engine = GetDocument().GetStyleEngine();
 
   scoped_refptr<ComputedStyle> initial_style = CreateComputedStyle();
 
   initial_style->SetRtlOrdering(
       GetDocument().VisuallyOrdered() ? EOrder::kVisual : EOrder::kLogical);
-  initial_style->SetZoom(
-      frame && !GetDocument().Printing() ? frame->PageZoomFactor() : 1);
+  initial_style->SetZoom(InitialZoom());
   initial_style->SetEffectiveZoom(initial_style->Zoom());
   initial_style->SetInForcedColorsMode(GetDocument().InForcedColorsMode());
   initial_style->SetTapHighlightColor(

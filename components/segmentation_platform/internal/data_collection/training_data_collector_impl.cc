@@ -12,9 +12,9 @@
 #include "components/segmentation_platform/internal/database/signal_storage_config.h"
 #include "components/segmentation_platform/internal/execution/processing/feature_list_query_processor.h"
 #include "components/segmentation_platform/internal/proto/model_metadata.pb.h"
-#include "components/segmentation_platform/internal/proto/model_prediction.pb.h"
 #include "components/segmentation_platform/internal/segmentation_ukm_helper.h"
 #include "components/segmentation_platform/internal/stats.h"
+#include "components/segmentation_platform/public/local_state_helper.h"
 
 using optimization_guide::proto::OptimizationTarget;
 
@@ -138,6 +138,11 @@ void TrainingDataCollectorImpl::ReportForSegmentsInfoList(
     if (!CanReportImmediateTrainingData(segment.second))
       continue;
 
+    absl::optional<proto::PredictionResult> result;
+    if (segment_info.has_prediction_result()) {
+      result = segment_info.prediction_result();
+    }
+
     // Generate training data input.
     // TODO(ssid): Validate immediate output is not included in the input
     // features and update the comment in model_metadata.proto.
@@ -147,8 +152,8 @@ void TrainingDataCollectorImpl::ReportForSegmentsInfoList(
                        weak_ptr_factory_.GetWeakPtr(),
                        static_cast<float>(output_metric_sample),
                        hash_index_map[output_metric_hash],
-                       segment_info.segment_id(),
-                       segment_info.model_version()));
+                       segment_info.segment_id(), segment_info.model_version(),
+                       result));
   }
 }
 
@@ -163,9 +168,27 @@ bool TrainingDataCollectorImpl::CanReportImmediateTrainingData(
     return false;
   }
 
+  const proto::SegmentationModelMetadata& model_metadata =
+      segment_info.model_metadata();
+
+  // If UKM is allowed recently, don't upload the metrics.
+  DCHECK_LE(model_metadata.min_signal_collection_length(),
+            model_metadata.signal_storage_length());
+  base::TimeDelta signal_storage_length =
+      model_metadata.signal_storage_length() *
+      metadata_utils::GetTimeUnit(model_metadata);
+  if (LocalStateHelper::GetInstance().GetUkmMostRecentAllowedTime() +
+          signal_storage_length >=
+      clock_->Now()) {
+    RecordTrainingDataCollectionEvent(
+        segment_info.segment_id(),
+        stats::TrainingDataCollectionEvent::kPartialDataNotAllowed);
+    return false;
+  }
+
   base::TimeDelta min_signal_collection_length =
-      segment_info.model_metadata().min_signal_collection_length() *
-      metadata_utils::GetTimeUnit(segment_info.model_metadata());
+      model_metadata.min_signal_collection_length() *
+      metadata_utils::GetTimeUnit(model_metadata);
   base::Time model_update_time = base::Time::FromDeltaSinceWindowsEpoch(
       base::Seconds(segment_info.model_update_time_s()));
 
@@ -182,7 +205,7 @@ bool TrainingDataCollectorImpl::CanReportImmediateTrainingData(
 
   // Each input must be collected for enough time.
   if (!signal_storage_config_->MeetsSignalCollectionRequirement(
-          segment_info.model_metadata())) {
+          model_metadata)) {
     RecordTrainingDataCollectionEvent(
         segment_info.segment_id(),
         stats::TrainingDataCollectionEvent::kNotEnoughCollectionTime);
@@ -197,6 +220,7 @@ void TrainingDataCollectorImpl::OnGetInputTensor(
     int output_index,
     OptimizationTarget segment_id,
     int64_t model_version,
+    const absl::optional<proto::PredictionResult>& prediction_result,
     bool success,
     const std::vector<float>& inputs) {
   if (!success) {
@@ -206,7 +230,8 @@ void TrainingDataCollectorImpl::OnGetInputTensor(
   }
 
   auto ukm_source_id = SegmentationUkmHelper::GetInstance()->RecordTrainingData(
-      segment_id, model_version, inputs, {output_value}, {output_index});
+      segment_id, model_version, inputs, {output_value}, {output_index},
+      prediction_result);
   if (ukm_source_id == ukm::kInvalidSourceId) {
     VLOG(1) << "Failed to collect training data for segment:" << segment_id;
     RecordTrainingDataCollectionEvent(

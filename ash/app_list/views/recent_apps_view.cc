@@ -180,8 +180,10 @@ void RecentAppsView::OnAppListItemWillBeDeleted(AppListItem* item) {
     if (view->item() && view->item() == item)
       ids_to_remove.push_back(view->item()->id());
   }
-  if (!ids_to_remove.empty())
+  if (!ids_to_remove.empty()) {
     UpdateResults(ids_to_remove);
+    UpdateVisibility();
+  }
 }
 
 void RecentAppsView::UpdateAppListConfig(const AppListConfig* app_list_config) {
@@ -211,7 +213,9 @@ void RecentAppsView::UpdateResults(
   }
 
   if (items.size() < kMinRecommendedApps) {
-    SetVisible(false);
+    if (auto* notifier = view_delegate_->GetNotifier()) {
+      notifier->NotifyResultsUpdated(SearchResultDisplayType::kRecentApps, {});
+    }
     return;
   }
 
@@ -222,8 +226,6 @@ void RecentAppsView::UpdateResults(
     notifier->NotifyResultsUpdated(SearchResultDisplayType::kRecentApps,
                                    notifier_results);
   }
-
-  SetVisible(true);
 
   for (AppListItem* item : items) {
     auto* item_view = AddChildView(std::make_unique<AppListItemView>(
@@ -249,6 +251,18 @@ void RecentAppsView::SetModels(SearchModel* search_model, AppListModel* model) {
 
   search_model_ = search_model;
   UpdateResults(/*ids_to_ignore=*/{});
+  UpdateVisibility();
+}
+
+void RecentAppsView::UpdateVisibility() {
+  const bool has_enough_apps = item_views_.size() >= kMinRecommendedApps;
+  const bool hidden_by_user = view_delegate_->ShouldHideContinueSection();
+  const bool visible = has_enough_apps && !hidden_by_user;
+  SetVisible(visible);
+  if (auto* notifier = view_delegate_->GetNotifier()) {
+    notifier->NotifyContinueSectionVisibilityChanged(
+        SearchResultDisplayType::kRecentApps, visible);
+  }
 }
 
 int RecentAppsView::GetItemViewCount() const {

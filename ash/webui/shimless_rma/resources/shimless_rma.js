@@ -130,7 +130,7 @@ export const StateComponentMapping = {
   [State.kWaitForManualWPDisable]: {
     componentIs: 'onboarding-wait-for-manual-wp-disable-page',
     requiresReloadWhenShown: true,
-    buttonNext: ButtonState.DISABLED,
+    buttonNext: ButtonState.HIDDEN,
     buttonCancel: ButtonState.VISIBLE,
     buttonBack: ButtonState.VISIBLE,
   },
@@ -388,6 +388,15 @@ export class ShimlessRma extends ShimlessRmaBase {
     };
 
     /**
+     * The nextButtonCallback_ callback is used by the landing page to simulate
+     * the next button being clicked.
+     * @private {?Function}
+     */
+    this.nextButtonCallback_ = (e) => {
+      this.onNextButtonClicked_();
+    };
+
+    /**
      * The setNextButtonLabelCallback callback is used by page elements to set
      * the text label for the 'Next' button.
      * @private {?Function}
@@ -411,6 +420,7 @@ export class ShimlessRma extends ShimlessRmaBase {
     window.addEventListener(
         'enable-all-buttons', this.enableAllButtonsCallback_);
     window.addEventListener('click-cancel-button', this.cancelButtonCallback_);
+    window.addEventListener('click-next-button', this.nextButtonCallback_);
   }
 
   /** @override */
@@ -427,6 +437,7 @@ export class ShimlessRma extends ShimlessRmaBase {
         'enable-all-buttons', this.enableAllButtonsCallback_);
     window.removeEventListener(
         'click-cancel-button', this.cancelButtonCallback_);
+    window.removeEventListener('click-next-button', this.nextButtonCallback_);
   }
 
   /** @override */
@@ -451,8 +462,7 @@ export class ShimlessRma extends ShimlessRmaBase {
     if (this.handleStandardAndCriticalError_(stateResult.error)) {
       return;
     }
-    this.showState_(
-        stateResult.state, stateResult.canCancel, stateResult.canGoBack);
+    this.showState_(stateResult);
   }
 
   /** @param {!RmadErrorCode} error */
@@ -469,7 +479,13 @@ export class ShimlessRma extends ShimlessRmaBase {
   handleStandardAndCriticalError_(error) {
     // Critical error - expected to be in RMA.
     if (error === RmadErrorCode.kRmaNotRequired) {
-      this.showState_(State.kUnknown, false, false);
+      const errorState = {
+        state: State.kUnknown,
+        canCancel: false,
+        canGoBack: false,
+        error: RmadErrorCode.kRmaNotRequired
+      };
+      this.showState_(errorState);
       return true;
     }
 
@@ -477,60 +493,48 @@ export class ShimlessRma extends ShimlessRmaBase {
   }
 
   /**
-   * @param {!State} state
-   * @param {boolean} canCancel
-   * @param {boolean} canGoBack
+   * @param {!StateResult} stateResult
    * @private
    */
-  showState_(state, canCancel, canGoBack) {
-    const pageInfo = StateComponentMapping[state];
-    assert(pageInfo);
+  showState_(stateResult) {
+    // Reset clicked variables to hide the spinners.
     this.nextButtonClicked_ = false;
     this.backButtonClicked_ = false;
     this.cancelButtonClicked_ = false;
-    if (!canCancel) {
-      pageInfo.buttonCancel = ButtonState.HIDDEN;
+
+    const nextStatePageInfo = StateComponentMapping[stateResult.state];
+    assert(nextStatePageInfo);
+
+    if (this.currentPage_.requiresReloadWhenShown) {
+      this.removeComponent_(this.currentPage_.componentIs);
     }
 
-    if (!canGoBack) {
-      pageInfo.buttonBack = ButtonState.HIDDEN;
-    }
+    // Only perform the below actions if the page needs to change or reload.
+    const shouldLoadNextPage = this.currentPage_ !== nextStatePageInfo ||
+        this.currentPage_.requiresReloadWhenShown;
+    if (shouldLoadNextPage) {
+      this.hideAllComponents_();
 
-    // TODO(gavindodd): Replace this with 'dom-if' in html.
-    if (!!this.currentPage_ && this.currentPage_.requiresReloadWhenShown) {
-      let component =
-          this.shadowRoot.querySelector(`#${this.currentPage_.componentIs}`);
-      if (component !== null) {
-        component.remove();
-        component = null;
+      // Set the next page as the current page.
+      this.currentPage_ = nextStatePageInfo;
+      if (!stateResult.canCancel) {
+        this.currentPage_.buttonCancel = ButtonState.HIDDEN;
       }
-    } else if (pageInfo == this.currentPage_) {
-      this.setAllButtonsState_(
-          /* shouldDisableButtons= */ false, /* showBusyStateOverlay= */ false);
-      // Make sure all button states are correct.
-      this.notifyPath('currentPage_.buttonNext');
-      this.notifyPath('currentPage_.buttonBack');
-      this.notifyPath('currentPage_.buttonCancel');
-      return;
-    }
-    this.currentPage_ = pageInfo;
-    let component =
-        this.shadowRoot.querySelector(`#${this.currentPage_.componentIs}`);
-    if (component === null) {
-      component = this.loadComponent_(this.currentPage_.componentIs);
+      if (!stateResult.canGoBack) {
+        this.currentPage_.buttonBack = ButtonState.HIDDEN;
+      }
+
+      // Load the next page so it's visible.
+      const currentPageComponent =
+          this.loadComponent_(this.currentPage_.componentIs);
+      currentPageComponent.hidden = false;
+
+      // A special case for the landing page, which has its own navigation
+      // buttons.
+      currentPageComponent.getStartedButtonClicked = false;
+      currentPageComponent.landingCancelButtonClicked = false;
     }
 
-    // A special case for the landing page, which has its own navigation
-    // buttons.
-    if (component.getStartedButtonClicked) {
-      component.getStartedButtonClicked = false;
-    }
-    if (component.landingCancelButtonClicked) {
-      component.landingCancelButtonClicked = false;
-    }
-
-    this.hideAllComponents_();
-    component.hidden = false;
     this.setAllButtonsState_(
         /* shouldDisableButtons= */ false, /* showBusyStateOverlay= */ false);
   }
@@ -545,10 +549,27 @@ export class ShimlessRma extends ShimlessRmaBase {
 
   /**
    * @param {string} componentIs
+   * @private
+   */
+  removeComponent_(componentIs) {
+    const currentPageComponent =
+        this.shadowRoot.querySelector(`#${componentIs}`);
+    assert(!!currentPageComponent);
+    currentPageComponent.remove();
+  }
+
+  /**
+   * @param {string} componentIs
    * @return {!Element}
    * @private
    */
   loadComponent_(componentIs) {
+    const alreadyLoadedComponent =
+        this.shadowRoot.querySelector(`#${componentIs}`);
+    if (alreadyLoadedComponent) {
+      return alreadyLoadedComponent;
+    }
+
     const shimlessBody = this.shadowRoot.querySelector('#contentContainer');
 
     /** @type {!Element} */

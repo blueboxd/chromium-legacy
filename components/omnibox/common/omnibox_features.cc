@@ -270,7 +270,7 @@ const base::Feature kOmniboxFuzzyUrlSuggestions{
 // Feature used to enable the first batch of Pedals on Android. The Pedals,
 // which will be enabled on Android, should be already enabled on desktop.
 const base::Feature kOmniboxPedalsAndroidBatch1{
-    "OmniboxPedalsAndroidBatch1", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OmniboxPedalsAndroidBatch1", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used to enable the third batch of Pedals (Find your phone, etc.)
 // for non-English locales (English locales are 'en' and 'en-GB').
@@ -333,5 +333,10 @@ const base::Feature kReportAssistedQueryStats{"OmniboxReportAssistedQueryStats",
 // Search Results Page URL.
 extern const base::Feature kReportSearchboxStats{
     "OmniboxReportSearchboxStats", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, retains all suggestions with headers to be presented entirely.
+// Disabling the feature trims the suggestions list to the predefined limit.
+extern const base::Feature kRetainSuggestionsWithHeaders{
+    "OmniboxRetainSuggestionsWithHeaders", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace omnibox

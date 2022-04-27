@@ -26,13 +26,11 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/css/cascade_layer_map.h"
-#include "third_party/blink/renderer/core/css/resolver/cascade_expansion.h"
-#include "third_party/blink/renderer/core/css/resolver/cascade_filter.h"
+#include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_origin.h"
-#include "third_party/blink/renderer/core/css/resolver/cascade_priority.h"
 #include "third_party/blink/renderer/core/css/rule_set.h"
-#include "third_party/blink/renderer/core/css/selector_checker.h"
+#include "third_party/blink/renderer/core/dom/tree_scope.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -171,6 +169,12 @@ class CORE_EXPORT MatchResult {
   bool ConditionallyAffectsAnimations() const {
     return conditionally_affects_animations_;
   }
+  void SetMatchesNonUniversalHighlights() {
+    matches_non_universal_highlights_ = true;
+  }
+  bool MatchesNonUniversalHighlights() const {
+    return matches_non_universal_highlights_;
+  }
 
   const MatchedPropertiesVector& GetMatchedProperties() const {
     return matched_properties_;
@@ -193,6 +197,7 @@ class CORE_EXPORT MatchResult {
   bool depends_on_viewport_container_queries_{false};
   bool depends_on_rem_container_queries_{false};
   bool conditionally_affects_animations_{false};
+  bool matches_non_universal_highlights_{false};
   CascadeOrigin current_origin_{CascadeOrigin::kUserAgent};
   uint16_t current_tree_order_{0};
 };

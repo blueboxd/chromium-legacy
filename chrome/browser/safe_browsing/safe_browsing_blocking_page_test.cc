@@ -66,7 +66,6 @@
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
-#include "components/reputation/core/safety_tip_test_utils.h"
 #include "components/safe_browsing/content/browser/safe_browsing_blocking_page.h"
 #include "components/safe_browsing/content/browser/safe_browsing_blocking_page_factory.h"
 #include "components/safe_browsing/content/browser/threat_details.h"
@@ -89,7 +88,6 @@
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "components/security_interstitials/core/urls.h"
-#include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/unified_consent/pref_names.h"
@@ -806,6 +804,8 @@ class SafeBrowsingBlockingPageBrowserTest
 
  protected:
   TestThreatDetailsFactory details_factory_;
+
+  net::EmbeddedTestServer& https_server() { return https_server_; }
 
  private:
   // Adds a safebrowsing result of the current test threat to the fake
@@ -2690,185 +2690,6 @@ INSTANTIATE_TEST_SUITE_P(
         testing::Values(false, true), /* IsolateAllSitesForTesting */
         testing::Values(false, true) /* Show warning on mouse click */));
 
-class SafeBrowsingBlockingPageDelayedWarningWithSafetyTipBrowserTest
-    : public SafeBrowsingBlockingPageDelayedWarningBrowserTest {
- public:
-  SafeBrowsingBlockingPageDelayedWarningWithSafetyTipBrowserTest() = default;
-  SafeBrowsingBlockingPageDelayedWarningWithSafetyTipBrowserTest(
-      const SafeBrowsingBlockingPageDelayedWarningWithSafetyTipBrowserTest&) =
-      delete;
-  SafeBrowsingBlockingPageDelayedWarningWithSafetyTipBrowserTest& operator=(
-      const SafeBrowsingBlockingPageDelayedWarningWithSafetyTipBrowserTest&) =
-      delete;
-
- protected:
-  void SetUp() override {
-    reputation::InitializeSafetyTipConfig();
-    SafeBrowsingBlockingPageDelayedWarningBrowserTest::SetUp();
-  }
-
-  void GetAdditionalFeatures(
-      std::vector<FeatureAndParams>* enabled_features,
-      std::vector<base::Feature>* disabled_features) override {
-    enabled_features->push_back(FeatureAndParams(
-        security_state::features::kSafetyTipUIOnDelayedWarning, {}));
-    // Explicitly disable the main Safety Tip feature. This feature is used to
-    // enable Safety Tips independently of delayed warnings, so that we can
-    // have one experiment studying regular Safety Tips running at the same time
-    // as another experiment studying delayed warnings Safety Tips. We want to
-    // test that delayed warnings Safety Tips can be enabled independently
-    // without requiring the main Safety Tip feature as well.
-    disabled_features->push_back(security_state::features::kSafetyTipUI);
-  }
-};
-
-// Tests that when delayed warnings and Safety Tips for delayed warnings are
-// enabled, a safety tip is shown on page load, and then the delayed warning on
-// interaction.
-IN_PROC_BROWSER_TEST_P(
-    SafeBrowsingBlockingPageDelayedWarningWithSafetyTipBrowserTest,
-    ShowSafetyTipBeforeInterstitial) {
-  base::HistogramTester histograms;
-  // Use an https server in this test to check that the security level is
-  // downgraded when the Safety Tip is showing. (http:// pages are always
-  // downgraded regardless of Safety Tip status.)
-  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
-  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
-  ASSERT_TRUE(https_server.Start());
-  GURL url = https_server.GetURL("/title1.html");
-  SetURLThreatType(url, SB_THREAT_TYPE_URL_PHISHING);
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
-  AssertNoInterstitial(browser(), true);
-
-  // Check that a "Suspicious site" Safety Tip is showing.
-  EXPECT_EQ(PageInfoBubbleViewBase::BUBBLE_SAFETY_TIP,
-            PageInfoBubbleViewBase::GetShownBubbleType());
-  histograms.ExpectUniqueSample("Security.SafetyTips.SafetyTipShown",
-                                security_state::SafetyTipStatus::kBadReputation,
-                                1);
-  auto* page_info = OpenPageInfo(browser());
-  ASSERT_TRUE(page_info);
-  EXPECT_EQ(
-      GetSecuritySummaryTextFromPageInfo(),
-      l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE));
-
-  // When the Safety Tip is showing, the security level should be downgraded, as
-  // with a normal Safety Tip.
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(contents);
-  ASSERT_TRUE(helper);
-  EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
-
-  // After typing in the page, the delayed warning should show and the Safety
-  // Tip should be dismissed.
-  EXPECT_TRUE(TypeAndWaitForInterstitial(browser()));
-  EXPECT_EQ(PageInfoBubbleViewBase::BUBBLE_NONE,
-            PageInfoBubbleViewBase::GetShownBubbleType());
-  // After the interstitial shows, the security level should be DANGEROUS as
-  // with a normal interstitial.
-  EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
-}
-
-// Tests that when delayed warnings and Safety Tips for delayed warnings are
-// enabled, the safety tip for the delayed warning takes precedence over a
-// lookalike URL safety tip.
-IN_PROC_BROWSER_TEST_P(
-    SafeBrowsingBlockingPageDelayedWarningWithSafetyTipBrowserTest,
-    SafetyTipLookalike) {
-  base::HistogramTester histograms;
-  // Use a domain that is 1 edit distance away from a top 500 domain.
-  const GURL lookalike_url =
-      embedded_test_server()->GetURL("gooogle.com", "/iframe.html");
-  SetURLThreatType(lookalike_url, SB_THREAT_TYPE_URL_PHISHING);
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), lookalike_url));
-  AssertNoInterstitial(browser(), true);
-
-  // Check that a Safety Tip is showing and that is not recorded as a lookalike,
-  // but rather as a bad reputation safety tip (the type we use for delayed
-  // warnings).
-  EXPECT_EQ(PageInfoBubbleViewBase::BUBBLE_SAFETY_TIP,
-            PageInfoBubbleViewBase::GetShownBubbleType());
-  histograms.ExpectUniqueSample("Security.SafetyTips.SafetyTipShown",
-                                security_state::SafetyTipStatus::kBadReputation,
-                                1);
-
-  // After typing in the page, the delayed warning should show and the Safety
-  // Tip should be dismissed.
-  EXPECT_TRUE(TypeAndWaitForInterstitial(browser()));
-  EXPECT_EQ(PageInfoBubbleViewBase::BUBBLE_NONE,
-            PageInfoBubbleViewBase::GetShownBubbleType());
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    SafeBrowsingBlockingPageDelayedWarningWithSafetyTipBrowserTest,
-    SafeBrowsingBlockingPageDelayedWarningWithSafetyTipBrowserTest,
-    testing::Combine(
-        testing::Values(false, true), /* IsolateAllSitesForTesting */
-        testing::Values(false, true) /* Show warning on mouse click */));
-
-// This test fixture has both regular Safety Tips and delayed warnings Safety
-// Tips enabled, to test that delayed warnings Safety Tips don't interfere with
-// regular Safety Tips on non-blocklisted pages.
-class SafeBrowsingBlockingPageDelayedWarningWithLookalikeSafetyTipBrowserTest
-    : public SafeBrowsingBlockingPageDelayedWarningBrowserTest {
- public:
-  SafeBrowsingBlockingPageDelayedWarningWithLookalikeSafetyTipBrowserTest() =
-      default;
-  SafeBrowsingBlockingPageDelayedWarningWithLookalikeSafetyTipBrowserTest(
-      const SafeBrowsingBlockingPageDelayedWarningWithLookalikeSafetyTipBrowserTest&) =
-      delete;
-  SafeBrowsingBlockingPageDelayedWarningWithLookalikeSafetyTipBrowserTest&
-  operator=(
-      const SafeBrowsingBlockingPageDelayedWarningWithLookalikeSafetyTipBrowserTest&) =
-      delete;
-
- protected:
-  void SetUp() override {
-    reputation::InitializeSafetyTipConfig();
-    SafeBrowsingBlockingPageDelayedWarningBrowserTest::SetUp();
-  }
-
-  void GetAdditionalFeatures(
-      std::vector<FeatureAndParams>* enabled_features,
-      std::vector<base::Feature>* disabled_features) override {
-    enabled_features->push_back(FeatureAndParams(
-        security_state::features::kSafetyTipUIOnDelayedWarning, {}));
-    enabled_features->push_back(FeatureAndParams(
-        security_state::features::kSafetyTipUI, {{"editdistance", "true"}}));
-  }
-};
-
-// Tests that the delayed warnings Safety Tips feature does not interfere with
-// normal lookalike safety tips.
-IN_PROC_BROWSER_TEST_P(
-    SafeBrowsingBlockingPageDelayedWarningWithLookalikeSafetyTipBrowserTest,
-    LookalikeSafetyTip) {
-  // Use a domain that is 1 edit distance away from a top 500 domain.
-  const GURL lookalike_url =
-      embedded_test_server()->GetURL("gooogle.com", "/iframe.html");
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), lookalike_url));
-  AssertNoInterstitial(browser(), true);
-
-  // Check that a "Did you mean..." Safety Tip is showing.
-  EXPECT_EQ(PageInfoBubbleViewBase::BUBBLE_SAFETY_TIP,
-            PageInfoBubbleViewBase::GetShownBubbleType());
-  auto* page_info = OpenPageInfo(browser());
-  ASSERT_TRUE(page_info);
-  EXPECT_EQ(GetSecuritySummaryTextFromPageInfo(),
-            l10n_util::GetStringFUTF16(IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_TITLE,
-                                       u"google.com"));
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    SafeBrowsingBlockingPageDelayedWarningWithLookalikeSafetyTipBrowserTest,
-    SafeBrowsingBlockingPageDelayedWarningWithLookalikeSafetyTipBrowserTest,
-    testing::Combine(
-        testing::Values(false, true), /* IsolateAllSitesForTesting */
-        testing::Values(false, true) /* Show warning on mouse click */));
-
 // Test that SafeBrowsingBlockingPage properly decodes IDN URLs that are
 // displayed.
 class SafeBrowsingBlockingPageIDNTest
@@ -3496,6 +3317,17 @@ class SafeBrowsingFencedFrameBrowserTest
  public:
   ~SafeBrowsingFencedFrameBrowserTest() override = default;
 
+  void SetUpOnMainThread() override {
+    SafeBrowsingBlockingPageBrowserTest::SetUpOnMainThread();
+    https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+    ASSERT_TRUE(https_server_.Start());
+    scoped_refptr<net::X509Certificate> cert(https_server_.GetCertificate());
+    net::CertVerifyResult verify_result;
+    verify_result.verified_cert = cert;
+    verify_result.cert_status = 0;
+    mock_cert_verifier()->AddResultForCert(cert.get(), verify_result, net::OK);
+  }
+
   void AddFencedFrameAndExpectInterstitial(const GURL& url) {
     content::WebContents* contents =
         browser()->tab_strip_model()->GetActiveWebContents();
@@ -3522,8 +3354,11 @@ class SafeBrowsingFencedFrameBrowserTest
     EXPECT_TRUE(IsShowingInterstitial(contents));
   }
 
+  net::EmbeddedTestServer& https_server() { return https_server_; }
+
  private:
   content::test::FencedFrameTestHelper fenced_frame_helper_;
+  net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -3538,10 +3373,15 @@ INSTANTIATE_TEST_SUITE_P(
 IN_PROC_BROWSER_TEST_P(SafeBrowsingFencedFrameBrowserTest, UnsafeFencedFrame) {
   const GURL initial_url = embedded_test_server()->GetURL("/title1.html");
   const GURL fenced_frame_url =
-      embedded_test_server()->GetURL("/fenced_frames/title1.html");
+      https_server().GetURL("/fenced_frames/title1.html");
   SetURLThreatType(fenced_frame_url, GetThreatType());
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), initial_url));
+  ASSERT_FALSE(browser()
+                   ->tab_strip_model()
+                   ->GetActiveWebContents()
+                   ->GetMainFrame()
+                   ->IsErrorDocument());
   AddFencedFrameAndExpectInterstitial(fenced_frame_url);
 }
 
@@ -3551,10 +3391,8 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingFencedFrameBrowserTest,
   SetExtendedReportingPrefForTests(browser()->profile()->GetPrefs(), true);
   const bool expect_threat_details =
       SafeBrowsingBlockingPage::ShouldReportThreatDetails(GetThreatType());
-  const GURL initial_url =
-      embedded_test_server()->GetURL(kMaliciousFencedFrameOwner);
-  const GURL fenced_frame_url =
-      embedded_test_server()->GetURL(kMaliciousFencedFrame);
+  const GURL initial_url = https_server().GetURL(kMaliciousFencedFrameOwner);
+  const GURL fenced_frame_url = https_server().GetURL(kMaliciousFencedFrame);
   SetURLThreatType(fenced_frame_url, GetThreatType());
 
   base::RunLoop threat_report_sent_run_loop;

@@ -204,39 +204,37 @@ TabletModeAnimationTransition CalculateAnimationTransitionForMetrics(
   }
 }
 
+PrefService* GetLastActiveUserPrefService() {
+  return Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+}
+
 int GetSuggestedContentInfoShownCount() {
-  PrefService* prefs =
-      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  PrefService* prefs = GetLastActiveUserPrefService();
   return prefs->GetInteger(prefs::kSuggestedContentInfoShownInLauncher);
 }
 
 void SetSuggestedContentInfoShownCount(int count) {
-  PrefService* prefs =
-      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  PrefService* prefs = GetLastActiveUserPrefService();
   prefs->SetInteger(prefs::kSuggestedContentInfoShownInLauncher, count);
 }
 
 bool IsSuggestedContentInfoDismissed() {
-  PrefService* prefs =
-      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  PrefService* prefs = GetLastActiveUserPrefService();
   return prefs->GetBoolean(prefs::kSuggestedContentInfoDismissedInLauncher);
 }
 
 void SetSuggestedContentInfoDismissed() {
-  PrefService* prefs =
-      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  PrefService* prefs = GetLastActiveUserPrefService();
   prefs->SetBoolean(prefs::kSuggestedContentInfoDismissedInLauncher, true);
 }
 
 bool IsSuggestedContentEnabled() {
-  PrefService* prefs =
-      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  PrefService* prefs = GetLastActiveUserPrefService();
   return prefs->GetBoolean(chromeos::prefs::kSuggestedContentEnabled);
 }
 
 int GetOffset(int offset, const char* pref_name) {
-  PrefService* prefs =
-      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  PrefService* prefs = GetLastActiveUserPrefService();
   return prefs->GetBoolean(pref_name) ? -offset : offset;
 }
 
@@ -335,6 +333,9 @@ void AppListControllerImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(
       prefs::kLauncherFeedbackOnContinueSectionSent, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kLauncherContinueSectionHidden, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   AppListNudgeController::RegisterProfilePrefs(registry);
 }
@@ -442,6 +443,10 @@ bool AppListControllerImpl::IsVisible(
 
 bool AppListControllerImpl::IsVisible() {
   return IsVisible(absl::nullopt);
+}
+
+void AppListControllerImpl::HideContinueSection() {
+  SetHideContinueSection(true);
 }
 
 void AppListControllerImpl::OnActiveUserPrefServiceChanged(
@@ -1413,10 +1418,10 @@ void AppListControllerImpl::ActivateItem(const std::string& id,
 
 void AppListControllerImpl::GetContextMenuModel(
     const std::string& id,
-    bool add_sort_options,
+    AppListItemContext item_context,
     GetContextMenuModelCallback callback) {
   if (client_)
-    client_->GetContextMenuModel(profile_id_, id, add_sort_options,
+    client_->GetContextMenuModel(profile_id_, id, item_context,
                                  std::move(callback));
 }
 
@@ -1621,6 +1626,18 @@ void AppListControllerImpl::LoadIcon(const std::string& app_id) {
 
 bool AppListControllerImpl::HasValidProfile() const {
   return profile_id_ != kAppListInvalidProfileID;
+}
+
+bool AppListControllerImpl::ShouldHideContinueSection() const {
+  PrefService* prefs = GetLastActiveUserPrefService();
+  return prefs->GetBoolean(prefs::kLauncherContinueSectionHidden);
+}
+
+void AppListControllerImpl::SetHideContinueSection(bool hide) {
+  PrefService* prefs = GetLastActiveUserPrefService();
+  prefs->SetBoolean(prefs::kLauncherContinueSectionHidden, hide);
+  fullscreen_presenter_->UpdateContinueSectionVisibility();
+  bubble_presenter_->UpdateContinueSectionVisibility();
 }
 
 void AppListControllerImpl::GetAppLaunchedMetricParams(

@@ -6,6 +6,8 @@
 
 #include <sys/stat.h>
 
+#include <map>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -16,6 +18,8 @@
 #include "base/system/sys_info.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ash/crosapi/fake_migration_progress_tracker.h"
+#include "components/sync/base/model_type.h"
+#include "components/sync/model/blocking_model_type_store_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
@@ -34,6 +38,7 @@ constexpr char kCodeCacheUMAName[] = "CodeCache";
 constexpr char kTextFileContent[] = "Hello, World!";
 constexpr int kTextFileSize = sizeof(kTextFileContent);
 constexpr char kMoveExtensionId[] = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+constexpr syncer::ModelType kAshSyncDataType = syncer::ModelType::UNSPECIFIED;
 
 struct TargetItemComparator {
   bool operator()(const TargetItem& t1, const TargetItem& t2) const {
@@ -128,6 +133,57 @@ void SetUpStateStore(const base::FilePath& path,
   ASSERT_TRUE(status.ok());
 }
 
+// Prepare Sync Data LevelDB.
+void SetUpSyncData(const base::FilePath& path,
+                   std::unique_ptr<leveldb::DB>& db) {
+  leveldb_env::Options options;
+  options.create_if_missing = true;
+  leveldb::Status status = leveldb_env::OpenDB(options, path.value(), &db);
+  ASSERT_TRUE(status.ok());
+
+  leveldb::WriteBatch batch;
+  const syncer::ModelType lacros_dt =
+      browser_data_migrator_util::kLacrosSyncDataTypes[0];
+
+  batch.Put(syncer::FormatDataPrefix(lacros_dt) + kMoveExtensionId,
+            "lacros_data");
+  batch.Put(syncer::FormatMetaPrefix(lacros_dt) + kMoveExtensionId,
+            "lacros_metadata");
+  batch.Put(syncer::FormatGlobalMetadataKey(lacros_dt),
+            "lacros_globalmetadata");
+
+  batch.Put(syncer::FormatDataPrefix(kAshSyncDataType) + kMoveExtensionId,
+            "ash_data");
+  batch.Put(syncer::FormatMetaPrefix(kAshSyncDataType) + kMoveExtensionId,
+            "ash_metadata");
+  batch.Put(syncer::FormatGlobalMetadataKey(kAshSyncDataType),
+            "ash_globalmetadata");
+
+  leveldb::WriteOptions write_options;
+  write_options.sync = true;
+  status = db->Write(write_options, &batch);
+  ASSERT_TRUE(status.ok());
+}
+
+// Return all the key-value pairs in a LevelDB.
+std::map<std::string, std::string> ReadLevelDB(const base::FilePath& path) {
+  leveldb_env::Options options;
+  options.create_if_missing = false;
+
+  std::unique_ptr<leveldb::DB> db;
+  leveldb::Status status = leveldb_env::OpenDB(options, path.value(), &db);
+  EXPECT_TRUE(status.ok());
+
+  std::map<std::string, std::string> db_map;
+  std::unique_ptr<leveldb::Iterator> it(
+      db->NewIterator(leveldb::ReadOptions()));
+  for (it->SeekToFirst(); it->Valid(); it->Next()) {
+    db_map.emplace(it->key().ToString(), it->value().ToString());
+  }
+
+  return db_map;
+}
+
 }  // namespace
 
 TEST(BrowserDataMigratorUtilTest, NoPathOverlaps) {
@@ -138,7 +194,7 @@ TEST(BrowserDataMigratorUtilTest, NoPathOverlaps) {
   base::span<const char* const> deletable_paths =
       base::make_span(kDeletablePaths);
   base::span<const char* const> common_data_paths =
-      base::make_span(kNeedCopyDataPaths);
+      base::make_span(kNeedCopyForMoveDataPaths);
 
   std::vector<base::span<const char* const>> paths_groups{
       remain_in_ash_paths, lacros_data_paths, deletable_paths,
@@ -360,6 +416,46 @@ TEST(BrowserDataMigratorUtilTest, MigrateLevelDB) {
        }},
   };
   EXPECT_EQ(expected_keys, keys);
+}
+
+TEST(BrowserDataMigratorUtilTest, MigrateSyncData) {
+  base::ScopedTempDir scoped_temp_dir;
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+
+  // Prepare Sync Data LevelDB.
+  std::unique_ptr<leveldb::DB> db;
+  const base::FilePath db_path =
+      scoped_temp_dir.GetPath().Append(FILE_PATH_LITERAL("syncdata"));
+  SetUpSyncData(db_path, db);
+  db.reset();
+
+  // Migrate Sync Data.
+  const base::FilePath ash_db_path = db_path.AddExtension(".ash");
+  const base::FilePath lacros_db_path = db_path.AddExtension(".lacros");
+  EXPECT_TRUE(MigrateSyncData(db_path, ash_db_path, lacros_db_path));
+
+  // Check resulting Ash database.
+  auto ash_db_map = ReadLevelDB(ash_db_path);
+  std::map<std::string, std::string> expected_ash_db_map = {
+      {syncer::FormatDataPrefix(kAshSyncDataType) + kMoveExtensionId,
+       "ash_data"},
+      {syncer::FormatMetaPrefix(kAshSyncDataType) + kMoveExtensionId,
+       "ash_metadata"},
+      {syncer::FormatGlobalMetadataKey(kAshSyncDataType), "ash_globalmetadata"},
+  };
+  EXPECT_EQ(expected_ash_db_map, ash_db_map);
+
+  // Check resulting Lacros database.
+  auto lacros_db_map = ReadLevelDB(lacros_db_path);
+  const syncer::ModelType lacros_dt =
+      browser_data_migrator_util::kLacrosSyncDataTypes[0];
+  std::map<std::string, std::string> expected_lacros_db_map = {
+      {syncer::FormatDataPrefix(lacros_dt) + kMoveExtensionId, "lacros_data"},
+      {syncer::FormatMetaPrefix(lacros_dt) + kMoveExtensionId,
+       "lacros_metadata"},
+      {syncer::FormatGlobalMetadataKey(lacros_dt), "lacros_globalmetadata"},
+  };
+  EXPECT_EQ(expected_lacros_db_map, lacros_db_map);
 }
 
 TEST(BrowserDataMigratorUtilTest, RecordUserDataSize) {
@@ -612,7 +708,7 @@ TEST_F(BrowserDataMigratorUtilWithTargetsTest, GetTargetItems) {
       {profile_data_dir_.Append(kPolicyDataPath), kTextFileSize,
        TargetItem::ItemType::kFile}};
   TargetItems need_copy_items =
-      GetTargetItems(profile_data_dir_, ItemType::kNeedCopy);
+      GetTargetItems(profile_data_dir_, ItemType::kNeedCopyForMove);
   EXPECT_EQ(need_copy_items.total_size, kTextFileSize);
   ASSERT_EQ(need_copy_items.items.size(), expected_need_copy_items.size());
   EXPECT_EQ(need_copy_items.items[0], expected_need_copy_items[0]);

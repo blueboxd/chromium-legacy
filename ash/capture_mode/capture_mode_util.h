@@ -18,13 +18,20 @@ class Window;
 namespace gfx {
 class Point;
 class Rect;
+class Transform;
 }  // namespace gfx
+
+namespace ui {
+class Layer;
+}  // namespace ui
 
 namespace views {
 class View;
 }  // namespace views
 
 namespace ash {
+
+class StopRecordingButtonTray;
 
 namespace capture_mode_util {
 
@@ -39,6 +46,10 @@ ASH_EXPORT gfx::Point GetLocationForFineTunePosition(const gfx::Rect& rect,
 
 // Return whether |position| is a corner.
 bool IsCornerFineTunePosition(FineTunePosition position);
+
+// Returns the stop recording tray button on the given `root`. It may return
+// `nullptr` during shutdown or if `root` is destroying.
+StopRecordingButtonTray* GetStopRecordingButtonForRoot(aura::Window* root);
 
 // Sets the visibility of the stop-recording button in the Shelf's status area
 // widget of the given |root| window.
@@ -84,6 +95,38 @@ std::unique_ptr<views::View> CreateBannerView();
 // Creates the play icon view which shows on top of the video thumbnail in the
 // notification.
 std::unique_ptr<views::View> CreatePlayIconView();
+
+// Returns a transform that scales the given `layer` by the given `scale` factor
+// in both X and Y around its local center point.
+gfx::Transform GetScaleTransformAboutCenter(ui::Layer* layer, float scale);
+
+// Defines an object to hold the values of the camera preview size specs.
+struct CameraPreviewSizeSpecs {
+  // The size to which the camera preview should be set under the current
+  // conditions.
+  const gfx::Size size;
+
+  // True if the expanded size of the camera preview is big enough to allow it
+  // to be collapsible. False otherwise.
+  const bool is_collapsible;
+
+  // True if the surface within which the camera preview is confined is big
+  // enough to allow it to show. False otherwise.
+  const bool should_be_visible;
+};
+
+// Calculates the size specs of the camera preview which will be confined within
+// the given `confine_bounds_size` and will be either expanded or collapsed
+// based on the given `is_collapsed`.
+ASH_EXPORT CameraPreviewSizeSpecs
+CalculateCameraPreviewSizeSpecs(const gfx::Size& confine_bounds_size,
+                                bool is_collapsed);
+
+// Gets the top-most window that is capturable under the mouse/touch position.
+// The windows that are not capturable include the camera preview widget and
+// capture label. There will be a crash if the capture label widget gets picked
+// since the snapshot code tries to snap a deleted window.
+aura::Window* GetTopMostCapturableWindowAtPoint(const gfx::Point& screen_point);
 
 }  // namespace capture_mode_util
 

@@ -72,6 +72,9 @@
 #include "components/crash/core/app/crashpad.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/nacl/common/nacl_switches.h"
+#include "components/policy/core/common/cloud/cloud_policy_core.h"
+#include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
+#include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -192,21 +195,6 @@ LaunchParamsFromBackground DoLacrosBackgroundWorkPreLaunch(
     base::FilePath lacros_dir,
     bool cleared_user_data_dir) {
   LaunchParamsFromBackground params;
-
-  // TODO(crbug/1198528): remove use_new_account_manager parameter.
-  // This code wipes the Lacros --user-data-dir exactly once due to an
-  // incompatible account_manager change. This code can be removed when ash is
-  // newer than M92, as we can then assume that all relevant users have been
-  // migrated.
-  //
-  // If we want to use the new account manager, and we haven't yet cleared the
-  // user data dir, do so.
-  if (!cleared_user_data_dir) {
-    params.use_new_account_manager =
-        base::DeletePathRecursively(browser_util::GetUserDataDir());
-  } else {
-    params.use_new_account_manager = true;
-  }
 
   if (!RotateLacrosLogs()) {
     // If log file does not exist, most likely the user directory does not
@@ -905,14 +893,6 @@ void BrowserManager::StartWithLogFile(
     return;
   }
 
-  if (!params.use_new_account_manager) {
-    // If `use_new_account_manager` is false, that means deleting old lacros
-    // data directory failed. In such a case, do not launch lacros.
-    LOG(ERROR) << "Failed to delete old user data dir.";
-    SetState(State::STOPPED);
-    return;
-  }
-
   const std::string user_id_hash = ash::ProfileHelper::GetUserIdHashFromProfile(
       ProfileManager::GetPrimaryUserProfile());
   crosapi::browser_util::RecordDataVer(g_browser_process->local_state(),
@@ -1129,6 +1109,18 @@ void BrowserManager::OnBrowserRelaunchRequested(CrosapiId id) {
   relaunch_requested_ = true;
 }
 
+void BrowserManager::OnCoreConnected(policy::CloudPolicyCore* core) {}
+
+void BrowserManager::OnRefreshSchedulerStarted(policy::CloudPolicyCore* core) {
+  core->refresh_scheduler()->AddObserver(this);
+}
+
+void BrowserManager::OnCoreDisconnecting(policy::CloudPolicyCore* core) {}
+
+void BrowserManager::OnCoreDestruction(policy::CloudPolicyCore* core) {
+  core->RemoveObserver(this);
+}
+
 void BrowserManager::OnMojoDisconnected() {
   DCHECK(state_ == State::STARTING || state_ == State::RUNNING);
   DCHECK(lacros_process_.IsValid());
@@ -1220,6 +1212,19 @@ void BrowserManager::OnComponentPolicyServiceDestruction(
   service->RemoveObserver(this);
 }
 
+void BrowserManager::OnFetchAttempt(
+    policy::CloudPolicyRefreshScheduler* scheduler) {
+  environment_provider_->SetLastPolicyFetchAttemptTimestamp(
+      scheduler->last_refresh());
+  if (browser_service_.has_value())
+    browser_service_->service->NotifyPolicyFetchAttempt();
+}
+
+void BrowserManager::OnRefreshSchedulerDestruction(
+    policy::CloudPolicyRefreshScheduler* scheduler) {
+  scheduler->RemoveObserver(this);
+}
+
 void BrowserManager::OnEvent(Events event, const std::string& id) {
   // Track whether an update has been installed and should be loaded next time
   // the browser is started.
@@ -1261,7 +1266,7 @@ void BrowserManager::PrepareLacrosPolicies() {
   const user_manager::User* user =
       user_manager::UserManager::Get()->GetPrimaryUser();
 
-  policy::CloudPolicyStore* store = nullptr;
+  policy::CloudPolicyCore* core = nullptr;
   policy::ComponentCloudPolicyService* component_policy_service = nullptr;
   switch (user->GetType()) {
     case user_manager::USER_TYPE_REGULAR:
@@ -1271,7 +1276,7 @@ void BrowserManager::PrepareLacrosPolicies() {
       policy::CloudPolicyManager* user_cloud_policy_manager =
           profile->GetUserCloudPolicyManagerAsh();
       if (user_cloud_policy_manager) {
-        store = user_cloud_policy_manager->core()->store();
+        core = user_cloud_policy_manager->core();
         component_policy_service =
             user_cloud_policy_manager->component_policy_service();
       }
@@ -1285,7 +1290,7 @@ void BrowserManager::PrepareLacrosPolicies() {
               ->GetDeviceLocalAccountPolicyService()
               ->GetBrokerForUser(user->GetAccountId().GetUserEmail());
       if (broker) {
-        store = broker->core()->store();
+        core = broker->core();
         component_policy_service = broker->component_policy_service();
       }
       break;
@@ -1294,21 +1299,26 @@ void BrowserManager::PrepareLacrosPolicies() {
       break;
   }
 
-  if (store && store->policy_fetch_response()) {
-    const std::string policy_blob =
-        store->policy_fetch_response()->SerializeAsString();
-    SetDeviceAccountPolicy(policy_blob);
-    // The lifetime of `BrowserManager` is longer than lifetime of policy store.
-    // That is why `CloudPolicyStore::RemoveObserver()` is called during
-    // `CloudPolicyStore::Observer::OnStoreDestruction()`.
-    store->AddObserver(this);
+  // The lifetime of `BrowserManager` is longer than lifetime of various
+  // classes, for which we register as an observer below. The RemoveObserver
+  // function is therefore called in various handlers invoked by those classes
+  // and not in the destructor.
+  if (core) {
+    core->AddObserver(this);
+    if (core->refresh_scheduler())
+      core->refresh_scheduler()->AddObserver(this);
+
+    policy::CloudPolicyStore* store = core->store();
+    if (store && store->policy_fetch_response()) {
+      const std::string policy_blob =
+          store->policy_fetch_response()->SerializeAsString();
+      SetDeviceAccountPolicy(policy_blob);
+      store->AddObserver(this);
+    }
   }
 
-  if (component_policy_service) {
-    // Same as above, the RemoveObserver function is called during
-    // `ComponentCloudPolicyService::Observer::OnComponentStoreDestruction()`.
+  if (component_policy_service)
     component_policy_service->AddObserver(this);
-  }
 }
 
 void BrowserManager::SetDeviceAccountPolicy(const std::string& policy_blob) {

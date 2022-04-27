@@ -7,6 +7,8 @@
 
 #include <cstdint>
 
+#include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/time/time.h"
 #include "base/types/id_type.h"
 
@@ -19,37 +21,24 @@ using UkmEventHash = base::IdTypeU64<class UkmEventHashTag>;
 using UkmMetricHash = base::IdTypeU64<class UkmMetricHashTag>;
 using UrlId = base::IdType64<class UrlIdTag>;
 
+namespace processing {
+
 // A struct that can accommodate multiple output types needed for Segmentation
 // metadata's feature processing. It can only hold one value at a time with the
 // corresponding type.
 struct ProcessedValue {
-  explicit ProcessedValue(bool val) : type(Type::BOOL), bool_val(val) {}
-  explicit ProcessedValue(int val) : type(Type::INT), int_val(val) {}
-  explicit ProcessedValue(float val) : type(Type::FLOAT), float_val(val) {}
-  explicit ProcessedValue(double val) : type(Type::DOUBLE), double_val(val) {}
-  explicit ProcessedValue(std::string val) : type(Type::STRING), str_val(val) {}
-  explicit ProcessedValue(base::Time val) : type(Type::TIME), time_val(val) {}
+  explicit ProcessedValue(bool val);
+  explicit ProcessedValue(int val);
+  explicit ProcessedValue(float val);
+  explicit ProcessedValue(double val);
+  explicit ProcessedValue(const std::string& val);
+  explicit ProcessedValue(base::Time val);
+  explicit ProcessedValue(int64_t val);
 
-  bool operator==(const ProcessedValue& rhs) const {
-    if (type != rhs.type)
-      return false;
-    switch (type) {
-      case Type::BOOL:
-        return bool_val == rhs.bool_val;
-      case Type::INT:
-        return int_val == rhs.int_val;
-      case Type::FLOAT:
-        return float_val == rhs.float_val;
-      case Type::DOUBLE:
-        return double_val == rhs.double_val;
-      case Type::STRING:
-        return str_val == rhs.str_val;
-      case Type::TIME:
-        return time_val == rhs.time_val;
-      default:
-        return false;
-    }
-  }
+  ProcessedValue(const ProcessedValue& other);
+  ProcessedValue& operator=(const ProcessedValue& other);
+
+  bool operator==(const ProcessedValue& rhs) const;
 
   enum Type {
     UNKNOWN = 0,
@@ -59,6 +48,7 @@ struct ProcessedValue {
     DOUBLE = 4,
     STRING = 5,
     TIME = 6,
+    INT64 = 7,
   };
   Type type{UNKNOWN};
   bool bool_val{false};
@@ -67,7 +57,17 @@ struct ProcessedValue {
   double double_val{0};
   std::string str_val;
   base::Time time_val;
+  int64_t int64_val{0};
 };
+
+// Represents a set of values that can represent inputs or outputs for a model.
+using Tensor = std::vector<ProcessedValue>;
+
+// Intermediate representation of processed features from the metadata queries.
+using FeatureIndex = int;
+using IndexedTensors = base::flat_map<FeatureIndex, Tensor>;
+
+}  // namespace processing
 
 }  // namespace segmentation_platform
 

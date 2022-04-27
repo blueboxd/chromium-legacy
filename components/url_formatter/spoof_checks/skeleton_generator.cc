@@ -5,7 +5,6 @@
 #include "components/url_formatter/spoof_checks/skeleton_generator.h"
 
 #include <ostream>
-
 #include <queue>
 
 #include "base/i18n/unicodestring.h"
@@ -20,6 +19,11 @@
 namespace {
 
 using QueueItem = std::vector<std::u16string>;
+
+// Maximum length of a hostname whose supplemental hostnames we'll calculate.
+// For hostnames longer than this length, the supplemental hostnames will be
+// empty.
+const size_t kMaxHostnameLengthToComputeSupplementalHostnames = 32;
 
 // Maximum number of supplemental hostname to generate for a given input.
 // If this number is too high, we may end up DOSing the browser process.
@@ -144,6 +148,16 @@ SkeletonGenerator::SkeletonGenerator(const USpoofChecker* checker)
   // Characters that look like multiple characters.
   character_map_[u'þ'] = {"b", "p"};
   character_map_[u'œ'] = {"ce", "oe"};
+  // https://crbug.com/1250993:
+  character_map_[u'ł'] = {"l", "t"};
+
+  // Find the characters with diacritics that have multiple skeletons.
+  for (const auto& it : character_map_) {
+    std::u16string char_str(1, it.first);
+    if (char_str != MaybeRemoveDiacritics(char_str)) {
+      characters_with_multiple_skeletons_with_diacritics_.insert(it.first);
+    }
+  }
 }
 
 SkeletonGenerator::~SkeletonGenerator() = default;
@@ -164,13 +178,41 @@ std::u16string SkeletonGenerator::MaybeRemoveDiacritics(
   return base::i18n::UnicodeStringToString16(host);
 }
 
-Skeletons SkeletonGenerator::GetSkeletons(base::StringPiece16 input_hostname) {
-  std::u16string hostname_no_diacritics = MaybeRemoveDiacritics(input_hostname);
+bool SkeletonGenerator::ShouldComputeSupplementalHostnamesWithDiacritics(
+    base::StringPiece16 input_hostname) const {
+  for (const char16_t c : characters_with_multiple_skeletons_with_diacritics_) {
+    if (input_hostname.find(c) != base::StringPiece16::npos) {
+      return true;
+    }
+  }
+  return false;
+}
 
-  // Generate alternative versions of the input hostname and extract skeletons.
+Skeletons SkeletonGenerator::GetSkeletons(base::StringPiece16 input_hostname) {
+  // Generate supplemental hostnames for the input hostname with and without
+  // diacritics. We do this to cover characters whose diacritic versions can
+  // look like completely other characters, such as LATIN SMALL LETTER L WITH
+  // STROKE (ł) looking like t. By doing this, we can generate multiple
+  // skeletons for ł (l and t).
+  //
+  // Ideally, we'd compute a hostname variant for each character with and
+  // without its diacritic. That would result in 2^n hostname variants where n
+  // is the number of characters in the hostname with diacritics, which is too
+  // expensive. Currently, there is only one character with a diacritic that has
+  // multiple skeletons (ł), so this isn't needed.
+  std::u16string hostname_no_diacritics = MaybeRemoveDiacritics(input_hostname);
+  base::flat_set<std::u16string> all_variants = GenerateSupplementalHostnames(
+      hostname_no_diacritics, kMaxSupplementalHostnames, character_map_);
+  if (ShouldComputeSupplementalHostnamesWithDiacritics(input_hostname)) {
+    base::flat_set<std::u16string> diacritic_variants =
+        GenerateSupplementalHostnames(input_hostname, kMaxSupplementalHostnames,
+                                      character_map_);
+    all_variants.insert(diacritic_variants.begin(), diacritic_variants.end());
+  }
+
+  // Extract skeletons of all hostname variants.
   Skeletons skeletons;
-  for (const std::u16string& hostname : GenerateSupplementalHostnames(
-           hostname_no_diacritics, kMaxSupplementalHostnames, character_map_)) {
+  for (const std::u16string& hostname : all_variants) {
     size_t hostname_length =
         hostname.length() - (hostname.back() == '.' ? 1 : 0);
     icu::UnicodeString hostname_unicode(false, hostname.data(),
@@ -234,7 +276,9 @@ base::flat_set<std::u16string> SkeletonGenerator::GenerateSupplementalHostnames(
     size_t max_alternatives,
     const SkeletonMap& mapping) {
   base::flat_set<std::u16string> output;
-  if (!input.size() || max_alternatives == 0) {
+  if (!input.size() ||
+      input.size() > kMaxHostnameLengthToComputeSupplementalHostnames ||
+      max_alternatives == 0) {
     return output;
   }
   icu::UnicodeString input_unicode =

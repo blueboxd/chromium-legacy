@@ -5,7 +5,6 @@
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 
 #include <cmath>
-#include <functional>
 #include <iterator>
 #include <utility>
 
@@ -503,16 +502,20 @@ void AttributionManagerImpl::OnReportStored(const AttributionTrigger trigger,
                                             CreateReportResult result) {
   RecordCreateReportStatus(result);
 
-  if (std::vector<AttributionReport>& new_reports = result.new_reports();
-      !new_reports.empty()) {
-    auto min_report = base::ranges::min_element(
-        new_reports, std::less<>(), &AttributionReport::report_time);
-    scheduler_.ScheduleSend(min_report->report_time());
+  absl::optional<base::Time> min_new_report_time;
 
-    for (AttributionReport& report : new_reports) {
-      MaybeSendDebugReport(std::move(report));
-    }
+  if (auto& report = result.new_event_level_report()) {
+    min_new_report_time = report->report_time();
+    MaybeSendDebugReport(std::move(*report));
   }
+
+  if (auto& report = result.new_aggregatable_report()) {
+    min_new_report_time = AttributionReport::MinReportTime(
+        min_new_report_time, report->report_time());
+    MaybeSendDebugReport(std::move(*report));
+  }
+
+  scheduler_.ScheduleSend(min_new_report_time);
 
   if (result.event_level_status() !=
       AttributionTrigger::EventLevelResult::kInternalError) {
@@ -648,10 +651,9 @@ void AttributionManagerImpl::SendReports(std::vector<AttributionReport> reports,
                                          base::RepeatingClosure done) {
   const base::Time now = base::Time::Now();
   for (AttributionReport& report : reports) {
-    DCHECK(report.ReportId().has_value());
     DCHECK_LE(report.report_time(), now);
 
-    bool inserted = reports_being_sent_.emplace(*report.ReportId()).second;
+    bool inserted = reports_being_sent_.emplace(report.ReportId()).second;
     if (!inserted) {
       done.Run();
       continue;
@@ -700,8 +702,6 @@ void AttributionManagerImpl::PrepareToSendReport(AttributionReport report,
 void AttributionManagerImpl::OnReportSent(base::OnceClosure done,
                                           AttributionReport report,
                                           SendResult info) {
-  DCHECK(report.ReportId().has_value());
-
   // If there was a transient failure, and another attempt is allowed,
   // update the report's DB state to reflect that. Otherwise, delete the report
   // from storage if it wasn't skipped due to the browser being offline.
@@ -724,7 +724,7 @@ void AttributionManagerImpl::OnReportSent(base::OnceClosure done,
     // occur.
     attribution_storage_
         .AsyncCall(&AttributionStorage::UpdateReportForSendFailure)
-        .WithArgs(*report.ReportId(), report.report_time())
+        .WithArgs(report.ReportId(), report.report_time())
         .Then(base::BindOnce(
             [](base::OnceClosure done,
                base::WeakPtr<AttributionManagerImpl> manager,
@@ -739,7 +739,7 @@ void AttributionManagerImpl::OnReportSent(base::OnceClosure done,
                     AttributionReport::GetReportType(report_id));
               }
             },
-            std::move(done), weak_factory_.GetWeakPtr(), *report.ReportId(),
+            std::move(done), weak_factory_.GetWeakPtr(), report.ReportId(),
             report.report_time()));
 
     // TODO(apaseltiner): Consider surfacing retry attempts in internals UI.
@@ -748,7 +748,7 @@ void AttributionManagerImpl::OnReportSent(base::OnceClosure done,
   }
 
   attribution_storage_.AsyncCall(&AttributionStorage::DeleteReport)
-      .WithArgs(*report.ReportId())
+      .WithArgs(report.ReportId())
       .Then(base::BindOnce(
           [](base::OnceClosure done,
              base::WeakPtr<AttributionManagerImpl> manager,
@@ -761,7 +761,7 @@ void AttributionManagerImpl::OnReportSent(base::OnceClosure done,
                   AttributionReport::GetReportType(report_id));
             }
           },
-          std::move(done), weak_factory_.GetWeakPtr(), *report.ReportId()));
+          std::move(done), weak_factory_.GetWeakPtr(), report.ReportId()));
 
   LogMetricsOnReportCompleted(report, info.status);
 

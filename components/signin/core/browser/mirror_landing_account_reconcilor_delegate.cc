@@ -29,31 +29,13 @@ gaia::GaiaSource MirrorLandingAccountReconcilorDelegate::GetGaiaApiSource()
 
 bool MirrorLandingAccountReconcilorDelegate::
     ShouldAbortReconcileIfPrimaryHasError() const {
-  return true;
+  return false;
 }
 
 ConsentLevel
 MirrorLandingAccountReconcilorDelegate::GetConsentLevelForPrimaryAccount()
     const {
   return ConsentLevel::kSignin;
-}
-
-CoreAccountId
-MirrorLandingAccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
-    const std::vector<CoreAccountId>& chrome_accounts,
-    const std::vector<gaia::ListedAccount>& gaia_accounts,
-    const CoreAccountId& primary_account,
-    bool first_execution,
-    bool will_logout) const {
-  if (!primary_account.empty()) {
-    // `ShouldAbortReconcileIfPrimaryHasError()` returns true.
-    DCHECK(base::Contains(chrome_accounts, primary_account));
-    return primary_account;
-  }
-
-  // If there is no primary account, there should be no account at all.
-  DCHECK(chrome_accounts.empty());
-  return CoreAccountId();
 }
 
 std::vector<CoreAccountId>
@@ -64,9 +46,10 @@ MirrorLandingAccountReconcilorDelegate::GetChromeAccountsForReconcile(
     bool first_execution,
     bool primary_has_error,
     const gaia::MultiloginMode mode) const {
-  DCHECK(!primary_has_error);
   DCHECK_EQ(mode,
             gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER);
+  if (primary_has_error)
+    return {};  // Log out all accounts.
   return ReorderChromeAccountsForReconcile(chrome_accounts, primary_account,
                                            gaia_accounts);
 }

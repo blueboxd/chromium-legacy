@@ -11,9 +11,9 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_request.h"
+#include "content/public/browser/permission_type.h"
 
 namespace content {
-enum class PermissionType;
 class RenderFrameHost;
 }  // namespace content
 
@@ -73,6 +73,16 @@ class PermissionUtil {
   // permission decisions in `render_frame_host`.
   static GURL GetLastCommittedOriginAsURL(
       content::RenderFrameHost* render_frame_host);
+
+  // Helper method to convert PermissionType to ContentSettingType.
+  // If PermissionType is not supported or found, returns
+  // ContentSettingsType::DEFAULT.
+  static ContentSettingsType PermissionTypeToContentSettingSafe(
+      content::PermissionType permission);
+
+  // Helper method to convert PermissionType to ContentSettingType.
+  static ContentSettingsType PermissionTypeToContentSetting(
+      content::PermissionType permission);
 };
 
 }  // namespace permissions

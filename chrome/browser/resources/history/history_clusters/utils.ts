@@ -3,44 +3,27 @@
 // found in the LICENSE file.
 
 import {highlight} from 'chrome://resources/js/search_highlight_utils.js';
-import {quoteString} from 'chrome://resources/js/util.m.js';
-
-type Range = {
-  start: number,
-  length: number,
-};
+import {MatchPosition} from './history_clusters.mojom-webui.js';
 
 /**
- * Returns an array of ranges indicating where in the text the query appears.
- * Returns an empty array if no matches are found.
- * TODO(crbug.com/1295121): Move this logic to a cross-platform location to be
- * shared by various surfaces.
+ * Populates `container` with the highlighted `text` based on the mojom provided
+ * `match_positions`. This function takes care of converting from the mojom
+ * format to the format expected by search_highlight_utils.
  */
-function getRanges(text: string, query: string): Range[] {
-  if (!text || !query) {
-    return [];
-  }
-  const escapedText = quoteString(query);
-  const ranges: Range[] = [];
-  let match = null;
-  for (const re = new RegExp(escapedText, 'gi'); match = re.exec(text);) {
-    ranges.push({
-      start: match.index,
-      length: query.length,
-    });
-  }
-  return ranges;
-}
-
-/**
- * Populates the container with the highlighted text based on the given query.
- */
-export function insertHighlightedTextIntoElement(
-    container: HTMLElement, text: string, query: string) {
-  const ranges = getRanges(text, query);
+export function insertHighlightedTextWithMatchesIntoElement(
+    container: HTMLElement, text: string, matches: MatchPosition[]) {
   container.textContent = '';
   const node = document.createTextNode(text);
   container.appendChild(node);
+
+  const ranges = [];
+  for (const match of matches) {
+    ranges.push({
+      start: match.begin,
+      length: match.end - match.begin,
+    });
+  }
+
   if (ranges.length > 0) {
     highlight(node, ranges);
   }

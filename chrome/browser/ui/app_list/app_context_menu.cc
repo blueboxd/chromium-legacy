@@ -124,6 +124,9 @@ const gfx::VectorIcon& AppContextMenu::GetMenuItemVectorIcon(int command_id,
       return ash::kSortAlphabeticalIcon;
     case ash::REORDER_BY_COLOR:
       return ash::kSortColorIcon;
+    case ash::HIDE_CONTINUE_SECTION:
+      // TODO(crbug.com/1317428): Custom icon.
+      return ash::kLockScreenPasswordInvisibleIcon;
     case ash::NOTIFICATION_CONTAINER:
       NOTREACHED() << "NOTIFICATION_CONTAINER does not have an icon, and it is "
                       "added to the model by NotificationMenuController.";

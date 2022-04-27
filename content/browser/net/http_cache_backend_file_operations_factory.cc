@@ -37,6 +37,12 @@ static_assert(
         (base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
          base::File::FLAG_WIN_SHARE_DELETE),
     "kCreateReadWriteWinShareDelete");
+static_assert(static_cast<uint32_t>(
+                  OpenFileFlags::kOpenReadWinShareDeleteWinSequentialScan) ==
+                  (base::File::FLAG_OPEN | base::File::FLAG_READ |
+                   base::File::FLAG_WIN_SHARE_DELETE |
+                   base::File::FLAG_WIN_SEQUENTIAL_SCAN),
+              "kOpenReadWinShareDeleteWinSequentialScan");
 
 class FileEnumerator final : public network::mojom::FileEnumerator {
  public:
@@ -200,7 +206,7 @@ class HttpCacheBackendFileOperations final
                              ": The path is not an absolute path.");
       return false;
     }
-    if (!path_.IsParent(path)) {
+    if (path_ != path && !path_.IsParent(path)) {
       mojo::ReportBadMessage(static_cast<std::string>(tag) +
                              ": The path is not in the specified area.");
       return false;
@@ -220,10 +226,8 @@ class HttpCacheBackendFileOperations final
 }  // namespace
 
 HttpCacheBackendFileOperationsFactory::HttpCacheBackendFileOperationsFactory(
-    mojo::PendingReceiver<network::mojom::HttpCacheBackendFileOperationsFactory>
-        receiver,
     const base::FilePath& path)
-    : receiver_(this, std::move(receiver)), path_(path) {}
+    : path_(path) {}
 HttpCacheBackendFileOperationsFactory::
     ~HttpCacheBackendFileOperationsFactory() = default;
 

@@ -17,6 +17,7 @@
 #include "ash/capture_mode/capture_mode_menu_group.h"
 #include "ash/capture_mode/capture_mode_metrics.h"
 #include "ash/capture_mode/capture_mode_session.h"
+#include "ash/capture_mode/capture_mode_session_focus_cycler.h"
 #include "ash/capture_mode/capture_mode_session_test_api.h"
 #include "ash/capture_mode/capture_mode_settings_test_api.h"
 #include "ash/capture_mode/capture_mode_settings_view.h"
@@ -242,12 +243,6 @@ class CaptureModeTest : public AshTestBase {
   CaptureModeTest& operator=(const CaptureModeTest&) = delete;
   ~CaptureModeTest() override = default;
 
-  CaptureModeBarView* GetCaptureModeBarView() const {
-    auto* session = CaptureModeController::Get()->capture_mode_session();
-    DCHECK(session);
-    return CaptureModeSessionTestApi(session).GetCaptureModeBarView();
-  }
-
   views::Widget* GetCaptureModeBarWidget() const {
     auto* session = CaptureModeController::Get()->capture_mode_session();
     DCHECK(session);
@@ -294,22 +289,6 @@ class CaptureModeTest : public AshTestBase {
     auto* controller = CaptureModeController::Get();
     DCHECK(controller->IsActive());
     return GetCaptureModeBarView()->capture_type_view()->video_toggle_button();
-  }
-
-  CaptureModeToggleButton* GetFullscreenToggleButton() const {
-    auto* controller = CaptureModeController::Get();
-    DCHECK(controller->IsActive());
-    return GetCaptureModeBarView()
-        ->capture_source_view()
-        ->fullscreen_toggle_button();
-  }
-
-  CaptureModeToggleButton* GetRegionToggleButton() const {
-    auto* controller = CaptureModeController::Get();
-    DCHECK(controller->IsActive());
-    return GetCaptureModeBarView()
-        ->capture_source_view()
-        ->region_toggle_button();
   }
 
   CaptureModeToggleButton* GetWindowToggleButton() const {
@@ -2254,6 +2233,42 @@ TEST_F(CaptureModeTest, VerifyWindowRecordingVideoFrames) {
 
   controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
   EXPECT_FALSE(controller->is_recording_in_progress());
+}
+
+// Tests that minimized windows are ignored while tabbing through in kWindow
+// capture source type.
+// TODO(crbug.com/1318231) : Add tests cases for occluded windows when the
+// algorithm is ready.
+TEST_F(CaptureModeTest, IgnoreUnselectableWindowsWhileTabbingInKWindow) {
+  std::unique_ptr<aura::Window> window1(
+      CreateTestWindow(gfx::Rect(10, 10, 500, 600)));
+  // Create `window2` to be minized.
+  std::unique_ptr<aura::Window> window2(
+      CreateTestWindow(gfx::Rect(0, 0, 50, 90)));
+  WindowState::Get(window2.get())->Minimize();
+  EXPECT_TRUE(WindowState::Get(window2.get())->IsMinimized());
+
+  auto* controller =
+      StartCaptureSession(CaptureModeSource::kWindow, CaptureModeType::kImage);
+  CaptureModeSession* capture_mode_session = controller->capture_mode_session();
+
+  using FocusGroup = CaptureModeSessionFocusCycler::FocusGroup;
+  CaptureModeSessionTestApi test_api(capture_mode_session);
+
+  EXPECT_EQ(FocusGroup::kNone, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
+
+  auto* event_generator = GetEventGenerator();
+
+  // Tab six times, `window1` should be focused.
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/6);
+  EXPECT_EQ(FocusGroup::kCaptureWindow, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(window1.get(), capture_mode_session->GetSelectedWindow());
+
+  // Tab once, the `settings` button should be focused. The minimized `window2`
+  // will be ignored during the tabbing process.
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(FocusGroup::kSettingsClose, test_api.GetCurrentFocusGroup());
 }
 
 class CaptureModeSaveFileTest
@@ -5207,12 +5222,44 @@ TEST_P(ProjectorCaptureModeIntegrationTests,
     test_api.StopVideoRecording();
     EXPECT_FALSE(CaptureModeController::Get()->is_recording_in_progress());
 
-    histogram_tester_.ExpectBucketCount(
+    histogram_tester_.ExpectUniqueSample(
         GetCaptureModeHistogramName(
             kProjectorCaptureConfigurationHistogramBase),
         GetConfiguration(CaptureModeType::kVideo, capture_source), 1);
 
     WaitForCaptureFileToBeSaved();
+  }
+}
+
+// Tests that metrics are recorded correctly for screen recording length
+// entering from projector in both clamshell and tablet mode.
+TEST_P(ProjectorCaptureModeIntegrationTests,
+       ProjectorScreenRecordingLengthMetrics) {
+  const auto capture_source = GetParam();
+  constexpr char kProjectorRecordTimeHistogramBase[] =
+      "Ash.CaptureModeController.Projector.ScreenRecordingLength";
+  ash::CaptureModeTestApi test_api;
+
+  const bool kTabletEnabledStates[]{false, true};
+
+  for (const bool tablet_enabled : kTabletEnabledStates) {
+    if (tablet_enabled) {
+      SwitchToTabletMode();
+      EXPECT_TRUE(Shell::Get()->IsInTabletMode());
+    } else {
+      EXPECT_FALSE(Shell::Get()->IsInTabletMode());
+    }
+
+    StartRecordingForProjectorFromSource(capture_source);
+    WaitForSeconds(5);
+    test_api.StopVideoRecording();
+    EXPECT_FALSE(CaptureModeController::Get()->is_recording_in_progress());
+
+    WaitForCaptureFileToBeSaved();
+
+    histogram_tester_.ExpectUniqueSample(
+        GetCaptureModeHistogramName(kProjectorRecordTimeHistogramBase),
+        /*seconds=*/5, /*count=*/1);
   }
 }
 

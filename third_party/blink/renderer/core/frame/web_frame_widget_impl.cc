@@ -86,7 +86,6 @@
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
-#include "third_party/blink/renderer/core/html/battery_savings.h"
 #include "third_party/blink/renderer/core/html/fenced_frame/document_fenced_frames.h"
 #include "third_party/blink/renderer/core/html/fenced_frame/html_fenced_frame_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
@@ -3859,11 +3858,6 @@ void WebFrameWidgetImpl::CalculateSelectionBounds(
   }
 }
 
-void WebFrameWidgetImpl::BatterySavingsChanged(BatterySavingsFlags savings) {
-  widget_base_->LayerTreeHost()->SetEnableFrameRateThrottling(
-      savings & kAllowReducedFrameRate);
-}
-
 const viz::LocalSurfaceId& WebFrameWidgetImpl::LocalSurfaceIdFromParent() {
   return widget_base_->local_surface_id_from_parent();
 }
@@ -4147,7 +4141,6 @@ HitTestResult WebFrameWidgetImpl::HitTestResultForRootFramePos(
   HitTestResult result =
       LocalRootImpl()->GetFrame()->View()->HitTestWithThrottlingAllowed(
           location, HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  result.SetToShadowHostIfInRestrictedShadowRoot();
   return result;
 }
 

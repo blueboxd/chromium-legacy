@@ -24,6 +24,7 @@
       'chromeos-kevin-chrome': 'chromeos_kevin_include_unwind_tables_official_dchecks',
       'chromeos-jacuzzi-chrome': 'chromeos_jacuzzi_include_unwind_tables_official',
       'chromeos-octopus-chrome': 'chromeos_octopus_include_unwind_tables_official_dchecks',
+      'chromeos-reven-chrome': 'chromeos_reven_include_unwind_tables_official_dchecks',
       'lacros-amd64-generic-chrome': 'chromeos_amd64-generic_lacros_official',
       'lacros-amd64-generic-chrome-skylab': 'chromeos_amd64-generic_lacros_official_skylab',
       'lacros-arm-generic-chrome': 'chromeos_arm-generic_lacros_official',
@@ -133,6 +134,7 @@
       # Use webview_trichrome as this builder triggers tests on Android 10
       'android-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_trichrome_webview_shell_reclient',
       'android-11-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_trichrome_webview_shell_reclient',
+      'android-12-x64-fyi-rel': 'android_release_bot_minimal_symbols_x64_fastbuild_webview_trichrome_reclient',
     },
 
     'chromium.angle': {
@@ -149,21 +151,21 @@
     },
 
     'chromium.chromiumos': {
-      'Linux ChromiumOS Full': 'chromeos_with_codecs_release_bot',
+      'Linux ChromiumOS Full': 'chromeos_with_codecs_release_bot_reclient',
       'Linux ChromiumOS Full (reclient shadow)': 'chromeos_with_codecs_release_bot_reclient',
 
-      'chromeos-amd64-generic-asan-rel': 'chromeos_amd64-generic_asan',
+      'chromeos-amd64-generic-asan-rel': 'chromeos_amd64-generic_asan_reclient',
       'chromeos-amd64-generic-asan-rel (reclient shadow)': 'chromeos_amd64-generic_asan_reclient',
       'chromeos-amd64-generic-cfi-thin-lto-rel': 'chromeos_amd64-generic_cfi_thin_lto',
-      'chromeos-amd64-generic-dbg': 'chromeos_amd64-generic_dbg',
+      'chromeos-amd64-generic-dbg': 'chromeos_amd64-generic_dbg_reclient',
       'chromeos-amd64-generic-dbg (reclient shadow)': 'chromeos_amd64-generic_dbg_reclient',
       'chromeos-amd64-generic-lacros-dbg': 'chromeos_amd64-generic_lacros_dbg',
       'chromeos-amd64-generic-rel': 'chromeos_amd64-generic_use_fake_dbus_clients_vm_optimized',
-      'chromeos-arm-generic-dbg': 'chromeos_arm-generic_dbg',
+      'chromeos-arm-generic-dbg': 'chromeos_arm-generic_dbg_reclient',
       'chromeos-arm-generic-dbg (reclient shadow)': 'chromeos_arm-generic_dbg_reclient',
       'chromeos-arm-generic-rel': 'chromeos_arm-generic',
       'chromeos-arm64-generic-rel': 'chromeos_arm64-generic_dchecks',
-      'chromeos-kevin-rel': 'chromeos_kevin_dchecks',
+      'chromeos-kevin-rel': 'chromeos_kevin_dchecks_reclient',
       'chromeos-kevin-rel (reclient shadow)': 'chromeos_kevin_dchecks_reclient',
       'lacros-amd64-generic-binary-size-rel': 'chromeos_amd64-generic_lacros_rel',
       'lacros-amd64-generic-rel': 'chromeos_amd64-generic_lacros_rel',
@@ -254,7 +256,7 @@
       'ASan Release (32-bit x86 with V8-ARM)': 'asan_fuzzer_v8_heap_release_bot_hybrid_reclient',
       'ASan Release Media (32-bit x86 with V8-ARM)': 'asan_fuzzer_v8_heap_chromeos_codecs_release_bot_hybrid_reclient',
       'Afl Upload Linux ASan': 'afl_asan_shared_release_bot_reclient',
-      'ChromiumOS ASAN Release': 'chromeos_asan_lsan_fuzzer_v8_heap_release_bot',
+      'ChromiumOS ASAN Release': 'chromeos_asan_lsan_fuzzer_v8_heap_release_bot_reclient',
       'ChromiumOS ASAN Release (reclient shadow)': 'chromeos_asan_lsan_fuzzer_v8_heap_release_bot_reclient',
       'Libfuzzer Upload Chrome OS ASan': 'libfuzzer_chromeos_asan_release_bot',
       'Libfuzzer Upload iOS Catalyst Debug': 'ios_catalyst_debug_static_bot_compile_only_libfuzzer_no_dsyms_no_lld_no_remoting',
@@ -313,8 +315,10 @@
       'Libfuzzer Upload Linux UBSan': 'libfuzzer_ubsan_release_bot',
       'Libfuzzer Upload Mac ASan': 'libfuzzer_mac_asan_shared_release_bot',
       'Libfuzzer Upload Windows ASan': 'libfuzzer_windows_asan_release_bot',
+      'Linux ChromiumOS MSan Focal': 'chromeos_msan_release_bot',
       'Linux Builder (j-500) (reclient)': 'gpu_tests_release_bot_reclient',
       'Linux CFI (reclient shadow)': 'cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on_reclient',
+      'Linux MSan Focal': 'msan_release_bot_reclient',
       'Linux Viz': 'release_trybot_minimal_symbols_reclient',
       'lacros-amd64-generic-rel-fyi': 'chromeos_amd64-generic_lacros_rel',
       'lacros-amd64-generic-rel-skylab-fyi': 'chromeos_amd64-generic_lacros_rel_fyi',
@@ -495,7 +499,7 @@
     'chromium.gpu.fyi': {
       # These all use the 'trybot' mixins to ensure that dcheck is on.
       'ANGLE GPU Android Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
-      'ChromeOS FYI Release (amd64-generic)': 'gpu_tests_chromeos_amd64_release_trybot_dcheck_off_no_symbols',
+      'ChromeOS FYI Release (amd64-generic)': 'gpu_tests_chromeos_amd64_release_trybot_dcheck_off_no_symbols_reclient',
       'ChromeOS FYI Release (amd64-generic) (reclient shadow)': 'gpu_tests_chromeos_amd64_release_trybot_dcheck_off_no_symbols_reclient',
       'gpu-fyi-chromeos-jacuzzi-exp': 'gpu_tests_chromeos_jacuzzi_release_trybot',
       'ChromeOS FYI Release (kevin)': 'gpu_tests_chromeos_kevin_release_trybot_dcheck_off_no_symbols',
@@ -630,8 +634,8 @@
     },
 
     'chromium.rust': {
-      'linux-rust-x64-dbg': 'debug_bot_rust_linux_x64',
-      'linux-rust-x64-rel': 'release_rust_linux_x64',
+      'linux-rust-x64-dbg': 'debug_bot_rust_linux_x64_reclient',
+      'linux-rust-x64-rel': 'release_rust_linux_x64_reclient',
       'android-rust-arm-dbg': 'debug_bot_rust_android_arm_reclient',
       'android-rust-arm-rel': 'release_rust_android_arm_reclient',
     },
@@ -869,6 +873,7 @@
       'android-11-x86-fyi-rel': 'android_release_trybot_x86_fastbuild_webview_trichrome',
       'android-12-x64-dbg': 'android_debug_trybot_x64_webview_trichrome_webview_shell',
       'android-12-x64-rel': 'android_release_trybot_x64_fastbuild_webview_trichrome',
+      'android-12-x64-fyi-rel': 'android_release_bot_minimal_symbols_x64_fastbuild_webview_trichrome_reclient',
       'android-webview-12-x64-dbg': 'android_debug_trybot_x64_webview_trichrome_webview_shell',
       'android-webview-marshmallow-arm64-dbg': 'android_release_trybot_arm64_webview_google',
       'android-webview-nougat-arm64-dbg': 'android_release_trybot_arm64_webview_monochrome',
@@ -936,6 +941,7 @@
       'chromeos-kevin-compile-chrome': 'chromeos_kevin_include_unwind_tables_official_dchecks',
       'chromeos-octopus-chrome': 'chromeos_octopus_include_unwind_tables_official_dchecks',
       'chromeos-octopus-compile-chrome': 'chromeos_octopus_include_unwind_tables_official_dchecks',
+      'chromeos-reven-chrome': 'chromeos_reven_include_unwind_tables_official_dchecks',
       'lacros-amd64-generic-chrome': 'chromeos_amd64-generic_lacros_official',
       'lacros-amd64-generic-chrome-skylab': 'chromeos_amd64-generic_lacros_official_skylab',
       'lacros-arm-generic-chrome': 'chromeos_arm-generic_lacros_official',
@@ -1090,6 +1096,7 @@
       'linux_chromium_cfi_rel_ng': 'cfi_full_cfi_icall_cfi_diag_thin_lto_release_static_dcheck_always_on_goma',
       'linux_chromium_chromeos_asan_rel_ng': 'asan_lsan_chromeos_release_bot_dcheck_always_on',
       'linux_chromium_chromeos_msan_rel_ng': 'chromeos_msan_release_bot',
+      'linux_chromium_chromeos_msan_focal': 'chromeos_msan_release_bot',
       'linux_chromium_clobber_deterministic': 'release_trybot',
       'linux_chromium_clobber_rel_ng': 'release_trybot',
       'linux_chromium_compile_dbg_ng': 'debug_bot',
@@ -1100,6 +1107,7 @@
       # enabling DCHECKs seems to cause flaky failures that don't show up
       # on the continuous builder.
       'linux_chromium_msan_rel_ng': 'msan_release_bot',
+      'linux_chromium_msan_focal': 'msan_release_bot',
 
       'linux_chromium_tsan_rel_ng': 'tsan_disable_nacl_release_trybot',
 
@@ -1908,10 +1916,6 @@
       'cfi_full', 'cfi_icall', 'cfi_diag', 'thin_lto', 'release', 'static', 'dcheck_always_on', 'reclient',
     ],
 
-    'chromeos_amd64-generic_asan': [
-      'chromeos_amd64-generic', 'asan',
-    ],
-
     'chromeos_amd64-generic_asan_reclient': [
       'chromeos_amd64-generic_reclient', 'asan',
     ],
@@ -2022,10 +2026,6 @@
       'chromeos_arm-generic-crostoolchain', 'lacros', 'release', 'dcheck_always_on',
     ],
 
-    'chromeos_asan_lsan_fuzzer_v8_heap_release_bot': [
-      'chromeos', 'asan', 'lsan', 'fuzzer', 'v8_heap', 'release_bot',
-    ],
-
     'chromeos_asan_lsan_fuzzer_v8_heap_release_bot_reclient': [
       'chromeos', 'asan', 'lsan', 'fuzzer', 'v8_heap', 'release_bot_reclient',
     ],
@@ -2086,6 +2086,10 @@
       'chromeos_device', 'octopus', 'include_unwind_tables', 'official', 'dcheck_always_on',
     ],
 
+    'chromeos_reven_include_unwind_tables_official_dchecks': [
+      'chromeos_device', 'reven', 'include_unwind_tables', 'official', 'dcheck_always_on',
+    ],
+
     'chromeos_with_codecs_debug_bot': [
       'chromeos_with_codecs', 'debug_bot',
     ],
@@ -2116,7 +2120,7 @@
 
     # Keep in sync with chromeos_with_codecs_release_trybot.
     'chromeos_with_codecs_release_trybot_code_coverage': [
-      'chromeos_with_codecs', 'release_trybot', 'no_symbols',
+      'chromeos_with_codecs', 'release_trybot', 'no_symbols', 'also_build_lacros_chrome',
       'use_clang_coverage', 'partial_code_coverage_instrumentation',
     ],
 
@@ -2342,6 +2346,10 @@
 
     'debug_bot_rust_linux_x64': [
       'debug_bot', 'enable_rust', 'x64',
+    ],
+
+    'debug_bot_rust_linux_x64_reclient': [
+      'debug_bot_reclient', 'enable_rust', 'x64',
     ],
 
     'debug_bot_x86_reclient': [
@@ -3301,6 +3309,10 @@
       'release_trybot_minimal_symbols', 'enable_rust', 'x64',
     ],
 
+    'release_rust_linux_x64_reclient': [
+      'release_trybot_minimal_symbols_reclient', 'enable_rust', 'x64',
+    ],
+
     'release_rust_intree_linux_x64': [
       'release_trybot_minimal_symbols', 'enable_rust', 'use_chromium_rust_toolchain', 'x64',
     ],
@@ -4201,6 +4213,10 @@
 
     'resource_allowlisting': {
       'gn_args': 'enable_resource_allowlist_generation=true',
+    },
+
+    'reven': {
+      'args_file': '//build/args/chromeos/reven-vmtest.gni',
     },
 
     'shared': {

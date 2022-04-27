@@ -92,6 +92,10 @@ _NEGATIVE_FILTER = [
     'ChromeDriverTest.testPrintInvalidArgument',
     # Flaky https://bugs.chromium.org/p/chromium/issues/detail?id=1143940
     'ChromeDriverTest.testTakeLargeElementFullPageScreenshot',
+    # Flaky https://bugs.chromium.org/p/chromium/issues/detail?id=1306504
+    'ChromeSwitchesCapabilityTest.*',
+    'ChromeExtensionsCapabilityTest.*',
+    'MobileEmulationCapabilityTest.*',
 ]
 
 
@@ -111,13 +115,18 @@ _OS_SPECIFIC_FILTER['win'] = [
     'HeadlessInvalidCertificateTest.testLoadsPage',
     'HeadlessInvalidCertificateTest.testNavigateNewWindow',
     'RemoteBrowserTest.testConnectToRemoteBrowserLiteralAddressHeadless',
+    # Timed out on Win7 bots: crbug.com/1306504.
+    'ChromeLoggingCapabilityTest.testDevToolsEventsLogger',
+    'ChromeLoggingCapabilityTest.testPerformanceLogger',
+    'JavaScriptTests.testAllJS',
+    'LaunchDesktopTest.testExistingDevToolsPortFile',
+    'RemoteBrowserTest.testConnectToRemoteBrowser',
+    'SessionHandlingTest.testQuitASessionMoreThanOnce',
+    'SupportIPv4AndIPv6.testSupportIPv4AndIPv6',
 ]
 _OS_SPECIFIC_FILTER['linux'] = [
 ]
 _OS_SPECIFIC_FILTER['mac'] = [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1927
-    # https://crbug.com/1036636
-    'MobileEmulationCapabilityTest.testTapElement',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=1011225
     'ChromeDriverTest.testActionsMultiTouchPoint',
     # Flaky: https://crbug.com/1156576.
@@ -1015,22 +1024,27 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
 
   def testClickElementHavingSmallIntersectionWithindowObscuredByScrollBar(self):
     # This is a regression test for chromedriver:3933.
-    # It relies on some internal knowledge on how ExecuteClickElement is implemented.
+    # It relies on some internal knowledge on how ExecuteClickElement is
+    # implemented.
     # See also: https://bugs.chromium.org/p/chromedriver/issues/detail?id=3933
     # This is what happens if the bug exists in the code:
     # Assume:
     # bar.height = 50.5 (see the CSS from horizontal_scroller.html)
     # x = 1.5 (can be any 1.5 <= x < 2.5)
     # horizontalScrollBar.height = 15
-    # p = 36.5 <- position of #link relative to the viewport, calculated and scrolled to by webdriver::atoms::GET_LOCATION_IN_VIEW
+    # p = 36.5 <- position of #link relative to the viewport, calculated and
+    # scrolled to by webdriver::atoms::GET_LOCATION_IN_VIEW
     # Assign:
     # window.innerHeight = floor(bar.height + x) = 52
     # Then:
-    # horizontalScrollBar.y = window.innerHeight - horizontalScrollBar.height = 37
+    # horizontalScrollBar.y
+    #   = window.innerHeight - horizontalScrollBar.height = 37
     # clickPosition.y = p + (window.innerHeight - bar.height) / 2 = 37.25
     #
-    # Condition clickPosition.y > horizontalScrollBar.y means that we are clicking the area obscured by horizontal scroll bar.
-    # It is worth mentioning that if x < 1.5 or x >= 2.5 then 'p' will be calculated differently and the bug will not reproduce.
+    # Condition clickPosition.y > horizontalScrollBar.y means that we are
+    # clicking the area obscured by horizontal scroll bar.
+    # It is worth mentioning that if x < 1.5 or x >= 2.5 then 'p' will be
+    # calculated differently and the bug will not reproduce.
     testcaseUrl = self.GetHttpUrlForFile(
         '/chromedriver/horizontal_scroller.html')
     self._driver.Load(testcaseUrl)
@@ -1040,7 +1054,9 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     # The value of barHeight is 50.5
     barHeight = self._driver.FindElement(
         'css selector', '#bar').GetRect()['height']
-    x = 1.5  # as mentioned above any number 1.5 <= x < 2.5 is ok provided scroll.height = 15
+    # as mentioned above any number 1.5 <= x < 2.5 is ok provided
+    # scroll.height = 15
+    x = 1.5
     windowHeight = barHeight + windowDecorationHeight + x
 
     self._driver.SetWindowRect(640, windowHeight, None, None)
@@ -1066,7 +1082,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     barHeight = self._driver.FindElement(
         'css selector', '#bar').GetRect()['height']
 
-    # -1 is used to ensure that there is no space for link before the scroll bar.
+    # -1 is used to ensure that there is no space for link before the scroll
+    # bar.
     self._driver.SetWindowRect(640, math.floor(
         barHeight + windowDecorationHeight + scrollbarHeight - 1), None, None)
     self._driver.Load(testcaseUrl)
@@ -1087,9 +1104,10 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testClickElementAlmostObscuredByScrollBar(self):
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=3933
     # This test does not reproduce chromedriver:3933.
-    # However it fails if the implementation contains the bug that was responsible for the issue:
-    # incorrect calculation of the intersection between the element and the viewport
-    # led to scrolling where the element was positioned in such a way that it could not be clicked.
+    # However it fails if the implementation contains the bug that was
+    # responsible for the issue: incorrect calculation of the intersection
+    # between the element and the viewport led to scrolling where the element
+    # was positioned in such a way that it could not be clicked.
     testcaseUrl = self.GetHttpUrlForFile(
         '/chromedriver/horizontal_scroller.html')
     self._driver.Load(testcaseUrl)
@@ -4029,7 +4047,7 @@ class ChromeDriverTestLegacy(ChromeDriverBaseTestWithWebServer):
 class ChromeDriverFencedFrame(ChromeDriverBaseTestWithWebServer):
   def setUp(self):
     super().setUp()
-    self._http_server.SetDataForPath('/main.html', bytes("""
+    self._https_server.SetDataForPath('/main.html', bytes("""
       <!DOCTYPE html>
         <html>
           <body>
@@ -4038,7 +4056,7 @@ class ChromeDriverFencedFrame(ChromeDriverBaseTestWithWebServer):
         </html>
       """, 'utf-8'))
 
-    self._http_server.SetDataForPath('/nesting.html', bytes("""
+    self._https_server.SetDataForPath('/nesting.html', bytes("""
       <!DOCTYPE html>
         <html>
           <body>
@@ -4055,22 +4073,30 @@ class ChromeDriverFencedFrame(ChromeDriverBaseTestWithWebServer):
             <button></button>
           </body>
         </html>""", 'utf-8')
-    self._http_server.SetCallbackForPath('/fencedframe.html', respondWithFencedFrameContents)
+    self._https_server.SetCallbackForPath('/fencedframe.html',
+                                          respondWithFencedFrameContents)
 
+  @staticmethod
+  def GetHttpsUrlForFile(file_path):
+    return ChromeDriverFencedFrame._https_server.GetUrl() + file_path
 
   def tearDown(self):
     super().tearDown()
-    self._http_server.SetDataForPath('/main.html', None)
-    self._http_server.SetDataForPath('/nesting.html', None)
-    self._http_server.SetCallbackForPath('/fencedframe.html', None)
+    self._https_server.SetDataForPath('/main.html', None)
+    self._https_server.SetDataForPath('/nesting.html', None)
+    self._https_server.SetCallbackForPath('/fencedframe.html', None)
 
   def _initDriver(self, fenced_frame_implementation):
-    self._driver = self.CreateDriver(chrome_switches=['--site-per-process',
-        '--enable-features=FencedFrames:implementation_type/%s' % fenced_frame_implementation])
+    self._driver = self.CreateDriver(
+        accept_insecure_certs = True,
+        chrome_switches=['--site-per-process',
+            '--enable-features=FencedFrames:'
+            'implementation_type/%s,PrivacySandboxAdsAPIsOverride' %
+            fenced_frame_implementation])
 
   def _testCanSwitchToFencedFrame(self, fenced_frame_implementation):
     self._initDriver(fenced_frame_implementation)
-    self._driver.Load(self.GetHttpUrlForFile('/main.html'))
+    self._driver.Load(self.GetHttpsUrlForFile('/main.html'))
     self._driver.SetTimeouts({'implicit': 2000})
     fencedframe = self._driver.FindElement('tag name', 'fencedframe')
     self._driver.SwitchToFrame(fencedframe)
@@ -4079,15 +4105,16 @@ class ChromeDriverFencedFrame(ChromeDriverBaseTestWithWebServer):
 
   def _testAppendEmptyFencedFrame(self, fenced_frame_implementation):
     self._initDriver(fenced_frame_implementation)
-    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
-    self._driver.ExecuteScript('document.body.appendChild(document.createElement("fencedframe"));')
+    self._driver.Load(self.GetHttpsUrlForFile('/chromedriver/empty.html'))
+    self._driver.ExecuteScript(
+        'document.body.appendChild(document.createElement("fencedframe"));')
     fencedframe = self._driver.FindElement('tag name', 'fencedframe')
     self.assertIsNotNone(fencedframe)
     self._driver.SwitchToFrame(fencedframe)
 
   def _testFencedFrameInsideIframe(self, fenced_frame_implementation):
     self._initDriver(fenced_frame_implementation)
-    self._driver.Load(self.GetHttpUrlForFile('/nesting.html'))
+    self._driver.Load(self.GetHttpsUrlForFile('/nesting.html'))
     self._driver.SwitchToFrameByIndex(0)
     fencedframe = self._driver.FindElement('tag name', 'fencedframe')
     self.assertIsNotNone(fencedframe)

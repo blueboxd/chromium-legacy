@@ -19,6 +19,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/trace_event/base_tracing.h"
 #include "base/trace_event/trace_event.h"
@@ -269,6 +270,15 @@ void TraceShouldSwapBrowsingInstanceResult(int frame_tree_node_id,
         data->set_result(ShouldSwapBrowsingInstanceToProto(result));
       });
 }
+
+// Please keep in sync with SpeculativeRenderFrameHostType in
+// tools/metrics/histograms/enums.xml. These values should not be renumbered.
+enum class SpeculativeRenderFrameHostType {
+  kDoesNotExist = 0,
+  kNotPendingCommit = 1,
+  kPendingCommit = 2,
+  kMaxValue = kPendingCommit,
+};
 
 }  // namespace
 
@@ -760,8 +770,7 @@ void RenderFrameHostManager::UnloadOldFrame(
     }
 
     if (old_page_back_forward_cache_metrics) {
-      old_page_back_forward_cache_metrics->FinalizeNotRestoredReasons(
-          can_store.flattened_reasons, std::move(can_store.tree_reasons));
+      old_page_back_forward_cache_metrics->SetNotRestoredReasons(can_store);
     }
   }
 
@@ -909,6 +918,21 @@ void RenderFrameHostManager::DidCreateNavigationRequest(
   TRACE_EVENT("navigation",
               "RenderFrameHostManager::DidCreateNavigationRequest",
               ChromeTrackEvent::kFrameTreeNodeInfo, *frame_tree_node_);
+  // Track whether there is an existing speculative RFH when a new
+  // NavigationRequest is created.
+  SpeculativeRenderFrameHostType current_speculative_rfh_type =
+      SpeculativeRenderFrameHostType::kDoesNotExist;
+  if (speculative_render_frame_host_) {
+    // Track whether the speculative RFH is pending commit or not.
+    current_speculative_rfh_type =
+        speculative_render_frame_host_->HasPendingCommitNavigation()
+            ? SpeculativeRenderFrameHostType::kPendingCommit
+            : SpeculativeRenderFrameHostType::kNotPendingCommit;
+  }
+  UMA_HISTOGRAM_ENUMERATION(
+      "Navigation.NavigationRequestCreation.SpeculativeRFHExisted",
+      current_speculative_rfh_type);
+
   const bool force_use_current_render_frame_host =
       // Since the frame from the back-forward cache is being committed to the
       // SiteInstance we already have, it is treated as current.
@@ -1784,8 +1808,9 @@ RenderFrameHostManager::ShouldProactivelySwapBrowsingInstance(
     // impossible to get correct non-sticky reasons at this timing.
     BackForwardCacheMetrics* back_forward_cache_metrics =
         render_frame_host_->GetBackForwardCacheMetrics();
-    if (back_forward_cache_metrics)
-      back_forward_cache_metrics->MarkNotRestoredWithReason(can_store);
+    if (back_forward_cache_metrics) {
+      back_forward_cache_metrics->SetNotRestoredReasons(can_store);
+    }
     return ShouldSwapBrowsingInstance::kNo_NotNeededForBackForwardCache;
   }
 }

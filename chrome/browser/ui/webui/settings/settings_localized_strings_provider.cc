@@ -411,45 +411,48 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
 void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source,
                                  Profile* profile) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"clearTimeRange", IDS_SETTINGS_CLEAR_PERIOD_TITLE},
-      {"clearBrowsingDataWithSync", IDS_SETTINGS_CLEAR_BROWSING_DATA_WITH_SYNC},
-      {"clearBrowsingDataWithSyncError",
-       IDS_SETTINGS_CLEAR_BROWSING_DATA_WITH_SYNC_ERROR},
-      {"clearBrowsingDataWithSyncPassphraseError",
-       IDS_SETTINGS_CLEAR_BROWSING_DATA_WITH_SYNC_PASSPHRASE_ERROR},
-      {"clearBrowsingDataWithSyncPaused",
-       IDS_SETTINGS_CLEAR_BROWSING_DATA_WITH_SYNC_PAUSED},
-      {"clearBrowsingHistory", IDS_SETTINGS_CLEAR_BROWSING_HISTORY},
-      {"clearBrowsingHistorySummary",
-       IDS_SETTINGS_CLEAR_BROWSING_HISTORY_SUMMARY},
-      {"clearBrowsingHistorySummarySignedInNoLink",
-       IDS_SETTINGS_CLEAR_BROWSING_HISTORY_SUMMARY_SIGNED_IN_NO_LINK},
-      {"clearDownloadHistory", IDS_SETTINGS_CLEAR_DOWNLOAD_HISTORY},
-      {"clearCache", IDS_SETTINGS_CLEAR_CACHE},
-      {"clearCookies", IDS_SETTINGS_CLEAR_COOKIES},
-      {"clearCookiesSummary",
-       IDS_SETTINGS_CLEAR_COOKIES_AND_SITE_DATA_SUMMARY_BASIC},
-      {"clearCookiesSummarySignedIn",
-       IDS_SETTINGS_CLEAR_COOKIES_AND_SITE_DATA_SUMMARY_BASIC_WITH_EXCEPTION},
-      {"clearCookiesCounter", IDS_DEL_COOKIES_COUNTER},
-      {"clearPasswords", IDS_SETTINGS_CLEAR_PASSWORDS},
-      {"clearFormData", IDS_SETTINGS_CLEAR_FORM_DATA},
-      {"clearHostedAppData", IDS_SETTINGS_CLEAR_HOSTED_APP_DATA},
-      {"clearPeriodHour", IDS_SETTINGS_CLEAR_PERIOD_HOUR},
-      {"clearPeriod24Hours", IDS_SETTINGS_CLEAR_PERIOD_24_HOURS},
-      {"clearPeriod7Days", IDS_SETTINGS_CLEAR_PERIOD_7_DAYS},
-      {"clearPeriod4Weeks", IDS_SETTINGS_CLEAR_PERIOD_FOUR_WEEKS},
-      {"clearPeriodEverything", IDS_SETTINGS_CLEAR_PERIOD_EVERYTHING},
-      {"historyDeletionDialogTitle",
-       IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_TITLE},
-      {"historyDeletionDialogOK", IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OK},
-      {"passwordsDeletionDialogTitle",
-       IDS_CLEAR_BROWSING_DATA_PASSWORDS_NOTICE_TITLE},
-      {"passwordsDeletionDialogOK",
-       IDS_CLEAR_BROWSING_DATA_PASSWORDS_NOTICE_OK},
-      {"installedAppsConfirm", IDS_SETTINGS_CLEAR_INSTALLED_APPS_DATA_CONFIRM},
-      {"installedAppsTitle", IDS_SETTINGS_CLEAR_INSTALLED_APPS_DATA_TITLE},
-      {"notificationWarning", IDS_SETTINGS_NOTIFICATION_WARNING},
+    {"clearTimeRange", IDS_SETTINGS_CLEAR_PERIOD_TITLE},
+    {"clearBrowsingDataWithSync", IDS_SETTINGS_CLEAR_BROWSING_DATA_WITH_SYNC},
+    {"clearBrowsingDataWithSyncError",
+     IDS_SETTINGS_CLEAR_BROWSING_DATA_WITH_SYNC_ERROR},
+    {"clearBrowsingDataWithSyncPassphraseError",
+     IDS_SETTINGS_CLEAR_BROWSING_DATA_WITH_SYNC_PASSPHRASE_ERROR},
+    {"clearBrowsingDataWithSyncPaused",
+     IDS_SETTINGS_CLEAR_BROWSING_DATA_WITH_SYNC_PAUSED},
+    {"clearBrowsingHistory", IDS_SETTINGS_CLEAR_BROWSING_HISTORY},
+    {"clearBrowsingHistorySummary",
+     IDS_SETTINGS_CLEAR_BROWSING_HISTORY_SUMMARY},
+    {"clearBrowsingHistorySummarySignedInNoLink",
+     IDS_SETTINGS_CLEAR_BROWSING_HISTORY_SUMMARY_SIGNED_IN_NO_LINK},
+    {"clearDownloadHistory", IDS_SETTINGS_CLEAR_DOWNLOAD_HISTORY},
+    {"clearCache", IDS_SETTINGS_CLEAR_CACHE},
+    {"clearCookies", IDS_SETTINGS_CLEAR_COOKIES},
+    {"clearCookiesSummary",
+     IDS_SETTINGS_CLEAR_COOKIES_AND_SITE_DATA_SUMMARY_BASIC},
+    {"clearCookiesSummarySignedIn",
+     IDS_SETTINGS_CLEAR_COOKIES_AND_SITE_DATA_SUMMARY_BASIC_WITH_EXCEPTION},
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    {"clearCookiesSummarySignedInMainProfile",
+     IDS_SETTINGS_CLEAR_COOKIES_AND_SITE_DATA_SUMMARY_BASIC_MAIN_PROFILE},
+#endif
+    {"clearCookiesCounter", IDS_DEL_COOKIES_COUNTER},
+    {"clearPasswords", IDS_SETTINGS_CLEAR_PASSWORDS},
+    {"clearFormData", IDS_SETTINGS_CLEAR_FORM_DATA},
+    {"clearHostedAppData", IDS_SETTINGS_CLEAR_HOSTED_APP_DATA},
+    {"clearPeriodHour", IDS_SETTINGS_CLEAR_PERIOD_HOUR},
+    {"clearPeriod24Hours", IDS_SETTINGS_CLEAR_PERIOD_24_HOURS},
+    {"clearPeriod7Days", IDS_SETTINGS_CLEAR_PERIOD_7_DAYS},
+    {"clearPeriod4Weeks", IDS_SETTINGS_CLEAR_PERIOD_FOUR_WEEKS},
+    {"clearPeriodEverything", IDS_SETTINGS_CLEAR_PERIOD_EVERYTHING},
+    {"historyDeletionDialogTitle",
+     IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_TITLE},
+    {"historyDeletionDialogOK", IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_OK},
+    {"passwordsDeletionDialogTitle",
+     IDS_CLEAR_BROWSING_DATA_PASSWORDS_NOTICE_TITLE},
+    {"passwordsDeletionDialogOK", IDS_CLEAR_BROWSING_DATA_PASSWORDS_NOTICE_OK},
+    {"installedAppsConfirm", IDS_SETTINGS_CLEAR_INSTALLED_APPS_DATA_CONFIRM},
+    {"installedAppsTitle", IDS_SETTINGS_CLEAR_INSTALLED_APPS_DATA_TITLE},
+    {"notificationWarning", IDS_SETTINGS_NOTIFICATION_WARNING},
   };
 
   html_source->AddString(
@@ -856,9 +859,7 @@ bool IsFidoAuthenticationAvailable(autofill::PersonalDataManager* personal_data,
       autofill_driver_factory->DriverForFrame(web_contents->GetMainFrame());
   if (!autofill_driver)
     return false;
-  autofill::BrowserAutofillManager* autofill_manager =
-      autofill_driver->browser_autofill_manager();
-  if (!autofill_manager)
+  if (!autofill_driver->autofill_manager())
     return false;
 
   // Show the toggle switch only if FIDO authentication is available. Once
@@ -2849,7 +2850,7 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
 void AddSystemStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"systemPageTitle", IDS_SETTINGS_SYSTEM},
-#if !defined(IS_MAC) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_CHROMEOS_LACROS)
     {"backgroundAppsLabel", IDS_SETTINGS_SYSTEM_BACKGROUND_APPS_LABEL},
 #endif
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)

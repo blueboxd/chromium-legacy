@@ -158,8 +158,10 @@ class DeepScanningSideIconImageView : public DeepScanningBaseView,
                                             dialog()->GetSideImageLogoColor(),
                                             kSideImageSize));
     if (dialog()->is_result()) {
-      SetBackground(std::make_unique<CircleBackground>(
-          dialog()->GetSideImageBackgroundColor()));
+      ui::ColorId color = dialog()->GetSideImageBackgroundColor();
+      SetBackground(std::make_unique<CircleBackground>(color));
+      GetBackground()->SetNativeControlColor(
+          GetColorProvider()->GetColor(color));
     }
   }
 
@@ -391,12 +393,6 @@ void ContentAnalysisDialog::WebContentsDestroyed() {
 void ContentAnalysisDialog::PrimaryPageChanged(content::Page& page) {
   // If the primary page is changed, the scan results would be stale. So the
   // delegate should be reset and dialog should be cancelled.
-  // TODO(https://crbug.com/1289334): Currently, Chrome Enterprise Connectors
-  // supports the primary page only. Once we support non-primary pages for
-  // fenced frames and portals, we need to track multiple delegates and dialogs
-  // per page. There, we should revisit if we should keep scanning if it runs
-  // against a portals page, and the portals page is activated to be the primary
-  // page.
   delegate_.reset(nullptr);
   CancelDialog();
 }
@@ -888,13 +884,15 @@ ui::ColorId ContentAnalysisDialog::GetSideImageLogoColor() const {
 
   switch (dialog_state_) {
     case State::PENDING:
-      // Match the spinner in the pending state.
-      return ui::kColorThrobberPreconnect;
+      // In the dialog's pending state, the side image is just an enterprise
+      // logo surrounded by a throbber, so we use the throbber color for it.
+      return ui::kColorThrobber;
     case State::SUCCESS:
     case State::FAILURE:
     case State::WARNING:
-      // In a result state the background will have the result's color, so the
-      // logo should have the same color as the background.
+      // In a result state, the side image is a circle colored with the result's
+      // color and an enterprise logo in front of it, so the logo should have
+      // the same color as the dialog's overall background.
       return ui::kColorDialogBackground;
   }
 }

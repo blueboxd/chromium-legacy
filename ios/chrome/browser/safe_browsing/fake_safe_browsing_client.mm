@@ -16,6 +16,10 @@ FakeSafeBrowsingClient::FakeSafeBrowsingClient()
 
 FakeSafeBrowsingClient::~FakeSafeBrowsingClient() = default;
 
+base::WeakPtr<SafeBrowsingClient> FakeSafeBrowsingClient::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 SafeBrowsingService* FakeSafeBrowsingClient::GetSafeBrowsingService() {
   return safe_browsing_service_.get();
 }
@@ -29,14 +33,16 @@ bool FakeSafeBrowsingClient::ShouldBlockUnsafeResource(
     const security_interstitials::UnsafeResource& resource) const {
   return should_block_unsafe_resource_;
 }
+
 void FakeSafeBrowsingClient::OnMainFrameUrlQueryCancellationDecided(
     web::WebState* web_state,
-    const GURL& url) const {
-  // No op.
+    const GURL& url) {
+  main_frame_cancellation_decided_called_ = true;
 }
 
 bool FakeSafeBrowsingClient::OnSubFrameUrlQueryCancellationDecided(
     web::WebState* web_state,
-    const GURL& url) const {
+    const GURL& url) {
+  sub_frame_cancellation_decided_called_ = true;
   return true;
 }

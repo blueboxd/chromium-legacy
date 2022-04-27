@@ -3808,13 +3808,23 @@ class SitePerProcessFencedFrameTest
       fenced_frame_helper_ =
           std::make_unique<content::test::FencedFrameTestHelper>();
     } else {
-      feature_list_.InitAndEnableFeatureWithParameters(
-          blink::features::kFencedFrames,
-          {{"implementation_type", "shadow_dom"}});
+      feature_list_.InitWithFeaturesAndParameters(
+          {{blink::features::kFencedFrames,
+            {{"implementation_type", "shadow_dom"}}},
+           {features::kPrivacySandboxAdsAPIsOverride, {}}},
+          {/* disabled_features */});
     }
   }
 
+  void SetUpOnMainThread() override {
+    SitePerProcessBrowserTestBase::SetUpOnMainThread();
+    https_server_.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+    ASSERT_TRUE(https_server_.Start());
+  }
+
  protected:
+  net::EmbeddedTestServer& https_server() { return https_server_; }
+
   content::RenderFrameHost* CreateFencedFrame(content::RenderFrameHost* parent,
                                               const GURL& url) {
     if (fenced_frame_helper_) {
@@ -3839,6 +3849,7 @@ class SitePerProcessFencedFrameTest
  private:
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<content::test::FencedFrameTestHelper> fenced_frame_helper_;
+  net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -3856,8 +3867,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessFencedFrameTest,
   FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
 
   // Create a fenced frame.
-  GURL fenced_frame_url(
-      embedded_test_server()->GetURL("/fenced_frames/title1.html"));
+  GURL fenced_frame_url(https_server().GetURL("/fenced_frames/title1.html"));
   RenderFrameHost* fenced_frame_host =
       CreateFencedFrame(web_contents()->GetMainFrame(), fenced_frame_url);
   EXPECT_NE(nullptr, fenced_frame_host);
@@ -12116,8 +12126,20 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 // Ensure that when a process is about to be destroyed after the last active
 // frame in it goes away, an attempt to reuse a proxy in that process doesn't
 // result in a crash.  See https://crbug.com/794625.
-IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
-                       RenderFrameProxyNotRecreatedDuringProcessShutdown) {
+// TODO(https://crbug.com/754084): This is flaky on Fuchsia because the
+// MessagePort is not cleared on the other side, resulting in Zircon killing the
+// process. See the comment referencing the same bug in
+// //mojo/core/channel_fuchsia.cc
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_RenderFrameProxyNotRecreatedDuringProcessShutdown \
+  DISABLED_RenderFrameProxyNotRecreatedDuringProcessShutdown
+#else
+#define MAYBE_RenderFrameProxyNotRecreatedDuringProcessShutdown \
+  RenderFrameProxyNotRecreatedDuringProcessShutdown
+#endif
+IN_PROC_BROWSER_TEST_P(
+    SitePerProcessBrowserTest,
+    MAYBE_RenderFrameProxyNotRecreatedDuringProcessShutdown) {
   GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
   FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();

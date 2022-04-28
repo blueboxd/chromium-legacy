@@ -827,7 +827,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Gaia.Message.{GaiaAuthFlow}.{MessageName}"
-    enum="BooleanReceived" expires_after="2022-06-01">
+    enum="BooleanReceived" expires_after="2023-03-01">
   <owner>rsorokin@chromium.org</owner>
   <owner>cros-oac@google.com</owner>
   <summary>
@@ -846,9 +846,9 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Gaia.PasswordFlow" enum="BooleanStartedCompleted"
-    expires_after="2022-06-01">
-  <owner>rsorokin@chromium.org</owner>
-  <owner>cros-oac@google.com</owner>
+    expires_after="2023-03-01">
+  <owner>antrim@chromium.org</owner>
+  <owner>cros-lurs@google.com</owner>
   <summary>
     Records events for the Gaia password flow. &quot;Started&quot; is recorded
     on each password entry on the Gaia page. &quot;Completed&quot; is recorded
@@ -1016,17 +1016,23 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.KeyPermissionsManager.Migration"
-    enum="KeyPermissionsManagerMigrationStatus" expires_after="2022-05-01">
+    enum="KeyPermissionsManagerMigrationStatus" expires_after="2022-11-01">
   <owner>omorsi@google.com</owner>
   <owner>pmarko@google.com</owner>
   <summary>
     Counts the number of times the migration started as well as the number of
-    times it succeeded and failed.
+    times it succeeded and failed. It also counts the number of necessary
+    migrations. Necessary migrations are the ones that work on migrating
+    permissions for at least one key. Currently, some migration processes start
+    when there are 0 keys saved in preferences.
   </summary>
 </histogram>
 
 <histogram name="ChromeOS.KeyPermissionsManager.MigrationTime" units="ms"
     expires_after="2022-02-06">
+  <obsolete>
+    Removed in M103
+  </obsolete>
   <owner>omorsi@google.com</owner>
   <owner>pmarko@chromium.org</owner>
   <summary>
@@ -1361,16 +1367,6 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>Records SAML provider when SAML login flow is used.</summary>
 </histogram>
 
-<histogram name="ChromeOS.SAML.SamlChallengeKeyHandlerResult"
-    enum="SamlChallengeKeyHandlerResult" expires_after="2022-02-01">
-  <owner>miersh@google.com</owner>
-  <owner>pmarko@chromium.org</owner>
-  <summary>
-    Tracks results of calculating response for a challenge from Verified Access
-    server for remove attestation during SAML authentication.
-  </summary>
-</histogram>
-
 <histogram name="ChromeOS.SAML.Scraping.PasswordCountAll" units="passwords"
     expires_after="2022-09-21">
   <owner>mslus@chromium.org</owner>
@@ -1541,7 +1537,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Sync.PreferencesMigrated" enum="BooleanMigrated"
-    expires_after="2022-06-01">
+    expires_after="2022-12-01">
   <owner>rsorokin@chromium.org</owner>
   <owner>jamescook@chromium.org</owner>
   <owner>cros-oac@google.com</owner>

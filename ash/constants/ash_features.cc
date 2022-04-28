@@ -1111,7 +1111,7 @@ const base::Feature kPhoneHub{"PhoneHub", base::FEATURE_ENABLED_BY_DEFAULT};
 // Enables the Camera Roll feature in Phone Hub, which allows users to access
 // recent photos and videos taken on a connected Android device
 const base::Feature kPhoneHubCameraRoll{"PhoneHubCameraRoll",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the incoming/ongoing call notification feature in Phone Hub.
 const base::Feature kPhoneHubCallNotification{
@@ -1298,7 +1298,7 @@ const base::Feature kSmartDimExperimentalComponent{
 // screen, removes the Smart Lock subpage in settings, and shows a one-time
 // notification for users who previously had this feature enabled.
 const base::Feature kSmartLockSignInRemoved{"SmartLockSignInRemoved",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Replaces Smart Lock UI in lock screen password box with new UI similar to
 // fingerprint auth. Adds Smart Lock to "Lock screen and sign-in" section of
@@ -1352,6 +1352,11 @@ const base::Feature kTabClusterUI{"TabClusterUI",
 // Enables ChromeOS Telemetry Extension.
 const base::Feature kTelemetryExtension{"TelemetryExtension",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables Terminal System App to load from Downloads for developer testing.
+// Only works in dev and canary channels.
+const base::Feature kTerminalDev{"TerminalDev",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables SSH tabs in the Terminal System App.
 const base::Feature kTerminalSSH{"TerminalSSH",

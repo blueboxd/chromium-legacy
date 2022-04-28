@@ -385,7 +385,9 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       current_begin_frame_tracker_(FROM_HERE),
       compositor_frame_reporting_controller_(
           std::make_unique<CompositorFrameReportingController>(
-              /*should_report_metrics=*/!settings.single_thread_proxy_scheduler,
+              /*should_report_histograms=*/!settings
+                  .single_thread_proxy_scheduler,
+              /*should_report_ukm=*/!settings.single_thread_proxy_scheduler,
               id)),
       settings_(settings),
       is_synchronous_single_threaded_(!task_runner_provider->HasImplThread() &&
@@ -1529,11 +1531,6 @@ void LayerTreeHostImpl::SetViewportDamage(const gfx::Rect& damage_rect) {
   viewport_damage_rect_.Union(damage_rect);
 }
 
-void LayerTreeHostImpl::SetEnableFrameRateThrottling(
-    bool enable_frame_rate_throttling) {
-  enable_frame_rate_throttling_ = enable_frame_rate_throttling;
-}
-
 void LayerTreeHostImpl::InvalidateContentOnImplSide() {
   DCHECK(!pending_tree_);
   // Invalidation should never be ran outside the impl frame for non
@@ -2670,13 +2667,11 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
   constexpr auto kTwiceOfDefaultInterval =
       viz::BeginFrameArgs::DefaultInterval() * 2;
   constexpr auto kMinDelta = kTwiceOfDefaultInterval - kFudgeDelta;
-  if (enable_frame_rate_throttling_) {
-    metadata.preferred_frame_interval = viz::BeginFrameArgs::MaxInterval();
-  } else if (mutator_host_->MainThreadAnimationsCount() == 0 &&
-             !mutator_host_->HasSmilAnimation() &&
-             mutator_host_->NeedsTickAnimations() &&
-             !frame_rate_estimator_.input_priority_mode() &&
-             mutator_host_->MinimumTickInterval() > kMinDelta) {
+  if (mutator_host_->MainThreadAnimationsCount() == 0 &&
+      !mutator_host_->HasSmilAnimation() &&
+      mutator_host_->NeedsTickAnimations() &&
+      !frame_rate_estimator_.input_priority_mode() &&
+      mutator_host_->MinimumTickInterval() > kMinDelta) {
     // All animations are impl-thread animations that tick at no more than
     // half the default display compositing fps.
     // Here and below with FrameRateEstimator::GetPreferredInterval(), the

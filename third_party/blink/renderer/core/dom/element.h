@@ -541,6 +541,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void UpdatePopupAttribute(String);
   bool HasValidPopupAttribute() const;
   PopupData* GetPopupData() const;
+  PopupValueType PopupType() const;
   bool popupOpen() const;
   void showPopup();
   void hidePopup();
@@ -910,6 +911,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   virtual bool IsScriptElement() const { return false; }
   virtual bool IsVTTCueBackgroundBox() const { return false; }
   virtual bool IsSliderThumbElement() const { return false; }
+  virtual bool IsOutputElement() const { return false; }
 
   // Elements that may have an insertion mode other than "in body" should
   // override this and return true.

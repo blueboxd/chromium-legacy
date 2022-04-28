@@ -818,10 +818,10 @@
     "bases": [
       "external/wpt/web-locks/partitioned-web-locks.tentative.https.html",
       "external/wpt/workers/shared-worker-partitioned.tentative.html",
-      "external/wpt/service-workers/service-worker/partitioned-service-worker.tentative.https.html",
-      "external/wpt/service-workers/service-worker/partitioned-service-worker-getRegistrations.tentative.https.html",
-      "external/wpt/service-workers/service-worker/partitioned-service-worker-matchAll.tentative.https.html",
-      "external/wpt/service-workers/service-worker/partitioned-service-worker-claim.tentative.https.html",
+      "external/wpt/service-workers/service-worker/partitioned.tentative.https.html",
+      "external/wpt/service-workers/service-worker/partitioned-getRegistrations.tentative.https.html",
+      "external/wpt/service-workers/service-worker/partitioned-matchAll.tentative.https.html",
+      "external/wpt/service-workers/service-worker/partitioned-claim.tentative.https.html",
       "external/wpt/webstorage/localstorage-basic-partitioned.tentative.sub.html",
       "external/wpt/webmessaging/broadcastchannel/cross-partition.https.tentative.html",
       "external/wpt/IndexedDB/idb-partitioned-basic.tentative.sub.html",
@@ -982,6 +982,7 @@
               "accessibility/virtual-node-build-parent-multiple.html",
               "accessibility/virtual-node-removed-from-document.html",
               "accessibility/virtual-node-repair-document.html",
+              "dom/legacy_dom_conformance/html/level2/core/createAttributeNS06.html",
               "external/wpt/accessibility/crashtests/aria-hidden-with-select.html",
               "external/wpt/accessibility/crashtests/aria-owns-destroyed-by-content-replacement.html",
               "external/wpt/accessibility/crashtests/aria-owns-reparent.html",
@@ -996,6 +997,7 @@
               "external/wpt/accessibility/crashtests/slot-assignment-lockup.html",
               "external/wpt/accessibility/crashtests/validation-message.html",
               "external/wpt/accessibility/crashtests/displaylocked-serialize.html",
+              "external/wpt/dom/ranges/Range-deleteContents.html",
               "editing/text-iterator/auto-expand-details.html",
               "editing/text-iterator/auto-expand-details-shadowdom.html"],
     "args": ["--force-renderer-accessibility"]
@@ -1183,7 +1185,10 @@
     "bases": [
       "external/wpt/css/css-pseudo",
       "wpt_internal/css/css-pseudo",
-      "external/wpt/css/css-highlight-api"
+      "external/wpt/css/css-highlight-api",
+      "paint/markers/inline_spelling_markers.html",
+      "paint/markers/inline-spelling-markers-hidpi.html",
+      "paint/markers/inline-spelling-markers-hidpi-composited.html"
     ],
     "args": ["--enable-blink-features=HighlightOverlayPainting"]
   },

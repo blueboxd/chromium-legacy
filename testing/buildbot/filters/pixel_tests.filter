@@ -62,6 +62,7 @@ SecurePaymentConfirmationDialogViewTest.InvokeUi_*
 SessionCrashedBubbleViewTest.*
 TabGroupEditorBubbleViewDialogBrowserTest.*
 TabHoverCardBubbleViewBrowserTest.*
+TranslateBubbleVisualTest.InvokeUi_*
 UpdateRecommendedDialogTest.*
 WebAppConfirmViewBrowserTest.*
 ZoomBubbleDialogTest.*

@@ -670,6 +670,11 @@
     "expiry_milestone": 106
   },
   {
+    "name": "bulk-tab-restore-android",
+    "owners": ["ckitagawa", "fredmello"],
+    "expiry_milestone": 110
+  },
+  {
     "name": "bypass-app-banner-engagement-checks",
     "owners": [ "dmurph" ],
     "expiry_milestone": 95
@@ -1196,11 +1201,6 @@
     "name": "destroy-system-profiles",
     "owners": [ "nicolaso" ],
     "expiry_milestone": 104
-  },
-  {
-    "name": "detect-form-submission-on-form-clear",
-    "owners": [ "kazinova@google.com", "khamutov@google.com"],
-    "expiry_milestone": 101
   },
   {
     "name": "device-force-scheduled-reboot",
@@ -3532,18 +3532,23 @@
   },
   {
     "name": "history-journeys",
-    "owners": [ "tommycli", "chrome-journeys@google.com", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 105
+    "owners": [ "tommycli", "chrome-journeys@google.com" ],
+    "expiry_milestone": 110
+  },
+  {
+    "name": "history-journeys-labels",
+    "owners": [ "tommycli", "chrome-journeys@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "history-journeys-omnibox-action",
-    "owners": [ "tommycli", "chrome-journeys@google.com", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 105
+    "owners": [ "tommycli", "chrome-journeys@google.com" ],
+    "expiry_milestone": 110
   },
   {
     "name": "history-journeys-on-device-clustering",
     "owners": [ "sophiechang", "chrome-journeys@google.com", "chrome-intelligence-core@google.com" ],
-    "expiry_milestone": 105
+    "expiry_milestone": 110
   },
   {
     "name": "http-cache-partitioning",
@@ -5040,7 +5045,7 @@
   {
     "name": "quick-dim",
     "owners": [ "charleszhao", "martis", "napper" ],
-    "expiry_milestone": 102
+    "expiry_milestone": 106
   },
   {
     "name": "quick-settings-network-revamp",
@@ -5508,7 +5513,7 @@
   {
     "name": "snooping-protection",
     "owners": [ "martis", "charleszhao", "napper" ],
-    "expiry_milestone": 102
+    "expiry_milestone": 106
   },
   {
     "name": "spectre-v2-mitigation",
@@ -5654,6 +5659,14 @@
       "expiry_milestone":102
   },
   {
+    "name": "terminal-dev",
+    "owners": [ "joelhockey", "lxj@google.com", "//chrome/browser/ash/guest_os/OWNERS" ],
+    // This flag is used by CrOS Terminal developers for testing SSH on devices
+    // with valid machine certs and should not be removed.  Only works in dev
+    // and canary channels.
+    "expiry_milestone": -1
+  },
+  {
     "name": "terminal-ssh",
     "owners": [ "lxj@google.com", "joelhockey", "//chrome/browser/ash/guest_os/OWNERS" ],
     "expiry_milestone": 110
@@ -5758,6 +5771,11 @@
     "name": "trust-tokens",
     "owners": [ "svaldez", "privacy-sandbox-dev" ],
     "expiry_milestone": 105
+  },
+  {
+    "name": "trusted-web-activity-notification-permission-delegation",
+    "owners": [ "mvanouwerkerk", "//chrome/android/java/src/org/chromium/chrome/browser/browserservices/OWNERS" ],
+    "expiry_milestone": 108
   },
   {
     "name": "turn-off-streaming-media-caching-always",

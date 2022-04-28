@@ -40,6 +40,10 @@ class ASH_EXPORT AppListTestApi {
   // Returns the active app list model.
   AppListModel* GetAppListModel();
 
+  // Shows the bubble app list by the accelerator and waits until the show
+  // animation finishes.
+  void ShowBubbleAppListAndWait();
+
   // Waits for the bubble launcher window to open on the primary display.
   // `wait_for_opening_animation` indicates whether to wait for the bubble
   // launcher show animations (including the app list window animation, the
@@ -143,6 +147,9 @@ class ASH_EXPORT AppListTestApi {
   // Enables/Disables the app list nudge for testing.
   void DisableAppListNudge(bool disable);
 
+  // Marks continue section privacy notice as accepted.
+  void SetContinueSectionPrivacyNoticeAccepted();
+
   // Moves the app list item at `source_index` to `target_index` by
   // drag-and-drop. `source_index` and `target_index` are view indices in the
   // root apps grid.
@@ -157,6 +164,9 @@ class ASH_EXPORT AppListTestApi {
 
   // Verifies that all item views are visible.
   void VerifyTopLevelItemVisibility();
+
+  // Returns the recent app item item specified by `index`.
+  views::View* GetRecentAppAt(int index);
 
   // App list sort related methods ---------------------------------------------
 

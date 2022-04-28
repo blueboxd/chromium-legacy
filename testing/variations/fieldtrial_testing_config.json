@@ -1868,6 +1868,21 @@
             ]
         }
     ],
+    "CaptureModeSelfieCamera": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "EnableCaptureModeSelfieCamera",
+                    "enable_features": [
+                        "CaptureModeSelfieCamera"
+                    ]
+                }
+            ]
+        }
+    ],
     "CctClientDataHeader": [
         {
             "platforms": [
@@ -2902,21 +2917,6 @@
                     "name": "DestroySystemProfiles",
                     "enable_features": [
                         "DestroySystemProfiles"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DetectFormSubmissionOnFormClearIOS": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DetectFormSubmissionOnFormClear"
                     ]
                 }
             ]
@@ -6677,6 +6677,7 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
+                        "ServiceWorkerStorageControlOnIOThread",
                         "ServiceWorkerStorageControlResponseQueue"
                     ]
                 }
@@ -7702,6 +7703,29 @@
                     "name": "UseSkiaRenderer",
                     "enable_features": [
                         "UseSkiaRenderer"
+                    ]
+                }
+            ]
+        }
+    ],
+    "UserAgentOverrideExperiment": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UserAgentOverrideExperiment"
                     ]
                 }
             ]

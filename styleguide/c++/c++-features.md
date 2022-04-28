@@ -11,8 +11,9 @@ support._
 The C++ language has in recent years received an updated standard every three
 years (C++11, C++14, etc.). For various reasons, Chromium does not immediately
 allow new features on the publication of such a standard. Instead, once
-toolchain support is sufficient, a standard is declared "initially supported",
-with new language/library features banned pending discussion.
+Chromium supports the toolchain to a certain extent (e.g., build support is
+ready), a standard is declared "_initially supported_", with new
+language/library features banned pending discussion but not yet allowed.
 
 You can propose changing the status of a feature by sending an email to
 [cxx@chromium.org](https://groups.google.com/a/chromium.org/forum/#!forum/cxx).
@@ -692,6 +693,44 @@ Prefer range-based for loops over `std::size()`: range-based for loops work even
 for regular arrays.
 ***
 
+### std::is_invocable <sup>[allowed]</sup>
+
+```c++
+std::is_invocable_v<Fn, 1, "Hello">
+```
+
+**Description:** Checks whether a function may be invoked with the given
+argument types.  The `_r` variant also evaluates whether the result is
+convertible to a given type.
+
+**Documentation:**
+[std::is_invocable](https://en.cppreference.com/w/cpp/types/is_invocable)
+
+**Notes:**
+*** promo
+[Discussion thread](https://groups.google.com/a/chromium.org/g/cxx/c/YhlF_sTDSc0/m/QMzf42BtAAAJ)
+***
+
+### std::conjunction/std::disjunction/std::negation <sup>[allowed]</sup>
+
+```c++
+template<typename T, typename... Ts>
+std::enable_if_t<std::conjunction_v<std::is_same<T, Ts>...>>
+func(T, Ts...) { ...
+```
+
+**Description:** Performs logical operations on type traits.
+
+**Documentation:**
+[std::conjunction](https://en.cppreference.com/w/cpp/types/conjunction),
+[std::disjunction](https://en.cppreference.com/w/cpp/types/disjunction),
+[std::negation](https://en.cppreference.com/w/cpp/types/negation)
+
+**Notes:**
+*** promo
+[Discussion thread](https://groups.google.com/a/chromium.org/g/cxx/c/YhlF_sTDSc0/m/QMzf42BtAAAJ)
+***
+
 ## C++17 Banned Library Features {#library-blocklist-17}
 
 The following C++17 library features are not allowed in the Chromium codebase.
@@ -1258,26 +1297,6 @@ int* p2 = static_cast<int*>(std::aligned_alloc(1024, 1024));
 None
 ***
 
-### std::conjunction/std::disjunction/std::negation <sup>[tbd]</sup>
-
-```c++
-template<typename T, typename... Ts>
-std::enable_if_t<std::conjunction_v<std::is_same<T, Ts>...>>
-func(T, Ts...) { ...
-```
-
-**Description:** Performs logical operations on type traits.
-
-**Documentation:**
-[std::conjunction](https://en.cppreference.com/w/cpp/types/conjunction),
-[std::disjunction](https://en.cppreference.com/w/cpp/types/disjunction),
-[std::negation](https://en.cppreference.com/w/cpp/types/negation)
-
-**Notes:**
-*** promo
-None
-***
-
 ### std::is_swappable <sup>[tbd]</sup>
 
 ```c++
@@ -1289,24 +1308,6 @@ std::is_swappable_with_v<T, U>
 
 **Documentation:**
 [std::is_swappable](https://en.cppreference.com/w/cpp/types/is_swappable)
-
-**Notes:**
-*** promo
-None
-***
-
-### std::is_invocable <sup>[tbd]</sup>
-
-```c++
-std::is_invocable_v<Fn, 1, "Hello">
-```
-
-**Description:** Checks whether a function may be invoked with the given
-argument types.  The `_r` variant also evaluates whether the result is
-convertible to a given type.
-
-**Documentation:**
-[std::is_invocable](https://en.cppreference.com/w/cpp/types/is_invocable)
 
 **Notes:**
 *** promo

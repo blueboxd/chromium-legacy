@@ -1048,7 +1048,7 @@ Permissions you've already given to websites and apps may apply to this account.
       </message>
 
       <!-- ProcessSingleton -->
-      <if expr="is_linux or is_macosx">
+      <if expr="is_posix">
         <message name="IDS_PROFILE_IN_USE_POSIX" desc="Message shown when the browser cannot start because the profile is in use on a different host.">
           The profile appears to be in use by another Google Chrome process (<ph name="PROCESS_ID">$1<ex>12345</ex></ph>) on another computer (<ph name="HOST_NAME">$2<ex>example.com</ex></ph>).  Chrome has locked the profile so that it doesn't get corrupted.  If you are sure no other processes are using this profile, you can unlock the profile and relaunch Chrome.
         </message>
@@ -1429,7 +1429,7 @@ Permissions you've already given to websites and apps may apply to this account.
       </if>
 
       <!-- Chrome parent extension/app install blocking dialog. -->
-      <if expr="chromeos_ash">
+      <if expr="enable_extensions and enable_supervised_users">
         <message name="IDS_EXTENSION_INSTALL_BLOCKED_BY_PARENT_PROMPT_MESSAGE" desc="Text for the dialog indicating that a parent has blocked extensions and apps.">
          Your parent has turned off "Permissions for sites, apps and extensions" for Chrome. Adding this <ph name="EXTENSION_TYPE_PARAMETER">$1<ex>extension</ex></ph> is not allowed.
         </message>

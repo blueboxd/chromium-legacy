@@ -134,12 +134,6 @@ const char kDeferredFontShapingDescription[] =
     "Defer text rendering in invisible CSS boxes until the boxes become "
     "visible.";
 
-const char kDetectFormSubmissionOnFormClearName[] =
-    "Detect form submission when the form is cleared.";
-const char kDetectFormSubmissionOnFormClearDescription[] =
-    "Detect form submissions for change password forms that are cleared and "
-    "not removed from the page.";
-
 const char kEditPasswordsInSettingsName[] = "Edit passwords in settings";
 const char kEditPasswordsInSettingsDescription[] =
     "Enables password editing in settings.";
@@ -1570,6 +1564,10 @@ const char kJavascriptHarmonyShippingDescription[] =
 const char kJourneysName[] = "History Journeys";
 const char kJourneysDescription[] = "Enables the History Journeys UI.";
 
+const char kJourneysLabelsName[] = "History Journeys Labels";
+const char kJourneysLabelsDescription[] =
+    "Enables labels for Journeys within the History Journeys UI.";
+
 const char kJourneysOmniboxActionName[] = "History Journeys Omnibox Action";
 const char kJourneysOmniboxActionDescription[] =
     "Enables the History Journeys Omnibox Action.";
@@ -1843,12 +1841,6 @@ const char kOmniboxRetainSuggestionsWithHeadersDescription[] =
     "Given a list of suggestions, all suggestions for which a header metadata "
     "is available will be retained as a whole and not be counted towards the "
     "limit.";
-
-const char kOmniboxTabSwitchSuggestionsName[] =
-    "Omnibox switch to tab suggestions";
-const char kOmniboxTabSwitchSuggestionsDescription[] =
-    "Enable URL suggestions to optionally take the user to a tab where a "
-    "website is already opened.";
 
 const char kOmniboxMaxZeroSuggestMatchesName[] =
     "Omnibox Max Zero Suggest Matches";
@@ -2981,6 +2973,11 @@ const char kBackGestureRefactorAndroidName[] = "Back Gesture Refactor";
 const char kBackGestureRefactorAndroidDescription[] =
     "Enable Back Gesture Refactor.";
 
+const char kBulkTabRestoreAndroidName[] = "Recent Tabs Bulk Restore";
+const char kBulkTabRestoreAndroidDescription[] =
+    "Enables restoration of bulk tab closures (e.g. close all tabs, close "
+    "a group, etc.) from Recent Tabs > Recently Closed.";
+
 const char kCCTIncognitoName[] = "Chrome Custom Tabs Incognito mode";
 const char kCCTIncognitoDescription[] =
     "Enables incognito mode for Chrome Custom Tabs, on Android.";
@@ -3552,6 +3549,12 @@ const char kTranslateMessageUIName[] = "Translate Message UI";
 const char kTranslateMessageUIDescription[] =
     "Controls whether the Translate Message UI will be shown instead of the "
     "Translate InfoBar.";
+
+const char kTrustedWebActivityNotificationPermissionDelegationName[] =
+    "TWA notification permission delegation";
+const char kTrustedWebActivityNotificationPermissionDelegationDescription[] =
+    "When enabled, notification permission requests for Trusted Web Activities "
+    "will be delegated to the app.";
 
 const char kUpdateMenuBadgeName[] = "Force show update menu badge";
 const char kUpdateMenuBadgeDescription[] =
@@ -5324,6 +5327,11 @@ const char kQuickSettingsNetworkRevampName[] =
 const char kQuickSettingsNetworkRevampDescription[] =
     "Enables the Quick Settings Network revamp, which updates Network Quick "
     "Settings UI and related infrastructure. See https://crbug.com/1169479.";
+
+const char kTerminalDevName[] = "Terminal dev";
+const char kTerminalDevDescription[] =
+    "Enables Terminal System App to load from Downloads for developer testing. "
+    "Only works in dev and canary channels.";
 
 const char kTerminalSSHName[] = "Terminal SSH tabs";
 const char kTerminalSSHDescription[] =

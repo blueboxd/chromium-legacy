@@ -23,7 +23,6 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/style/highlight_border.h"
 #include "ash/style/style_util.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
@@ -44,6 +43,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/highlight_border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/vector_icons.h"
@@ -63,11 +63,11 @@ constexpr int kViewCornerRadiusTablet = 20;
 constexpr int kTaskMinWidth = 204;
 constexpr int kTaskMaxWidth = 264;
 
-gfx::ImageSkia CreateIconWithCircleBackground(const gfx::ImageSkia& icon) {
+gfx::ImageSkia CreateIconWithCircleBackground(
+    const gfx::ImageSkia& icon,
+    ColorProvider::ControlsLayerType color_id) {
   return gfx::ImageSkiaOperations::CreateImageWithCircleBackground(
-      kCircleRadius,
-      ColorProvider::Get()->GetControlsLayerColor(
-          ColorProvider::ControlsLayerType::kControlBackgroundColorInactive),
+      kCircleRadius, ColorProvider::Get()->GetControlsLayerColor(color_id),
       icon);
 }
 
@@ -160,6 +160,7 @@ void ContinueTaskView::OnThemeChanged() {
   views::View::OnThemeChanged();
   bubble_utils::ApplyStyle(title_, bubble_utils::LabelStyle::kBody);
   bubble_utils::ApplyStyle(subtitle_, bubble_utils::LabelStyle::kSubtitle);
+  UpdateIcon();
   UpdateStyleForTabletMode();
 }
 
@@ -183,12 +184,21 @@ void ContinueTaskView::OnButtonPressed(const ui::Event& event) {
   OpenResult(event.flags());
 }
 
-void ContinueTaskView::SetIcon(const gfx::ImageSkia& icon) {
+void ContinueTaskView::UpdateIcon() {
+  if (!result()) {
+    icon_->SetImage(gfx::ImageSkia());
+    return;
+  }
+
+  const gfx::ImageSkia& icon = result()->chip_icon();
   icon_->SetImage(CreateIconWithCircleBackground(
       icon.size() == GetIconSize()
           ? icon
           : gfx::ImageSkiaOperations::CreateResizedImage(
-                icon, skia::ImageOperations::RESIZE_BEST, GetIconSize())));
+                icon, skia::ImageOperations::RESIZE_BEST, GetIconSize()),
+      result()->result_type() == AppListSearchResultType::kHelpApp
+          ? ColorProvider::ControlsLayerType::kControlBackgroundColorActive
+          : ColorProvider::ControlsLayerType::kControlBackgroundColorInactive));
 }
 
 gfx::Size ContinueTaskView::GetIconSize() const {
@@ -204,16 +214,15 @@ void ContinueTaskView::UpdateResult() {
   views::InkDrop::Get(this)->GetInkDrop()->AnimateToState(
       views::InkDropState::HIDDEN);
   CloseContextMenu();
+  UpdateIcon();
 
   if (!result()) {
-    SetIcon(gfx::ImageSkia());
     title_->SetText(std::u16string());
     subtitle_->SetText(std::u16string());
     GetViewAccessibility().OverrideName(std::u16string());
     return;
   }
 
-  SetIcon(result()->chip_icon());
   title_->SetText(result()->title());
   subtitle_->SetText(result()->details());
 
@@ -391,9 +400,9 @@ void ContinueTaskView::UpdateStyleForTabletMode() {
   SetBackground(
       views::CreateSolidBackground(ColorProvider::Get()->GetBaseLayerColor(
           ColorProvider::BaseLayerType::kTransparent60)));
-  SetBorder(std::make_unique<HighlightBorder>(
+  SetBorder(std::make_unique<views::HighlightBorder>(
       GetCornerRadius(/*tablet_mode=*/true),
-      HighlightBorder::Type::kHighlightBorder2,
+      views::HighlightBorder::Type::kHighlightBorder2,
       /*use_light_colors=*/false));
 }
 

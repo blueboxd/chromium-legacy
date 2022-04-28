@@ -992,53 +992,33 @@ const FeatureEntry::FeatureVariation kJourneysOmniboxActionVariations[] = {
     {"Action Chips on URLs", kJourneysOmniboxActionOnURLsParams,
      std::size(kJourneysOmniboxActionOnURLsParams), nullptr},
 };
-const FeatureEntry::FeatureParam
-    kJourneysOnDeviceClusteringLabelingNoContentClusteringParams[] = {
-        {"should_label_clusters", "true"},
-        {"labels_from_entities", "true"},
-        {"content_clustering_enabled", "false"},
+const FeatureEntry::FeatureParam kJourneysLabelsWithEntitiesParams[] = {
+    {"labels_from_entities", "true"},
 };
 const FeatureEntry::FeatureParam
-    kJourneysOnDeviceClusteringLabelingNoHostnamesNoContentClusteringParams[] =
-        {
-            {"should_label_clusters", "true"},
-            {"labels_from_hostnames", "false"},
-            {"labels_from_entities", "true"},
-            {"content_clustering_enabled", "false"},
+    kJourneysLabelsWithEntitiesNoHostnamesParams[] = {
+        {"labels_from_hostnames", "false"},
+        {"labels_from_entities", "true"},
+};
+const FeatureEntry::FeatureVariation kJourneysLabelsVariations[] = {
+    {"With Entities", kJourneysLabelsWithEntitiesParams,
+     std::size(kJourneysLabelsWithEntitiesParams), nullptr},
+    {"With Entities, No Hostnames",
+     kJourneysLabelsWithEntitiesNoHostnamesParams,
+     std::size(kJourneysLabelsWithEntitiesNoHostnamesParams), nullptr},
 };
 const FeatureEntry::FeatureParam
     kJourneysOnDeviceClusteringNoContentClusteringParams[] = {
-        {"should_label_clusters", "false"},
         {"content_clustering_enabled", "false"},
 };
 const FeatureEntry::FeatureParam
-    kJourneysOnDeviceClusteringLabelingWithContentClusteringParams[] = {
-        {"should_label_clusters", "true"},
-        {"labels_from_entities", "true"},
-        {"content_clustering_enabled", "true"},
-};
-const FeatureEntry::FeatureParam
     kJourneysOnDeviceClusteringContentClusteringParams[] = {
-        {"should_label_clusters", "false"},
         {"content_clustering_enabled", "true"},
 };
 const FeatureEntry::FeatureVariation kJourneysOnDeviceClusteringVariations[] = {
-    {"Label Clusters and No Content Clustering",
-     kJourneysOnDeviceClusteringLabelingNoContentClusteringParams,
-     std::size(kJourneysOnDeviceClusteringLabelingNoContentClusteringParams),
-     nullptr},
-    {"Label Clusters, No Hostnames, & No Content Clustering",
-     kJourneysOnDeviceClusteringLabelingNoHostnamesNoContentClusteringParams,
-     std::size(
-         kJourneysOnDeviceClusteringLabelingNoHostnamesNoContentClusteringParams),
-     nullptr},
     {"No Content Clustering",
      kJourneysOnDeviceClusteringNoContentClusteringParams,
      std::size(kJourneysOnDeviceClusteringNoContentClusteringParams), nullptr},
-    {"Label Clusters and Content Clustering",
-     kJourneysOnDeviceClusteringLabelingWithContentClusteringParams,
-     std::size(kJourneysOnDeviceClusteringLabelingWithContentClusteringParams),
-     nullptr},
     {"Content Clustering", kJourneysOnDeviceClusteringContentClusteringParams,
      std::size(kJourneysOnDeviceClusteringContentClusteringParams), nullptr},
 };
@@ -1519,9 +1499,33 @@ const FeatureEntry::FeatureVariation kDiscountConsentV2Variations[] = {
 
 const FeatureEntry::FeatureParam kNtpRecipeTasksModuleFakeData[] = {
     {ntp_features::kNtpRecipeTasksModuleDataParam, "fake"}};
+const FeatureEntry::FeatureParam kNtpRecipeTasksModuleHistorical3Days[] = {
+    {ntp_features::kNtpRecipeTasksModuleExperimentGroupParam, "historical-3"}};
+const FeatureEntry::FeatureParam kNtpRecipeTasksModuleHistorical7Days[] = {
+    {ntp_features::kNtpRecipeTasksModuleExperimentGroupParam, "historical-7"}};
+const FeatureEntry::FeatureParam kNtpRecipeTasksModuleHistorical14Days[] = {
+    {ntp_features::kNtpRecipeTasksModuleExperimentGroupParam, "historical-14"}};
+const FeatureEntry::FeatureParam kNtpRecipeTasksModuleMix3Days[] = {
+    {ntp_features::kNtpRecipeTasksModuleExperimentGroupParam, "mix-3"}};
+const FeatureEntry::FeatureParam kNtpRecipeTasksModuleMix7Days[] = {
+    {ntp_features::kNtpRecipeTasksModuleExperimentGroupParam, "mix-7"}};
+const FeatureEntry::FeatureParam kNtpRecipeTasksModuleMix14Days[] = {
+    {ntp_features::kNtpRecipeTasksModuleExperimentGroupParam, "mix-14"}};
 const FeatureEntry::FeatureVariation kNtpRecipeTasksModuleVariations[] = {
     {"- Fake Data", kNtpRecipeTasksModuleFakeData,
      std::size(kNtpRecipeTasksModuleFakeData), nullptr},
+    {"- Historical Arm (3 days)", kNtpRecipeTasksModuleHistorical3Days,
+     std::size(kNtpRecipeTasksModuleHistorical3Days), nullptr},
+    {"- Historical Arm (7 days)", kNtpRecipeTasksModuleHistorical7Days,
+     std::size(kNtpRecipeTasksModuleHistorical7Days), nullptr},
+    {"- Historical Arm (14 days)", kNtpRecipeTasksModuleHistorical14Days,
+     std::size(kNtpRecipeTasksModuleHistorical14Days), nullptr},
+    {"- Recommended Mix Arm (3 days)", kNtpRecipeTasksModuleMix3Days,
+     std::size(kNtpRecipeTasksModuleMix3Days), nullptr},
+    {"- Recommended Mix Arm (7 days)", kNtpRecipeTasksModuleMix7Days,
+     std::size(kNtpRecipeTasksModuleMix7Days), nullptr},
+    {"- Recommended Mix Arm (14 days)", kNtpRecipeTasksModuleMix14Days,
+     std::size(kNtpRecipeTasksModuleMix14Days), nullptr},
 };
 
 const FeatureEntry::FeatureParam kNtpDriveModuleFakeData[] = {
@@ -3902,6 +3906,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"crostini-reset-lxd-db", flag_descriptions::kCrostiniResetLxdDbName,
      flag_descriptions::kCrostiniResetLxdDbDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniResetLxdDb)},
+    {"terminal-dev", flag_descriptions::kTerminalDevName,
+     flag_descriptions::kTerminalDevDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kTerminalDev)},
     {"terminal-ssh", flag_descriptions::kTerminalSSHName,
      flag_descriptions::kTerminalSSHDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kTerminalSSH)},
@@ -4809,10 +4816,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxMostVisitedTilesName,
      flag_descriptions::kOmniboxMostVisitedTilesDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kMostVisitedTiles)},
-    {"omnibox-tab-switch-suggestions",
-     flag_descriptions::kOmniboxTabSwitchSuggestionsName,
-     flag_descriptions::kOmniboxTabSwitchSuggestionsDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxTabSwitchSuggestions)},
     {"omnibox-pedals-android-batch1",
      flag_descriptions::kOmniboxPedalsAndroidBatch1Name,
      flag_descriptions::kOmniboxPedalsAndroidBatch1Description, kOsAndroid,
@@ -4870,10 +4873,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxShortBookmarkSuggestionsName,
      flag_descriptions::kOmniboxShortBookmarkSuggestionsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kShortBookmarkSuggestions)},
-    {"omnibox-tab-switch-suggestions",
-     flag_descriptions::kOmniboxTabSwitchSuggestionsName,
-     flag_descriptions::kOmniboxTabSwitchSuggestionsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxTabSwitchSuggestions)},
     {"omnibox-pedals-batch3-nonenglish",
      flag_descriptions::kOmniboxPedalsBatch3NonEnglishName,
      flag_descriptions::kOmniboxPedalsBatch3NonEnglishDescription, kOsDesktop,
@@ -5061,6 +5060,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(history_clusters::internal::kJourneys,
                                     kJourneysVariations,
                                     "HistoryJourneys")},
+
+    {"history-journeys-labels", flag_descriptions::kJourneysLabelsName,
+     flag_descriptions::kJourneysLabelsDescription, kOsDesktop | kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(history_clusters::internal::kJourneysLabels,
+                                    kJourneysLabelsVariations,
+                                    "HistoryJourneysLabels")},
 
     {"history-journeys-omnibox-action",
      flag_descriptions::kJourneysOmniboxActionName,
@@ -7247,12 +7252,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDeferredFontShapingDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kDeferredFontShaping)},
 
-    {"detect-form-submission-on-form-clear",
-     flag_descriptions::kDetectFormSubmissionOnFormClearName,
-     flag_descriptions::kDetectFormSubmissionOnFormClearDescription, kOsAll,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kDetectFormSubmissionOnFormClear)},
-
     {"permission-predictions", flag_descriptions::kPermissionPredictionsName,
      flag_descriptions::kPermissionPredictionsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kPermissionPredictions)},
@@ -7917,6 +7916,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUpcomingSharingFeaturesDescription, kOsAll,
      FEATURE_VALUE_TYPE(share::kUpcomingSharingFeatures)},
 
+#if BUILDFLAG(IS_ANDROID)
+    {"trusted-web-activity-notification-permission-delegation",
+     flag_descriptions::kTrustedWebActivityNotificationPermissionDelegationName,
+     flag_descriptions::
+         kTrustedWebActivityNotificationPermissionDelegationDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         chrome::android::kTrustedWebActivityNotificationPermissionDelegation)},
+#endif  // BUILDFLAG(IS_ANDROID)
+
 #if BUILDFLAG(ENABLE_SIDE_SEARCH)
     {"side-search", flag_descriptions::kSideSearchName,
      flag_descriptions::kSideSearchDescription, kOsDesktop,
@@ -8391,6 +8400,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"dm-token-deletion", flag_descriptions::kDmTokenDeletionName,
      flag_descriptions::kDmTokenDeletionDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kDmTokenDeletion)},
+
+#if BUILDFLAG(IS_ANDROID)
+    {"bulk-tab-restore-android", flag_descriptions::kBulkTabRestoreAndroidName,
+     flag_descriptions::kBulkTabRestoreAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kBulkTabRestore)},
+#endif  // BUILDFLAG(IS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

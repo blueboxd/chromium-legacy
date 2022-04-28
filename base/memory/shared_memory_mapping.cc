@@ -48,6 +48,7 @@ void SharedMemoryMapping::Unmap() {
   if (!IsValid())
     return;
 
+  SharedMemorySecurityPolicy::ReleaseReservationForMapping(size_);
   SharedMemoryTracker::GetInstance()->DecrementMemoryUsage(*this);
 
   SharedMemoryMapper* mapper = mapper_;

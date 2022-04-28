@@ -288,6 +288,8 @@ source_set("chromeos") {
     "//chromeos/dbus/audio",
     "//chromeos/dbus/cdm_factory_daemon",
     "//chromeos/dbus/chunneld",
+    "//chromeos/dbus/cicerone",
+    "//chromeos/dbus/concierge",
     "//chromeos/dbus/constants",
     "//chromeos/dbus/cros_disks",
     "//chromeos/dbus/cryptohome",
@@ -313,6 +315,7 @@ source_set("chromeos") {
     "//chromeos/dbus/permission_broker",
     "//chromeos/dbus/power",
     "//chromeos/dbus/resourced",
+    "//chromeos/dbus/seneschal",
     "//chromeos/dbus/session_manager",
     "//chromeos/dbus/session_manager:login_manager_proto",
     "//chromeos/dbus/smbprovider",
@@ -336,6 +339,7 @@ source_set("chromeos") {
     "//chromeos/network",
     "//chromeos/printing",
     "//chromeos/scanning",
+    "//chromeos/services/assistant:lib",
     "//chromeos/services/assistant/public/cpp",
     "//chromeos/services/bluetooth_config:in_process_bluetooth_config",
     "//chromeos/services/cros_healthd/public/cpp",
@@ -502,6 +506,7 @@ source_set("chromeos") {
     "//printing",
     "//printing/backend",
     "//printing/mojom",
+    "//remoting/host/chromeos:host_event_reporter_impl",
     "//remoting/host/chromeos:remoting_service",
     "//remoting/protocol",
     "//remoting/protocol:errors",
@@ -561,12 +566,7 @@ source_set("chromeos") {
     "//ui/wm/public",
     "//url",
   ]
-  if (is_chromeos_ash) {
-    deps += [ "//remoting/host/chromeos:host_event_reporter_impl" ]
-    if (use_libfuzzer) {
-      deps += [ "//components/exo/wayland:weston_test_stub" ]
-    }
-  }
+
   data_deps = [ ":dbus_service_files" ]
 
   allow_circular_includes_from = [
@@ -578,25 +578,6 @@ source_set("chromeos") {
   ]
 
   sources = [
-    "../ash/accessibility/accessibility_event_rewriter_delegate_impl.cc",
-    "../ash/accessibility/accessibility_event_rewriter_delegate_impl.h",
-    "../ash/accessibility/accessibility_extension_loader.cc",
-    "../ash/accessibility/accessibility_extension_loader.h",
-    "../ash/accessibility/accessibility_manager.cc",
-    "../ash/accessibility/accessibility_manager.h",
-    "../ash/accessibility/accessibility_panel.cc",
-    "../ash/accessibility/accessibility_panel.h",
-    "../ash/accessibility/chromevox_panel.cc",
-    "../ash/accessibility/chromevox_panel.h",
-    "../ash/accessibility/dictation.cc",
-    "../ash/accessibility/dictation.h",
-    "../ash/accessibility/event_handler_common.cc",
-    "../ash/accessibility/event_handler_common.h",
-    "../ash/accessibility/magnification_manager.cc",
-    "../ash/accessibility/magnification_manager.h",
-    "../ash/accessibility/magnifier_type.h",
-    "../ash/accessibility/select_to_speak_event_handler_delegate_impl.cc",
-    "../ash/accessibility/select_to_speak_event_handler_delegate_impl.h",
     "../ash/account_manager/account_apps_availability.cc",
     "../ash/account_manager/account_apps_availability.h",
     "../ash/account_manager/account_apps_availability_factory.cc",
@@ -1158,6 +1139,8 @@ source_set("chromeos") {
     "../ash/borealis/borealis_engagement_metrics.h",
     "../ash/borealis/borealis_features.cc",
     "../ash/borealis/borealis_features.h",
+    "../ash/borealis/borealis_features_util.cc",
+    "../ash/borealis/borealis_features_util.h",
     "../ash/borealis/borealis_game_mode_controller.cc",
     "../ash/borealis/borealis_game_mode_controller.h",
     "../ash/borealis/borealis_installer.cc",
@@ -3739,6 +3722,10 @@ source_set("chromeos") {
     defines += [ "USE_CRAS" ]
   }
 
+  if (use_libfuzzer) {
+    deps += [ "//components/exo/wayland:weston_test_stub" ]
+  }
+
   if (is_cfm) {
     sources += [
       "../ash/chromebox_for_meetings/browser/cfm_browser_service.cc",
@@ -4025,10 +4012,13 @@ static_library("test_support") {
     "//chrome/test:test_support_ui",
     "//chromeos/dbus:test_support",
     "//chromeos/dbus/chunneld",
+    "//chromeos/dbus/cicerone",
+    "//chromeos/dbus/concierge",
     "//chromeos/dbus/cros_disks",
     "//chromeos/dbus/cryptohome",
     "//chromeos/dbus/cryptohome:cryptohome_proto",
     "//chromeos/dbus/dlcservice",
+    "//chromeos/dbus/seneschal",
     "//chromeos/dbus/session_manager",
     "//chromeos/dbus/userdataauth:userdataauth",
     "//chromeos/dbus/userdataauth:userdataauth_proto",

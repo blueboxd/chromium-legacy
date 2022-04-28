@@ -102,9 +102,6 @@ extern const char kLauncherAppSortDescription[];
 extern const char kLeakDetectionUnauthenticated[];
 extern const char kLeakDetectionUnauthenticatedDescription[];
 
-extern const char kDetectFormSubmissionOnFormClearName[];
-extern const char kDetectFormSubmissionOnFormClearDescription[];
-
 extern const char kEditPasswordsInSettingsName[];
 extern const char kEditPasswordsInSettingsDescription[];
 
@@ -883,6 +880,9 @@ extern const char kJavascriptHarmonyShippingDescription[];
 extern const char kJourneysName[];
 extern const char kJourneysDescription[];
 
+extern const char kJourneysLabelsName[];
+extern const char kJourneysLabelsDescription[];
+
 extern const char kJourneysOmniboxActionName[];
 extern const char kJourneysOmniboxActionDescription[];
 
@@ -1025,9 +1025,6 @@ extern const char kOmniboxSpareRendererDescription[];
 
 extern const char kOmniboxRetainSuggestionsWithHeadersName[];
 extern const char kOmniboxRetainSuggestionsWithHeadersDescription[];
-
-extern const char kOmniboxTabSwitchSuggestionsName[];
-extern const char kOmniboxTabSwitchSuggestionsDescription[];
 
 extern const char kOmniboxTrendingZeroPrefixSuggestionsOnNTPName[];
 extern const char kOmniboxTrendingZeroPrefixSuggestionsOnNTPDescription[];
@@ -1681,6 +1678,9 @@ extern const char kAppMenuMobileSiteOptionDescription[];
 extern const char kBackGestureRefactorAndroidName[];
 extern const char kBackGestureRefactorAndroidDescription[];
 
+extern const char kBulkTabRestoreAndroidName[];
+extern const char kBulkTabRestoreAndroidDescription[];
+
 extern const char kCCTIncognitoName[];
 extern const char kCCTIncognitoDescription[];
 
@@ -2013,6 +2013,10 @@ extern const char kTouchDragAndContextMenuDescription[];
 
 extern const char kTranslateMessageUIName[];
 extern const char kTranslateMessageUIDescription[];
+
+extern const char kTrustedWebActivityNotificationPermissionDelegationName[];
+extern const char
+    kTrustedWebActivityNotificationPermissionDelegationDescription[];
 
 extern const char kUpdateMenuBadgeName[];
 extern const char kUpdateMenuBadgeDescription[];
@@ -3051,6 +3055,9 @@ extern const char kSystemTransliterationPhysicalTypingDescription[];
 
 extern const char kQuickSettingsNetworkRevampName[];
 extern const char kQuickSettingsNetworkRevampDescription[];
+
+extern const char kTerminalDevName[];
+extern const char kTerminalDevDescription[];
 
 extern const char kTerminalSSHName[];
 extern const char kTerminalSSHDescription[];

@@ -253,11 +253,6 @@ const base::Feature kFFmpegDecodeOpaqueVP8{"FFmpegDecodeOpaqueVP8",
 const base::Feature kOverlayFullscreenVideo{"overlay-fullscreen-video",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Use a LocalMediaStreamAudioSource for getDisplayMedia captures with audio.
-// TODO(crbug.com/1313841): Remove this after M107 branch point.
-const base::Feature kDisplayAudioUseLocalAudioSource{
-    "DisplayAudioUseLocalAudioSource", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables user control over muting tab audio from the tab strip.
 const base::Feature kEnableTabMuting{"EnableTabMuting",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
@@ -594,7 +589,7 @@ const base::Feature kLiveCaption{"LiveCaption",
 // tab instead" button is shown for chrome.desktopCapture captures.
 const base::Feature kShareThisTabInsteadButtonGetDisplayMedia{
     "ShareThisTabInsteadButtonGetDisplayMedia",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If kShareThisTabInsteadButtonGetDisplayMedia is ENABLED, this flag controls
 // whether a "Share this tab instead" button should be enabled for

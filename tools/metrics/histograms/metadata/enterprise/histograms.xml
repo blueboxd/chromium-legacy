@@ -77,7 +77,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.ActiveDirectoryJoin"
-    enum="ActiveDirectoryDomainJoinType" expires_after="M104">
+    enum="ActiveDirectoryDomainJoinType" expires_after="M111">
   <owner>fsandrade@chromium.org</owner>
   <owner>src/chrome/browser/ash/authpolicy/OWNERS</owner>
   <summary>
@@ -1788,6 +1788,19 @@ chromium-metrics-reviews@google.com.
     the highest priority from their policy atomic group. This is recorded at
     startup, then every 24 hours. If chrome is not running at the 24 hours mark,
     this will be recorded at the next startup.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.Policies.Sources" enum="EnterprisePoliciesSources"
+    expires_after="2023-04-01">
+  <owner>zmin@chromium.org</owner>
+  <owner>igorruvinov@chromium.org</owner>
+  <summary>
+    Record summary of sources of all policies. It's recorded ever 24 hours and
+    at startup.
+
+    This does not include user cloud policy and some speicial policy sources
+    like enterprise_default.
   </summary>
 </histogram>
 

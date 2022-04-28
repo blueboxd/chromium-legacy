@@ -1874,6 +1874,7 @@ void RenderFrameHostImpl::OnPortalActivated(
               case blink::mojom::PortalActivateResult::
                   kRejectedDueToErrorInPortal:
               case blink::mojom::PortalActivateResult::kDisconnected:
+              case blink::mojom::PortalActivateResult::kNotImplemented:
               case blink::mojom::PortalActivateResult::kAbortedDueToBug:
                 // The renderer is misbehaving.
                 mojo::ReportBadMessage(
@@ -6419,7 +6420,7 @@ void RenderFrameHostImpl::HadStickyUserActivationBeforeNavigationChanged(
 }
 
 void RenderFrameHostImpl::ScrollRectToVisibleInParentFrame(
-    const gfx::Rect& rect_to_scroll,
+    const gfx::RectF& rect_to_scroll,
     blink::mojom::ScrollIntoViewParamsPtr params) {
   RenderFrameProxyHost* proxy = GetProxyToParent();
   if (!proxy)

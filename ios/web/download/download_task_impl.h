@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
@@ -16,7 +17,9 @@
 #include "ios/web/public/download/download_task.h"
 #include "url/gurl.h"
 
-@class NSURLSession;
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
 
 namespace web {
 
@@ -35,7 +38,8 @@ class DownloadTaskImpl : public DownloadTask {
                    const std::string& content_disposition,
                    int64_t total_bytes,
                    const std::string& mime_type,
-                   NSString* identifier);
+                   NSString* identifier,
+                   const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
   // DownloadTask overrides:
   WebState* GetWebState() override;
@@ -54,15 +58,15 @@ class DownloadTaskImpl : public DownloadTask {
   std::string GetContentDisposition() const override;
   std::string GetOriginalMimeType() const override;
   std::string GetMimeType() const override;
-  std::u16string GetSuggestedFilename() const override;
+  base::FilePath GenerateFileName() const override;
   bool HasPerformedBackgroundDownload() const override;
   void AddObserver(DownloadTaskObserver* observer) override;
   void RemoveObserver(DownloadTaskObserver* observer) override;
 
-  DownloadTaskImpl(const DownloadTaskImpl&) = delete;
-  DownloadTaskImpl& operator=(const DownloadTaskImpl&) = delete;
-
   ~DownloadTaskImpl() override;
+
+ private:
+  virtual std::string GetSuggestedName() const;
 
  protected:
   // Called when download was completed and the data writing was finished.
@@ -92,6 +96,8 @@ class DownloadTaskImpl : public DownloadTask {
   bool has_performed_background_download_ = false;
   DownloadResult download_result_;
   WebState* web_state_ = nullptr;
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Observes UIApplicationWillResignActiveNotification notifications.
   id<NSObject> observer_ = nil;

@@ -158,11 +158,7 @@ namespace {
 // change depending on Feed visibility).
 @property(nonatomic, strong) UIViewController* containerViewController;
 
-// The coordinator contained ViewController. It can be either a
-// NewTabPageViewController (When the Discover Feed is being shown) or a
-// ContentSuggestionsViewController (When the Discover Feed is hidden or when
-// the non refactored NTP is being used.)
-// TODO(crbug.com/1114792): Update this comment when the NTP refactors launches.
+// The coordinator contained ViewController.
 @property(nonatomic, strong) UIViewController* containedViewController;
 
 // PrefService used by this Coordinator.
@@ -721,6 +717,7 @@ namespace {
 }
 
 - (BOOL)isGoogleDefaultSearchEngine {
+  DCHECK(self.templateURLService);
   const TemplateURL* defaultURL =
       self.templateURLService->GetDefaultSearchProvider();
   BOOL isGoogleDefaultSearchProvider =
@@ -1069,8 +1066,7 @@ namespace {
 - (void)defaultSearchEngineDidChange {
   [self updateFeedHeaderLabelText:self.feedHeaderViewController];
   if (IsWebChannelsEnabled()) {
-    self.feedHeaderViewController.isGoogleDefaultSearchEngine =
-        [self isGoogleDefaultSearchEngine];
+    [self.feedHeaderViewController updateForDefaultSearchEngineChanged];
     [self.feedHeaderViewController.view setNeedsLayout];
     [self.feedHeaderViewController.view layoutIfNeeded];
   }
@@ -1104,6 +1100,7 @@ namespace {
   ntpMediator.browser = self.browser;
   ntpMediator.ntpViewController = self.ntpViewController;
   ntpMediator.headerCollectionInteractionHandler = self.headerSynchronizer;
+  ntpMediator.feedControlDelegate = self;
   return ntpMediator;
 }
 
@@ -1171,9 +1168,9 @@ namespace {
                                           self.prefService->GetInteger(
                                               prefs::kNTPFollowingFeedSortType)
            followingSegmentDotVisible:self.discoverFeedService
-                                          ->GetFollowingFeedHasUnseenContent()
-          isGoogleDefaultSearchEngine:[self isGoogleDefaultSearchEngine]];
+                                          ->GetFollowingFeedHasUnseenContent()];
     _feedHeaderViewController.feedControlDelegate = self;
+    _feedHeaderViewController.ntpDelegate = self;
     [_feedHeaderViewController.menuButton
                addTarget:self
                   action:@selector(openFeedMenu)

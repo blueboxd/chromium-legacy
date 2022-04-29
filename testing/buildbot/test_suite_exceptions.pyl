@@ -481,20 +481,17 @@
       },
       'mac10.12-blink-rel-dummy': {
         'swarming': {
-          'shards': 20,
+          'shards': 2,
         },
       },
       'mac10.13-blink-rel-dummy': {
         'swarming': {
-          'shards': 20,
+          'shards': 2,
         },
       },
       'mac10.14-blink-rel-dummy': {
         'swarming': {
-          # Increase timeout and reduce shards.
-          # See https://crbug.com/1203565.
-          'shards': 12,
-          'hard_timeout': 1800,
+          'shards': 2,
         },
       },
       'mac10.15-blink-rel-dummy': {
@@ -3645,9 +3642,6 @@
     },
   },
   'webview_64_cts_tests': {
-    'remove_from': [
-      'android-12-x64-rel', # crbug.com/1260194
-    ],
     'modifications': {
       'android-pie-arm64-rel': {
         # TODO(crbug.com/1111436): Move this back to walleye if/when additional
@@ -3663,9 +3657,6 @@
     },
   },
   'webview_cts_tests': {
-    'remove_from': [
-      'android-11-x86-rel', # crbug.com/1165280
-    ],
     'modifications': {
       'android-pie-arm64-rel': {
         # TODO(crbug.com/1111436): Move this back to walleye if/when additional

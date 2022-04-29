@@ -5,6 +5,7 @@
 #import "ios/web/download/download_native_task_impl.h"
 
 #import "base/strings/sys_string_conversions.h"
+#import "base/task/sequenced_task_runner.h"
 #import "ios/web/download/download_native_task_bridge.h"
 #import "net/base/filename_util.h"
 
@@ -22,6 +23,7 @@ DownloadNativeTaskImpl::DownloadNativeTaskImpl(
     int64_t total_bytes,
     const std::string& mime_type,
     NSString* identifier,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
     DownloadNativeTaskBridge* download)
     : DownloadTaskImpl(web_state,
                        original_url,
@@ -29,7 +31,8 @@ DownloadNativeTaskImpl::DownloadNativeTaskImpl(
                        content_disposition,
                        total_bytes,
                        mime_type,
-                       identifier),
+                       identifier,
+                       task_runner),
       download_bridge_(download) {
   DCHECK(download_bridge_);
 }
@@ -53,8 +56,8 @@ void DownloadNativeTaskImpl::Start(const base::FilePath& path,
   if (download_path_.empty()) {
     NSString* temporary_directory = NSTemporaryDirectory();
     NSString* temporary_filename = [temporary_directory
-        stringByAppendingPathComponent:base::SysUTF16ToNSString(
-                                           GetSuggestedFilename())];
+        stringByAppendingPathComponent:base::SysUTF8ToNSString(
+                                           GenerateFileName().AsUTF8Unsafe())];
     download_path_ =
         base::FilePath(base::SysNSStringToUTF8(temporary_filename));
   }
@@ -87,6 +90,14 @@ void DownloadNativeTaskImpl::Cancel() {
     download_bridge_ = nil;
   }
   DownloadTaskImpl::Cancel();
+}
+
+std::string DownloadNativeTaskImpl::GetSuggestedName() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (@available(iOS 15, *)) {
+    return base::SysNSStringToUTF8(download_bridge_.suggestedFilename);
+  }
+  return std::string();
 }
 
 NSData* DownloadNativeTaskImpl::GetResponseData() const {
@@ -128,20 +139,6 @@ int DownloadNativeTaskImpl::GetPercentComplete() const {
     return static_cast<int>(download_bridge_.progress.fractionCompleted * 100);
   }
   return percent_complete_;
-}
-
-std::u16string DownloadNativeTaskImpl::GetSuggestedFilename() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::string suggested_filename;
-  if (@available(iOS 15, *)) {
-    suggested_filename =
-        base::SysNSStringToUTF8(download_bridge_.suggestedFilename);
-  }
-  return net::GetSuggestedFilename(GetOriginalUrl(), GetContentDisposition(),
-                                   /*referrer_charset=*/std::string(),
-                                   /*suggested_name=*/suggested_filename,
-                                   /*mime_type=*/std::string(),
-                                   /*default_name=*/"document");
 }
 
 }  // namespace web

@@ -1964,6 +1964,12 @@ const char kPageInfoAboutThisSiteName[] =
 const char kPageInfoAboutThisSiteDescription[] =
     "Enable the 'About this site' section in the page info.";
 
+const char kPageInfoMoreAboutThisPageName[] =
+    "'More about this page' link in page info";
+const char kPageInfoMoreAboutThisPageDescription[] =
+    "Enable the 'More about this page' link in the 'From the web' section of "
+    "page info.";
+
 const char kPageInfoHistoryDesktopName[] = "Page info history";
 const char kPageInfoHistoryDesktopDescription[] =
     "Enable a history section in the page info.";
@@ -2420,6 +2426,19 @@ const char kSyncTrustedVaultPassphraseRecoveryDescription[] =
     "Enables support for an experimental sync passphrase type, referred to as "
     "trusted vault, including logic and APIs for improved account recovery "
     "flows.";
+
+const char kSyncInvalidationsName[] = "Use Sync standalone invalidations";
+const char kSyncInvalidationsDescription[] =
+    "If enabled, Sync will use standalone invalidations instead of topic based "
+    "invalidations (Wallet and Offer data types are enabled by a dedicated "
+    "flag).";
+
+const char kSyncInvalidationsWalletAndOfferName[] =
+    "Use Sync standalone invalidations for Wallet and Offer";
+const char kSyncInvalidationsWalletAndOfferDescription[] =
+    "If enabled, Sync will use standalone invalidations for Wallet and Offer "
+    "data types. Takes effect only when Sync standalone invalidations are "
+    "enabled.";
 
 const char kSystemKeyboardLockName[] = "Experimental system keyboard lock";
 const char kSystemKeyboardLockDescription[] =
@@ -4364,6 +4383,10 @@ const char kCrostiniVirtualKeyboardSupportName[] =
 const char kCrostiniVirtualKeyboardSupportDescription[] =
     "Experimental support for the Virtual Keyboard on Crostini.";
 
+const char kGuestOSGenericInstallerName[] = "Generic GuestOS Installer";
+const char kGuestOSGenericInstallerDescription[] =
+    "Experimental generic installer for virtual machines";
+
 const char kBruschettaName[] = "Enable the third party VMs feature";
 const char kBruschettaDescription[] =
     "Enables UI support for third party/generic VMs";
@@ -4766,11 +4789,6 @@ const char kExoLockNotificationName[] = "Notification bubble for UI lock";
 const char kExoLockNotificationDescription[] =
     "Show a notification bubble once an application has switched to "
     "non-immersive fullscreen mode or obtained pointer lock.";
-
-const char kExperimentalAccessibilityDictationExtensionName[] =
-    "Experimental accessibility dictation extension.";
-const char kExperimentalAccessibilityDictationExtensionDescription[] =
-    "Enables the JavaScript dictation extension.";
 
 const char kExperimentalAccessibilityDictationCommandsName[] =
     "Experimental accessibility dictation commands";
@@ -5516,7 +5534,7 @@ extern const char kLacrosScreenCoordinatesDescription[];
 
 #endif  // #if BUILDFLAG(IS_CHROMEOS_LACROS)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 const char kAllowDefaultWebAppMigrationForChromeOsManagedUsersName[] =
     "Allow default web app migration for ChromeOS managed users";
 const char kAllowDefaultWebAppMigrationForChromeOsManagedUsersDescription[] =
@@ -5570,7 +5588,7 @@ const char kDefaultCalculatorWebAppName[] = "Default install Calculator PWA";
 const char kDefaultCalculatorWebAppDescription[] =
     "Enable default installing of the calculator PWA instead of the deprecated "
     "chrome app.";
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS)
 const char kDeprecateLowUsageCodecsName[] = "Deprecates low usage media codecs";

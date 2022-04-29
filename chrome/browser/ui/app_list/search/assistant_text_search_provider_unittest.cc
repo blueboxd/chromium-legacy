@@ -6,10 +6,12 @@
 
 #include <string>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/assistant/test_support/mock_assistant_controller.h"
 #include "ash/public/cpp/assistant/test_support/mock_assistant_state.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/test/test_search_controller.h"
@@ -17,13 +19,18 @@
 #include "url/gurl.h"
 
 namespace app_list {
-namespace test {
+namespace {
 
 using chromeos::assistant::AssistantAllowedState;
 
-class AssistantTextSearchProviderTest : public AppListTestBase {
+// Parameterized by feature ProductivityLauncher.
+class AssistantTextSearchProviderTest
+    : public AppListTestBase,
+      public ::testing::WithParamInterface<bool> {
  public:
   AssistantTextSearchProviderTest() {
+    feature_list_.InitWithFeatureState(ash::features::kProductivityLauncher,
+                                       GetParam());
     search_provider_.set_controller(&search_controller_);
   }
   AssistantTextSearchProviderTest(const AssistantTextSearchProviderTest&) =
@@ -65,15 +72,22 @@ class AssistantTextSearchProviderTest : public AppListTestBase {
   }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   ash::MockAssistantState assistant_state_;
   testing::NiceMock<ash::MockAssistantController> assistant_controller_;
   TestSearchController search_controller_;
   AssistantTextSearchProvider search_provider_;
 };
 
+INSTANTIATE_TEST_SUITE_P(ProductivityLauncher,
+                         AssistantTextSearchProviderTest,
+                         testing::Bool());
+
 // Tests -----------------------------------------------------------------------
 
-TEST_F(AssistantTextSearchProviderTest, ShouldNotProvideResultForEmptyQuery) {
+// TODO(crbug.com/1258415): Remove this test when the productivity launcher is
+// enabled.
+TEST_P(AssistantTextSearchProviderTest, ShouldNotProvideResultForEmptyQuery) {
   EXPECT_TRUE(LastResults().empty());
 
   SendText("testing");
@@ -81,12 +95,18 @@ TEST_F(AssistantTextSearchProviderTest, ShouldNotProvideResultForEmptyQuery) {
   EXPECT_EQ(LastResults().size(), 1u);
   VerifyResultAt(0, "testing");
 
-  SendText("");
-  // Should have no search results.
-  EXPECT_TRUE(LastResults().empty());
+  // If the productivity launcher is enabled, search_provider_.Start() is
+  // guaranteed to be called with a non-empty query. So this test only applies
+  // to the classic launcher.
+  bool productivity_launcher_enabled = GetParam();
+  if (!productivity_launcher_enabled) {
+    SendText("");
+    // Should have no search results.
+    EXPECT_TRUE(LastResults().empty());
+  }
 }
 
-TEST_F(AssistantTextSearchProviderTest,
+TEST_P(AssistantTextSearchProviderTest,
        ShouldUpdateResultsWhenAssistantSettingsChange) {
   SendText("testing");
   EXPECT_EQ(LastResults().size(), 1u);
@@ -98,7 +118,7 @@ TEST_F(AssistantTextSearchProviderTest,
   EXPECT_EQ(LastResults().size(), 1u);
 }
 
-TEST_F(AssistantTextSearchProviderTest,
+TEST_P(AssistantTextSearchProviderTest,
        ShouldUpdateResultsWhenAssistantAllowedStateChanges) {
   SendText("testing");
 
@@ -116,7 +136,7 @@ TEST_F(AssistantTextSearchProviderTest,
     EXPECT_EQ(1u, LastResults().size());
   }
 }
-TEST_F(AssistantTextSearchProviderTest, ShouldDeepLinkAssistantQuery) {
+TEST_P(AssistantTextSearchProviderTest, ShouldDeepLinkAssistantQuery) {
   SendText("testing query");
 
   GURL url;
@@ -133,5 +153,5 @@ TEST_F(AssistantTextSearchProviderTest, ShouldDeepLinkAssistantQuery) {
   EXPECT_FALSE(from_user);
 }
 
-}  // namespace test
+}  // namespace
 }  // namespace app_list

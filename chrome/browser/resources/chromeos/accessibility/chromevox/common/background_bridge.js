@@ -64,3 +64,47 @@ BackgroundBridge.ChromeVoxPrefs = {
         BridgeTarget.CHROMEVOX_PREFS, BridgeAction.SET_PREF, {key, value});
   },
 };
+
+BackgroundBridge.ChromeVoxState = {
+  /**
+   * Method that updates the punctuation echo level, and also persists setting
+   * to local storage.
+   * @param {number} punctuationEcho The index of the desired punctuation echo
+   * level in AbstractTts.PUNCTUATION_ECHOES.
+   */
+  async updatePunctuationEcho(punctuationEcho) {
+    return BridgeHelper.sendMessage(
+        BridgeTarget.CHROMEVOX_STATE, BridgeAction.UPDATE_PUNCTUATION_ECHO,
+        punctuationEcho);
+  },
+};
+
+BackgroundBridge.CommandHandler = {
+  /**
+   * Handles ChromeVox commands.
+   * @param {string} command
+   * @return {!Promise<boolean>} True if the command should propagate.
+   */
+  async onCommand(command) {
+    return BridgeHelper.sendMessage(
+        BridgeTarget.COMMAND_HANDLER, BridgeAction.ON_COMMAND, command);
+  },
+};
+
+BackgroundBridge.LogStore = {
+  /** Clear the log buffer. */
+  async clearLog() {
+    return BridgeHelper.sendMessage(
+        BridgeTarget.LOG_STORE, BridgeAction.CLEAR_LOG);
+  },
+
+  /**
+   * Create logs in order.
+   * This function is not currently optimized for speed.
+   * @return {!Promise<!Array<BaseLog>>}
+   */
+  async getLogs() {
+    return BridgeHelper.sendMessage(
+        BridgeTarget.LOG_STORE, BridgeAction.GET_LOGS);
+  },
+};

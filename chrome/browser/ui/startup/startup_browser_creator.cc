@@ -657,7 +657,7 @@ void StartupBrowserCreator::LaunchBrowser(
 
   if (!IsSilentLaunchEnabled(command_line, profile)) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-    if (ShouldOpenPrimaryProfileFirstRun()) {
+    if (ShouldOpenPrimaryProfileFirstRun(profile)) {
       // Show the FRE and let `OpenNewWindowForFirstRun()` handle the browser
       // launch. This `StartupBrowserCreator` will get destroyed when the method
       // returns so the relevant data is copied over and passed to the callback.
@@ -1023,7 +1023,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   }
 #endif  //  BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if !BUILDFLAG(IS_CHROMEOS)
   if (base::FeatureList::IsEnabled(features::kOnConnectNative) &&
       command_line.HasSwitch(switches::kNativeMessagingConnectHost) &&
       command_line.HasSwitch(switches::kNativeMessagingConnectExtension)) {

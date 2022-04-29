@@ -40,14 +40,14 @@ class SSLManager {
   // Entry point for SSLCertificateErrors.  This function begins the process
   // of resolving a certificate error during an SSL connection.  SSLManager
   // will adjust the security UI and either call |CancelSSLRequest| or
-  // |ContinueSSLRequest| of |delegate|. |is_main_frame_request| is true only
-  // when the request is for a navigation in the main frame.
+  // |ContinueSSLRequest| of |delegate|. |is_primary_main_frame_request| is true
+  // only when the request is for a navigation in the primary main frame.
   //
   // This can be called on the UI or IO thread. It will call |delegate| on the
   // same thread.
   static void OnSSLCertificateError(
       const base::WeakPtr<SSLErrorHandler::Delegate>& delegate,
-      bool is_main_frame_request,
+      bool is_primary_main_frame_request,
       const GURL& url,
       NavigationOrDocumentHandle* navigation_or_document,
       int net_error,
@@ -89,7 +89,8 @@ class SSLManager {
   void OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler);
 
   // Updates the NavigationEntry's |content_status| flags according to state in
-  // |ssl_host_state_delegate|. |add_content_status_flags| and
+  // |ssl_host_state_delegate|, and calls NotifyDidChangeVisibleSSLState
+  // according to |notify_changes|. |add_content_status_flags| and
   // |remove_content_status_flags| are bitmasks of SSLStatus::ContentStatusFlags
   // that will be added or removed from the |content_status| field. (Pass 0 to
   // add/remove no content status flags.) |remove_content_status_flags| are
@@ -97,7 +98,8 @@ class SSLManager {
   // flags changes, this method will notify the WebContents and return true.
   bool UpdateEntry(NavigationEntryImpl* entry,
                    int add_content_status_flags,
-                   int remove_content_status_flags);
+                   int remove_content_status_flags,
+                   bool notify_changes);
 
   // Helper function for UpdateEntry().
   void UpdateLastCommittedEntry(int add_content_status_flags,

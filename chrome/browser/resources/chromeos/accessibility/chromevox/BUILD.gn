@@ -29,7 +29,6 @@ chromevox_modules = [
   "../common/string_util.js",
   "../common/tree_walker.js",
   "background/automation_object_constructor_installer.js",
-  "background/braille/bluetooth_braille_display_manager.js",
   "background/braille/braille_key_types.js",
   "background/braille/cursor_dots.js",
   "background/braille/liblouis.js",
@@ -50,6 +49,7 @@ chromevox_modules = [
   "background/output/output_logger.js",
   "background/output/output_role_info.js",
   "background/output/output_types.js",
+  "background/phonetic_data.js",
   "background/user_action_monitor.js",
   "common/abstract_earcons.js",
   "common/background_bridge.js",
@@ -61,7 +61,6 @@ chromevox_modules = [
   "common/log_types.js",
   "common/msgs.js",
   "common/panel_command.js",
-  "common/phonetic_data.js",
   "common/spannable.js",
   "common/tree_dumper.js",
   "common/tts_interface.js",
@@ -69,6 +68,7 @@ chromevox_modules = [
   "injected/extension_bridge.js",
   "injected/loader.js",
   "injected/script_installer.js",
+  "options/bluetooth_braille_display_manager.js",
   "third_party/tamachiyomi/ja_phonetic_data.js",
   "third_party/tamachiyomi/ja_phonetic_map.js",
 ]
@@ -115,6 +115,8 @@ chromevox_es6_modules = [
   "background/math_handler.js",
   "background/media_automation_handler.js",
   "background/page_load_sound_handler.js",
+  "background/panel/i_search.js",
+  "background/panel/i_search_handler.js",
   "background/pointer_handler.js",
   "background/prefs.js",
   "background/range_automation_handler.js",
@@ -134,7 +136,7 @@ chromevox_es6_modules = [
   "log_page/log.js",
   "options/bluetooth_braille_display_ui.js",
   "options/options.js",
-  "panel/i_search.js",
+  "panel/i_search_ui.js",
   "panel/panel.js",
   "panel/panel_interface.js",
   "panel/panel_menu.js",
@@ -370,9 +372,9 @@ if (is_chromeos_ash) {
     sources = [
       "background/braille/expanding_braille_translator_test.js",
       "background/braille/pan_strategy_test.js",
+      "background/phonetic_data_test.js",
       "common/editable_text_base_test.js",
       "common/key_sequence_test.js",
-      "common/phonetic_data_test.js",
       "common/spannable_test.js",
       "testing/mock_feedback_test.js",
     ]
@@ -389,12 +391,12 @@ if (is_chromeos_ash) {
       "background/braille/pan_strategy.js",
       "background/braille/spans.js",
       "background/braille/liblouis.js",
+      "background/phonetic_data.js",
       "common/abstract_earcons.js",
       "common/braille_interface.js",
       "common/editable_text_base.js",
       "common/key_sequence.js",
       "common/msgs.js",
-      "common/phonetic_data.js",
       "common/spannable.js",
       "common/tts_interface.js",
       "testing/fake_dom.js",
@@ -407,7 +409,7 @@ if (is_chromeos_ash) {
   # renderer.
   js2gtest("chromevox_webui_js_tests") {
     test_type = "webui"
-    sources = [ "background/braille/bluetooth_braille_display_manager_test.js" ]
+    sources = [ "options/bluetooth_braille_display_manager_test.js" ]
     gen_include_files = [
       "../common/testing/accessibility_test_base.js",
       "../common/testing/assert_additions.js",
@@ -442,6 +444,7 @@ if (is_chromeos_ash) {
       "background/logging/log_store_test.js",
       "background/output/locale_output_helper_test.js",
       "background/output/output_test.js",
+      "background/panel/i_search_test.js",
       "background/portals_test.js",
       "background/settings_test.js",
       "background/smart_sticky_mode_test.js",
@@ -450,7 +453,6 @@ if (is_chromeos_ash) {
       "learn_mode/learn_mode_test.js",
       "options/bluetooth_braille_display_ui_test.js",
       "options/options_test.js",
-      "panel/i_search_test.js",
       "panel/panel_test.js",
       "panel/panel_test_base.js",
       "panel/tutorial_test.js",
@@ -486,6 +488,7 @@ js_type_check("closure_compile") {
     ":chromevox_es6_library",
     ":chromevox_library",
   ]
+  closure_flags = [ "js_module_root=../" ]
 }
 
 js_library("chromevox_library") {

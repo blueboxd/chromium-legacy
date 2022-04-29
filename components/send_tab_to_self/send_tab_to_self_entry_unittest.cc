@@ -23,8 +23,7 @@ bool IsEqualForTesting(const SendTabToSelfEntry& a,
          a.GetTitle() == b.GetTitle() &&
          a.GetDeviceName() == b.GetDeviceName() &&
          a.GetTargetDeviceSyncCacheGuid() == b.GetTargetDeviceSyncCacheGuid() &&
-         a.GetSharedTime() == b.GetSharedTime() &&
-         a.GetOriginalNavigationTime() == b.GetOriginalNavigationTime();
+         a.GetSharedTime() == b.GetSharedTime();
 }
 
 bool IsEqualForTesting(const SendTabToSelfEntry& entry,
@@ -37,23 +36,17 @@ bool IsEqualForTesting(const SendTabToSelfEntry& entry,
       entry.GetTargetDeviceSyncCacheGuid() ==
           specifics.target_device_sync_cache_guid() &&
       specifics.shared_time_usec() ==
-          entry.GetSharedTime().ToDeltaSinceWindowsEpoch().InMicroseconds() &&
-      specifics.navigation_time_usec() == entry.GetOriginalNavigationTime()
-                                              .ToDeltaSinceWindowsEpoch()
-                                              .InMicroseconds());
+          entry.GetSharedTime().ToDeltaSinceWindowsEpoch().InMicroseconds());
 }
 
 TEST(SendTabToSelfEntry, CompareEntries) {
   const SendTabToSelfEntry e1("1", GURL("http://example.com"), "bar",
-                              base::Time::FromTimeT(10),
                               base::Time::FromTimeT(10), "device1", "device2");
   const SendTabToSelfEntry e2("1", GURL("http://example.com"), "bar",
-                              base::Time::FromTimeT(10),
                               base::Time::FromTimeT(10), "device1", "device2");
 
   EXPECT_TRUE(IsEqualForTesting(e1, e2));
   const SendTabToSelfEntry e3("2", GURL("http://example.org"), "bar",
-                              base::Time::FromTimeT(10),
                               base::Time::FromTimeT(10), "device1", "device2");
 
   EXPECT_FALSE(IsEqualForTesting(e1, e3));
@@ -61,8 +54,7 @@ TEST(SendTabToSelfEntry, CompareEntries) {
 
 TEST(SendTabToSelfEntry, SharedTime) {
   SendTabToSelfEntry e("1", GURL("http://example.com"), "bar",
-                       base::Time::FromTimeT(10), base::Time::FromTimeT(10),
-                       "device", "device2");
+                       base::Time::FromTimeT(10), "device", "device2");
   EXPECT_EQ("bar", e.GetTitle());
   // Getters return Base::Time values.
   EXPECT_EQ(e.GetSharedTime(), base::Time::FromTimeT(10));
@@ -72,8 +64,7 @@ TEST(SendTabToSelfEntry, SharedTime) {
 // sync_pb::SendTabToSelfSpecifics.
 TEST(SendTabToSelfEntry, AsProto) {
   SendTabToSelfEntry entry("1", GURL("http://example.com"), "bar",
-                           base::Time::FromTimeT(10), base::Time::FromTimeT(10),
-                           "device", "device2");
+                           base::Time::FromTimeT(10), "device", "device2");
   SendTabToSelfLocal pb_entry(entry.AsLocalProto());
   EXPECT_TRUE(IsEqualForTesting(entry, pb_entry.specifics()));
 }
@@ -82,7 +73,7 @@ TEST(SendTabToSelfEntry, AsProto) {
 // fields
 TEST(SendTabToSelfEntry, FromRequiredFields) {
   SendTabToSelfEntry expected("1", GURL("http://example.com"), "", base::Time(),
-                              base::Time(), "", "target_device");
+                              "", "target_device");
   std::unique_ptr<SendTabToSelfEntry> actual =
       SendTabToSelfEntry::FromRequiredFields("1", GURL("http://example.com"),
                                              "target_device");
@@ -100,7 +91,6 @@ TEST(SendTabToSelfEntry, FromProto) {
   pb_entry->set_device_name("device");
   pb_entry->set_target_device_sync_cache_guid("device");
   pb_entry->set_shared_time_usec(1);
-  pb_entry->set_navigation_time_usec(1);
 
   std::unique_ptr<SendTabToSelfEntry> entry(
       SendTabToSelfEntry::FromProto(*pb_entry, base::Time::FromTimeT(10)));
@@ -111,8 +101,7 @@ TEST(SendTabToSelfEntry, FromProto) {
 // Tests that the send tab to self entry expiry works as expected
 TEST(SendTabToSelfEntry, IsExpired) {
   SendTabToSelfEntry entry("1", GURL("http://example.com"), "bar",
-                           base::Time::FromTimeT(10), base::Time::FromTimeT(10),
-                           "device1", "device1");
+                           base::Time::FromTimeT(10), "device1", "device1");
 
   EXPECT_TRUE(entry.IsExpired(base::Time::FromTimeT(11) + base::Days(10)));
   EXPECT_FALSE(entry.IsExpired(base::Time::FromTimeT(11)));
@@ -126,26 +115,24 @@ TEST(SendTabToSelfEntry, InvalidStrings) {
   base::UTF16ToUTF8(&term[0], 1, &invalid_utf8);
 
   SendTabToSelfEntry invalid1("1", GURL("http://example.com"), invalid_utf8,
-                              base::Time::FromTimeT(10),
                               base::Time::FromTimeT(10), "device", "device");
 
   EXPECT_EQ(std::string(), invalid1.GetGUID());
 
   SendTabToSelfEntry invalid2(invalid_utf8, GURL("http://example.com"), "title",
-                              base::Time::FromTimeT(10),
                               base::Time::FromTimeT(10), "device", "device");
 
   EXPECT_EQ(std::string(), invalid2.GetGUID());
 
-  SendTabToSelfEntry invalid3(
-      "1", GURL("http://example.com"), "title", base::Time::FromTimeT(10),
-      base::Time::FromTimeT(10), invalid_utf8, "device");
+  SendTabToSelfEntry invalid3("1", GURL("http://example.com"), "title",
+                              base::Time::FromTimeT(10), invalid_utf8,
+                              "device");
 
   EXPECT_EQ(std::string(), invalid3.GetGUID());
 
-  SendTabToSelfEntry invalid4(
-      "1", GURL("http://example.com"), "title", base::Time::FromTimeT(10),
-      base::Time::FromTimeT(10), "device", invalid_utf8);
+  SendTabToSelfEntry invalid4("1", GURL("http://example.com"), "title",
+                              base::Time::FromTimeT(10), "device",
+                              invalid_utf8);
 
   EXPECT_EQ(std::string(), invalid4.GetGUID());
 
@@ -156,9 +143,7 @@ TEST(SendTabToSelfEntry, InvalidStrings) {
   pb_entry->set_title(invalid_utf8);
   pb_entry->set_device_name(invalid_utf8);
   pb_entry->set_target_device_sync_cache_guid("device");
-  ;
   pb_entry->set_shared_time_usec(1);
-  pb_entry->set_navigation_time_usec(1);
 
   std::unique_ptr<SendTabToSelfEntry> invalid_entry(
       SendTabToSelfEntry::FromProto(*pb_entry, base::Time::FromTimeT(10)));
@@ -170,8 +155,7 @@ TEST(SendTabToSelfEntry, InvalidStrings) {
 // sync_pb::SendTabToSelfSpecifics.
 TEST(SendTabToSelfEntry, MarkAsOpened) {
   SendTabToSelfEntry entry("1", GURL("http://example.com"), "bar",
-                           base::Time::FromTimeT(10), base::Time::FromTimeT(10),
-                           "device", "device2");
+                           base::Time::FromTimeT(10), "device", "device2");
   EXPECT_FALSE(entry.IsOpened());
   entry.MarkOpened();
   EXPECT_TRUE(entry.IsOpened());
@@ -184,7 +168,6 @@ TEST(SendTabToSelfEntry, MarkAsOpened) {
   pb_entry->set_device_name("device");
   pb_entry->set_target_device_sync_cache_guid("device");
   pb_entry->set_shared_time_usec(1);
-  pb_entry->set_navigation_time_usec(1);
   pb_entry->set_opened(true);
 
   std::unique_ptr<SendTabToSelfEntry> entry2(

@@ -30,6 +30,7 @@
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
+#include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "media/media_buildflags.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -540,6 +541,11 @@ void Surface::SetRoundedCorners(const gfx::RRectF& rounded_corners_bounds) {
 void Surface::SetOverlayPriorityHint(OverlayPriority hint) {
   TRACE_EVENT0("exo", "Surface::SetOverlayPriorityHint");
   pending_state_.overlay_priority_hint = hint;
+}
+
+void Surface::SetBackgroundColor(absl::optional<SkColor> background_color) {
+  TRACE_EVENT0("exo", "Surface::SetBackgroundColor");
+  pending_state_.basic_state.background_color = background_color;
 }
 
 void Surface::SetViewport(const gfx::SizeF& viewport) {
@@ -1415,7 +1421,9 @@ void Surface::AppendContentsToFrame(const gfx::PointF& origin,
     }
 
     SkColor background_color = SK_ColorTRANSPARENT;
-    if (current_resource_has_alpha_ && are_contents_opaque)
+    if (state_.basic_state.background_color.has_value())
+      background_color = state_.basic_state.background_color.value();
+    else if (current_resource_has_alpha_ && are_contents_opaque)
       background_color = SK_ColorBLACK;  // Avoid writing alpha < 1
 
     // If this surface is being replaced by a SurfaceId emit a SurfaceDrawQuad.
@@ -1446,61 +1454,79 @@ void Surface::AppendContentsToFrame(const gfx::PointF& origin,
       // A resource was still produced for this so we still need to release it
       // later.
       frame->resource_list.push_back(current_resource_);
-    } else if (state_.basic_state.alpha) {
-      // Texture quad is only needed if buffer is not fully transparent.
-      viz::TextureDrawQuad* texture_quad =
-          render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
-      float vertex_opacity[4] = {1.0, 1.0, 1.0, 1.0};
-      texture_quad->SetNew(
-          quad_state, quad_rect, quad_rect,
-          /* needs_blending=*/!are_contents_opaque, current_resource_.id,
-          /* premultiplied_alpha=*/true, uv_crop.origin(),
-          uv_crop.bottom_right(), background_color, vertex_opacity,
-          /* y_flipped=*/false, /* nearest_neighbor=*/false,
-          state_.basic_state.only_visible_on_secure_output,
-          gfx::ProtectedVideoType::kClear);
-      if (current_resource_.is_overlay_candidate)
-        texture_quad->set_resource_size_in_pixels(current_resource_.size);
+    } else if (state_.basic_state.alpha != 0.0f) {
+      // Draw quad is only needed if buffer is not fully transparent.
 
-      switch (state_.overlay_priority_hint) {
-        case OverlayPriority::LOW:
-          texture_quad->overlay_priority_hint = viz::OverlayPriority::kLow;
-          break;
-        case OverlayPriority::REQUIRED:
-          texture_quad->overlay_priority_hint = viz::OverlayPriority::kRequired;
-          break;
-        case OverlayPriority::REGULAR:
-          texture_quad->overlay_priority_hint = viz::OverlayPriority::kRegular;
-          break;
-      }
+      const bool requires_texture_draw_quad =
+          state_.basic_state.only_visible_on_secure_output ||
+          state_.overlay_priority_hint != OverlayPriority::LOW;
+
+      if (requires_texture_draw_quad) {
+        viz::TextureDrawQuad* texture_quad =
+            render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
+        float vertex_opacity[4] = {1.0, 1.0, 1.0, 1.0};
+        texture_quad->SetNew(
+            quad_state, quad_rect, quad_rect,
+            /* needs_blending=*/!are_contents_opaque, current_resource_.id,
+            /* premultiplied*/ true, uv_crop.origin(), uv_crop.bottom_right(),
+            background_color, vertex_opacity,
+            /* flipped=*/false, /* nearest*/ false,
+            state_.basic_state.only_visible_on_secure_output,
+            gfx::ProtectedVideoType::kClear);
+        if (current_resource_.is_overlay_candidate)
+          texture_quad->set_resource_size_in_pixels(current_resource_.size);
+
+        switch (state_.overlay_priority_hint) {
+          case OverlayPriority::LOW:
+            texture_quad->overlay_priority_hint = viz::OverlayPriority::kLow;
+            break;
+          case OverlayPriority::REQUIRED:
+            texture_quad->overlay_priority_hint =
+                viz::OverlayPriority::kRequired;
+            break;
+          case OverlayPriority::REGULAR:
+            texture_quad->overlay_priority_hint =
+                viz::OverlayPriority::kRegular;
+            break;
+        }
 
 #if BUILDFLAG(USE_ARC_PROTECTED_MEDIA)
-      if (state_.basic_state.only_visible_on_secure_output &&
-          state_.buffer.has_value() && state_.buffer->buffer() &&
-          state_.buffer->buffer()->NeedsHardwareProtection()) {
-        texture_quad->protected_video_type =
-            gfx::ProtectedVideoType::kHardwareProtected;
-      }
+        if (state_.basic_state.only_visible_on_secure_output &&
+            state_.buffer.has_value() && state_.buffer->buffer() &&
+            state_.buffer->buffer()->NeedsHardwareProtection()) {
+          texture_quad->protected_video_type =
+              gfx::ProtectedVideoType::kHardwareProtected;
+        }
 #endif  // BUILDFLAG(USE_ARC_PROTECTED_MEDIA)
-      frame->resource_list.push_back(current_resource_);
 
-      if (!damage_rect.IsEmpty()) {
-        texture_quad->damage_rect = gfx::ToEnclosedRect(damage_rect);
-        render_pass->has_per_quad_damage = true;
-        // Clear handled damage so it will not be added to the |render_pass|.
-        damage_rect = gfx::RectF();
+        if (!damage_rect.IsEmpty()) {
+          texture_quad->damage_rect = gfx::ToEnclosedRect(damage_rect);
+          render_pass->has_per_quad_damage = true;
+          // Clear handled damage so it will not be added to the |render_pass|.
+          damage_rect = gfx::RectF();
+        }
+      } else {
+        viz::TileDrawQuad* tile_quad =
+            render_pass->CreateAndAppendDrawQuad<viz::TileDrawQuad>();
+        tile_quad->SetNew(
+            quad_state, quad_rect, quad_rect,
+            /* needs_blending=*/!are_contents_opaque, current_resource_.id,
+            gfx::ScaleRect(uv_crop, current_resource_.size.width(),
+                           current_resource_.size.height()),
+            current_resource_.size,
+            /* is_premultiplied=*/true,
+            /* nearest_neighbor */ false,
+            /* force_anti_aliasing_off */ false);
       }
+      frame->resource_list.push_back(current_resource_);
     }
-  } else if (state_.buffer.has_value() && state_.buffer->buffer()) {
-    SkColor color = state_.buffer->buffer()->GetColor().toSkColor();
+  } else {
+    SkColor color = state_.buffer.has_value() && state_.buffer->buffer()
+                        ? state_.buffer->buffer()->GetColor().toSkColor()
+                        : SK_ColorBLACK;
     viz::SolidColorDrawQuad* solid_quad =
         render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
     solid_quad->SetNew(quad_state, quad_rect, quad_rect, color,
-                       false /* force_anti_aliasing_off */);
-  } else {
-    viz::SolidColorDrawQuad* solid_quad =
-        render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
-    solid_quad->SetNew(quad_state, quad_rect, quad_rect, SK_ColorBLACK,
                        false /* force_anti_aliasing_off */);
   }
 

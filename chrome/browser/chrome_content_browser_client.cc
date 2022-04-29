@@ -312,6 +312,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/navigation/navigation_policy.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/mojom/browsing_topics/browsing_topics.mojom.h"
 #include "third_party/blink/public/public_buildflags.h"
@@ -2963,11 +2964,11 @@ void ChromeContentBrowserClient::AllowCertificateError(
     int cert_error,
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
-    bool is_main_frame_request,
+    bool is_primary_main_frame_request,
     bool strict_enforcement,
     base::OnceCallback<void(content::CertificateRequestResultType)> callback) {
   DCHECK(web_contents);
-  if (!is_main_frame_request) {
+  if (!is_primary_main_frame_request) {
     // A sub-resource has a certificate error. The user doesn't really
     // have a context for making the right decision, so block the
     // request hard, without an info bar to allow showing the insecure
@@ -6099,7 +6100,7 @@ bool ChromeContentBrowserClient::IsClipboardPasteAllowed(
       browser_context->GetPermissionController();
   blink::mojom::PermissionStatus status =
       permission_controller->GetPermissionStatusForCurrentDocument(
-          content::PermissionType::CLIPBOARD_READ_WRITE, render_frame_host);
+          blink::PermissionType::CLIPBOARD_READ_WRITE, render_frame_host);
 
   // True if this paste is executed from an extension URL with read permission.
   bool is_extension_paste_allowed = false;

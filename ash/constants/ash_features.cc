@@ -358,6 +358,10 @@ const base::Feature kCrostiniImeSupport{"CrostiniImeSupport",
 const base::Feature kCrostiniVirtualKeyboardSupport{
     "CrostiniVirtualKeyboardSupport", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables generic guest OS installer infrastructure.
+const base::Feature kGuestOSGenericInstaller{"GuestOSGenericInstaller",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables support for third party VMs.
 const base::Feature kBruschetta{"Bruschetta",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1172,6 +1176,12 @@ const base::Feature kProjectorManagedUserIgnorePolicy(
     "ProjectorManagedUserIgnorePolicy",
     base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Controls whether to show pseduo transcript that is shorter than the
+// threshold.
+const base::Feature kProjectorShowShortPseudoTranscript(
+    "ProjectorShowShortPseudoTranscript",
+    base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Controls whether the quick dim prototype is enabled.
 const base::Feature kQuickDim{"QuickDim", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -1307,14 +1317,14 @@ const base::Feature kSmartLockUIRevamp{"SmartLockUIRevamp",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // This feature:
-// - Creates a new "Sync your settings" section in Chrome OS settings
-// - Moves app, wallpaper and Wi-Fi sync to OS settings
-// - Provides a separate toggle for OS preferences, distinct from browser
-//   preferences
-// - Makes the OS ModelTypes run in sync transport mode, controlled by a single
-//   pref for the entire OS sync feature
+// - Categorizes all sync data types into two large categories:
+//     - OS-related sync data types (WiFi passwords and OS preferences, etc.).
+//       Can be configured from OS Sync Settings.
+//     - Browser-related sync data types (bookmarks, browser preferences, etc.).
+//       Can be configured from Browser Sync Settings.
+// - Changes a bunch of UIs to accommodate for this categorization.
 const base::Feature kSyncSettingsCategorization{
-    "SyncSettingsCategorization", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SyncSettingsCategorization", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables battery indicator for styluses in the palette tray
 const base::Feature kStylusBatteryStatus{"StylusBatteryStatus",
@@ -2056,6 +2066,10 @@ bool IsProjectorCustomThumbnailEnabled() {
 
 bool IsProjectorManagedUserIgnorePolicyEnabled() {
   return base::FeatureList::IsEnabled(kProjectorManagedUserIgnorePolicy);
+}
+
+bool IsProjectorShowShortPseudoTranscript() {
+  return base::FeatureList::IsEnabled(kProjectorShowShortPseudoTranscript);
 }
 
 bool IsQuickDimEnabled() {

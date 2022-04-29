@@ -1230,6 +1230,54 @@ TEST_F(DesksTemplatesTest, IconsOrderWithInactiveTabs) {
   EXPECT_EQ(kTabs1[2].spec(), icon_views[3]->icon_identifier());
 }
 
+// Tests that when two tabs are put into a desk template that have the same
+// domain but different query parameters, only one icon shows up in the template
+// to represent both tabs.
+TEST_F(DesksTemplatesTest, IdenticalURL) {
+  const std::string kAppId = app_constants::kChromeAppId;
+  constexpr int kWindowId = 1;
+  constexpr int kActiveTabIndex = 1;
+  const std::vector<GURL> kTabs{GURL("http://google.com/?query=a"),
+                                GURL("http://google.com/?query=b")};
+
+  // Create `restore_data` for the template.
+  auto restore_data = std::make_unique<app_restore::RestoreData>();
+
+  // Add app launch info.
+  auto app_launch_info =
+      std::make_unique<app_restore::AppLaunchInfo>(kAppId, kWindowId);
+  app_launch_info->active_tab_index = kActiveTabIndex;
+  app_launch_info->urls = absl::make_optional(kTabs);
+  restore_data->AddAppLaunchInfo(std::move(app_launch_info));
+  app_restore::WindowInfo window_info;
+  window_info.activation_index = absl::make_optional<int32_t>(kWindowId);
+  restore_data->ModifyWindowInfo(kAppId, kWindowId, window_info);
+
+  AddEntry(base::GUID::GenerateRandomV4(), "template", base::Time::Now(),
+           DeskTemplateSource::kUser, DeskTemplateType::kTemplate,
+           std::move(restore_data));
+
+  OpenOverviewAndShowTemplatesGrid();
+
+  // Get the icon views.
+  DesksTemplatesItemView* item_view = GetItemViewFromTemplatesGrid(
+      /*grid_item_index=*/0);
+  const std::vector<DesksTemplatesIconView*>& icon_views =
+      DesksTemplatesItemViewTestApi(item_view).GetIconViews();
+
+  // There should be one icon view for both the urls, and another icon view for
+  // the overflow icon.
+  ASSERT_EQ(2u, icon_views.size());
+  // The first icon view should have the first url including the query parameter
+  // as its identifier, and have a count of 2 because its representing both
+  // urls.
+  EXPECT_EQ(kTabs[0].spec(), icon_views[0]->icon_identifier());
+  EXPECT_EQ(2, icon_views[0]->count());
+  // The second icon view should have a count of 0, because there are no
+  // overflow windows.
+  EXPECT_EQ(0, icon_views[1]->count());
+}
+
 // Tests that the overflow count view is visible, in bounds, displays the right
 // count when there is more than `DesksTemplatesIconContainer::kMaxIcons` icons.
 TEST_F(DesksTemplatesTest, OverflowIconView) {
@@ -3363,8 +3411,7 @@ TEST_F(DesksTemplatesTest, VisibleOnAllDesksWindowShownProperly) {
 
 // Test save same desk as template won't create name with number on the template
 // view for the second template.
-// crbug/1318777: the test is flaky.
-TEST_F(DesksTemplatesTest, DISABLED_NoDuplicateDisplayedName) {
+TEST_F(DesksTemplatesTest, NoDuplicateDisplayedName) {
   // There are no saved template entries and one test window initially.
   auto test_window = CreateAppWindow();
   ToggleOverview();
@@ -3411,25 +3458,53 @@ TEST_F(DesksTemplatesTest, DISABLED_NoDuplicateDisplayedName) {
   OverviewGrid* overview_grid = GetOverviewGridList()[0].get();
   DeskNameView* desk_name_view =
       overview_grid->desks_bar_view()->mini_views().back()->desk_name_view();
-  // Check newly created template doesn't have name nudge.
+  // Check newly created template name view doesn't have a "(1)" appended.
   EXPECT_EQ(desk_name_view->GetText(), name_view->GetText());
   ASSERT_EQ(u"Desk 1", DesksController::Get()->active_desk()->name());
   EXPECT_EQ(u"Desk 1", name_view->GetText());
-  // The new template name still have name nudge to maintain it's uniqueness.
+  // The actual template name will still have "(1)" appended to maintain its
+  // uniqueness.
   EXPECT_EQ(u"Desk 1 (1)",
             GetItemViewFromTemplatesGrid(0)->desk_template()->template_name());
 
-  // Set template 1 under new name.
-  GetItemViewFromTemplatesGrid(1)->desk_template()->set_template_name(
-      u"Desk 2");
+  // Set the second template to have a new unique name by updating the model
+  // directly. This mimics updating the name on a different device and is the
+  // only way to change the name without prompting the replace dialog.
+  DesksTemplatesItemView* second_item = GetItemViewFromTemplatesGrid(1);
+  auto new_desk_template = second_item->desk_template()->Clone();
+  new_desk_template->set_template_name(u"Desk 2");
+  DeskTemplate* new_desk_template_ptr = new_desk_template.get();
+
+  base::RunLoop loop;
+  desk_model()->AddOrUpdateEntry(
+      std::move(new_desk_template),
+      base::BindLambdaForTesting(
+          [&](desks_storage::DeskModel::AddOrUpdateEntryStatus status) {
+            EXPECT_EQ(desks_storage::DeskModel::AddOrUpdateEntryStatus::kOk,
+                      status);
+            loop.Quit();
+          }));
+  loop.Run();
+
+  // `LocalDeskStorage` does not support `EntriesAddedOrUpdatedRemotely`, so
+  // manually call it to simluate what the real model would do.
+  DesksTemplatesPresenter::Get()->EntriesAddedOrUpdatedRemotely(
+      {new_desk_template_ptr});
+  ASSERT_EQ(u"Desk 2", second_item->name_view()->GetText());
+  ASSERT_EQ(u"Desk 2", second_item->desk_template()->template_name());
+
   // Save template 2 under new name and confirm, this will trigger replace
   // dialog.
+  name_view->RequestFocus();
   name_view->SetText(u"Desk 2");
-  EXPECT_EQ(u"Desk 2", name_view->GetText());
   views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
                                        "TemplateDialogForTesting");
-  GetEventGenerator()->PressAndReleaseKey(ui::VKEY_RETURN);
+  // Normally we would want to clear focus by simulating a user action (enter or
+  // click outside) but that doesn't work after already clear focus once before.
+  views::Widget* grid_widget = overview_grid->desks_templates_grid_widget();
+  grid_widget->GetFocusManager()->ClearFocus();
   views::Widget* dialog_widget = waiter.WaitIfNeededAndGet();
+
   // Cancel on replace dialog will revert view name to template name.
   dialog_widget->widget_delegate()->AsDialogDelegate()->CancelDialog();
   EXPECT_EQ(u"Desk 1", name_view->GetText());

@@ -20,15 +20,16 @@ class DownloadNativeTaskImpl final : public DownloadTaskImpl {
  public:
   // Constructs a new DownloadSessionTaskImpl objects. |web_state|, |identifier|
   // and |download| must be valid.
-  DownloadNativeTaskImpl(WebState* web_state,
-                         const GURL& original_url,
-                         NSString* http_method,
-                         const std::string& content_disposition,
-                         int64_t total_bytes,
-                         const std::string& mime_type,
-                         NSString* identifier,
-                         DownloadNativeTaskBridge* download)
-      API_AVAILABLE(ios(15));
+  DownloadNativeTaskImpl(
+      WebState* web_state,
+      const GURL& original_url,
+      NSString* http_method,
+      const std::string& content_disposition,
+      int64_t total_bytes,
+      const std::string& mime_type,
+      NSString* identifier,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+      DownloadNativeTaskBridge* download) API_AVAILABLE(ios(15));
 
   DownloadNativeTaskImpl(const DownloadNativeTaskImpl&) = delete;
   DownloadNativeTaskImpl& operator=(const DownloadNativeTaskImpl&) = delete;
@@ -38,6 +39,7 @@ class DownloadNativeTaskImpl final : public DownloadTaskImpl {
   // DownloadTaskImpl overrides:
   void Start(const base::FilePath& path, Destination destination_hint) final;
   void Cancel() final;
+  std::string GetSuggestedName() const final;
 
   // DownloadTask overrides:
   NSData* GetResponseData() const final;
@@ -45,7 +47,6 @@ class DownloadNativeTaskImpl final : public DownloadTaskImpl {
   int64_t GetTotalBytes() const final;
   int64_t GetReceivedBytes() const final;
   int GetPercentComplete() const final;
-  std::u16string GetSuggestedFilename() const final;
 
  private:
   DownloadNativeTaskBridge* download_bridge_ API_AVAILABLE(ios(15)) = nil;

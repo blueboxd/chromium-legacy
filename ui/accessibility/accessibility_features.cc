@@ -129,15 +129,6 @@ bool IsExperimentalAccessibilityDictationCommandsEnabled() {
       ::features::kExperimentalAccessibilityDictationCommands);
 }
 
-const base::Feature kExperimentalAccessibilityDictationExtension{
-    "ExperimentalAccessibilityDictationExtension",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-bool IsExperimentalAccessibilityDictationExtensionEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::features::kExperimentalAccessibilityDictationExtension);
-}
-
 const base::Feature kExperimentalAccessibilityDictationHints{
     "ExperimentalAccessibilityDictationHints",
     base::FEATURE_ENABLED_BY_DEFAULT};
@@ -212,6 +203,7 @@ bool IsComputeAXModeEnabled() {
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 
+#if !BUILDFLAG(IS_ANDROID)
 const base::Feature kReadAnything{"ReadAnything",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -219,7 +211,6 @@ bool IsReadAnythingEnabled() {
   return base::FeatureList::IsEnabled(::features::kReadAnything);
 }
 
-#if !BUILDFLAG(IS_ANDROID)
 const base::Feature kScreenAI{"ScreenAI", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsScreenAIEnabled() {

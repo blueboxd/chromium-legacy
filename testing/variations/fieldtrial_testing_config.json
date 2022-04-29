@@ -2663,6 +2663,8 @@
     "CrashReportBreadcrumbs": [
         {
             "platforms": [
+                "chromeos",
+                "chromeos_lacros",
                 "windows",
                 "mac",
                 "linux"
@@ -3719,6 +3721,27 @@
             ]
         }
     ],
+    "HappinessTrackingSystemPerformance": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "prob": "0.001",
+                        "survey_cycle_length": "7",
+                        "survey_start_date_ms": "1641024000000",
+                        "trigger_id": "d9usFbUBd0jBnuKU19R0YEKpVBkq"
+                    },
+                    "enable_features": [
+                        "HappinessTrackingSystemPerformance"
+                    ]
+                }
+            ]
+        }
+    ],
     "HappinessTrackingSystemStability": [
         {
             "platforms": [
@@ -3750,27 +3773,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ToolbarUseHardwareBitmapDraw"
-                    ]
-                }
-            ]
-        }
-    ],
-    "HatsAudio": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "prob": "0.01",
-                        "survey_cycle_length": "90",
-                        "survey_start_date_ms": "1642608000000",
-                        "trigger_id": "cVHSWE7RR0jBnuKU19R0ThFKQTU5"
-                    },
-                    "enable_features": [
-                        "HappinessTrackingAudio"
                     ]
                 }
             ]
@@ -6085,7 +6087,7 @@
                     "name": "Enabled",
                     "params": {
                         "FetchBehavior": "background-and-on-demand",
-                        "RandomQueryProbability": "0.0197"
+                        "RandomQueryProbability": "0.0394"
                     },
                     "enable_features": [
                         "NetworkTimeServiceQuerying"

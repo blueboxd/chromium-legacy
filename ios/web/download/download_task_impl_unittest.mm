@@ -7,24 +7,27 @@
 #import <Foundation/Foundation.h>
 #import <WebKit/WebKit.h>
 
-#include <memory>
+#import <memory>
 
-#include "base/files/file_util.h"
-#include "base/strings/utf_string_conversions.h"
+#import "base/files/file_util.h"
+#import "base/strings/utf_string_conversions.h"
+#import "base/task/sequenced_task_runner.h"
+#import "base/task/task_traits.h"
+#import "base/task/thread_pool.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/web/net/cookies/wk_cookie_util.h"
 #import "ios/web/public/download/download_task_observer.h"
-#include "ios/web/public/test/fakes/fake_cookie_store.h"
+#import "ios/web/public/test/fakes/fake_cookie_store.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
-#include "ios/web/public/test/web_test.h"
+#import "ios/web/public/test/web_test.h"
 #import "ios/web/test/fakes/crw_fake_nsurl_session_task.h"
-#include "net/base/net_errors.h"
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest_mac.h"
-#include "testing/platform_test.h"
+#import "net/base/net_errors.h"
+#import "testing/gmock/include/gmock/gmock.h"
+#import "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
+#import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
-#include "url/gurl.h"
+#import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -42,6 +45,7 @@ namespace {
 const char kUrl[] = "chromium://download.test/";
 const char kContentDisposition[] = "attachment; filename=file.test";
 const char kMimeType[] = "application/pdf";
+const base::FilePath::CharType kTestFileName[] = FILE_PATH_LITERAL("file.test");
 NSString* const kHttpMethod = @"POST";
 
 class MockDownloadTaskObserver : public DownloadTaskObserver {
@@ -60,20 +64,23 @@ class MockDownloadTaskObserver : public DownloadTaskObserver {
 // Creates a non-virtual class to use for testing
 class FakeDownloadTaskImpl : public DownloadTaskImpl {
  public:
-  FakeDownloadTaskImpl(WebState* web_state,
-                       const GURL& original_url,
-                       NSString* http_method,
-                       const std::string& content_disposition,
-                       int64_t total_bytes,
-                       const std::string& mime_type,
-                       NSString* identifier)
+  FakeDownloadTaskImpl(
+      WebState* web_state,
+      const GURL& original_url,
+      NSString* http_method,
+      const std::string& content_disposition,
+      int64_t total_bytes,
+      const std::string& mime_type,
+      NSString* identifier,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner)
       : DownloadTaskImpl(web_state,
                          original_url,
                          http_method,
                          content_disposition,
                          total_bytes,
                          mime_type,
-                         identifier) {}
+                         identifier,
+                         task_runner) {}
 
   NSData* GetResponseData() const override { return response_data_; }
 
@@ -97,7 +104,9 @@ class DownloadTaskImplTest : public PlatformTest {
             kContentDisposition,
             /*total_bytes=*/-1,
             kMimeType,
-            [[NSUUID UUID] UUIDString])) {
+            [[NSUUID UUID] UUIDString],
+            base::ThreadPool::CreateSequencedTaskRunner(
+                {base::MayBlock(), base::TaskPriority::USER_BLOCKING}))) {
     task_->AddObserver(&task_observer_);
   }
 
@@ -122,7 +131,7 @@ TEST_F(DownloadTaskImplTest, DefaultState) {
   EXPECT_EQ(kContentDisposition, task_->GetContentDisposition());
   EXPECT_EQ(kMimeType, task_->GetMimeType());
   EXPECT_EQ(kMimeType, task_->GetOriginalMimeType());
-  EXPECT_EQ("file.test", base::UTF16ToUTF8(task_->GetSuggestedFilename()));
+  EXPECT_EQ(base::FilePath(kTestFileName), task_->GenerateFileName());
 }
 
 // Tests that DownloadTaskImpl methods are overloaded

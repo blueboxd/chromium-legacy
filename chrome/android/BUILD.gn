@@ -12,6 +12,8 @@ import("//chrome/android/chrome_common_shared_library.gni")
 import("//chrome/android/chrome_java_resources.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
 import("//chrome/android/features/dev_ui/dev_ui_module.gni")
+import(
+    "//chrome/android/features/start_surface/public/start_surface_public_java_sources.gni")
 import("//chrome/android/features/tab_ui/buildflags.gni")
 import("//chrome/android/features/tab_ui/tab_management_java_sources.gni")
 import("//chrome/android/features/vr/public_vr_java_sources.gni")
@@ -356,6 +358,7 @@ android_library("chrome_java") {
     "//chrome/browser/android/messages:java",
     "//chrome/browser/android/webapps/launchpad:java",
     "//chrome/browser/banners/android:java",
+    "//chrome/browser/bluetooth/android:java",
     "//chrome/browser/browser_controls/android:java",
     "//chrome/browser/commerce/android:java",
     "//chrome/browser/commerce/merchant_viewer/android:java",
@@ -685,6 +688,7 @@ android_library("chrome_java") {
 
   # Include sources from public_tab_management_java_sources.gni.
   sources += public_tab_management_java_sources
+  sources += start_surface_public_java_sources
 
   if (enable_arcore) {
     deps += [
@@ -960,6 +964,7 @@ junit_binary("chrome_junit_tests") {
     "//chrome/browser/android/lifecycle:java",
     "//chrome/browser/android/webapps/launchpad:junit_tests",
     "//chrome/browser/banners/android:java",
+    "//chrome/browser/bluetooth/android:junit",
     "//chrome/browser/browser_controls/android:java",
     "//chrome/browser/browser_controls/android:junit",
     "//chrome/browser/commerce/merchant_viewer/android:junit",
@@ -992,6 +997,7 @@ junit_binary("chrome_junit_tests") {
     "//chrome/browser/incognito:java",
     "//chrome/browser/lens:delegate_public_impl_java",
     "//chrome/browser/lens:java",
+    "//chrome/browser/loading_modal/android:junit",
     "//chrome/browser/locale:java",
     "//chrome/browser/notifications:java",
     "//chrome/browser/notifications:junit_tests",
@@ -2543,6 +2549,7 @@ android_library("base_module_java") {
     "java/src/org/chromium/chrome/browser/ChromeBackgroundService.java",
     "java/src/org/chromium/chrome/browser/ChromeBackupAgent.java",
     "java/src/org/chromium/chrome/browser/DeferredStartupHandler.java",
+    "java/src/org/chromium/chrome/browser/app/bluetooth/BluetoothNotificationService.java",
     "java/src/org/chromium/chrome/browser/base/DexFixer.java",
     "java/src/org/chromium/chrome/browser/base/DexFixerReason.java",
     "java/src/org/chromium/chrome/browser/base/SplitChromeApplication.java",
@@ -3822,8 +3829,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/browsing_data/BrowsingDataBridge.java",
     "java/src/org/chromium/chrome/browser/browsing_data/BrowsingDataCounterBridge.java",
     "java/src/org/chromium/chrome/browser/browsing_data/UrlFilterBridge.java",
-    "java/src/org/chromium/chrome/browser/childaccounts/ChildAccountFeedbackReporter.java",
-    "java/src/org/chromium/chrome/browser/childaccounts/ChildAccountService.java",
     "java/src/org/chromium/chrome/browser/complex_tasks/TaskTabHelper.java",
     "java/src/org/chromium/chrome/browser/compositor/CompositorView.java",
     "java/src/org/chromium/chrome/browser/compositor/LayerTitleCache.java",
@@ -3972,6 +3977,8 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/status_indicator/StatusIndicatorSceneLayer.java",
     "java/src/org/chromium/chrome/browser/suggestions/mostvisited/MostVisitedSites.java",
     "java/src/org/chromium/chrome/browser/suggestions/mostvisited/MostVisitedSitesBridge.java",
+    "java/src/org/chromium/chrome/browser/supervised_user/ChildAccountFeedbackReporter.java",
+    "java/src/org/chromium/chrome/browser/supervised_user/ChildAccountService.java",
     "java/src/org/chromium/chrome/browser/survey/SurveyHttpClientBridge.java",
     "java/src/org/chromium/chrome/browser/sync/TrustedVaultClient.java",
     "java/src/org/chromium/chrome/browser/tab/TabBrowserControlsConstraintsHelper.java",

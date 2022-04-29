@@ -2456,6 +2456,19 @@ const FeatureEntry::Choice kCrostiniContainerChoices[] = {
 };
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+// The variations of --password-domain-capabilities-fetching.
+const FeatureEntry::FeatureParam
+    kPasswordDomainCapabilitiesFetchingVariationLiveExperiment[] = {
+        {password_manager::features::kPasswordChangeLiveExperimentParam.name,
+         "true"}};
+
+const FeatureEntry::FeatureVariation
+    kPasswordDomainCapabilitiesFetchingFeatureVariations[] = {
+        {"Live experiment",
+         kPasswordDomainCapabilitiesFetchingVariationLiveExperiment,
+         std::size(kPasswordDomainCapabilitiesFetchingVariationLiveExperiment),
+         nullptr}};
+
 #if BUILDFLAG(IS_ANDROID)
 // The variations of --password-change-in-settings.
 const FeatureEntry::FeatureParam
@@ -2470,19 +2483,6 @@ const FeatureEntry::FeatureVariation
          kPasswordChangeInSettingsVariationWithForcedWarningForEverySite,
          std::size(
              kPasswordChangeInSettingsVariationWithForcedWarningForEverySite),
-         nullptr}};
-
-// The variations of --password-domain-capabilities-fetching.
-const FeatureEntry::FeatureParam
-    kPasswordDomainCapabilitiesFetchingVariationLiveExperiment[] = {
-        {password_manager::features::kPasswordChangeLiveExperimentParam.name,
-         "true"}};
-
-const FeatureEntry::FeatureVariation
-    kPasswordDomainCapabilitiesFetchingFeatureVariations[] = {
-        {"Live experiment",
-         kPasswordDomainCapabilitiesFetchingVariationLiveExperiment,
-         std::size(kPasswordDomainCapabilitiesFetchingVariationLiveExperiment),
          nullptr}};
 
 // The variations of --password-change-support.
@@ -2743,18 +2743,42 @@ const FeatureEntry::FeatureParam kSnoopingProtectionPrecision[] = {
     {"SnoopingProtection_positive_count_threshold", "1"},
     {"SnoopingProtection_negative_count_threshold", "1"},
     {"SnoopingProtection_uncertain_count_threshold", "1"},
-    {"SnoopingProtection_positive_score_threshold", "-20"},
-    {"SnoopingProtection_negative_score_threshold", "-20"}};
+    {"SnoopingProtection_positive_score_threshold", "0"},
+    {"SnoopingProtection_negative_score_threshold", "0"}};
 
 const FeatureEntry::FeatureParam kSnoopingProtectionConfidence[] = {
     {"SnoopingProtection_filter_config_case", "2"},
     {"SnoopingProtection_positive_count_threshold", "2"},
     {"SnoopingProtection_negative_count_threshold", "2"},
     {"SnoopingProtection_uncertain_count_threshold", "2"},
+    {"SnoopingProtection_positive_score_threshold", "0"},
+    {"SnoopingProtection_negative_score_threshold", "0"}};
+
+const FeatureEntry::FeatureParam kSnoopingProtectionThreshold20[] = {
+    {"SnoopingProtection_filter_config_case", "2"},
+    {"SnoopingProtection_positive_count_threshold", "1"},
+    {"SnoopingProtection_negative_count_threshold", "1"},
+    {"SnoopingProtection_uncertain_count_threshold", "1"},
+    {"SnoopingProtection_positive_score_threshold", "20"},
+    {"SnoopingProtection_negative_score_threshold", "20"}};
+
+const FeatureEntry::FeatureParam kSnoopingProtectionThresholdMinus20[] = {
+    {"SnoopingProtection_filter_config_case", "2"},
+    {"SnoopingProtection_positive_count_threshold", "1"},
+    {"SnoopingProtection_negative_count_threshold", "1"},
+    {"SnoopingProtection_uncertain_count_threshold", "1"},
     {"SnoopingProtection_positive_score_threshold", "-20"},
     {"SnoopingProtection_negative_score_threshold", "-20"}};
 
-const FeatureEntry::FeatureParam kSnoopingProtectionRecall[] = {
+const FeatureEntry::FeatureParam kSnoopingProtectionThreshold40[] = {
+    {"SnoopingProtection_filter_config_case", "2"},
+    {"SnoopingProtection_positive_count_threshold", "1"},
+    {"SnoopingProtection_negative_count_threshold", "1"},
+    {"SnoopingProtection_uncertain_count_threshold", "1"},
+    {"SnoopingProtection_positive_score_threshold", "40"},
+    {"SnoopingProtection_negative_score_threshold", "40"}};
+
+const FeatureEntry::FeatureParam kSnoopingProtectionThresholdMinus40[] = {
     {"SnoopingProtection_filter_config_case", "2"},
     {"SnoopingProtection_positive_count_threshold", "1"},
     {"SnoopingProtection_negative_count_threshold", "1"},
@@ -2762,13 +2786,40 @@ const FeatureEntry::FeatureParam kSnoopingProtectionRecall[] = {
     {"SnoopingProtection_positive_score_threshold", "-40"},
     {"SnoopingProtection_negative_score_threshold", "-40"}};
 
+const FeatureEntry::FeatureParam kSnoopingProtectionThreshold60[] = {
+    {"SnoopingProtection_filter_config_case", "2"},
+    {"SnoopingProtection_positive_count_threshold", "1"},
+    {"SnoopingProtection_negative_count_threshold", "1"},
+    {"SnoopingProtection_uncertain_count_threshold", "1"},
+    {"SnoopingProtection_positive_score_threshold", "60"},
+    {"SnoopingProtection_negative_score_threshold", "60"}};
+
+const FeatureEntry::FeatureParam kSnoopingProtectionThresholdMinus60[] = {
+    {"SnoopingProtection_filter_config_case", "2"},
+    {"SnoopingProtection_positive_count_threshold", "1"},
+    {"SnoopingProtection_negative_count_threshold", "1"},
+    {"SnoopingProtection_uncertain_count_threshold", "1"},
+    {"SnoopingProtection_positive_score_threshold", "-60"},
+    {"SnoopingProtection_negative_score_threshold", "-60"}};
+
 const FeatureEntry::FeatureVariation kSnoopingProtectionVariations[] = {
     {"Precise", kSnoopingProtectionPrecision,
      std::size(kSnoopingProtectionPrecision), nullptr},
     {"Slow Precise", kSnoopingProtectionConfidence,
      std::size(kSnoopingProtectionConfidence), nullptr},
-    {"Comprehensive", kSnoopingProtectionRecall,
-     std::size(kSnoopingProtectionRecall), nullptr}};
+    {"Threshold20", kSnoopingProtectionThreshold20,
+     std::size(kSnoopingProtectionThreshold20), nullptr},
+    {"Threshold-20", kSnoopingProtectionThresholdMinus20,
+     std::size(kSnoopingProtectionThresholdMinus20), nullptr},
+    {"Threshold40", kSnoopingProtectionThreshold40,
+     std::size(kSnoopingProtectionThreshold40), nullptr},
+    {"Threshold-40", kSnoopingProtectionThresholdMinus40,
+     std::size(kSnoopingProtectionThresholdMinus40), nullptr},
+    {"Threshold60", kSnoopingProtectionThreshold60,
+     std::size(kSnoopingProtectionThreshold60), nullptr},
+    {"Threshold-60", kSnoopingProtectionThresholdMinus60,
+     std::size(kSnoopingProtectionThresholdMinus60), nullptr},
+};
 
 const FeatureEntry::FeatureParam kQuickDim10s[] = {
     {"QuickDim_quick_dim_ms", "10000"},
@@ -2800,6 +2851,50 @@ const FeatureEntry::FeatureParam kQuickDim10sQuickLock130s[] = {
     {"QuickDim_uncertain_count_threshold", "2"},
     {"QuickDim_positive_score_threshold", "0"},
     {"QuickDim_negative_score_threshold", "0"},
+};
+
+const FeatureEntry::FeatureParam kQuickDim10sQuickLock130sThreshold20[] = {
+    {"QuickDim_quick_dim_ms", "10000"},
+    {"QuickDim_quick_lock_ms", "130000"},
+    {"QuickDim_filter_config_case", "2"},
+    {"QuickDim_positive_count_threshold", "1"},
+    {"QuickDim_negative_count_threshold", "2"},
+    {"QuickDim_uncertain_count_threshold", "2"},
+    {"QuickDim_positive_score_threshold", "20"},
+    {"QuickDim_negative_score_threshold", "20"},
+};
+
+const FeatureEntry::FeatureParam kQuickDim10sQuickLock130sThresholdMinus20[] = {
+    {"QuickDim_quick_dim_ms", "10000"},
+    {"QuickDim_quick_lock_ms", "130000"},
+    {"QuickDim_filter_config_case", "2"},
+    {"QuickDim_positive_count_threshold", "1"},
+    {"QuickDim_negative_count_threshold", "2"},
+    {"QuickDim_uncertain_count_threshold", "2"},
+    {"QuickDim_positive_score_threshold", "-20"},
+    {"QuickDim_negative_score_threshold", "-20"},
+};
+
+const FeatureEntry::FeatureParam kQuickDim10sQuickLock130sThreshold40[] = {
+    {"QuickDim_quick_dim_ms", "10000"},
+    {"QuickDim_quick_lock_ms", "130000"},
+    {"QuickDim_filter_config_case", "2"},
+    {"QuickDim_positive_count_threshold", "1"},
+    {"QuickDim_negative_count_threshold", "2"},
+    {"QuickDim_uncertain_count_threshold", "2"},
+    {"QuickDim_positive_score_threshold", "40"},
+    {"QuickDim_negative_score_threshold", "40"},
+};
+
+const FeatureEntry::FeatureParam kQuickDim10sQuickLock130sThresholdMinus40[] = {
+    {"QuickDim_quick_dim_ms", "10000"},
+    {"QuickDim_quick_lock_ms", "130000"},
+    {"QuickDim_filter_config_case", "2"},
+    {"QuickDim_positive_count_threshold", "1"},
+    {"QuickDim_negative_count_threshold", "2"},
+    {"QuickDim_uncertain_count_threshold", "2"},
+    {"QuickDim_positive_score_threshold", "-40"},
+    {"QuickDim_negative_score_threshold", "-40"},
 };
 
 const FeatureEntry::FeatureParam kQuickDim45sQuickLock105s[] = {
@@ -2847,6 +2942,14 @@ const FeatureEntry::FeatureVariation kQuickDimVariations[] = {
     {"Dim120sLock240s", kQuickDim120sQuickLock240s,
      std::size(kQuickDim120sQuickLock240s), nullptr},
     {"Dim10sNoLock", kQuickDim10s, std::size(kQuickDim10s), nullptr},
+    {"Dim10sLock130sThreshold20", kQuickDim10sQuickLock130sThreshold20,
+     std::size(kQuickDim10sQuickLock130sThreshold20), nullptr},
+    {"Dim10sLock130sThreshold-20", kQuickDim10sQuickLock130sThresholdMinus20,
+     std::size(kQuickDim10sQuickLock130sThresholdMinus20), nullptr},
+    {"Dim10sLock130sThreshold40", kQuickDim10sQuickLock130sThreshold40,
+     std::size(kQuickDim10sQuickLock130sThreshold40), nullptr},
+    {"Dim10sLock130sThreshold-40", kQuickDim10sQuickLock130sThresholdMinus40,
+     std::size(kQuickDim10sQuickLock130sThresholdMinus40), nullptr},
 };
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -3929,6 +4032,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrostiniVirtualKeyboardSupportName,
      flag_descriptions::kCrostiniVirtualKeyboardSupportDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniVirtualKeyboardSupport)},
+    {"guest-os-generic-installer",
+     flag_descriptions::kGuestOSGenericInstallerName,
+     flag_descriptions::kGuestOSGenericInstallerDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kGuestOSGenericInstaller)},
     {"bruschetta", flag_descriptions::kBruschettaName,
      flag_descriptions::kBruschettaDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kBruschetta)},
@@ -3985,7 +4092,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBypassAppBannerEngagementChecksName,
      flag_descriptions::kBypassAppBannerEngagementChecksDescription, kOsAll,
      SINGLE_VALUE_TYPE(webapps::switches::kBypassAppBannerEngagementChecks)},
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
     {"allow-default-web-app-migration-for-chrome-os-managed-users",
      flag_descriptions::kAllowDefaultWebAppMigrationForChromeOsManagedUsersName,
      flag_descriptions::
@@ -3993,7 +4100,7 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      FEATURE_VALUE_TYPE(
          web_app::kAllowDefaultWebAppMigrationForChromeOsManagedUsers)},
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
     {"enable-desktop-pwas-prefix-app-name-in-window-title",
      flag_descriptions::kDesktopPWAsPrefixAppNameInWindowTitleName,
      flag_descriptions::kDesktopPWAsPrefixAppNameInWindowTitleDescription,
@@ -4525,12 +4632,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVirtualKeyboardMultitouchName,
      flag_descriptions::kVirtualKeyboardMultitouchDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardMultitouch)},
-    {"enable-experimental-accessibility-dictation-extension",
-     flag_descriptions::kExperimentalAccessibilityDictationExtensionName,
-     flag_descriptions::kExperimentalAccessibilityDictationExtensionDescription,
-     kOsCrOS,
-     FEATURE_VALUE_TYPE(
-         features::kExperimentalAccessibilityDictationExtension)},
     {"enable-experimental-accessibility-dictation-commands",
      flag_descriptions::kExperimentalAccessibilityDictationCommandsName,
      flag_descriptions::kExperimentalAccessibilityDictationCommandsDescription,
@@ -5724,7 +5825,7 @@ const FeatureEntry kFeatureEntries[] = {
          "CCTResizableThirdPartiesDefaultPolicy")},
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
     {"allow-dsp-based-aec", flag_descriptions::kCrOSDspBasedAecAllowedName,
      flag_descriptions::kCrOSDspBasedAecAllowedDescription, kOsCrOS | kOsLacros,
      FEATURE_VALUE_TYPE(features::kCrOSDspBasedAecAllowed)},
@@ -6700,6 +6801,20 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDoubleBufferCompositingDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kDoubleBufferCompositing)},
 
+    {"password-domain-capabilities-fetching",
+     flag_descriptions::kPasswordDomainCapabilitiesFetchingName,
+     flag_descriptions::kPasswordDomainCapabilitiesFetchingDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         password_manager::features::kPasswordDomainCapabilitiesFetching,
+         kPasswordDomainCapabilitiesFetchingFeatureVariations,
+         "PasswordDomainCapabilitiesFetchingFeatureVariations")},
+    {"force-enable-password-domain-capabilities",
+     flag_descriptions::kForceEnablePasswordDomainCapabilitiesName,
+     flag_descriptions::kForceEnablePasswordDomainCapabilitiesDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kForceEnablePasswordDomainCapabilities)},
+
 #if BUILDFLAG(IS_ANDROID)
     {"password-change-in-settings",
      flag_descriptions::kPasswordChangeInSettingsName,
@@ -6708,14 +6823,6 @@ const FeatureEntry kFeatureEntries[] = {
          password_manager::features::kPasswordChangeInSettings,
          kPasswordChangeInSettingsFeatureVariations,
          "PasswordChangeInSettingsFeatureVariations")},
-    {"password-domain-capabilities-fetching",
-     flag_descriptions::kPasswordDomainCapabilitiesFetchingName,
-     flag_descriptions::kPasswordDomainCapabilitiesFetchingDescription,
-     kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         password_manager::features::kPasswordDomainCapabilitiesFetching,
-         kPasswordDomainCapabilitiesFetchingFeatureVariations,
-         "PasswordDomainCapabilitiesFetchingFeatureVariations")},
     {"password-scripts-fetching",
      flag_descriptions::kPasswordScriptsFetchingName,
      flag_descriptions::kPasswordScriptsFetchingDescription, kOsAndroid,
@@ -6725,12 +6832,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(password_manager::features::kPasswordChange,
                                     kPasswordChangeFeatureVariations,
                                     "PasswordChangeFeatureVariations")},
-    {"force-enable-password-domain-capabilities",
-     flag_descriptions::kForceEnablePasswordDomainCapabilitiesName,
-     flag_descriptions::kForceEnablePasswordDomainCapabilitiesDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         password_manager::features::kForceEnablePasswordDomainCapabilities)},
 
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -6763,6 +6864,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPageInfoAboutThisSiteDescription,
      kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(page_info::kPageInfoAboutThisSiteEn)},
+
+    {"page-info-more-about-this-page",
+     flag_descriptions::kPageInfoMoreAboutThisPageName,
+     flag_descriptions::kPageInfoMoreAboutThisPageDescription,
+     kOsDesktop | kOsAndroid,
+     FEATURE_VALUE_TYPE(page_info::kPageInfoAboutThisSiteMoreInfo)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enhanced_clipboard", flag_descriptions::kEnhancedClipboardName,
@@ -7715,6 +7822,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncTrustedVaultPassphraseRecoveryName,
      flag_descriptions::kSyncTrustedVaultPassphraseRecoveryDescription, kOsAll,
      FEATURE_VALUE_TYPE(::syncer::kSyncTrustedVaultPassphraseRecovery)},
+
+    {"sync-standalone-invalidations", flag_descriptions::kSyncInvalidationsName,
+     flag_descriptions::kSyncInvalidationsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(::syncer::kUseSyncInvalidations)},
+
+    {"sync-standalone-invalidations-wallet-and-offer",
+     flag_descriptions::kSyncInvalidationsWalletAndOfferName,
+     flag_descriptions::kSyncInvalidationsWalletAndOfferDescription, kOsAll,
+     FEATURE_VALUE_TYPE(::syncer::kUseSyncInvalidationsForWalletAndOffer)},
 
     {"debug-history-intervention-no-user-activation",
      flag_descriptions::kDebugHistoryInterventionNoUserActivationName,

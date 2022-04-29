@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -160,7 +161,6 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::FILE_SYSTEM_LAST_PICKED_DIRECTORY, nullptr},
     {ContentSettingsType::DISPLAY_CAPTURE, nullptr},
     {ContentSettingsType::FEDERATED_IDENTITY_SHARING, nullptr},
-    {ContentSettingsType::FEDERATED_IDENTITY_REQUEST, nullptr},
     {ContentSettingsType::JAVASCRIPT_JIT, nullptr},
     {ContentSettingsType::HTTP_ALLOWED, nullptr},
     {ContentSettingsType::FORMFILL_METADATA, nullptr},

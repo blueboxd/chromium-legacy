@@ -112,8 +112,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest,
       specifics.mutable_send_tab_to_self();
   send_tab_to_self->set_url(kUrl);
   send_tab_to_self->set_guid(kGuid);
-  send_tab_to_self->set_navigation_time_usec(
-      kNavigationTime.ToDeltaSinceWindowsEpoch().InMicroseconds());
   send_tab_to_self->set_shared_time_usec(
       base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
 
@@ -149,7 +147,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest,
                        ShouldCleanupOnSignout) {
   const GURL kUrl("https://www.example.com");
   const std::string kTitle("example");
-  const base::Time kTime = base::Time::FromDoubleT(1);
   const std::string kTargetDeviceSyncCacheGuid("target");
 
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
@@ -161,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest,
       SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(0))
           ->GetSendTabToSelfModel();
 
-  ASSERT_TRUE(model->AddEntry(kUrl, kTitle, kTime, kTargetDeviceSyncCacheGuid));
+  ASSERT_TRUE(model->AddEntry(kUrl, kTitle, kTargetDeviceSyncCacheGuid));
 
   secondary_account_helper::SignOutAccount(
       GetProfile(0), &test_url_loader_factory_, account.account_id);
@@ -177,7 +174,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest,
                        ShouldNotUploadInSyncPausedState) {
   const GURL kUrl("https://www.example.com");
   const std::string kTitle("example");
-  const base::Time kTime = base::Time::FromDoubleT(1);
   const std::string kTargetDeviceSyncCacheGuid("target");
 
   ASSERT_TRUE(SetupSync());
@@ -191,8 +187,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSendTabToSelfSyncTest,
       SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile(0))
           ->GetSendTabToSelfModel();
 
-  ASSERT_FALSE(
-      model->AddEntry(kUrl, kTitle, kTime, kTargetDeviceSyncCacheGuid));
+  ASSERT_FALSE(model->AddEntry(kUrl, kTitle, kTargetDeviceSyncCacheGuid));
 
   EXPECT_FALSE(send_tab_to_self::ShouldOfferFeature(
       GetBrowser(0)->tab_strip_model()->GetActiveWebContents()));

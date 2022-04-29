@@ -15,12 +15,17 @@
 #include "base/time/time.h"
 #include "pdf/paint_aggregator.h"
 #include "pdf/ppapi_migration/graphics.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/size.h"
+
+class SkImage;
+class SkSurface;
 
 namespace gfx {
 class Point;
 class Rect;
 class Vector2d;
+class Vector2dF;
 }  // namespace gfx
 
 namespace chrome_pdf {
@@ -34,7 +39,7 @@ namespace chrome_pdf {
 // The client's OnPaint
 class PaintManager {
  public:
-  class Client : public SkiaGraphics::Client {
+  class Client {
    public:
     // Invalidates the entire plugin container, scheduling a repaint.
     virtual void InvalidatePluginContainer() = 0;
@@ -61,9 +66,19 @@ class PaintManager {
                          std::vector<PaintReadyRect>& ready,
                          std::vector<gfx::Rect>& pending) = 0;
 
+    // Updates the client with the latest snapshot created by `Flush()`.
+    virtual void UpdateSnapshot(sk_sp<SkImage> snapshot) = 0;
+
+    // Updates the client with the latest output scale.
+    virtual void UpdateScale(float scale) = 0;
+
+    // Updates the client with the latest output layer transform.
+    virtual void UpdateLayerTransform(float scale,
+                                      const gfx::Vector2dF& translate) = 0;
+
    protected:
     // You shouldn't delete through this interface.
-    ~Client() override = default;
+    ~Client() = default;
   };
 
   // The Client is a non-owning pointer and must remain valid (normally the
@@ -145,6 +160,9 @@ class PaintManager {
 
   // Non-owning pointer. See the constructor.
   const raw_ptr<Client> client_;
+
+  // Backing Skia surface.
+  sk_sp<SkSurface> surface_;
 
   // This graphics device will be null if no graphics has been set yet.
   std::unique_ptr<Graphics> graphics_;

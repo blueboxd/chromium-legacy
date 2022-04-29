@@ -22,8 +22,8 @@
 #include <vector>
 
 #include "base/base_export.h"
-#include "base/cxx17_backports.h"
 #include "base/debug/crash_logging.h"
+#include "base/immediate_crash.h"
 #include "base/pending_task.h"
 #include "base/strings/string_piece.h"
 #include "base/task/common/task_annotator.h"

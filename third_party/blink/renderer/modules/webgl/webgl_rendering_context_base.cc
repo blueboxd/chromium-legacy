@@ -5220,9 +5220,11 @@ void WebGLRenderingContextBase::TexImageStaticBitmapImage(
   // needed here.
   const char* func_name = GetTexImageFunctionName(params.function_id);
 
-  // Ensure that `image` is in the unpack color space.
+  // If `image` is accelerated, then convert to the unpack color space while
+  // still on the GPU. Unaccelerated images will be converted on the CPU below
+  // in TexImageSkImage.
   scoped_refptr<StaticBitmapImage> color_converted_image;
-  {
+  if (image->IsTextureBacked()) {
     const auto image_color_info = image->GetSkColorInfo();
     const auto image_color_space = image_color_info.colorSpace()
                                        ? image_color_info.refColorSpace()
@@ -5251,8 +5253,8 @@ void WebGLRenderingContextBase::TexImageStaticBitmapImage(
     return;
   }
 
-  // Apply orientation if necessary. This should be merged into the above
-  // color space conversion.
+  // Apply orientation if necessary. This should be merged into the
+  // transformations performed inside TexImageSkImage.
   PaintImage paint_image = image->PaintImageForCurrentFrame();
   if (!image->HasDefaultOrientation()) {
     paint_image = Image::ResizeAndOrientImage(
@@ -5578,12 +5580,22 @@ void WebGLRenderingContextBase::TexImageHelperHTMLImageElement(
 
   WebGLImageConversion::ImageExtractor image_extractor(
       image_for_render.get(), params.unpack_premultiply_alpha,
-      unpack_colorspace_conversion_ == GL_NONE);
+      unpack_colorspace_conversion_ == GL_NONE
+          ? nullptr
+          : PredefinedColorSpaceToSkColorSpace(unpack_color_space_));
   auto sk_image = image_extractor.GetSkImage();
   if (!sk_image) {
     SynthesizeGLError(GL_INVALID_VALUE, func_name, "bad image data");
     return;
   }
+  // If UNPACK_COLORSPACE_CONVERSION_WEBGL is NONE, then treat the image as
+  // though it were already in the unpack color space. This will skip any
+  // subsequent color space conversion.
+  if (unpack_colorspace_conversion_ == GL_NONE) {
+    sk_image = sk_image->reinterpretColorSpace(
+        PredefinedColorSpaceToSkColorSpace(unpack_color_space_));
+  }
+
   TexImageSkImage(params, std::move(sk_image), /*image_has_flip_y=*/false);
 }
 
@@ -5808,12 +5820,15 @@ void WebGLRenderingContextBase::TexImageHelperCanvasRenderingContextHost(
     return;
   }
 
-  // The Image-based upload path may still be used for WebGL-rendered
-  // canvases in the case of driver bug workarounds
-  // (e.g. CanUseTexImageViaGPU returning false).
+  // If the source is a WebGL context, then that context can blit its buffer
+  // directly into a texture in this context. This path does not perform color
+  // space conversion, so only use it if the source and unpack color spaces are
+  // the same.
   if (auto* source_canvas_webgl_context = DynamicTo<WebGLRenderingContextBase>(
           context_host->RenderingContext())) {
-    if (CanUseTexImageViaGPU(params)) {
+    if (CanUseTexImageViaGPU(params) &&
+        source_canvas_webgl_context->drawing_buffer_color_space_ ==
+            unpack_color_space_) {
       TexImageViaGPU(params, nullptr, source_canvas_webgl_context);
       return;
     }
@@ -5963,6 +5978,11 @@ void WebGLRenderingContextBase::TexImageHelperMediaVideoFrame(
     return;
   }
 
+  // Paths that use the PaintCanvasVideoRenderer assume the target is sRGB, and
+  // produce incorrect results when the unpack color space is not sRGB.
+  const bool unpack_color_space_is_srgb =
+      unpack_color_space_ == PredefinedColorSpace::kSRGB;
+
   // The CopyTexImage fast paths can't handle orientation, so if a non-default
   // orientation is provided, we must disable them.
   const auto transform = media_video_frame->metadata().transformation.value_or(
@@ -5984,7 +6004,8 @@ void WebGLRenderingContextBase::TexImageHelperMediaVideoFrame(
       params.function_id == kTexImage2D && source_image_rect_is_default &&
       params.depth.value_or(1) == 1 && GL_TEXTURE_2D == params.target &&
       (have_image_external_essl3 || !may_need_image_external_essl3) &&
-      CanUseTexImageViaGPU(params) && transform == media::kNoTransformation;
+      CanUseTexImageViaGPU(params) && transform == media::kNoTransformation &&
+      unpack_color_space_is_srgb;
 
 #if BUILDFLAG(IS_WIN)
   // TODO(crbug.com/1227921): When OOP GPU rasterization is disabled, uploading
@@ -6052,7 +6073,8 @@ void WebGLRenderingContextBase::TexImageHelperMediaVideoFrame(
   }
 
   if (source_image_rect_is_default && media_video_frame->IsMappable() &&
-      media_video_frame->format() == media::PIXEL_FORMAT_Y16) {
+      media_video_frame->format() == media::PIXEL_FORMAT_Y16 &&
+      unpack_color_space_is_srgb) {
     // Try using optimized CPU-GPU path for some formats: e.g. Y16 and Y8. It
     // leaves early for other formats or if frame is stored on GPU.
     ScopedUnpackParametersResetRestore unpack_params(

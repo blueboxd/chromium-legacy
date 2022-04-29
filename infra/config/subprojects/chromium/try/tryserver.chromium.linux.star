@@ -122,10 +122,7 @@ try_.builder(
 
 try_.builder(
     name = "fuchsia-fyi-arm64-dbg",
-)
-
-try_.builder(
-    name = "fuchsia-fyi-arm64-femu",
+    mirrors = ["ci/fuchsia-fyi-arm64-dbg"],
 )
 
 try_.builder(
@@ -134,6 +131,7 @@ try_.builder(
 
 try_.builder(
     name = "fuchsia-fyi-x64-dbg",
+    mirrors = ["ci/fuchsia-fyi-x64-dbg"],
 )
 
 try_.builder(
@@ -174,6 +172,13 @@ try_.builder(
 
 try_.builder(
     name = "linux-1mbu-compile-fyi-rel",
+    mirrors = [
+        "ci/Linux Builder",
+    ],
+    try_settings = builder_config.try_settings(
+        include_all_triggered_testers = True,
+        is_compile_only = True,
+    ),
     builderless = False,
     goma_jobs = goma.jobs.J150,
     tryjob = try_.job(
@@ -220,6 +225,7 @@ try_.builder(
 
 try_.builder(
     name = "linux-dcheck-off-rel",
+    mirrors = builder_config.copy_from("linux-rel"),
 )
 
 try_.builder(
@@ -241,6 +247,7 @@ try_.builder(
 
 try_.builder(
     name = "linux-inverse-fieldtrials-fyi-rel",
+    mirrors = builder_config.copy_from("linux-rel"),
 )
 
 try_.builder(
@@ -249,10 +256,12 @@ try_.builder(
 
 try_.builder(
     name = "linux-mbi-mode-per-render-process-host-rel",
+    mirrors = builder_config.copy_from("linux-rel"),
 )
 
 try_.builder(
     name = "linux-mbi-mode-per-site-instance-rel",
+    mirrors = builder_config.copy_from("linux-rel"),
 )
 
 try_.builder(
@@ -294,6 +303,17 @@ try_.orchestrator_builder(
     name = "linux-rel",
     compilator = "linux-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/Linux Builder",
+        "ci/Linux Tests",
+        "ci/GPU Linux Builder",
+        "ci/Linux Release (NVIDIA)",
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+    ),
     main_list_view = "try",
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
@@ -310,6 +330,17 @@ try_.compilator_builder(
 try_.orchestrator_builder(
     name = "linux-rel-warmed",
     compilator = "linux-rel-warmed-compilator",
+    mirrors = [
+        "ci/Linux Builder",
+        "ci/Linux Tests",
+        "ci/GPU Linux Builder",
+        "ci/Linux Release (NVIDIA)",
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+    ),
     main_list_view = "try",
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
@@ -434,6 +465,13 @@ try_.builder(
 
 try_.builder(
     name = "linux_chromium_compile_rel_ng",
+    mirrors = [
+        "ci/Linux Builder",
+    ],
+    try_settings = builder_config.try_settings(
+        include_all_triggered_testers = True,
+        is_compile_only = True,
+    ),
 )
 
 try_.builder(

@@ -15,6 +15,7 @@
 #include "ash/components/disks/disk_mount_manager.h"
 #include "ash/components/disks/mock_disk_mount_manager.h"
 #include "ash/constants/ash_switches.h"
+#include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_move_support.h"
@@ -32,13 +33,13 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/cicerone/cicerone_client.h"
 #include "chromeos/dbus/cicerone/fake_cicerone_client.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/vm_plugin_dispatcher/fake_vm_plugin_dispatcher_client.h"
 #include "services/device/public/cpp/test/fake_usb_device_info.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
@@ -135,7 +136,7 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
     chromeos::DBusThreadManager::Initialize();
     chromeos::CiceroneClient::InitializeFake();
     chromeos::ConciergeClient::InitializeFake();
-    chromeos::SeneschalClient::InitializeFake();
+    SeneschalClient::InitializeFake();
     fake_cicerone_client_ = chromeos::FakeCiceroneClient::Get();
     fake_concierge_client_ = chromeos::FakeConciergeClient::Get();
     fake_vm_plugin_dispatcher_client_ =
@@ -152,7 +153,7 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
 
   ~CrosUsbDetectorTest() override {
     disks::DiskMountManager::Shutdown();
-    chromeos::SeneschalClient::Shutdown();
+    SeneschalClient::Shutdown();
     chromeos::ConciergeClient::Shutdown();
     chromeos::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();

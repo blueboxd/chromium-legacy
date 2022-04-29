@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -99,7 +100,7 @@ void OnMainProfileLoaded(base::OnceCallback<void(Profile*)>& callback,
     case Profile::CREATE_STATUS_INITIALIZED:
       DCHECK(profile);
 
-      if (can_trigger_fre && ShouldOpenPrimaryProfileFirstRun()) {
+      if (can_trigger_fre && ShouldOpenPrimaryProfileFirstRun(profile)) {
         // TODO(https://crbug.com/1313848): Consider taking a
         // `ScopedProfileKeepAlive`.
         OpenPrimaryProfileFirstRunIfNeeded(

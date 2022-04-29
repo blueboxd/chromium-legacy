@@ -1094,6 +1094,9 @@ extern const char kPageEntitiesPageContentAnnotationsDescription[];
 extern const char kPageInfoAboutThisSiteName[];
 extern const char kPageInfoAboutThisSiteDescription[];
 
+extern const char kPageInfoMoreAboutThisPageName[];
+extern const char kPageInfoMoreAboutThisPageDescription[];
+
 extern const char kPageInfoHistoryDesktopName[];
 extern const char kPageInfoHistoryDesktopDescription[];
 
@@ -1367,6 +1370,12 @@ extern const char kSyncTrustedVaultPassphrasePromoDescription[];
 
 extern const char kSyncTrustedVaultPassphraseRecoveryName[];
 extern const char kSyncTrustedVaultPassphraseRecoveryDescription[];
+
+extern const char kSyncInvalidationsName[];
+extern const char kSyncInvalidationsDescription[];
+
+extern const char kSyncInvalidationsWalletAndOfferName[];
+extern const char kSyncInvalidationsWalletAndOfferDescription[];
 
 extern const char kSystemProxyForSystemServicesName[];
 extern const char kSystemProxyForSystemServicesDescription[];
@@ -2502,6 +2511,9 @@ extern const char kCrostiniImeSupportDescription[];
 extern const char kCrostiniVirtualKeyboardSupportName[];
 extern const char kCrostiniVirtualKeyboardSupportDescription[];
 
+extern const char kGuestOSGenericInstallerName[];
+extern const char kGuestOSGenericInstallerDescription[];
+
 extern const char kBruschettaName[];
 extern const char kBruschettaDescription[];
 
@@ -2723,12 +2735,6 @@ extern const char kExoPointerLockDescription[];
 
 extern const char kExoLockNotificationName[];
 extern const char kExoLockNotificationDescription[];
-
-extern const char kExperimentalAccessibilityDictationExtensionName[];
-extern const char kExperimentalAccessibilityDictationExtensionDescription[];
-
-extern const char kExperimentalAccessibilityDictationOfflineName[];
-extern const char kExperimentalAccessibilityDictationOfflineDescription[];
 
 extern const char kExperimentalAccessibilityDictationCommandsName[];
 extern const char kExperimentalAccessibilityDictationCommandsDescription[];
@@ -3167,7 +3173,7 @@ extern const char kLacrosScreenCoordinatesEnabledName[];
 extern const char kLacrosScreenCoordinatesEnabledDescription[];
 #endif  // #if BUILDFLAG(IS_CHROMEOS_LACROS)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 extern const char kAllowDefaultWebAppMigrationForChromeOsManagedUsersName[];
 extern const char
     kAllowDefaultWebAppMigrationForChromeOsManagedUsersDescription[];
@@ -3198,7 +3204,7 @@ extern const char kCrOSEnforceSystemAecNsAgcDescription[];
 
 extern const char kDefaultCalculatorWebAppName[];
 extern const char kDefaultCalculatorWebAppDescription[];
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS)
 extern const char kDeprecateLowUsageCodecsName[];

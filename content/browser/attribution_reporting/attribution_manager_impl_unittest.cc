@@ -26,6 +26,7 @@
 #include "content/browser/aggregation_service/aggregatable_report.h"
 #include "content/browser/aggregation_service/aggregation_service_impl.h"
 #include "content/browser/aggregation_service/aggregation_service_test_utils.h"
+#include "content/browser/attribution_reporting/aggregatable_attribution_utils.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
 #include "content/browser/attribution_reporting/attribution_cookie_checker.h"
 #include "content/browser/attribution_reporting/attribution_observer.h"
@@ -1541,35 +1542,31 @@ TEST_F(AttributionManagerImplTest, RegistrationsHandledInOrder) {
   const auto r1 = url::Origin::Create(GURL("https://r1.test"));
   const auto r2 = url::Origin::Create(GURL("https://r2.test"));
 
-  const AttributionManagerImpl::SourceOrTrigger kEvents[] = {
-      SourceBuilder()
-          .SetSourceEventId(1)
-          .SetDebugKey(11)
-          .SetReportingOrigin(r1)
-          .SetExpiry(kImpressionExpiry)
-          .Build(),
+  attribution_manager_->HandleSource(SourceBuilder()
+                                         .SetSourceEventId(1)
+                                         .SetDebugKey(11)
+                                         .SetReportingOrigin(r1)
+                                         .SetExpiry(kImpressionExpiry)
+                                         .Build());
 
-      TriggerBuilder().SetTriggerData(2).SetReportingOrigin(r1).Build(),
+  attribution_manager_->HandleTrigger(
+      TriggerBuilder().SetTriggerData(2).SetReportingOrigin(r1).Build());
 
-      TriggerBuilder()
-          .SetTriggerData(3)
-          .SetDebugKey(13)
-          .SetReportingOrigin(r2)
-          .Build(),
+  attribution_manager_->HandleTrigger(TriggerBuilder()
+                                          .SetTriggerData(3)
+                                          .SetDebugKey(13)
+                                          .SetReportingOrigin(r2)
+                                          .Build());
 
-      SourceBuilder()
-          .SetSourceEventId(4)
-          .SetDebugKey(14)
-          .SetReportingOrigin(r2)
-          .SetExpiry(kImpressionExpiry)
-          .Build(),
+  attribution_manager_->HandleSource(SourceBuilder()
+                                         .SetSourceEventId(4)
+                                         .SetDebugKey(14)
+                                         .SetReportingOrigin(r2)
+                                         .SetExpiry(kImpressionExpiry)
+                                         .Build());
 
-      TriggerBuilder().SetTriggerData(5).SetReportingOrigin(r2).Build(),
-  };
-
-  for (const auto& event : kEvents) {
-    attribution_manager_->MaybeEnqueueEventForTesting(event);
-  }
+  attribution_manager_->HandleTrigger(
+      TriggerBuilder().SetTriggerData(5).SetReportingOrigin(r2).Build());
 
   ASSERT_THAT(StoredSources(), IsEmpty());
   ASSERT_THAT(StoredReports(), IsEmpty());
@@ -1815,9 +1812,9 @@ TEST_F(AttributionManagerImplTest,
   report_sender_->RunCallbacksAndReset(
       {SendResult::Status::kSent, SendResult::Status::kSent});
 
-  // kSuccess = 0.
   histograms.ExpectUniqueSample(
-      "Conversions.AggregatableReport.AssembleReportStatus", 0, 1);
+      "Conversions.AggregatableReport.AssembleReportStatus",
+      AssembleAggregatableReportStatus::kSuccess, 1);
   histograms.ExpectUniqueSample(
       "Conversions.AggregatableReport.TimeFromTriggerToReportAssembly",
       kFirstReportingWindow.InMinutes(), 1);
@@ -1860,9 +1857,9 @@ TEST_F(AttributionManagerImplTest,
   // Event-level report was sent.
   EXPECT_THAT(report_sender_->calls(), SizeIs(1));
 
-  // kAssembleReportFailed = 3.
   histograms.ExpectUniqueSample(
-      "Conversions.AggregatableReport.AssembleReportStatus", 3, 1);
+      "Conversions.AggregatableReport.AssembleReportStatus",
+      AssembleAggregatableReportStatus::kAssembleReportFailed, 1);
   histograms.ExpectUniqueSample(
       "Conversions.AggregatableReport.TimeFromTriggerToReportAssembly",
       kFirstReportingWindow.InMinutes(), 1);
@@ -1885,9 +1882,9 @@ TEST_F(AttributionManagerImplTest, AggregationServiceDisabled_ReportNotSent) {
   // Event-level report was sent.
   EXPECT_THAT(report_sender_->calls(), SizeIs(1));
 
-  // kAggregationServiceUnavailable = 1.
   histograms.ExpectUniqueSample(
-      "Conversions.AggregatableReport.AssembleReportStatus", 1, 1);
+      "Conversions.AggregatableReport.AssembleReportStatus",
+      AssembleAggregatableReportStatus::kAggregationServiceUnavailable, 1);
   histograms.ExpectUniqueSample(
       "Conversions.AggregatableReport.TimeFromTriggerToReportAssembly",
       kFirstReportingWindow.InMinutes(), 1);

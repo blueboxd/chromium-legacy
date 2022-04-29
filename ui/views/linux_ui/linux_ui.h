@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "build/buildflag.h"
 #include "build/chromecast_buildflags.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -99,7 +100,7 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   // running with the "--ash" flag.)
   static LinuxUI* instance();
 
-  virtual void Initialize() = 0;
+  virtual bool Initialize() = 0;
   virtual bool GetTint(int id, color_utils::HSL* tint) const = 0;
   virtual bool GetColor(int id,
                         SkColor* color,
@@ -203,7 +204,25 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   virtual void SetSystemThemeByNameForTest(const std::string& theme_name) = 0;
 
  protected:
+  struct CmdLineArgs {
+    CmdLineArgs();
+    CmdLineArgs(const CmdLineArgs&);
+    CmdLineArgs& operator=(const CmdLineArgs&);
+    ~CmdLineArgs();
+
+    // `argc` is modified by toolkits, so store it explicitly.
+    int argc = 0;
+
+    // Contains C-strings that point into `args`.  `argv.size()` >= `argc`.
+    std::vector<char*> argv;
+
+    // `argv` concatenated with NUL characters.
+    std::vector<char> args;
+  };
+
   LinuxUI();
+
+  static CmdLineArgs CopyCmdLine(const base::CommandLine& command_line);
 };
 
 }  // namespace views

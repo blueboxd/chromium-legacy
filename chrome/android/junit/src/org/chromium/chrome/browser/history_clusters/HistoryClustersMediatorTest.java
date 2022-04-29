@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.history_clusters;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -24,6 +25,7 @@ import org.robolectric.shadows.ShadowLooper;
 import org.chromium.base.Promise;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.history_clusters.HistoryClustersItemProperties.ItemType;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.favicon.LargeIconBridge;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
@@ -53,6 +55,8 @@ public class HistoryClustersMediatorTest {
     private GURL mGurl2;
     @Mock
     private GURL mGurl3;
+    @Mock
+    private BottomSheetController mBottomSheetController;
 
     private ClusterVisit mVisit1;
     private ClusterVisit mVisit2;
@@ -61,14 +65,18 @@ public class HistoryClustersMediatorTest {
     private HistoryCluster mCluster2;
     private HistoryClustersResult mHistoryClustersResult;
     private ModelList mModelList;
+    private HistoryClustersBottomSheetContent mBottomSheetContent =
+            new HistoryClustersBottomSheetContent();
     private HistoryClustersMediator mMediator;
 
     @Before
     public void setUp() {
         doReturn(mResources).when(mContext).getResources();
         mModelList = new ModelList();
-        mMediator = new HistoryClustersMediator(
-                mBridge, mLargeIconBridge, mContext, mResources, mModelList);
+        mBottomSheetContent = new HistoryClustersBottomSheetContent();
+        mMediator = new HistoryClustersMediator(mBridge, mLargeIconBridge, mContext, mResources,
+                mModelList, new PropertyModel(HistoryClustersBottomSheetToolbarProperties.ALL_KEYS),
+                mBottomSheetController, mBottomSheetContent);
         mVisit1 = new ClusterVisit(1.0F, mGurl1, "Title 1");
         mVisit2 = new ClusterVisit(1.0F, mGurl2, "Title 1");
         mVisit3 = new ClusterVisit(1.0F, mGurl3, "Title 1");
@@ -99,6 +107,30 @@ public class HistoryClustersMediatorTest {
         PropertyModel model = item.model;
         assertTrue(model.getAllSetProperties().containsAll(Arrays.asList(
                 HistoryClustersItemProperties.TITLE, HistoryClustersItemProperties.URL)));
+    }
+
+    @Test
+    public void testShowBottomSheet() {
+        Promise<HistoryClustersResult> promise = new Promise<>();
+        doReturn(promise).when(mBridge).queryClusters("foo");
+
+        mMediator.showBottomSheet("foo");
+        fulfillPromise(promise, mHistoryClustersResult);
+        verify(mBottomSheetController).requestShowContent(mBottomSheetContent, true);
+
+        assertEquals(mModelList.size(), 3);
+    }
+
+    @Test
+    public void testShowBottomSheet_emptyQuery() {
+        Promise<HistoryClustersResult> promise = new Promise<>();
+        doReturn(promise).when(mBridge).queryClusters("");
+
+        mMediator.showBottomSheet("");
+        fulfillPromise(promise, mHistoryClustersResult);
+
+        verify(mBottomSheetController).requestShowContent(mBottomSheetContent, true);
+        assertEquals(mModelList.size(), 3);
     }
 
     private <T> void fulfillPromise(Promise<T> promise, T result) {

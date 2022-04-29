@@ -2119,13 +2119,12 @@ gfx::Size LocalFrame::GetMainFrameViewportSize() const {
              : local_root.intersection_state_.main_frame_viewport_size;
 }
 
-gfx::Point LocalFrame::GetMainFrameScrollOffset() const {
+gfx::Point LocalFrame::GetMainFrameScrollPosition() const {
   LocalFrame& local_root = LocalFrameRoot();
   return local_root.IsMainFrame()
-             // TODO(crbug.com/1274078): Should this return ScrollPosition()?
-             ? gfx::ToFlooredPoint(gfx::PointAtOffsetFromOrigin(
-                   local_root.View()->GetScrollableArea()->GetScrollOffset()))
-             : local_root.intersection_state_.main_frame_scroll_offset;
+             ? gfx::ToFlooredPoint(
+                   local_root.View()->LayoutViewport()->ScrollPosition())
+             : local_root.intersection_state_.main_frame_scroll_position;
 }
 
 void LocalFrame::SetOpener(Frame* opener_frame) {
@@ -2618,8 +2617,10 @@ void LocalFrame::CountUseIfFeatureWouldBeBlockedByPermissionsPolicy(
   const SecurityOrigin* topOrigin =
       Tree().Top().GetSecurityContext()->GetSecurityOrigin();
 
-  // Check if this frame is same-origin with the top-level
-  if (!GetSecurityContext()->GetSecurityOrigin()->CanAccess(topOrigin)) {
+  // Check if this frame is same-origin with the top-level or is in
+  // a fenced frame tree.
+  if (!GetSecurityContext()->GetSecurityOrigin()->CanAccess(topOrigin) ||
+      IsInFencedFrameTree()) {
     // This frame is cross-origin with the top-level frame, and so would be
     // blocked without a permissions policy.
     UseCounter::Count(GetDocument(), blocked_cross_origin);

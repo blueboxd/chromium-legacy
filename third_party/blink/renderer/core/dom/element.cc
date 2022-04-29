@@ -157,6 +157,7 @@
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -600,18 +601,30 @@ void EnqueueAutofocus(Element& element) {
   top_document.EnqueueAutofocusCandidate(element);
 }
 
-bool MaySkipNGBlockNodeLayout(const LayoutObject& layout_object) {
-  // Return true if we are not guaranteed that the layout_object will hit the
-  // LayoutNG code path during layout, which is a problem for container queries.
-  //
+// For container query containers, we may skip the style recalc of the
+// container's descendants during regular style recalc, with the expectation
+// that we will recalc the style of those elements during `NGBlockNode::Layout`.
+// If a given LayoutObject isn't guaranteed to actually enter
+// `NGBlockNode::Layout`, then we recalc the skipped descendants during
+// layout-tree building instead.
+bool IsGuaranteedToEnterNGBlockNodeLayout(const LayoutObject& layout_object) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return false;
+  auto* box = DynamicTo<LayoutBox>(layout_object);
+  if (!box)
+    return false;
+  if (!NGBlockNode::CanUseNewLayout(*box))
+    return false;
   // Out-of-flow positioned replaced elements take the legacy path for layout
   // if the container for positioning is a legacy object. That is the case for
   // LayoutView, which is a legacy object but does not otherwise force
   // legacy layout objects.
-  return layout_object.ForceLegacyLayout() ||
-         (!RuntimeEnabledFeatures::LayoutNGViewEnabled() &&
-          layout_object.IsOutOfFlowPositioned() &&
-          layout_object.IsLayoutReplaced());
+  if (!RuntimeEnabledFeatures::LayoutNGViewEnabled() &&
+      layout_object.IsOutOfFlowPositioned() &&
+      layout_object.IsLayoutReplaced()) {
+    return false;
+  }
+  return true;
 }
 
 }  // namespace
@@ -2361,7 +2374,8 @@ void Element::UpdatePopupAttribute(String value) {
     if (PopupType() == type)
       return;
     // If the popup type is changing, hide it.
-    hidePopup();
+    if (popupOpen())
+      hidePopup(ASSERT_NO_EXCEPTION);
   }
   if (type == PopupValueType::kNone) {
     if (HasValidPopupAttribute()) {
@@ -2400,10 +2414,18 @@ bool Element::popupOpen() const {
   return false;
 }
 
-void Element::showPopup() {
+void Element::showPopup(ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
-  if (!HasValidPopupAttribute() || popupOpen() || !isConnected())
-    return;
+  if (!HasValidPopupAttribute()) {
+    return exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "Not supported on elements that do not have a valid value for the "
+        "'popup' attribute");
+  } else if (popupOpen() || !isConnected()) {
+    return exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Invalid on already-showing or disconnected popup elements");
+  }
   if (PopupType() == PopupValueType::kPopup ||
       PopupType() == PopupValueType::kHint) {
     if (GetDocument().HintShowing()) {
@@ -2428,10 +2450,18 @@ void Element::showPopup() {
   GetDocument().EnqueueAnimationFrameEvent(event);
 }
 
-void Element::hidePopup() {
+void Element::hidePopup(ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
-  if (!HasValidPopupAttribute() || !popupOpen())
-    return;
+  if (!HasValidPopupAttribute()) {
+    return exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "Not supported on elements that do not have a valid value for the "
+        "'popup' attribute");
+  } else if (!popupOpen()) {
+    return exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Invalid on already-hidden popup elements");
+  }
   DCHECK(isConnected());
   GetPopupData()->setOpen(false);
   GetPopupData()->setInvoker(nullptr);
@@ -2653,7 +2683,7 @@ void Element::InvokePopup(Element* invoker) {
   DCHECK(RuntimeEnabledFeatures::HTMLPopupAttributeEnabled());
   DCHECK(HasValidPopupAttribute());
   GetPopupData()->setInvoker(invoker);
-  showPopup();
+  showPopup(ASSERT_NO_EXCEPTION);
 }
 
 Element* Element::anchorElement() const {
@@ -2990,7 +3020,7 @@ Node::InsertionNotificationRequest Element::InsertedInto(
                          if (popup && popup->isConnected() &&
                              (popup->PopupType() == PopupValueType::kAsync ||
                               !popup->GetDocument().PopupOrHintShowing())) {
-                           popup->showPopup();
+                           popup->showPopup(ASSERT_NO_EXCEPTION);
                          }
                        },
                        WrapWeakPersistent(this)));
@@ -3161,7 +3191,8 @@ void Element::AttachLayoutTree(AttachContext& context) {
 
   if (children_context.force_legacy_layout ||
       (being_rendered && !children_context.parent) ||
-      (layout_object && MaySkipNGBlockNodeLayout(*layout_object))) {
+      (layout_object &&
+       !IsGuaranteedToEnterNGBlockNodeLayout(*layout_object))) {
     // If the created LayoutObject is forced into a legacy object, or if a
     // LayoutObject was not created, even if we thought it should have been, for
     // instance because the parent LayoutObject returns false for
@@ -3400,7 +3431,7 @@ bool Element::SkipStyleRecalcForContainer(
     LayoutObject* layout_object = GetLayoutObject();
     if (!layout_object || !layout_object->SelfNeedsLayout() ||
         !layout_object->IsEligibleForSizeContainment() ||
-        MaySkipNGBlockNodeLayout(*layout_object)) {
+        !IsGuaranteedToEnterNGBlockNodeLayout(*layout_object)) {
       return false;
     }
   }
@@ -3719,7 +3750,7 @@ StyleRecalcChange Element::RecalcOwnStyle(
   StyleRecalcChange child_change = change.ForChildren(*this);
 
   const ComputedStyle* parent_style = ParentComputedStyle();
-  if (parent_style && old_style && change.IndependentInherit()) {
+  if (parent_style && old_style && change.IndependentInherit(*old_style)) {
     // When propagating inherited changes, we don't need to do a full style
     // recalc if the only changed properties are independent. In this case, we
     // can simply clone the old ComputedStyle and set these directly.

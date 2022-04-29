@@ -297,7 +297,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   bool HasDefaultActionVerb() const;
 
   std::string accessible_name_;
-
+  
  protected:
   AXPlatformNodeAuraLinux();
 

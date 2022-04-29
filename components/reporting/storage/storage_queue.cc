@@ -24,6 +24,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/hash/hash.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/rand_util.h"
@@ -33,6 +34,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
 #include "base/task/task_runner.h"
 #include "base/task/thread_pool.h"
 #include "components/reporting/compression/compression_module.h"
@@ -222,8 +224,12 @@ Status StorageQueue::Init() {
   }
   // Delete all files except used ones.
   DeleteUnusedFiles(used_files_set);
-  // Initiate periodic uploading, if needed.
-  if (!options_.upload_period().is_zero()) {
+  // Initiate periodic uploading, if needed (IMMEDIATE, SECURITY and MANUAL
+  // priorities do not need it - they are created with 0, 0 and infinite period
+  // respectively).
+  //
+  if (!options_.upload_period().is_zero() &&
+      !options_.upload_period().is_max()) {
     upload_timer_.Start(FROM_HERE, options_.upload_period(), this,
                         &StorageQueue::PeriodicUpload);
   }

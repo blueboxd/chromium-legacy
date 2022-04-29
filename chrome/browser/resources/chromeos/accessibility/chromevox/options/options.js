@@ -5,11 +5,9 @@
 /**
  * @fileoverview ChromeVox options page.
  */
-import {BrailleTable} from '../background/braille/braille_table.js';
-import {TtsBackground} from '../background/tts_background.js';
-import {AbstractTts} from '../common/abstract_tts.js';
-
-import {BluetoothBrailleDisplayUI} from './bluetooth_braille_display_ui.js';
+import {BrailleTable} from '/chromevox/background/braille/braille_table.js';
+import {AbstractTts} from '/chromevox/common/abstract_tts.js';
+import {BluetoothBrailleDisplayUI} from '/chromevox/options/bluetooth_braille_display_ui.js';
 
 /** @const {string} */
 const GOOGLE_TTS_EXTENSION_ID = 'gjjabgpgjpampikjhjpfhneeoapjbjaf';
@@ -27,8 +25,6 @@ export class OptionsPage {
    * @this {OptionsPage}
    */
   static async init() {
-    OptionsPage.backgroundTts =
-        chrome.extension.getBackgroundPage().ChromeVoxState.backgroundTts;
     OptionsPage.populateVoicesSelect();
     BrailleTable.getAll(function(tables) {
       /** @type {!Array<BrailleTable.Table>} */
@@ -470,7 +466,7 @@ export class OptionsPage {
         const selectedPunctuationEcho = target.options[target.selectedIndex].id;
         const punctuationEcho = AbstractTts.PUNCTUATION_ECHOES.findIndex(
             echo => echo.name === selectedPunctuationEcho);
-        OptionsPage.backgroundTts.updatePunctuationEcho(punctuationEcho);
+        BackgroundBridge.ChromeVoxState.updatePunctuationEcho(punctuationEcho);
       } else if (target.classList.contains('pref')) {
         if (target.tagName === 'INPUT' && target.type === 'checkbox') {
           BackgroundBridge.ChromeVoxPrefs.setPref(target.name, target.checked);
@@ -499,12 +495,6 @@ export class OptionsPage {
    */
   static hidePlatformSpecifics() {}
 }
-
-/**
- * The TtsBackground object.
- * @type {TtsBackground}
- */
-OptionsPage.backgroundTts;
 
 /**
  * Adds event listeners to input boxes to update local storage values and

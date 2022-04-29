@@ -4,48 +4,24 @@
 
 #include "pdf/ppapi_migration/graphics.h"
 
-#include <utility>
+#include <memory>
 
-#include "base/callback_helpers.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_utils.h"
 #include "pdf/ppapi_migration/bitmap.h"
 #include "pdf/test/test_helpers.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkImage.h"
-#include "third_party/skia/include/core/SkImageInfo.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSize.h"
 #include "third_party/skia/include/core/SkSurface.h"
-#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
-#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace chrome_pdf {
 
 namespace {
-
-struct FakeSkiaGraphicsClient : public SkiaGraphics::Client {
-  FakeSkiaGraphicsClient() = default;
-  ~FakeSkiaGraphicsClient() override = default;
-
-  void UpdateSnapshot(sk_sp<SkImage> new_snapshot) override {
-    snapshot = std::move(new_snapshot);
-  }
-
-  MOCK_METHOD(void, UpdateScale, (float), (override));
-  MOCK_METHOD(void,
-              UpdateLayerTransform,
-              (float, const gfx::Vector2dF&),
-              (override));
-
-  sk_sp<SkImage> snapshot;
-};
 
 SkBitmap GenerateExpectedBitmap(const SkISize& graphics_size,
                                 const SkIRect& rect) {
@@ -76,20 +52,19 @@ class SkiaGraphicsTest : public testing::Test {
                             const gfx::Size& src_size,
                             const gfx::Rect& paint_rect,
                             const SkIRect& overlapped_rect) {
-    graphics_ =
-        SkiaGraphics::Create(&client_, gfx::SkISizeToSize(graphics_size));
-    ASSERT_TRUE(graphics_);
+    surface_ = SkSurface::MakeRasterN32Premul(graphics_size.width(),
+                                              graphics_size.height());
+    ASSERT_TRUE(surface_);
+    graphics_ = std::make_unique<SkiaGraphics>(surface_.get());
 
-    // Create snapshots as SkImage and SkBitmap after painting.
+    // Paint and snapshot.
     graphics_->PaintImage(CreateSkiaImageForTesting(src_size, SK_ColorRED),
                           paint_rect);
-    graphics_->Flush(base::DoNothing());
-    SkBitmap snapshot_bitmap;
-    ASSERT_TRUE(client_.snapshot->asLegacyBitmap(&snapshot_bitmap));
+    SkBitmap snapshot_bitmap = MakeSnapshot();
 
     // Verify snapshot dimensions.
-    EXPECT_EQ(client_.snapshot->dimensions(), graphics_size)
-        << client_.snapshot->width() << " x " << client_.snapshot->height()
+    EXPECT_EQ(snapshot_bitmap.dimensions(), graphics_size)
+        << snapshot_bitmap.width() << " x " << snapshot_bitmap.height()
         << " != " << graphics_size.width() << " x " << graphics_size.height();
 
     // Verify the snapshot matches the expected result.
@@ -102,7 +77,13 @@ class SkiaGraphicsTest : public testing::Test {
         << graphics_size.width() << " x " << graphics_size.height();
   }
 
-  FakeSkiaGraphicsClient client_;
+  SkBitmap MakeSnapshot() {
+    SkBitmap bitmap;
+    surface_->makeImageSnapshot()->asLegacyBitmap(&bitmap);
+    return bitmap;
+  }
+
+  sk_sp<SkSurface> surface_;
 
   std::unique_ptr<Graphics> graphics_;
 };
@@ -113,16 +94,17 @@ class SkiaGraphicsScrollTest : public SkiaGraphicsTest {
 
   // Initializes `initial_bitmap_` and `graphics_` before scrolling tests.
   void SetUp() override {
-    graphics_ = SkiaGraphics::Create(&client_, kGraphicsRect.size());
-    ASSERT_TRUE(graphics_);
+    surface_ = SkSurface::MakeRasterN32Premul(kGraphicsRect.width(),
+                                              kGraphicsRect.height());
+    ASSERT_TRUE(surface_);
+    graphics_ = std::make_unique<SkiaGraphics>(surface_.get());
 
     // Paint a nonuniform SkBitmap to graphics.
     initial_bitmap_ =
         CreateNonuniformBitmap(kGraphicsRect.width(), kGraphicsRect.height());
     graphics_->PaintImage(initial_bitmap_, kGraphicsRect);
-    graphics_->Flush(base::DoNothing());
-    SkBitmap initial_snapshot;
-    ASSERT_TRUE(client_.snapshot->asLegacyBitmap(&initial_snapshot));
+    SkBitmap initial_snapshot = MakeSnapshot();
+
     ASSERT_TRUE(cc::MatchesBitmap(initial_snapshot, initial_bitmap_,
                                   cc::ExactPixelComparator(false)));
   }
@@ -135,7 +117,6 @@ class SkiaGraphicsScrollTest : public SkiaGraphicsTest {
 
     graphics_->PaintImage(initial_bitmap_, kGraphicsRect);
     graphics_->Scroll(kGraphicsRect, scroll_amount);
-    graphics_->Flush(base::DoNothing());
   }
 
   SkBitmap initial_bitmap_;
@@ -143,19 +124,6 @@ class SkiaGraphicsScrollTest : public SkiaGraphicsTest {
 
 // static
 constexpr gfx::Rect SkiaGraphicsScrollTest::kGraphicsRect;
-
-TEST_F(SkiaGraphicsTest, Flush) {
-  graphics_ = SkiaGraphics::Create(&client_, gfx::Size(20, 20));
-  ASSERT_TRUE(graphics_);
-
-  // The client's snapshot is nullptr before flushing.
-  EXPECT_FALSE(client_.snapshot);
-
-  EXPECT_TRUE(graphics_->Flush(base::DoNothing()));
-
-  // The client's snapshot has changed after flushing.
-  EXPECT_TRUE(client_.snapshot);
-}
 
 TEST_F(SkiaGraphicsTest, PaintImage) {
   struct PaintImageParams {
@@ -189,21 +157,6 @@ TEST_F(SkiaGraphicsTest, PaintImage) {
                          params.paint_rect, params.overlapped_rect);
 }
 
-TEST_F(SkiaGraphicsTest, SetScale) {
-  auto graphics = SkiaGraphics::Create(&client_, {400, 300});
-  EXPECT_CALL(client_, UpdateScale(0.123f));
-
-  graphics->SetScale(0.123f);
-}
-
-TEST_F(SkiaGraphicsTest, SetLayerTransform) {
-  auto graphics = SkiaGraphics::Create(&client_, {400, 300});
-  EXPECT_CALL(client_,
-              UpdateLayerTransform(0.25f, gfx::Vector2dF(116.5f, 29.5f)));
-
-  graphics->SetLayerTransform(0.25f, gfx::Point(150, 50), gfx::Vector2d(-4, 8));
-}
-
 TEST_F(SkiaGraphicsScrollTest, InvalidScroll) {
   static constexpr gfx::Vector2d kNoOpScrollAmounts[] = {
       // Scroll to the edge of the graphics rect.
@@ -220,8 +173,7 @@ TEST_F(SkiaGraphicsScrollTest, InvalidScroll) {
 
   for (const auto& no_op_amount : kNoOpScrollAmounts) {
     ResetAndScroll(no_op_amount);
-    SkBitmap snapshot;
-    ASSERT_TRUE(client_.snapshot->asLegacyBitmap(&snapshot));
+    SkBitmap snapshot = MakeSnapshot();
     EXPECT_TRUE(cc::MatchesBitmap(snapshot, initial_bitmap_,
                                   cc::ExactPixelComparator(false)))
         << "SkBitmap comparison failed for scroll amount of "
@@ -239,8 +191,7 @@ TEST_F(SkiaGraphicsScrollTest, Scroll) {
 
   for (const auto& valid_amount : kValidScrollAmounts) {
     ResetAndScroll(valid_amount);
-    SkBitmap snapshot;
-    ASSERT_TRUE(client_.snapshot->asLegacyBitmap(&snapshot));
+    SkBitmap snapshot = MakeSnapshot();
     EXPECT_FALSE(cc::MatchesBitmap(snapshot, initial_bitmap_,
                                    cc::ExactPixelComparator(false)))
         << "The scroll amount of " << valid_amount.ToString()

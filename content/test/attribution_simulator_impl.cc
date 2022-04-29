@@ -74,9 +74,13 @@ base::Time GetEventTime(const AttributionSimulationEventAndValue& event) {
     base::Time operator()(const AttributionSimulatorCookie& cookie) {
       return cookie.cookie.CreationDate();
     }
+
+    base::Time operator()(const AttributionDataClear& clear) {
+      return clear.time;
+    }
   };
 
-  return absl::visit(Visitor{}, event.first);
+  return absl::visit(Visitor(), event.first);
 }
 
 class AlwaysSetCookieChecker : public AttributionCookieChecker {
@@ -265,13 +269,13 @@ class AttributionEventHandler : public AttributionObserver {
 
   // For use with `absl::visit()`.
   void operator()(StorableSource source) {
-    manager_->MaybeEnqueueEventForTesting(std::move(source));
+    manager_->HandleSource(std::move(source));
     FlushCookies();
   }
 
   // For use with `absl::visit()`.
   void operator()(AttributionTriggerAndTime trigger) {
-    manager_->MaybeEnqueueEventForTesting(std::move(trigger.trigger));
+    manager_->HandleTrigger(std::move(trigger.trigger));
     FlushCookies();
   }
 
@@ -288,6 +292,24 @@ class AttributionEventHandler : public AttributionObserver {
           // TODO(apaseltiner): Consider surfacing `r` in output.
           run_loop.Quit();
         }));
+    run_loop.Run();
+  }
+
+  // For use with `absl::visit()`.
+  void operator()(AttributionDataClear clear) {
+    DCHECK(!input_values_.empty());
+    input_values_.pop_front();
+
+    base::RepeatingCallback<bool(const url::Origin&)> filter;
+    if (clear.origins.has_value()) {
+      filter = base::BindLambdaForTesting([&](const url::Origin& origin) {
+        return clear.origins->contains(origin);
+      });
+    }
+
+    base::RunLoop run_loop;
+    manager_->ClearData(clear.delete_begin, clear.delete_end, std::move(filter),
+                        run_loop.QuitClosure());
     run_loop.Run();
   }
 

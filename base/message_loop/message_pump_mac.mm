@@ -191,6 +191,7 @@ void MessagePumpCFRunLoopBase::ScheduleDelayedWorkImpl(TimeDelta delta) {
       CFRunLoopTimerSetTolerance(delayed_work_timer_, delta.InSecondsF() * 0.5);
     } else {
       CFRunLoopTimerSetTolerance(delayed_work_timer_, 0);
+    }
   }
   CFRunLoopTimerSetNextFireDate(
       delayed_work_timer_, CFAbsoluteTimeGetCurrent() + delta.InSecondsF());

@@ -204,7 +204,7 @@ void DesksTemplatesPresenter::OnGetAllEntries(
     const base::GUID& item_to_focus,
     aura::Window* const root_window,
     desks_storage::DeskModel::GetAllEntriesStatus status,
-    const std::vector<DeskTemplate*>& entries) {
+    const std::vector<const DeskTemplate*>& entries) {
   if (status != desks_storage::DeskModel::GetAllEntriesStatus::kOk)
     return;
 
@@ -379,7 +379,7 @@ void DesksTemplatesPresenter::OnAddOrUpdateEntry(
 
       desks_controller->RemoveDesk(active_desk,
                                    DesksCreationRemovalSource::kSaveAndRecall,
-                                   /*close_windows=*/true);
+                                   DeskCloseType::kCloseAllWindows);
     }
 
     RecordNewTemplateHistogram();

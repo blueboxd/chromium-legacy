@@ -64,7 +64,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.app.metrics.LaunchCauseMetrics;
-import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -79,6 +78,7 @@ import org.chromium.chrome.browser.power_bookmarks.ShoppingSpecifics;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.read_later.ReadingListUtils;
 import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
@@ -92,6 +92,7 @@ import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.bookmarks.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.browser_ui.widget.RecyclerViewTestUtils;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenuButton;
@@ -1250,7 +1251,8 @@ public class BookmarkTest {
         Assert.assertFalse(customTabIntent.hasExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB));
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { Assert.assertTrue(activity.getActivityTab().getUrl().equals(mTestUrlA)); });
-        activity.finish();
+        pressBack();
+        onView(withText("Reading list")).check(matches(isDisplayed()));
     }
 
     @Test
@@ -1280,7 +1282,44 @@ public class BookmarkTest {
             Criteria.checkThat(activityTab, Matchers.notNullValue());
             Criteria.checkThat(activityTab.getUrl(), Matchers.notNullValue());
             Criteria.checkThat(activityTab.getUrl(), Matchers.is(mTestUrlA));
+            Criteria.checkThat(activityTab.isIncognito(), Matchers.is(false));
         });
+        pressBack();
+        onView(withText("Reading list")).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @SmallTest
+    @Features.EnableFeatures({ChromeFeatureList.READ_LATER + "<Study"})
+    @CommandLineFlags.
+    Add({"force-fieldtrials=Study/Group", "force-fieldtrial-params=Study.Group:use_cct/false"})
+    public void testReadingListOpenInIncognitoTab() throws Exception {
+        addReadingListBookmark(TEST_PAGE_TITLE_GOOGLE, mTestUrlA);
+        BookmarkPromoHeader.forcePromoStateForTests(SyncPromoState.NO_PROMO);
+        mActivityTestRule.loadUrlInNewTab("about:blank", /*incognito=*/true);
+        openBookmarkManager();
+        CriteriaHelper.pollUiThread(() -> mBookmarkModel.getReadingListItem(mTestUrlA) != null);
+
+        // Open the "Reading list" folder.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mManager.openFolder(mBookmarkModel.getRootFolderId()));
+        onView(withText("Reading list")).perform(click());
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+        View readingListRow = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        Assert.assertEquals("The 2nd view should be reading list.", BookmarkType.READING_LIST,
+                getIdByPosition(1).getType());
+        TestThreadUtils.runOnUiThreadBlocking(() -> TouchCommon.singleClickView(readingListRow));
+
+        ChromeTabbedActivity activity = waitForTabbedActivity();
+        CriteriaHelper.pollUiThread(() -> {
+            Tab activityTab = activity.getActivityTab();
+            Criteria.checkThat(activityTab, Matchers.notNullValue());
+            Criteria.checkThat(activityTab.getUrl(), Matchers.notNullValue());
+            Criteria.checkThat(activityTab.getUrl(), Matchers.is(mTestUrlA));
+            Criteria.checkThat(activityTab.isIncognito(), Matchers.is(true));
+        });
+        pressBack();
+        onView(withText("Reading list")).check(matches(isDisplayed()));
     }
 
     @Test
@@ -1426,8 +1465,7 @@ public class BookmarkTest {
         // Verify that bookmark 1 is editable (so more button can be triggered) but not movable.
         BookmarkId partnerBookmarkId1 = getReorderAdapter().getIdByPosition(0);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            BookmarkBridge.BookmarkItem partnerBookmarkItem1 =
-                    mBookmarkModel.getBookmarkById(partnerBookmarkId1);
+            BookmarkItem partnerBookmarkItem1 = mBookmarkModel.getBookmarkById(partnerBookmarkId1);
             partnerBookmarkItem1.forceEditableForTesting();
             Assert.assertEquals("Incorrect bookmark type for item 1", BookmarkType.PARTNER,
                     partnerBookmarkId1.getType());
@@ -1447,8 +1485,7 @@ public class BookmarkTest {
         // Verify that bookmark 2 is not movable.
         BookmarkId partnerBookmarkId2 = getReorderAdapter().getIdByPosition(1);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            BookmarkBridge.BookmarkItem partnerBookmarkItem2 =
-                    mBookmarkModel.getBookmarkById(partnerBookmarkId2);
+            BookmarkItem partnerBookmarkItem2 = mBookmarkModel.getBookmarkById(partnerBookmarkId2);
             partnerBookmarkItem2.forceEditableForTesting();
             Assert.assertEquals("Incorrect bookmark type for item 2", BookmarkType.PARTNER,
                     partnerBookmarkId2.getType());
@@ -1831,17 +1868,12 @@ public class BookmarkTest {
         BookmarkTestUtil.waitForBookmarkModelLoaded();
 
         if (mActivityTestRule.getActivity().isTablet()) {
-            TestThreadUtils.runOnUiThreadBlocking(() -> {
-                BookmarkUtils.showBookmarkManager(
-                        null, new BookmarkId(0, BookmarkType.READING_LIST), /*isIncognito=*/false);
-            });
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> ReadingListUtils.showReadingList(/*isIncognito=*/false));
         } else {
             mBookmarkActivity = ApplicationTestUtils.waitForActivityWithClass(
-                    BookmarkActivity.class, Stage.CREATED, () -> {
-                        BookmarkUtils.showBookmarkManager(null,
-                                new BookmarkId(0, BookmarkType.READING_LIST),
-                                /*isIncognito=*/false);
-                    });
+                    BookmarkActivity.class, Stage.CREATED,
+                    () -> ReadingListUtils.showReadingList(/*isIncognito=*/false));
         }
 
         onView(withText("Reading list")).check(matches(isDisplayed()));

@@ -931,7 +931,6 @@ static_library("ui") {
       "//components/translate/content/android",
       "//components/webauthn/android",
       "//content/public/browser",
-      "//crypto:platform",
       "//device/vr/buildflags",
       "//services/device/public/cpp/usb",
       "//services/device/public/mojom:usb",
@@ -1510,6 +1509,8 @@ static_library("ui") {
       "webui/extensions/extensions_ui.h",
       "webui/favicon_source.cc",
       "webui/favicon_source.h",
+      "webui/feed/feed_handler.cc",
+      "webui/feed/feed_handler.h",
       "webui/feed/feed_ui.cc",
       "webui/feed/feed_ui.h",
       "webui/feed/feed_ui_config.cc",
@@ -1767,6 +1768,7 @@ static_library("ui") {
       "//chrome/browser/ui/commander:fuzzy_finder",
       "//chrome/browser/ui/webui/access_code_cast:mojo_bindings",
       "//chrome/browser/ui/webui/app_service_internals:mojo_bindings",
+      "//chrome/browser/ui/webui/feed:mojo_bindings",
       "//chrome/browser/ui/webui/image_editor:mojo_bindings",
       "//chrome/browser/ui/webui/internals/user_education:mojo_bindings",
       "//chrome/browser/ui/webui/new_tab_page:mojo_bindings",
@@ -2057,6 +2059,8 @@ static_library("ui") {
       "app_list/search/games/game_result.h",
       "app_list/search/help_app_provider.cc",
       "app_list/search/help_app_provider.h",
+      "app_list/search/help_app_zero_state_provider.cc",
+      "app_list/search/help_app_zero_state_provider.h",
       "app_list/search/keyboard_shortcut_data.cc",
       "app_list/search/keyboard_shortcut_data.h",
       "app_list/search/keyboard_shortcut_provider.cc",
@@ -3969,6 +3973,8 @@ static_library("ui") {
       "webui/webui_js_error/webui_js_error_ui.cc",
       "webui/webui_js_error/webui_js_error_ui.h",
     ]
+    deps += [ "//third_party/boringssl" ]
+    configs += [ "//build/config/linux/nss" ]
     if (use_aura) {
       deps += [ "//third_party/fontconfig" ]
     }

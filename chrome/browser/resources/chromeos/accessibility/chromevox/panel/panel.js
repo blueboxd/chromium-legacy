@@ -5,7 +5,7 @@
 /**
  * @fileoverview The ChromeVox panel and menus.
  */
-import {BrailleCommandData} from '/chromevox/common/braille_command_data.js';
+import {BrailleCommandData} from '/chromevox/common/braille/braille_command_data.js';
 import {CommandStore} from '/chromevox/common/command_store.js';
 import {GestureCommandData} from '/chromevox/common/gesture_command_data.js';
 import {KeyMap} from '/chromevox/common/key_map.js';
@@ -305,9 +305,9 @@ export class Panel extends PanelInterface {
       const bkgnd = chrome.extension.getBackgroundPage();
       const range = bkgnd.ChromeVoxState.instance.getCurrentRange();
       const node = range ? range.start.node : null;
+      const eventSourceState = await BackgroundBridge.EventSourceState.get();
       const touchScreen =
-          (bkgnd['EventSourceState']['get']() ===
-               EventSourceType.TOUCH_GESTURE ||
+          (eventSourceState === EventSourceType.TOUCH_GESTURE ||
            this.mockTouchGestureSourceForTesting_);
 
       // Build the top-level menus.

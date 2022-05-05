@@ -5,8 +5,9 @@
 /**
  * @fileoverview ChromeVox options page.
  */
-import {BrailleTable} from '/chromevox/background/braille/braille_table.js';
 import {AbstractTts} from '/chromevox/common/abstract_tts.js';
+import {BrailleTable} from '/chromevox/common/braille/braille_table.js';
+import {ExtensionBridge} from '/chromevox/common/extension_bridge.js';
 import {BluetoothBrailleDisplayUI} from '/chromevox/options/bluetooth_braille_display_ui.js';
 
 /** @const {string} */
@@ -242,12 +243,12 @@ export class OptionsPage {
   /**
    * Populates the voices select with options.
    */
-  static populateVoicesSelect() {
+  static async populateVoicesSelect() {
     const select = $('voices');
 
-    function setVoiceList() {
+    async function setVoiceList() {
       const selectedVoice =
-          chrome.extension.getBackgroundPage()['getCurrentVoice']();
+          await BackgroundBridge.ChromeVoxBackground.getCurrentVoice();
       const addVoiceOption = (visibleVoiceName, voiceName) => {
         const option = document.createElement('option');
         option.voiceName = voiceName;
@@ -292,7 +293,7 @@ export class OptionsPage {
     }
 
     window.speechSynthesis.onvoiceschanged = setVoiceList;
-    setVoiceList();
+    await setVoiceList();
 
     select.addEventListener('change', function(evt) {
       const selIndex = select.selectedIndex;

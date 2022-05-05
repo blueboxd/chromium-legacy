@@ -10,13 +10,13 @@ import {BrailleBackground} from '/chromevox/background/braille/braille_backgroun
 import {BrailleCaptionsBackground} from '/chromevox/background/braille/braille_captions_background.js';
 import {ChromeVoxBackground} from '/chromevox/background/classic_background.js';
 import {Color} from '/chromevox/background/color.js';
-import {CustomAutomationEvent} from '/chromevox/background/custom_automation_event.js';
 import {DesktopAutomationInterface} from '/chromevox/background/desktop_automation_interface.js';
 import {GestureInterface} from '/chromevox/background/gesture_interface.js';
 import {ChromeVoxPrefs} from '/chromevox/background/prefs.js';
 import {SmartStickyMode} from '/chromevox/background/smart_sticky_mode.js';
 import {AbstractTts} from '/chromevox/common/abstract_tts.js';
 import {CommandStore} from '/chromevox/common/command_store.js';
+import {CustomAutomationEvent} from '/chromevox/common/custom_automation_event.js';
 import {TypingEcho} from '/chromevox/common/editable_text_base.js';
 import {GestureGranularity} from '/chromevox/common/gesture_command_data.js';
 import {ChromeVoxKbHandler} from '/chromevox/common/keyboard_handler.js';
@@ -70,7 +70,7 @@ export class CommandHandler extends CommandHandlerInterface {
 
     // Check for loss of focus which results in us invalidating our current
     // range. Note this call is synchronous.
-    chrome.automation.getFocus(function(focusedNode) {
+    chrome.automation.getFocus((focusedNode) => {
       const cur = ChromeVoxState.instance.currentRange;
       if (cur && !cur.isValid()) {
         ChromeVoxState.instance.setCurrentRange(
@@ -377,7 +377,7 @@ export class CommandHandler extends CommandHandlerInterface {
     }
 
     // Require a current range.
-    if (!ChromeVoxState.instance.currentRange_) {
+    if (!ChromeVoxState.instance.currentRange) {
       if (!ChromeVoxState.instance.talkBackEnabled) {
         new Output()
             .withString(Msgs.getMsg(
@@ -1507,7 +1507,7 @@ export class CommandHandler extends CommandHandlerInterface {
    * Performs global initialization.
    */
   init() {
-    ChromeVoxKbHandler.commandHandler = this.onCommand.bind(this);
+    ChromeVoxKbHandler.commandHandler = (command) => this.onCommand(command);
 
     chrome.commandLinePrivate.hasSwitch(
         'enable-experimental-accessibility-language-detection', (enabled) => {

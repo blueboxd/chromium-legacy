@@ -154,10 +154,15 @@ struct PopupView: View {
           matchIndex, match in
           let indexPath = IndexPath(row: matchIndex, section: sectionIndex)
           let highlighted = indexPath == model.highlightedMatchIndexPath
+          // UI Variation 1 always has separators. Variation 2 doesn't have
+          // one on the last row in a section.
+          let shouldDisplayCustomSeparator =
+            !highlighted && (matchIndex < section.matches.count - 1 || popupUIVariation == .one)
 
           PopupMatchRowView(
             match: match,
             isHighlighted: highlighted,
+            toolbarConfiguration: toolbarConfiguration,
             selectionHandler: {
               model.delegate?.autocompleteResultConsumer(
                 model, didSelectRow: UInt(matchIndex), inSection: UInt(sectionIndex))
@@ -167,7 +172,7 @@ struct PopupView: View {
                 model, didTapTrailingButtonForRow: UInt(matchIndex),
                 inSection: UInt(sectionIndex))
             },
-            shouldDisplayCustomSeparator: (!highlighted && matchIndex < section.matches.count - 1)
+            shouldDisplayCustomSeparator: shouldDisplayCustomSeparator
           )
           .id(indexPath)
           .deleteDisabled(!match.supportsDeletion)
@@ -255,9 +260,8 @@ struct PopupView: View {
       if popupUIVariation == .one {
         if index == 0 {
           // Additional space between omnibox and top section.
-          let firstSectionHeader =
-            Color.cr_primaryBackground.frame(
-              width: geometry.size.width, height: -Dimensions.VariationOne.hiddenTopContentInset)
+          let firstSectionHeader = Color(toolbarConfiguration.backgroundColor).frame(
+            width: geometry.size.width, height: -Dimensions.VariationOne.hiddenTopContentInset)
           if #available(iOS 15.0, *) {
             // Additional padding is added on iOS 15, which needs to be cancelled here.
             firstSectionHeader.padding([.top, .bottom], -6)
@@ -267,12 +271,12 @@ struct PopupView: View {
         } else if index == 1 {
           // Spacing and separator below the top (pedal) section is inserted as
           // a header in the second section.
-          let separatorColor = (colorScheme == .dark) ? Color.cr_grey700 : Color.cr_grey200
+          let separatorColor = (colorScheme == .dark) ? Color.grey700 : Color.grey200
           let pedalSectionSeparator =
             separatorColor
             .frame(width: geometry.size.width, height: 0.5)
             .padding(Dimensions.VariationOne.pedalSectionSeparatorPadding)
-            .background(Color.cr_primaryBackground)
+            .background(Color(toolbarConfiguration.backgroundColor))
 
           if #available(iOS 15.0, *) {
             pedalSectionSeparator.padding([.top, .bottom], -6)
@@ -319,15 +323,28 @@ struct PopupView: View {
     // mode color. This bug is fixed in iOS 15, but until then, a workaround
     // color with the dark mode + high contrast color specified is used.
     if #available(iOS 15, *) {
-      backgroundColor =
-        (popupUIVariation == .one) ? Color.cr_primaryBackground : Color.cr_groupedPrimaryBackground
+      switch popupUIVariation {
+      case .one:
+        backgroundColor = Color(toolbarConfiguration.backgroundColor)
+      case .two:
+        backgroundColor = .groupedPrimaryBackground
+      }
     } else {
-      backgroundColor =
-        (popupUIVariation == .one)
-        ? Color("primary_background_color_swiftui_ios14")
-        : Color("grouped_primary_background_color_swiftui_ios14")
+      switch popupUIVariation {
+      case .one:
+        backgroundColor = Color("background_color_swiftui_ios14")
+      case .two:
+        backgroundColor = Color("grouped_primary_background_color_swiftui_ios14")
+      }
     }
     return backgroundColor.edgesIgnoringSafeArea(.all)
+  }
+
+  /// The toolbar configuration for the current popup view.
+  /// ToolbarConfiguration's background color doesn't actually depend on
+  /// the style any more, as normal vs. incognito is handled via colorsets.
+  var toolbarConfiguration: ToolbarConfiguration {
+    ToolbarConfiguration(style: .NORMAL)
   }
 
   func onAppear() {

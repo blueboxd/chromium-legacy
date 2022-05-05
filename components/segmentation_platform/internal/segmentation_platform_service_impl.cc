@@ -18,9 +18,7 @@
 #include "base/time/clock.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/segmentation_platform/internal/constants.h"
-#include "components/segmentation_platform/internal/database/signal_storage_config.h"
 #include "components/segmentation_platform/internal/database/storage_service.h"
-#include "components/segmentation_platform/internal/execution/model_execution_manager.h"
 #include "components/segmentation_platform/internal/platform_options.h"
 #include "components/segmentation_platform/internal/proto/model_prediction.pb.h"
 #include "components/segmentation_platform/internal/scheduler/model_execution_scheduler_impl.h"
@@ -87,11 +85,8 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
                                                  all_segment_ids_.end());
 
   // Construct signal processors.
-  signal_handler_.Initialize(
-      storage_service_->signal_database(),
-      storage_service_->segment_info_database(),
-      storage_service_->ukm_data_manager(), init_params->history_service,
-      storage_service_->default_model_manager(), segment_id_vec);
+  signal_handler_.Initialize(storage_service_.get(),
+                             init_params->history_service, segment_id_vec);
 
   for (const auto& config : configs_) {
     segment_selectors_[config->segmentation_key] =
@@ -195,8 +190,6 @@ void SegmentationPlatformServiceImpl::OnSegmentationModelUpdated(
   DCHECK(metadata_utils::ValidateSegmentInfoMetadataAndFeatures(segment_info) ==
          metadata_utils::ValidationResult::kValidationSuccess);
 
-  storage_service_->signal_storage_config()->OnSignalCollectionStarted(
-      segment_info.model_metadata());
   signal_handler_.OnSignalListUpdated();
 
   execution_service_.OnNewModelInfoReady(segment_info);

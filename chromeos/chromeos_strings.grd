@@ -2700,20 +2700,20 @@ Try tapping the mic to ask me anything.
         Retry
       </message>
       <!-- Landing page -->
-      <message name="IDS_SHIMLESS_RMA_LANDING_PAGE_TITLE" translateable="false" desc="Title for the landing page at the start of RMA.">
+      <message name="IDS_SHIMLESS_RMA_LANDING_PAGE_TITLE" desc="Title for the landing page at the start of RMA.">
         <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> repair
       </message>
-      <message name="IDS_SHIMLESS_RMA_AUTHORIZED_TECH_ONLY_WARNING" translateable="false" desc="Warning that RMA is only for qualified technicians.">
-        This repair process is intended for a trained repair technicians. Start only after replacing the malfunctioning components.
+      <message name="IDS_SHIMLESS_RMA_AUTHORIZED_TECH_ONLY_WARNING" desc="Warning that RMA is only for qualified technicians.">
+        This repair process is intended for a trained repair technician. Start only after replacing the malfunctioning components.
       </message>
-      <message name="IDS_SHIMLESS_RMA_VALIDATING_COMPONENTS" translateable="false" desc="Checking that device components are approved for this device.">
+      <message name="IDS_SHIMLESS_RMA_VALIDATING_COMPONENTS" desc="Checking that device components are approved for this device.">
         Validating components...
       </message>
-      <message name="IDS_SHIMLESS_RMA_VALIDATED_COMPONENTS_SUCCESS" translateable="false" desc="Successfully checked that device components are approved for this device.">
+      <message name="IDS_SHIMLESS_RMA_VALIDATED_COMPONENTS_SUCCESS" desc="Successfully checked that device components are approved for this device.">
         Components are installed correctly.
       </message>
-      <message name="IDS_SHIMLESS_RMA_VALIDATED_COMPONENTS_FAIL" translateable="false" desc="Validation check found that device components are NOT approved for this device.">
-        <ph name="LINK_BEGIN">&lt;a id="unqualifiedComponentsLink"&gt;</ph>Unqualified components<ph name="LINK_END">&lt;/a&gt;</ph> found. To make sure all qualified components are identified, update your ChromeOS to the latest version.
+      <message name="IDS_SHIMLESS_RMA_VALIDATED_COMPONENTS_FAIL" desc="Validation check found that device components are NOT approved for this device.">
+        <ph name="LINK_BEGIN">&lt;a id="unqualifiedComponentsLink"&gt;</ph>Unqualified components<ph name="LINK_END">&lt;/a&gt;</ph> detected. If you choose to confirm this has been installed, please do so now.
       </message>
       <message name="IDS_SHIMLESS_RMA_GET_STARTED_BUTTON_LABEL" desc="The label for the button to start the RMA process.">
         Get started
@@ -2766,6 +2766,9 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SHIMLESS_RMA_NEW_OWNER_DESCRIPTION" desc="Detailed description of when to choose return to a new owner.">
         Select this option if the device is being restocked or refurbished for distribution to a new customer.
       </message>
+      <message name="IDS_SHIMLESS_RMA_NOT_SURE_OWNER" translateable="false" desc="Text shown next to the radio button for when the technician is not sure whether the device goes to the same owner or a different owner.">
+        Not sure
+      </message>
       <!-- Choose write protect disable method page -->
       <message name="IDS_SHIMLESS_RMA_CHOOSE_WP_DISABLE_METHOD_PAGE_TITLE" translateable="false" desc="Title for the page offering the options for disabling write protect on this device. Disabling write protection allows the new components to be calibrated and the system to be updated with information about them.">
         Select how you would like to disable write-protect
@@ -2791,6 +2794,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_SHIMLESS_RMA_RSU_CODE_LABEL" desc="Label for the RSU code input box.">
         Enter the 8-character unlock code
+      </message>
+      <message name="IDS_SHIMLESS_RMA_RSU_CODE_ERROR_LABEL" desc="Label shown for an incorrect RSU code.">
+        Incorrect code
       </message>
       <message name="IDS_SHIMLESS_RMA_RSU_CHALLENGE_DIALOG_TITLE" translateable="false" desc="Title for the dialog that shows the RSU challenge code link.">
         Go to this link for your RSU unlock code
@@ -3274,6 +3280,18 @@ Try tapping the mic to ask me anything.
       <message name="IDS_ASH_QUICK_ANSWERS_VIEW_REPORT_QUERY_REPORT_LABEL" desc="Description text of the report query button for the Quick Answers view.">
         Report this query
       </message>
+
+      <!-- Feedback Tool-->
+      <message name="IDS_FEEDBACK_TOOL_CONTINUE_BUTTON_LABEL" translateable="false" desc="Label of the continue button.">
+        Continue
+      </message>
+      <message name="IDS_FEEDBACK_TOOL_DESCRIPTION_LABEL" translateable="false" desc="Label of the text box where users can describe a problem they are having">
+        Description
+      </message>
+      <message name="IDS_FEEDBACK_TOOL_PAGE_TITLE" translateable="false" desc="Label showing the title of the feedback tool before a report has been sent">
+        Send feedback
+      </message>
+      <!-- End of Feedback Tool -->
     </messages>
   </release>
 </grit>

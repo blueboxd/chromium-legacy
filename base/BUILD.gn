@@ -444,7 +444,6 @@ mixed_component("base") {
     "message_loop/message_pump_glib.cc",
     "message_loop/message_pump_glib.h",
     "message_loop/message_pump_type.h",
-    "message_loop/timer_slack.cc",
     "message_loop/timer_slack.h",
     "message_loop/work_id_provider.cc",
     "message_loop/work_id_provider.h",
@@ -3095,7 +3094,6 @@ test("base_unittests") {
     "memory/weak_ptr_unittest.cc",
     "message_loop/message_pump_glib_unittest.cc",
     "message_loop/message_pump_unittest.cc",
-    "message_loop/timer_slack_unittest.cc",
     "message_loop/work_id_provider_unittest.cc",
     "metrics/bucket_ranges_unittest.cc",
     "metrics/crc32_unittest.cc",
@@ -3993,6 +3991,7 @@ if (is_android) {
     ]
 
     deps = [
+      ":jni_java",
       "//build/android:build_java",
       "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
       "//third_party/androidx:androidx_annotation_annotation_experimental_java",
@@ -4001,8 +4000,6 @@ if (is_android) {
       "//third_party/androidx:androidx_core_core_java",
       "//third_party/androidx:androidx_multidex_multidex_java",
     ]
-
-    public_deps = [ ":jni_java" ]
 
     sources = [
       "android/java/src/org/chromium/base/ActivityState.java",
@@ -4173,6 +4170,7 @@ if (is_android) {
     deps = [
       ":base_java",
       ":base_java_test_support",
+      "//base:jni_java",
       "//base/test:test_support_java",
       "//build/android:build_java",
       "//third_party/android_support_test_runner:runner_java",
@@ -4229,6 +4227,7 @@ if (is_android) {
 
     deps = [
       ":base_java",
+      "//base:jni_java",
       "//build/android:build_java",
       "//third_party/android_sdk:android_test_base_java",
       "//third_party/android_sdk:android_test_mock_java",
@@ -4421,7 +4420,6 @@ if (is_android) {
       ":base_java_process_launcher_test_support",
       ":base_java_test_support",
       ":base_junit_test_support",
-      ":jni_java",
       "//base/test:test_support_java",
       "//build/android:build_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
@@ -4461,6 +4459,7 @@ if (is_android) {
 
     deps = [
       "//base:base_java",
+      "//base:jni_java",
       "//build/android:build_java",
     ]
   }
@@ -4470,6 +4469,7 @@ if (is_android) {
 
     deps = [
       ":base_java",
+      "//base:jni_java",
       "//build/android:build_java",
     ]
 

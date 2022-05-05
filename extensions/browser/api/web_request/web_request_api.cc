@@ -289,8 +289,7 @@ bool FromHeaderDictionary(const base::DictionaryValue* header_value,
     *out_value = value->GetString();
   } else if (binary_value) {
     if (!binary_value->is_list() ||
-        !helpers::CharListToString(binary_value->GetListDeprecated(),
-                                   out_value)) {
+        !helpers::CharListToString(binary_value->GetList(), out_value)) {
       return false;
     }
   }
@@ -315,8 +314,8 @@ void SendOnMessageEventOnUI(
   if (!ExtensionsBrowserClient::Get()->IsValidContext(browser_context))
     return;
 
-  std::unique_ptr<base::ListValue> event_args(new base::ListValue);
-  event_args->Append(
+  std::vector<base::Value> event_args;
+  event_args.emplace_back(
       base::Value::FromUniquePtrValue(event_details->GetAndClearDict()));
 
   EventRouter* event_router = EventRouter::Get(browser_context);
@@ -340,8 +339,8 @@ void SendOnMessageEventOnUI(
   }
 
   auto event = std::make_unique<Event>(
-      histogram_value, event_name, std::move(*event_args).TakeListDeprecated(),
-      browser_context, GURL(), EventRouter::USER_GESTURE_UNKNOWN,
+      histogram_value, event_name, std::move(event_args), browser_context,
+      GURL(), EventRouter::USER_GESTURE_UNKNOWN,
       std::move(event_filtering_info));
   event_router->DispatchEventToExtension(extension_id, std::move(event));
 }
@@ -974,7 +973,7 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
     if (it.key() == "urls") {
       if (!it.value().is_list())
         return false;
-      for (const auto& item : it.value().GetListDeprecated()) {
+      for (const auto& item : it.value().GetList()) {
         std::string url;
         URLPattern pattern(URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS |
                            URLPattern::SCHEME_FTP | URLPattern::SCHEME_FILE |
@@ -996,7 +995,7 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
     } else if (it.key() == "types") {
       if (!it.value().is_list())
         return false;
-      for (const auto& type : it.value().GetListDeprecated()) {
+      for (const auto& type : it.value().GetList()) {
         std::string type_str;
         if (type.is_string())
           type_str = type.GetString();
@@ -2206,7 +2205,7 @@ std::unique_ptr<base::DictionaryValue> SummarizeResponseDelta(
     modified_headers->Append(base::Value(
         helpers::CreateHeaderDictionary(iter.name(), iter.value())));
   }
-  if (!modified_headers->GetListDeprecated().empty()) {
+  if (!modified_headers->GetList().empty()) {
     details->Set(activity_log::kModifiedRequestHeadersKey,
                  std::move(modified_headers));
   }
@@ -2215,7 +2214,7 @@ std::unique_ptr<base::DictionaryValue> SummarizeResponseDelta(
   for (const std::string& header : delta.deleted_request_headers) {
     deleted_headers->Append(header);
   }
-  if (!deleted_headers->GetListDeprecated().empty()) {
+  if (!deleted_headers->GetList().empty()) {
     details->Set(activity_log::kDeletedRequestHeadersKey,
                  std::move(deleted_headers));
   }
@@ -2830,7 +2829,7 @@ WebRequestInternalEventHandledFunction::Run() {
       }
       EXTENSION_FUNCTION_VALIDATE(headers_value);
 
-      for (const base::Value& elem : headers_value->GetListDeprecated()) {
+      for (const base::Value& elem : headers_value->GetList()) {
         EXTENSION_FUNCTION_VALIDATE(elem.is_dict());
         const base::DictionaryValue& header_value =
             base::Value::AsDictionaryValue(elem);

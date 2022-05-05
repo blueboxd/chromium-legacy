@@ -19,15 +19,15 @@ struct PopupMatchRowView: View {
     static let actionButtonOuterPadding = EdgeInsets(top: 2, leading: 0, bottom: 2, trailing: 0)
     static let leadingSpacing: CGFloat = 60
     static let minHeight: CGFloat = 58
-    static let maxHeight: CGFloat = 98
+    static let maxHeight: CGFloat = 320
     static let padding = EdgeInsets(top: 9, leading: 0, bottom: 9, trailing: 16)
   }
 
-  @Environment(\.colorScheme) var colorScheme: ColorScheme
   @Environment(\.popupUIVariation) var uiVariation: PopupUIVariation
 
   let match: PopupMatch
   let isHighlighted: Bool
+  let toolbarConfiguration: ToolbarConfiguration
   let selectionHandler: () -> Void
   let trailingButtonHandler: () -> Void
 
@@ -68,7 +68,7 @@ struct PopupMatchRowView: View {
   /// Enable this to tell the row it should display its own custom separator at the bottom.
   let shouldDisplayCustomSeparator: Bool
   var customSeparatorColor: Color {
-    (colorScheme == .dark) ? .cr_grey700 : .cr_grey200
+    uiVariation == .one ? .separator : .grey700
   }
   @ViewBuilder
   var customSeparator: some View {
@@ -93,7 +93,7 @@ struct PopupMatchRowView: View {
       if isHighlighted {
         LinearGradient(gradient: Colors.highlightingGradient, startPoint: .top, endPoint: .bottom)
       } else if self.isPressed {
-        Color.cr_tableRowViewHighlight
+        Color.tableRowViewHighlight
       }
 
       button
@@ -142,7 +142,7 @@ struct PopupMatchRowView: View {
         Spacer()
         if match.isAppendable || match.isTabMatch {
           PopupMatchTrailingButton(match: match, action: trailingButtonHandler)
-            .foregroundColor(isHighlighted ? foregroundColorPrimary : .cr_blue)
+            .foregroundColor(isHighlighted ? foregroundColorPrimary : .chromeBlue)
         }
       }
       .padding(Dimensions.padding)
@@ -151,7 +151,12 @@ struct PopupMatchRowView: View {
   }
 
   var backgroundColor: Color {
-    (uiVariation == .one) ? .cr_primaryBackground : .cr_groupedSecondaryBackground
+    switch uiVariation {
+    case .one:
+      return Color(toolbarConfiguration.backgroundColor)
+    case .two:
+      return .groupedSecondaryBackground
+    }
   }
 
   var foregroundColorPrimary: Color {

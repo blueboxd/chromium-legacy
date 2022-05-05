@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.IncognitoCCTCallerId;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
-import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.commerce.shopping_list.ShoppingFeatures;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
@@ -47,11 +46,13 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.subscriptions.CommerceSubscriptionsServiceFactory;
 import org.chromium.chrome.browser.subscriptions.SubscriptionsManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.bookmarks.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -342,7 +343,8 @@ public class BookmarkUtils {
 
         // Tablet.
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)) {
-            openUrl(context, url, activity == null ? null : activity.getComponentName());
+            openUrl(context, url, activity == null ? null : activity.getComponentName(),
+                    /*launchType=*/null, isIncognito);
             return;
         }
 
@@ -475,7 +477,8 @@ public class BookmarkUtils {
                     isIncognito);
             model.setReadStatusForReadingList(bookmarkItem.getUrl(), true);
         } else {
-            openUrl(context, bookmarkItem.getUrl().getSpec(), openBookmarkComponentName);
+            openUrl(context, bookmarkItem.getUrl().getSpec(), openBookmarkComponentName,
+                    /*launchType=*/null, isIncognito);
         }
         return true;
     }
@@ -527,12 +530,33 @@ public class BookmarkUtils {
         return null;
     }
 
-    private static void openUrl(Context context, String url, ComponentName componentName) {
+    /**
+     * Opens a url.
+     *
+     * @param url Url to open.
+     * @param componentName Name of the component opening the URL. If null, {@link
+     *         ChromeTabbedActivity} is used.
+     * @param launchType If not null, url is opened in a new tab with the specified {@link
+     *         TabLaunchType}.
+     */
+    private static void openUrl(Context context, String url, ComponentName componentName,
+            @Nullable @TabLaunchType Integer launchType, boolean isOffTheRecord) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         intent.putExtra(
                 Browser.EXTRA_APPLICATION_ID, context.getApplicationContext().getPackageName());
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(IntentHandler.EXTRA_PAGE_TRANSITION_TYPE, PageTransition.AUTO_BOOKMARK);
+
+        if (launchType != null) {
+            IntentHandler.setTabLaunchType(intent, launchType);
+            if (isOffTheRecord) {
+                intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true);
+            } else {
+                intent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
+            }
+        } else {
+            intent.putExtra(IntentHandler.EXTRA_INCOGNITO_MODE, isOffTheRecord);
+        }
 
         if (componentName != null) {
             ChromeTabbedActivity.setNonAliasedComponent(intent, componentName);
@@ -551,7 +575,11 @@ public class BookmarkUtils {
         if (ReadingListFeatures.shouldUseCustomTab()) {
             openReadingListInCustomTab(context, url, isOffTheRecord);
         } else {
-            openUrl(context, url, componentName);
+            openUrl(context, url, componentName,
+                    DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
+                            ? null
+                            : TabLaunchType.FROM_READING_LIST,
+                    isOffTheRecord);
         }
     }
 

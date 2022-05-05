@@ -13,6 +13,16 @@
 # Tests that fail in legacy but pass in NG
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/fetch/metadata/generated/css-images.https.sub.tentative.html [ Timeout ]
+crbug.com/626703 external/wpt/fetch/metadata/generated/css-images.sub.tentative.html [ Timeout ]
+crbug.com/626703 external/wpt/fetch/metadata/generated/element-link-icon.https.sub.html [ Timeout ]
+crbug.com/626703 external/wpt/fetch/metadata/generated/element-link-icon.sub.html [ Timeout ]
+crbug.com/626703 external/wpt/fetch/metadata/generated/element-video-poster.https.sub.html [ Timeout ]
+crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/fetch/metadata/generated/css-images.https.sub.tentative.html [ Timeout ]
+crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/fetch/metadata/generated/css-images.sub.tentative.html [ Timeout ]
+crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/fetch/metadata/generated/element-link-icon.https.sub.html [ Timeout ]
+crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/fetch/metadata/generated/element-link-icon.sub.html [ Timeout ]
+crbug.com/626703 virtual/plz-dedicated-worker/external/wpt/fetch/metadata/generated/element-video-poster.https.sub.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-writing-modes/abs-pos-replaced-vrl-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-039.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-multicol/column-fill-balance-orthog-block-001.html [ Failure ]
@@ -1343,6 +1353,10 @@ crbug.com/626703 external/wpt/css/CSS2/normal-flow/min-height-applies-to-014.xht
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/min-width-applies-to-005.xht [ Failure ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/min-width-applies-to-006.xht [ Failure ]
 crbug.com/711807 external/wpt/css/CSS2/normal-flow/min-width-applies-to-014.xht [ Failure ]
+
+# external/wpt/css/CSS2/stacking-context/
+crbug.com/836244 external/wpt/css/CSS2/stacking-context/opacity-affects-block-in-inline.html [ Failure ]
+crbug.com/764458 external/wpt/css/CSS2/stacking-context/zindex-affects-block-in-inline.html [ Failure ]
 
 ### external/wpt/css/CSS2/tables/
 crbug.com/958381 external/wpt/css/CSS2/tables/border-collapse-dynamic-row-002.xht [ Failure ]

@@ -9,12 +9,14 @@
 #include "base/path_service.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_utils.h"
-#include "pdf/ppapi_migration/bitmap.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImage.h"
-#include "ui/gfx/geometry/skia_conversions.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkSurface.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace chrome_pdf {
 
@@ -44,10 +46,15 @@ testing::AssertionResult MatchesPngFile(
   return testing::AssertionSuccess();
 }
 
-SkBitmap CreateSkiaImageForTesting(const gfx::Size& size, SkColor color) {
-  SkBitmap bitmap = CreateN32PremulSkBitmap(gfx::SizeToSkISize(size));
-  bitmap.eraseColor(color);
-  return bitmap;
+sk_sp<SkSurface> CreateSkiaSurfaceForTesting(const gfx::Size& size,
+                                             SkColor color) {
+  auto surface = SkSurface::MakeRasterN32Premul(size.width(), size.height());
+  surface->getCanvas()->clear(color);
+  return surface;
+}
+
+sk_sp<SkImage> CreateSkiaImageForTesting(const gfx::Size& size, SkColor color) {
+  return CreateSkiaSurfaceForTesting(size, color)->makeImageSnapshot();
 }
 
 }  // namespace chrome_pdf

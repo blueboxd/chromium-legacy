@@ -130,6 +130,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kToolbarUseHardwareBitmapDraw,
     &features::kWebNfc,
     &features::kIncognitoNtpRevamp,
+    &feature_engagement::kEnableIPH,
     &feature_engagement::kEnableAutomaticSnooze,
     &feature_engagement::kIPHNewTabPageHomeButtonFeature,
     &feature_engagement::kIPHSnooze,
@@ -240,6 +241,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kLensCameraAssistedSearch,
     &kLensOnQuickActionSearchWidget,
     &kLocationBarModelOptimizations,
+    &kMostRecentTabOnBackgroundCloseTab,
     &kNewWindowAppMenu,
     &kNotificationPermissionVariant,
     &kPageAnnotationsService,
@@ -347,6 +349,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &page_info::kPageInfoDiscoverability,
     &password_manager::features::kBiometricTouchToFill,
     &password_manager::features::kLeakDetectionUnauthenticated,
+    &password_manager::features::kPasswordDomainCapabilitiesFetching,
     &password_manager::features::kPasswordChange,
     &password_manager::features::kPasswordScriptsFetching,
     &password_manager::features::kRecoverFromNeverSaveAndroid,
@@ -664,6 +667,9 @@ const base::Feature kSearchEnginePromoNewDevice{
 
 const base::Feature kSearchEnginePromoNewDeviceV2{
     "SearchEnginePromo.NewDeviceVer2", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kMostRecentTabOnBackgroundCloseTab{
+    "MostRecentTabOnBackgroundCloseTab", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNewWindowAppMenu{"NewWindowAppMenu",
                                       base::FEATURE_ENABLED_BY_DEFAULT};

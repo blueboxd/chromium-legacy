@@ -60,8 +60,10 @@ String ReadyStateToString(const MediaStreamSource::ReadyState& ready_state) {
   return String();
 }
 
-MediaStreamTrack* MediaStreamTrack::Create(ScriptState* script_state,
-                                           const TransferredValues& data) {
+// static
+MediaStreamTrack* MediaStreamTrack::FromTransferredState(
+    ScriptState* script_state,
+    const TransferredValues& data) {
   auto* window =
       DynamicTo<LocalDOMWindow>(ExecutionContext::From(script_state));
   if (!window)
@@ -80,7 +82,8 @@ MediaStreamTrack* MediaStreamTrack::Create(ScriptState* script_state,
   // supporting BrowserCaptureMediaStreamTrack or FocusableMediaStreamTrack
   // operations when needed (or support these behaviors in some other way).
   TransferredMediaStreamTrack* transferred_media_stream_track =
-      MakeGarbageCollected<TransferredMediaStreamTrack>(data);
+      MakeGarbageCollected<TransferredMediaStreamTrack>(
+          ExecutionContext::From(script_state), data);
 
   request->SetTransferData(data.session_id, transferred_media_stream_track);
   request->Start();

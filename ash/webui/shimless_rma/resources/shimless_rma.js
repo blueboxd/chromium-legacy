@@ -201,7 +201,7 @@ export const StateComponentMapping = {
   },
   [State.kFinalize]: {
     componentIs: 'wrapup-finalize-page',
-    buttonNext: ButtonState.VISIBLE,
+    buttonNext: ButtonState.HIDDEN,
     buttonCancel: ButtonState.HIDDEN,
     buttonBack: ButtonState.VISIBLE,
   },
@@ -529,6 +529,7 @@ export class ShimlessRma extends ShimlessRmaBase {
       const currentPageComponent =
           this.loadComponent_(this.currentPage_.componentIs);
       currentPageComponent.hidden = false;
+      currentPageComponent.errorCode = stateResult.error;
 
       // A special case for the landing page, which has its own navigation
       // buttons.

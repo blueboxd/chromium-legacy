@@ -146,6 +146,8 @@
 #include "chrome/browser/ui/webui/app_service_internals/app_service_internals_ui.h"
 #include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
 #include "chrome/browser/ui/webui/downloads/downloads_ui.h"
+#include "chrome/browser/ui/webui/feed/feed.mojom.h"
+#include "chrome/browser/ui/webui/feed/feed_ui.h"
 #include "chrome/browser/ui/webui/image_editor/image_editor.mojom.h"
 #include "chrome/browser/ui/webui/image_editor/image_editor_untrusted_ui.h"
 #include "chrome/browser/ui/webui/realbox/realbox.mojom.h"
@@ -171,6 +173,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "components/history_clusters/core/history_clusters_service.h"
 #include "components/search/ntp_features.h"
+#include "media/mojo/mojom/renderer_extensions.mojom.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ui/webui/resources/cr_components/customize_themes/customize_themes.mojom.h"
@@ -587,14 +590,8 @@ void BindMediaFoundationRendererNotifierHandler(
     content::RenderFrameHost* frame_host,
     mojo::PendingReceiver<media::mojom::MediaFoundationRendererNotifier>
         receiver) {
-  Profile* profile = Profile::FromBrowserContext(
-      frame_host->GetProcess()->GetBrowserContext());
-  PrefService* profile_prefs = profile->GetPrefs();
-  if (profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled) &&
-      captions::IsLiveCaptionFeatureSupported()) {
-    captions::LiveCaptionUnavailabilityNotifier::Create(frame_host,
-                                                        std::move(receiver));
-  }
+  captions::LiveCaptionUnavailabilityNotifier::Create(frame_host,
+                                                      std::move(receiver));
 }
 #endif
 
@@ -1135,6 +1132,11 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<feed_internals::mojom::PageHandler,
                                          FeedInternalsUI>(map);
 #endif
+
+#if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_FEED_V2)
+  RegisterWebUIControllerInterfaceBinder<
+      feed::mojom::FeedSidePanelHandlerFactory, feed::FeedUI>(map);
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   RegisterWebUIControllerInterfaceBinder<::mojom::ResetPasswordHandler,

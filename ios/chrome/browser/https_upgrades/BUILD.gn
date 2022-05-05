@@ -1,0 +1,39 @@
+# Copyright 2022 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("https_upgrades") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "https_only_mode_upgrade_tab_helper.h",
+    "https_only_mode_upgrade_tab_helper.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/security_interstitials/core",
+    "//ios/components/security_interstitials",
+    "//ios/components/security_interstitials/https_only_mode",
+    "//ios/components/security_interstitials/https_only_mode:feature",
+    "//ios/web/public:public",
+    "//ios/web/public/navigation",
+    "//net",
+    "//services/metrics/public/cpp:metrics_cpp",
+  ]
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [ "https_only_mode_upgrade_tab_helper_unittest.mm" ]
+  deps = [
+    ":https_upgrades",
+    "//base/test:test_support",
+    "//components/security_interstitials/core",
+    "//ios/components/security_interstitials/https_only_mode",
+    "//ios/web/public",
+    "//ios/web/public/test",
+    "//net",
+    "//services/metrics/public/cpp:metrics_cpp",
+    "//testing/gtest",
+  ]
+}

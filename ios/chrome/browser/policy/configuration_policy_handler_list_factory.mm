@@ -10,13 +10,13 @@
 #include "components/autofill/core/browser/autofill_credit_card_policy_handler.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/managed/managed_bookmarks_policy_handler.h"
+#include "components/component_updater/pref_names.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/enterprise/browser/reporting/cloud_reporting_frequency_policy_handler.h"
 #include "components/enterprise/browser/reporting/cloud_reporting_policy_handler.h"
 #include "components/enterprise/browser/reporting/common_pref_names.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
-#include "components/optimization_guide/core/optimization_guide_prefs.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
@@ -55,6 +55,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { policy::key::kAllowChromeDataInBackups,
     prefs::kAllowChromeDataInBackups,
     base::Value::Type::BOOLEAN },
+  { policy::key::kComponentUpdatesEnabled,
+    prefs::kComponentUpdatesEnabled,
+    base::Value::Type::BOOLEAN },
   { policy::key::kChromeVariations,
     variations::prefs::kVariationsRestrictionsByPolicy,
     base::Value::Type::INTEGER },
@@ -78,9 +81,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { policy::key::kMetricsReportingEnabled,
     metrics::prefs::kMetricsReportingEnabled,
-    base::Value::Type::BOOLEAN },
-  { policy::key::kOptimizationGuideFetchingEnabled,
-    optimization_guide::prefs::kOptimizationGuideFetchingEnabled,
     base::Value::Type::BOOLEAN },
   { policy::key::kPolicyRefreshRate,
     policy::policy_prefs::kUserPolicyRefreshRate,

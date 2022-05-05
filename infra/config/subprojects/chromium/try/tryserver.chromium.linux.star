@@ -121,17 +121,7 @@ try_.builder(
 )
 
 try_.builder(
-    name = "fuchsia-fyi-arm64-dbg",
-    mirrors = ["ci/fuchsia-fyi-arm64-dbg"],
-)
-
-try_.builder(
     name = "fuchsia-fyi-arm64-rel",
-)
-
-try_.builder(
-    name = "fuchsia-fyi-x64-dbg",
-    mirrors = ["ci/fuchsia-fyi-x64-dbg"],
 )
 
 try_.builder(
@@ -208,7 +198,28 @@ try_.builder(
 )
 
 try_.builder(
+    name = "linux-blink-v8-sandbox-future-rel",
+    mirrors = ["ci/linux-blink-v8-sandbox-future-rel"],
+)
+
+try_.builder(
     name = "linux-blink-web-tests-force-accessibility-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        test_results_config = builder_config.test_results_config(
+            config = "staging_server",
+        ),
+    ),
 )
 
 try_.builder(
@@ -318,6 +329,9 @@ try_.orchestrator_builder(
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
     tryjob = try_.job(),
+    experiments = {
+        "remove_src_checkout_experiment": 30,
+    },
 )
 
 try_.compilator_builder(

@@ -73,6 +73,7 @@ if (is_android) {
     testonly = true
     deps = [
       "//base:base_java",
+      "//base:jni_java",
       "//chrome/android:chrome_all_java",
       "//components/autofill/android:autofill_java",
       "//components/payments/content/android:java",
@@ -387,8 +388,8 @@ static_library("test_support") {
     allow_circular_includes_from = [ ":test_support_ui" ]
   }
 
-  if (is_linux || is_chromeos) {
-    public_deps += [ "//crypto:platform" ]
+  if (use_nss_certs) {
+    public_configs = [ "//build/config/linux/nss" ]
   }
 
   if (is_mac) {
@@ -1406,7 +1407,6 @@ if (!is_android) {
       "//content/test:test_support",
       "//courgette:bsdiff",
       "//courgette:courgette_lib",
-      "//crypto:platform",
       "//crypto:test_support",
       "//device/bluetooth:mocks",
       "//device/fido:cablev2_test_util",
@@ -2218,6 +2218,7 @@ if (!is_android) {
       "../browser/ui/zoom/zoom_controller_browsertest.cc",
       "../browser/ukm_worker_browsertest.cc",
       "../browser/unload_browsertest.cc",
+      "../browser/url_param_filter/url_param_classifications_loader_browsertest.cc",
       "../browser/url_param_filter/url_param_filter_browsertest.cc",
       "../browser/usb/usb_browsertest.cc",
       "../browser/user_agent/user_agent_browsertest.cc",
@@ -5257,7 +5258,6 @@ test("unit_tests") {
     "../browser/signin/chrome_signin_client_unittest.cc",
     "../browser/signin/chrome_signin_helper_unittest.cc",
     "../browser/signin/chrome_signin_proxying_url_loader_factory_unittest.cc",
-    "../browser/signin/chrome_signin_status_metrics_provider_delegate_unittest.cc",
     "../browser/signin/chrome_signin_url_loader_throttle_unittest.cc",
     "../browser/signin/primary_account_policy_manager_unittest.cc",
     "../browser/signin/reauth_tab_helper_unittest.cc",
@@ -5708,7 +5708,6 @@ test("unit_tests") {
     "//content/public/app",
     "//content/test:test_support",
     "//courgette:courgette_lib",
-    "//crypto:platform",
     "//crypto:test_support",
     "//device/bluetooth:mocks",
     "//device/fido",
@@ -6854,7 +6853,6 @@ test("unit_tests") {
     sources -= [
       "../browser/policy/cloud/user_policy_signin_service_unittest.cc",
       "../browser/profiles/gaia_info_update_service_unittest.cc",
-      "../browser/signin/chrome_signin_status_metrics_provider_delegate_unittest.cc",
       "../browser/ui/webui/settings/settings_manage_profile_handler_unittest.cc",
       "../browser/ui/webui/signin/profile_picker_handler_unittest.cc",
 
@@ -6976,7 +6974,7 @@ test("unit_tests") {
       "../browser/ui/app_list/search/files/zero_state_file_provider_unittest.cc",
       "../browser/ui/app_list/search/games/game_provider_unittest.cc",
       "../browser/ui/app_list/search/games/game_result_unittest.cc",
-      "../browser/ui/app_list/search/help_app_provider_unittest.cc",
+      "../browser/ui/app_list/search/help_app_zero_state_provider_unittest.cc",
       "../browser/ui/app_list/search/keyboard_shortcut_provider_unittest.cc",
       "../browser/ui/app_list/search/keyboard_shortcut_result_unittest.cc",
       "../browser/ui/app_list/search/mixer_unittest.cc",
@@ -7745,7 +7743,10 @@ test("unit_tests") {
 
     if (is_chromeos) {
       sources += [ "//chrome/browser/chromeos/extensions/contact_center_insights/contact_center_insights_extension_manager_unittest.cc" ]
-      deps += [ "//chrome/browser/chromeos/extensions/login_screen:unit_tests" ]
+      deps += [
+        "//chrome/browser/chromeos/extensions/login_screen:unit_tests",
+        "//chromeos/dbus/missive:missive",
+      ]
     }
 
     if (is_chromeos_ash) {
@@ -8789,7 +8790,6 @@ if (!is_android) {
         "//components/sync:test_support_model",
         "//content/app/resources",
         "//content/test:test_support",
-        "//crypto:platform",
         "//crypto:test_support",
         "//extensions/buildflags",
         "//google_apis:test_support",
@@ -9013,7 +9013,6 @@ if (!is_android) {
       "//content/app/resources",
       "//content/test:browsertest_support",
       "//content/test:test_support",
-      "//crypto:platform",
       "//crypto:test_support",
       "//device/fido:test_support",
       "//extensions/buildflags",
@@ -9478,6 +9477,7 @@ if (is_android) {
     testonly = true
     deps = [
       "//base:base_java",
+      "//base:jni_java",
       "//build/android:build_java",
       "//chrome/android:chrome_all_java",
       "//chrome/browser/profiles/android:java",
@@ -9720,7 +9720,6 @@ if (!is_android) {
       "//components/sync_device_info:test_support",
       "//components/undo",
       "//components/webapps/browser",
-      "//crypto:platform",
       "//testing/gmock",
       "//testing/gtest",
       "//third_party/blink/public:blink",
@@ -9819,7 +9818,6 @@ if (!is_android) {
       "//components/password_manager/core/browser",
       "//components/spellcheck/common",
       "//components/sync",
-      "//crypto:platform",
       "//testing/gmock",
       "//testing/gtest",
       "//testing/perf",
@@ -9946,7 +9944,6 @@ if (!is_android && !is_fuchsia) {
       "//components/sync:test_support_model",
       "//content/app/resources",
       "//content/test:test_support",
-      "//crypto:platform",
       "//crypto:test_support",
       "//google_apis:test_support",
       "//net",
@@ -10075,7 +10072,6 @@ if (!is_android) {
         "//components/user_manager:user_manager",
         "//content/app/resources",
         "//content/test:test_support",
-        "//crypto:platform",
         "//crypto:test_support",
         "//google_apis:test_support",
         "//net",

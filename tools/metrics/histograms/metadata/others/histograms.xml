@@ -642,8 +642,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AnimatedImage.NumOfFramesSkipped" units="count"
-    expires_after="2022-04-24">
+    expires_after="2023-04-24">
   <owner>khushalsagar@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
   <summary>
     If the frame rate for the image animation can not be reached, frames in the
     animation are skipped to catch up to the desired frame. This metric tracks
@@ -654,6 +655,9 @@ chromium-metrics-reviews@google.com.
     be skipped. Note that skipping of frames can also be triggered if the
     animation was intentionally paused (on becoming off-screen, or the tab being
     hidden).
+
+    Warning: this histogram was expired from 2020-04-24 to 2022-04-29; data may
+    be missing.
   </summary>
 </histogram>
 
@@ -8903,18 +8907,6 @@ chromium-metrics-reviews@google.com.
 
     This is recorded for each source once per surface shown (e.g. each source is
     recorded once per link context menu opened).
-  </summary>
-</histogram>
-
-<histogram name="PerformanceManager.WorkerClientFound" enum="BooleanFound"
-    expires_after="2020-11-30">
-  <owner>pmonette@chromium.org</owner>
-  <owner>catan-team@chromium.org</owner>
-  <summary>
-    Records a boolean indicating if a worker's client frame node could be found
-    when trying to connect the worker to a client frame, given its ID. This is
-    supposed to be always true if the performance manager has perfect coverage
-    of WebContents objects.
   </summary>
 </histogram>
 

@@ -1583,6 +1583,11 @@
           'chromiumos_preflight',
         ],
       },
+      'chromeos-amd64-generic-cfi-thin-lto-rel (reclient shadow)': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
       'chromeos-amd64-generic-dbg': {
         'additional_compile_targets': [
           'chromiumos_preflight',
@@ -2593,6 +2598,61 @@
     },
   },
   {
+    'name': 'chromium.fuchsia.fyi',
+    'mixins': ['chromium-tester-service-account'],
+    'machines': {
+      'fuchsia-fyi-arm64-dbg': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'gtest_tests': 'fuchsia_web_engine_non_graphical_gtests',
+          'isolated_scripts': 'gpu_angle_fuchsia_unittests_isolated_scripts',
+        },
+        'mixins': [
+          'arm64',
+          'docker',
+          'linux-focal',
+        ],
+      },
+      'fuchsia-fyi-x64-asan': {
+        'mixins': [
+          'linux-bionic',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'kvm': '1',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'fuchsia_gtests',
+          'isolated_scripts': 'gpu_angle_fuchsia_unittests_isolated_scripts',
+        },
+      },
+      'fuchsia-fyi-x64-dbg': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'mixins': [
+          'linux-bionic',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'kvm': '1',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'fuchsia_gtests',
+          'isolated_scripts': 'gpu_angle_fuchsia_unittests_isolated_scripts',
+        },
+      },
+    },
+  },
+  {
     'name': 'chromium.fuzz',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
@@ -3060,20 +3120,6 @@
           'linux-bionic',
         ],
       },
-      'fuchsia-fyi-arm64-dbg': {
-        'additional_compile_targets': [
-          'all',
-        ],
-        'test_suites': {
-          'gtest_tests': 'fuchsia_web_engine_non_graphical_gtests',
-          'isolated_scripts': 'gpu_angle_fuchsia_unittests_isolated_scripts',
-        },
-        'mixins': [
-          'arm64',
-          'docker',
-          'linux-focal',
-        ],
-      },
       # A temporary builder to test the changes to the emulator arguments on
       # arm64.
       'fuchsia-fyi-arm64-emu-arg': {
@@ -3102,41 +3148,6 @@
           'docker',
           'linux-focal',
         ],
-      },
-      'fuchsia-fyi-x64-asan': {
-        'mixins': [
-          'linux-bionic',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'kvm': '1',
-            },
-          ],
-        },
-        'test_suites': {
-          'gtest_tests': 'fuchsia_gtests',
-          'isolated_scripts': 'gpu_angle_fuchsia_unittests_isolated_scripts',
-        },
-      },
-      'fuchsia-fyi-x64-dbg': {
-        'additional_compile_targets': [
-          'all',
-        ],
-        'mixins': [
-          'linux-bionic',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'kvm': '1',
-            },
-          ],
-        },
-        'test_suites': {
-          'gtest_tests': 'fuchsia_gtests',
-          'isolated_scripts': 'gpu_angle_fuchsia_unittests_isolated_scripts',
-        },
       },
       'fuchsia-fyi-x64-rel': {
         'additional_compile_targets': [
@@ -3493,6 +3504,15 @@
         },
       },
       'linux-blink-v8-sandbox-future-dbg': {
+        'mixins': [
+          'linux-bionic',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
+      'linux-blink-v8-sandbox-future-rel': {
         'mixins': [
           'linux-bionic',
         ],
@@ -6870,6 +6890,15 @@
         ],
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
+      'linux_optional_gpu_tests_rel': {
+        'os_type': 'linux',
+        'browser_config': 'release',
+        'test_suites': {
+          'gtest_tests': 'linux_optional_gpu_tests_rel_gtests',
+          'isolated_scripts': 'linux_optional_gpu_tests_rel_isolated_scripts',
+          'gpu_telemetry_tests': 'linux_optional_gpu_tests_rel_gpu_telemetry_tests',
         },
       },
     },

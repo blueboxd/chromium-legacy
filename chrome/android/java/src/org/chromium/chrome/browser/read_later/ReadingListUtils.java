@@ -11,7 +11,6 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
-import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.BookmarkUndoController;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
@@ -19,6 +18,7 @@ import org.chromium.chrome.browser.bookmarks.ReadingListFeatures;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.bookmarks.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.embedder_support.util.UrlUtilities;
@@ -51,7 +51,7 @@ public final class ReadingListUtils {
         BookmarkUndoController.createOneshotBookmarkUndoController(
                 activity, bookmarkModel, snackbarManager);
         bookmarkModel.finishLoadingBookmarkModel(() -> {
-            BookmarkBridge.BookmarkItem bookmarkItem =
+            BookmarkItem bookmarkItem =
                     bookmarkModel.getReadingListItem(currentTab.getOriginalUrl());
             bookmarkModel.deleteBookmarks(bookmarkItem.getId());
         });
@@ -156,6 +156,17 @@ public final class ReadingListUtils {
     /** For cases where GURLs are faked for testing (e.g. test pages). */
     public static void setReadingListSupportedForTesting(Boolean supported) {
         sReadingListSupportedForTesting = supported;
+    }
+
+    /**
+     * Opens the Reading list folder in the bookmark manager.
+     *
+     * @param isIncognito Whether the bookmark manager should open in incognito mode.
+     */
+    public static void showReadingList(boolean isIncognito) {
+        if (!ReadingListFeatures.isReadingListEnabled()) return;
+        BookmarkUtils.showBookmarkManager(
+                null, new BookmarkId(0, BookmarkType.READING_LIST), /*isIncognito=*/isIncognito);
     }
 
     /** For cases where we don't want to mock the entire bookmarks save flow infra. */

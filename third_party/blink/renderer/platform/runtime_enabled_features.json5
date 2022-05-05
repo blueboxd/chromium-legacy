@@ -112,7 +112,7 @@
     },
     {
       name: "AbortSignalTimeout",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "Accelerated2dCanvas",
@@ -965,7 +965,7 @@
     {
       name: "EarlyHintsPreloadForNavigationOptIn",
       origin_trial_feature_name: "EarlyHintsPreloadForNavigation",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "EditContext",
@@ -1983,6 +1983,10 @@
     {
       // See https://crbug.com/1012063
       name: "RequestVideoFrameCallback",
+      status: "stable",
+    },
+    {
+      name: "RestrictBatteryStatusToSecureContexts",
       status: "stable",
     },
     {

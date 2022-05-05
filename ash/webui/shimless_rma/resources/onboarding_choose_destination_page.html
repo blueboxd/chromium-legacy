@@ -1,7 +1,7 @@
 <style include="cr-shared-style shimless-rma-shared">
 </style>
 
-<base-page>
+<base-page left-pane-only>
   <div slot="left-pane">
     <h1>[[i18n('chooseDestinationTitleText')]]</h1>
     <cr-radio-group
@@ -22,6 +22,10 @@
       <div class="indented-description">
         [[i18n('newOwnerDescriptionText')]]
       </div>
+      <cr-radio-button name="notSureOwner" id="destinationNotSureOwner"
+          aria-label="[[i18n('notSureOwnerText')]]">
+        [[i18n('notSureOwnerText')]]
+      </cr-radio-button>
     </cr-radio-group>
   </div>
 </base-page>

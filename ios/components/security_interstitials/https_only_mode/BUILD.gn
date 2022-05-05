@@ -15,8 +15,6 @@ source_set("https_only_mode") {
     "https_only_mode_controller_client.mm",
     "https_only_mode_error.h",
     "https_only_mode_error.mm",
-    "https_only_mode_upgrade_tab_helper.h",
-    "https_only_mode_upgrade_tab_helper.mm",
   ]
   deps = [
     ":feature",
@@ -41,10 +39,7 @@ source_set("feature") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "https_only_mode_blocking_page_unittest.mm",
-    "https_only_mode_upgrade_tab_helper_unittest.mm",
-  ]
+  sources = [ "https_only_mode_blocking_page_unittest.mm" ]
   deps = [
     ":https_only_mode",
     "//base/test:test_support",

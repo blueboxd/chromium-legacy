@@ -158,6 +158,7 @@
       'chromeos-amd64-generic-asan-rel': 'chromeos_amd64-generic_asan_reclient',
       'chromeos-amd64-generic-asan-rel (reclient shadow)': 'chromeos_amd64-generic_asan_reclient',
       'chromeos-amd64-generic-cfi-thin-lto-rel': 'chromeos_amd64-generic_cfi_thin_lto',
+      'chromeos-amd64-generic-cfi-thin-lto-rel (reclient shadow)': 'chromeos_amd64-generic_cfi_thin_lto_reclient',
       'chromeos-amd64-generic-dbg': 'chromeos_amd64-generic_dbg_reclient',
       'chromeos-amd64-generic-dbg (reclient shadow)': 'chromeos_amd64-generic_dbg_reclient',
       'chromeos-amd64-generic-lacros-dbg': 'chromeos_amd64-generic_lacros_dbg_reclient',
@@ -264,6 +265,12 @@
       'DevTools Linux (chromium)': 'release_trybot_blink_do_typecheck',
     },
 
+    'chromium.fuchsia.fyi': {
+      'fuchsia-fyi-arm64-dbg': 'debug_bot_fuchsia_arm64',
+      'fuchsia-fyi-x64-asan': 'asan_lsan_bot_fuchsia',
+      'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
+    },
+
     'chromium.fuzz': {
       'ASAN Debug': 'asan_lsan_debug_bot_reclient',
       'ASAN Release': 'asan_lsan_fuzzer_v8_heap_release_bot_reclient',
@@ -360,10 +367,7 @@
       'chromeos-amd64-generic-rel (reclient compare)': 'chromeos_amd64-generic-vm_use_fake_dbus_clients_reclient',
       'chromeos-amd64-generic-rel (reclient)': 'chromeos_amd64-generic-vm_use_fake_dbus_clients_reclient',
       'fuchsia-code-coverage': 'fuchsia_clang_code_coverage',
-      'fuchsia-fyi-arm64-dbg': 'debug_bot_fuchsia_arm64',
       'fuchsia-fyi-arm64-rel': 'release_bot_fuchsia_arm64',
-      'fuchsia-fyi-x64-asan': 'asan_lsan_bot_fuchsia',
-      'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
       'fuchsia-fyi-x64-rel': 'release_bot_fuchsia',
       'fuchsia-fyi-x64-reviver': 'release_bot_fuchsia',
       'fuchsia-fyi-x64-wst': 'fuchsia_workstation_bot',
@@ -393,6 +397,7 @@
       'linux-blink-heap-concurrent-marking-tsan-rel': 'release_trybot_minimal_symbols_tsan',
       'linux-blink-heap-verification': 'release_bot_enable_blink_heap_verification_dcheck_always_on_reclient',
       'linux-blink-v8-sandbox-future-dbg': 'debug_bot_enable_v8_sandbox_future_reclient',
+      'linux-blink-v8-sandbox-future-rel': 'release_bot_enable_v8_sandbox_future_dcheck_always_on_reclient',
       'linux-chromeos-annotator-rel': 'chromeos_with_codecs_release_bot_reclient',
       'linux-chromeos-code-coverage': 'chromeos_with_codecs_release_bot_coverage_reclient',
       'linux-chromeos-js-code-coverage': 'chromeos_with_codecs_release_bot_javascript_coverage',
@@ -551,6 +556,7 @@
       'codesearch-gen-chromium-fuchsia': 'codesearch_gen_chromium_fuchsia_bot',
       'codesearch-gen-chromium-lacros': 'codesearch_gen_chromium_lacros_bot',
       'codesearch-gen-chromium-linux': 'codesearch_gen_chromium_bot',
+      'codesearch-gen-chromium-mac': 'codesearch_gen_chromium_mac_bot',
       'codesearch-gen-chromium-win': 'codesearch_gen_chromium_bot',
     },
 
@@ -1014,6 +1020,7 @@
       'gen-fuchsia-try': 'codesearch_gen_chromium_fuchsia_bot',
       'gen-lacros-try': 'codesearch_gen_chromium_lacros_bot',
       'gen-linux-try': 'codesearch_gen_chromium_bot',
+      'gen-mac-try': 'codesearch_gen_chromium_mac_bot',
       'gen-win-try': 'codesearch_gen_chromium_bot',
     },
 
@@ -1031,6 +1038,11 @@
       'win-dawn-rel': 'dawn_tests_release_trybot',
     },
 
+    'tryserver.chromium.fuchsia': {
+      'fuchsia-fyi-arm64-dbg': 'debug_bot_fuchsia_arm64',
+      'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
+    },
+
     'tryserver.chromium.linux': {
       'cast-binary-size': 'cast_binary_size',
       'cast_shell_audio_linux': 'cast_audio_release_trybot',
@@ -1043,10 +1055,8 @@
       'fuchsia-clang-tidy-rel': 'release_trybot_fuchsia',
       'fuchsia-compile-x64-dbg': 'debug_bot_fuchsia_compile_only',
       'fuchsia-deterministic-dbg': 'debug_bot_fuchsia',
-      'fuchsia-fyi-arm64-dbg': 'debug_bot_fuchsia_arm64',
       'fuchsia-fyi-arm64-emu-arg': 'release_trybot_fuchsia_arm64',
       'fuchsia-fyi-arm64-rel': 'release_trybot_fuchsia_arm64',
-      'fuchsia-fyi-x64-dbg': 'debug_bot_fuchsia',
       'fuchsia-fyi-x64-rel': 'release_trybot_fuchsia',
       'fuchsia-x64-cast': 'release_trybot_fuchsia_cast',
       'fuchsia_arm64': 'release_trybot_fuchsia_arm64',
@@ -1208,9 +1218,9 @@
     'tryserver.chromium.rust': {
       'android-rust-arm-dbg': 'debug_bot_rust_android_arm',
       'android-rust-arm-rel': 'release_rust_android_arm',
-      'linux-rust-intree-x64-rel': 'release_rust_intree_linux_x64',
       'linux-rust-x64-dbg': 'debug_bot_rust_linux_x64',
       'linux-rust-x64-rel': 'release_rust_linux_x64',
+      'linux-rust-x64-rel-android-toolchain': 'release_rust_linux_x64_android_toolchain',
     },
 
     'tryserver.chromium.swangle': {
@@ -1938,6 +1948,10 @@
       'chromeos_amd64-generic', 'cfi_full', 'thin_lto',
     ],
 
+    'chromeos_amd64-generic_cfi_thin_lto_reclient': [
+      'chromeos_amd64-generic_reclient', 'cfi_full', 'thin_lto',
+    ],
+
     'chromeos_amd64-generic_dbg': [
       'chromeos_amd64-generic', 'debug',
     ],
@@ -2243,10 +2257,6 @@
       'codesearch',
     ],
 
-    'codesearch_gen_chromium_bot': [
-      'codesearch',
-    ],
-
     'codesearch_gen_chromium_chromiumos_bot': [
       'codesearch', 'chromeos',
     ],
@@ -2259,6 +2269,10 @@
     # simplicity, we only generate codesearch x-refs for lacros on Linux.
     'codesearch_gen_chromium_lacros_bot': [
       'codesearch', 'lacros_on_linux',
+    ],
+
+    'codesearch_gen_chromium_mac_bot': [
+      'codesearch', 'mac',
     ],
 
     'dawn_tests_asan_release_bot_dcheck_always_on_reclient': [
@@ -3159,6 +3173,10 @@
       'release_bot_blink_reclient', 'enable_blink_heap_verification', 'dcheck_always_on',
     ],
 
+    'release_bot_enable_v8_sandbox_future_dcheck_always_on_reclient': [
+      'release_bot_blink_reclient', 'v8_sandbox_future', 'dcheck_always_on',
+    ],
+
     'release_bot_extended_tracing_reclient': [
       'release_bot_reclient', 'extended_tracing',
     ],
@@ -3243,12 +3261,12 @@
       'release_trybot_minimal_symbols_reclient', 'enable_rust', 'android', 'arm',
     ],
 
-    'release_rust_intree_linux_x64': [
-      'release_trybot_minimal_symbols', 'enable_rust', 'use_chromium_rust_toolchain', 'x64',
-    ],
-
     'release_rust_linux_x64': [
       'release_trybot_minimal_symbols', 'enable_rust', 'x64',
+    ],
+
+    'release_rust_linux_x64_android_toolchain': [
+      'release_trybot_minimal_symbols', 'enable_rust', 'use_android_rust_toolchain', 'x64',
     ],
 
     'release_rust_linux_x64_reclient': [
@@ -3976,6 +3994,10 @@
       'gn_args': 'is_lsan=true',
     },
 
+    'mac': {
+      'gn_args': 'target_os="mac"',
+    },
+
     'mac_strip': {
       'gn_args': 'enable_stripping=true',
     },
@@ -4333,8 +4355,8 @@
       'gn_args': 'enable_chromium_updater=true',
     },
 
-    'use_chromium_rust_toolchain': {
-      'gn_args': 'use_chromium_rust_toolchain=true',
+    'use_android_rust_toolchain': {
+      'gn_args': 'use_chromium_rust_toolchain=false',
     },
 
     'use_clang_coverage': {

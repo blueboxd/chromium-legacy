@@ -110,6 +110,7 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
       {"sameOwnerDescriptionText", IDS_SHIMLESS_RMA_SAME_OWNER_DESCRIPTION},
       {"newOwnerText", IDS_SHIMLESS_RMA_NEW_OWNER},
       {"newOwnerDescriptionText", IDS_SHIMLESS_RMA_NEW_OWNER_DESCRIPTION},
+      {"notSureOwnerText", IDS_SHIMLESS_RMA_NOT_SURE_OWNER},
       // OS update page
       {"osUpdateTitleText", IDS_SHIMLESS_RMA_UPDATE_OS_PAGE_TITLE},
       {"osUpdateUnqualifiedComponentsTopText",
@@ -138,6 +139,7 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
       {"rsuChallengeDialogTitleText",
        IDS_SHIMLESS_RMA_RSU_CHALLENGE_DIALOG_TITLE},
       {"rsuCodeLabelText", IDS_SHIMLESS_RMA_RSU_CODE_LABEL},
+      {"rsuCodeErrorLabelText", IDS_SHIMLESS_RMA_RSU_CODE_ERROR_LABEL},
       {"rsuChallengeDialogDoneButtonLabel",
        IDS_SHIMLESS_RMA_RSU_CHALLENGE_DIALOG_DONE_BUTTON},
       // Manual WP disable complete

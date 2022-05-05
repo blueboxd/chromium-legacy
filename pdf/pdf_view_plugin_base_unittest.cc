@@ -23,7 +23,6 @@
 #include "pdf/document_metadata.h"
 #include "pdf/pdf_engine.h"
 #include "pdf/pdfium/pdfium_form_filler.h"
-#include "pdf/ppapi_migration/graphics.h"
 #include "pdf/ppapi_migration/url_loader.h"
 #include "pdf/test/test_pdfium_engine.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -149,8 +148,6 @@ class FakePdfViewPluginBase : public PdfViewPluginBase {
   }
 
   MOCK_METHOD(void, SaveAs, (), (override));
-
-  MOCK_METHOD(void, InitImageData, (const gfx::Size&), (override));
 
   MOCK_METHOD(void, SetFormTextFieldInFocus, (bool), (override));
 

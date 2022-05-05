@@ -21,7 +21,6 @@
 #include "cc/paint/paint_canvas.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_utils.h"
-#include "pdf/ppapi_migration/bitmap.h"
 #include "pdf/test/test_helpers.h"
 #include "pdf/test/test_pdfium_engine.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
@@ -39,7 +38,10 @@
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -119,10 +121,14 @@ MATCHER_P(IsExpectedImeKeyEvent, expected_text, "") {
 // clipped area and `kDefaultColor` as the background color.
 SkBitmap GenerateExpectedBitmapForPaint(const gfx::Rect& expected_clipped_rect,
                                         SkColor paint_color) {
-  SkBitmap expected_bitmap =
-      CreateN32PremulSkBitmap(gfx::SizeToSkISize(kCanvasSize));
-  expected_bitmap.eraseColor(kDefaultColor);
-  expected_bitmap.erase(paint_color, gfx::RectToSkIRect(expected_clipped_rect));
+  sk_sp<SkSurface> expected_surface =
+      CreateSkiaSurfaceForTesting(kCanvasSize, kDefaultColor);
+  expected_surface->getCanvas()->clipIRect(
+      gfx::RectToSkIRect(expected_clipped_rect));
+  expected_surface->getCanvas()->clear(paint_color);
+
+  SkBitmap expected_bitmap;
+  expected_surface->makeImageSnapshot()->asLegacyBitmap(&expected_bitmap);
   return expected_bitmap;
 }
 
@@ -425,10 +431,8 @@ class PdfViewWebPluginTest : public PdfViewWebPluginWithoutInitializeTest {
     canvas_.DrawColor(kDefaultColor);
 
     // Paint the plugin with `kPaintColor`.
-    plugin_->UpdateSnapshot(
-        CreateSkiaImageForTesting(plugin_->GetPluginRectForTesting().size(),
-                                  kPaintColor)
-            .asImage());
+    plugin_->UpdateSnapshot(CreateSkiaImageForTesting(
+        plugin_->GetPluginRectForTesting().size(), kPaintColor));
     plugin_->Paint(canvas_.sk_canvas(), paint_rect);
 
     // Expect the clipped area on canvas to be filled with `kPaintColor`.

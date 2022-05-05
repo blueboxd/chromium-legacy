@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_payment_credential_instrument.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_parameters.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_request_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_rp_entity.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_user_entity.h"
@@ -476,6 +477,11 @@ DOMException* AuthenticatorStatusToDOMException(
           DOMExceptionCode::kNotReadableError,
           "Failed to save the credential identifier for the 'payment' "
           "extension.");
+    case AuthenticatorStatus::REMOTE_DESKTOP_CLIENT_OVERRIDE_NOT_AUTHORIZED:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotAllowedError,
+          "This origin is not permitted to use the "
+          "'remoteDesktopClientOverride' extension.");
     case AuthenticatorStatus::ERROR_WITH_DOM_EXCEPTION_DETAILS:
       return DOMException::Create(
           /*message=*/dom_exception_details->message,
@@ -733,13 +739,9 @@ void OnGetAssertionComplete(
       }
       extension_outputs->setLargeBlob(large_blob_outputs);
     }
-    if (credential->echo_get_cred_blob) {
-      if (credential->get_cred_blob) {
-        extension_outputs->setGetCredBlob(
-            VectorToDOMArrayBuffer(std::move(*credential->get_cred_blob)));
-      } else {
-        extension_outputs->setGetCredBlob(nullptr);
-      }
+    if (credential->get_cred_blob) {
+      extension_outputs->setGetCredBlob(
+          VectorToDOMArrayBuffer(std::move(*credential->get_cred_blob)));
     }
     resolver->Resolve(MakeGarbageCollected<PublicKeyCredential>(
         credential->info->id,
@@ -1404,6 +1406,27 @@ ScriptPromise CredentialsContainer::create(
             mojom::blink::ConsoleMessageLevel::kWarning,
             "Ignoring unknown publicKey.authenticatorSelection.residentKey "
             "value"));
+  }
+  // An empty list uses default algorithm identifiers.
+  if (options->publicKey()->pubKeyCredParams().size() != 0) {
+    WTF::HashSet<int16_t> algorithm_set;
+    for (const auto& param : options->publicKey()->pubKeyCredParams()) {
+      // 0 and -1 are special values that cannot be inserted into the HashSet.
+      if (param->alg() != 0 && param->alg() != -1)
+        algorithm_set.insert(param->alg());
+    }
+    if (!algorithm_set.Contains(-7) || !algorithm_set.Contains(-257)) {
+      resolver->DomWindow()->AddConsoleMessage(
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::blink::ConsoleMessageSource::kJavaScript,
+              mojom::blink::ConsoleMessageLevel::kWarning,
+              "publicKey.pubKeyCredParams is missing at least one of the "
+              "default algorithm identifiers: ES256 and RS256. This can "
+              "result in registration failures on incompatible "
+              "authenticators. See "
+              "https://chromium.googlesource.com/chromium/src/+/master/"
+              "content/browser/webauth/pub_key_cred_params.md for details"));
+    }
   }
 
   auto mojo_options =

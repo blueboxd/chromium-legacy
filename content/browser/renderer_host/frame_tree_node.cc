@@ -501,6 +501,21 @@ void FrameTreeNode::SetPendingFramePolicy(blink::FramePolicy frame_policy) {
   }
 }
 
+void FrameTreeNode::SetAnonymous(bool anonymous) {
+  if (anonymous) {
+    if (!parent_) {
+      bad_message::ReceivedBadMessage(current_frame_host()->GetProcess(),
+                                      bad_message::FTN_ANONYMOUS);
+      return;
+    }
+
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        parent_, blink::mojom::WebFeature::kAnonymousIframe);
+  }
+
+  anonymous_ = anonymous;
+}
+
 bool FrameTreeNode::IsLoading() const {
   RenderFrameHostImpl* current_frame_host =
       render_manager_.current_frame_host();
@@ -667,10 +682,9 @@ void FrameTreeNode::DidFocus() {
 }
 
 void FrameTreeNode::BeforeUnloadCanceled() {
-  // TODO(clamy): Support BeforeUnload in subframes.
-  // TODO(crbug.com/1314749): With MPArch there may be multiple main frames and
-  // so IsMainFrame should not be used to identify subframes. Follow up to
-  // confirm correctness.
+  // TODO(clamy): Support BeforeUnload in subframes. Fenced Frames don't run
+  // BeforeUnload. Maybe need to check whether other MPArch inner pages cases
+  // need beforeunload(e.g., portals, GuestView if it gets ported to MPArch).
   if (!IsOutermostMainFrame())
     return;
 

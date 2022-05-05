@@ -7,6 +7,7 @@ package org.chromium.components.browser_ui.widget.gesture;
 import androidx.annotation.IntDef;
 
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -19,21 +20,23 @@ import java.lang.annotation.RetentionPolicy;
  */
 public interface BackPressHandler {
     // The smaller the value is, the higher the priority is.
-    @IntDef({Type.TEXT_BUBBLE, Type.TEST})
+    @IntDef({Type.TEXT_BUBBLE, Type.AR_DELEGATE, Type.LAYOUT_MANAGER})
     @Retention(RetentionPolicy.SOURCE)
     @interface Type {
         int TEXT_BUBBLE = 0;
-        // Add new type here and then increment the value of TEST by one.
-        int TEST = 1; // This is for test only. Do not use it in production.
-        int NUM_TYPES = TEST + 1;
+        int AR_DELEGATE = 1;
+        int LAYOUT_MANAGER = 2;
+        int NUM_TYPES = LAYOUT_MANAGER + 1;
     }
 
-    void handleBackPress();
+    default void handleBackPress() {}
 
     /**
      * A {@link ObservableSupplier<Boolean>} which notifies of whether the implementer wants to
      * intercept the back gesture.
      * @return True if the implementer wants to intercept the back gesture.
      */
-    ObservableSupplier<Boolean> getHandleBackPressChangedSupplier();
+    default ObservableSupplier<Boolean> getHandleBackPressChangedSupplier() {
+        return new ObservableSupplierImpl<>();
+    }
 }

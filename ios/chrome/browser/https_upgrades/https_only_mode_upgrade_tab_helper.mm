@@ -8,7 +8,9 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/prefs/pref_service.h"
 #include "components/security_interstitials/core/https_only_mode_metrics.h"
+#include "ios/chrome/browser/pref_names.h"
 #import "ios/components/security_interstitials/https_only_mode/https_only_mode_allowlist.h"
 #import "ios/components/security_interstitials/https_only_mode/https_only_mode_blocking_page.h"
 #include "ios/components/security_interstitials/https_only_mode/https_only_mode_container.h"
@@ -93,6 +95,10 @@ void HttpsOnlyModeUpgradeTabHelper::SetFallbackDelayForTesting(
   fallback_delay_ = delay;
 }
 
+bool HttpsOnlyModeUpgradeTabHelper::IsTimerRunningForTesting() const {
+  return timer_.IsRunning();
+}
+
 bool HttpsOnlyModeUpgradeTabHelper::IsFakeHTTPSForTesting(
     const GURL& url) const {
   return url.IntPort() == https_port_for_testing_;
@@ -106,9 +112,24 @@ bool HttpsOnlyModeUpgradeTabHelper::IsHttpAllowedForUrl(const GURL& url) const {
   return allow_list->IsHttpAllowedForHost(url.host());
 }
 
+// static
+void HttpsOnlyModeUpgradeTabHelper::CreateForWebState(web::WebState* web_state,
+                                                      PrefService* prefs) {
+  DCHECK(web_state);
+  DCHECK(prefs);
+  if (!FromWebState(web_state)) {
+    web_state->SetUserData(
+        UserDataKey(),
+        base::WrapUnique(new HttpsOnlyModeUpgradeTabHelper(web_state, prefs)));
+  }
+}
+
 HttpsOnlyModeUpgradeTabHelper::HttpsOnlyModeUpgradeTabHelper(
-    web::WebState* web_state)
-    : web::WebStatePolicyDecider(web_state), was_upgraded_(false) {
+    web::WebState* web_state,
+    PrefService* prefs)
+    : web::WebStatePolicyDecider(web_state),
+      was_upgraded_(false),
+      prefs_(prefs) {
   web_state->AddObserver(this);
 }
 
@@ -234,6 +255,10 @@ void HttpsOnlyModeUpgradeTabHelper::ShouldAllowRequest(
         web::WebStatePolicyDecider::PolicyDecision::Allow());
     return;
   }
+  // This is a fallback navigation, no need to keep the slow upgrade timer
+  // running.
+  timer_.Stop();
+
   // If the URL is in the allowlist, don't show any warning. This can happen
   // if another tab allowlists the host before we initiate the fallback
   // navigation.
@@ -288,6 +313,12 @@ void HttpsOnlyModeUpgradeTabHelper::ShouldAllowResponse(
   DCHECK(item_pending);
   // Upgrade to HTTPS if the navigation wasn't upgraded before.
   if (!item_pending->IsUpgradedToHttps()) {
+    if (!prefs_ || !prefs_->GetBoolean(prefs::kHttpsOnlyModeEnabled)) {
+      // Feature is disabled, don't upgrade.
+      std::move(callback).Run(
+          web::WebStatePolicyDecider::PolicyDecision::Allow());
+      return;
+    }
     DCHECK(!stopped_loading_to_upgrade_);
     // Copy navigation parameters, then cancel the current navigation.
     http_url_ = url;
@@ -309,11 +340,13 @@ void HttpsOnlyModeUpgradeTabHelper::ShouldAllowResponse(
   // ShouldAllowRequest(), but we don't have enough information there to ensure
   // whether the HTTP URL is part of the redirect chain or a completely new
   // navigation.
-  // This is divergence from the desktop implementation of this feature which
+  // This is a divergence from the desktop implementation of this feature which
   // relies on a redirect loop triggering a net error.
   RecordUMA(Event::kUpgradeFailed);
   DCHECK(was_upgraded_);
+  DCHECK(timer_.IsRunning());
   was_upgraded_ = false;
+  timer_.Stop();
   HttpsOnlyModeContainer* container =
       HttpsOnlyModeContainer::FromWebState(web_state());
   container->SetHttpUrl(url);

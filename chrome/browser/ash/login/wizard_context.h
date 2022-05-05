@@ -64,6 +64,10 @@ class WizardContext {
   // flag will ignore hid detection results.
   bool skip_to_update_for_tests = false;
 
+  // Whether the post login screens should be skipped. Used in MaybeSkip by
+  // screens in tests. Is set by WizardController::SkipPostLoginScreensForTests.
+  bool skip_post_login_screens_for_tests = false;
+
   // Whether user creation screen is enabled (could be disabled due to disabled
   // feature or on managed device). It determines the behavior of back button
   // for GaiaScreen and OfflineLoginScreen. Value is set to true in
@@ -104,6 +108,16 @@ class WizardContext {
   // TermsOfServiceScreen should be shown on login this will be set to
   // ash::OOBE_SCREEN_UNKNOWN.
   OobeScreenId screen_after_managed_tos;
+
+  // If this is a first login after update from CloudReady to a new version.
+  // During such an update show users license agreement and data collection
+  // consent.
+  bool is_cloud_ready_update_flow = false;
+
+  // Determining ownership can take some time. Instead of finding out if the
+  // current user is an owner of the device we reuse this value. It is set
+  // during ConsolidatedConsentScreen.
+  absl::optional<bool> is_owner_flow;
 };
 
 }  // namespace ash

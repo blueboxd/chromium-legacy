@@ -35,21 +35,11 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Assistant.BetterOnboarding.Click"
-    enum="AssistantBetterOnboardingType" expires_after="2022-05-01">
+    enum="AssistantBetterOnboardingType" expires_after="2023-05-01">
   <owner>xiaohuic@chromium.org</owner>
   <owner>croissant-eng@chromium.org</owner>
   <summary>
     The number of times Assistant better onboarding buttons are clicked.
-  </summary>
-</histogram>
-
-<histogram name="Assistant.BetterOnboarding.Shown"
-    enum="AssistantBetterOnboardingMode" expires_after="2021-12-19">
-  <owner>xiaohuic@chromium.org</owner>
-  <owner>croissant-eng@chromium.org</owner>
-  <summary>
-    The number of times Assistant better onboarding UI is shown. The UI has a
-    few different modes recorded in the enum.
   </summary>
 </histogram>
 
@@ -115,7 +105,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Assistant.Interaction.Resolution"
-    enum="AssistantInteractionResolution" expires_after="2021-07-22">
+    enum="AssistantInteractionResolution" expires_after="2023-05-01">
   <owner>xiaohuic@chromium.org</owner>
   <owner>croissant-eng@chromium.org</owner>
   <summary>
@@ -169,7 +159,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Assistant.QuerySource" enum="AssistantQuerySource"
-    expires_after="2022-05-01">
+    expires_after="2023-05-01">
   <owner>xiaohuic@chromium.org</owner>
   <owner>croissant-eng@chromium.org</owner>
   <summary>
@@ -179,7 +169,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Assistant.ServiceEnabledUserCount" enum="BooleanEnabled"
-    expires_after="2022-04-24">
+    expires_after="2023-05-01">
   <owner>xiaohuic@chromium.org</owner>
   <owner>croissant-eng@chromium.org</owner>
   <summary>
@@ -206,7 +196,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Assistant.SetDspHotwordLocale" enum="BooleanSuccess"
-    expires_after="2022-05-01">
+    expires_after="2023-05-01">
   <owner>xiaohuic@chromium.org</owner>
   <owner>croissant-eng@chromium.org</owner>
   <summary>

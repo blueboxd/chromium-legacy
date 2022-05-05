@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 
+#include "base/check.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -28,13 +29,17 @@ UIImageConfiguration* DefaultSymbolConfigurationWithPointSize(
 UIImage* SymbolWithConfiguration(NSString* symbolName,
                                  UIImageConfiguration* configuration,
                                  BOOL systemSymbol) {
+  UIImage* symbol;
   if (systemSymbol) {
-    return [UIImage systemImageNamed:symbolName
-                   withConfiguration:configuration];
+    symbol = [UIImage systemImageNamed:symbolName
+                     withConfiguration:configuration];
+  } else {
+    symbol = [UIImage imageNamed:symbolName
+                        inBundle:nil
+               withConfiguration:configuration];
   }
-  return [UIImage imageNamed:symbolName
-                    inBundle:nil
-           withConfiguration:configuration];
+  DCHECK(symbol);
+  return symbol;
 }
 
 }  // namespace
@@ -42,17 +47,28 @@ UIImage* SymbolWithConfiguration(NSString* symbolName,
 // Custom symbol names.
 NSString* const kArrowClockWiseSymbol = @"arrow_clockwise";
 NSString* const kIncognitoSymbol = @"incognito";
+NSString* const kIncognitoCircleFillSymbol = @"incognito_circle_fill";
 NSString* const kSquareNumberSymbol = @"square_number";
 NSString* const kTranslateSymbol = @"translate";
 NSString* const kCameraSymbol = @"camera";
 NSString* const kCameraFillSymbol = @"camera_fill";
+NSString* const kPlusCircleFillSymbol = @"plus_circle_fill";
+NSString* const kArrowTriangleSlashCirclePathSymbol =
+    @"arrow_triangle_slash_circlepath";
+NSString* const kPopupBadgeMinusSymbol = @"popup_badge_minus";
 
 // Default symbol names.
 NSString* const kCreditCardSymbol = @"creditcard";
-NSString* const kMicrophoneSymbol = @"mic.fill";
+NSString* const kMicrophoneFillSymbol = @"mic.fill";
+NSString* const kMicrophoneSymbol = @"mic";
 NSString* const kEllipsisCircleFillSymbol = @"ellipsis.circle.fill";
 NSString* const kPinSymbol = @"pin";
 NSString* const kGearShapeSymbol = @"gearshape.fill";
+NSString* const kShareSymbol = @"square.and.arrow.up";
+NSString* const kXMarkSymbol = @"xmark";
+NSString* const kPlusSymbol = @"plus";
+NSString* const kSearchSymbol = @"magnifyingglass";
+NSString* const kCheckmarkSymbol = @"checkmark";
 
 UIImage* DefaultSymbolWithConfiguration(NSString* symbolName,
                                         UIImageConfiguration* configuration) {

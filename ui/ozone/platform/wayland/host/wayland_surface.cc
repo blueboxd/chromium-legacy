@@ -315,10 +315,9 @@ augmented_surface* WaylandSurface::GetAugmentedSurface() {
   return augmented_surface_.get();
 }
 
-void WaylandSurface::SetViewportSource(const gfx::RectF& src_rect) {
+void WaylandSurface::SetBufferCrop(const gfx::RectF& crop) {
   DCHECK(!apply_state_immediately_);
-  pending_state_.crop =
-      src_rect == gfx::RectF{1.f, 1.f} ? gfx::RectF() : src_rect;
+  pending_state_.crop = crop == gfx::RectF{1.f, 1.f} ? gfx::RectF() : crop;
 }
 
 void WaylandSurface::SetOpacity(const float opacity) {
@@ -446,6 +445,24 @@ void WaylandSurface::ApplyPendingState() {
                   .get());
   }
 
+  if (pending_state_.background_color != state_.background_color) {
+    DCHECK(GetAugmentedSurface());
+    if (augmented_surface_get_version(GetAugmentedSurface()),
+        static_cast<uint32_t>(
+            AUGMENTED_SURFACE_SET_BACKGROUND_COLOR_SINCE_VERSION)) {
+      wl_array color_data;
+      wl_array_init(&color_data);
+      if (pending_state_.background_color.has_value())
+        wl::SkColorToWlArray(pending_state_.background_color.value(),
+                             color_data);
+
+      augmented_surface_set_background_color(GetAugmentedSurface(),
+                                             &color_data);
+
+      wl_array_release(&color_data);
+    }
+  }
+
   if (pending_state_.rounded_clip_bounds != state_.rounded_clip_bounds) {
     DCHECK(GetAugmentedSurface());
     if (augmented_surface_get_version(GetAugmentedSurface()) >=
@@ -514,8 +531,12 @@ void WaylandSurface::ApplyPendingState() {
   if (pending_state_.crop.IsEmpty()) {
     viewport_src_dip = gfx::RectF(bounds);
   } else {
+    // viewport_src_dip needs to be in post-transform coordinates.
+    gfx::RectF crop_transformed = wl::ApplyWaylandTransform(
+        pending_state_.crop, gfx::SizeF(1, 1),
+        wl::ToWaylandTransform(pending_state_.buffer_transform));
     viewport_src_dip =
-        gfx::ScaleRect(pending_state_.crop, bounds.width(), bounds.height());
+        gfx::ScaleRect(crop_transformed, bounds.width(), bounds.height());
     DCHECK(viewport());
     if (wl_fixed_from_double(viewport_src_dip.width()) == 0 ||
         wl_fixed_from_double(viewport_src_dip.height()) == 0) {
@@ -658,6 +679,7 @@ WaylandSurface::State& WaylandSurface::State::operator=(
   rounded_clip_bounds = other.rounded_clip_bounds;
   use_blending = other.use_blending;
   priority_hint = other.priority_hint;
+  background_color = other.background_color;
   return *this;
 }
 
@@ -726,6 +748,12 @@ void WaylandSurface::SetRoundedClipBounds(
     const gfx::RRectF& rounded_clip_bounds) {
   if (GetAugmentedSurface())
     pending_state_.rounded_clip_bounds = rounded_clip_bounds;
+}
+
+void WaylandSurface::SetBackgroundColor(
+    absl::optional<SkColor> background_color) {
+  if (GetAugmentedSurface())
+    pending_state_.background_color = background_color;
 }
 
 // static

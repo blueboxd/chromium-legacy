@@ -212,7 +212,6 @@ void WaylandFrameManager::PlayBackFrame(std::unique_ptr<WaylandFrame> frame) {
         }
       }
     } else {
-      subsurface->Show();
       subsurface->ConfigureAndShowSurface(
           config->bounds_rect, root_config->bounds_rect,
           root_config->surface_scale_factor, nullptr, reference_above);
@@ -266,12 +265,13 @@ void WaylandFrameManager::ApplySurfaceConfigure(
 
   surface->SetBufferTransform(config->transform);
   surface->SetSurfaceBufferScale(ceil(config->surface_scale_factor));
-  surface->SetViewportSource(config->crop_rect);
+  surface->SetBufferCrop(config->crop_rect);
   surface->SetViewportDestination(config->bounds_rect.size());
   surface->SetOpacity(config->opacity);
   surface->SetBlending(config->enable_blend);
   surface->SetRoundedClipBounds(config->rounded_clip_bounds);
   surface->SetOverlayPriority(config->priority_hint);
+  surface->SetBackgroundColor(config->background_color);
   if (set_opaque_region) {
     std::vector<gfx::Rect> region_px = {
         gfx::Rect(gfx::ToRoundedSize(config->bounds_rect.size()))};

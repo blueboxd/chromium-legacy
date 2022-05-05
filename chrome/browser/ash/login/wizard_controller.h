@@ -111,7 +111,9 @@ class WizardController : public OobeUI::Observer {
 
   // Whether to skip any screens that may normally be shown after login
   // (registration, Terms of Service, user image selection).
-  static bool skip_post_login_screens() { return skip_post_login_screens_; }
+  bool skip_post_login_screens() {
+    return wizard_context_->skip_post_login_screens_for_tests;
+  }
 
   // Whether to skip any prompts that may be normally shown during enrollment.
   static bool skip_enrollment_prompts_for_testing() {
@@ -126,7 +128,7 @@ class WizardController : public OobeUI::Observer {
 
   // Skips any screens that may normally be shown after login (registration,
   // Terms of Service, user image selection).
-  static void SkipPostLoginScreensForTesting();
+  void SkipPostLoginScreensForTesting();
 
   // Skips any enrollment prompts that may be normally shown.
   static void SkipEnrollmentPromptsForTesting();
@@ -457,13 +459,15 @@ class WizardController : public OobeUI::Observer {
   // exist already).
   AutoEnrollmentController* GetAutoEnrollmentController();
 
+  // Requests owning TPM for branded builds with --tpm-is-dynamic switch unset
+  // when OobeConsolidatedConsent feature is enabled. When --tpm-is-dynamic
+  // switch is set, pre-enrollment TPM check relies on the TPM being un-owned
+  // until enrollment. b/187429309
+  void MaybeTakeTPMOwnership();
+
   std::unique_ptr<AutoEnrollmentController> auto_enrollment_controller_;
   std::unique_ptr<ScreenManager> screen_manager_;
   WizardContext* wizard_context_;
-
-  // Whether to skip any screens that may normally be shown after login
-  // (registration, Terms of Service, user image selection).
-  static bool skip_post_login_screens_;
 
   static bool skip_enrollment_prompts_for_testing_;
 

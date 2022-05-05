@@ -37,7 +37,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Blink.Accessibility.NumTreeUpdatesQueuedBeforeLayout"
-    units="updates" expires_after="M106">
+    units="updates" expires_after="2022-10-30">
   <owner>aleventhal@chromium.org</owner>
   <owner>chrome-a11y-core@chromium.org</owner>
   <summary>
@@ -715,7 +715,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.DecodedImage.WebPFileFormat" enum="WebPFileFormat"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>mcasas@chromium.org</owner>
   <owner>andrescj@chromium.org</owner>
   <summary>
@@ -725,7 +725,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.DecodedImageType" enum="DecodedImageType"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>urvang@chromium.org</owner>
   <summary>
     Image codec inferred during decode. The histogram is incremented when enough
@@ -885,18 +885,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Blink.Fetch.RequestResourceTime" units="microseconds"
-    expires_after="M82">
+<histogram name="Blink.Fetch.RequestResourceTime2{Scheme}" units="microseconds"
+    expires_after="2022-11-02">
   <owner>csharrison@chromium.org</owner>
+  <owner>cduvall@chromium.org</owner>
   <summary>
-    The total microseconds spent in ResourceFetcher::requestResource.
+    The total microseconds spent in ResourceFetcher::requestResource for
+    {Scheme}.
 
-    Warning: This metric may include reports from clients with low-resolution
-    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
-    will cause this metric to have an abnormal distribution. When considering
-    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
-    solution.
+    This histogram only records metrics on machines with high-resolution clocks.
   </summary>
+  <token key="Scheme">
+    <variant name="" summary="all URLs"/>
+    <variant name=".Data" summary="data URLs"/>
+  </token>
 </histogram>
 
 <histogram name="Blink.FetchQueuedPreloadsTime.{FrameType}.{IsInitial}"
@@ -1562,7 +1564,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.JavascriptDocumentUpdate.UpdateTime"
-    units="microseconds" expires_after="2022-08-28">
+    units="microseconds" expires_after="2022-10-30">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -1979,7 +1981,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.ResourceRequest.RedirectDelay" units="ms"
-    expires_after="2022-08-29">
+    expires_after="2022-10-30">
   <owner>cduvall@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -1999,7 +2001,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.ResourceRequest.StartDelay" units="ms"
-    expires_after="2022-08-29">
+    expires_after="2022-10-30">
   <owner>cduvall@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -2101,7 +2103,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.BackendAvailability"
-    enum="WebOTPBackendAvailability" expires_after="2022-08-28">
+    enum="WebOTPBackendAvailability" expires_after="2022-10-30">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity@google.com</owner>
   <summary>
@@ -2143,7 +2145,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.Outcome" enum="WebOTPServiceOutcome"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>yigu@chromium.org</owner>
   <owner>goto@chromium.org</owner>
   <owner>web-identity@google.com</owner>
@@ -2218,7 +2220,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.TimeSuccess" units="ms"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>yigu@chromium.org</owner>
   <owner>goto@chromium.org</owner>
   <owner>web-identity@google.com</owner>
@@ -2242,7 +2244,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.WebContentsVisibleOnReceive" enum="Boolean"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity@google.com</owner>
   <summary>
@@ -2898,17 +2900,6 @@ chromium-metrics-reviews@google.com.
     <variant name="VideoDecoder"/>
     <variant name="VideoEncoder"/>
   </token>
-</histogram>
-
-<histogram name="Blink.WindowOpen.FromAdState" enum="WindowOpenFromAdState"
-    expires_after="2019-08-30">
-  <owner>yaoxia@chromium.org</owner>
-  <owner>csharrison@chromium.org</owner>
-  <summary>
-    Indicates whether the page called window.open() with an ad script in the
-    stack and/or from an ad subframe. Recorded whenever window.open() is called
-    when AdTagging is enabled.
-  </summary>
 </histogram>
 
 <histogram name="Blink.{CookieOperation}Time.Manager{ManagerState}" units="ms"

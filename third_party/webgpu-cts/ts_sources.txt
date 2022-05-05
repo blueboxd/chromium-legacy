@@ -27,6 +27,7 @@ src/common/internal/test_suite_listing.ts
 src/common/internal/util.ts
 src/common/internal/tree.ts
 src/common/internal/file_loader.ts
+src/common/util/colors.ts
 src/common/util/navigator_gpu.ts
 src/common/runtime/helper/sys.ts
 src/common/runtime/cmdline.ts
@@ -43,7 +44,6 @@ src/common/tools/gen_wpt_cts_html.ts
 src/common/tools/presubmit.ts
 src/common/tools/version.ts
 src/common/util/collect_garbage.ts
-src/common/util/colors.ts
 src/common/util/preprocessor.ts
 src/unittests/unit_test.ts
 src/demo/a.spec.ts
@@ -155,6 +155,7 @@ src/webgpu/api/operation/render_pass/storeop2.spec.ts
 src/webgpu/api/operation/render_pipeline/alpha_to_coverage.spec.ts
 src/webgpu/api/operation/render_pipeline/culling_tests.spec.ts
 src/webgpu/api/operation/render_pipeline/entry_point_name.spec.ts
+src/webgpu/util/texture/texture_ok.ts
 src/webgpu/api/operation/render_pipeline/pipeline_output_targets.spec.ts
 src/webgpu/api/operation/render_pipeline/primitive_topology.spec.ts
 src/webgpu/api/operation/render_pipeline/sample_mask.spec.ts
@@ -176,7 +177,6 @@ src/webgpu/api/operation/sampling/anisotropy.spec.ts
 src/webgpu/api/operation/sampling/filter_mode.spec.ts
 src/webgpu/api/operation/sampling/lod_clamp.spec.ts
 src/webgpu/api/operation/shader_module/compilation_info.spec.ts
-src/webgpu/util/texture/texture_ok.ts
 src/webgpu/api/operation/texture_view/format_reinterpretation.spec.ts
 src/webgpu/api/operation/texture_view/read.spec.ts
 src/webgpu/api/operation/texture_view/write.spec.ts
@@ -288,7 +288,15 @@ src/webgpu/shader/execution/expression/call/builtin/countOneBits.spec.ts
 src/webgpu/shader/execution/expression/call/builtin/countTrailingZeros.spec.ts
 src/webgpu/shader/execution/expression/call/builtin/cross.spec.ts
 src/webgpu/shader/execution/expression/call/builtin/degrees.spec.ts
+src/webgpu/shader/execution/expression/call/builtin/determinant.spec.ts
 src/webgpu/shader/execution/expression/call/builtin/distance.spec.ts
+src/webgpu/shader/execution/expression/call/builtin/dot.spec.ts
+src/webgpu/shader/execution/expression/call/builtin/dpdx.spec.ts
+src/webgpu/shader/execution/expression/call/builtin/dpdxCoarse.spec.ts
+src/webgpu/shader/execution/expression/call/builtin/dpdxFine.spec.ts
+src/webgpu/shader/execution/expression/call/builtin/dpdy.spec.ts
+src/webgpu/shader/execution/expression/call/builtin/dpdyCoarse.spec.ts
+src/webgpu/shader/execution/expression/call/builtin/dpdyFine.spec.ts
 src/webgpu/shader/execution/expression/call/builtin/exp.spec.ts
 src/webgpu/shader/execution/expression/call/builtin/exp2.spec.ts
 src/webgpu/shader/execution/expression/call/builtin/extractBits.spec.ts
@@ -299,6 +307,9 @@ src/webgpu/shader/execution/expression/call/builtin/floor.spec.ts
 src/webgpu/shader/execution/expression/call/builtin/fma.spec.ts
 src/webgpu/shader/execution/expression/call/builtin/fract.spec.ts
 src/webgpu/shader/execution/expression/call/builtin/frexp.spec.ts
+src/webgpu/shader/execution/expression/call/builtin/fwidth.spec.ts
+src/webgpu/shader/execution/expression/call/builtin/fwidthCoarse.spec.ts
+src/webgpu/shader/execution/expression/call/builtin/fwidthFine.spec.ts
 src/webgpu/shader/execution/expression/call/builtin/insertBits.spec.ts
 src/webgpu/shader/execution/expression/call/builtin/inversesqrt.spec.ts
 src/webgpu/shader/execution/expression/call/builtin/ldexp.spec.ts
@@ -318,7 +329,16 @@ src/webgpu/shader/execution/expression/call/builtin/refract.spec.ts
 src/webgpu/shader/execution/expression/call/builtin/reverseBits.spec.ts
 src/webgpu/shader/execution/expression/call/builtin/round.spec.ts
 src/webgpu/shader/execution/expression/call/builtin/select.spec.ts
+src/webgpu/shader/execution/expression/call/builtin/sign.spec.ts
 src/webgpu/shader/execution/expression/call/builtin/sin.spec.ts
+src/webgpu/shader/execution/expression/call/builtin/sinh.spec.ts
+src/webgpu/shader/execution/expression/call/builtin/smoothstep.spec.ts
+src/webgpu/shader/execution/expression/call/builtin/sqrt.spec.ts
+src/webgpu/shader/execution/expression/call/builtin/step.spec.ts
+src/webgpu/shader/execution/expression/call/builtin/tan.spec.ts
+src/webgpu/shader/execution/expression/call/builtin/tanh.spec.ts
+src/webgpu/shader/execution/expression/call/builtin/transpose.spec.ts
+src/webgpu/shader/execution/expression/call/builtin/trunc.spec.ts
 src/webgpu/shader/execution/expression/unary/unary.ts
 src/webgpu/shader/execution/expression/unary/f32_arithmetic.spec.ts
 src/webgpu/shader/execution/memory_model/memory_model_setup.ts

@@ -237,8 +237,8 @@ void ContinueSectionView::AnimateDismissToast(base::RepeatingClosure callback) {
   PrepareForLayerAnimation(privacy_toast_);
 
   views::AnimationBuilder animation_builder;
-  animation_builder.OnEnded(std::move(callback));
-  animation_builder.OnAborted(std::move(callback));
+  animation_builder.OnEnded(callback);
+  animation_builder.OnAborted(callback);
 
   animation_builder
       .SetPreemptionStrategy(
@@ -440,6 +440,14 @@ void ContinueSectionView::UpdateElementsVisibility() {
 
 void ContinueSectionView::AddedToWidget() {
   GetFocusManager()->AddFocusChangeListener(this);
+}
+
+void ContinueSectionView::OnThemeChanged() {
+  views::View::OnThemeChanged();
+  if (continue_label_) {
+    bubble_utils::ApplyStyle(continue_label_,
+                             bubble_utils::LabelStyle::kSubtitle);
+  }
 }
 
 void ContinueSectionView::RemovedFromWidget() {

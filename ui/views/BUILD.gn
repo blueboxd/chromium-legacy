@@ -825,7 +825,7 @@ component("views") {
         public += [ "widget/desktop_aura/desktop_screen_ozone.h" ]
         sources += [ "widget/desktop_aura/desktop_screen_ozone.cc" ]
       }
-      if (is_linux || is_chromeos) {
+      if (is_linux) {
         public += [ "widget/desktop_aura/desktop_window_tree_host_linux.h" ]
         sources += [
           "style/platform_style_linux.cc",
@@ -836,7 +836,18 @@ component("views") {
         ]
         deps += [ "//ui/base:hit_test" ]
       }
-      if (is_linux || is_chromeos || is_fuchsia) {
+      if (is_chromeos_lacros) {
+        public += [ "widget/desktop_aura/desktop_window_tree_host_lacros.h" ]
+        sources += [
+          # TODO: do we need one for lacros?
+          "style/platform_style_linux.cc",
+          "widget/desktop_aura/desktop_window_tree_host_lacros.cc",
+          "widget/desktop_aura/window_event_filter_lacros.cc",
+          "widget/desktop_aura/window_event_filter_lacros.h",
+        ]
+        deps += [ "//ui/base:hit_test" ]
+      }
+      if (is_linux || is_chromeos_lacros || is_fuchsia) {
         public += [
           "widget/desktop_aura/desktop_window_tree_host_platform.h",
           "widget/desktop_aura/window_move_client_platform.h",
@@ -848,6 +859,12 @@ component("views") {
           "widget/desktop_aura/window_move_client_platform.cc",
         ]
         public_deps += [ "//ui/base/dragdrop/mojom:mojom_shared" ]
+      }
+      if (is_linux) {
+        sources += [
+          "widget/desktop_aura/desktop_drag_drop_client_ozone_linux.cc",
+          "widget/desktop_aura/desktop_drag_drop_client_ozone_linux.h",
+        ]
       }
       if (use_atk) {
         sources += [
@@ -1362,11 +1379,9 @@ test("views_unittests") {
         sources += [
           "widget/desktop_aura/desktop_window_tree_host_platform_unittest.cc",
         ]
-        if (is_linux || is_chromeos) {
-          sources += [
-            "widget/desktop_aura/desktop_window_tree_host_linux_unittest.cc",
-          ]
-        }
+      }
+      if (is_linux || is_chromeos) {
+        sources += [ "widget/desktop_aura/desktop_window_tree_host_platform_impl_unittest.cc" ]
       }
       if (use_ozone) {
         sources +=
@@ -1452,7 +1467,7 @@ source_set("views_interactive_ui_tests") {
     ]
 
     if (is_linux || is_chromeos_lacros) {
-      sources += [ "widget/desktop_aura/desktop_window_tree_host_linux_interactive_uitest.cc" ]
+      sources += [ "widget/desktop_aura/desktop_window_tree_host_platform_impl_interactive_uitest.cc" ]
     }
 
     deps += [

@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/qr_scanner_commands.h"
+#import "ios/chrome/browser/ui/icons/action_icon.h"
 #import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
@@ -33,13 +34,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-
-// The size of the symbol image.
-NSInteger kSymbolImagePointSize = 18;
-
-}  // namespace
 
 @interface BrowserActionFactory ()
 
@@ -105,9 +99,12 @@ NSInteger kSymbolImagePointSize = 18;
     };
   }
 
+  UIImage* image = UseSymbols() ? CustomSymbolWithPointSize(
+                                      kIncognitoSymbol, kSymbolActionPointSize)
+                                : [UIImage imageNamed:@"open_in_incognito"];
   return [self actionWithTitle:l10n_util::GetNSString(
                                    IDS_IOS_OPEN_IN_INCOGNITO_ACTION_TITLE)
-                         image:[UIImage imageNamed:@"open_in_incognito"]
+                         image:image
                           type:MenuActionType::OpenInNewIncognitoTab
                          block:block];
 }
@@ -118,10 +115,14 @@ NSInteger kSymbolImagePointSize = 18;
   id<ApplicationCommands> windowOpener = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), ApplicationCommands);
 
+  UIImage* image = UseSymbols()
+                       ? DefaultSymbolWithPointSize(kNewWindowActionSymbol,
+                                                    kSymbolActionPointSize)
+                       : [UIImage imageNamed:@"open_new_window"];
   NSUserActivity* activity = ActivityToLoadURL(activityOrigin, URL);
   return [self actionWithTitle:l10n_util::GetNSString(
                                    IDS_IOS_CONTENT_CONTEXT_OPENINNEWWINDOW)
-                         image:[UIImage imageNamed:@"open_new_window"]
+                         image:image
                           type:MenuActionType::OpenInNewWindow
                          block:^{
                            [windowOpener openNewWindowWithActivity:activity];
@@ -131,9 +132,14 @@ NSInteger kSymbolImagePointSize = 18;
 - (UIAction*)actionToOpenInNewWindowWithActivity:(NSUserActivity*)activity {
   id<ApplicationCommands> windowOpener = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), ApplicationCommands);
+
+  UIImage* image = UseSymbols()
+                       ? DefaultSymbolWithPointSize(kNewWindowActionSymbol,
+                                                    kSymbolActionPointSize)
+                       : [UIImage imageNamed:@"open_new_window"];
   return [self actionWithTitle:l10n_util::GetNSString(
                                    IDS_IOS_CONTENT_CONTEXT_OPENINNEWWINDOW)
-                         image:[UIImage imageNamed:@"open_new_window"]
+                         image:image
                           type:MenuActionType::OpenInNewWindow
                          block:^{
                            [windowOpener openNewWindowWithActivity:activity];
@@ -176,39 +182,13 @@ NSInteger kSymbolImagePointSize = 18;
   return action;
 }
 
-- (UIAction*)actionToShowLinkPreview {
-  PrefService* prefService = self.browser->GetBrowserState()->GetPrefs();
-  UIAction* action = [self
-      actionWithTitle:l10n_util::GetNSString(
-                          IDS_IOS_CONTENT_CONTEXT_SHOWLINKPREVIEW)
-                image:[UIImage imageNamed:@"show_preview"]
-                 type:MenuActionType::ShowLinkPreview
-                block:^{
-                  prefService->SetBoolean(prefs::kLinkPreviewEnabled, true);
-                }];
-  return action;
-}
-
-- (UIAction*)actionToHideLinkPreview {
-  PrefService* prefService = self.browser->GetBrowserState()->GetPrefs();
-  UIAction* action = [self
-      actionWithTitle:l10n_util::GetNSString(
-                          IDS_IOS_CONTENT_CONTEXT_HIDELINKPREVIEW)
-                image:[UIImage imageNamed:@"hide_preview"]
-                 type:MenuActionType::HideLinkPreview
-                block:^{
-                  prefService->SetBoolean(prefs::kLinkPreviewEnabled, false);
-                }];
-  return action;
-}
-
 - (UIAction*)actionToOpenNewTab {
   id<ApplicationCommands> handler = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), ApplicationCommands);
   UIAction* action =
       [self actionWithTitle:l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_NEW_TAB)
-                      image:DefaultSymbolWithPointSize(@"plus.square",
-                                                       kSymbolImagePointSize)
+                      image:DefaultSymbolWithPointSize(kNewTabActionSymbol,
+                                                       kSymbolActionPointSize)
                        type:MenuActionType::OpenNewTab
                       block:^{
                         [handler openURLInNewTab:[OpenNewTabCommand
@@ -244,8 +224,8 @@ NSInteger kSymbolImagePointSize = 18;
       static_cast<id<BrowserCommands>>(self.browser->GetCommandDispatcher());
   UIAction* action =
       [self actionWithTitle:l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_CLOSE_TAB)
-                      image:DefaultSymbolWithPointSize(@"xmark",
-                                                       kSymbolImagePointSize)
+                      image:DefaultSymbolWithPointSize(kXMarkSymbol,
+                                                       kSymbolActionPointSize)
                        type:MenuActionType::CloseCurrentTabs
                       block:^{
                         [handler closeCurrentTab];
@@ -259,8 +239,8 @@ NSInteger kSymbolImagePointSize = 18;
       self.browser->GetCommandDispatcher(), QRScannerCommands);
   return [self
       actionWithTitle:l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_QR_SCANNER)
-                image:DefaultSymbolWithPointSize(@"qrcode.viewfinder",
-                                                 kSymbolImagePointSize)
+                image:DefaultSymbolWithPointSize(kQRCodeFinderActionSymbol,
+                                                 kSymbolActionPointSize)
                  type:MenuActionType::ShowQRScanner
                 block:^{
                   [handler showQRScanner];
@@ -272,7 +252,8 @@ NSInteger kSymbolImagePointSize = 18;
       self.browser->GetCommandDispatcher(), ApplicationCommands);
   return [self
       actionWithTitle:l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_VOICE_SEARCH)
-                image:DefaultSymbolWithPointSize(@"mic", kSymbolImagePointSize)
+                image:DefaultSymbolWithPointSize(kMicrophoneSymbol,
+                                                 kSymbolActionPointSize)
                  type:MenuActionType::StartVoiceSearch
                 block:^{
                   [handler startVoiceSearch];
@@ -284,8 +265,8 @@ NSInteger kSymbolImagePointSize = 18;
       self.browser->GetCommandDispatcher(), ApplicationCommands);
   UIAction* action = [self
       actionWithTitle:l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_NEW_SEARCH)
-                image:DefaultSymbolWithPointSize(@"magnifyingglass",
-                                                 kSymbolImagePointSize)
+                image:DefaultSymbolWithPointSize(kSearchSymbol,
+                                                 kSymbolActionPointSize)
                  type:MenuActionType::StartNewSearch
                 block:^{
                   OpenNewTabCommand* command =
@@ -350,8 +331,9 @@ NSInteger kSymbolImagePointSize = 18;
 
   return [self actionWithTitle:l10n_util::GetNSString(
                                    IDS_IOS_TOOLS_MENU_SEARCH_COPIED_IMAGE)
-                         image:DefaultSymbolWithPointSize(@"doc.on.clipboard",
-                                                          kSymbolImagePointSize)
+                         image:DefaultSymbolWithPointSize(
+                                   kClipboardActionSymbol,
+                                   kSymbolActionPointSize)
                           type:MenuActionType::SearchCopiedImage
                          block:^{
                            ClipboardRecentContent::GetInstance()
@@ -377,8 +359,9 @@ NSInteger kSymbolImagePointSize = 18;
 
   return [self actionWithTitle:l10n_util::GetNSString(
                                    IDS_IOS_TOOLS_MENU_VISIT_COPIED_LINK)
-                         image:DefaultSymbolWithPointSize(@"doc.on.clipboard",
-                                                          kSymbolImagePointSize)
+                         image:DefaultSymbolWithPointSize(
+                                   kClipboardActionSymbol,
+                                   kSymbolActionPointSize)
                           type:MenuActionType::VisitCopiedLink
                          block:^{
                            ClipboardRecentContent::GetInstance()
@@ -404,8 +387,9 @@ NSInteger kSymbolImagePointSize = 18;
 
   return [self actionWithTitle:l10n_util::GetNSString(
                                    IDS_IOS_TOOLS_MENU_SEARCH_COPIED_TEXT)
-                         image:DefaultSymbolWithPointSize(@"doc.on.clipboard",
-                                                          kSymbolImagePointSize)
+                         image:DefaultSymbolWithPointSize(
+                                   kClipboardActionSymbol,
+                                   kSymbolActionPointSize)
                           type:MenuActionType::SearchCopiedText
                          block:^{
                            ClipboardRecentContent::GetInstance()

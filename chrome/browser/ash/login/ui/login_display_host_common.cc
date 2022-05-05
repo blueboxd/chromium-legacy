@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/login/ui/login_display_host_common.h"
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/login_accelerators.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -405,6 +406,11 @@ bool LoginDisplayHostCommon::HandleAccelerator(LoginAcceleratorAction action) {
     return true;
   }
 
+  if (kiosk_launch_controller_ &&
+      kiosk_launch_controller_->HandleAccelerator(action)) {
+    return true;
+  }
+
   // This path should only handle screen-specific acceletators, so we do not
   // need to create WebUI here.
   if (IsWizardControllerCreated() &&
@@ -450,6 +456,16 @@ void LoginDisplayHostCommon::StartManagementTransition() {
 void LoginDisplayHostCommon::ShowTosForExistingUser() {
   SetScreenAfterManagedTos(ash::OOBE_SCREEN_UNKNOWN);
   StartUserOnboarding();
+}
+
+void LoginDisplayHostCommon::ShowNewTermsForFlexUsers() {
+  if (features::IsOobeConsolidatedConsentEnabled()) {
+    SetScreenAfterManagedTos(ConsolidatedConsentScreenView::kScreenId);
+  } else {
+    SetScreenAfterManagedTos(EulaView::kScreenId);
+  }
+  wizard_context_->is_cloud_ready_update_flow = true;
+  StartWizard(TermsOfServiceScreenView::kScreenId);
 }
 
 void LoginDisplayHostCommon::SetAuthSessionForOnboarding(

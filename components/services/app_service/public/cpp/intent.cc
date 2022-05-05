@@ -14,6 +14,19 @@ IntentFile::IntentFile(const GURL& url) : url(url) {}
 
 IntentFile::~IntentFile() = default;
 
+std::unique_ptr<IntentFile> IntentFile::Clone() const {
+  auto intent_file = std::make_unique<IntentFile>(url);
+  if (mime_type.has_value()) {
+    intent_file->mime_type = mime_type.value();
+  }
+  if (file_name.has_value()) {
+    intent_file->file_name = file_name.value();
+  }
+  intent_file->file_size = file_size;
+  intent_file->is_directory = is_directory;
+  return intent_file;
+}
+
 bool IntentFile::MatchConditionValue(const ConditionValuePtr& condition_value) {
   switch (condition_value->match_type) {
     case PatternMatchType::kNone:
@@ -51,49 +64,53 @@ bool IntentFile::MatchAnyConditionValue(
 
 Intent::Intent(const std::string& action) : action(action) {}
 
-Intent::Intent(const GURL& url)
-    : action(apps_util::kIntentActionView), url(url) {}
+Intent::Intent(const std::string& action, const GURL& url)
+    : action(action), url(url) {}
 
-Intent::Intent(const std::vector<GURL>& filesystem_urls,
-               const std::vector<std::string>& mime_types)
-    : action(filesystem_urls.size() == 1
-                 ? apps_util::kIntentActionSend
-                 : apps_util::kIntentActionSendMultiple),
-      mime_type(apps_util::CalculateCommonMimeType(mime_types)) {
-  DCHECK_EQ(filesystem_urls.size(), mime_types.size());
-  for (size_t i = 0; i < filesystem_urls.size(); i++) {
-    auto file = std::make_unique<IntentFile>(filesystem_urls[i]);
-    file->mime_type = mime_types.at(i);
-    files.push_back(std::move(file));
-  }
-}
-
-Intent::Intent(std::vector<IntentFilePtr> files)
-    : action(apps_util::kIntentActionView), files(std::move(files)) {}
-
-Intent::Intent(const std::vector<GURL>& filesystem_urls,
-               const std::vector<std::string>& mime_types,
-               const std::string& text,
-               const std::string& title)
-    : Intent(filesystem_urls, mime_types) {
-  if (!text.empty()) {
-    share_text = text;
-  }
-  if (!title.empty()) {
-    share_title = title;
-  }
-}
-
-Intent::Intent(const std::string& text, const std::string& title)
-    : Intent(apps_util::kIntentActionSend) {
-  mime_type = "text/plain";
-  share_text = text;
-  if (!title.empty()) {
-    share_title = title;
-  }
-}
+Intent::Intent(const std::string& action, std::vector<IntentFilePtr> files)
+    : action(action), files(std::move(files)) {}
 
 Intent::~Intent() = default;
+
+std::unique_ptr<Intent> Intent::Clone() const {
+  auto intent = std::make_unique<Intent>(action);
+
+  if (url.has_value()) {
+    intent->url = url.value();
+  }
+  if (mime_type.has_value()) {
+    intent->mime_type = mime_type.value();
+  }
+  for (const auto& file : files) {
+    intent->files.push_back(file->Clone());
+  }
+  if (activity_name.has_value()) {
+    intent->activity_name = activity_name.value();
+  }
+  if (drive_share_url.has_value()) {
+    intent->drive_share_url = drive_share_url.value();
+  }
+  if (share_text.has_value()) {
+    intent->share_text = share_text.value();
+  }
+  if (share_title.has_value()) {
+    intent->share_title = share_title.value();
+  }
+  if (start_type.has_value()) {
+    intent->start_type = start_type.value();
+  }
+  for (const auto& category : categories) {
+    intent->categories.push_back(category);
+  }
+  if (data.has_value()) {
+    intent->data = data.value();
+  }
+  intent->ui_bypassed = ui_bypassed;
+  for (const auto& extra : extras) {
+    intent->extras[extra.first] = extra.second;
+  }
+  return intent;
+}
 
 absl::optional<std::string> Intent::GetIntentConditionValueByType(
     ConditionType condition_type) {

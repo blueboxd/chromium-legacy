@@ -34,7 +34,6 @@
 #include "content/public/browser/mojo_binder_policy_map.h"
 #include "content/public/browser/storage_partition_config.h"
 #include "content/public/common/alternative_error_page_override_info.mojom-forward.h"
-#include "content/public/common/main_function_params.h"
 #include "content/public/common/page_visibility_state.h"
 #include "content/public/common/window_container_type.mojom-forward.h"
 #include "device/vr/buildflags/buildflags.h"
@@ -277,8 +276,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allows the embedder to set any number of custom BrowserMainParts
   // implementations for the browser startup code. See comments in
   // browser_main_parts.h.
+  // |is_integration_test| is true iff MainFunctionParams::ui_task was set and
+  // will thus intercept MainMessageLoopRun (i.e. in integration tests -- ref.
+  // BrowserMainParts::ShouldInterceptMainMessageLoopRun for additional control
+  // the embedder has over that).
   virtual std::unique_ptr<BrowserMainParts> CreateBrowserMainParts(
-      MainFunctionParams parameters);
+      bool is_integration_test);
 
   // Allows the embedder to change the default behavior of
   // BrowserThread::PostAfterStartupTask to better match whatever
@@ -2220,6 +2223,16 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns true if First-Party Sets is enabled. The value of this method
   // should not change in a single browser session.
   virtual bool IsFirstPartySetsEnabled();
+
+  // Returns true iff the embedder will provide a list of First-Party Sets via
+  // content::FirstPartySetsHandler::SetPublicFirstPartySets during startup, at
+  // some point. If `IsFirstPartySetsEnabled()` returns false, this method will
+  // still be called, but its return value will be ignored.
+  //
+  // If this method returns false but `IsFirstPartySetsEnabled()` returns true
+  // (e.g. in tests), an empty list will be used instead of waiting for the
+  // embedder to call content::FirstPartySetsHandler::SetPublicFirstPartySets.
+  virtual bool WillProvidePublicFirstPartySets();
 
   // Returns a base::Value::Dict containing the value of the First-Party Sets
   // Overrides enterprise policy.

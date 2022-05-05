@@ -106,7 +106,8 @@ _CONFIG = [
             'base::WrapRefCounted',
             'base::WritableSharedMemoryMapping',
             'base::as_bytes',
-            'base::in_place',
+            'base::bit_cast',
+            'absl::in_place',
             'absl::make_optional',
             'base::make_span',
             'absl::nullopt',
@@ -271,6 +272,7 @@ _CONFIG = [
             'base::Feature.*',
             'base::FEATURE_.+',
             "base::GetFieldTrial.*",
+            'base::features::.+',
             'features::.+',
 
             # PartitionAlloc
@@ -932,7 +934,8 @@ _CONFIG = [
     },
     {
         'paths': [
-            'third_party/blink/renderer/core/inspector/inspector_memory_agent.cc'
+            'third_party/blink/renderer/core/inspector/inspector_memory_agent.cc',
+            'third_party/blink/renderer/core/inspector/inspector_memory_agent.h',
         ],
         'allowed': [
             'base::ModuleCache',
@@ -1111,6 +1114,7 @@ _CONFIG = [
             'gpu::raster::RasterInterface',
             'gpu::Mailbox',
             'gpu::MailboxHolder',
+            'gpu::SharedImageInterface',
             'gpu::SyncToken',
             'gpu::webgpu::ReservedTexture',
             'display::Display',

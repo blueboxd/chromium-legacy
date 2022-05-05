@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -55,6 +56,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -628,6 +630,12 @@ void ManagePasswordsUIController::NavigateToPasswordCheckup(
     password_manager::PasswordCheckReferrer referrer) {
   chrome::ShowPasswordCheck(chrome::FindBrowserWithWebContents(web_contents()));
   password_manager::LogPasswordCheckReferrer(referrer);
+}
+
+void ManagePasswordsUIController::StartAutomatedPasswordChange() {
+  // TODO(crbug.com/1321500): Implement once AutomatedPasswordCheckClient class
+  // exists.
+  NOTIMPLEMENTED();
 }
 
 void ManagePasswordsUIController::EnableSync(const AccountInfo& account) {

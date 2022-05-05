@@ -20,6 +20,8 @@
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/web_contents.h"
 
+using password_manager::PasswordScriptsFetcher;
+
 namespace {
 
 // TODO(1311324): Reduce the level of code duplication between
@@ -73,14 +75,15 @@ void APCInternalsHandler::OnScriptCacheRequested(
 
 void APCInternalsHandler::OnRefreshScriptCacheRequested(
     const base::Value::List& args) {
-#if BUILDFLAG(IS_ANDROID)
-  content::BrowserContext* browser_context =
-      web_ui()->GetWebContents()->GetBrowserContext();
-  password_manager::PasswordScriptsFetcher* scripts_fetcher =
-      PasswordScriptsFetcherFactory::GetForBrowserContext(browser_context);
-  if (scripts_fetcher)
+  if (PasswordScriptsFetcher* scripts_fetcher = GetPasswordScriptsFetcher();
+      scripts_fetcher) {
     scripts_fetcher->PrewarmCache();
-#endif
+  }
+}
+
+PasswordScriptsFetcher* APCInternalsHandler::GetPasswordScriptsFetcher() {
+  return PasswordScriptsFetcherFactory::GetForBrowserContext(
+      web_ui()->GetWebContents()->GetBrowserContext());
 }
 
 // Returns a list of dictionaries that contain the name and the state of
@@ -91,11 +94,11 @@ base::Value::List APCInternalsHandler::GetAPCRelatedFlags() const {
   // base::FeatureList::IsEnabled) checks that there is only one memory address
   // per feature.
   const base::Feature* const apc_features[] = {
-#if BUILDFLAG(IS_ANDROID)
-    &password_manager::features::kPasswordChangeInSettings,
-    &password_manager::features::kPasswordDomainCapabilitiesFetching,
-    &password_manager::features::kPasswordScriptsFetching,
-#endif
+      &password_manager::features::kPasswordChange,
+      &password_manager::features::kPasswordChangeInSettings,
+      &password_manager::features::kPasswordScriptsFetching,
+      &password_manager::features::kPasswordDomainCapabilitiesFetching,
+      &password_manager::features::kForceEnablePasswordDomainCapabilities,
   };
 
   base::Value::List relevant_features;
@@ -122,28 +125,18 @@ base::Value::List APCInternalsHandler::GetAPCRelatedFlags() const {
 }
 
 base::Value::Dict APCInternalsHandler::GetPasswordScriptFetcherInformation() {
-#if BUILDFLAG(IS_ANDROID)
-  content::BrowserContext* browser_context =
-      web_ui()->GetWebContents()->GetBrowserContext();
-  password_manager::PasswordScriptsFetcher* scripts_fetcher =
-      PasswordScriptsFetcherFactory::GetForBrowserContext(browser_context);
-  if (scripts_fetcher)
+  if (PasswordScriptsFetcher* scripts_fetcher = GetPasswordScriptsFetcher();
+      scripts_fetcher) {
     return scripts_fetcher->GetDebugInformationForInternals();
-#endif
+  }
   return base::Value::Dict();
 }
 
 base::Value::List APCInternalsHandler::GetPasswordScriptFetcherCache() {
-#if BUILDFLAG(IS_ANDROID)
-  content::BrowserContext* browser_context =
-      web_ui()->GetWebContents()->GetBrowserContext();
-  password_manager::PasswordScriptsFetcher* scripts_fetcher =
-      PasswordScriptsFetcherFactory::GetForBrowserContext(browser_context);
-  if (scripts_fetcher) {
+  if (PasswordScriptsFetcher* scripts_fetcher = GetPasswordScriptsFetcher();
+      scripts_fetcher) {
     return scripts_fetcher->GetCacheEntries();
   }
-#endif
-
   return base::Value::List();
 }
 
@@ -154,19 +147,16 @@ base::Value::Dict APCInternalsHandler::GetAutofillAssistantInformation() const {
   // TODO(crbug.com/1314010): Add default values once global instance of
   // AutofillAssistant exists and exposes more methods.
   static const char* const kAutofillAssistantSwitches[] = {
-#if BUILDFLAG(IS_ANDROID)
-    autofill_assistant::switches::kAutofillAssistantAnnotateDom,
-    autofill_assistant::switches::kAutofillAssistantAuth,
-    autofill_assistant::switches::kAutofillAssistantCupPublicKeyBase64,
-    autofill_assistant::switches::kAutofillAssistantCupKeyVersion,
-    autofill_assistant::switches::kAutofillAssistantForceFirstTimeUser,
-    autofill_assistant::switches::kAutofillAssistantForceOnboarding,
-    autofill_assistant::switches::
-        kAutofillAssistantImplicitTriggeringDebugParameters,
-    autofill_assistant::switches::kAutofillAssistantServerKey,
-    autofill_assistant::switches::kAutofillAssistantUrl
-#endif
-  };
+      autofill_assistant::switches::kAutofillAssistantAnnotateDom,
+      autofill_assistant::switches::kAutofillAssistantAuth,
+      autofill_assistant::switches::kAutofillAssistantCupPublicKeyBase64,
+      autofill_assistant::switches::kAutofillAssistantCupKeyVersion,
+      autofill_assistant::switches::kAutofillAssistantForceFirstTimeUser,
+      autofill_assistant::switches::kAutofillAssistantForceOnboarding,
+      autofill_assistant::switches::
+          kAutofillAssistantImplicitTriggeringDebugParameters,
+      autofill_assistant::switches::kAutofillAssistantServerKey,
+      autofill_assistant::switches::kAutofillAssistantUrl};
 
   const auto* command_line = base::CommandLine::ForCurrentProcess();
   for (const char* switch_name : kAutofillAssistantSwitches) {

@@ -100,6 +100,10 @@ bool WebSocketTransportConnectJob::HasEstablishedConnection() const {
   return false;
 }
 
+ConnectionAttempts WebSocketTransportConnectJob::GetConnectionAttempts() const {
+  return connection_attempts_;
+}
+
 ResolveErrorInfo WebSocketTransportConnectJob::GetResolveErrorInfo() const {
   return resolve_error_info_;
 }
@@ -172,8 +176,11 @@ int WebSocketTransportConnectJob::DoResolveHostComplete(int result) {
   connect_timing_.connect_start = connect_timing_.dns_end;
   resolve_error_info_ = request_->GetResolveErrorInfo();
 
-  if (result != OK)
+  if (result != OK) {
+    // If hostname resolution failed, record an empty endpoint and the result.
+    connection_attempts_.push_back(ConnectionAttempt(IPEndPoint(), result));
     return result;
+  }
   DCHECK(request_->GetAddressResults());
 
   next_state_ = STATE_TRANSPORT_CONNECT;
@@ -201,7 +208,6 @@ int WebSocketTransportConnectJob::DoTransportConnect() {
 
   AddressList ipv4_addresses;
   AddressList ipv6_addresses;
-  int result = ERR_UNEXPECTED;
   next_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
 
   for (AddressList::const_iterator it = request_->GetAddressResults()->begin();
@@ -223,90 +229,97 @@ int WebSocketTransportConnectJob::DoTransportConnect() {
 
   if (!ipv4_addresses.empty()) {
     ipv4_job_ = std::make_unique<WebSocketTransportConnectSubJob>(
-        ipv4_addresses, this, SUB_JOB_IPV4, websocket_endpoint_lock_manager());
+        ipv4_addresses, this, SUB_JOB_IPV4);
   }
 
   if (!ipv6_addresses.empty()) {
     ipv6_job_ = std::make_unique<WebSocketTransportConnectSubJob>(
-        ipv6_addresses, this, SUB_JOB_IPV6, websocket_endpoint_lock_manager());
-    result = ipv6_job_->Start();
-    switch (result) {
-      case OK:
-        DCHECK(request_);
-        SetSocket(ipv6_job_->PassSocket(),
-                  base::OptionalFromPtr(request_->GetDnsAliasResults()));
-        return result;
-
-      case ERR_IO_PENDING:
-        if (ipv4_job_) {
-          // This use of base::Unretained is safe because |fallback_timer_| is
-          // owned by this object.
-          fallback_timer_.Start(
-              FROM_HERE,
-              base::Milliseconds(TransportConnectJob::kIPv6FallbackTimerInMs),
-              base::BindOnce(&WebSocketTransportConnectJob::StartIPv4JobAsync,
-                             base::Unretained(this)));
-        }
-        return result;
-
-      default:
-        ipv6_job_.reset();
+        ipv6_addresses, this, SUB_JOB_IPV6);
+    int result = ipv6_job_->Start();
+    if (result != ERR_IO_PENDING)
+      return HandleSubJobComplete(result, ipv6_job_.get());
+    if (ipv4_job_) {
+      // This use of base::Unretained is safe because |fallback_timer_| is
+      // owned by this object.
+      fallback_timer_.Start(
+          FROM_HERE, TransportConnectJob::kIPv6FallbackTime,
+          base::BindOnce(&WebSocketTransportConnectJob::StartIPv4JobAsync,
+                         base::Unretained(this)));
     }
+    return ERR_IO_PENDING;
   }
 
   DCHECK(!ipv6_job_);
   if (ipv4_job_) {
-    result = ipv4_job_->Start();
-    if (result == OK) {
-      DCHECK(request_);
-      SetSocket(ipv4_job_->PassSocket(),
-                base::OptionalFromPtr(request_->GetDnsAliasResults()));
-    }
+    int result = ipv4_job_->Start();
+    if (result != ERR_IO_PENDING)
+      return HandleSubJobComplete(result, ipv4_job_.get());
+    return ERR_IO_PENDING;
   }
 
-  return result;
+  return ERR_UNEXPECTED;
 }
 
 int WebSocketTransportConnectJob::DoTransportConnectComplete(int result) {
+  // Make sure nothing else calls back into this object.
+  ipv4_job_.reset();
+  ipv6_job_.reset();
+  fallback_timer_.Stop();
+
   if (result == OK)
     TransportConnectJob::HistogramDuration(connect_timing_);
+  return result;
+}
+
+int WebSocketTransportConnectJob::HandleSubJobComplete(
+    int result,
+    WebSocketTransportConnectSubJob* job) {
+  DCHECK_NE(result, ERR_IO_PENDING);
+  if (result == OK) {
+    DCHECK(request_);
+    SetSocket(job->PassSocket(),
+              base::OptionalFromPtr(request_->GetDnsAliasResults()));
+    return result;
+  }
+
+  if (result == ERR_NETWORK_IO_SUSPENDED) {
+    // Don't try other jobs if entering suspend mode.
+    return result;
+  }
+
+  switch (job->type()) {
+    case SUB_JOB_IPV4:
+      ipv4_job_.reset();
+      break;
+
+    case SUB_JOB_IPV6:
+      ipv6_job_.reset();
+      // Start the other job, rather than wait for the fallback timer.
+      if (ipv4_job_ && !ipv4_job_->started()) {
+        fallback_timer_.Stop();
+        result = ipv4_job_->Start();
+        if (result != ERR_IO_PENDING) {
+          return HandleSubJobComplete(result, ipv4_job_.get());
+        }
+      }
+      break;
+  }
+
+  if (ipv4_job_ || ipv6_job_) {
+    // Wait for the other job to complete, rather than reporting |result|.
+    return ERR_IO_PENDING;
+  }
+
   return result;
 }
 
 void WebSocketTransportConnectJob::OnSubJobComplete(
     int result,
     WebSocketTransportConnectSubJob* job) {
-  if (result == OK) {
-    DCHECK(request_);
-    SetSocket(job->PassSocket(),
-              base::OptionalFromPtr(request_->GetDnsAliasResults()));
-
-    // Make sure all connections are cancelled even if this object fails to be
-    // deleted.
-    ipv4_job_.reset();
-    ipv6_job_.reset();
-  } else {
-    switch (job->type()) {
-      case SUB_JOB_IPV4:
-        ipv4_job_.reset();
-        break;
-
-      case SUB_JOB_IPV6:
-        ipv6_job_.reset();
-        if (ipv4_job_ && !ipv4_job_->started()) {
-          fallback_timer_.Stop();
-          result = ipv4_job_->Start();
-          if (result != ERR_IO_PENDING) {
-            OnSubJobComplete(result, ipv4_job_.get());
-            return;
-          }
-        }
-        break;
-    }
-    if (ipv4_job_ || ipv6_job_)
-      return;
+  result = HandleSubJobComplete(result, job);
+  if (result != ERR_IO_PENDING) {
+    OnIOComplete(result);
   }
-  OnIOComplete(result);
 }
 
 void WebSocketTransportConnectJob::StartIPv4JobAsync() {

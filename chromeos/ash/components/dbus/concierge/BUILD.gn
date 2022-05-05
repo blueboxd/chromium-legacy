@@ -1,0 +1,35 @@
+# Copyright 2021 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/chromeos/ui_mode.gni")
+import("//third_party/protobuf/proto_library.gni")
+
+assert(is_chromeos_ash, "Non-ChromeOS builds cannot depend on //chromeos/ash")
+
+component("concierge") {
+  defines = [ "IS_CONCIERGE_IMPL" ]
+  deps = [
+    ":concierge_proto",
+    "//base",
+    "//chromeos/dbus:cicerone_proto",
+    "//chromeos/dbus/cicerone",
+    "//chromeos/dbus/common",
+    "//dbus",
+  ]
+
+  sources = [
+    "concierge_client.cc",
+    "concierge_client.h",
+    "fake_concierge_client.cc",
+    "fake_concierge_client.h",
+  ]
+}
+
+proto_library("concierge_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/vm_concierge/concierge_service.proto",
+  ]
+
+  proto_out_dir = "chromeos/ash/components/dbus/concierge"
+}

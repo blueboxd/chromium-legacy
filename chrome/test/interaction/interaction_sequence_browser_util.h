@@ -70,6 +70,23 @@ class InteractionSequenceBrowserUtil : private content::WebContentsObserver,
     StateChange& operator=(StateChange&& other);
     ~StateChange();
 
+    // What type of state change are we watching for?
+    enum class Type {
+      // Triggers when `test_function`, evaluated at `where`, returns true.
+      // If `where` does not exist, an error is generated.
+      kConditionTrue,
+      // Triggers when the element specified by `where` exists in the DOM.
+      // The `test_function` field is ignored.
+      kExists,
+      // Triggers when the element specified by `where` exists in the DOM *and*
+      // `test_function` evaluates to true.
+      kExistsAndConditionTrue
+    };
+
+    // By default we want to check `test_function` and assume the element
+    // exists.
+    Type type = Type::kConditionTrue;
+
     // Function to be evaluated every `polling_interval`. Must be able to
     // execute multiple times successfully. State change is detected when this
     // script returns a "truthy" value.
@@ -105,10 +122,6 @@ class InteractionSequenceBrowserUtil : private content::WebContentsObserver,
     // truthy value. If not specified, generates an error on timeout.
     ui::CustomElementEventType timeout_event;
   };
-
-  // As above, but with a specific WebContents.
-  // InteractionSequenceBrowserUtil(content::WebContents* web_contents,
-  //                                ui::ElementIdentifier page_identifier);
 
   ~InteractionSequenceBrowserUtil() override;
 
@@ -290,11 +303,16 @@ class InteractionSequenceBrowserUtil : private content::WebContentsObserver,
   bool Exists(const DeepQuery& query, std::string* not_found = nullptr);
 
   // Evaluates `function` on the element returned by finding the element at
-  // `where`; generates an error if `where` doesn't exist. The `function`
-  // parameter should be the text of a valid javascript unnamed function that
-  // takes a single DOM element parameter and optionally returns a value.
+  // `where`; throw an error if `where` doesn't exist or capture with a second
+  // argument.
+  // The `function` parameter should be the text of a valid javascript unnamed
+  // function that takes a DOM element and/or an error parameter if occurs and
+  // optionally returns a value.
   //
-  // Example: "function(el) { return el.innterText; }"
+  // Example:
+  //   function(el) { return el.innterText; }
+  // Or capture the error instead of throw:
+  //   (el, err) => !err && !!el
   base::Value EvaluateAt(const DeepQuery& where, const std::string& function);
 
   // The following are convenience methods that do not use the Shadow DOM and
@@ -346,7 +364,7 @@ class InteractionSequenceBrowserUtil : private content::WebContentsObserver,
 
   // When we force a page load, we might still get events for the old page.
   // We'll ignore those events.
-  GURL navigating_away_from_;
+  absl::optional<GURL> navigating_away_from_;
 
   // Tracks the WebView that hosts a non-tab WebContents; null otherwise.
   std::unique_ptr<WebViewData> web_view_data_;

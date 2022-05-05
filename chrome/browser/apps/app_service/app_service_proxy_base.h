@@ -27,6 +27,9 @@
 #include "components/services/app_service/public/cpp/icon_coalescer.h"
 #include "components/services/app_service/public/cpp/icon_loader.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
+#include "components/services/app_service/public/cpp/intent.h"
+#include "components/services/app_service/public/cpp/intent_filter.h"
+#include "components/services/app_service/public/cpp/preferred_app.h"
 #include "components/services/app_service/public/cpp/preferred_apps_impl.h"
 #include "components/services/app_service/public/cpp/preferred_apps_list.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -95,8 +98,18 @@ class AppServiceProxyBase : public KeyedService,
 
   // PreferredApps::Host overrides.
   void InitializePreferredAppsForAllSubscribers() override;
+  void OnPreferredAppsChanged(PreferredAppChangesPtr changes) override;
+  void OnPreferredAppSet(
+      const std::string& app_id,
+      IntentFilterPtr intent_filter,
+      IntentPtr intent,
+      ReplacedAppPreferences replaced_app_preferences) override;
   void OnSupportedLinksPreferenceChanged(const std::string& app_id,
                                          bool open_in_app) override;
+  void OnSupportedLinksPreferenceChanged(AppType app_type,
+                                         const std::string& app_id,
+                                         bool open_in_app) override;
+  bool HasPublisher(AppType app_type) override;
 
   // apps::IconLoader overrides.
   absl::optional<IconKey> GetIconKey(const std::string& app_id) override;

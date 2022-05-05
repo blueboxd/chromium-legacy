@@ -369,14 +369,6 @@
           'shards': 20,
         },
       },
-      'WebKit Linux layout_ng_disabled Builder': {
-        'args': [
-          '--flag-specific=disable-layout-ng',
-        ],
-        'swarming': {
-          'shards': 20,
-        },
-      },
       'Win10 Tests x64': {
         'args': [
           '--target',
@@ -474,6 +466,14 @@
         'args': [
           '--flag-specific=enable-editing-ng',
         ],
+      },
+      'linux_layout_tests_layout_ng_disabled': {
+        'args': [
+          '--flag-specific=disable-layout-ng',
+        ],
+        'swarming': {
+          'shards': 20,
+        },
       },
       # TODO (crbug.com/1254971) Re-enable once fixed
       'mac-osxbeta-rel': {
@@ -574,7 +574,7 @@
         # These are very slow on the ASAN trybot for some reason.
         # crbug.com/1257927
         'swarming': {
-          'shards': 50,
+          'shards': 60,
         },
       },
       'Linux ChromiumOS MSan Focal': {
@@ -731,7 +731,7 @@
       },
       'linux-chromeos-dbg': {
         'swarming': {
-          'shards': 40,
+          'shards': 50,
         },
       },
       'linux-chromeos-rel': {
@@ -2909,6 +2909,11 @@
           'shards': 6,
         },
       },
+      'Mac ASan 64 Tests (1)': {
+        'swarming': {
+          'shards': 3,
+        },
+      },
       'ToTLinuxTSan': {
         'swarming': {
           'shards': 6,
@@ -3077,11 +3082,6 @@
 
       # TODO(https://crbug.com/1267161): Re-enable when platform is supported.
       'mac11-arm64-rel-tests',
-    ],
-  },
-  'test_buildbucket_api_gpu_use_cases': {
-    'remove_from': [
-      'Optional Linux Release (NVIDIA)',  # crbug.com/1080749
     ],
   },
   'test_buildbucket_api_gpu_use_cases GTX 1660': {

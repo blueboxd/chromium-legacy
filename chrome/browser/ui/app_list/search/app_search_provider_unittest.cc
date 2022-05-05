@@ -40,9 +40,9 @@
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/crx_file/id_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
@@ -175,9 +175,10 @@ class AppSearchProviderTest : public AppListTestBase {
   void CreateSearch() {
     clock_.SetNow(kTestCurrentTime);
     search_controller_ = std::make_unique<TestSearchController>();
-    app_search_ = std::make_unique<AppSearchProvider>(
+    auto app_search = std::make_unique<AppSearchProvider>(
         profile_.get(), nullptr, &clock_, model_updater_.get());
-    app_search_->set_controller(search_controller_.get());
+    app_search_ = app_search.get();
+    search_controller_->AddProvider(0, std::move(app_search));
   }
 
   void CreateSearchWithContinueReading() {
@@ -194,7 +195,7 @@ class AppSearchProviderTest : public AppListTestBase {
   }
 
   std::string RunQuery(const std::string& query) {
-    app_search_->Start(base::UTF8ToUTF16(query));
+    search_controller_->StartSearch(base::UTF8ToUTF16(query));
 
     // Sort results by relevance.
     std::vector<ChromeSearchResult*> sorted_results;
@@ -221,7 +222,7 @@ class AppSearchProviderTest : public AppListTestBase {
   // container based on index flags instead of relevance, use this methodology
   // to generate list of test results.
   std::string RunQueryNotSortingByRelevance(const std::string& query) {
-    app_search_->Start(base::UTF8ToUTF16(query));
+    search_controller_->StartSearch(base::UTF8ToUTF16(query));
 
     std::vector<ChromeSearchResult*> non_relevance_results;
     std::vector<ChromeSearchResult*> priority_results;
@@ -329,7 +330,7 @@ class AppSearchProviderTest : public AppListTestBase {
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<TestSearchController> search_controller_;
-  std::unique_ptr<AppSearchProvider> app_search_;
+  AppSearchProvider* app_search_ = nullptr;
   std::unique_ptr<::test::TestAppListControllerDelegate> controller_;
   ArcAppTest arc_test_;
 
@@ -583,39 +584,6 @@ class AppSearchProviderCrostiniTest : public AppSearchProviderTest {
     chromeos::DBusThreadManager::Shutdown();
   }
 };
-
-TEST_F(AppSearchProviderCrostiniTest, CrostiniTerminal) {
-  CreateSearch();
-
-  // Crostini UI is not allowed yet.
-  EXPECT_EQ("", RunQuery("terminal"));
-  EXPECT_EQ("", RunQuery("linux"));
-
-  // This both allows Crostini UI and enables Crostini.
-  crostini::CrostiniTestHelper crostini_test_helper(testing_profile());
-  crostini_test_helper.ReInitializeAppServiceIntegration();
-  CreateSearch();
-  EXPECT_EQ("Terminal,Hosted App", RunQuery("te"));
-  EXPECT_EQ("Terminal", RunQuery("ter"));
-  EXPECT_EQ("Terminal", RunQuery("terminal"));
-  EXPECT_EQ("Terminal", RunQuery("li"));
-  EXPECT_EQ("Terminal", RunQuery("linux"));
-  EXPECT_EQ("Terminal", RunQuery("crosti"));
-
-  // If Crostini UI is allowed but disabled (i.e. not installed), a match score
-  // of 0.8 is required before surfacing search results.
-  crostini::CrostiniTestHelper::DisableCrostini(testing_profile());
-  CreateSearch();
-  EXPECT_EQ("Hosted App", RunQuery("te"));
-  EXPECT_EQ("Terminal", RunQuery("ter"));
-  EXPECT_EQ("Terminal", RunQuery("terminal"));
-  EXPECT_EQ("", RunQuery("li"));
-  EXPECT_EQ("Terminal", RunQuery("lin"));
-  EXPECT_EQ("Terminal", RunQuery("linux"));
-  EXPECT_EQ("", RunQuery("cr"));
-  EXPECT_EQ("Terminal", RunQuery("cro"));
-  EXPECT_EQ("Terminal", RunQuery("cros"));
-}
 
 TEST_F(AppSearchProviderCrostiniTest, CrostiniApp) {
   // This both allows Crostini UI and enables Crostini.

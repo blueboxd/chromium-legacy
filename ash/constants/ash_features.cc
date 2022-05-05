@@ -631,9 +631,13 @@ const base::Feature kExoLockNotification{"ExoLockNotification",
 const base::Feature kExoOrdinalMotion{"ExoOrdinalMotion",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable or disable pointer lock for Crostini windows.
+// Enable or disable pointer lock for Crostini and Borealis windows.
 const base::Feature kExoPointerLock{"ExoPointerLock",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Allows RGB Keyboard to test new animations/patterns.
+const base::Feature kExperimentalRgbKeyboardPatterns{
+    "ExperimentalRgbKeyboardPatterns", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables policy that controls feature to allow Family Link accounts on school
 // owned devices.
@@ -739,11 +743,6 @@ const base::Feature kFuseBoxDebug{"FuseBoxDebug",
 const base::Feature kGuestOsFiles{"GuestOsFiles",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables handle of `closeView` message from Gaia. The message is
-// supposed to end the flow.
-const base::Feature kGaiaCloseViewMessage{"GaiaCloseViewMessage",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables the Gaia reauth endpoint with deleted user customization page.
 const base::Feature kGaiaReauthEndpoint{"GaiaReauthEndpoint",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
@@ -816,18 +815,6 @@ const base::Feature kHideArcMediaNotifications{
 // preferences, or policy).
 const base::Feature kHideShelfControlsInTabletMode{
     "HideShelfControlsInTabletMode", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables V2 implementation for visual representation of in-progress items in
-// Tote, the productivity feature that aims to reduce context switching by
-// enabling users to collect content and transfer or access it later.
-const base::Feature kHoldingSpaceInProgressAnimationV2{
-    "HoldingSpaceInProgressAnimationV2", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables delay for the `kHoldingSpaceInProgressAnimationV2` feature so that
-// progress icon animations won't start until any associated holding space tray
-// item previews have had the opportunity to animate in.
-const base::FeatureParam<bool> kHoldingSpaceInProgressAnimationV2DelayEnabled{
-    &kHoldingSpaceInProgressAnimationV2, "delay_enabled", true};
 
 // Enables in-progress downloads notification suppression with the productivity
 // feature that aims to reduce context switching by enabling users to collect
@@ -932,6 +919,12 @@ const base::Feature kLauncherFolderRenameKeepsSortOrder{
 const base::Feature kLauncherDismissButtonsOnSortNudgeAndToast{
     "LauncherDismissButtonsOnSortNudgeAndToast",
     base::FEATURE_ENABLED_BY_DEFAULT};
+
+// When enabled, adds menu items to the launcher continue task context menu
+// and recent apps context menu that allow the user to hide the continue
+// section.
+const base::Feature kLauncherHideContinueSection{
+    "LauncherHideContinueSection", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Uses short intervals for launcher nudge for testing if enabled.
 const base::Feature kLauncherNudgeShortInterval{
@@ -1138,7 +1131,7 @@ const base::Feature kPreferConstantFrameRate{"PreferConstantFrameRate",
 // from the apps grid. This feature was previously named "AppListBubble".
 // https://crbug.com/1204551
 const base::Feature kProductivityLauncher{"ProductivityLauncher",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable Projector.
 const base::Feature kProjector{"Projector", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1441,6 +1434,11 @@ const base::Feature kWakeOnWifiAllowed{"WakeOnWifiAllowed",
 const base::Feature kWallpaperWebUI{"WallpaperWebUI",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable "daily" refresh wallpaper to refresh every ten seconds for testing.
+// Requires |kWallpaperWebUI| to also be enabled.
+const base::Feature kWallpaperFastRefresh{"WallpaperFastRefresh",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable full screen wallpaper preview in new wallpaper experience. Requires
 // |kWallpaperWebUI| to also be enabled.
 const base::Feature kWallpaperFullScreenPreview{
@@ -1699,6 +1697,10 @@ bool IsESimPolicyEnabled() {
   return base::FeatureList::IsEnabled(kESimPolicy);
 }
 
+bool IsExperimentalRgbKeyboardPatternsEnabled() {
+  return base::FeatureList::IsEnabled(kExperimentalRgbKeyboardPatterns);
+}
+
 bool IsExtendedOpenVpnSettingsEnabled() {
   return base::FeatureList::IsEnabled(kExtendedOpenVpnSettings);
 }
@@ -1759,10 +1761,6 @@ bool IsFullscreenAlertBubbleEnabled() {
   return base::FeatureList::IsEnabled(kFullscreenAlertBubble);
 }
 
-bool IsGaiaCloseViewMessageEnabled() {
-  return base::FeatureList::IsEnabled(kGaiaCloseViewMessage);
-}
-
 bool IsGaiaReauthEndpointEnabled() {
   return base::FeatureList::IsEnabled(kGaiaReauthEndpoint);
 }
@@ -1781,15 +1779,6 @@ bool IsHideArcMediaNotificationsEnabled() {
 
 bool IsHideShelfControlsInTabletModeEnabled() {
   return base::FeatureList::IsEnabled(kHideShelfControlsInTabletMode);
-}
-
-bool IsHoldingSpaceInProgressAnimationV2Enabled() {
-  return base::FeatureList::IsEnabled(kHoldingSpaceInProgressAnimationV2);
-}
-
-bool IsHoldingSpaceInProgressAnimationV2DelayEnabled() {
-  return IsHoldingSpaceInProgressAnimationV2Enabled() &&
-         kHoldingSpaceInProgressAnimationV2DelayEnabled.Get();
 }
 
 bool IsHoldingSpaceInProgressDownloadsNotificationSuppressionEnabled() {
@@ -1846,6 +1835,11 @@ bool IsLauncherDismissButtonsOnSortNudgeAndToastEnabled() {
   return IsLauncherAppSortEnabled() &&
          base::FeatureList::IsEnabled(
              kLauncherDismissButtonsOnSortNudgeAndToast);
+}
+
+bool IsLauncherHideContinueSectionEnabled() {
+  return IsProductivityLauncherEnabled() &&
+         base::FeatureList::IsEnabled(kLauncherHideContinueSection);
 }
 
 bool IsLauncherNudgeShortIntervalEnabled() {
@@ -2170,6 +2164,11 @@ bool IsUseStorkSmdsServerAddressEnabled() {
 
 bool IsWallpaperWebUIEnabled() {
   return base::FeatureList::IsEnabled(kWallpaperWebUI);
+}
+
+bool IsWallpaperFastRefreshEnabled() {
+  return IsWallpaperWebUIEnabled() &&
+         base::FeatureList::IsEnabled(kWallpaperFastRefresh);
 }
 
 bool IsWallpaperFullScreenPreviewEnabled() {

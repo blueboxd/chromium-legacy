@@ -25,6 +25,8 @@ struct IntentFile {
   IntentFile& operator=(const IntentFile&) = delete;
   ~IntentFile();
 
+  std::unique_ptr<IntentFile> Clone() const;
+
   // Returns true if matches `condition_value`, otherwise, returns false.
   bool MatchConditionValue(const ConditionValuePtr& condition_value);
 
@@ -58,30 +60,17 @@ using IntentFilePtr = std::unique_ptr<IntentFile>;
 // ConvertIntentToValue and ConvertValueToIntent in
 // components/services/app_service/public/cpp/intent_util.*
 struct Intent {
+  // Factory methods for more complicated Intents are available in
+  // intent_util.h.
   explicit Intent(const std::string& action);
-  explicit Intent(const GURL& url);
-
-  // Creates an intent for sharing `filesystem_urls`. `filesystem_urls` must be
-  // co-indexed with `mime_types`.
-  Intent(const std::vector<GURL>& filesystem_urls,
-         const std::vector<std::string>& mime_types);
-
-  // Creates an intent with the list of `files`.
-  explicit Intent(std::vector<IntentFilePtr> files);
-
-  // Creates an intent for sharing `filesystem_urls`, along with `text` content
-  // and `title`. `filesystem_urls` must be co-indexed with  mime_types.
-  Intent(const std::vector<GURL>& filesystem_urls,
-         const std::vector<std::string>& mime_types,
-         const std::string& text,
-         const std::string& title);
-
-  // Creates an intent for sharing `text`, with `title`.
-  Intent(const std::string& text, const std::string& title);
+  explicit Intent(const std::string& action, const GURL& url);
+  explicit Intent(const std::string& action, std::vector<IntentFilePtr> files);
 
   Intent(const Intent&) = delete;
   Intent& operator=(const Intent&) = delete;
   ~Intent();
+
+  std::unique_ptr<Intent> Clone() const;
 
   // Gets the field that need to be checked/matched based on `condition_type`.
   absl::optional<std::string> GetIntentConditionValueByType(

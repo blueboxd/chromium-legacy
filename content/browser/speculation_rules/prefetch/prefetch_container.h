@@ -15,7 +15,16 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
+namespace network {
+class SimpleURLLoader;
+}  // namespace network
+
 namespace content {
+
+class PrefetchService;
+class PrefetchDocumentManager;
+class PrefetchNetworkContext;
+class PrefetchedMainframeResponseContainer;
 
 // This class contains the state for a request to prefetch a specific URL.
 class CONTENT_EXPORT PrefetchContainer {
@@ -23,7 +32,8 @@ class CONTENT_EXPORT PrefetchContainer {
   PrefetchContainer(
       const GlobalRenderFrameHostId& referring_render_frame_host_id,
       const GURL& url,
-      const PrefetchType& prefetch_type);
+      const PrefetchType& prefetch_type,
+      base::WeakPtr<PrefetchDocumentManager> prefetch_document_manager);
   ~PrefetchContainer();
 
   PrefetchContainer(const PrefetchContainer&) = delete;
@@ -58,6 +68,37 @@ class CONTENT_EXPORT PrefetchContainer {
   bool HasPrefetchStatus() const { return prefetch_status_.has_value(); }
   PrefetchStatus GetPrefetchStatus() const;
 
+  // Whether this prefetch is a decoy. Decoy prefetches will not store the
+  // response, and not serve any prefetched resources.
+  void SetIsDecoy(bool is_decoy) { is_decoy_ = is_decoy; }
+  bool IsDecoy() const { return is_decoy_; }
+
+  // The network context used to make network requests for this prefetch.
+  PrefetchNetworkContext* GetOrCreateNetworkContext(
+      PrefetchService* prefetch_service);
+  PrefetchNetworkContext* GetNetworkContext() { return network_context_.get(); }
+
+  // The URL loader used to make the network requests for this prefetch.
+  void TakeURLLoader(std::unique_ptr<network::SimpleURLLoader> loader);
+  network::SimpleURLLoader* GetLoader() { return loader_.get(); }
+  void ResetURLLoader();
+
+  // The |PrefetchDocumentManager| that requested |this|.
+  PrefetchDocumentManager* GetPrefetchDocumentManager() const;
+
+  // Whether or not |this| has a prefetched response.
+  bool HasPrefetchedResponse() const;
+
+  // |this| takes ownership of the given |prefetched_response|.
+  void TakePrefetchedResponse(
+      std::unique_ptr<PrefetchedMainframeResponseContainer>
+          prefetched_response);
+
+  // Releases ownership of |prefetched_response_| from |this| and gives it to
+  // the caller.
+  std::unique_ptr<PrefetchedMainframeResponseContainer>
+  ReleasePrefetchedResponse();
+
  private:
   // The ID of the render frame host that triggered the prefetch.
   GlobalRenderFrameHostId referring_render_frame_host_id_;
@@ -72,8 +113,26 @@ class CONTENT_EXPORT PrefetchContainer {
   // prefetched.
   PrefetchType prefetch_type_;
 
+  // The |PrefetchDocumentManager| that requested |this|. Initially it owns
+  // |this|, but once the network request for the prefetch is started,
+  // ownernship is transferred to |PrefetchService|.
+  base::WeakPtr<PrefetchDocumentManager> prefetch_document_manager_;
+
   // The current status, if any, of the prefetch.
   absl::optional<PrefetchStatus> prefetch_status_;
+
+  // Whether this prefetch is a decoy or not. If the prefetch is a decoy then
+  // any prefetched resources will not be served.
+  bool is_decoy_ = false;
+
+  // The network context used to prefetch |url_|.
+  std::unique_ptr<PrefetchNetworkContext> network_context_;
+
+  // The URL loader used to prefetch |url_|.
+  std::unique_ptr<network::SimpleURLLoader> loader_;
+
+  // The prefetched response for |url_|.
+  std::unique_ptr<PrefetchedMainframeResponseContainer> prefetched_response_;
 
   base::WeakPtrFactory<PrefetchContainer> weak_method_factory_{this};
 };

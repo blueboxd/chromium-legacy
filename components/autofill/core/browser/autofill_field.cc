@@ -41,7 +41,7 @@ std::unique_ptr<AutofillField> AutofillField::CreateForPasswordManagerUpload(
   return field;
 }
 
-ServerFieldType AutofillField::heuristic_type(PredictionSource s) const {
+ServerFieldType AutofillField::heuristic_type(PatternSource s) const {
   ServerFieldType type = local_type_predictions_[static_cast<size_t>(s)];
   // `NO_SERVER_DATA` would mean that there is no heuristic type. Client code
   // presumes there is a prediction, therefore we coalesce to `UNKNOWN_TYPE`.
@@ -60,8 +60,7 @@ bool AutofillField::server_type_prediction_is_override() const {
                                      : server_predictions_[0].override();
 }
 
-void AutofillField::set_heuristic_type(PredictionSource s,
-                                       ServerFieldType type) {
+void AutofillField::set_heuristic_type(PatternSource s, ServerFieldType type) {
   if (type < 0 || type > MAX_VALID_FIELD_TYPE ||
       type == FIELD_WITH_DEFAULT_VALUE) {
     NOTREACHED();
@@ -70,7 +69,7 @@ void AutofillField::set_heuristic_type(PredictionSource s,
     type = UNKNOWN_TYPE;
   }
   local_type_predictions_[static_cast<size_t>(s)] = type;
-  if (s == PredictionSource::kDefaultHeuristics)
+  if (s == PatternSource::kDefault)
     overall_type_ = AutofillType(NO_SERVER_DATA);
 }
 
@@ -134,8 +133,8 @@ AutofillType AutofillField::ComputedType() const {
     return AutofillType(server_type());
   }
 
-  // If the explicit type is cc-exp and either the server or heuristics agree on
-  // a 2 vs 4 digit specialization of cc-exp, use that specialization.
+  // If the explicit type is cc-exp and either the server or heuristics agree
+  // on a 2 vs 4 digit specialization of cc-exp, use that specialization.
   if (html_type_ == HTML_TYPE_CREDIT_CARD_EXP) {
     if (server_type() == CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR ||
         server_type() == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR) {
@@ -196,8 +195,8 @@ AutofillType AutofillField::ComputedType() const {
           (heuristic_type() == NAME_LAST_SECOND ||
            heuristic_type() == NAME_LAST_FIRST));
 
-    // For new address tokens the heuristic predictions get precedence over the
-    // server predictions.
+    // For new address tokens the heuristic predictions get precedence over
+    // the server predictions.
     // TODO(crbug.com/1098943): Remove feature check once launched.
     believe_server =
         believe_server &&

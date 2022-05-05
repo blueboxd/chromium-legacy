@@ -41,10 +41,11 @@ enum WallpaperType {
                       // goes away when another wallpaper is shown or the
                       // browser process exits. Note: the image will never be
                       // blurred or dimmed.
-  kGooglePhotos = 9,       // WallpaperInfo.location contains the Google Photos
-                           // photo id.
+  // kGooglePhotos = 9,    // Deprecated: b/229788402
   kDailyGooglePhotos = 10, // WallpaperInfo.location contains the Google Photos
                            // album id.
+  kOnceGooglePhotos = 11,  // WallpaperInfo.location contains the Google Photos
+                           // photo id.
 };
 
 // The image type specific to online wallpapers. This should be kept in sync
@@ -241,6 +242,13 @@ interface WallpaperProvider {
     // will be null on failure.
     GetLocalImages() => (array<mojo_base.mojom.FilePath>? images);
 
+    // Device default image is a special case of an image stored on disk. It is
+    // stored in a special directory and the file is not accessible to the user.
+    // If this device has a default image, return a thumbnail representation of
+    // it. |data| will be empty string on failure or if the device has no
+    // default image.
+    GetDefaultImageThumbnail() => (string data);
+
     // Fetch a thumbnail data url for the given local image path. |data| will be
     // empty string on failure.
     GetLocalImageThumbnail(mojo_base.mojom.FilePath file_path) =>
@@ -252,6 +260,10 @@ interface WallpaperProvider {
     // Sets the given backdrop wallpaper as the user's background.
     SelectWallpaper(uint64 image_asset_id, bool preview_mode) =>
         (bool success);
+
+    // Select the device default image as the user's background. Not all devices
+    // have a default image.
+    SelectDefaultImage() => (bool success);
 
     // Sets the given local wallpaper as the user's background. Validated
     // against list of file paths returned by |GetLocalImages|.

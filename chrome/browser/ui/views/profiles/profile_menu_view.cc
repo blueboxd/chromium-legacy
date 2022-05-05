@@ -288,21 +288,23 @@ void ProfileMenuView::OnSyncErrorButtonClicked(AvatarSyncErrorType error) {
     case AvatarSyncErrorType::kManagedUserUnrecoverableError:
       chrome::ShowSettingsSubPage(browser(), chrome::kSignOutSubPage);
       break;
-    case AvatarSyncErrorType::kUnrecoverableError:
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-      IdentityManagerFactory::GetForProfile(browser()->profile())
-          ->GetPrimaryAccountMutator()
-          ->RevokeSyncConsent(signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
-                              signin_metrics::SignoutDelete::kIgnoreMetric);
+    case AvatarSyncErrorType::kUnrecoverableError: {
+      signin::IdentityManager* identity_manager =
+          IdentityManagerFactory::GetForProfile(browser()->profile());
+      // This error means that the Sync engine failed to initialize. Shutdown
+      // Sync engine by revoking sync consent.
+      identity_manager->GetPrimaryAccountMutator()->RevokeSyncConsent(
+          signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
+          signin_metrics::SignoutDelete::kIgnoreMetric);
       Hide();
-      browser()->signin_view_controller()->ShowSignin(
-          profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN,
+      // Re-enable sync with the same primary account.
+      signin_ui_util::EnableSyncFromSingleAccountPromo(
+          browser(),
+          identity_manager->GetPrimaryAccountInfo(
+              signin::ConsentLevel::kSignin),
           signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
-#else
-      // TODO(https://crbug.com/1260291): Add support for Lacros.
-      NOTIMPLEMENTED();
-#endif
       break;
+    }
     case AvatarSyncErrorType::kAuthError:
       Hide();
       signin_ui_util::ShowReauthForPrimaryAccountWithAuthError(
@@ -332,7 +334,7 @@ void ProfileMenuView::OnSyncErrorButtonClicked(AvatarSyncErrorType error) {
 #endif
 }
 
-void ProfileMenuView::OnSigninAccountButtonClicked(AccountInfo account) {
+void ProfileMenuView::OnSigninAccountButtonClicked(CoreAccountInfo account) {
   RecordClick(ActionableItem::kSigninAccountButton);
   if (!perform_menu_actions())
     return;
@@ -366,20 +368,13 @@ void ProfileMenuView::OnSignoutButtonClicked() {
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 void ProfileMenuView::OnSigninButtonClicked() {
   RecordClick(ActionableItem::kSigninButton);
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  signin_ui_util::ShowSigninPromptAndMaybeEnableSync(
-      browser(), browser()->profile(), /*enable_sync=*/true,
-      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
-      signin_metrics::PromoAction::
-          PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT);
-#else
   if (!perform_menu_actions())
     return;
   Hide();
-  browser()->signin_view_controller()->ShowSignin(
-      profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN,
+
+  signin_ui_util::EnableSyncFromSingleAccountPromo(
+      browser(), AccountInfo(),
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
-#endif
 }
 
 void ProfileMenuView::OnOtherProfileSelected(
@@ -557,8 +552,8 @@ void ProfileMenuView::BuildSyncInfo() {
   // If there's no error and sync-the-feature is disabled, show a sync promo.
   // For a signed-in user, the promo just opens the "turn on sync" dialog.
   // For a signed-out user, it prompts for sign-in first.
-  AccountInfo account_info = identity_manager->FindExtendedAccountInfo(
-      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin));
+  CoreAccountInfo account_info =
+      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
   if (!account_info.IsEmpty()) {
     BuildSyncInfoWithCallToAction(
         l10n_util::GetStringUTF16(IDS_PROFILES_DICE_NOT_SYNCING_TITLE),

@@ -991,6 +991,11 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     // ScriptRunner::PendingScriptFinished().
     // TODO(hiroshige): Annotate it.
 
+    if (resource_keep_alive_) {
+      resource_keep_alive_->AddFinishObserver(
+          this, element_document.GetTaskRunner(TaskType::kNetworking).get());
+    }
+
     return true;
   }
 
@@ -1014,6 +1019,11 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     // The part "When the script is ready..." is implemented in
     // ScriptRunner::PendingScriptFinished().
     // TODO(hiroshige): Annotate it.
+
+    if (resource_keep_alive_) {
+      resource_keep_alive_->AddFinishObserver(
+          this, element_document.GetTaskRunner(TaskType::kNetworking).get());
+    }
 
     return true;
   }
@@ -1081,10 +1091,6 @@ void ScriptLoader::FetchClassicScript(const KURL& url,
       url, document, options, cross_origin, encoding, element_, defer);
   prepared_pending_script_ = pending_script;
   resource_keep_alive_ = pending_script->GetResource();
-  if (resource_keep_alive_) {
-    resource_keep_alive_->AddFinishObserver(
-        this, document.GetTaskRunner(TaskType::kNetworking).get());
-  }
 }
 
 // <specdef href="https://html.spec.whatwg.org/C/#prepare-a-script">
@@ -1126,9 +1132,7 @@ void ScriptLoader::NotifyFinished() {
   // memory cache. So we keep |resource_keep_alive_| to keep the resource in the
   // memory cache.
   if (resource_keep_alive_ &&
-      !resource_keep_alive_->GetResponse().IsSignedExchangeInnerResponse() &&
-      !base::FeatureList::IsEnabled(
-          blink::features::kKeepScriptResourceAlive)) {
+      !resource_keep_alive_->GetResponse().IsSignedExchangeInnerResponse()) {
     resource_keep_alive_ = nullptr;
   }
 }

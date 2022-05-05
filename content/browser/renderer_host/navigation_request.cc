@@ -3129,28 +3129,29 @@ UrlInfo NavigationRequest::GetUrlInfo() {
   auto web_exposed_isolation_info = ComputeWebExposedIsolationInfo();
 
   // Determine if the request is for a sandboxed frame or not. If
-  // ComputeSandboxFlagsToCommit() has run `sandbox_flags_to_commit_` will be
-  // valid, but even if it hasn't, we can speculatively take
-  // `commit_params_->frame_policy.sandbox_flags` if we haven't received the
-  // response yet and don't have the final `sandbox_flags_to_commit_`, and
-  // if the state of the kOrigin flag changes, we'll detect the change and
-  // recompute the target SiteInstance elsewhere.
+  // PolicyContainer::ComputePoliciesToCommit() has run
+  // `policy_container_builder_` will be valid, but even if it hasn't, we can
+  // speculatively take `commit_params_->frame_policy.sandbox_flags` if we
+  // haven't received the response yet and don't have the final
+  // `policy_container_builder_`, and if the state of the kOrigin flag changes,
+  // we'll detect the change and recompute the target SiteInstance elsewhere.
   // Note: We don't try to process-isolate about:blank URLs since that would
   // prevent the parent frame from interacting with them, and they would be
   // stuck as empty content.
   bool is_origin_restricted_sandbox = false;
   if (SiteIsolationPolicy::AreIsolatedSandboxedIframesEnabled() &&
       !GetURL().IsAboutBlank()) {
-    if (state_ >= WILL_PROCESS_RESPONSE) {
+    if (policy_container_builder_->HasComputedPolicies()) {
       is_origin_restricted_sandbox =
           (policy_container_builder_->FinalPolicies().sandbox_flags &
            network::mojom::WebSandboxFlags::kOrigin) ==
           network::mojom::WebSandboxFlags::kOrigin;
     } else {
-      // Note: We'll end up here for srcdoc iframes, as they don't go through
-      // OnResponseStarted. That means ComputeSandboxFlagsToCommit() may not
-      // have been called yet, but we should be able to reliably get kOrigin
-      // information from `commit_params_->frame_policy.sandbox_flags`.
+      // Note: We'll end up here if this function is called before
+      // ComputePoliciesToCommit(), such as when computing a speculative
+      // RenderFrameHost's SiteInstance before receiving a response. In that
+      // event we use the sandbox flags in commit_params_ as a current "best
+      // estimate".
       is_origin_restricted_sandbox =
           (commit_params_->frame_policy.sandbox_flags &
            network::mojom::WebSandboxFlags::kOrigin) ==
@@ -3158,22 +3159,40 @@ UrlInfo NavigationRequest::GetUrlInfo() {
     }
   }
 
-  // TODO(crbug.com/1172042): Remove WebBundle-specific code here.
+  UrlInfoInit url_info_init(GetURL());
+  url_info_init.WithOriginIsolationRequest(isolation_request)
+      .WithWebExposedIsolationInfo(web_exposed_isolation_info)
+      .WithIsPdf(is_pdf_)
+      .WithSandbox(is_origin_restricted_sandbox);
+
   if (GetWebBundleURL().is_valid()) {
-    return UrlInfo(UrlInfoInit(GetURL())
-                       .WithOriginIsolationRequest(isolation_request)
-                       .WithOrigin(url::Origin::Resolve(
-                           GetURL(), url::Origin::Create(GetWebBundleURL())))
-                       .WithWebExposedIsolationInfo(web_exposed_isolation_info)
-                       .WithIsPdf(is_pdf_)
-                       .WithSandbox(is_origin_restricted_sandbox));
+    // Web Bundle navigations should use the origin of the bundle rather than
+    // the target URL.
+    //
+    // TODO(crbug.com/1172042): Remove WebBundle-specific code here.
+    url_info_init.WithOrigin(
+        url::Origin::Resolve(GetURL(), url::Origin::Create(GetWebBundleURL())));
+  } else if (IsLoadDataWithBaseURL()) {
+    // LoadDataWithBaseURL() navigations also need to explicitly set the origin
+    // to the origin of the base URL.  This ensures that the process for this
+    // navigation will eventually be locked to the right origin (i.e., origin of
+    // the base URL rather than the data: URL).
+    //
+    // Note that while LoadDataWithBaseURL() is supported in <webview> tags on
+    // desktop platforms and on Android Webview, only <webview> tags currently
+    // utilize this special case when running in site-isolated mode. Android
+    // Webview doesn't currently lock processes for LoadDataWithBaseURL()
+    // navigations.
+    url_info_init.WithOrigin(
+        url::Origin::Create(common_params().base_url_for_data_url));
+  } else {
+    // Overriding the origin for a URL is dangerous and only allowed in very
+    // narrow cases which are handled explicitly above.  Please think very
+    // carefully about any new cases that need to do this.
+    DCHECK(!url_info_init.origin().has_value());
   }
 
-  return UrlInfo(UrlInfoInit(GetURL())
-                     .WithOriginIsolationRequest(isolation_request)
-                     .WithWebExposedIsolationInfo(web_exposed_isolation_info)
-                     .WithIsPdf(is_pdf_)
-                     .WithSandbox(is_origin_restricted_sandbox));
+  return UrlInfo(url_info_init);
 }
 
 const GURL& NavigationRequest::GetOriginalRequestURL() {
@@ -3615,7 +3634,7 @@ void NavigationRequest::OnResponseStarted(
               ? frame_entry->subresource_web_bundle_navigation_info()->Clone()
               : nullptr,
           frame_entry->policy_container_policies()
-              ? frame_entry->policy_container_policies()->Clone()
+              ? frame_entry->policy_container_policies()->ClonePtr()
               : nullptr);
     }
   }
@@ -7285,16 +7304,6 @@ void NavigationRequest::ComputePoliciesToCommit() {
 
   commit_params_->sandbox_flags =
       policy_container_builder_->FinalPolicies().sandbox_flags;
-
-  // For about: urls this function should not change the kOrigin flag. We rely
-  // on this when deciding on process isolation for sandboxed frames with these
-  // URLs, see NavigationRequest::GetUrlInfo().
-  if (GetURL().IsAboutBlank() || GetURL().IsAboutSrcdoc()) {
-    CHECK_EQ(commit_params_->frame_policy.sandbox_flags &
-                 network::mojom::WebSandboxFlags::kOrigin,
-             policy_container_builder_->FinalPolicies().sandbox_flags &
-                 network::mojom::WebSandboxFlags::kOrigin);
-  }
 }
 
 void NavigationRequest::ComputePoliciesToCommitForError() {

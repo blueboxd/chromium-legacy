@@ -51,9 +51,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/prefs/pref_service.h"
@@ -626,33 +626,6 @@ TEST_F(ShelfContextMenuTest, InternalAppShelfContextMenuOptionsNumber) {
     const int expected_options_num = internal_app.show_in_launcher ? 2 : 1;
     EXPECT_EQ(expected_options_num, menu->GetItemCount());
   }
-}
-
-// Checks some properties for crostini's terminal app's context menu,
-// specifically that every menu item has an icon.
-TEST_F(ShelfContextMenuTest, CrostiniTerminalApp) {
-  const std::string app_id = crostini::kCrostiniTerminalSystemAppId;
-  crostini::CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
-      crostini::kCrostiniDefaultVmName);
-
-  PinAppWithIDToShelf(app_id);
-  const ash::ShelfItem* item = controller()->GetItem(ash::ShelfID(app_id));
-  ASSERT_TRUE(item);
-
-  ash::ShelfItemDelegate* item_delegate =
-      model()->GetShelfItemDelegate(ash::ShelfID(app_id));
-  ASSERT_TRUE(item_delegate);
-  int64_t primary_id = GetPrimaryDisplay().id();
-  std::unique_ptr<ui::MenuModel> menu =
-      GetContextMenu(item_delegate, primary_id);
-
-  // Check that every menu item has an icon
-  for (int i = 0; i < menu->GetItemCount(); ++i)
-    EXPECT_FALSE(menu->GetIconAt(i).IsEmpty());
-
-  // When crostini is running, the terminal should have an option to kill the
-  // vm.
-  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::SHUTDOWN_GUEST_OS));
 }
 
 // Checks the context menu for a "normal" crostini app (i.e. a registered one).

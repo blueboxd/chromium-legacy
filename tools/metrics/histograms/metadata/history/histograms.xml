@@ -926,7 +926,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.UIActions.ToggledVisibility"
-    enum="BooleanVisible" expires_after="2022-08-25">
+    enum="BooleanVisible" expires_after="2022-10-30">
   <owner>mahmadi@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <summary>
@@ -955,25 +955,6 @@ chromium-metrics-reviews@google.com.
         summary="visit to a url other than the default search results page"/>
     <variant name="SRP" summary="visit to the default search results page"/>
   </token>
-</histogram>
-
-<histogram name="History.Clusters.WebUISessionDuration" units="ms"
-    expires_after="2022-11-30">
-  <owner>tommycli@chromium.org</owner>
-  <owner>chrome-journeys@google.com</owner>
-  <summary>
-    Records the amount of time the Journeys WebUI is open.
-
-    This timer is started when the Journeys WebUI is loaded. The Journeys WebUI
-    is loaded when either the user directly goes to the Journeys WebUI, or when
-    the user switches to the Journeys tab from a different tab.
-
-    The timer is stopped and the elapsed time recorded when either the whole
-    WebUI is closed, or if the user disables the Journeys preference, or if the
-    user switches tabs off the Journeys tab onto a different one.
-
-    Elapsed times longer than one hour are recorded as one hour.
-  </summary>
 </histogram>
 
 <histogram name="History.DatabaseAdvancedMetricsTime" units="ms"
@@ -1483,7 +1464,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="History.URLTableCount" units="URLs" expires_after="2022-08-29">
+<histogram name="History.URLTableCount" units="URLs" expires_after="2022-10-30">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>

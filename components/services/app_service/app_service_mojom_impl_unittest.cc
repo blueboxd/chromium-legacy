@@ -11,8 +11,10 @@
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/services/app_service/app_service_mojom_impl.h"
 #include "components/services/app_service/public/cpp/app_capability_access_cache.h"
+#include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_test_util.h"
@@ -246,8 +248,14 @@ class FakeSubscriber : public apps::mojom::Subscriber {
 
 class AppServiceMojomImplTest : public testing::Test {
  protected:
+  AppServiceMojomImplTest() {
+    scoped_feature_list_.InitAndDisableFeature(
+        kAppServicePreferredAppsWithoutMojom);
+  }
+
   content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(AppServiceMojomImplTest, PubSub) {
@@ -517,7 +525,7 @@ TEST_F(AppServiceMojomImplTest, PreferredAppsWriteBeforeInit) {
   std::vector<std::string> mime_types({"image/png"});
   ASSERT_EQ(kAppId1,
             impl.GetPreferredAppsListForTesting().FindPreferredAppForIntent(
-                std::make_unique<Intent>(filesystem_urls, mime_types)));
+                apps_util::MakeShareIntent(filesystem_urls, mime_types)));
   ASSERT_EQ(
       kAppId2,
       impl.GetPreferredAppsListForTesting().FindPreferredAppForUrl(filter_url));

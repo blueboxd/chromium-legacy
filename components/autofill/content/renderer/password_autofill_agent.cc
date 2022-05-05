@@ -487,7 +487,7 @@ mojom::SubmissionReadinessState CalculateSubmissionReadiness(
     return field.form_control_type == "checkbox";
   };
 
-  for (size_t i = username_index + 1; i <= password_index - 1; ++i) {
+  for (size_t i = username_index + 1; i < password_index; ++i) {
     if (ShouldIgnoreField(form_data.fields[i]))
       continue;
     return mojom::SubmissionReadinessState::kFieldBetweenUsernameAndPassword;
@@ -591,7 +591,7 @@ class PasswordAutofillAgent::DeferringPasswordManagerDriver
              text_direction, typed_username, options, bounds);
   }
   void ShowTouchToFill(
-      autofill::mojom::SubmissionReadinessState submission_readiness) override {
+      mojom::SubmissionReadinessState submission_readiness) override {
     DeferMsg(&mojom::PasswordManagerDriver::ShowTouchToFill,
              submission_readiness);
   }
@@ -686,7 +686,7 @@ PasswordAutofillAgent::FocusStateNotifier::FocusStateNotifier(
 PasswordAutofillAgent::FocusStateNotifier::~FocusStateNotifier() = default;
 
 void PasswordAutofillAgent::FocusStateNotifier::FocusedInputChanged(
-    autofill::FieldRendererId focused_field_id,
+    FieldRendererId focused_field_id,
     FocusedFieldType focused_field_type) {
   // Forward the request if the type changed or the field is fillable.
   if (focused_field_id_ != focused_field_id ||

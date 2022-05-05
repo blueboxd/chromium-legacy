@@ -5,7 +5,7 @@
 import 'chrome://personalization/strings.m.js';
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
-import {emptyState, GooglePhotosEnablementState, GooglePhotosPhoto, IFrameApi, kMaximumGooglePhotosPreviews, kMaximumLocalImagePreviews, Paths, PersonalizationRouter, WallpaperActionName, WallpaperCollections} from 'chrome://personalization/trusted/personalization_app.js';
+import {emptyState, GooglePhotosEnablementState, IFrameApi, kDefaultImageSymbol, kMaximumLocalImagePreviews, Paths, PersonalizationRouter, WallpaperActionName, WallpaperCollections} from 'chrome://personalization/trusted/personalization_app.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
@@ -57,36 +57,6 @@ suite('WallpaperCollectionsTest', function() {
         wallpaperCollectionsElement.$.collectionsGrid, target,
         'collections data is sent to collections-grid');
     assertDeepEquals(wallpaperProvider!.collections, data);
-  });
-
-  test('sends Google Photos photos when loaded', async () => {
-    const testProxy = setupTestIFrameApi();
-
-    wallpaperCollectionsElement = initElement(WallpaperCollections);
-
-    personalizationStore.data.wallpaper.googlePhotos.photos =
-        Array.from({length: kMaximumGooglePhotosPreviews + 1})
-            .map((_, i) => ({url: {url: `foo://${i}`}}));
-    personalizationStore.data.wallpaper.loading.googlePhotos.photos = false;
-    personalizationStore.notifyObservers();
-
-    // Wait for |sendGooglePhotosPhotos| to be called.
-    const [target, data] =
-        await testProxy.whenCalled('sendGooglePhotosPhotos') as
-        Parameters<IFrameApi['sendGooglePhotosPhotos']>;
-    await waitAfterNextRender(wallpaperCollectionsElement);
-
-    const main = wallpaperCollectionsElement.shadowRoot!.querySelector('main');
-    assertFalse(main!.hidden);
-
-    assertEquals(
-        wallpaperCollectionsElement.$.collectionsGrid, target,
-        'Google Photos urls are sent to collections-grid');
-    assertDeepEquals(
-        personalizationStore.data.wallpaper.googlePhotos.photos
-            .slice(0, kMaximumGooglePhotosPreviews)
-            .map((googlePhoto: GooglePhotosPhoto) => googlePhoto.url),
-        data);
   });
 
   [GooglePhotosEnablementState.kDisabled, GooglePhotosEnablementState.kEnabled,
@@ -201,7 +171,7 @@ suite('WallpaperCollectionsTest', function() {
         {'id_0': 1, 'id_1': 2, 'id_2': 0, 'id_3': null, 'id_4': 1}, counts);
   });
 
-  test('sends local images when loaded', async () => {
+  test('sends local images when local and default image loaded', async () => {
     const testProxy = setupTestIFrameApi();
 
     wallpaperCollectionsElement = initElement(WallpaperCollections);
@@ -209,7 +179,7 @@ suite('WallpaperCollectionsTest', function() {
     personalizationStore.data.wallpaper.loading = {
       ...personalizationStore.data.wallpaper.loading,
       collections: false,
-      local: {images: false}
+      local: {images: false, data: {[kDefaultImageSymbol]: false}}
     };
     personalizationStore.data.wallpaper.local.images =
         wallpaperProvider.localImages;
@@ -231,6 +201,33 @@ suite('WallpaperCollectionsTest', function() {
     assertDeepEquals(wallpaperProvider.localImages, data);
   });
 
+  test('default image is included in local image list', async () => {
+    const testProxy = setupTestIFrameApi();
+
+    wallpaperCollectionsElement = initElement(WallpaperCollections);
+
+    personalizationStore.data.wallpaper.loading = {
+      ...personalizationStore.data.wallpaper.loading,
+      collections: false,
+      local: {images: false, data: {[kDefaultImageSymbol]: false}},
+    };
+    personalizationStore.data.wallpaper.local.images =
+        [kDefaultImageSymbol, ...wallpaperProvider.localImages!];
+    personalizationStore.data.wallpaper.local.data =
+        {[kDefaultImageSymbol]: wallpaperProvider.defaultImageThumbnail};
+    personalizationStore.notifyObservers();
+
+    const [_, data] = await testProxy.whenCalled('sendLocalImages') as
+        Parameters<IFrameApi['sendLocalImages']>;
+    await waitAfterNextRender(wallpaperCollectionsElement);
+
+    assertTrue(Array.isArray(data), 'sent local images array');
+    assertEquals(
+        1 + wallpaperProvider.localImages!.length, data.length,
+        'Sent default image plus local images');
+    assertEquals(kDefaultImageSymbol, data[0], 'default image is index 0');
+  });
+
   test('sends collections and local images when no internet', async () => {
     const testProxy = setupTestIFrameApi();
 
@@ -239,7 +236,7 @@ suite('WallpaperCollectionsTest', function() {
     personalizationStore.data.wallpaper.loading = {
       ...personalizationStore.data.wallpaper.loading,
       collections: false,
-      local: {images: false}
+      local: {images: false, data: {[kDefaultImageSymbol]: false}},
     };
     personalizationStore.data.wallpaper.local.images =
         wallpaperProvider.localImages;
@@ -285,7 +282,7 @@ suite('WallpaperCollectionsTest', function() {
     personalizationStore.data.wallpaper.loading = {
       ...personalizationStore.data.wallpaper.loading,
       collections: false,
-      local: {images: false},
+      local: {images: false, data: {[kDefaultImageSymbol]: false}},
     };
     personalizationStore.data.wallpaper.backdrop.collections = null;
     personalizationStore.data.wallpaper.local.images = null;

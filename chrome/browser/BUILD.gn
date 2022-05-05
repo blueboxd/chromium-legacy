@@ -9,7 +9,6 @@ import("//build/config/chrome_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/compiler/pgo/pgo.gni")
 import("//build/config/features.gni")
-import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/python.gni")
 import("//build/config/ui.gni")
 import("//chrome/browser/buildflags.gni")
@@ -179,6 +178,14 @@ static_library("browser") {
     "autofill/strike_database_factory.h",
     "autofill/validation_rules_storage_factory.cc",
     "autofill/validation_rules_storage_factory.h",
+    "autofill_assistant/annotate_dom_model_service_factory.cc",
+    "autofill_assistant/annotate_dom_model_service_factory.h",
+    "autofill_assistant/assistant_field_trial_util_chrome.cc",
+    "autofill_assistant/assistant_field_trial_util_chrome.h",
+    "autofill_assistant/common_dependencies_chrome.cc",
+    "autofill_assistant/common_dependencies_chrome.h",
+    "autofill_assistant/platform_dependencies_desktop.cc",
+    "autofill_assistant/platform_dependencies_desktop.h",
     "background_fetch/background_fetch_delegate_factory.cc",
     "background_fetch/background_fetch_delegate_factory.h",
     "background_fetch/background_fetch_delegate_impl.cc",
@@ -304,6 +311,8 @@ static_library("browser") {
     "command_updater_delegate.h",
     "command_updater_impl.cc",
     "command_updater_impl.h",
+    "commerce/shopping_service_factory.cc",
+    "commerce/shopping_service_factory.h",
     "complex_tasks/task_tab_helper.cc",
     "complex_tasks/task_tab_helper.h",
     "component_updater/autofill_regex_remover.cc",
@@ -799,6 +808,12 @@ static_library("browser") {
     "metrics/oom/out_of_memory_reporter.h",
     "metrics/power/battery_level_provider.cc",
     "metrics/power/battery_level_provider.h",
+    "metrics/power/process_metrics_recorder.cc",
+    "metrics/power/process_metrics_recorder.h",
+    "metrics/power/process_metrics_recorder_util.cc",
+    "metrics/power/process_metrics_recorder_util.h",
+    "metrics/power/process_monitor.cc",
+    "metrics/power/process_monitor.h",
     "metrics/process_memory_metrics_emitter.cc",
     "metrics/process_memory_metrics_emitter.h",
     "metrics/shutdown_watcher_helper.cc",
@@ -1078,12 +1093,6 @@ static_library("browser") {
     "performance_manager/policies/working_set_trimmer_policy.h",
     "performance_monitor/chrome_browser_main_extra_parts_performance_monitor.cc",
     "performance_monitor/chrome_browser_main_extra_parts_performance_monitor.h",
-    "performance_monitor/process_metrics_recorder.cc",
-    "performance_monitor/process_metrics_recorder.h",
-    "performance_monitor/process_metrics_recorder_util.cc",
-    "performance_monitor/process_metrics_recorder_util.h",
-    "performance_monitor/process_monitor.cc",
-    "performance_monitor/process_monitor.h",
     "performance_monitor/system_monitor.cc",
     "performance_monitor/system_monitor.h",
     "permissions/abusive_origin_notifications_permission_revocation_config.cc",
@@ -2560,6 +2569,7 @@ static_library("browser") {
 
   if (is_chromeos) {
     sources += [
+      "obsolete_system/obsolete_system_stub.cc",
       "policy/messaging_layer/util/manual_test_heartbeat_event.cc",
       "policy/messaging_layer/util/manual_test_heartbeat_event.h",
       "policy/messaging_layer/util/manual_test_heartbeat_event_factory.cc",
@@ -2619,12 +2629,10 @@ static_library("browser") {
       "android/android_theme_resources.h",
       "android/autocomplete/tab_matcher_android.cc",
       "android/autocomplete/tab_matcher_android.h",
-      "android/autofill_assistant/annotate_dom_model_service_factory.cc",
-      "android/autofill_assistant/annotate_dom_model_service_factory.h",
-      "android/autofill_assistant/assistant_field_trial_util_chrome.cc",
-      "android/autofill_assistant/assistant_field_trial_util_chrome.h",
-      "android/autofill_assistant/dependencies_chrome.cc",
-      "android/autofill_assistant/dependencies_chrome.h",
+      "android/autofill_assistant/dependencies_android_chrome.cc",
+      "android/autofill_assistant/dependencies_android_chrome.h",
+      "android/autofill_assistant/platform_dependencies_android.cc",
+      "android/autofill_assistant/platform_dependencies_android.h",
       "android/background_sync_launcher_android.cc",
       "android/background_sync_launcher_android.h",
       "android/background_tab_manager.cc",
@@ -2724,8 +2732,6 @@ static_library("browser") {
       "android/contextualsearch/contextual_search_ranker_logger_impl.h",
       "android/contextualsearch/contextual_search_tab_helper.cc",
       "android/contextualsearch/contextual_search_tab_helper.h",
-      "android/contextualsearch/ctr_suppression.cc",
-      "android/contextualsearch/ctr_suppression.h",
       "android/contextualsearch/resolved_search_term.cc",
       "android/contextualsearch/resolved_search_term.h",
       "android/contextualsearch/unhandled_tap_notifier_impl.cc",
@@ -3364,6 +3370,8 @@ static_library("browser") {
       "tab/web_contents_state.h",
       "touch_to_fill/touch_to_fill_controller.cc",
       "touch_to_fill/touch_to_fill_controller.h",
+      "touch_to_fill/touch_to_fill_webauthn_credential.cc",
+      "touch_to_fill/touch_to_fill_webauthn_credential.h",
       "translate/android/translate_bridge.cc",
       "translate/android/translate_bridge.h",
       "video_tutorials/internal/android/video_tutorial_service_bridge_factory.cc",
@@ -3388,7 +3396,6 @@ static_library("browser") {
       "//chrome/browser/android/webapk:webapk_features",
       "//chrome/browser/banners/android:jni_headers",
       "//chrome/browser/bluetooth/android:jni_headers",
-      "//chrome/browser/commerce:shopping_service",
       "//chrome/browser/commerce/android:shopping_service_jni",
       "//chrome/browser/commerce/merchant_viewer:merchant_signal_db",
       "//chrome/browser/commerce/merchant_viewer:merchant_signal_db_content_proto",
@@ -3445,7 +3452,6 @@ static_library("browser") {
       "//chrome/common:non_code_constants",
       "//chrome/services/media_gallery_util/public/cpp",
       "//components/assist_ranker/proto",
-      "//components/autofill_assistant/browser",
       "//components/autofill_assistant/browser:proto",
       "//components/autofill_assistant/browser/android",
       "//components/autofill_assistant/browser/android:dependencies_android",
@@ -4291,6 +4297,8 @@ static_library("browser") {
       "sharing_hub/sharing_hub_service_factory.h",
       "signin/signin_promo.cc",
       "signin/signin_promo.h",
+      "signin/signin_ui_delegate.cc",
+      "signin/signin_ui_delegate.h",
       "signin/signin_ui_util.cc",
       "signin/signin_ui_util.h",
       "speech/chrome_speech_recognition_service.cc",
@@ -5065,6 +5073,7 @@ static_library("browser") {
       "//components/arc/common",
       "//components/arc/common:arc_intent_helper_constants",
       "//components/desks_storage",
+      "//components/metrics/structured",
       "//components/metrics/structured:neutrino_logging",
       "//components/metrics/structured:neutrino_logging_util",
       "//components/services/app_service/public/cpp:instance_update",
@@ -5191,6 +5200,8 @@ static_library("browser") {
       "chromeos/extensions/echo_private/echo_private_api.h",
       "chromeos/extensions/info_private_api.cc",
       "chromeos/extensions/info_private_api.h",
+      "chromeos/extensions/public_session_permission_helper.cc",
+      "chromeos/extensions/public_session_permission_helper.h",
       "chromeos/policy/dlp/clipboard_bubble.cc",
       "chromeos/policy/dlp/clipboard_bubble.h",
       "chromeos/policy/dlp/data_transfer_dlp_controller.cc",
@@ -5349,6 +5360,8 @@ static_library("browser") {
       "notifications/notification_platform_bridge_lacros.cc",
       "notifications/notification_platform_bridge_lacros.h",
       "platform_util_lacros.cc",
+      "signin/signin_ui_delegate_impl_lacros.cc",
+      "signin/signin_ui_delegate_impl_lacros.h",
       "speech/tts_client_factory_lacros.cc",
       "speech/tts_client_factory_lacros.h",
       "speech/tts_client_lacros.cc",
@@ -5966,7 +5979,6 @@ static_library("browser") {
       "enterprise/signals/device_info_fetcher_linux.h",
       "first_run/first_run_internal_linux.cc",
       "memory_details_linux.cc",
-      "obsolete_system/obsolete_system_stub.cc",
       "policy/browser_dm_token_storage_linux.cc",
       "policy/browser_dm_token_storage_linux.h",
     ]
@@ -6340,8 +6352,8 @@ static_library("browser") {
       "//ui/snapshot",
       "//ui/wm",
     ]
-    if (use_gtk) {
-      deps += [ "//ui/gtk" ]
+    if (is_linux) {
+      deps += [ "//ui/views/linux_ui:linux_ui_factory" ]
     }
   }
 
@@ -6357,6 +6369,7 @@ static_library("browser") {
     sources += [
       "chrome_browser_main_extra_parts_linux.cc",
       "chrome_browser_main_extra_parts_linux.h",
+      "obsolete_system/obsolete_system_linux.cc",
     ]
   }
 
@@ -6562,6 +6575,8 @@ static_library("browser") {
       "signin/logout_tab_helper.h",
       "signin/process_dice_header_delegate_impl.cc",
       "signin/process_dice_header_delegate_impl.h",
+      "signin/signin_ui_delegate_impl_dice.cc",
+      "signin/signin_ui_delegate_impl_dice.h",
     ]
     if (is_win) {
       sources += [
@@ -7239,6 +7254,8 @@ static_library("browser") {
       "supervised_user/kids_chrome_management/kids_chrome_management_client_factory.h",
       "supervised_user/kids_management_url_checker_client.cc",
       "supervised_user/kids_management_url_checker_client.h",
+      "supervised_user/parental_control_metrics.cc",
+      "supervised_user/parental_control_metrics.h",
       "supervised_user/permission_request_creator.h",
       "supervised_user/supervised_user_constants.cc",
       "supervised_user/supervised_user_constants.h",
@@ -7248,6 +7265,10 @@ static_library("browser") {
       "supervised_user/supervised_user_google_auth_navigation_throttle.h",
       "supervised_user/supervised_user_interstitial.cc",
       "supervised_user/supervised_user_interstitial.h",
+      "supervised_user/supervised_user_metrics_service.cc",
+      "supervised_user/supervised_user_metrics_service.h",
+      "supervised_user/supervised_user_metrics_service_factory.cc",
+      "supervised_user/supervised_user_metrics_service_factory.h",
       "supervised_user/supervised_user_navigation_observer.cc",
       "supervised_user/supervised_user_navigation_observer.h",
       "supervised_user/supervised_user_navigation_throttle.cc",
@@ -7664,7 +7685,6 @@ grit("dev_ui_browser_resources") {
     "//chrome/browser/media:mojo_bindings_js",
     "//chrome/browser/resources/internals/user_education:components",
     "//chrome/browser/resources/local_state:build",
-    "//chrome/browser/resources/media:build_ts",
     "//chrome/browser/resources/predictors:build_ts",
     "//chrome/browser/ui/webui/internals/user_education:mojo_bindings_js",
     "//components/site_engagement/core/mojom:mojo_bindings_webui_js",

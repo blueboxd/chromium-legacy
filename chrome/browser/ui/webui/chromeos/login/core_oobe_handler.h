@@ -18,6 +18,7 @@
 #include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/version_info_updater.h"
 #include "chrome/browser/ash/tpm_firmware_update.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -36,12 +37,7 @@ class CoreOobeView {
   virtual void ShowScreenWithData(const ash::OobeScreenId& screen,
                                   absl::optional<base::Value::Dict> data) = 0;
   virtual void ReloadContent(base::Value::Dict dictionary) = 0;
-  virtual void SetVirtualKeyboardShown(bool shown) = 0;
-  virtual void SetShelfHeight(int height) = 0;
-  virtual void UpdateKeyboardState() = 0;
   virtual void FocusReturned(bool reverse) = 0;
-  virtual void SetOrientation(bool is_horizontal) = 0;
-  virtual void SetDialogSize(int width, int height) = 0;
   virtual void UpdateClientAreaSize(const gfx::Size& size) = 0;
 };
 
@@ -51,7 +47,8 @@ class CoreOobeHandler : public BaseWebUIHandler,
                         public CoreOobeView,
                         public ui::EventSource,
                         public ash::TabletModeObserver,
-                        public OobeConfiguration::Observer {
+                        public OobeConfiguration::Observer,
+                        public ChromeKeyboardControllerClient::Observer {
  public:
   CoreOobeHandler();
 
@@ -85,11 +82,6 @@ class CoreOobeHandler : public BaseWebUIHandler,
   // Show or hide OOBE UI.
   void ShowOobeUI(bool show);
 
-  // If `reboot_on_shutdown` is true, the reboot button becomes visible
-  // and the shutdown button is hidden. Vice versa if `reboot_on_shutdown` is
-  // false.
-  void UpdateShutdownAndRebootVisibility(bool reboot_on_shutdown);
-
   // Notify WebUI of the user count on the views login screen.
   void SetLoginUserCount(int user_count);
 
@@ -101,15 +93,9 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void ShowScreenWithData(const ash::OobeScreenId& screen,
                           absl::optional<base::Value::Dict> data) override;
   void ReloadContent(base::Value::Dict dictionary) override;
-  void SetVirtualKeyboardShown(bool displayed) override;
-  void SetShelfHeight(int height) override;
   void FocusReturned(bool reverse) override;
-  void SetOrientation(bool is_horizontal) override;
-  void SetDialogSize(int width, int height) override;
   // Updates client area size based on the primary screen size.
   void UpdateClientAreaSize(const gfx::Size& size) override;
-
-  void UpdateKeyboardState() override;
 
   // ash::TabletModeObserver:
   void OnTabletModeStarted() override;
@@ -117,6 +103,9 @@ class CoreOobeHandler : public BaseWebUIHandler,
 
   // OobeConfiguration::Observer:
   void OnOobeConfigurationChanged() override;
+
+  // ChromeKeyboardControllerClient::Observer:
+  void OnKeyboardVisibilityChanged(bool visible) override;
 
   // Handlers for JS WebUI messages.
   void HandleEnableShelfButtons(bool enable);

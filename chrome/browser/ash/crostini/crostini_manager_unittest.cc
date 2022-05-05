@@ -37,14 +37,14 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
+#include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/anomaly_detector/fake_anomaly_detector_client.h"
 #include "chromeos/dbus/cicerone/cicerone_client.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/dbus/cicerone/fake_cicerone_client.h"
-#include "chromeos/dbus/concierge/concierge_client.h"
-#include "chromeos/dbus/concierge/concierge_service.pb.h"
-#include "chromeos/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
@@ -1359,6 +1359,33 @@ TEST_F(CrostiniManagerRestartTest, MultiRestartAllowed) {
   ExpectRestarterUmaCount(3);
 }
 
+TEST_F(CrostiniManagerRestartTest, FailureWithMultipleRestarts) {
+  // When multiple restarters are running, a failure in the first should cause
+  // the others to fail immediately.
+
+  vm_tools::concierge::StartVmResponse response;
+  response.set_status(vm_tools::concierge::VmStatus::VM_STATUS_FAILURE);
+  fake_concierge_client_->set_start_vm_response(response);
+
+  auto barrier_closure = base::BarrierClosure(3, run_loop()->QuitClosure());
+  auto result_callback =
+      base::BindLambdaForTesting([barrier_closure](CrostiniResult result) {
+        EXPECT_EQ(CrostiniResult::VM_START_FAILED, result);
+        barrier_closure.Run();
+      });
+  CrostiniManager::RestartId id1, id2, id3;
+  id1 = crostini_manager()->RestartCrostini(container_id(), result_callback);
+  id2 = crostini_manager()->RestartCrostini(container_id(), result_callback);
+  id3 = crostini_manager()->RestartCrostini(container_id(), result_callback);
+
+  run_loop()->Run();
+
+  EXPECT_EQ(1, fake_concierge_client_->start_termina_vm_call_count());
+  EXPECT_FALSE(crostini_manager()->IsRestartPending(id1));
+  EXPECT_FALSE(crostini_manager()->IsRestartPending(id2));
+  EXPECT_FALSE(crostini_manager()->IsRestartPending(id3));
+}
+
 TEST_F(CrostiniManagerRestartTest, IsContainerRunningFalseIfVmNotStarted) {
   restart_id_ = crostini_manager()->RestartCrostini(
       container_id(),
@@ -2155,15 +2182,21 @@ TEST_F(CrostiniManagerTest, StartLxdSuccess) {
   run_loop()->Run();
 }
 
-class CrostiniManagerAnsibleInfraTest : public CrostiniManagerTest {
+class CrostiniManagerAnsibleInfraTest
+    : public CrostiniManagerTest,
+      public AnsibleManagementService::Observer {
  public:
   void SetUp() override {
     CrostiniManagerTest::SetUp();
     ansible_management_test_helper_ =
         std::make_unique<AnsibleManagementTestHelper>(profile_.get());
     ansible_management_test_helper_->SetUpAnsibleInfra();
-
     SetUpViewsEnvironmentForTesting();
+    AnsibleManagementService::GetForProfile(profile_.get())->AddObserver(this);
+
+    // Set sensible default values.
+    is_install_ansible_success_ = true;
+    is_apply_ansible_success_ = true;
   }
 
   void TearDown() override {
@@ -2174,16 +2207,61 @@ class CrostiniManagerAnsibleInfraTest : public CrostiniManagerTest {
     TearDownViewsEnvironmentForTesting();
 
     ansible_management_test_helper_.reset();
+    AnsibleManagementService::GetForProfile(profile_.get())
+        ->RemoveObserver(this);
     CrostiniManagerTest::TearDown();
   }
 
+  // AnsibleManagementService::Observer
+  void OnAnsibleSoftwareConfigurationStarted(
+      const ContainerId& container_id) override {}
+  void OnAnsibleSoftwareConfigurationFinished(const ContainerId& container_id,
+                                              bool success) override {}
+  void OnAnsibleSoftwareInstall(const ContainerId& container_id) override {
+    if (is_install_ansible_success_) {
+      ansible_management_test_helper_->SendSucceededInstallSignal();
+    } else {
+      ansible_management_test_helper_->SendFailedInstallSignal();
+    }
+  }
+  void OnApplyAnsiblePlaybook(const ContainerId& container_id) override {
+    if (is_apply_ansible_success_) {
+      ansible_management_test_helper_->SendSucceededApplySignal();
+    } else {
+      ansible_management_test_helper_->SendFailedApplySignal();
+    }
+  }
+
  protected:
+  void SetInstallAnsibleStatus(bool status) {
+    is_install_ansible_success_ = status;
+  }
+  void SetApplyAnsibleStatus(bool status) {
+    is_apply_ansible_success_ = status;
+  }
+
   std::unique_ptr<AnsibleManagementTestHelper> ansible_management_test_helper_;
+
+  bool is_install_ansible_success_;
+  bool is_apply_ansible_success_;
 };
 
 TEST_F(CrostiniManagerAnsibleInfraTest, StartContainerAnsibleInstallFailure) {
   ansible_management_test_helper_->SetUpAnsibleInstallation(
       vm_tools::cicerone::InstallLinuxPackageResponse::FAILED);
+
+  crostini_manager()->StartLxdContainer(
+      ContainerId::GetDefault(),
+      base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
+                     CrostiniResult::CONTAINER_CONFIGURATION_FAILED));
+
+  run_loop()->Run();
+}
+
+TEST_F(CrostiniManagerAnsibleInfraTest, StartContainerInstallSignalFailure) {
+  ansible_management_test_helper_->SetUpAnsibleInstallation(
+      vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
+  SetInstallAnsibleStatus(false);
 
   crostini_manager()->StartLxdContainer(
       ContainerId::GetDefault(),
@@ -2204,9 +2282,21 @@ TEST_F(CrostiniManagerAnsibleInfraTest, StartContainerApplyFailure) {
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
                      CrostiniResult::CONTAINER_CONFIGURATION_FAILED));
 
-  base::RunLoop().RunUntilIdle();
+  run_loop()->Run();
+}
 
-  ansible_management_test_helper_->SendSucceededInstallSignal();
+TEST_F(CrostiniManagerAnsibleInfraTest, StartContainerApplySignalFailure) {
+  ansible_management_test_helper_->SetUpAnsibleInstallation(
+      vm_tools::cicerone::InstallLinuxPackageResponse::STARTED);
+  ansible_management_test_helper_->SetUpPlaybookApplication(
+      vm_tools::cicerone::ApplyAnsiblePlaybookResponse::STARTED);
+
+  SetApplyAnsibleStatus(false);
+
+  crostini_manager()->StartLxdContainer(
+      ContainerId::GetDefault(),
+      base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
+                     CrostiniResult::CONTAINER_CONFIGURATION_FAILED));
 
   run_loop()->Run();
 }
@@ -2221,13 +2311,6 @@ TEST_F(CrostiniManagerAnsibleInfraTest, StartContainerSuccess) {
       ContainerId::GetDefault(),
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
                      CrostiniResult::SUCCESS));
-  base::RunLoop().RunUntilIdle();
-
-  ansible_management_test_helper_->SendSucceededInstallSignal();
-  base::RunLoop().RunUntilIdle();
-
-  ansible_management_test_helper_->SendSucceededApplySignal();
-
   run_loop()->Run();
 }
 

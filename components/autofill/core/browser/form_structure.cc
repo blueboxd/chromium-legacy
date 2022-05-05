@@ -39,7 +39,6 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_parsing/buildflags.h"
-#include "components/autofill/core/browser/form_parsing/field_candidates.h"
 #include "components/autofill/core/browser/form_parsing/form_field.h"
 #include "components/autofill/core/browser/form_processing/label_processing_util.h"
 #include "components/autofill/core/browser/form_processing/name_processing_util.h"
@@ -375,7 +374,7 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
 }
 
 std::ostream& operator<<(std::ostream& out,
-                         const autofill::AutofillQueryResponse& response) {
+                         const AutofillQueryResponse& response) {
   for (const auto& form : response.form_suggestions()) {
     out << "\nForm";
     for (const auto& field : form.field_suggestions()) {
@@ -669,7 +668,7 @@ FormStructure::FormStructure(const FormData& form)
     fields_.push_back(std::make_unique<AutofillField>(field));
   }
 
-  form_signature_ = autofill::CalculateFormSignature(form);
+  form_signature_ = CalculateFormSignature(form);
   // Do further processing on the fields, as needed.
   ProcessExtractedFields();
 }
@@ -690,7 +689,11 @@ void FormStructure::DetermineHeuristicTypes(
   SCOPED_UMA_HISTOGRAM_TIMER("Autofill.Timing.DetermineHeuristicTypes");
 
   ParseFieldTypesFromAutocompleteAttributes();
-  ParseFieldTypesWithPatterns(log_manager);
+  ParseFieldTypesWithPatterns(PatternSource::kDefault, log_manager);
+#if BUILDFLAG(USE_INTERNAL_AUTOFILL_HEADERS)
+  ParseFieldTypesWithPatterns(PatternSource::kExperimental, log_manager);
+  ParseFieldTypesWithPatterns(PatternSource::kNextGen, log_manager);
+#endif
 
   UpdateAutofillCount();
   IdentifySections(has_author_specified_sections_);
@@ -730,7 +733,7 @@ std::vector<AutofillUploadContents> FormStructure::EncodeUploadRequest(
                               ? submission_event_
                               : ToSubmissionIndicatorEvent(submission_source_);
 
-  DCHECK(autofill::mojom::IsKnownEnumValue(triggering_event));
+  DCHECK(mojom::IsKnownEnumValue(triggering_event));
   upload.set_submission_event(
       static_cast<AutofillUploadContents_SubmissionIndicatorEvent>(
           triggering_event));
@@ -1011,7 +1014,7 @@ std::vector<FieldGlobalId> FormStructure::FindFieldsEligibleForManualFilling(
   for (const auto* form : forms) {
     for (const auto& field : form->fields_) {
       FieldTypeGroup field_type_group =
-          autofill::GroupTypeOfServerFieldType(field->server_type());
+          GroupTypeOfServerFieldType(field->server_type());
       // In order to trigger the payments bottom sheet that assists users to
       // manually fill the form, credit card form fields are marked eligible for
       // manual filling. Also, if a field is not classified to a type, we can
@@ -1182,9 +1185,8 @@ void FormStructure::RetrieveFromCache(
       if (!only_server_and_autofill_state) {
         // Transfer attributes of the cached AutofillField to the newly created
         // AutofillField.
-        for (int i = 0; i <= static_cast<int>(PredictionSource::kMaxValue);
-             ++i) {
-          PredictionSource s = static_cast<PredictionSource>(i);
+        for (int i = 0; i <= static_cast<int>(PatternSource::kMaxValue); ++i) {
+          PatternSource s = static_cast<PatternSource>(i);
           field->set_heuristic_type(s, cached_field->heuristic_type(s));
         }
         field->SetHtmlType(cached_field->html_type(),
@@ -1650,41 +1652,27 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes() {
   was_parsed_for_autocomplete_attributes_ = true;
 }
 
-void FormStructure::ParseFieldTypesWithPatterns(LogManager* log_manager) {
-  // Then if there are enough active fields, and if we are dealing with either a
-  // proper <form> or a <form>-less checkout, run the heuristics and server
-  // prediction routines.
+void FormStructure::ParseFieldTypesWithPatterns(PatternSource pattern_source,
+                                                LogManager* log_manager) {
   FieldCandidatesMap field_type_map;
   if (ShouldRunHeuristics()) {
-    field_type_map = FormField::ParseFormFields(
-        fields_, current_page_language_, is_form_tag_,
-        PredictionSource::kDefaultHeuristics, log_manager);
+    field_type_map =
+        FormField::ParseFormFields(fields_, current_page_language_,
+                                   is_form_tag_, pattern_source, log_manager);
   } else if (ShouldRunPromoCodeHeuristics()) {
     field_type_map = FormField::ParseFormFieldsForPromoCodes(
-        fields_, current_page_language_, is_form_tag_,
-        PredictionSource::kDefaultHeuristics, log_manager);
+        fields_, current_page_language_, is_form_tag_, pattern_source,
+        log_manager);
   }
-  if (!field_type_map.empty()) {
-    for (const auto& field : fields_) {
-      auto iter = field_type_map.find(field->global_id());
-      if (iter != field_type_map.end()) {
-        const FieldCandidates& candidates = iter->second;
-        field->set_heuristic_type(PredictionSource::kDefaultHeuristics,
-                                  candidates.BestHeuristicType());
+  if (field_type_map.empty())
+    return;
 
-#if BUILDFLAG(USE_INTERNAL_AUTOFILL_HEADERS)
-        auto set_hypothetical_type =
-            [&field, &candidates](PredictionSource source) -> void {
-          absl::optional<ServerFieldType> type =
-              candidates.GetHypotheticalType(source);
-          if (type)
-            field->set_heuristic_type(source, *type);
-        };
-        set_hypothetical_type(PredictionSource::kExperimentalHeuristics);
-        set_hypothetical_type(PredictionSource::kNextGenHeuristics);
-#endif
-      }
-    }
+  for (const auto& field : fields_) {
+    auto iter = field_type_map.find(field->global_id());
+    if (iter == field_type_map.end())
+      continue;
+    const FieldCandidates& candidates = iter->second;
+    field->set_heuristic_type(pattern_source, candidates.BestHeuristicType());
   }
 }
 

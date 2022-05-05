@@ -47,7 +47,6 @@ struct PopupMatchRowView: View {
       .accessibilityElement()
       .accessibilityLabel(match.text.string)
       .accessibilityValue(match.detailText?.string ?? "")
-      .accessibilityRemoveTraits(.isButton)
 
     if match.isAppendable || match.isTabMatch {
       let trailingActionAccessibilityTitle =
@@ -68,7 +67,7 @@ struct PopupMatchRowView: View {
   /// Enable this to tell the row it should display its own custom separator at the bottom.
   let shouldDisplayCustomSeparator: Bool
   var customSeparatorColor: Color {
-    uiVariation == .one ? .separator : .grey700
+    uiVariation == .one ? .separator : .grey200
   }
   @ViewBuilder
   var customSeparator: some View {

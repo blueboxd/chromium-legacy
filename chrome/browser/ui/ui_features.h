@@ -69,7 +69,6 @@ extern const base::Feature kSidePanelJourneys;
 
 #if BUILDFLAG(ENABLE_SIDE_SEARCH)
 extern const base::Feature kSideSearch;
-extern const base::Feature kSideSearchClearCacheWhenClosed;
 extern const base::Feature kSideSearchFeedback;
 extern const base::Feature kSideSearchDSESupport;
 extern const base::Feature kClobberAllSideSearchSidePanels;
@@ -183,8 +182,6 @@ extern const base::Feature kWebUITabStrip;
 // Controls whether the context menu is shown on a touch press or a touch
 // tap gesture on the WebUI Tab Strip.
 extern const base::Feature kWebUITabStripContextMenuAfterTap;
-
-extern const base::Feature kWebUIFeedback;
 
 #if BUILDFLAG(IS_CHROMEOS)
 extern const base::Feature kChromeOSTabSearchCaptionButton;

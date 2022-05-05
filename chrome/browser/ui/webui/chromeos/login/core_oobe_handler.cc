@@ -61,6 +61,11 @@ CoreOobeHandler::CoreOobeHandler() {
   ash::TabletMode::Get()->AddObserver(this);
 
   OobeConfiguration::Get()->AddAndFireObserver(this);
+
+  ChromeKeyboardControllerClient::Get()->AddObserver(this);
+
+  OnKeyboardVisibilityChanged(
+      ChromeKeyboardControllerClient::Get()->is_keyboard_visible());
 }
 
 CoreOobeHandler::~CoreOobeHandler() {
@@ -69,6 +74,9 @@ CoreOobeHandler::~CoreOobeHandler() {
   // Ash may be released before us.
   if (ash::TabletMode::Get())
     ash::TabletMode::Get()->RemoveObserver(this);
+
+  if (ChromeKeyboardControllerClient::Get())
+    ChromeKeyboardControllerClient::Get()->RemoveObserver(this);
 }
 
 void CoreOobeHandler::DeclareLocalizedValues(
@@ -98,7 +106,6 @@ void CoreOobeHandler::InitializeDeprecated() {
 #else
   version_info_updater_.StartUpdate(false);
 #endif
-  UpdateKeyboardState();
   UpdateClientAreaSize(
       display::Screen::GetScreen()->GetPrimaryDisplay().size());
 }
@@ -148,22 +155,6 @@ void CoreOobeHandler::ShowScreenWithData(
 
 void CoreOobeHandler::ReloadContent(base::Value::Dict dictionary) {
   CallJS("cr.ui.Oobe.reloadContent", base::Value(std::move(dictionary)));
-}
-
-void CoreOobeHandler::SetVirtualKeyboardShown(bool shown) {
-  CallJS("cr.ui.Oobe.setVirtualKeyboardShown", shown);
-}
-
-void CoreOobeHandler::SetShelfHeight(int height) {
-  CallJS("cr.ui.Oobe.setShelfHeight", height);
-}
-
-void CoreOobeHandler::SetOrientation(bool is_horizontal) {
-  CallJS("cr.ui.Oobe.setOrientation", is_horizontal);
-}
-
-void CoreOobeHandler::SetDialogSize(int width, int height) {
-  CallJS("cr.ui.Oobe.setDialogSize", width, height);
 }
 
 void CoreOobeHandler::HandleInitialized() {
@@ -275,12 +266,6 @@ void CoreOobeHandler::UpdateLabel(const std::string& id,
   CallJS("cr.ui.Oobe.setLabelText", id, text);
 }
 
-void CoreOobeHandler::UpdateKeyboardState() {
-  const bool is_keyboard_shown =
-      ChromeKeyboardControllerClient::Get()->is_keyboard_visible();
-  SetVirtualKeyboardShown(is_keyboard_shown);
-}
-
 void CoreOobeHandler::OnTabletModeStarted() {
   CallJS("cr.ui.Oobe.setTabletModeState", true);
 }
@@ -290,14 +275,16 @@ void CoreOobeHandler::OnTabletModeEnded() {
 }
 
 void CoreOobeHandler::UpdateClientAreaSize(const gfx::Size& size) {
-  SetShelfHeight(ash::ShelfConfig::Get()->shelf_size());
+  CallJS("cr.ui.Oobe.setShelfHeight", ash::ShelfConfig::Get()->shelf_size());
+
   const gfx::Size display_size =
       display::Screen::GetScreen()->GetPrimaryDisplay().size();
   const bool is_horizontal = display_size.width() > display_size.height();
-  SetOrientation(is_horizontal);
+  CallJS("cr.ui.Oobe.setOrientation", is_horizontal);
+
   const gfx::Size dialog_size = CalculateOobeDialogSize(
       size, ash::ShelfConfig::Get()->shelf_size(), is_horizontal);
-  SetDialogSize(dialog_size.width(), dialog_size.height());
+  CallJS("cr.ui.Oobe.setDialogSize", dialog_size.width(), dialog_size.height());
 }
 
 void CoreOobeHandler::OnOobeConfigurationChanged() {
@@ -306,6 +293,10 @@ void CoreOobeHandler::OnOobeConfigurationChanged() {
       OobeConfiguration::Get()->GetConfiguration(),
       configuration::ConfigurationHandlerSide::HANDLER_JS, configuration);
   CallJS("cr.ui.Oobe.updateOobeConfiguration", std::move(configuration));
+}
+
+void CoreOobeHandler::OnKeyboardVisibilityChanged(bool shown) {
+  CallJS("cr.ui.Oobe.setVirtualKeyboardShown", shown);
 }
 
 void CoreOobeHandler::HandleLaunchHelpApp(int help_topic_id) {
@@ -328,8 +319,6 @@ void CoreOobeHandler::HandleStartDemoModeSetupForTesting(
   DemoSession::DemoModeConfig config;
   if (demo_config == "online") {
     config = DemoSession::DemoModeConfig::kOnline;
-  } else if (demo_config == "offline") {
-    config = DemoSession::DemoModeConfig::kOffline;
   } else {
     NOTREACHED() << "Unknown demo config passed for tests";
   }

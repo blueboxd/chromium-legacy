@@ -25,6 +25,7 @@
 <translation id="1204296502688602597">DNS кідірісі</translation>
 <translation id="123124571410524056">Портал болуы мүмкін.</translation>
 <translation id="1238612778414822719">HTTPS кідірісі</translation>
+<translation id="1264116747675686718">Операциялық жүйенің нұсқасы жаңартылып жатыр.</translation>
 <translation id="1264369926465113395">Chromebook құрылғысының авторларға арналған жаңа цифрлық журналын қараңыз.</translation>
 <translation id="1270369111467284986">Адаптивті портал болуы мүмкін.</translation>
 <translation id="1290331692326790741">Әлсіз сигнал</translation>
@@ -121,6 +122,7 @@
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: Қайталау</translation>
 <translation id="2161394479394250669">Баспа жұмысынан бас тарту</translation>
 <translation id="2163937499206714165">Қараңғы режимді қосу</translation>
+<translation id="2177831236093724629"><ph name="LINK_BEGIN" />Үйлеспейтін құрамдастар<ph name="LINK_END" /> табылды. Барлық сәйкес құрамдастың анықталғанын тексеру үшін Chrome OS жүйесін соңғы нұсқаға жаңартыңыз.</translation>
 <translation id="2180197493692062006">Бірдеңе дұрыс болмады. Қолданбаны қайта ашып көріңіз.</translation>
 <translation id="2209788852729124853">Трафик есептегіштерін нөлдеу</translation>
 <translation id="2212733584906323460">Атаулар ажыратымдылығы</translation>
@@ -203,6 +205,7 @@
 <translation id="3188257591659621405">Файлдарым</translation>
 <translation id="3192947282887913208">Аудио файлдары</translation>
 <translation id="3199982728237701504">Құжат беруші (екі жақты)</translation>
+<translation id="320091191259649613">Жаңартылғаннан кейін қате кетпесе, құрамдас жаңадан бейімделіп, дерекқорға әлі енгізілмеген болуы мүмкін.</translation>
 <translation id="3226405216343213872">Сканерлер ізделуде</translation>
 <translation id="3246869037381808805">1 күннен асқан баспа жұмыстары өшіріледі.</translation>
 <translation id="3268178239013324452">Сәтсіз: есігі ашық</translation>
@@ -211,6 +214,7 @@
 <translation id="3291996639387199448">Кілт бағыты</translation>
 <translation id="3310640316857623290">DNS кідірісі рұқсат етілетін шектен әлдеқайда жоғары.</translation>
 <translation id="3328783797891415197">Тексерілуде</translation>
+<translation id="3336855445806447827">Сенімді емеспін</translation>
 <translation id="3340011300870565703">Оң құлақаспаптың батарея деңгейі: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3368922792935385530">Қосылған</translation>
 <translation id="3369013195428705271">Басып шығару тарихын шынымен толығымен тазалағыңыз келе ме? Қазір орындалып жатқан басып шығару жұмысының деректері сақталады.</translation>
@@ -225,6 +229,7 @@
 <translation id="3484914941826596830">Микробағдарлама жаңартылып жатқанда, сыртқы құрылғыны ажыратпаңыз немесе компьютерді өшірмеңіз. Бұл терезені кішірейте аласыз. Бұл жаңарту бірнеше минутқа созылып, ол кезде сыртқы құрылғы жұмыс істемей қалуы мүмкін.</translation>
 <translation id="3486220673238053218">анықтама</translation>
 <translation id="3488065109653206955">Ішінара белсендірілген</translation>
+<translation id="3517001332549868749">Chrome OS жаңарту</translation>
 <translation id="3527036260304016759">Сәтсіз: белгісіз қате шықты</translation>
 <translation id="3532980081107202182">Шамамен <ph name="MIN_REMAINING" /> минут қалды.</translation>
 <translation id="3557205324756024651">Жергілікті идентификация (қосымша)</translation>
@@ -316,7 +321,6 @@
 <translation id="4472575034687746823">Іске кірісу</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Әдепкі емес желі шлюзінің байланысы тексерілмеді.</translation>
-<translation id="4485626319513081846">Құрылғы жаңа клиентке жеткізу үшін реттеліп немесе жөнделіп жатса, осы опцияны таңдаңыз.</translation>
 <translation id="4503223151711056411">Сол бағыт пернесі</translation>
 <translation id="4511264077854731334">Портал</translation>
 <translation id="4521826082652183069">Балама атау тақырыбы сәйкестігі</translation>
@@ -377,6 +381,7 @@
 <translation id="4985509611418653372">Іске қосу</translation>
 <translation id="4987769320337599931">Брандмауэр</translation>
 <translation id="4999333166442584738">Есепті жасыру</translation>
+<translation id="5008611843832219958">Жөндеу процесінің артықшылықтарын пайдалану үшін Chrome OS жүйесінің соңғы нұсқасын орнатыңыз.</translation>
 <translation id="500920857929044050">Тексеруді тоқтату</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5019310272469539976">Экран пайдаланылмай тұрғанда, фотосуреттерді, уақытты, ауа райын және медиа ақпаратын көрсетеді.</translation>
@@ -430,6 +435,7 @@
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
 <translation id="5499114900554609492">Сканерлеу аяқталмады</translation>
 <translation id="5502931783115429516">Android іске қосылмаған.</translation>
+<translation id="5507300744274596613">Chrome OS жүйесінің жаңартылғанын тексеріңіз</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5578477003638479617">UMTS</translation>
@@ -468,6 +474,7 @@
 <translation id="5939518447894949180">Қалпына келтіру</translation>
 <translation id="594552776027197022">Кездейсоқ кілттер жұбын жасау</translation>
 <translation id="5972388717451707488">Update Engine</translation>
+<translation id="5984145644188835034">Әдепкі тұсқағаз</translation>
 <translation id="6034694447310538551">Ай сайын автоматты түрде бастапқы күйге қайтаруды қосу</translation>
 <translation id="6037291330010597344">Сканердің құжат бергіші бос. Құжаттар қосып, әрекетті қайталаңыз.</translation>
 <translation id="6040143037577758943">Жабу</translation>
@@ -547,6 +554,7 @@
 <translation id="6692996468359469499">Таңдауға қатысты ақпарат алу</translation>
 <translation id="6704062477274546131">DNS ажыратымдылығы</translation>
 <translation id="6723839937902243910">Күш</translation>
+<translation id="6723847290197874913">Пернетақта жарығы</translation>
 <translation id="672609503628871915">Жаңалықтарды қарау</translation>
 <translation id="6747215703636344499">Тоқтатылды: шығыс науа толып кетті</translation>
 <translation id="6749473226660745022">Фотосуреттер</translation>
@@ -568,7 +576,6 @@
 <translation id="6961170852793647506">Бастау үшін құжатты сканерге қойыңыз.</translation>
 <translation id="6965382102122355670">Жарайды</translation>
 <translation id="6977381486153291903">Микробағдарлама нұсқасы</translation>
-<translation id="6992266763844448459">Бұл құрылғының иесі өзгермесе (мысалы, құрылғы ұйымдағы басқа адамға берілсе), осы опцияны таңдаңыз.</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> осы құрылғыны басқарады және пайдаланушының барлық әрекетін (мысалы, кірген веб-сайттары, құпия сөздері және электрондық поштасы) көре алады.</translation>
 <translation id="7040230719604914234">Оператор</translation>
 <translation id="7041549558901442110">Құрылғы жалғанбаған.</translation>
@@ -600,7 +607,6 @@
 <translation id="7297226631177386107">Брандмауэр арқылы HTTPS веб-сайттарына қосылу мүмкін емес.</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
-<translation id="7309920310754476121">Құрылғы басқа иеге өтеді.</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Нәтижені Google Search-тен көру үшін іздеу және бос орын пернелерін бірге басыңыз.</translation>
 <translation id="7343649194310845056">Желілік құрылғылар</translation>
@@ -717,6 +723,7 @@
 <translation id="8655295600908251630">Арна</translation>
 <translation id="8660881923941176839">фунт</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> желісіне қосылу</translation>
+<translation id="8671972493856476349"><ph name="VERSION_NUMBER" /> нұсқасына жаңарту және өшіріп қосу</translation>
 <translation id="8675354002693747642">Алдын ала бөлісілген код</translation>
 <translation id="8677859815076891398">Альбомдар жоқ. <ph name="LINK_BEGIN" />Google Photos<ph name="LINK_END" /> қызметінде альбом жасаңыз.</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> Бұл функцияны басқару үшін сол немесе оң жаққа бағыттауыш пернелерді пайдаланыңыз.</translation>
@@ -767,7 +774,6 @@
 <translation id="9082718469794970195">Осы бейнені қолдану</translation>
 <translation id="9087578468327036362">Осы сұрау туралы хабарлау</translation>
 <translation id="9088306295921699330">Қазір пайдаланылуы</translation>
-<translation id="9095415590198785865">Құрылғы сол иеге өтеді.</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> үшін билетті жаңарту</translation>
 <translation id="9106415115617144481"><ph name="PAGE_NUMBER" />-бет сканерленуде</translation>
@@ -781,6 +787,7 @@
 <translation id="917720651393141712">Тексеру</translation>
 <translation id="9204237731135241582">Android қолданбаларынан шлюзге қосылу мүмкін емес.</translation>
 <translation id="9211490828691860325">Барлық жұмыс үстелдері</translation>
+<translation id="922179502584117429">Қазіргі <ph name="VERSION_NUMBER" /> нұсқасы ескірген.</translation>
 <translation id="932327136139879170">Негізгі бет</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">Белсендірілмеген</translation>

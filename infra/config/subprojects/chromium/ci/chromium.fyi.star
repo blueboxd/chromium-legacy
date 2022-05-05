@@ -275,6 +275,9 @@ ci.builder(
         short_name = "lcr",
     ),
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -382,19 +385,6 @@ ci.builder(
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     goma_backend = None,
     reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
-)
-
-ci.builder(
-    name = "linux-blink-v8-sandbox-future-dbg",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux|blink",
-        short_name = "SD",
-    ),
-    notifies = ["v8-sandbox-fyi-bots"],
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.DEFAULT,
     reclient_instance = rbe_instance.DEFAULT,
 )
 
@@ -1160,6 +1150,9 @@ fyi_coverage_builder(
     use_javascript_coverage = True,
     schedule = "triggered",
     triggered_by = [],
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 fyi_coverage_builder(

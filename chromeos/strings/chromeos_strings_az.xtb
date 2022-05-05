@@ -113,6 +113,7 @@
 <translation id="2085089206770112532">Displey parlaqlığını azaldın</translation>
 <translation id="2104796393919810494">Təmir tamamlanıb</translation>
 <translation id="2105810540595158374">Cihaz oyun nizamlayıcısıdır.</translation>
+<translation id="2115956742084455574">Yanlış kod</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, versiya <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736"><ph name="AVAILABLE_MEMORY" />/<ph name="TOTAL_MEMORY" /> GB əlçatandır</translation>
 <translation id="2138109643290557664">Üzmə</translation>
@@ -142,6 +143,7 @@
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
 <translation id="2338501278241028356">Yaxınlıqdakı cihazları tapmaq üçün Bluetooth'u aktiv edin</translation>
 <translation id="2346474577291266260">Əla (<ph name="SIGNAL_STRENGTH" />)</translation>
+<translation id="2360257214555822463"><ph name="LINK_BEGIN" />Uyğunsuz komponentlər<ph name="LINK_END" /> aşkarlanıb. Bunun quraşdırıldığını təsdiqləməyi seçsəniz, indi bunu edin.</translation>
 <translation id="2363636958541445404">Ekran qoruyucu seçimlərini seçmək üçün funksiyanı aktiv edin</translation>
 <translation id="2364498172489649528">Keçdi</translation>
 <translation id="2380886658946992094">Hüquqi</translation>
@@ -191,6 +193,7 @@
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
 <translation id="3056720590588772262">Son nöqtə</translation>
 <translation id="3069085583900247081">Test uğursuz oldu</translation>
+<translation id="3076243757415932261">Komponentlər doğrulanır...</translation>
 <translation id="3083667275341675831">Bağlantı Diaqnostikası</translation>
 <translation id="3084958266922136097">Ekran qoruyucusunu deaktiv edin</translation>
 <translation id="3091839911843451378">Alınmadı - Dayandırılıb</translation>
@@ -214,10 +217,12 @@
 <translation id="3291996639387199448">Açar istiqaməti</translation>
 <translation id="3310640316857623290">DNS gecikməsi icazə verilən həddən xeyli yuxarıdır</translation>
 <translation id="3328783797891415197">Test icra edilir</translation>
+<translation id="3336855445806447827">Əmin deyiləm</translation>
 <translation id="3340011300870565703">Sağ qulaqlığın batareya səviyyəsi: <ph name="BATTERY_PERCENTAGE" />%.</translation>
 <translation id="3368922792935385530">Qoşuludur</translation>
 <translation id="3369013195428705271">Bütün çap tarixçəsini silmək istədiyinizə əminsiniz? Davam edən çap işləriniz silinməyəcək.</translation>
 <translation id="3404249063913988450">Ekran qoruyucusunu aktiv edin</translation>
+<translation id="3404770484521709967">Komponentlər düzgün quraşdırılıb.</translation>
 <translation id="3413935475507503304">Güncəlləməyə keçmək üçün "Növbəti" seçiminə toxunun.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">Təhlükəsizlik</translation>
@@ -228,6 +233,7 @@
 <translation id="3484914941826596830">Proqram güncəllənərkən bu xarici cihazı ayırmayın və ya kompüterinizi söndürməyin. Bu pəncərəni kiçildə bilərsiniz. Bu güncəlləmə bir neçə dəqiqə çəkə bilər və xarici cihazınız bu müddət ərzində işləməyə bilər.</translation>
 <translation id="3486220673238053218">təsvir</translation>
 <translation id="3488065109653206955">Qismən aktivləşdirilib</translation>
+<translation id="3517001332549868749">ChromeOS güncəlləməsi</translation>
 <translation id="3527036260304016759">Alınmadı - Naməlum xəta</translation>
 <translation id="3532980081107202182">Təxminən <ph name="MIN_REMAINING" /> dəqiqə qalıb</translation>
 <translation id="3557205324756024651">Lokal kimlik (istəyə görə)</translation>
@@ -319,7 +325,6 @@
 <translation id="4472575034687746823">Başlayın</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Qeyri-defolt şəbəkə girişini yoxlamaq alınmadı</translation>
-<translation id="4485626319513081846">Cihaz yeni müştəriyə verilmək üçün ehtiyatda saxlansa və ya yenilənsə, bu seçimi edin.</translation>
 <translation id="4503223151711056411">Sol ox</translation>
 <translation id="4511264077854731334">Portal</translation>
 <translation id="4521826082652183069">Subyektin alternativ adının uyğunluğu</translation>
@@ -370,6 +375,7 @@
 <translation id="4890353053343094602">Dərhal yenisini seçin</translation>
 <translation id="4891842000192098784">Gərginlik</translation>
 <translation id="4897058166682006107">Sol qulaqlığın batareya səviyyəsi: <ph name="BATTERY_PERCENTAGE" />%.</translation>
+<translation id="4915052247106771211">Cihazı zavod ayarlarına sıfırlanacaq (Powerwash).</translation>
 <translation id="4917385247580444890">Güclü</translation>
 <translation id="4917889632206600977">Dayanıb - Kağız yoxdur</translation>
 <translation id="4921665434385737356"><ph name="NUM_SECONDS" /> saniyədə <ph name="RATE" /> şarj edilib.</translation>
@@ -423,6 +429,7 @@
 <translation id="5358174242040570474">Xəta oldu. Yenidən divar kağızı seçin və ya tətbiqi yenidən açın.</translation>
 <translation id="5372659122375744710">WiFi şəbəkəsi güvənli deyil</translation>
 <translation id="5376354385557966694">Avtomatik işıqlı rejim</translation>
+<translation id="537872351913703572">Cihaz başqa istifadəçinin və ya təşkilatın mülkiyyətinə keçəcək</translation>
 <translation id="5400907029458559844">Cihaz qoşulur.</translation>
 <translation id="5401938042319910061">Bütün Rejimləri İşə Salın</translation>
 <translation id="5423849171846380976">Aktivləşdirildi</translation>
@@ -553,6 +560,7 @@
 <translation id="6692996468359469499">Seçiminizlə bağlı məlumat əldə edin</translation>
 <translation id="6704062477274546131">DNS Həlli</translation>
 <translation id="6723839937902243910">Enerji</translation>
+<translation id="6723847290197874913">Klaviaturanın arxa işığı</translation>
 <translation id="672609503628871915">Yeniliklərə baxın</translation>
 <translation id="6747215703636344499">Dayanıb - Çıxış doludur</translation>
 <translation id="6749473226660745022">Foto</translation>
@@ -563,6 +571,7 @@
 <translation id="6768237774506518020">DNS həllinin alınmama faizi yüksəkdir</translation>
 <translation id="680983167891198932">Açar</translation>
 <translation id="6816797338148849397">Seçiminizlə əlaqəli məlumat əlçatandır. Giriş üçün Yuxarı ox düyməsini istifadə edin.</translation>
+<translation id="6840315122969944400"><ph name="DEVICE_TYPE" /> təmiri</translation>
 <translation id="6853312040151791195">Deşarj faizi</translation>
 <translation id="6889786074662672253">Yenidən başlatma zamanı bu xarici cihazı ayırmayın və ya kompüterinizi söndürməyin. Bu pəncərəni kiçildə bilərsiniz. Bu, bir neçə dəqiqə çəkə bilər və xarici cihazınız bu müddət ərzində işləməyə bilər.</translation>
 <translation id="6905724422583748843"><ph name="PAGE_NAME" /> səhifəsinə qayıdın</translation>
@@ -574,7 +583,6 @@
 <translation id="6961170852793647506">Başlamaq üçün sənədinizi skanerə yerləşdirin</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6977381486153291903">Mikro proqram versiyası</translation>
-<translation id="6992266763844448459">Cihazın mülkiyyəti dəyişmirsə, bu seçimi edin. Məsələn, cihaz təşkilat daxilində başqa bir şəxsə ötürüldükdə.</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> bu cihazı idarə edir və giriş edilən veb səhifə, parol və e-poçt daxil olmaqla bütün istifadəçi fəaliyyətinə girişi var.</translation>
 <translation id="7040230719604914234">Operator</translation>
 <translation id="7041549558901442110">Cihaz qoşulmayıb.</translation>
@@ -606,7 +614,6 @@
 <translation id="7297226631177386107">Alov divarı aktiv olduqda HTTPS vebsaytlarına qoşulmaq olmur</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
-<translation id="7309920310754476121">Cihaz başqa şəxsin mülkiyyətinə keçəcək</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Google Axtarışda nəticəni görmək üçün Axtarış və Boşluq düyməsinə basın.</translation>
 <translation id="7343649194310845056">Şəbəkə Cihazları</translation>
@@ -673,6 +680,7 @@
 <translation id="8045012663542226664">Mikrofonun səssiz düyməsi</translation>
 <translation id="8075838845814659848">Qalan şarj</translation>
 <translation id="8082366717211101304">Android tətbiqlərindən DNS'i həll etmək olmur</translation>
+<translation id="8083281199617904460">Bu təmir prosesi təlim keçmiş təmir ustası üçün nəzərdə tutulub. Yalnız nasaz komponentləri dəyişdirdikdən sonra başlayın.</translation>
 <translation id="808894953321890993">Parolu dəyişin</translation>
 <translation id="8104083085214006426">Açıq və güvənsiz şəbəkədən istifadə edirsiniz</translation>
 <translation id="811820734797650957">(Android) Giriş test edilə bilər</translation>
@@ -726,6 +734,7 @@
 <translation id="8671972493856476349"><ph name="VERSION_NUMBER" /> versiyasına güncəlləyin və yenidən başladın</translation>
 <translation id="8675354002693747642">Öncədən paylaşılan açar</translation>
 <translation id="8677859815076891398">Albom yoxdur. <ph name="LINK_BEGIN" />Google Fotoda<ph name="LINK_END" /> albom yaradın.</translation>
+<translation id="8680431479333800907">Cihaz eyni istifadəçinin mülkiyyətinə keçəcək</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> Bu funksiyanı idarə etmək üçün Sol və ya Sağ ox düyməsini istifadə edin.</translation>
 <translation id="8712637175834984815">Anladım</translation>
 <translation id="871560550817059752">Alınmadı - Mürəkkəb yoxdur</translation>
@@ -774,7 +783,6 @@
 <translation id="9082718469794970195">Bu videonu istifadə edin</translation>
 <translation id="9087578468327036362">Bu sorğunu bildirin</translation>
 <translation id="9088306295921699330">Cari istifadə</translation>
-<translation id="9095415590198785865">Cihaz eyni şəxsin mülkiyyətinə keçəcək</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> üçün bileti yeniləyin</translation>
 <translation id="9106415115617144481"><ph name="PAGE_NUMBER" /> saylı səhifə skanlanır</translation>

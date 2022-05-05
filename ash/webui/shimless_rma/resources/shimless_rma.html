@@ -12,8 +12,6 @@
 
   #contentContainer {
     flex-grow: 1;
-    /* TODO(longbowei): Update max-height later with specs. */
-    max-height: 600px;
   }
 
   .shimless-content {
@@ -27,12 +25,13 @@
   }
 
   .shimless-header {
-    height: 80px;
+    height: var(--header-height);
   }
 
   #back {
     border: 0;
     height: 100%;
+    padding-inline-start: 0;
   }
 
   #next {
@@ -58,12 +57,12 @@
   #cancelButtonSpinner,
   #nextButtonCaret,
   #nextButtonSpinner {
-    margin-inline-start: 5px;
+    margin-inline-start: 8px;
   }
 
   #backButtonCaret,
   #backButtonSpinner {
-    margin-inline-end: 5px;
+    margin-inline-end: 8px;
   }
 
   #busyStateOverlay {

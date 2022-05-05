@@ -80,6 +80,8 @@ namespace {
 
 constexpr float kDefaultCursorScale = 1.f;
 
+constexpr uint32_t kAugmentedSurfaceNotSupportedVersion = 0;
+
 struct PopupPosition {
   gfx::Rect anchor_rect;
   gfx::Size size;
@@ -2706,10 +2708,8 @@ TEST_P(WaylandWindowTest, ReattachesBackgroundOnShow) {
   EXPECT_TRUE(connection_->buffer_manager_host());
 
   auto interface_ptr = connection_->buffer_manager_host()->BindInterface();
-  buffer_manager_gpu_->Initialize(
-      std::move(interface_ptr), {}, false, true, false,
-      /*supports_non_backed_solid_color_buffers*/ false,
-      /*supports_subpixel_accurate_position*/ false);
+  buffer_manager_gpu_->Initialize(std::move(interface_ptr), {}, false, true,
+                                  false, kAugmentedSurfaceNotSupportedVersion);
 
   // Setup wl_buffers.
   constexpr uint32_t buffer_id1 = 1;
@@ -2911,12 +2911,19 @@ TEST_P(WaylandWindowTest, CreatesPopupOnButtonPressSerial) {
 
     auto* test_popup = GetTestXdgPopupByWindow(popup.get());
     ASSERT_TRUE(test_popup);
+
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
     if (use_explicit_grab) {
       EXPECT_NE(test_popup->grab_serial(), button_release_serial);
       EXPECT_EQ(test_popup->grab_serial(), button_press_serial);
     } else {
       EXPECT_EQ(test_popup->grab_serial(), 0U);
     }
+#else
+    // crbug.com/1320528: Lacros uses explicit grab always.
+    EXPECT_NE(test_popup->grab_serial(), button_release_serial);
+    EXPECT_EQ(test_popup->grab_serial(), button_press_serial);
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
   }
 }
 
@@ -2969,11 +2976,14 @@ TEST_P(WaylandWindowTest, CreatesPopupOnTouchDownSerial) {
     auto* test_popup = GetTestXdgPopupByWindow(popup.get());
     ASSERT_TRUE(test_popup);
 
+    // crbug.com/1320528: Lacros uses explicit grab always.
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
     // Unless the use-wayland-explicit-grab switch is set, touch events are the
     // exception, i.e: the serial sent before the "up" event (latest) cannot be
     // used, otherwise, some compositors may dismiss popups.
     if (!use_explicit_grab)
       EXPECT_EQ(test_popup->grab_serial(), 0U);
+#endif
 
     popup->Hide();
 
@@ -2991,20 +3001,23 @@ TEST_P(WaylandWindowTest, CreatesPopupOnTouchDownSerial) {
     test_popup = GetTestXdgPopupByWindow(popup.get());
     ASSERT_TRUE(test_popup);
 
-    uint32_t expected_serial = touch_down_serial;
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
+    uint32_t expected_serial = touch_down_serial;
     auto env = base::Environment::Create();
     if (base::nix::GetDesktopEnvironment(env.get()) ==
         base::nix::DESKTOP_ENVIRONMENT_GNOME) {
       // We do not grab with touch events on gnome shell.
       expected_serial = 0u;
     }
-#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
     if (use_explicit_grab) {
       EXPECT_EQ(test_popup->grab_serial(), expected_serial);
     } else {
       EXPECT_EQ(test_popup->grab_serial(), 0U);
     }
+#else
+    // crbug.com/1320528: Lacros uses explicit grab always.
+    EXPECT_EQ(test_popup->grab_serial(), touch_down_serial);
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
   }
 }
 
@@ -3288,10 +3301,8 @@ TEST_P(WaylandWindowTest, NoDuplicateViewporterRequests) {
   EXPECT_TRUE(connection_->buffer_manager_host());
 
   auto interface_ptr = connection_->buffer_manager_host()->BindInterface();
-  buffer_manager_gpu_->Initialize(
-      std::move(interface_ptr), {}, false, true, false,
-      /*supports_non_backed_solid_color_buffers*/ false,
-      /*supports_subpixel_accurate_position*/ false);
+  buffer_manager_gpu_->Initialize(std::move(interface_ptr), {}, false, true,
+                                  false, kAugmentedSurfaceNotSupportedVersion);
 
   // Setup wl_buffers.
   constexpr uint32_t buffer_id = 1;
@@ -3312,7 +3323,7 @@ TEST_P(WaylandWindowTest, NoDuplicateViewporterRequests) {
   surface->AttachBuffer(connection_->buffer_manager_host()->EnsureBufferHandle(
       surface, buffer_id));
 
-  surface->SetViewportSource({0.5, 0.5, 0.5, 0.5});
+  surface->SetBufferCrop({0.5, 0.5, 0.5, 0.5});
   surface->SetViewportDestination({800, 600});
   surface->ApplyPendingState();
   surface->Commit();
@@ -3328,7 +3339,7 @@ TEST_P(WaylandWindowTest, NoDuplicateViewporterRequests) {
   surface->AttachBuffer(connection_->buffer_manager_host()->EnsureBufferHandle(
       surface, buffer_id));
 
-  surface->SetViewportSource({0.5, 0.5, 0.5, 0.5});
+  surface->SetBufferCrop({0.5, 0.5, 0.5, 0.5});
   surface->SetViewportDestination({800, 600});
   surface->ApplyPendingState();
   surface->Commit();
@@ -3344,7 +3355,7 @@ TEST_P(WaylandWindowTest, NoDuplicateViewporterRequests) {
   surface->AttachBuffer(connection_->buffer_manager_host()->EnsureBufferHandle(
       surface, buffer_id));
 
-  surface->SetViewportSource({0., 0., 1., 1.});
+  surface->SetBufferCrop({0., 0., 1., 1.});
   surface->SetViewportDestination({1024, 768});
   surface->ApplyPendingState();
   surface->Commit();
@@ -3360,7 +3371,7 @@ TEST_P(WaylandWindowTest, NoDuplicateViewporterRequests) {
   surface->AttachBuffer(connection_->buffer_manager_host()->EnsureBufferHandle(
       surface, buffer_id));
 
-  surface->SetViewportSource({0., 0., 1., 1.});
+  surface->SetBufferCrop({0., 0., 1., 1.});
   surface->SetViewportDestination({1024, 768});
   surface->ApplyPendingState();
   surface->Commit();

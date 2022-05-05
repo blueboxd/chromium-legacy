@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/callback_forward.h"
 #include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
@@ -16,15 +17,8 @@
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chrome/browser/ui/webui/signin/turn_sync_on_helper.h"
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "components/account_manager_core/account_manager_facade.h"
-#endif
-
 struct AccountInfo;
+struct CoreAccountInfo;
 class Browser;
 class Profile;
 class ProfileAttributesEntry;
@@ -33,6 +27,7 @@ class ProfileAttributesStorage;
 // Utility functions to gather status information from the various signed in
 // services and construct messages suitable for showing in UI.
 namespace signin_ui_util {
+class SigninUiDelegate;
 
 // The maximum number of times to show the welcome tutorial for an upgrade user.
 const int kUpgradeWelcomeTutorialShowMax = 1;
@@ -59,85 +54,6 @@ void ShowExtensionSigninPrompt(Profile* profile,
                                bool enable_sync,
                                const std::string& email_hint);
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-// Displays sign-in UI to the user and shows the Sync confirmation if the user
-// successfully adds an account and `enable_sync` is true.
-// This will display the Chrome account picker first, if the system has
-// available accounts. If the user chooses to add a new account or no existing
-// accounts are available, this function will display OS's add account flow.
-// `browser` might be null. In that case, this function will try to re-use an
-// existing or open a new browser window for a `profile` if needed.
-void ShowSigninPromptAndMaybeEnableSync(
-    Browser* browser,
-    Profile* profile,
-    bool enable_sync,
-    signin_metrics::AccessPoint access_point,
-    signin_metrics::PromoAction promo_action);
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-
-namespace internal {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
-using CreateTurnSyncOnHelperCallback = base::OnceCallback<void(
-    Profile* profile,
-    Browser* browser,
-    signin_metrics::AccessPoint signin_access_point,
-    signin_metrics::PromoAction signin_promo_action,
-    signin_metrics::Reason signin_reason,
-    const CoreAccountId& account_id,
-    TurnSyncOnHelper::SigninAbortedMode signin_aborted_mode)>;
-#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-using OnAccountAddedCallback = base::OnceCallback<void(const CoreAccountId&)>;
-// The callback triggering the add account flow.
-// `AccountAdditionSource` specifies a source of the account addition.
-// `OnAccountAddedCallback` is invoked when the add account flow is complete.
-using AddAccountCallback = base::OnceCallback<void(
-    account_manager::AccountManagerFacade::AccountAdditionSource,
-    OnAccountAddedCallback)>;
-
-// Same as `ShowReauthForPrimaryAccountWithAuthError` but with a getter function
-// for AccountManagerFacade so that it can be unit tested.
-void ShowReauthForPrimaryAccountWithAuthErrorLacros(
-    Browser* browser,
-    signin_metrics::AccessPoint access_point,
-    account_manager::AccountManagerFacade* account_manager_facade);
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-// Same as `ShowExtensionSigninPrompt()` but with an additional parameters that
-// can be injected for unit testing.
-// `add_account_callback` encapsulates the logic to add a new account.
-// `create_turn_sync_on_helper_callback` creates a TurnSyncOnHelper when Sync
-// needs to be enabled.
-void ShowExtensionSigninPrompt(
-    Profile* profile,
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    account_manager::AccountManagerFacade* account_manager_facade,
-    AddAccountCallback add_account_callback,
-    CreateTurnSyncOnHelperCallback create_turn_sync_on_helper_callback,
-#endif
-    bool enable_sync,
-    const std::string& email_hint);
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-// Same as `ShowSigninPromptAndMaybeEnableSync()` but with an additional
-// parameters that can be injected for unit testing.
-// `add_account_callback` encapsulates the logic to add a new account.
-// `create_turn_sync_on_helper_callback` creates a TurnSyncOnHelper when Sync
-// needs to be enabled.
-void ShowSigninPromptAndMaybeEnableSync(
-    Browser* browser,
-    Profile* profile,
-    AddAccountCallback add_account_callback,
-    CreateTurnSyncOnHelperCallback create_turn_sync_on_helper_callback,
-    bool enable_sync,
-    signin_metrics::AccessPoint access_point,
-    signin_metrics::PromoAction promo_action);
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-}  // namespace internal
-
 // This function is used to enable sync for a given account:
 // * This function does nothing if the user is already signed in to Chrome.
 // * If |account| is empty, then it presents the Chrome sign-in page.
@@ -146,7 +62,7 @@ void ShowSigninPromptAndMaybeEnableSync(
 // * If token service has a valid refresh token for |account|, then it
 //   enables sync for |account|.
 void EnableSyncFromSingleAccountPromo(Browser* browser,
-                                      const AccountInfo& account,
+                                      const CoreAccountInfo& account,
                                       signin_metrics::AccessPoint access_point);
 
 // This function is used to enable sync for a given account. It has the same
@@ -157,7 +73,7 @@ void EnableSyncFromSingleAccountPromo(Browser* browser,
 // |is_default_promo_account| is true if |account| corresponds to the default
 // account in the promo. It is ignored if |account| is empty.
 void EnableSyncFromMultiAccountPromo(Browser* browser,
-                                     const AccountInfo& account,
+                                     const CoreAccountInfo& account,
                                      signin_metrics::AccessPoint access_point,
                                      bool is_default_promo_account);
 
@@ -190,32 +106,17 @@ std::u16string GetShortProfileIdentityToDisplay(
 // Also, the parser does not validate the policy value.
 std::string GetAllowedDomain(std::string signin_pattern);
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
-namespace internal {
-// Same as `EnableSyncFromPromo()` but with extra parameters that can be
-// injected for unit testing.
-// `add_account_callback` encapsulates the logic to add a new account.
-// `create_turn_sync_on_helper_callback` creates a TurnSyncOnHelper when Sync
-// needs to be enabled.
-void EnableSyncFromPromo(
-    Browser* browser,
-    const AccountInfo& account,
-    signin_metrics::AccessPoint access_point,
-    bool is_default_promo_account,
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    account_manager::AccountManagerFacade* account_manager_facade,
-    AddAccountCallback add_account_callback,
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-    CreateTurnSyncOnHelperCallback create_turn_sync_on_helper_callback);
-}  // namespace internal
-#endif
-
 // Returns whether Chrome should show the identity of the user (using a brief
 // animation) on opening a new window. IdentityManager's refresh tokens must be
 // loaded when this function gets called.
 bool ShouldShowAnimatedIdentityOnOpeningWindow(
     const ProfileAttributesStorage& profile_attributes_storage,
     Profile* profile);
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
+base::AutoReset<SigninUiDelegate*> SetSigninUiDelegateForTesting(
+    SigninUiDelegate* delegate);
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 // Records that the animated identity was shown for the given profile. This is
 // used for metrics and to decide whether/when the animation can be shown again.

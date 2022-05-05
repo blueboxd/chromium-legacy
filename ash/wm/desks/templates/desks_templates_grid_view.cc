@@ -16,9 +16,9 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/pill_button.h"
 #include "ash/wm/desks/templates/desks_templates_animations.h"
-#include "ash/wm/desks/templates/desks_templates_item_view.h"
-#include "ash/wm/desks/templates/desks_templates_name_view.h"
 #include "ash/wm/desks/templates/desks_templates_presenter.h"
+#include "ash/wm/desks/templates/saved_desk_item_view.h"
+#include "ash/wm/desks/templates/saved_desk_name_view.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_session.h"
@@ -27,6 +27,7 @@
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
@@ -87,6 +88,43 @@ gfx::Transform GetScaleTransformForView(views::View* view) {
 }
 
 }  // namespace
+
+// -----------------------------------------------------------------------------
+// CustomWindowTargeter:
+
+// A custom targeter that only allows us to handle events which are located on
+// the children of the grid. The grid takes up all the available space in
+// overview, but we still want some events to fall through to the
+// `OverviewGridEventHandler`, if they are not handled by the grid's children.
+class CustomWindowTargeter : public aura::WindowTargeter {
+ public:
+  explicit CustomWindowTargeter(DesksTemplatesGridView* owner)
+      : owner_(owner) {}
+  CustomWindowTargeter(const CustomWindowTargeter&) = delete;
+  CustomWindowTargeter& operator=(const CustomWindowTargeter&) = delete;
+  ~CustomWindowTargeter() override = default;
+
+  // aura::WindowTargeter:
+  bool SubtreeShouldBeExploredForEvent(aura::Window* window,
+                                       const ui::LocatedEvent& event) override {
+    // TODO(dandersson|yongshun): For desk templates this is sufficient, but for
+    // save and recall we may have children that are not buttons, offscreen
+    // children or invisible children.
+    for (views::View* child : owner_->children()) {
+      if (child->GetBoundsInScreen().Contains(event.location())) {
+        return aura::WindowTargeter::SubtreeShouldBeExploredForEvent(window,
+                                                                     event);
+      }
+    }
+
+    // None of the grids' children will handle the event, so `window` won't
+    // handle the event and it will fall through to the wallpaper.
+    return false;
+  }
+
+ private:
+  DesksTemplatesGridView* const owner_;
+};
 
 // -----------------------------------------------------------------------------
 // DesksTemplatesEventHandler:
@@ -208,8 +246,8 @@ void DesksTemplatesGridView::SortTemplateGridItems(
   // grid, and sort the rest of the templates after it.
   std::sort(
       grid_items_.begin(), grid_items_.end(),
-      [&collator, last_saved_template_uuid](const DesksTemplatesItemView* a,
-                                            const DesksTemplatesItemView* b) {
+      [&collator, last_saved_template_uuid](const SavedDeskItemView* a,
+                                            const SavedDeskItemView* b) {
         if (last_saved_template_uuid.is_valid() &&
             a->uuid() == last_saved_template_uuid) {
           return true;
@@ -241,19 +279,19 @@ void DesksTemplatesGridView::AddOrUpdateTemplates(
     const std::vector<const DeskTemplate*>& entries,
     bool initializing_grid_view,
     const base::GUID& last_saved_template_uuid) {
-  std::vector<DesksTemplatesItemView*> new_grid_items;
+  std::vector<SavedDeskItemView*> new_grid_items;
 
   for (const DeskTemplate* entry : entries) {
     auto iter = std::find_if(grid_items_.begin(), grid_items_.end(),
-                             [entry](DesksTemplatesItemView* grid_item) {
+                             [entry](SavedDeskItemView* grid_item) {
                                return entry->uuid() == grid_item->uuid();
                              });
 
     if (iter != grid_items_.end()) {
       (*iter)->UpdateTemplate(*entry);
     } else if (grid_items_.size() < kMaxTemplateCount) {
-      DesksTemplatesItemView* grid_item =
-          AddChildView(std::make_unique<DesksTemplatesItemView>(entry));
+      SavedDeskItemView* grid_item =
+          AddChildView(std::make_unique<SavedDeskItemView>(entry));
       grid_items_.push_back(grid_item);
       if (!initializing_grid_view)
         new_grid_items.push_back(grid_item);
@@ -281,14 +319,14 @@ void DesksTemplatesGridView::DeleteTemplates(
   for (const std::string& uuid : uuids) {
     auto iter =
         std::find_if(grid_items_.begin(), grid_items_.end(),
-                     [uuid](DesksTemplatesItemView* grid_item) {
+                     [uuid](SavedDeskItemView* grid_item) {
                        return uuid == grid_item->uuid().AsLowercaseString();
                      });
 
     if (iter == grid_items_.end())
       continue;
 
-    DesksTemplatesItemView* grid_item = *iter;
+    SavedDeskItemView* grid_item = *iter;
     highlight_controller->OnViewDestroyingOrDisabling(grid_item);
     highlight_controller->OnViewDestroyingOrDisabling(grid_item->name_view());
 
@@ -317,15 +355,15 @@ void DesksTemplatesGridView::DeleteTemplates(
   NotifyAccessibilityEvent(ax::mojom::Event::kTreeChanged, true);
 }
 
-DesksTemplatesItemView* DesksTemplatesGridView::GridItemBeingModified() {
+bool DesksTemplatesGridView::IsTemplateNameBeingModified() const {
   if (!GetWidget()->IsActive())
-    return nullptr;
+    return false;
 
   for (auto* grid_item : grid_items_) {
-    if (grid_item->IsTemplateNameBeingModified())
-      return grid_item;
+    if (grid_item->IsNameBeingModified())
+      return true;
   }
-  return nullptr;
+  return false;
 }
 
 void DesksTemplatesGridView::Layout() {
@@ -353,6 +391,8 @@ void DesksTemplatesGridView::AddedToWidget() {
   widget_window_ = GetWidget()->GetNativeWindow();
   widget_window_->AddObserver(this);
   widget_window_->AddPreTargetHandler(event_handler_.get());
+  widget_window_->SetEventTargeter(
+      std::make_unique<CustomWindowTargeter>(this));
 }
 
 void DesksTemplatesGridView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
@@ -382,28 +422,13 @@ void DesksTemplatesGridView::OnWindowDestroying(aura::Window* window) {
   widget_window_ = nullptr;
 }
 
-bool DesksTemplatesGridView::IntersectsWithFeedbackButton(
-    const gfx::Point& point_in_screen) {
-  return feedback_button_ &&
-         feedback_button_->bounds().Contains(point_in_screen);
-}
-
-bool DesksTemplatesGridView::IntersectsWithGridItem(
-    const gfx::Point& point_in_screen) {
-  for (DesksTemplatesItemView* grid_item : grid_items_) {
-    if (grid_item->bounds().Contains(point_in_screen))
-      return true;
-  }
-  return false;
-}
-
-DesksTemplatesItemView* DesksTemplatesGridView::GetItemForUUID(
+SavedDeskItemView* DesksTemplatesGridView::GetItemForUUID(
     const base::GUID& uuid) {
   if (!uuid.is_valid())
     return nullptr;
 
   auto it = std::find_if(grid_items_.begin(), grid_items_.end(),
-                         [&uuid](DesksTemplatesItemView* item_view) {
+                         [&uuid](SavedDeskItemView* item_view) {
                            return uuid == item_view->desk_template()->uuid();
                          });
   return it == grid_items_.end() ? nullptr : *it;
@@ -436,41 +461,12 @@ void DesksTemplatesGridView::OnLocatedEvent(ui::LocatedEvent* event,
       const gfx::Point screen_location =
           event->target() ? event->target()->GetScreenLocation(*event)
                           : event->root_location();
-      for (DesksTemplatesItemView* grid_item : grid_items_)
+      for (SavedDeskItemView* grid_item : grid_items_)
         grid_item->UpdateHoverButtonsVisibility(screen_location, is_touch);
       break;
     }
     default:
       break;
-  }
-
-  // If the event is `ui::ET_MOUSE_RELEASED` or `ui::ET_GESTURE_TAP`, it might
-  // be a click/tap outside grid item and feedback button to exit overview or
-  // to commit name changes.
-  if (event->type() == ui::ET_MOUSE_RELEASED ||
-      event->type() == ui::ET_GESTURE_TAP) {
-    DesksTemplatesItemView* grid_item_being_modified = GridItemBeingModified();
-    if (grid_item_being_modified &&
-        !grid_item_being_modified->bounds().Contains(event->location())) {
-      // When there is a desk grid template name being modified, and the
-      // location is outside of the current grid item, commit the name change.
-      DesksTemplatesNameView::CommitChanges(GetWidget());
-      event->StopPropagation();
-      event->SetHandled();
-      return;
-    }
-    if (!grid_item_being_modified &&
-        !IntersectsWithGridItem(event->location()) &&
-        !IntersectsWithFeedbackButton(event->location())) {
-      // When there is no desk grid template name being modified, and the
-      // location does not intersect with any grid item or the feedback button,
-      // exit overview.
-      Shell::Get()->overview_controller()->EndOverview(
-          OverviewEndAction::kClickingOutsideWindowsInOverview);
-      event->StopPropagation();
-      event->SetHandled();
-      return;
-    }
   }
 }
 
@@ -534,10 +530,10 @@ gfx::Rect DesksTemplatesGridView::CalculateFeedbackButtonPosition() const {
 }
 
 void DesksTemplatesGridView::AnimateGridItems(
-    const std::vector<DesksTemplatesItemView*>& new_grid_items) {
+    const std::vector<SavedDeskItemView*>& new_grid_items) {
   const std::vector<gfx::Rect> positions = CalculateGridItemPositions();
   for (size_t i = 0; i < grid_items_.size(); i++) {
-    DesksTemplatesItemView* grid_item = grid_items_[i];
+    SavedDeskItemView* grid_item = grid_items_[i];
     const gfx::Rect target_bounds = positions[i];
     if (bounds_animator_.GetTargetBounds(grid_item) == target_bounds)
       continue;
@@ -576,7 +572,7 @@ void DesksTemplatesGridView::AnimateGridItems(
 
 void DesksTemplatesGridView::OnFeedbackButtonPressed() {
   std::string extra_diagnostics;
-  for (DesksTemplatesItemView* grid_item : grid_items_)
+  for (SavedDeskItemView* grid_item : grid_items_)
     extra_diagnostics += (grid_item->desk_template()->ToString() + "\n");
 
   // Note that this will activate the dialog which will exit overview and delete

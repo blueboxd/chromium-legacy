@@ -85,8 +85,11 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
                                                  all_segment_ids_.end());
 
   // Construct signal processors.
-  signal_handler_.Initialize(storage_service_.get(),
-                             init_params->history_service, segment_id_vec);
+  signal_handler_.Initialize(
+      storage_service_.get(), init_params->history_service, segment_id_vec,
+      base::BindRepeating(
+          &SegmentationPlatformServiceImpl::OnModelRefreshNeeded,
+          weak_ptr_factory_.GetWeakPtr()));
 
   for (const auto& config : configs_) {
     segment_selectors_[config->segmentation_key] =
@@ -164,9 +167,7 @@ void SegmentationPlatformServiceImpl::OnDatabaseInitialized(bool success) {
   for (auto& key_and_selector : segment_selectors_)
     observers.push_back(key_and_selector.second.get());
   execution_service_.Initialize(
-      storage_service_->signal_database(),
-      storage_service_->segment_info_database(),
-      storage_service_->signal_storage_config(), &signal_handler_, clock_,
+      storage_service_.get(), &signal_handler_, clock_,
       base::BindRepeating(
           &SegmentationPlatformServiceImpl::OnSegmentationModelUpdated,
           weak_ptr_factory_.GetWeakPtr()),
@@ -178,6 +179,8 @@ void SegmentationPlatformServiceImpl::OnDatabaseInitialized(bool success) {
   for (auto& selector : segment_selectors_) {
     selector.second->OnPlatformInitialized(&execution_service_);
   }
+
+  RunDailyTasks(/*is_startup=*/true);
 
   init_time_ = clock_->Now();
   base::UmaHistogramMediumTimes(
@@ -201,9 +204,24 @@ void SegmentationPlatformServiceImpl::OnSegmentationModelUpdated(
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
+void SegmentationPlatformServiceImpl::OnModelRefreshNeeded() {
+  execution_service_.RefreshModelResults();
+}
+
 void SegmentationPlatformServiceImpl::OnServiceStatusChanged() {
   proxy_->OnServiceStatusChanged(storage_initialized_,
                                  storage_service_->GetServiceStatus());
+}
+
+void SegmentationPlatformServiceImpl::RunDailyTasks(bool is_startup) {
+  execution_service_.RefreshModelResults();
+  storage_service_->ExecuteDatabaseMaintenanceTasks(is_startup);
+
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&SegmentationPlatformServiceImpl::RunDailyTasks,
+                     weak_ptr_factory_.GetWeakPtr(), /*is_startup=*/false),
+      base::Days(1));
 }
 
 // static

@@ -141,10 +141,12 @@ class FakeProcess(object):
 
 
 class GenericBuilders(builders.Builders):
-  def __init__(self, include_internal_builders=False):
-    super(GenericBuilders, self).__init__(include_internal_builders)
+  #pylint: disable=useless-super-delegation
+  def __init__(self, suite=None, include_internal_builders=False):
+    super(GenericBuilders, self).__init__(suite, include_internal_builders)
+  #pylint: enable=useless-super-delegation
 
-  def _BuilderRunsTestOfInterest(self, test_map, suite):
+  def _BuilderRunsTestOfInterest(self, _test_map):
     return True
 
   def GetIsolateNames(self):

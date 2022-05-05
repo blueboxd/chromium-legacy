@@ -589,7 +589,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.TpmResults" enum="CryptohomeTpmResults"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>afakhry@chromium.org</owner>
   <summary>
     The errors resulting from interacting with the Trusted Platform Module (TPM)
@@ -604,6 +604,32 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records whether the user's profile directory (/home/chronos/u-{hash}) is
     owned by group chronos-access. This is recorded once per log-in.
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.UssExperiment.FetchUssExperimentConfigStatus"
+    enum="CryptohomeFetchUssExperimentConfigStatus" expires_after="2023-04-29">
+  <owner>hcyang@google.com</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    cryptohomed fetchs the USS experiment config from gstatic when it starts.
+    This metric tracks the fetch and parse result. If fetch and parse is
+    successful, and it determines that the experiment should be
+    enabled/disabled, it reports Enabled/Disabled respectively. If fetch or
+    parse is not successful, it reports Error.
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.UssExperiment.UssExperimentFlag"
+    enum="CryptohomeUssExperimentFlag" expires_after="2023-04-29">
+  <owner>hcyang@google.com</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    cryptohomed checks the USS experiment flag when a new user is created to
+    decide whether a USS-structured cryptohome should be created. This metrics
+    reports the value of the experiment flag when it checks it. Not found means
+    that the experiment config fetching failed or haven't complete when the flag
+    is checked.
   </summary>
 </histogram>
 

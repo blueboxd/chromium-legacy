@@ -6,7 +6,12 @@
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_WINDOW_EVENT_FILTER_LINUX_H_
 
 #include "ui/base/hit_test.h"
+#include "ui/events/event_handler.h"
 #include "ui/views/views_export.h"
+
+namespace aura {
+class Window;
+}  // namespace aura
 
 namespace ui {
 class LocatedEvent;
@@ -16,19 +21,20 @@ class WmMoveResizeHandler;
 
 namespace views {
 
-class DesktopWindowTreeHostLinux;
+class DesktopWindowTreeHostPlatform;
 
 // An EventFilter that sets properties on native windows. Uses
 // WmMoveResizeHandler to dispatch move/resize requests.
-class VIEWS_EXPORT WindowEventFilterLinux {
+class VIEWS_EXPORT WindowEventFilterLinux : public ui::EventHandler {
  public:
-  WindowEventFilterLinux(DesktopWindowTreeHostLinux* desktop_window_tree_host,
-                         ui::WmMoveResizeHandler* handler);
+  WindowEventFilterLinux(
+      DesktopWindowTreeHostPlatform* desktop_window_tree_host,
+      ui::WmMoveResizeHandler* handler);
 
   WindowEventFilterLinux(const WindowEventFilterLinux&) = delete;
   WindowEventFilterLinux& operator=(const WindowEventFilterLinux&) = delete;
 
-  ~WindowEventFilterLinux();
+  ~WindowEventFilterLinux() override;
 
   void HandleLocatedEventWithHitTest(int hit_test, ui::LocatedEvent* event);
 
@@ -41,7 +47,7 @@ class VIEWS_EXPORT WindowEventFilterLinux {
   // Called when the user clicked the maximize button.
   void OnClickedMaximizeButton(ui::MouseEvent* event);
 
-  void ToggleMaximizedState();
+  void MaybeToggleMaximizedState(aura::Window* window);
 
   // Dispatches a message to the window manager to tell it to act as if a border
   // or titlebar drag occurred with left mouse click. In case of X11, a
@@ -53,7 +59,10 @@ class VIEWS_EXPORT WindowEventFilterLinux {
   // stack.
   void LowerWindow();
 
-  DesktopWindowTreeHostLinux* const desktop_window_tree_host_;
+  // ui::EventHandler overrides:
+  void OnGestureEvent(ui::GestureEvent* event) override;
+
+  DesktopWindowTreeHostPlatform* const desktop_window_tree_host_;
 
   // A handler, which is used for interactive move/resize events if set and
   // unless MaybeDispatchHostWindowDragMovement is overridden by a derived

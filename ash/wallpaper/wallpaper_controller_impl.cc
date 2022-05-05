@@ -59,6 +59,7 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner_util.h"
@@ -656,7 +657,7 @@ bool GetWallpaperInfo(const AccountId& account_id,
 
   WallpaperType wallpaper_type = static_cast<WallpaperType>(type.value());
   if (!features::IsWallpaperGooglePhotosIntegrationEnabled() &&
-      (wallpaper_type == WallpaperType::kGooglePhotos ||
+      (wallpaper_type == WallpaperType::kOnceGooglePhotos ||
        wallpaper_type == WallpaperType::kDailyGooglePhotos)) {
     return false;
   }
@@ -1071,15 +1072,15 @@ bool WallpaperControllerImpl::IsBlurAllowedForLockState() const {
 bool WallpaperControllerImpl::SetUserWallpaperInfo(const AccountId& account_id,
                                                    const WallpaperInfo& info) {
   if (info.type != WallpaperType::kDaily &&
-      info.type != WallpaperType::kGooglePhotos &&
+      info.type != WallpaperType::kOnceGooglePhotos &&
       info.type != WallpaperType::kDailyGooglePhotos) {
     update_wallpaper_timer_.Stop();
   }
 
-  if (info.type == WallpaperType::kGooglePhotos)
+  if (info.type == WallpaperType::kOnceGooglePhotos)
     StartGooglePhotosStalenessTimer();
 
-  if (info.type != WallpaperType::kGooglePhotos &&
+  if (info.type != WallpaperType::kOnceGooglePhotos &&
       info.type != WallpaperType::kDailyGooglePhotos) {
     sequenced_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&DeleteGooglePhotosCache, account_id));
@@ -1217,12 +1218,11 @@ void WallpaperControllerImpl::SetCustomWallpaper(
       file_path);
 }
 
-void WallpaperControllerImpl::SetCustomWallpaper(
-    const AccountId& account_id,
-    const std::string& file_name,
-    WallpaperLayout layout,
-    const gfx::ImageSkia& image,
-    bool preview_mode) {
+void WallpaperControllerImpl::SetCustomWallpaper(const AccountId& account_id,
+                                                 const std::string& file_name,
+                                                 WallpaperLayout layout,
+                                                 const gfx::ImageSkia& image,
+                                                 bool preview_mode) {
   DCHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
   if (!CanSetUserWallpaper(account_id))
     return;
@@ -1373,7 +1373,7 @@ void WallpaperControllerImpl::SetGooglePhotosWallpaper(
       std::move(callback).Run(true);
 
       info.collection_id = std::string();
-      info.type = WallpaperType::kGooglePhotos;
+      info.type = WallpaperType::kOnceGooglePhotos;
       SetUserWallpaperInfo(params.account_id, info);
       return;
     } else {
@@ -1388,8 +1388,8 @@ void WallpaperControllerImpl::SetGooglePhotosWallpaper(
     wallpaper_controller_client_->FetchGooglePhotosPhoto(
         params.account_id, params.id,
         base::BindOnce(&WallpaperControllerImpl::OnGooglePhotosPhotoFetched,
-                       set_wallpaper_weak_factory_.GetWeakPtr(),
-                       std::move(params), std::move(callback)));
+                       set_wallpaper_weak_factory_.GetWeakPtr(), params,
+                       std::move(callback)));
   }
 }
 
@@ -1425,6 +1425,37 @@ void WallpaperControllerImpl::SetDefaultWallpaper(
   }
 }
 
+base::FilePath WallpaperControllerImpl::GetDefaultWallpaperPath(
+    const AccountId& account_id) {
+  const bool use_small =
+      (GetAppropriateResolution() == WALLPAPER_RESOLUTION_SMALL);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  const user_manager::UserType user_type = GetUserType(account_id);
+  // The wallpaper is determined in the following order:
+  // Guest wallpaper, child wallpaper, customized default wallpaper, and regular
+  // default wallpaper.
+  if (user_type == user_manager::USER_TYPE_GUEST) {
+    const base::StringPiece switch_string =
+        use_small ? switches::kGuestWallpaperSmall
+                  : switches::kGuestWallpaperLarge;
+    return command_line->GetSwitchValuePath(switch_string);
+  } else if (user_type == user_manager::USER_TYPE_CHILD) {
+    const base::StringPiece switch_string =
+        use_small ? switches::kChildWallpaperSmall
+                  : switches::kChildWallpaperLarge;
+    return command_line->GetSwitchValuePath(switch_string);
+  } else if (!customized_default_small_path_.empty()) {
+    DCHECK(!customized_default_large_path_.empty());
+    return use_small ? customized_default_small_path_
+                     : customized_default_large_path_;
+  } else {
+    const base::StringPiece switch_string =
+        use_small ? switches::kDefaultWallpaperSmall
+                  : switches::kDefaultWallpaperLarge;
+    return command_line->GetSwitchValuePath(switch_string);
+  }
+}
+
 void WallpaperControllerImpl::SetCustomizedDefaultWallpaperPaths(
     const base::FilePath& customized_default_small_path,
     const base::FilePath& customized_default_large_path) {
@@ -1441,9 +1472,8 @@ void WallpaperControllerImpl::SetCustomizedDefaultWallpaperPaths(
   SetDefaultWallpaperImpl(EmptyAccountId(), show_wallpaper, base::DoNothing());
 }
 
-void WallpaperControllerImpl::SetPolicyWallpaper(
-    const AccountId& account_id,
-    const std::string& data) {
+void WallpaperControllerImpl::SetPolicyWallpaper(const AccountId& account_id,
+                                                 const std::string& data) {
   // There is no visible wallpaper in kiosk mode.
   if (IsInKioskMode())
     return;
@@ -1534,7 +1564,7 @@ void WallpaperControllerImpl::UpdateCurrentWallpaperLayout(
   WallpaperInfo info;
   if (!GetUserWallpaperInfo(account_id, &info) ||
       ((info.type != WallpaperType::kCustomized) &&
-       (info.type != WallpaperType::kGooglePhotos))) {
+       (info.type != WallpaperType::kOnceGooglePhotos))) {
     return;
   }
   if (info.layout == layout)
@@ -1854,7 +1884,7 @@ void WallpaperControllerImpl::OnActiveUserSessionChanged(
   // prevent us from ever checking.
   WallpaperInfo info;
   GetLocalWallpaperInfo(account_id, &info);
-  if (info.type == WallpaperType::kGooglePhotos)
+  if (info.type == WallpaperType::kOnceGooglePhotos)
     CheckGooglePhotosStaleness(account_id, info);
 }
 
@@ -1911,7 +1941,7 @@ void WallpaperControllerImpl::OnColorModeChanged(bool dark_mode_enabled) {
     case WallpaperType::kThirdParty:
     case WallpaperType::kDevice:
     case WallpaperType::kOneShot:
-    case WallpaperType::kGooglePhotos:
+    case WallpaperType::kOnceGooglePhotos:
     case WallpaperType::kDailyGooglePhotos:
     case WallpaperType::kCount:
       return;
@@ -2141,33 +2171,7 @@ void WallpaperControllerImpl::SetDefaultWallpaperImpl(
       (GetAppropriateResolution() == WALLPAPER_RESOLUTION_SMALL);
   WallpaperLayout layout =
       use_small ? WALLPAPER_LAYOUT_CENTER : WALLPAPER_LAYOUT_CENTER_CROPPED;
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  base::FilePath file_path;
-  const user_manager::UserType user_type = GetUserType(account_id);
-
-  // The wallpaper is determined in the following order:
-  // Guest wallpaper, child wallpaper, customized default wallpaper, and regular
-  // default wallpaper.
-  if (user_type == user_manager::USER_TYPE_GUEST) {
-    const std::string switch_string = use_small
-                                          ? switches::kGuestWallpaperSmall
-                                          : switches::kGuestWallpaperLarge;
-    file_path = command_line->GetSwitchValuePath(switch_string);
-  } else if (user_type == user_manager::USER_TYPE_CHILD) {
-    const std::string switch_string = use_small
-                                          ? switches::kChildWallpaperSmall
-                                          : switches::kChildWallpaperLarge;
-    file_path = command_line->GetSwitchValuePath(switch_string);
-  } else if (!customized_default_small_path_.empty()) {
-    DCHECK(!customized_default_large_path_.empty());
-    file_path = use_small ? customized_default_small_path_
-                          : customized_default_large_path_;
-  } else {
-    const std::string switch_string = use_small
-                                          ? switches::kDefaultWallpaperSmall
-                                          : switches::kDefaultWallpaperLarge;
-    file_path = command_line->GetSwitchValuePath(switch_string);
-  }
+  base::FilePath file_path = GetDefaultWallpaperPath(account_id);
 
   // We need to decode the image if there's no cache, or if the file path
   // doesn't match the cached value (i.e. the cache is outdated). Otherwise,
@@ -2572,7 +2576,7 @@ void WallpaperControllerImpl::SetWallpaperFromInfo(const AccountId& account_id,
                                                    bool show_wallpaper) {
   if (info.type != WallpaperType::kOnline &&
       info.type != WallpaperType::kDaily &&
-      info.type != WallpaperType::kGooglePhotos &&
+      info.type != WallpaperType::kOnceGooglePhotos &&
       info.type != WallpaperType::kDailyGooglePhotos &&
       info.type != WallpaperType::kDefault) {
     // This method is meant to be used for `WallpaperType::kOnline` and
@@ -2611,7 +2615,7 @@ void WallpaperControllerImpl::SetWallpaperFromInfo(const AccountId& account_id,
                        weak_factory_.GetWeakPtr(), account_id, wallpaper_path,
                        info, show_wallpaper),
         wallpaper_path);
-  } else if (info.type == WallpaperType::kGooglePhotos ||
+  } else if (info.type == WallpaperType::kOnceGooglePhotos ||
              info.type == WallpaperType::kDailyGooglePhotos) {
     auto path =
         GetUserGooglePhotosWallpaperDir(account_id).Append(info.location);
@@ -2667,13 +2671,12 @@ void WallpaperControllerImpl::OnDefaultWallpaperDecoded(
   }
 }
 
-void WallpaperControllerImpl::SaveAndSetWallpaper(
-    const AccountId& account_id,
-    const std::string& file_name,
-    WallpaperType type,
-    WallpaperLayout layout,
-    bool show_wallpaper,
-    const gfx::ImageSkia& image) {
+void WallpaperControllerImpl::SaveAndSetWallpaper(const AccountId& account_id,
+                                                  const std::string& file_name,
+                                                  WallpaperType type,
+                                                  WallpaperLayout layout,
+                                                  bool show_wallpaper,
+                                                  const gfx::ImageSkia& image) {
   SaveAndSetWallpaperWithCompletion(account_id, file_name, type, layout,
                                     show_wallpaper, image, base::DoNothing());
 }
@@ -3049,7 +3052,7 @@ void WallpaperControllerImpl::HandleWallpaperInfoSyncedIn(
     case WallpaperType::kOnline:
       HandleSettingOnlineWallpaperFromWallpaperInfo(account_id, info);
       break;
-    case WallpaperType::kGooglePhotos:
+    case WallpaperType::kOnceGooglePhotos:
     case WallpaperType::kDailyGooglePhotos:
       HandleGooglePhotosWallpaperInfoSyncedIn(account_id, info);
       break;
@@ -3150,7 +3153,7 @@ constexpr bool WallpaperControllerImpl::IsWallpaperTypeSyncable(
     case WallpaperType::kDaily:
     case WallpaperType::kCustomized:
     case WallpaperType::kOnline:
-    case WallpaperType::kGooglePhotos:
+    case WallpaperType::kOnceGooglePhotos:
     case WallpaperType::kDailyGooglePhotos:
       return true;
     case WallpaperType::kDefault:
@@ -3234,7 +3237,7 @@ bool WallpaperControllerImpl::IsDailyGooglePhotosWallpaperSelected() {
 bool WallpaperControllerImpl::IsGooglePhotosWallpaperSet() const {
   WallpaperInfo info;
   GetUserWallpaperInfo(GetActiveAccountId(), &info);
-  return info.type == WallpaperType::kGooglePhotos;
+  return info.type == WallpaperType::kOnceGooglePhotos;
 }
 
 void WallpaperControllerImpl::UpdateDailyRefreshWallpaper(
@@ -3283,7 +3286,9 @@ void WallpaperControllerImpl::UpdateDailyRefreshWallpaper(
 
 void WallpaperControllerImpl::StartDailyRefreshTimer() {
   base::TimeDelta timer_delay =
-      FuzzTimeDelta(GetTimeToNextDailyRefreshUpdate());
+      features::IsWallpaperFastRefreshEnabled()
+          ? base::Seconds(10)
+          : FuzzTimeDelta(GetTimeToNextDailyRefreshUpdate());
   StartUpdateWallpaperTimer(timer_delay);
 }
 
@@ -3328,7 +3333,7 @@ void WallpaperControllerImpl::OnUpdateWallpaperTimerExpired() {
     case WallpaperType::kDailyGooglePhotos:
       UpdateDailyRefreshWallpaper();
       return;
-    case WallpaperType::kGooglePhotos:
+    case WallpaperType::kOnceGooglePhotos:
       CheckGooglePhotosStaleness(account_id, info);
       return;
     case WallpaperType::kOnline:
@@ -3348,7 +3353,7 @@ void WallpaperControllerImpl::OnUpdateWallpaperTimerExpired() {
 void WallpaperControllerImpl::CheckGooglePhotosStaleness(
     const AccountId& account_id,
     const WallpaperInfo& info) {
-  DCHECK(info.type == WallpaperType::kGooglePhotos);
+  DCHECK(info.type == WallpaperType::kOnceGooglePhotos);
   wallpaper_controller_client_->FetchGooglePhotosPhoto(
       account_id, info.location,
       base::BindOnce(&WallpaperControllerImpl::HandleGooglePhotosStalenessCheck,

@@ -45,6 +45,7 @@
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/alternative_error_page_override_info.mojom.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_utils.h"
@@ -83,7 +84,7 @@
 namespace content {
 
 std::unique_ptr<BrowserMainParts> ContentBrowserClient::CreateBrowserMainParts(
-    MainFunctionParams parameters) {
+    bool /* is_integration_test */) {
   return nullptr;
 }
 
@@ -1324,6 +1325,10 @@ bool ContentBrowserClient::ShouldPreconnectNavigation(
 
 bool ContentBrowserClient::IsFirstPartySetsEnabled() {
   return base::FeatureList::IsEnabled(features::kFirstPartySets);
+}
+
+bool ContentBrowserClient::WillProvidePublicFirstPartySets() {
+  return false;
 }
 
 base::Value::Dict ContentBrowserClient::GetFirstPartySetsOverrides() {

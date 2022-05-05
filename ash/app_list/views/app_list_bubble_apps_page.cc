@@ -146,6 +146,7 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
       std::make_unique<RoundedScrollBar>(/*horizontal=*/false);
   vertical_scroll->SetInsets(kVerticalScrollInsets);
   vertical_scroll->SetSnapBackOnDragOutside(false);
+  scroll_bar_ = vertical_scroll.get();
   scroll_view_->SetVerticalScrollBar(std::move(vertical_scroll));
 
   auto scroll_contents = std::make_unique<views::View>();
@@ -209,7 +210,8 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
   if (features::IsLauncherAppSortEnabled()) {
     toast_container_ = scroll_contents->AddChildView(
         std::make_unique<AppListToastContainerView>(
-            app_list_nudge_controller_.get(), a11y_announcer, /*delegate=*/this,
+            app_list_nudge_controller_.get(), a11y_announcer, view_delegate,
+            /*delegate=*/this,
             /*tablet_mode=*/false));
   }
 
@@ -253,6 +255,10 @@ void AppListBubbleAppsPage::UpdateSuggestions() {
 
 void AppListBubbleAppsPage::AnimateShowLauncher(bool is_side_shelf) {
   DCHECK(GetVisible());
+
+  // Don't show the scroll bar due to thumb bounds changes. There's enough
+  // visual movement going on during the animation.
+  scroll_bar_->SetShowOnThumbBoundsChanged(false);
 
   // The animation relies on the correct positions of views, so force layout.
   if (needs_layout())
@@ -551,6 +557,12 @@ void AppListBubbleAppsPage::OnViewVisibilityChanged(
     UpdateSeparatorVisibility();
 }
 
+void AppListBubbleAppsPage::OnThemeChanged() {
+  views::View::OnThemeChanged();
+  separator_->SetColor(ColorProvider::Get()->GetContentLayerColor(
+      ColorProvider::ContentLayerType::kSeparatorColor));
+}
+
 void AppListBubbleAppsPage::MoveFocusUpFromRecents() {
   DCHECK_GT(recent_apps_->GetItemViewCount(), 0);
   AppListItemView* first_recent = recent_apps_->GetItemViewAt(0);
@@ -669,6 +681,9 @@ void AppListBubbleAppsPage::OnAppsGridViewAnimationEnded() {
   // the gradient mask layer.
   gradient_helper_ = std::make_unique<ScrollViewGradientHelper>(scroll_view_);
   gradient_helper_->UpdateGradientZone();
+
+  // Show the scroll bar for keyboard-driven scroll position changes.
+  scroll_bar_->SetShowOnThumbBoundsChanged(true);
 }
 
 void AppListBubbleAppsPage::HandleFocusAfterSort() {

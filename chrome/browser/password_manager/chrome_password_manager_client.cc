@@ -37,6 +37,7 @@
 #include "chrome/browser/safe_browsing/user_interaction_observer.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
+#include "chrome/browser/touch_to_fill/touch_to_fill_webauthn_credential.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_controller_impl.h"
 #include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
@@ -430,12 +431,25 @@ void ChromePasswordManagerClient::ShowTouchToFill(
     PasswordManagerDriver* driver,
     autofill::mojom::SubmissionReadinessState submission_readiness) {
 #if BUILDFLAG(IS_ANDROID)
+  std::vector<TouchToFillWebAuthnCredential> webauthn_credentials;
+  if (GetWebAuthnCredentialsDelegate() &&
+      GetWebAuthnCredentialsDelegate()->IsWebAuthnAutofillEnabled()) {
+    const std::vector<autofill::Suggestion>& suggestions =
+        GetWebAuthnCredentialsDelegate()->GetWebAuthnSuggestions();
+    base::ranges::transform(
+        suggestions, std::back_inserter(webauthn_credentials),
+        [](const auto& suggestion) {
+          return TouchToFillWebAuthnCredential(suggestion.main_text.value,
+                                               suggestion.backend_id);
+        });
+  }
+
   GetOrCreateTouchToFillController()->Show(
       credential_cache_
           .GetCredentialStore(url::Origin::Create(
               driver->GetLastCommittedURL().DeprecatedGetOriginAsURL()))
           .GetCredentials(),
-      driver->AsWeakPtr(), submission_readiness);
+      webauthn_credentials, driver->AsWeakPtr(), submission_readiness);
 #endif
 }
 
@@ -604,17 +618,15 @@ void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
     password_manager::CredentialLeakType leak_type,
     const GURL& origin,
     const std::u16string& username) {
-#if BUILDFLAG(IS_ANDROID)
-  if (password_manager::features::IsPasswordScriptsFetchingEnabled() &&
-      GetPasswordFeatureManager()->IsGenerationEnabled()) {
+  if (GetPasswordFeatureManager()->IsGenerationEnabled() &&
+      password_manager::features::IsPasswordScriptsFetchingEnabled()) {
     // The prewarm is triggered so that script availability is prefetched in
     // case the user lands on the Password Check UI (after tapping the "Check
     // Passwords" button).
-    PasswordScriptsFetcherFactory::GetInstance()
-        ->GetForBrowserContext(web_contents()->GetBrowserContext())
-        ->PrewarmCache();
+    GetPasswordScriptsFetcher()->PrewarmCache();
   }
 
+#if BUILDFLAG(IS_ANDROID)
   if (messages::IsPasswordMessagesUiEnabled()) {
     save_update_password_message_delegate_.DismissSaveUpdatePasswordPrompt();
   } else {
@@ -683,12 +695,7 @@ ChromePasswordManagerClient::GetPasswordReuseManager() const {
 
 password_manager::PasswordScriptsFetcher*
 ChromePasswordManagerClient::GetPasswordScriptsFetcher() {
-  // PasswordScriptsFetcher exists only on Android.
-#if BUILDFLAG(IS_ANDROID)
   return PasswordScriptsFetcherFactory::GetForBrowserContext(profile_);
-#else
-  return nullptr;
-#endif
 }
 
 password_manager::PasswordChangeSuccessTracker*
@@ -1015,19 +1022,23 @@ version_info::Channel ChromePasswordManagerClient::GetChannel() const {
 
 void ChromePasswordManagerClient::AutomaticGenerationAvailable(
     const autofill::password_generation::PasswordGenerationUIData& ui_data) {
+  content::RenderFrameHost* rfh =
+      password_generation_driver_receivers_.GetCurrentTargetFrame();
   if (!password_manager::bad_message::CheckChildProcessSecurityPolicyForURL(
-          password_generation_driver_receivers_.GetCurrentTargetFrame(),
-          ui_data.form_data.url,
+          rfh, ui_data.form_data.url,
           BadMessageReason::
               CPMD_BAD_ORIGIN_AUTOMATIC_GENERATION_STATUS_CHANGED))
     return;
 #if BUILDFLAG(IS_ANDROID)
   if (PasswordGenerationController::AllowedForWebContents(web_contents())) {
-    PasswordManagerDriver* driver = driver_factory_->GetDriverForFrame(
-        password_generation_driver_receivers_.GetCurrentTargetFrame());
+    PasswordManagerDriver* driver = driver_factory_->GetDriverForFrame(rfh);
     // This method is called over Mojo via a RenderFrameHostReceiverSet; the
     // current target frame must be live.
-    DCHECK(driver);
+    // TODO(crbug.com/1294378): Remove reference to nested frames once
+    // EnablePasswordManagerWithinFencedFrame is launched.
+    DCHECK(driver || rfh->IsNestedWithinFencedFrame());
+    if (!driver)
+      return;
 
     PasswordGenerationController* generation_controller =
         PasswordGenerationController::GetIfExisting(web_contents());
@@ -1042,11 +1053,14 @@ void ChromePasswordManagerClient::AutomaticGenerationAvailable(
   }
 #else
   password_manager::ContentPasswordManagerDriver* driver =
-      driver_factory_->GetDriverForFrame(
-          password_generation_driver_receivers_.GetCurrentTargetFrame());
+      driver_factory_->GetDriverForFrame(rfh);
   // This method is called over Mojo via a RenderFrameHostReceiverSet; the
   // current target frame must be live.
-  DCHECK(driver);
+  // TODO(crbug.com/1294378): Remove reference to nested frames once
+  // EnablePasswordManagerWithinFencedFrame is launched.
+  DCHECK(driver || rfh->IsNestedWithinFencedFrame());
+  if (!driver)
+    return;
 
   // Attempt to show the autofill dropdown UI first.
   gfx::RectF element_bounds_in_top_frame_space =
@@ -1069,11 +1083,17 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
     const autofill::FormData& form_data,
     autofill::FieldRendererId field_renderer_id,
     const std::u16string& password_value) {
-  auto* driver = driver_factory_->GetDriverForFrame(
-      password_generation_driver_receivers_.GetCurrentTargetFrame());
+  content::RenderFrameHost* rfh =
+      password_generation_driver_receivers_.GetCurrentTargetFrame();
+  auto* driver = driver_factory_->GetDriverForFrame(rfh);
   // This method is called over Mojo via a RenderFrameHostReceiverSet; the
   // current target frame must be live.
-  DCHECK(driver);
+  // TODO(crbug.com/1294378): Remove reference to nested frames once
+  // EnablePasswordManagerWithinFencedFrame is launched.
+  DCHECK(driver || rfh->IsNestedWithinFencedFrame());
+  if (!driver)
+    return;
+
   gfx::RectF element_bounds_in_screen_space =
       GetBoundsInScreenSpace(TransformToRootCoordinates(
           password_generation_driver_receivers_.GetCurrentTargetFrame(),
@@ -1106,26 +1126,36 @@ void ChromePasswordManagerClient::PresaveGeneratedPassword(
   if (popup_controller_)
     popup_controller_->UpdatePassword(password_value);
 
-  PasswordManagerDriver* driver = driver_factory_->GetDriverForFrame(
-      password_generation_driver_receivers_.GetCurrentTargetFrame());
+  content::RenderFrameHost* rfh =
+      password_generation_driver_receivers_.GetCurrentTargetFrame();
+  PasswordManagerDriver* driver = driver_factory_->GetDriverForFrame(rfh);
   // This method is called over Mojo via a RenderFrameHostReceiverSet; the
   // current target frame must be live.
-  DCHECK(driver);
-  password_manager_.OnPresaveGeneratedPassword(
-      driver,
-      password_manager::GetFormWithFrameAndFormMetaData(
-          password_generation_driver_receivers_.GetCurrentTargetFrame(),
-          form_data),
-      password_value);
+  // TODO(crbug.com/1294378): Remove reference to nested frames once
+  // EnablePasswordManagerWithinFencedFrame is launched.
+  DCHECK(driver || rfh->IsNestedWithinFencedFrame());
+  if (driver) {
+    password_manager_.OnPresaveGeneratedPassword(
+        driver,
+        password_manager::GetFormWithFrameAndFormMetaData(
+            password_generation_driver_receivers_.GetCurrentTargetFrame(),
+            form_data),
+        password_value);
+  }
 }
 
 void ChromePasswordManagerClient::PasswordNoLongerGenerated(
     const autofill::FormData& form_data) {
-  PasswordManagerDriver* driver = driver_factory_->GetDriverForFrame(
-      password_generation_driver_receivers_.GetCurrentTargetFrame());
+  content::RenderFrameHost* rfh =
+      password_generation_driver_receivers_.GetCurrentTargetFrame();
+  PasswordManagerDriver* driver = driver_factory_->GetDriverForFrame(rfh);
   // This method is called over Mojo via a RenderFrameHostReceiverSet; the
   // current target frame must be live.
-  DCHECK(driver);
+  // TODO(crbug.com/1294378): Remove reference to nested frames once
+  // EnablePasswordManagerWithinFencedFrame is launched.
+  DCHECK(driver || rfh->IsNestedWithinFencedFrame());
+  if (!driver)
+    return;
   password_manager_.OnPasswordNoLongerGenerated(
       driver, password_manager::GetFormWithFrameAndFormMetaData(
                   password_generation_driver_receivers_.GetCurrentTargetFrame(),

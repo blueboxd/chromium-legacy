@@ -19,7 +19,6 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
-#include "components/services/app_service/public/cpp/preferred_app.h"
 #include "components/services/app_service/public/cpp/preferred_apps_converter.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -77,11 +76,6 @@ std::string ReadDataBlocking(const base::FilePath& preferred_apps_file) {
 }  // namespace
 
 namespace apps {
-
-apps::mojom::Publisher* PreferredAppsImpl::Host::GetMojomPublisher(
-    apps::mojom::AppType app_type) {
-  return nullptr;
-}
 
 PreferredAppsImpl::PreferredAppsImpl(
     Host* host,
@@ -272,16 +266,19 @@ void PreferredAppsImpl::AddPreferredAppImpl(
     return;
   }
 
-  apps::mojom::ReplacedAppPreferencesPtr replaced_apps =
-      preferred_apps_list_.AddPreferredApp(
-          app_id, ConvertMojomIntentFilterToIntentFilter(mojom_intent_filter));
+  IntentFilterPtr intent_filter =
+      ConvertMojomIntentFilterToIntentFilter(mojom_intent_filter);
+  auto replaced_apps =
+      preferred_apps_list_.AddPreferredApp(app_id, intent_filter);
+
+  auto mojom_replaced_apps =
+      ConvertReplacedAppPreferencesToMojomReplacedAppPreferences(replaced_apps);
 
   WriteToJSON(profile_dir_, preferred_apps_list_);
 
-  auto changes = apps::mojom::PreferredAppChanges::New();
-
-  changes->added_filters[app_id].push_back(mojom_intent_filter->Clone());
-  changes->removed_filters = Clone(replaced_apps->replaced_preference);
+  auto changes = std::make_unique<PreferredAppChanges>();
+  changes->added_filters[app_id].push_back(intent_filter->Clone());
+  changes->removed_filters = CloneIntentFiltersMap(replaced_apps);
   host_->OnPreferredAppsChanged(std::move(changes));
 
   if (from_publisher || !intent) {
@@ -291,11 +288,12 @@ void PreferredAppsImpl::AddPreferredAppImpl(
   // Sync the change to publishers. Because |replaced_app_preference| can
   // be any app type, we should run this for all publishers. Currently
   // only implemented in ARC publisher.
-  // TODO(crbug.com/853604): The |replaced_app_preference| can be really big,
+  // TODO(crbug.com/1322000): The |replaced_app_preference| can be really big,
   // update this logic to only call the relevant publisher for each app after
   // updating the storage structure.
-  host_->OnPreferredAppSet(app_id, std::move(mojom_intent_filter),
-                           std::move(intent), std::move(replaced_apps));
+  host_->OnPreferredAppSet(app_id, std::move(intent_filter),
+                           ConvertMojomIntentToIntent(intent),
+                           std::move(replaced_apps));
 }
 
 void PreferredAppsImpl::RemovePreferredAppImpl(apps::mojom::AppType app_type,
@@ -306,8 +304,7 @@ void PreferredAppsImpl::RemovePreferredAppImpl(apps::mojom::AppType app_type,
 
     auto changes = std::make_unique<PreferredAppChanges>();
     changes->removed_filters[app_id] = std::move(removed_filters);
-    host_->OnPreferredAppsChanged(
-        ConvertPreferredAppChangesToMojomPreferredAppChanges(changes));
+    host_->OnPreferredAppsChanged(std::move(changes));
   }
 }
 
@@ -323,23 +320,21 @@ void PreferredAppsImpl::RemovePreferredAppForFilterImpl(
 
     auto changes = std::make_unique<PreferredAppChanges>();
     changes->removed_filters[app_id] = std::move(removed_filters);
-    host_->OnPreferredAppsChanged(
-        ConvertPreferredAppChangesToMojomPreferredAppChanges(changes));
+    host_->OnPreferredAppsChanged(std::move(changes));
   }
 }
 
 void PreferredAppsImpl::SetSupportedLinksPreferenceImpl(
-    apps::mojom::AppType app_type,
+    apps::mojom::AppType mojom_app_type,
     const std::string& app_id,
     std::vector<apps::mojom::IntentFilterPtr> all_link_filters) {
-  auto changes = apps::mojom::PreferredAppChanges::New();
+  auto changes = std::make_unique<PreferredAppChanges>();
   auto& added = changes->added_filters;
   auto& removed = changes->removed_filters;
 
-  for (auto& filter : all_link_filters) {
-    apps::mojom::ReplacedAppPreferencesPtr replaced_apps =
-        preferred_apps_list_.AddPreferredApp(
-            app_id, ConvertMojomIntentFilterToIntentFilter(filter));
+  for (auto& mojom_filter : all_link_filters) {
+    auto filter = ConvertMojomIntentFilterToIntentFilter(mojom_filter);
+    auto replaced_apps = preferred_apps_list_.AddPreferredApp(app_id, filter);
     added[app_id].push_back(std::move(filter));
 
     // If we removed overlapping supported links when adding the new app, those
@@ -347,7 +342,7 @@ void PreferredAppsImpl::SetSupportedLinksPreferenceImpl(
     // need to have all their other Supported Links filters removed.
     // Additionally, track all removals in the |removed| map so that subscribers
     // can be notified correctly.
-    for (auto& replaced_app_and_filters : replaced_apps->replaced_preference) {
+    for (auto& replaced_app_and_filters : replaced_apps) {
       const std::string& removed_app_id = replaced_app_and_filters.first;
       bool first_removal_for_app = !base::Contains(removed, app_id);
       bool did_replace_supported_link = base::ranges::any_of(
@@ -356,8 +351,7 @@ void PreferredAppsImpl::SetSupportedLinksPreferenceImpl(
             return apps_util::IsSupportedLinkForApp(removed_app_id, filter);
           });
 
-      std::vector<apps::mojom::IntentFilterPtr>& removed_filters_for_app =
-          removed[removed_app_id];
+      IntentFilters& removed_filters_for_app = removed[removed_app_id];
       removed_filters_for_app.insert(
           removed_filters_for_app.end(),
           std::make_move_iterator(replaced_app_and_filters.second.begin()),
@@ -367,10 +361,10 @@ void PreferredAppsImpl::SetSupportedLinksPreferenceImpl(
       if (first_removal_for_app && did_replace_supported_link) {
         IntentFilters removed_filters =
             preferred_apps_list_.DeleteSupportedLinks(removed_app_id);
-        for (auto& removed_filter : removed_filters) {
-          removed_filters_for_app.push_back(
-              ConvertIntentFilterToMojomIntentFilter(removed_filter));
-        }
+        removed_filters_for_app.insert(
+            removed_filters_for_app.end(),
+            std::make_move_iterator(removed_filters.begin()),
+            std::make_move_iterator(removed_filters.end()));
       }
     }
   }
@@ -381,23 +375,24 @@ void PreferredAppsImpl::SetSupportedLinksPreferenceImpl(
 
   // Notify publishers: The new app has been set to open links, and all removed
   // apps no longer handle links.
-  auto* publisher = host_->GetMojomPublisher(app_type);
-  if (publisher) {
-    publisher->OnSupportedLinksPreferenceChanged(app_id,
-                                                 /*open_in_app=*/true);
+  AppType app_type = ConvertMojomAppTypToAppType(mojom_app_type);
+  if (host_->HasPublisher(app_type)) {
+    host_->OnSupportedLinksPreferenceChanged(app_type, app_id,
+                                             /*open_in_app=*/true);
   }
   for (const auto& removed_app_and_filters : removed) {
     // We don't know what app type the app is, so we have to notify all
     // publishers.
+    // TODO(crbug.com/1322000): Only notify the relevant publishers.
     host_->OnSupportedLinksPreferenceChanged(removed_app_and_filters.first,
                                              /*open_in_app=*/false);
   }
 }
 void PreferredAppsImpl::RemoveSupportedLinksPreferenceImpl(
-    apps::mojom::AppType app_type,
+    apps::mojom::AppType mojom_app_type,
     const std::string& app_id) {
-  auto* publisher = host_->GetMojomPublisher(app_type);
-  if (!publisher) {
+  AppType app_type = ConvertMojomAppTypToAppType(mojom_app_type);
+  if (!host_->HasPublisher(app_type)) {
     return;
   }
 
@@ -409,12 +404,11 @@ void PreferredAppsImpl::RemoveSupportedLinksPreferenceImpl(
 
     auto changes = std::make_unique<PreferredAppChanges>();
     changes->removed_filters[app_id] = std::move(removed_filters);
-    host_->OnPreferredAppsChanged(
-        ConvertPreferredAppChangesToMojomPreferredAppChanges(changes));
+    host_->OnPreferredAppsChanged(std::move(changes));
   }
 
-  publisher->OnSupportedLinksPreferenceChanged(app_id,
-                                               /*open_in_app=*/false);
+  host_->OnSupportedLinksPreferenceChanged(app_type, app_id,
+                                           /*open_in_app=*/false);
 }
 
 }  // namespace apps

@@ -303,12 +303,13 @@ mixed_component("base") {
     "debug/stack_trace.h",
     "debug/task_trace.cc",
     "debug/task_trace.h",
-    "enterprise_util.h",
     "environment.cc",
     "environment.h",
     "export_template.h",
     "feature_list.cc",
     "feature_list.h",
+    "features.cc",
+    "features.h",
     "file_descriptor_store.cc",
     "file_descriptor_store.h",
     "file_version_info.h",
@@ -404,6 +405,7 @@ mixed_component("base") {
     "memory/ptr_util.h",
     "memory/raw_ptr.cc",
     "memory/raw_ptr.h",
+    "memory/raw_ptr_exclusion.h",
     "memory/raw_scoped_refptr_mismatch_checker.h",
     "memory/read_only_shared_memory_region.cc",
     "memory/read_only_shared_memory_region.h",
@@ -693,8 +695,6 @@ mixed_component("base") {
     "task/lazy_thread_pool_task_runner.h",
     "task/post_job.cc",
     "task/post_job.h",
-    "task/post_task.cc",
-    "task/post_task.h",
     "task/post_task_and_reply_with_result_internal.h",
     "task/scoped_set_task_priority_for_current_thread.cc",
     "task/scoped_set_task_priority_for_current_thread.h",
@@ -1021,6 +1021,8 @@ mixed_component("base") {
       "debug/invalid_access_win.cc",
       "debug/invalid_access_win.h",
       "debug/stack_trace_win.cc",
+      "enterprise_util.cc",
+      "enterprise_util.h",
       "enterprise_util_win.cc",
       "file_version_info_win.cc",
       "file_version_info_win.h",
@@ -1190,6 +1192,8 @@ mixed_component("base") {
       "allocator/allocator_interception_mac.mm",
       "allocator/malloc_zone_functions_mac.cc",
       "allocator/malloc_zone_functions_mac.h",
+      "enterprise_util.cc",
+      "enterprise_util.h",
       "enterprise_util_mac.mm",
       "file_version_info_mac.h",
       "file_version_info_mac.mm",
@@ -3195,7 +3199,6 @@ test("base_unittests") {
     "task/delayed_task_handle_unittest.cc",
     "task/lazy_thread_pool_task_runner_unittest.cc",
     "task/post_job_unittest.cc",
-    "task/post_task_unittest.cc",
     "task/scoped_set_task_priority_for_current_thread_unittest.cc",
     "task/sequence_manager/atomic_flag_set_unittest.cc",
     "task/sequence_manager/lazily_deallocated_deque_unittest.cc",
@@ -3566,7 +3569,6 @@ test("base_unittests") {
       "test/launcher/test_results_tracker_unittest.cc",
     ]
     deps += [
-      ":base_java",
       ":base_java_unittest_support",
       "//base/test:test_support_java",
     ]
@@ -3971,7 +3973,10 @@ if (is_android) {
   java_cpp_features("java_features_srcjar") {
     # External code should depend on ":base_java" instead.
     visibility = [ ":*" ]
-    sources = [ "android/base_features.cc" ]
+    sources = [
+      "android/base_features.cc",
+      "features.cc",
+    ]
     template = "android/java/src/org/chromium/base/BaseFeatures.java.tmpl"
   }
 
@@ -4458,7 +4463,6 @@ if (is_android) {
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
     deps = [
-      "//base:base_java",
       "//base:jni_java",
       "//build/android:build_java",
     ]

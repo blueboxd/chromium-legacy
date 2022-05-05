@@ -24,7 +24,10 @@ BackgroundBridge.BrailleBackground = {
         BridgeTarget.BRAILLE_BACKGROUND, BridgeAction.BACK_TRANSLATE, cells);
   },
 
-  /** @param {string} brailleTable The table for this translator to use. */
+  /**
+   * @param {string} brailleTable The table for this translator to use.
+   * @return {!Promise<boolean>}
+   */
   async refreshBrailleTable(brailleTable) {
     return BridgeHelper.sendMessage(
         BridgeTarget.BRAILLE_BACKGROUND, BridgeAction.REFRESH_BRAILLE_TABLE,
@@ -45,8 +48,8 @@ BackgroundBridge.ChromeVoxBackground = {
 BackgroundBridge.ChromeVoxPrefs = {
   /**
    * Get the prefs (not including keys).
-   * @return {Promise<Object>} A map of all prefs except the key map from
-   *     localStorage.
+   * @return {!Promise<Object<string, string>>} A map of all prefs except the
+   *     key map from localStorage.
    */
   async getPrefs() {
     return BridgeHelper.sendMessage(
@@ -57,6 +60,7 @@ BackgroundBridge.ChromeVoxPrefs = {
    * Set the value of a pref of logging options.
    * @param {string} key The pref key.
    * @param {boolean} value The new value of the pref.
+   * @return {!Promise}
    */
   async setLoggingPrefs(key, value) {
     return BridgeHelper.sendMessage(
@@ -68,6 +72,7 @@ BackgroundBridge.ChromeVoxPrefs = {
    * Set the value of a pref.
    * @param {string} key The pref key.
    * @param {Object|string|boolean} value The new value of the pref.
+   * @return {!Promise}
    */
   async setPref(key, value) {
     return BridgeHelper.sendMessage(
@@ -80,7 +85,8 @@ BackgroundBridge.ChromeVoxState = {
    * Method that updates the punctuation echo level, and also persists setting
    * to local storage.
    * @param {number} punctuationEcho The index of the desired punctuation echo
-   * level in AbstractTts.PUNCTUATION_ECHOES.
+   *     level in AbstractTts.PUNCTUATION_ECHOES.
+   * @return {!Promise}
    */
   async updatePunctuationEcho(punctuationEcho) {
     return BridgeHelper.sendMessage(
@@ -113,7 +119,10 @@ BackgroundBridge.EventSourceState = {
 };
 
 BackgroundBridge.LogStore = {
-  /** Clear the log buffer. */
+  /**
+   * Clear the log buffer.
+   * @return {!Promise}
+   */
   async clearLog() {
     return BridgeHelper.sendMessage(
         BridgeTarget.LOG_STORE, BridgeAction.CLEAR_LOG);
@@ -127,5 +136,87 @@ BackgroundBridge.LogStore = {
   async getLogs() {
     return BridgeHelper.sendMessage(
         BridgeTarget.LOG_STORE, BridgeAction.GET_LOGS);
+  },
+};
+
+BackgroundBridge.PanelBackground = {
+  /**
+   * Creates a new ISearch object, ready to search starting from the current
+   * ChromeVox focus.
+   * @return {!Promise}
+   */
+  async createNewISearch() {
+    return BridgeHelper.sendMessage(
+        BridgeTarget.PANEL_BACKGROUND, BridgeAction.CREATE_NEW_I_SEARCH);
+  },
+
+  /**
+   * Destroy the ISearch object so it can be garbage collected.
+   * @return {!Promise}
+   */
+  async destroyISearch() {
+    return BridgeHelper.sendMessage(
+        BridgeTarget.PANEL_BACKGROUND, BridgeAction.DESTROY_I_SEARCH);
+  },
+
+  /**
+   * @return {!Promise<{
+   *     standardActions: !Array<!chrome.automation.ActionType>,
+   *     customActions: !Array<!chrome.automation.CustomAction>
+   * }>}
+   */
+  async getActionsForCurrentNode() {
+    return BridgeHelper.sendMessage(
+        BridgeTarget.PANEL_BACKGROUND,
+        BridgeAction.GET_ACTIONS_FOR_CURRENT_NODE);
+  },
+
+  /**
+   * @param {string} searchStr
+   * @param {constants.Dir} dir
+   * @param {boolean=} opt_nextObject
+   * @return {!Promise}
+   */
+  async incrementalSearch(searchStr, dir, opt_nextObject) {
+    return BridgeHelper.sendMessage(
+        BridgeTarget.PANEL_BACKGROUND, BridgeAction.INCREMENTAL_SEARCH,
+        {searchStr, dir, opt_nextObject});
+  },
+
+  /**
+   * @param {number} actionId
+   * @return {!Promise}
+   */
+  async performCustomActionOnCurrentNode(actionId) {
+    return BridgeHelper.sendMessage(
+        BridgeTarget.PANEL_BACKGROUND,
+        BridgeAction.PERFORM_CUSTOM_ACTION_ON_CURRENT_NODE, actionId);
+  },
+
+  /**
+   * @param {!chrome.automation.ActionType} action
+   * @return {!Promise}
+   */
+  async performStandardActionOnCurrentNode(action) {
+    return BridgeHelper.sendMessage(
+        BridgeTarget.PANEL_BACKGROUND,
+        BridgeAction.PERFORM_STANDARD_ACTION_ON_CURRENT_NODE, action);
+  },
+
+  /**
+   * Sets the current ChromeVox focus to the current ISearch node.
+   * @return {!Promise}
+   */
+  async setRangeToISearchNode() {
+    return BridgeHelper.sendMessage(
+        BridgeTarget.PANEL_BACKGROUND, BridgeAction.SET_RANGE_TO_I_SEARCH_NODE);
+  },
+
+  /**
+   * Listens for focus events, and returns once the target is not the panel.
+   */
+  async waitForPanelCollapse() {
+    return BridgeHelper.sendMessage(
+        BridgeTarget.PANEL_BACKGROUND, BridgeAction.WAIT_FOR_PANEL_COLLAPSE);
   },
 };

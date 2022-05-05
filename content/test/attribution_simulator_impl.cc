@@ -20,6 +20,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
@@ -137,8 +138,8 @@ struct AttributionReportJsonConverter {
 
     base::TimeDelta time_delta = base::Time::Now() - time_origin;
     switch (report_time_format) {
-      case AttributionReportTimeFormat::kSecondsSinceUnixEpoch:
-        value.Set(time_key, base::checked_cast<int>(time_delta.InSeconds()));
+      case AttributionReportTimeFormat::kMillisecondsSinceUnixEpoch:
+        value.Set(time_key, base::NumberToString(time_delta.InMilliseconds()));
         break;
       case AttributionReportTimeFormat::kISO8601:
         value.Set(time_key,
@@ -453,6 +454,9 @@ base::Value RunAttributionSimulation(
   if (!events)
     return base::Value();
 
+  if (events->empty())
+    return base::Value(base::Value::Dict());
+
   base::ranges::stable_sort(*events, /*comp=*/{}, &GetEventTime);
 
   // Avoid creating an on-disk sqlite DB.
@@ -535,7 +539,9 @@ base::Value RunAttributionSimulation(
   }
 
   base::Value::Dict output;
-  output.Set("event_level_reports", std::move(event_level_reports));
+
+  if (!event_level_reports.empty())
+    output.Set("event_level_reports", std::move(event_level_reports));
 
   if (!debug_event_level_reports.empty()) {
     output.Set("debug_event_level_reports",

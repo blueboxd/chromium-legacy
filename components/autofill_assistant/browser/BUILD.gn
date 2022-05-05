@@ -20,7 +20,10 @@ proto_library("proto") {
     "service.proto",
     "view_layout.proto",
   ]
-  link_deps = [ "//components/autofill_assistant/content/common/proto:proto" ]
+  link_deps = [
+    "//components/autofill_assistant/browser/public:proto",
+    "//components/autofill_assistant/content/common/proto:proto",
+  ]
 }
 
 proto_library("test_proto") {
@@ -56,6 +59,8 @@ static_library("browser") {
     "actions/execute_js_action.h",
     "actions/expect_navigation_action.cc",
     "actions/expect_navigation_action.h",
+    "actions/external_action.cc",
+    "actions/external_action.h",
     "actions/fallback_handler/required_field.cc",
     "actions/fallback_handler/required_field.h",
     "actions/fallback_handler/required_fields_fallback_handler.cc",
@@ -153,6 +158,8 @@ static_library("browser") {
     "client_settings.h",
     "client_status.cc",
     "client_status.h",
+    "common_dependencies.cc",
+    "common_dependencies.h",
     "controller.cc",
     "controller.h",
     "controller_observer.cc",
@@ -206,6 +213,8 @@ static_library("browser") {
     "overlay_state.h",
     "parse_jspb.cc",
     "parse_jspb.h",
+    "platform_dependencies.cc",
+    "platform_dependencies.h",
     "protocol_utils.cc",
     "protocol_utils.h",
     "radio_button_controller.cc",
@@ -586,6 +595,7 @@ source_set("unit_tests") {
     "//components/ukm:test_support",
     "//components/ukm/content:content",
     "//components/url_matcher",
+    "//components/variations/service",
     "//components/version_info",
     "//content/test:test_support",
     "//services/network:test_support",
@@ -608,7 +618,10 @@ if (is_android) {
       "service.proto",
       "view_layout.proto",
     ]
-    deps = [ "//components/autofill_assistant/content/common/proto:proto_java" ]
+    deps = [
+      "//components/autofill_assistant/browser/public:proto_java",
+      "//components/autofill_assistant/content/common/proto:proto_java",
+    ]
   }
 
   java_cpp_enum("autofill_assistant_enums_java") {

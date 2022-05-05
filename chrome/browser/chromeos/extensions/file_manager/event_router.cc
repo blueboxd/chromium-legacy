@@ -18,6 +18,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "ash/webui/file_manager/file_manager_ui.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/adapters.h"
@@ -91,8 +92,7 @@ const int64_t kProgressEventFrequencyInMilliseconds = 1000;
 
 // Whether Files SWA has any open windows.
 bool DoFilesSwaWindowsExist(Profile* profile) {
-  return FindSystemWebAppBrowser(profile, web_app::SystemAppType::FILE_MANAGER,
-                                 Browser::TYPE_APP) != nullptr;
+  return ash::file_manager::FileManagerUI::GetNumInstances() != 0;
 }
 
 // Checks if the Recovery Tool is running. This is a temporary solution.
@@ -253,6 +253,8 @@ file_manager_private::IOTaskType GetIOTaskType(
       return file_manager_private::IO_TASK_TYPE_EXTRACT;
     case file_manager::io_task::OperationType::kMove:
       return file_manager_private::IO_TASK_TYPE_MOVE;
+    case file_manager::io_task::OperationType::kTrash:
+      return file_manager_private::IO_TASK_TYPE_TRASH;
     case file_manager::io_task::OperationType::kZip:
       return file_manager_private::IO_TASK_TYPE_ZIP;
     default:

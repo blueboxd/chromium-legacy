@@ -13,6 +13,8 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_auto_reset.h"
+#include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
 #include "base/scoped_observation.h"
 #include "base/strings/strcat.h"
@@ -20,6 +22,7 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -91,6 +94,19 @@ content::WebContents* GetWebContents(Browser* browser,
                                      absl::optional<int> tab_index) {
   auto* const model = browser->tab_strip_model();
   return model->GetWebContentsAt(tab_index.value_or(model->active_index()));
+}
+
+// Provides a template function for "does this element exist" queries.
+// Will return on_missing_selector if 'err?.selector' is valid.
+// Will return on_found if el is valid.
+std::string GetExistsQuery(const char* on_missing_selector,
+                           const char* on_found) {
+  return base::StringPrintf(R"((el, err) => {
+        if (err?.selector) return %s;
+        if (err) throw err;
+        return %s;
+      })",
+                            on_missing_selector, on_found);
 }
 
 // Our replacement for content::EvalJs() that uses the same underlying logic as
@@ -165,14 +181,8 @@ content::EvalJsResult EvalJsLocal(
 
 std::string CreateDeepQuery(
     const InteractionSequenceBrowserUtil::DeepQuery& where,
-    const std::string& function,
-    bool is_exists) {
-  const std::string not_found_action =
-      is_exists ? "return selector"
-                : "throw new Error('Selector not found: ' + selector)";
-  const std::string deepquery_return_expression = is_exists ? "''" : "cur";
-  const std::string final_return_expression =
-      is_exists ? "el" : "(" + function + ")(el)";
+    const std::string& function) {
+  DCHECK(!function.empty());
 
   // Safely convert the selector list in `where` to a JSON/JS list.
   base::Value::List selector_list;
@@ -191,17 +201,28 @@ std::string CreateDeepQuery(
              }
              cur = cur.querySelector(selector);
              if (!cur) {
-               %s;
+               const err = new Error('Selector not found: ' + selector);
+               err.selector = selector;
+               throw err;
              }
            }
-           return %s;
+           return cur;
          }
 
-         let el = deepQuery(%s);
-         return %s;
+         let el, err;
+         try {
+           el = deepQuery(%s);
+         } catch (error) {
+           err = error;
+         }
+
+         const func = (%s);
+         if (err && func.length <= 1) {
+           throw err;
+         }
+         return func(el, err);
        })",
-      not_found_action.c_str(), deepquery_return_expression.c_str(),
-      selectors.c_str(), final_return_expression.c_str());
+      selectors.c_str(), function.c_str());
 }
 
 }  // namespace
@@ -265,7 +286,7 @@ class InteractionSequenceBrowserUtil::NewTabWatcher
 class InteractionSequenceBrowserUtil::Poller {
  public:
   Poller(InteractionSequenceBrowserUtil* const owner,
-         const std::string function,
+         const std::string& function,
          const DeepQuery& where,
          absl::optional<base::TimeDelta> timeout,
          base::TimeDelta interval)
@@ -285,6 +306,16 @@ class InteractionSequenceBrowserUtil::Poller {
 
  private:
   void Poll() {
+    // Callback can get called again if Evaluate() below stalls. We don't want
+    // to stack callbacks because of issues with message passing to/from web
+    // contents.
+    if (is_polling_)
+      return;
+
+    auto weak_ptr = weak_factory_.GetWeakPtr();
+    base::WeakAutoReset is_polling_auto_reset(weak_ptr, &Poller::is_polling_,
+                                              true);
+
     base::Value result;
     if (where_.empty()) {
       result = owner_->Evaluate(function_);
@@ -294,10 +325,15 @@ class InteractionSequenceBrowserUtil::Poller {
       result = owner_->EvaluateAt(where_, function_);
     }
 
-    if (IsTruthy(result)) {
-      owner_->OnPollEvent(this);
-    } else if (timeout_.has_value() && elapsed_.Elapsed() > timeout_.value()) {
-      owner_->OnPollTimeout(this);
+    // At this point, weak_ptr might be invalid since we could have been deleted
+    // while we were waiting for Evaluate[At]() to complete.
+    if (weak_ptr) {
+      if (IsTruthy(result)) {
+        owner_->OnPollEvent(this);
+      } else if (timeout_.has_value() &&
+                 elapsed_.Elapsed() > timeout_.value()) {
+        owner_->OnPollTimeout(this);
+      }
     }
   }
 
@@ -308,6 +344,8 @@ class InteractionSequenceBrowserUtil::Poller {
   const absl::optional<base::TimeDelta> timeout_;
   const base::raw_ptr<InteractionSequenceBrowserUtil> owner_;
   base::RepeatingTimer timer_;
+  bool is_polling_ = false;
+  base::WeakPtrFactory<Poller> weak_factory_{this};
 };
 
 struct InteractionSequenceBrowserUtil::PollerData {
@@ -606,9 +644,27 @@ void InteractionSequenceBrowserUtil::SendEventOnStateChange(
   CHECK(configuration.event);
   CHECK(configuration.timeout.has_value() || !configuration.timeout_event)
       << "Cannot specify timeout event without timeout.";
+
+  // Determine the actual query we should use; for kConditionTrue we can use
+  // configuration.test_function directly, but for the other options we need to
+  // modify it.
+  std::string actual_func;
+  switch (configuration.type) {
+    case StateChange::Type::kExists:
+      DCHECK(configuration.test_function.empty());
+      actual_func = GetExistsQuery("false", "true");
+      break;
+    case StateChange::Type::kConditionTrue:
+      actual_func = configuration.test_function;
+      break;
+    case StateChange::Type::kExistsAndConditionTrue:
+      const std::string on_found = "(" + configuration.test_function + ")(el)";
+      actual_func = GetExistsQuery("false", on_found.c_str());
+      break;
+  }
+
   PollerData poller_data{
-      std::make_unique<Poller>(this, configuration.test_function,
-                               configuration.where,
+      std::make_unique<Poller>(this, actual_func, configuration.where,
                                configuration.timeout,
                                configuration.polling_interval),
       configuration.event, configuration.timeout_event};
@@ -619,7 +675,8 @@ void InteractionSequenceBrowserUtil::SendEventOnStateChange(
 
 bool InteractionSequenceBrowserUtil::Exists(const DeepQuery& query,
                                             std::string* not_found) {
-  const std::string full_query = CreateDeepQuery(query, "", true);
+  const std::string full_query =
+      CreateDeepQuery(query, GetExistsQuery("err.selector", "''"));
   const std::string result = Evaluate(full_query).GetString();
   if (not_found)
     *not_found = result;
@@ -629,7 +686,7 @@ bool InteractionSequenceBrowserUtil::Exists(const DeepQuery& query,
 base::Value InteractionSequenceBrowserUtil::EvaluateAt(
     const DeepQuery& where,
     const std::string& function) {
-  const std::string full_query = CreateDeepQuery(where, function, false);
+  const std::string full_query = CreateDeepQuery(where, function);
   return Evaluate(full_query);
 }
 
@@ -742,9 +799,11 @@ void InteractionSequenceBrowserUtil::MaybeCreateElement(bool force) {
   }
 
   // Ignore events on a page we're navigating away from.
-  if (navigating_away_from_.EqualsIgnoringRef(web_contents()->GetURL()))
+  if (navigating_away_from_ &&
+      navigating_away_from_->EqualsIgnoringRef(web_contents()->GetURL())) {
     return;
-  navigating_away_from_ = GURL();
+  }
+  navigating_away_from_.reset();
 
   current_element_ =
       std::make_unique<TrackedElementWebPage>(page_identifier_, context, this);

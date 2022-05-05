@@ -27,6 +27,8 @@ namespace media_router {
 using ChannelOpenedCallback = base::OnceCallback<void(bool)>;
 using AddSinkResultCode = access_code_cast::mojom::AddSinkResultCode;
 
+bool IsAccessCodeCastEnabled();
+
 class AccessCodeCastSinkService : public KeyedService,
                                   public DiscoveryNetworkMonitor::Observer {
  public:
@@ -213,6 +215,8 @@ class AccessCodeCastSinkService : public KeyedService,
   // MediaSinkInternal will be returned in the optional value.
   absl::optional<const MediaSinkInternal> ValidateDeviceFromSinkId(
       const MediaSink::Id& sink_id);
+
+  void RemoveExistingSinksOnNetwork();
 
   // DiscoveryNetworkMonitor::Observer implementation
   void OnNetworksChanged(const std::string& network_id) override;

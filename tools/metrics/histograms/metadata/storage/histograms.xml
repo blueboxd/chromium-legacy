@@ -255,15 +255,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Storage.Blob.BuildFromStreamResult"
-    enum="BlobBuildFromStreamResult" expires_after="M87">
-  <owner>mek@chromium.org</owner>
-  <summary>
-    The result of constructing a blob using the BlobRegistry.RegisterFromStream
-    API.
-  </summary>
-</histogram>
-
 <histogram name="Storage.Blob.CleanupSuccess" enum="Boolean"
     expires_after="M95">
   <owner>mek@chromium.org</owner>
@@ -453,17 +444,6 @@ chromium-metrics-reviews@google.com.
     BlobStorageContext when the blob is finished being created. This can include
     memory that is shared with other blobs or memory from repeated internal
     items.
-  </summary>
-</histogram>
-
-<histogram name="Storage.BlobItemSize.File.Unknown" enum="BooleanUnknown"
-    expires_after="M87">
-  <owner>mek@chromium.org</owner>
-  <owner>dmurph@chromium.org</owner>
-  <summary>
-    True if the file size on blob append is unknown (which means the full file),
-    or false if a specific file length was populated. Recorded in
-    BlobStorageContext when we are adding a file item to a blob.
   </summary>
 </histogram>
 

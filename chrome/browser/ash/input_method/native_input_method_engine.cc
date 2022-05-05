@@ -476,8 +476,14 @@ InputFieldContext CreateInputFieldContext(
 }
 
 mojom::TextPredictionMode GetTextPredictionMode(
-    const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions) {
-  return enabled_suggestions.multi_word_suggestions
+    const std::string& engine_id,
+    const InputFieldContext& context,
+    const PrefService& prefs) {
+  // TODO(crbug.com/1263335): Enable text prediction for Lacros.
+  return context.multiword_enabled && context.multiword_allowed &&
+                 !context.lacros_enabled &&
+                 prefs.GetBoolean(prefs::kAssistPredictiveWritingEnabled) &&
+                 IsUsEnglishEngine(engine_id)
              ? mojom::TextPredictionMode::kEnabled
              : mojom::TextPredictionMode::kDisabled;
 }
@@ -494,8 +500,10 @@ std::string MojomLayoutToXkbLayout(mojom::PinyinLayout layout) {
 }
 
 mojom::InputFieldInfoPtr CreateInputFieldInfo(
+    const std::string& engine_id,
     const ui::IMEEngineHandlerInterface::InputContext& context,
-    const AssistiveSuggesterSwitch::EnabledSuggestions& enabled_suggestions,
+    const InputFieldContext& input_field_context,
+    const PrefService& prefs,
     bool is_normal_screen) {
   // Disable most features on the login screen.
   if (!is_normal_screen) {
@@ -508,12 +516,12 @@ mojom::InputFieldInfoPtr CreateInputFieldInfo(
         mojom::TextPredictionMode::kDisabled);
   }
 
-  return mojom::InputFieldInfo::New(TextInputTypeToMojoType(context.type),
-                                    AutocorrectFlagsToMojoType(context.flags),
-                                    context.should_do_learning
-                                        ? mojom::PersonalizationMode::kEnabled
-                                        : mojom::PersonalizationMode::kDisabled,
-                                    GetTextPredictionMode(enabled_suggestions));
+  return mojom::InputFieldInfo::New(
+      TextInputTypeToMojoType(context.type),
+      AutocorrectFlagsToMojoType(context.flags),
+      context.should_do_learning ? mojom::PersonalizationMode::kEnabled
+                                 : mojom::PersonalizationMode::kDisabled,
+      GetTextPredictionMode(engine_id, input_field_context, prefs));
 }
 
 void OverrideXkbLayoutIfNeeded(ImeKeyboard* keyboard,
@@ -780,13 +788,15 @@ void NativeInputMethodEngine::ImeObserver::OnFocus(
         assistive_suggester_->FetchEnabledSuggestionsFromBrowserContextThen(
             base::BindOnce(&NativeInputMethodEngine::ImeObserver::
                                HandleOnFocusAsyncForNativeMojoEngine,
-                           weak_ptr_factory_.GetWeakPtr(), engine_id, context));
+                           weak_ptr_factory_.GetWeakPtr(), engine_id,
+                           context_id, context));
       } else {
         // Because assistive_suggester is not available, we can assume that
         // there are no enabled suggestions. Hence we just run this function
         // synchronously with no enabled suggestions.
         HandleOnFocusAsyncForNativeMojoEngine(
-            engine_id, context, AssistiveSuggesterSwitch::EnabledSuggestions{});
+            engine_id, context_id, context,
+            AssistiveSuggesterSwitch::EnabledSuggestions{});
       }
     }
   } else {
@@ -799,9 +809,18 @@ void NativeInputMethodEngine::ImeObserver::OnFocus(
 void NativeInputMethodEngine::ImeObserver::
     HandleOnFocusAsyncForNativeMojoEngine(
         const std::string& engine_id,
+        int context_id,
         const IMEEngineHandlerInterface::InputContext& context,
         const AssistiveSuggesterSwitch::EnabledSuggestions&
             enabled_suggestions) {
+  // It is possible the text client got unfocused/or changed before this async
+  // function is run, if the new focus/blur event occurred fast enough. In that
+  // case, this async OnFocus call is obsolete, and should be skipped.
+  if (!text_client_.has_value() || text_client_->context_id != context_id ||
+      text_client_->state != TextClientState::kPending) {
+    return;
+  }
+
   InputFieldContext input_field_context =
       features::IsAssistiveMultiWordEnabled()
           ? CreateInputFieldContext(enabled_suggestions)
@@ -816,8 +835,8 @@ void NativeInputMethodEngine::ImeObserver::
   const bool is_normal_screen =
       InputMethodManager::Get()->GetActiveIMEState()->GetUIStyle() ==
       InputMethodManager::UIStyle::kNormal;
-  mojom::InputFieldInfoPtr input_field_info =
-      CreateInputFieldInfo(context, enabled_suggestions, is_normal_screen);
+  mojom::InputFieldInfoPtr input_field_info = CreateInputFieldInfo(
+      engine_id, context, input_field_context, *prefs_, is_normal_screen);
 
   base::OnceCallback<void(bool)> on_focus_callback =
       base::BindOnce(&NativeInputMethodEngine::ImeObserver::ActivateTextClient,

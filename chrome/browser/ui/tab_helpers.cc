@@ -89,7 +89,7 @@
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
-#include "chrome/browser/ui/privacy_sandbox/privacy_sandbox_dialog_helper.h"
+#include "chrome/browser/ui/privacy_sandbox/privacy_sandbox_prompt_helper.h"
 #include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
@@ -192,6 +192,8 @@
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
+#include "chrome/browser/autofill_assistant/common_dependencies_chrome.h"
+#include "chrome/browser/autofill_assistant/platform_dependencies_desktop.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/hats/hats_helper.h"
@@ -489,8 +491,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     LastTabStandingTrackerTabHelper::CreateForWebContents(web_contents);
   }
   ManagePasswordsUIController::CreateForWebContents(web_contents);
-  if (PrivacySandboxDialogHelper::ProfileRequiresDialog(profile))
-    PrivacySandboxDialogHelper::CreateForWebContents(web_contents);
+  if (PrivacySandboxPromptHelper::ProfileRequiresDialog(profile))
+    PrivacySandboxPromptHelper::CreateForWebContents(web_contents);
   SadTabHelper::CreateForWebContents(web_contents);
   SearchTabHelper::CreateForWebContents(web_contents);
   SyncEncryptionKeysTabHelper::CreateForWebContents(web_contents);
@@ -554,7 +556,10 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     BUILDFLAG(IS_CHROMEOS)
   if (base::FeatureList::IsEnabled(
           autofill_assistant::features::kAutofillAssistantDesktop)) {
-    autofill_assistant::CreateForWebContents(web_contents);
+    autofill_assistant::CreateForWebContents(
+        web_contents,
+        std::make_unique<autofill_assistant::CommonDependenciesChrome>(),
+        std::make_unique<autofill_assistant::PlatformDependenciesDesktop>());
   }
 #endif
 

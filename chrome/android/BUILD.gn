@@ -338,10 +338,10 @@ android_library("chrome_java") {
     "$google_play_services_package:google_play_services_tasks_java",
     "$google_play_services_package:google_play_services_vision_common_java",
     "$google_play_services_package:google_play_services_vision_java",
-    "//base:base_java",
     "//cc:cc_java",
     "//chrome/android/features/keyboard_accessory:public_java",
     "//chrome/android/features/start_surface:public_java",
+    "//chrome/android/features/start_surface/internal:java_resources",
     "//chrome/android/modules/cablev2_authenticator/public:java",
     "//chrome/android/modules/image_editor/provider:java",
     "//chrome/android/modules/stack_unwinder/provider:java",
@@ -633,6 +633,7 @@ android_library("chrome_java") {
     "//third_party/androidx:androidx_localbroadcastmanager_localbroadcastmanager_java",
     "//third_party/androidx:androidx_mediarouter_mediarouter_java",
     "//third_party/androidx:androidx_preference_preference_java",
+    "//third_party/androidx:androidx_vectordrawable_vectordrawable_animated_java",
     "//third_party/androidx:androidx_viewpager2_viewpager2_java",
     "//third_party/androidx:androidx_viewpager_viewpager_java",
     "//third_party/blink/public:blink_headers_java",
@@ -714,6 +715,15 @@ android_library("chrome_java") {
   ]
 
   processor_args_javac = [ "dagger.fastInit=enabled" ]
+
+  if (!is_java_debug) {
+    if (!defined(proguard_configs)) {
+      proguard_configs = []
+    }
+    proguard_enabled = true
+    proguard_configs +=
+        [ "//chrome/android/features/start_surface/internal/proguard.flags" ]
+  }
 
   resources_package = "org.chromium.chrome"
 
@@ -936,7 +946,6 @@ junit_binary("chrome_junit_tests") {
     "$google_play_services_package:google_play_services_basement_java",
     "$google_play_services_package:google_play_services_cast_framework_java",
     "$google_play_services_package:google_play_services_cast_java",
-    "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
     "//base/test:test_support_java",
@@ -948,7 +957,6 @@ junit_binary("chrome_junit_tests") {
     "//chrome/android/features/android_library_factory:junit_tests",
     "//chrome/android/features/keyboard_accessory:internal_java",
     "//chrome/android/features/start_surface:public_java",
-    "//chrome/android/features/start_surface/internal:java",
     "//chrome/android/features/tab_ui:java",
     "//chrome/android/modules/image_editor/provider:java",
     "//chrome/android/webapk/libs/client:client_java",
@@ -1209,9 +1217,11 @@ android_library("chrome_unit_test_util_java") {
 
   sources = [
     "javatests/src/org/chromium/chrome/browser/homepage/HomepageTestRule.java",
+    "javatests/src/org/chromium/chrome/browser/tabmodel/TestTabModelDirectory.java",
   ]
 
   deps = [
+    "//base:base_java",
     "//chrome/browser/preferences:java",
     "//components/policy/android:policy_java",
     "//components/policy/android:policy_java_test_support",
@@ -1277,7 +1287,12 @@ android_library("chrome_unit_test_java") {
   resources_package = "org.chromium.chrome.test"
   sources = [
     "javatests/src/org/chromium/chrome/browser/contextmenu/ChromeContextMenuPopulatorTest.java",
+    "javatests/src/org/chromium/chrome/browser/tab/WebContentsStateBridgeTest.java",
+    "javatests/src/org/chromium/chrome/browser/tabmodel/AsyncTabCreationParamsManagerTest.java",
+    "javatests/src/org/chromium/chrome/browser/tabmodel/RestoreMigrateTest.java",
+    "javatests/src/org/chromium/chrome/browser/tabmodel/TabPersistentStoreUnitTest.java",
     "javatests/src/org/chromium/chrome/browser/toolbar/HomeButtonTest.java",
+    "javatests/src/org/chromium/chrome/browser/toolbar/ToolbarSecurityIconTest.java",
   ]
   deps = [
     ":chrome_unit_test_util_java",
@@ -1289,12 +1304,23 @@ android_library("chrome_unit_test_java") {
     "//chrome/browser/first_run/android:java",
     "//chrome/browser/flags:java",
     "//chrome/browser/lens:java",
+    "//chrome/browser/preferences:java",
+    "//chrome/browser/profiles/android:java",
+    "//chrome/browser/tab:java",
+    "//chrome/browser/tabmodel:java",
+    "//chrome/browser/tabpersistence:java",
+    "//chrome/browser/ui/android/omnibox:java",
     "//chrome/browser/ui/android/toolbar:java",
     "//chrome/test/android:chrome_java_test_support",
     "//components/browser_ui/settings/android:java",
     "//components/embedder_support/android:context_menu_java",
+    "//components/embedder_support/android:util_java",
     "//components/externalauth/android:java",
+    "//components/prefs/android:java",
     "//components/search_engines/android:java",
+    "//components/security_state/content/android:java",
+    "//components/security_state/core:security_state_enums_java",
+    "//content/public/android:content_full_java",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_deps:espresso_java",
     "//third_party/android_support_test_runner:runner_java",
@@ -1330,7 +1356,6 @@ android_library("chrome_test_java") {
     "$google_play_services_package:google_play_services_gcm_java",
     "$google_play_services_package:google_play_services_iid_java",
     "$google_play_services_package:google_play_services_tasks_java",
-    "//base:base_java",
     "//base:base_java_test_support",
     "//base/test:test_support_java",
     "//build/android:build_java",
@@ -1338,7 +1363,6 @@ android_library("chrome_test_java") {
     "//cc:cc_java",
     "//chrome/android:chrome_java",
     "//chrome/android/features/start_surface:public_java",
-    "//chrome/android/features/start_surface/internal:java",
     "//chrome/android/features/start_surface/internal:java_resources",
     "//chrome/android/features/tab_ui:java",
     "//chrome/android/features/tab_ui:java_resources",
@@ -3287,7 +3311,6 @@ android_test_apk("chrome_bundle_smoke_test_apk") {
   # the parent target is never_incremental.
   never_incremental = true
   deps = [
-    "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/test/android:chrome_java_test_pagecontroller",
     "//content/public/test/android:content_java_test_support",
@@ -3413,24 +3436,25 @@ script_test("monochrome_webview_finch_smoke_tests") {
   data_deps = [
     "//android_webview/tools/system_webview_shell:system_webview_shell_apk",
     "//chrome/android:monochrome_public_apk",
-    "//testing:wpt_android_lib",
+    "//testing:run_wpt_tests",
   ]
 }
 
 script_test("chrome_public_wpt") {
-  script = "//testing/scripts/run_android_wpt.py"
+  script = "//testing/scripts/run_wpt_tests.py"
   args = [
-    "--product=chrome_android",
-    "--chrome-apk=apks/ChromePublic.apk",
-    "--webdriver-binary=clang_x64/chromedriver",
+    "--product",
+    "chrome_android",
+    "--browser-apk",
+    "@WrappedPath(apks/ChromePublic.apk)",
+    "--webdriver-binary",
+    "@WrappedPath(clang_x64/chromedriver)",
     "-v",
   ]
   data_deps = [
     ":chrome_public_apk",
-    "//build/android:test_runner_py",
     "//chrome/test/chromedriver:chromedriver($host_toolchain)",
     "//third_party/blink/tools:wpt_tests_android_isolate",
-    "//tools/imagediff",
   ]
 }
 
@@ -3857,7 +3881,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchManager.java",
     "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchRankerLoggerImpl.java",
     "java/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchTabHelper.java",
-    "java/src/org/chromium/chrome/browser/contextualsearch/CtrSuppression.java",
     "java/src/org/chromium/chrome/browser/crash/MinidumpUploadServiceImpl.java",
     "java/src/org/chromium/chrome/browser/customtabs/CustomTabsConnection.java",
     "java/src/org/chromium/chrome/browser/datareduction/DataSaverOSSetting.java",

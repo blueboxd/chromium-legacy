@@ -25,6 +25,7 @@
 <translation id="1204296502688602597">Latența DNS</translation>
 <translation id="123124571410524056">Posibil portal</translation>
 <translation id="1238612778414822719">Latență a solicitărilor HTTPS</translation>
+<translation id="1264116747675686718">Se actualizează versiunea sistemului de operare</translation>
 <translation id="1264369926465113395">Citește noua revistă digitală pentru Chromebookuri dedicată creatorilor</translation>
 <translation id="1270369111467284986">Posibil portal captiv</translation>
 <translation id="1290331692326790741">Semnal slab</translation>
@@ -121,6 +122,7 @@
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: reîncearcă</translation>
 <translation id="2161394479394250669">Anulează sarcina de printare</translation>
 <translation id="2163937499206714165">Activează modul întunecat</translation>
+<translation id="2177831236093724629">S-au detectat <ph name="LINK_BEGIN" />componente neautorizate<ph name="LINK_END" />. Pentru a te asigura că toate componentele autorizate sunt identificate, actualizează sistemul de operare Chrome la cea mai recentă versiune.</translation>
 <translation id="2180197493692062006">A apărut o eroare. Încearcă să redeschizi aplicația.</translation>
 <translation id="2209788852729124853">Resetează contoarele de trafic</translation>
 <translation id="2212733584906323460">Rezolvarea pentru nume</translation>
@@ -203,6 +205,7 @@
 <translation id="3188257591659621405">Fișierele mele</translation>
 <translation id="3192947282887913208">Fișiere audio</translation>
 <translation id="3199982728237701504">Alimentator de documente (față-verso)</translation>
+<translation id="320091191259649613">Dacă problema persistă după actualizare, este posibil ca respectiva componentă să fi fost autorizată recent și să nu fi fost încă adăugată în baza de date.</translation>
 <translation id="3226405216343213872">Se caută scanere</translation>
 <translation id="3246869037381808805">Sarcinile de printare mai vechi de o zi vor fi eliminate</translation>
 <translation id="3268178239013324452">Nereușită – Ușă deschisă</translation>
@@ -211,6 +214,7 @@
 <translation id="3291996639387199448">Direcția cheii</translation>
 <translation id="3310640316857623290">Latența DNS depășește semnificativ pragul permisibil</translation>
 <translation id="3328783797891415197">Se rulează testul</translation>
+<translation id="3336855445806447827">Nu știu sigur</translation>
 <translation id="3340011300870565703">Nivelul bateriei căștii drepte a dispozitivului este de <ph name="BATTERY_PERCENTAGE" /> %.</translation>
 <translation id="3368922792935385530">Conectat</translation>
 <translation id="3369013195428705271">Sigur vrei să ștergi tot istoricul printărilor? Sarcinile de printare în curs nu vor fi șterse.</translation>
@@ -225,6 +229,7 @@
 <translation id="3484914941826596830">Nu deconecta dispozitivul extern și nu închide computerul în timpul actualizării firmware-ului. Poți să minimizezi fereastra. Actualizarea poate să dureze câteva minute și este posibil ca dispozitivul extern să nu funcționeze în această perioadă.</translation>
 <translation id="3486220673238053218">definiție</translation>
 <translation id="3488065109653206955">Activat parțial</translation>
+<translation id="3517001332549868749">Actualizare SO Chrome</translation>
 <translation id="3527036260304016759">Nereușită – Eroare necunoscută</translation>
 <translation id="3532980081107202182">Au mai rămas aproximativ <ph name="MIN_REMAINING" /> minute</translation>
 <translation id="3557205324756024651">Identitate locală (opțională)</translation>
@@ -316,7 +321,6 @@
 <translation id="4472575034687746823">Începeți</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Nu s-a putut da ping către gateway-ul de rețea care nu este prestabilit</translation>
-<translation id="4485626319513081846">Selectează această opțiune dacă dispozitivul este înlocuit sau recondiționat pentru distribuirea către un client nou.</translation>
 <translation id="4503223151711056411">Săgeată spre stânga</translation>
 <translation id="4511264077854731334">Portal</translation>
 <translation id="4521826082652183069">Potrivire a numelui alternativ al subiectului</translation>
@@ -377,6 +381,7 @@
 <translation id="4985509611418653372">Rulează</translation>
 <translation id="4987769320337599931">Firewall</translation>
 <translation id="4999333166442584738">Ascunde raportul</translation>
+<translation id="5008611843832219958">Actualizează la cea mai recentă versiune a sistemului de operare Chrome pentru un proces de reparare optimizat</translation>
 <translation id="500920857929044050">Oprește testul</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5019310272469539976">Când ecranul este inactiv, se afișează fotografii, ora, vremea și informații despre media.</translation>
@@ -431,6 +436,7 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
 <translation id="5499114900554609492">Nu s-a putut finaliza scanarea</translation>
 <translation id="5502931783115429516">Android nu rulează</translation>
+<translation id="5507300744274596613">Asigură-te că sistemul de operare Chrome este actualizat la cea mai recentă versiune</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5578477003638479617">UMTS</translation>
@@ -469,6 +475,7 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="5939518447894949180">Resetează</translation>
 <translation id="594552776027197022">Generează o pereche de chei aleatorie</translation>
 <translation id="5972388717451707488">Update Engine</translation>
+<translation id="5984145644188835034">Imagine de fundal prestabilită</translation>
 <translation id="6034694447310538551">Activează resetarea lunară automată</translation>
 <translation id="6037291330010597344">Alimentatorul de documente al scanerului este gol. Adaugă documente și încearcă din nou.</translation>
 <translation id="6040143037577758943">Închide</translation>
@@ -548,6 +555,7 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="6692996468359469499">Obține informații despre selecție</translation>
 <translation id="6704062477274546131">Rezolvare DNS</translation>
 <translation id="6723839937902243910">Alimentare</translation>
+<translation id="6723847290197874913">Retroiluminarea tastaturii</translation>
 <translation id="672609503628871915">Vedeți noutățile</translation>
 <translation id="6747215703636344499">Oprită – Tavă de ieșire plină</translation>
 <translation id="6749473226660745022">Fotografii</translation>
@@ -569,7 +577,6 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="6961170852793647506">Pentru a începe, așază documentul pe scaner</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6977381486153291903">Versiune firmware</translation>
-<translation id="6992266763844448459">Selectează această opțiune dacă nu se schimbă calitatea de proprietar al dispozitivului. De exemplu, dispozitivul este transferat unei alte persoane din organizație.</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> gestionează acest dispozitiv și are acces la toată activitatea utilizatorului, inclusiv la paginile web accesate, parole și e-mail.</translation>
 <translation id="7040230719604914234">Operator</translation>
 <translation id="7041549558901442110">Dispozitivul nu este conectat.</translation>
@@ -601,7 +608,6 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="7297226631177386107">Nu se poate conecta la site-uri HTTPS prin firewall</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
-<translation id="7309920310754476121">Dispozitivul va avea alt proprietar</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; apasă tasta de căutare + bara de spațiu pentru a vedea rezultatul în Căutarea Google.</translation>
 <translation id="7343649194310845056">Dispozitive de rețea</translation>
@@ -718,6 +724,7 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="8655295600908251630">Canal</translation>
 <translation id="8660881923941176839">livre</translation>
 <translation id="8662671328352114214">Conectează-te la rețeaua <ph name="TYPE" /></translation>
+<translation id="8671972493856476349">Actualizează la <ph name="VERSION_NUMBER" /> și repornește</translation>
 <translation id="8675354002693747642">Cheie predistribuită</translation>
 <translation id="8677859815076891398">Niciun album. Creează un album în <ph name="LINK_BEGIN" />Google Foto<ph name="LINK_END" />.</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> folosește tastele săgeată la stânga sau la dreapta ca să gestionezi această funcție.</translation>
@@ -768,7 +775,6 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="9082718469794970195">Folosește videoclipul</translation>
 <translation id="9087578468327036362">Raportează interogarea</translation>
 <translation id="9088306295921699330">Folosire actuală</translation>
-<translation id="9095415590198785865">Dispozitivul va avea același proprietar</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="910415269708673980">Actualizează tichetul pentru <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">Se scanează pagina <ph name="PAGE_NUMBER" /></translation>
@@ -782,6 +788,7 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="917720651393141712">Testează</translation>
 <translation id="9204237731135241582">Nu se poate contacta gateway-ul din aplicații pentru Android</translation>
 <translation id="9211490828691860325">Toate desktopurile</translation>
+<translation id="922179502584117429">Versiunea actuală, <ph name="VERSION_NUMBER" />, este învechită</translation>
 <translation id="932327136139879170">Pagina de pornire</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">Neactivat</translation>

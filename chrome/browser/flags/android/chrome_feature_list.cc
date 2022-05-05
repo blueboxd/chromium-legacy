@@ -98,7 +98,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &commerce::kShoppingPDPMetrics,
     &content_creation::kLightweightReactions,
     &content_settings::kDarkenWebsitesCheckboxInThemesSetting,
-    &device::kWebAuthPhoneSupport,
     &download::features::kDownloadAutoResumptionNative,
     &download::features::kDownloadLater,
     &download::features::kIncognitoDownloadsWarning,
@@ -190,6 +189,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTResizableForFirstParties,
     &kCCTResizableForThirdParties,
     &kCCTResourcePrefetch,
+    &kCCTToolbarCustomizations,
     &kDontAutoHideBrowserControls,
     &kChromeNewDownloadTab,
     &kChromeShareLongScreenshot,
@@ -272,6 +272,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kSpecialLocaleWrapper,
     &kSpecialUserDecision,
     &kSuppressToolbarCaptures,
+    &kSplitCompositorTask,
     &kStoreHoursAndroid,
     &kSwapPixelFormatToFixConvertFromTranslucent,
     &kTabEngagementReportingAndroid,
@@ -503,6 +504,9 @@ const base::Feature kCCTResizableForThirdParties{
 const base::Feature kCCTResourcePrefetch{"CCTResourcePrefetch",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kCCTToolbarCustomizations{"CCTToolbarCustomizations",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kDontAutoHideBrowserControls{
     "DontAutoHideBrowserControls", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -603,7 +607,7 @@ const base::Feature kDownloadAutoResumptionThrottling{
     "DownloadAutoResumptionThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
 
 extern const base::Feature kDownloadHomeForExternalApp{
-    "DownloadHomeForExternalApp", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DownloadHomeForExternalApp", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDownloadFileProvider{"DownloadFileProvider",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
@@ -741,6 +745,9 @@ const base::Feature kSpecialLocaleWrapper{"SpecialLocaleWrapper",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSpecialUserDecision{"SpecialUserDecision",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSplitCompositorTask{"SplitCompositorTask",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kStoreHoursAndroid{"StoreHoursAndroid",

@@ -11,7 +11,8 @@
 #include "base/unguessable_token.h"
 #include "content/browser/renderer_host/policy_container_host.h"
 #include "content/common/content_export.h"
-#include "services/network/public/mojom/ip_address_space.mojom-shared.h"
+#include "services/network/public/mojom/ip_address_space.mojom-forward.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-forward.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/frame/policy_container.mojom.h"
 #include "url/gurl.h"
@@ -177,11 +178,11 @@ class CONTENT_EXPORT NavigationPolicyContainerBuilder {
   // due to another navigation committing in the meantime.
   void ResetForCrossDocumentRestart();
 
- private:
   // Whether either of `ComputePolicies()` or `ComputePoliciesForError()` has
   // been called yet.
   bool HasComputedPolicies() const;
 
+ private:
   // Sets `delivered_policies_.is_web_secure_context` to its final value.
   //
   // Helper for `ComputePolicies()`.
@@ -200,25 +201,23 @@ class CONTENT_EXPORT NavigationPolicyContainerBuilder {
   // Helper for `ComputePolicies()` and `ComputePoliciesForError()`.
   void ComputeSandboxFlags(bool is_inside_mhtml,
                            network::mojom::WebSandboxFlags frame_sandbox_flags,
-                           PolicyContainerPolicies* policies);
+                           PolicyContainerPolicies& policies);
 
   // Sets `host_`.
-  void SetFinalPolicies(std::unique_ptr<PolicyContainerPolicies> policies);
+  void SetFinalPolicies(PolicyContainerPolicies policies);
 
   // Helper for `FinalizePolicies()`. Appends the delivered Content Security
-  // Policies to `policies` and returns them.
-  std::unique_ptr<PolicyContainerPolicies> IncorporateDeliveredPolicies(
-      const GURL& url,
-      std::unique_ptr<PolicyContainerPolicies> policies);
+  // Policies to `policies`.
+  void IncorporateDeliveredPolicies(const GURL& url,
+                                    PolicyContainerPolicies& policies);
 
   // Helper for `FinalizePolicies()`. Returns, depending on `url`, the policies
   // that this document inherits from parent/initiator.
-  std::unique_ptr<PolicyContainerPolicies> ComputeInheritedPolicies(
-      const GURL& url);
+  PolicyContainerPolicies ComputeInheritedPolicies(const GURL& url);
 
   // Helper for `FinalizePolicies()`. Returns, depending on `url`, the final
   // policies for the document that is going to be committed.
-  std::unique_ptr<PolicyContainerPolicies> ComputeFinalPolicies(
+  PolicyContainerPolicies ComputeFinalPolicies(
       const GURL& url,
       bool is_inside_mhtml,
       network::mojom::WebSandboxFlags frame_sandbox_flags);
@@ -236,7 +235,7 @@ class CONTENT_EXPORT NavigationPolicyContainerBuilder {
   //
   // See the comment on `SetIsOriginPotentiallyTrustworthy()` regarding this
   // member's `is_web_secure_context` field.
-  std::unique_ptr<PolicyContainerPolicies> delivered_policies_;
+  PolicyContainerPolicies delivered_policies_;
 
   // Nullptr until `ComputePolicies()` or `ComputePoliciesForError()` is
   // called, then moved from by `TakePolicyContainerHost()`.

@@ -21,7 +21,6 @@ namespace personalization_app {
 
 namespace {
 const char kFakeCollectionId[] = "fake_collection_id";
-const char kFakeAlbumId[] = "fake_album_id";
 }  // namespace
 
 FakePersonalizationAppWallpaperProvider::
@@ -92,6 +91,11 @@ void FakePersonalizationAppWallpaperProvider::FetchGooglePhotosPhotos(
       ash::personalization_app::mojom::FetchGooglePhotosPhotosResponse::New());
 }
 
+void FakePersonalizationAppWallpaperProvider::GetDefaultImageThumbnail(
+    GetDefaultImageThumbnailCallback callback) {
+  std::move(callback).Run(std::string());
+}
+
 void FakePersonalizationAppWallpaperProvider::GetLocalImages(
     GetLocalImagesCallback callback) {
   std::move(callback).Run({});
@@ -114,6 +118,11 @@ void FakePersonalizationAppWallpaperProvider::SelectWallpaper(
   std::move(callback).Run(/*success=*/true);
 }
 
+void FakePersonalizationAppWallpaperProvider::SelectDefaultImage(
+    SelectDefaultImageCallback callback) {
+  std::move(callback).Run(/*success=*/true);
+}
+
 void FakePersonalizationAppWallpaperProvider::SelectGooglePhotosPhoto(
     const std::string& id,
     ash::WallpaperLayout layout,
@@ -131,7 +140,7 @@ void FakePersonalizationAppWallpaperProvider::SelectGooglePhotosAlbum(
 void FakePersonalizationAppWallpaperProvider::
     GetGooglePhotosDailyRefreshAlbumId(
         GetGooglePhotosDailyRefreshAlbumIdCallback callback) {
-  std::move(callback).Run(kFakeAlbumId);
+  std::move(callback).Run("");
 }
 
 void FakePersonalizationAppWallpaperProvider::SelectLocalImage(

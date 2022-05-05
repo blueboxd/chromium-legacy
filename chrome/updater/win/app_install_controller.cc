@@ -9,13 +9,22 @@
 #include <string>
 #include <vector>
 
+#include <shldisp.h>
+#include <shlobj.h>
+#include <wrl/client.h>
+
 #include "base/callback.h"
 #include "base/check.h"
 #include "base/check_op.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/process/launch.h"
 #include "base/sequence_checker.h"
+#include "base/strings/escape.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
@@ -27,13 +36,21 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/win/atl.h"
+#include "base/win/scoped_bstr.h"
+#include "base/win/scoped_variant.h"
+#include "base/win/shlwapi.h"
 #include "chrome/updater/registration_data.h"
 #include "chrome/updater/service_proxy_factory.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/update_service_internal.h"
+#include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util.h"
 #include "chrome/updater/win/install_progress_observer.h"
+#include "chrome/updater/win/manifest_util.h"
+#include "chrome/updater/win/scoped_impersonation.h"
+#include "chrome/updater/win/user_info.h"
+#include "chrome/updater/win/win_util.h"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-braces"
@@ -47,6 +64,30 @@
 
 namespace updater {
 namespace {
+
+bool GetShellDispatch(Microsoft::WRL::ComPtr<IShellDispatch2>* shell_dispatch) {
+  long hwnd = 0;
+  Microsoft::WRL::ComPtr<IShellWindows> shell;
+  Microsoft::WRL::ComPtr<IDispatch> dispatch;
+  Microsoft::WRL::ComPtr<IServiceProvider> service;
+  Microsoft::WRL::ComPtr<IShellBrowser> browser;
+  Microsoft::WRL::ComPtr<IShellView> view;
+  Microsoft::WRL::ComPtr<IShellFolderViewDual> folder;
+  return SUCCEEDED(::CoCreateInstance(CLSID_ShellWindows, nullptr, CLSCTX_ALL,
+                                      IID_PPV_ARGS(&shell))) &&
+         SUCCEEDED(shell->FindWindowSW(
+             base::win::ScopedVariant(CSIDL_DESKTOP).AsInput(), nullptr,
+             SWC_DESKTOP, &hwnd, SWFO_NEEDDISPATCH, &dispatch)) &&
+         SUCCEEDED(dispatch.As(&service)) &&
+         SUCCEEDED(service->QueryService(SID_STopLevelBrowser,
+                                         IID_PPV_ARGS(&browser))) &&
+         SUCCEEDED(browser->QueryActiveShellView(&view)) &&
+         SUCCEEDED(
+             view->GetItemObject(SVGIO_BACKGROUND, IID_PPV_ARGS(&dispatch))) &&
+         SUCCEEDED(dispatch.As(&folder)) &&
+         SUCCEEDED(folder->get_Application(&dispatch)) &&
+         SUCCEEDED(dispatch.As(shell_dispatch));
+}
 
 // Implements a simple inter-thread communication protocol based on Windows
 // messages exchanged between the application installer and its UI.
@@ -379,6 +420,11 @@ class AppInstallControllerImpl : public AppInstallController,
                   const std::string& app_name,
                   base::OnceCallback<void(int)> callback) override;
 
+  void InstallAppOffline(const std::string& app_id,
+                         const std::string& app_name,
+                         const base::FilePath& offline_dir,
+                         base::OnceCallback<void(int)> callback) override;
+
  private:
   friend class base::RefCountedThreadSafe<AppInstallControllerImpl>;
 
@@ -389,7 +435,7 @@ class AppInstallControllerImpl : public AppInstallController,
   void DoExit() override;
 
   // Overrides for CompleteWndEvents. This function is called on the UI thread.
-  bool DoLaunchBrowser(const std::u16string& url) override;
+  bool DoLaunchBrowser(const std::string& url) override;
 
   // Overrides for ProgressWndEvents. These functions are called on the UI
   // thread.
@@ -407,6 +453,7 @@ class AppInstallControllerImpl : public AppInstallController,
 
   // These functions are called on the main updater thread.
   void DoInstallApp();
+  void DoInstallAppOffline(const base::FilePath& offline_dir);
   void InstallComplete(UpdateService::Result result);
   void HandleInstallResult(const UpdateService::UpdateState& update_state);
 
@@ -516,6 +563,82 @@ void AppInstallControllerImpl::DoInstallApp() {
           base::WrapRefCounted(this)));
 }
 
+void AppInstallControllerImpl::InstallAppOffline(
+    const std::string& app_id,
+    const std::string& app_name,
+    const base::FilePath& offline_dir,
+    base::OnceCallback<void(int)> callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(base::ThreadTaskRunnerHandle::IsSet());
+
+  app_id_ = app_id;
+  app_name_ = base::UTF8ToUTF16(app_name);
+  callback_ = std::move(callback);
+
+  ui_task_runner_->PostTaskAndReply(
+      FROM_HERE, base::BindOnce(&AppInstallControllerImpl::InitializeUI, this),
+      base::BindOnce(&AppInstallControllerImpl::DoInstallAppOffline, this,
+                     offline_dir));
+}
+
+void AppInstallControllerImpl::DoInstallAppOffline(
+    const base::FilePath& offline_dir) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // At this point, the UI has been initialized, which means the UI can be
+  // used from now on as an observer of the application install. The task
+  // below runs the UI message loop until it exits, because a WM_QUIT message
+  // has been posted to it.
+  ui_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&AppInstallControllerImpl::RunUI, this));
+
+  install_progress_observer_ipc_ =
+      std::make_unique<InstallProgressObserverIPC>(progress_wnd_.get());
+
+  // Parse the offline manifest to get the install command and install data.
+  base::FilePath installer_path;
+  std::string install_args;
+  std::string install_data;
+  absl::optional<tagging::AppArgs> app_args = GetAppArgs(app_id_);
+  ReadInstallCommandFromManifest(
+      offline_dir, app_id_,
+      app_args ? app_args->install_data_index : std::string(), installer_path,
+      install_args, install_data);
+
+  // TODO(crbug.com/1286581, crbug.com/1286582): fine-tune installation
+  // behavior by serializing other related command line options, such as
+  // "/sessionid <sid>" and "/enterprise" into `install_settings`.
+  std::string install_settings;
+
+  absl::optional<tagging::TagArgs> tag_args = GetTagArgs().tag_args;
+  RegistrationRequest request;
+  request.app_id = app_id_;
+  if (app_args)
+    request.ap = app_args->ap;
+  if (tag_args)
+    request.brand_code = tag_args->brand_code;
+
+  update_service_->RegisterApp(
+      request,
+      base::BindOnce(
+          [](scoped_refptr<AppInstallControllerImpl> self,
+             const base::FilePath& installer_path,
+             const std::string& install_args, const std::string& install_data,
+             const std::string& install_settings,
+             const RegistrationResponse& response) {
+            DCHECK(response.status_code == kRegistrationSuccess ||
+                   response.status_code == kRegistrationAlreadyRegistered);
+            self->update_service_->RunInstaller(
+                self->app_id_, installer_path, install_args, install_data,
+                install_settings,
+                base::BindRepeating(&AppInstallControllerImpl::StateChange,
+                                    self),
+                base::BindOnce(&AppInstallControllerImpl::InstallComplete,
+                               self));
+          },
+          base::WrapRefCounted(this), installer_path, install_args,
+          install_data, install_settings));
+}
+
 // TODO(crbug.com/1218219) - propagate error code in case of errors.
 void AppInstallControllerImpl::InstallComplete(UpdateService::Result result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -611,8 +734,10 @@ void AppInstallControllerImpl::HandleInstallResult(
   ObserverCompletionInfo observer_info;
   observer_info.completion_code = completion_code;
   observer_info.completion_text = completion_text;
-  // TODO(sorin): implement handling the help URL. https://crbug.com/1014622
-  observer_info.help_url = u"http://www.google.com";
+  observer_info.help_url =
+      base::StringPrintf("%s?product=%s&error=%d", HELP_CENTER_URL,
+                         base::EscapeUrlEncodedData(app_id_, false).c_str(),
+                         update_state.error_code);
   // TODO(sorin): implement the installer API and provide the
   // application info in the observer info. https://crbug.com/1014630
   observer_info.apps_info.push_back({});
@@ -668,9 +793,16 @@ DWORD AppInstallControllerImpl::GetUIThreadID() const {
   return ::GetWindowThreadProcessId(progress_wnd_->m_hWnd, nullptr);
 }
 
-bool AppInstallControllerImpl::DoLaunchBrowser(const std::u16string& url) {
+bool AppInstallControllerImpl::DoLaunchBrowser(const std::string& url) {
   DCHECK_EQ(GetUIThreadID(), GetCurrentThreadId());
-  return false;
+  Microsoft::WRL::ComPtr<IShellDispatch2> shell_dispatch;
+  base::win::ScopedVariant empty(L"");
+#undef ShellExecute
+  return GetShellDispatch(&shell_dispatch) &&
+         SUCCEEDED(shell_dispatch->ShellExecute(
+             base::win::ScopedBstr(base::SysUTF8ToWide(url).c_str()).Get(),
+             *empty.AsInput(), *empty.AsInput(), *empty.AsInput(),
+             *base::win::ScopedVariant(SW_SHOWNORMAL).AsInput()));
 }
 
 bool AppInstallControllerImpl::DoRestartBrowser(

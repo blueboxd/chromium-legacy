@@ -125,13 +125,14 @@ void AutofillAssistantImpl::GetCapabilitiesByHashPrefix(
       ServiceRequestSender::AuthMode::API_KEY,
       base::BindOnce(&OnCapabilitiesResponse, std::move(callback)),
       RpcType::GET_CAPABILITIES_BY_HASH_PREFIX);
-  return;
 }
 
 std::unique_ptr<ExternalScriptController>
 AutofillAssistantImpl::CreateExternalScriptController(
-    content::WebContents* web_contents) {
-  return std::make_unique<ExternalScriptControllerImpl>(web_contents);
+    content::WebContents* web_contents,
+    ExternalActionDelegate* action_extension_delegate) {
+  return std::make_unique<ExternalScriptControllerImpl>(
+      web_contents, action_extension_delegate);
 }
 
 }  // namespace autofill_assistant

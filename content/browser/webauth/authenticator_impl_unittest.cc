@@ -1742,7 +1742,7 @@ class TestWebAuthenticationRequestProxy : public WebAuthenticationRequestProxy {
 
   Config& config() { return config_; }
 
-  const Observations& observations() { return observations_; }
+  Observations& observations() { return observations_; }
 
   bool IsActive() override { return config_.is_active; }
 
@@ -3484,7 +3484,8 @@ TEST_F(AuthenticatorImplRemoteDesktopClientOverrideTest, MakeCredential) {
 
     EXPECT_EQ(AuthenticatorMakeCredential(std::move(options)).status,
               test.success ? AuthenticatorStatus::SUCCESS
-                           : AuthenticatorStatus::NOT_ALLOWED_ERROR);
+                           : AuthenticatorStatus::
+                                 REMOTE_DESKTOP_CLIENT_OVERRIDE_NOT_AUTHORIZED);
   }
 }
 
@@ -3522,7 +3523,8 @@ TEST_F(AuthenticatorImplRemoteDesktopClientOverrideTest, GetAssertion) {
 
     EXPECT_EQ(AuthenticatorGetAssertion(std::move(options)).status,
               test.success ? AuthenticatorStatus::SUCCESS
-                           : AuthenticatorStatus::NOT_ALLOWED_ERROR);
+                           : AuthenticatorStatus::
+                                 REMOTE_DESKTOP_CLIENT_OVERRIDE_NOT_AUTHORIZED);
   }
 }
 
@@ -3535,14 +3537,20 @@ TEST_F(AuthenticatorImplRemoteDesktopClientOverrideTest, MakeCredentialAppid) {
     std::string remote_origin;
     std::string rp_id;
     std::string app_id;
-    bool success;
+    AuthenticatorStatus expected;
   } test_cases[] = {
-      {kCorpCrdOrigin, kExampleOrigin, kExampleRpId, kExampleAppid, true},
-      {kCorpCrdOrigin, kExampleOrigin, kExampleRpId, kOtherAppid, false},
-      {kOtherRdpOrigin, kExampleOrigin, kExampleRpId, kExampleAppid, false},
-      {kOtherRdpOrigin, kExampleOrigin, kExampleRpId, kOtherAppid, false},
-      {kExampleOrigin, kExampleOrigin, kExampleRpId, kExampleAppid, false},
-      {kExampleOrigin, kExampleOrigin, kExampleRpId, kOtherAppid, false},
+      {kCorpCrdOrigin, kExampleOrigin, kExampleRpId, kExampleAppid,
+       AuthenticatorStatus::SUCCESS},
+      {kCorpCrdOrigin, kExampleOrigin, kExampleRpId, kOtherAppid,
+       AuthenticatorStatus::INVALID_DOMAIN},
+      {kOtherRdpOrigin, kExampleOrigin, kExampleRpId, kExampleAppid,
+       AuthenticatorStatus::REMOTE_DESKTOP_CLIENT_OVERRIDE_NOT_AUTHORIZED},
+      {kOtherRdpOrigin, kExampleOrigin, kExampleRpId, kOtherAppid,
+       AuthenticatorStatus::REMOTE_DESKTOP_CLIENT_OVERRIDE_NOT_AUTHORIZED},
+      {kExampleOrigin, kExampleOrigin, kExampleRpId, kExampleAppid,
+       AuthenticatorStatus::REMOTE_DESKTOP_CLIENT_OVERRIDE_NOT_AUTHORIZED},
+      {kExampleOrigin, kExampleOrigin, kExampleRpId, kOtherAppid,
+       AuthenticatorStatus::REMOTE_DESKTOP_CLIENT_OVERRIDE_NOT_AUTHORIZED},
   };
 
   for (const auto& test : test_cases) {
@@ -3560,7 +3568,7 @@ TEST_F(AuthenticatorImplRemoteDesktopClientOverrideTest, MakeCredentialAppid) {
         url::Origin::Create(GURL(test.remote_origin)), true);
 
     auto result = AuthenticatorMakeCredential(std::move(options));
-    EXPECT_EQ(test.success, result.status == AuthenticatorStatus::SUCCESS);
+    EXPECT_EQ(result.status, test.expected);
   }
 }
 
@@ -3573,14 +3581,20 @@ TEST_F(AuthenticatorImplRemoteDesktopClientOverrideTest, GetAssertionAppid) {
     std::string remote_origin;
     std::string rp_id;
     std::string app_id;
-    bool success;
+    AuthenticatorStatus expected;
   } test_cases[] = {
-      {kCorpCrdOrigin, kExampleOrigin, kExampleRpId, kExampleAppid, true},
-      {kCorpCrdOrigin, kExampleOrigin, kExampleRpId, kOtherAppid, false},
-      {kOtherRdpOrigin, kExampleOrigin, kExampleRpId, kExampleAppid, false},
-      {kOtherRdpOrigin, kExampleOrigin, kExampleRpId, kOtherAppid, false},
-      {kExampleOrigin, kExampleOrigin, kExampleRpId, kExampleAppid, false},
-      {kExampleOrigin, kExampleOrigin, kExampleRpId, kOtherAppid, false},
+      {kCorpCrdOrigin, kExampleOrigin, kExampleRpId, kExampleAppid,
+       AuthenticatorStatus::SUCCESS},
+      {kCorpCrdOrigin, kExampleOrigin, kExampleRpId, kOtherAppid,
+       AuthenticatorStatus::INVALID_DOMAIN},
+      {kOtherRdpOrigin, kExampleOrigin, kExampleRpId, kExampleAppid,
+       AuthenticatorStatus::REMOTE_DESKTOP_CLIENT_OVERRIDE_NOT_AUTHORIZED},
+      {kOtherRdpOrigin, kExampleOrigin, kExampleRpId, kOtherAppid,
+       AuthenticatorStatus::REMOTE_DESKTOP_CLIENT_OVERRIDE_NOT_AUTHORIZED},
+      {kExampleOrigin, kExampleOrigin, kExampleRpId, kExampleAppid,
+       AuthenticatorStatus::REMOTE_DESKTOP_CLIENT_OVERRIDE_NOT_AUTHORIZED},
+      {kExampleOrigin, kExampleOrigin, kExampleRpId, kOtherAppid,
+       AuthenticatorStatus::REMOTE_DESKTOP_CLIENT_OVERRIDE_NOT_AUTHORIZED},
   };
 
   for (const auto& test : test_cases) {
@@ -3602,7 +3616,7 @@ TEST_F(AuthenticatorImplRemoteDesktopClientOverrideTest, GetAssertionAppid) {
         options->allow_credentials[0].id, test.rp_id));
 
     auto result = AuthenticatorGetAssertion(std::move(options));
-    EXPECT_EQ(test.success, result.status == AuthenticatorStatus::SUCCESS);
+    EXPECT_EQ(result.status, test.expected);
   }
 }
 
@@ -4675,7 +4689,6 @@ TEST_F(AuthenticatorImplTest, CredBlob) {
 
     auto result = AuthenticatorGetAssertion(std::move(options));
     ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
-    EXPECT_TRUE(result.response->echo_get_cred_blob);
     EXPECT_EQ(result.response->get_cred_blob, cred_blob);
   }
 }
@@ -8187,9 +8200,8 @@ class AuthenticatorCableV2Test
         browser_client_(
             base::BindRepeating(&AuthenticatorCableV2Test::MaybeContactPhones,
                                 base::Unretained(this))) {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kWebAuthCable, device::kWebAuthPhoneSupport},
-        /*disabled_features=*/{});
+    scoped_feature_list_.InitWithFeatures({features::kWebAuthCable},
+                                          /*disabled_features=*/{});
   }
 
   void SetUp() override {
@@ -8878,6 +8890,64 @@ TEST_F(AuthenticatorImplWithRequestProxyTest, MakeCredentialOriginAndRpIds) {
 
     EXPECT_EQ(AuthenticatorMakeCredential(std::move(options)).status,
               test_case.expected_status);
+    EXPECT_EQ(request_proxy().observations().create_requests.size(), 0u);
+  }
+}
+
+TEST_F(AuthenticatorImplWithRequestProxyTest, AppId) {
+  request_proxy().config().request_success = true;
+  request_proxy().config().make_credential_response =
+      MakeCredentialAuthenticatorResponse::New();
+  request_proxy().config().make_credential_response->info =
+      CommonCredentialInfo::New();
+
+  for (const auto& test_case : kValidAppIdCases) {
+    SCOPED_TRACE(std::string(test_case.origin) + " " +
+                 std::string(test_case.claimed_authority));
+
+    ASSERT_TRUE(test_client_.GetWebAuthenticationDelegate()
+                    ->MaybeGetRequestProxy(main_rfh()->GetBrowserContext())
+                    ->IsActive());
+
+    EXPECT_EQ(TryAuthenticationWithAppId(test_case.origin,
+                                         test_case.claimed_authority),
+              AuthenticatorStatus::SUCCESS);
+    EXPECT_EQ(request_proxy().observations().get_requests.size(), 1u);
+    request_proxy().observations().get_requests.clear();
+
+    EXPECT_EQ(TryRegistrationWithAppIdExclude(test_case.origin,
+                                              test_case.claimed_authority),
+              AuthenticatorStatus::SUCCESS);
+    EXPECT_EQ(request_proxy().observations().create_requests.size(), 1u);
+    request_proxy().observations().create_requests.clear();
+  }
+
+  // Test invalid cases that should be rejected. `kInvalidRelyingPartyTestCases`
+  // contains a mix of RP ID an App ID cases, but they should all be rejected.
+  for (const OriginClaimedAuthorityPair& test_case :
+       kInvalidRelyingPartyTestCases) {
+    SCOPED_TRACE(std::string(test_case.claimed_authority) + " " +
+                 std::string(test_case.origin));
+
+    if (strlen(test_case.claimed_authority) == 0) {
+      // In this case, no AppID is actually being tested.
+      continue;
+    }
+
+    ASSERT_TRUE(test_client_.GetWebAuthenticationDelegate()
+                    ->MaybeGetRequestProxy(main_rfh()->GetBrowserContext())
+                    ->IsActive());
+
+    AuthenticatorStatus test_status = TryAuthenticationWithAppId(
+        test_case.origin, test_case.claimed_authority);
+    EXPECT_TRUE(test_status == AuthenticatorStatus::INVALID_DOMAIN ||
+                test_status == test_case.expected_status);
+    EXPECT_EQ(request_proxy().observations().get_requests.size(), 0u);
+
+    test_status = TryRegistrationWithAppIdExclude(test_case.origin,
+                                                  test_case.claimed_authority);
+    EXPECT_TRUE(test_status == AuthenticatorStatus::INVALID_DOMAIN ||
+                test_status == test_case.expected_status);
     EXPECT_EQ(request_proxy().observations().create_requests.size(), 0u);
   }
 }

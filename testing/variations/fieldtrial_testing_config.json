@@ -1530,8 +1530,8 @@
                         "unload_support": "no"
                     },
                     "enable_features": [
-                        "BFCachePerformanceManagerPolicy",
                         "BackForwardCache",
+                        "FreezeWhileKeepActive",
                         "LoadingTasksUnfreezable"
                     ]
                 }
@@ -1812,28 +1812,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "CacheFontFamilyMatching"
-                    ]
-                }
-            ]
-        }
-    ],
-    "Canvas2dStaysGPUOnReadback": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "Canvas2dStaysGPUOnReadback"
                     ]
                 }
             ]
@@ -2188,137 +2166,17 @@
             ],
             "experiments": [
                 {
-                    "name": "ReadLater_US__SemiIntegrated_M99_v1",
+                    "name": "Dogfood",
                     "params": {
                         "allow_bookmark_type_swapping": "true",
                         "autodismiss_enabled": "true",
-                        "bookmark_in_app_menu": "false",
-                        "bookmark_visuals_enabled": "true",
-                        "enable_persisted_tab_data_maintenance": "true",
-                        "enable_price_notification": "false",
-                        "enable_price_tracking": "true",
-                        "price_tracking_with_optimization_guide": "true",
-                        "reading_list_in_app_menu": "false",
-                        "use_root_bookmark_as_default": "true"
-                    },
-                    "enable_features": [
-                        "BookmarksImprovedSaveFlow",
-                        "BookmarksRefresh",
-                        "CommercePriceTracking",
-                        "ReadLater"
-                    ],
-                    "disable_features": [
-                        "OptimizationGuidePushNotifications",
-                        "ShoppingList"
-                    ]
-                },
-                {
-                    "name": "ReadLater_non_US__SemiIntegrated_M99_v1",
-                    "params": {
-                        "allow_bookmark_type_swapping": "true",
-                        "autodismiss_enabled": "true",
-                        "bookmark_in_app_menu": "false",
-                        "bookmark_visuals_enabled": "true",
-                        "reading_list_in_app_menu": "false",
-                        "use_root_bookmark_as_default": "true"
-                    },
-                    "enable_features": [
-                        "BookmarksImprovedSaveFlow",
-                        "BookmarksRefresh",
-                        "ReadLater"
-                    ],
-                    "disable_features": [
-                        "CommercePriceTracking",
-                        "OptimizationGuidePushNotifications",
-                        "ShoppingList"
-                    ]
-                },
-                {
-                    "name": "ReadLater_non_US__NoCustomTab_M99_v1",
-                    "params": {
-                        "reading_list_in_app_menu": "false",
-                        "use_cct": "false",
-                        "use_root_bookmark_as_default": "true"
-                    },
-                    "enable_features": [
-                        "ReadLater"
-                    ],
-                    "disable_features": [
-                        "CommercePriceTracking",
-                        "OptimizationGuidePushNotifications",
-                        "ShoppingList"
-                    ]
-                },
-                {
-                    "name": "ReadLater_non_US__DedicatedSaveFlow_M99_v1",
-                    "params": {
-                        "allow_bookmark_type_swapping": "false",
-                        "autodismiss_enabled": "true",
-                        "bookmark_in_app_menu": "true",
-                        "bookmark_visuals_enabled": "true",
-                        "reading_list_in_app_menu": "true",
-                        "use_root_bookmark_as_default": "true"
-                    },
-                    "enable_features": [
-                        "BookmarksImprovedSaveFlow",
-                        "BookmarksRefresh",
-                        "ReadLater"
-                    ],
-                    "disable_features": [
-                        "CommercePriceTracking",
-                        "OptimizationGuidePushNotifications",
-                        "ShoppingList"
-                    ]
-                },
-                {
-                    "name": "BookmarksRefresh_non_US__BookmarksRefresh_M99_v1",
-                    "params": {
-                        "bookmark_in_app_menu": "false",
-                        "bookmark_visuals_enabled": "true",
-                        "reading_list_in_app_menu": "false",
-                        "use_root_bookmark_as_default": "true"
-                    },
-                    "enable_features": [
-                        "BookmarksRefresh",
-                        "ReadLater"
-                    ],
-                    "disable_features": [
-                        "BookmarksImprovedSaveFlow",
-                        "CommercePriceTracking",
-                        "OptimizationGuidePushNotifications",
-                        "ShoppingList"
-                    ]
-                },
-                {
-                    "name": "BookmarksRefresh_non_US__BookmarksRefreshWithMenuItem_M99_v1",
-                    "params": {
-                        "bookmark_in_app_menu": "true",
-                        "bookmark_visuals_enabled": "true",
-                        "reading_list_in_app_menu": "false",
-                        "use_root_bookmark_as_default": "true"
-                    },
-                    "enable_features": [
-                        "BookmarksRefresh",
-                        "ReadLater"
-                    ],
-                    "disable_features": [
-                        "BookmarksImprovedSaveFlow",
-                        "CommercePriceTracking",
-                        "OptimizationGuidePushNotifications",
-                        "ShoppingList"
-                    ]
-                },
-                {
-                    "name": "WallE_US__PriceWithNotifications_M99_v1",
-                    "params": {
-                        "autodismiss_enabled": "true",
+                        "bookmark_compact_visuals_enabled": "true",
                         "bookmark_in_app_menu": "true",
                         "bookmark_visuals_enabled": "true",
                         "enable_persisted_tab_data_maintenance": "true",
                         "enable_price_notification": "true",
                         "enable_price_tracking": "true",
                         "price_tracking_with_optimization_guide": "true",
-                        "reading_list_in_app_menu": "false",
                         "use_root_bookmark_as_default": "true"
                     },
                     "enable_features": [
@@ -2331,93 +2189,135 @@
                     ]
                 },
                 {
-                    "name": "WallE_US__BookmarksRefresh_M99_v1",
+                    "name": "Default__non_US_M100_B_v3",
                     "params": {
-                        "bookmark_in_app_menu": "false",
-                        "bookmark_visuals_enabled": "true",
-                        "enable_persisted_tab_data_maintenance": "true",
-                        "enable_price_notification": "false",
-                        "enable_price_tracking": "true",
-                        "price_tracking_with_optimization_guide": "true",
-                        "reading_list_in_app_menu": "false",
                         "use_root_bookmark_as_default": "true"
                     },
                     "enable_features": [
-                        "BookmarksRefresh",
-                        "CommercePriceTracking",
                         "ReadLater"
-                    ],
-                    "disable_features": [
-                        "BookmarksImprovedSaveFlow",
-                        "OptimizationGuidePushNotifications",
-                        "ShoppingList"
                     ]
                 },
                 {
-                    "name": "WallE_US__BookmarkMenuItem_M99_v1",
+                    "name": "Default__non_US_M100_C_v3",
                     "params": {
-                        "bookmark_in_app_menu": "true",
-                        "bookmark_visuals_enabled": "true",
-                        "enable_persisted_tab_data_maintenance": "true",
-                        "enable_price_notification": "false",
-                        "enable_price_tracking": "true",
-                        "price_tracking_with_optimization_guide": "true",
-                        "reading_list_in_app_menu": "false",
                         "use_root_bookmark_as_default": "true"
                     },
                     "enable_features": [
-                        "BookmarksRefresh",
-                        "CommercePriceTracking",
                         "ReadLater"
-                    ],
-                    "disable_features": [
-                        "BookmarksImprovedSaveFlow",
-                        "OptimizationGuidePushNotifications",
-                        "ShoppingList"
                     ]
                 },
                 {
-                    "name": "ReadLater_US__NoCustomTab_M99_v1",
+                    "name": "ReadLater_CCT_non_US__Control_M100_B_v3",
                     "params": {
-                        "enable_persisted_tab_data_maintenance": "true",
-                        "enable_price_notification": "false",
-                        "enable_price_tracking": "true",
-                        "price_tracking_with_optimization_guide": "true",
-                        "reading_list_in_app_menu": "false",
+                        "use_root_bookmark_as_default": "true"
+                    },
+                    "enable_features": [
+                        "ReadLater"
+                    ]
+                },
+                {
+                    "name": "ReadLater_CCT_non_US__Control_M100_C_v3",
+                    "params": {
+                        "use_root_bookmark_as_default": "true"
+                    },
+                    "enable_features": [
+                        "ReadLater"
+                    ]
+                },
+                {
+                    "name": "ReadLater_CCT_non_US__NoCustomTab_M100_B_v3",
+                    "params": {
                         "use_cct": "false",
                         "use_root_bookmark_as_default": "true"
                     },
                     "enable_features": [
-                        "CommercePriceTracking",
                         "ReadLater"
-                    ],
-                    "disable_features": [
-                        "OptimizationGuidePushNotifications",
-                        "ShoppingList"
                     ]
                 },
                 {
-                    "name": "ReadLater_US__DedicatedSaveFlow_M99_v1",
+                    "name": "ReadLater_CCT_non_US__NoCustomTab_M100_C_v3",
                     "params": {
-                        "allow_bookmark_type_swapping": "false",
+                        "use_cct": "false",
+                        "use_root_bookmark_as_default": "true"
+                    },
+                    "enable_features": [
+                        "ReadLater"
+                    ]
+                },
+                {
+                    "name": "ReadLater_SaveFlow_non_US__Control_M100_B_v3",
+                    "params": {
+                        "use_root_bookmark_as_default": "true"
+                    },
+                    "enable_features": [
+                        "ReadLater"
+                    ]
+                },
+                {
+                    "name": "ReadLater_SaveFlow_non_US__Control_M100_C_v3",
+                    "params": {
+                        "use_root_bookmark_as_default": "true"
+                    },
+                    "enable_features": [
+                        "ReadLater"
+                    ]
+                },
+                {
+                    "name": "ReadLater_SaveFlow_non_US__SemiIntegratedRedux_M100_B_v3",
+                    "params": {
+                        "allow_bookmark_type_swapping": "true",
                         "autodismiss_enabled": "true",
+                        "use_root_bookmark_as_default": "true"
+                    },
+                    "enable_features": [
+                        "BookmarksImprovedSaveFlow",
+                        "ReadLater"
+                    ]
+                },
+                {
+                    "name": "ReadLater_SaveFlow_non_US__SemiIntegratedRedux_M100_C_v3",
+                    "params": {
+                        "allow_bookmark_type_swapping": "true",
+                        "autodismiss_enabled": "true",
+                        "use_root_bookmark_as_default": "true"
+                    },
+                    "enable_features": [
+                        "BookmarksImprovedSaveFlow",
+                        "ReadLater"
+                    ]
+                },
+                {
+                    "name": "WallE_US__Control_M100_A_v3",
+                    "params": {
+                        "enable_persisted_tab_data_maintenance": "true",
+                        "enable_price_tracking": "true",
+                        "price_tracking_with_optimization_guide": "true",
+                        "use_root_bookmark_as_default": "true"
+                    },
+                    "enable_features": [
+                        "CommercePriceTracking",
+                        "ReadLater"
+                    ]
+                },
+                {
+                    "name": "WallE_US__ShoppingCompact_M100_A_v3",
+                    "params": {
+                        "autodismiss_enabled": "true",
+                        "bookmark_compact_visuals_enabled": "true",
                         "bookmark_in_app_menu": "true",
                         "bookmark_visuals_enabled": "true",
                         "enable_persisted_tab_data_maintenance": "true",
-                        "enable_price_notification": "false",
+                        "enable_price_notification": "true",
                         "enable_price_tracking": "true",
                         "price_tracking_with_optimization_guide": "true",
-                        "reading_list_in_app_menu": "true",
                         "use_root_bookmark_as_default": "true"
                     },
                     "enable_features": [
                         "BookmarksImprovedSaveFlow",
                         "BookmarksRefresh",
                         "CommercePriceTracking",
-                        "ReadLater"
-                    ],
-                    "disable_features": [
                         "OptimizationGuidePushNotifications",
+                        "ReadLater",
                         "ShoppingList"
                     ]
                 }
@@ -2900,6 +2800,32 @@
             ]
         }
     ],
+    "DesktopTabGroupsInProductHelp": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledIPH_20220401",
+                    "params": {
+                        "availability": ">0",
+                        "event_many_tabs_opened": "name:sixth_tab_opened;comparator:>0;window:1;storage:365",
+                        "event_trigger": "name:tab_groups_new_group_iph_triggered;comparator:<5;window:365;storage:365",
+                        "event_used": "name:tab_group_created;comparator:==0;window:365;storage:365",
+                        "session_rate": "<3"
+                    },
+                    "enable_features": [
+                        "IPH_DesktopTabGroupsNewGroup"
+                    ]
+                }
+            ]
+        }
+    ],
     "DestroySystemProfiles": [
         {
             "platforms": [
@@ -3140,21 +3066,6 @@
             ]
         }
     ],
-    "DownloadHomeForExternalApp": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DownloadHomeForExternalApp"
-                    ]
-                }
-            ]
-        }
-    ],
     "DownloadLater": [
         {
             "platforms": [
@@ -3359,6 +3270,21 @@
             ]
         }
     ],
+    "EnhancedSafeBrowsing": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingEnhancedProtection"
+                    ]
+                }
+            ]
+        }
+    ],
     "EstablishGpuChannelAsync": [
         {
             "platforms": [
@@ -3368,6 +3294,7 @@
                 "chromeos",
                 "chromeos_lacros",
                 "linux",
+                "mac",
                 "windows"
             ],
             "experiments": [
@@ -4127,21 +4054,6 @@
             ]
         }
     ],
-    "IOSTabGridSearch": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "TabsSearch"
-                    ]
-                }
-            ]
-        }
-    ],
     "IOSThumbstrip": [
         {
             "platforms": [
@@ -4692,6 +4604,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MediaFoundationD3D11VideoCapture"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MediaFoundationH264CbpEncoding": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MediaFoundationH264CbpEncoding"
                     ]
                 }
             ]
@@ -5312,6 +5239,47 @@
                     },
                     "enable_features": [
                         "OneTimeGeolocationPermission"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OpenLinkAsProfileStudy": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DisplayOpenLinkAsProfile"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OptimizeNetworkBuffers": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OptimizeNetworkBuffers"
                     ]
                 }
             ]
@@ -7221,6 +7189,21 @@
             ]
         }
     ],
+    "SynthesizePageLoadOnlyOnInitialMainDocumentAccess": [
+        {
+            "platforms": [
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebViewSynthesizePageLoadOnlyOnInitialMainDocumentAccess"
+                    ]
+                }
+            ]
+        }
+    ],
     "TabAudioMuting": [
         {
             "platforms": [
@@ -7644,29 +7627,6 @@
             ]
         }
     ],
-    "UpdateClientHintsGREASERollout": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "updated_algorithm": "true"
-                    },
-                    "enable_features": [
-                        "GreaseUACH"
-                    ]
-                }
-            ]
-        }
-    ],
     "UpdateHistoryEntryPointsInIncognito": [
         {
             "platforms": [
@@ -7887,6 +7847,29 @@
                     "disable_features": [
                         "V8ConcurrentSparkplug"
                     ]
+                }
+            ]
+        }
+    ],
+    "V8CrashOnEvacuationFailure": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "CrashOnEvacuationFailure",
+                    "enable_features": [
+                        "V8CrashOnEvacuationFailure"
+                    ]
+                },
+                {
+                    "name": "Default"
                 }
             ]
         }
@@ -8683,7 +8666,6 @@
         },
         {
             "platforms": [
-                "chromeos",
                 "chromeos_lacros"
             ],
             "experiments": [

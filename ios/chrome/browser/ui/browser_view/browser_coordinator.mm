@@ -18,7 +18,9 @@
 #import "ios/chrome/browser/download/external_app_util.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
+#import "ios/chrome/browser/follow/follow_tab_helper.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #import "ios/chrome/browser/signin/account_consistency_browser_agent.h"
@@ -45,7 +47,6 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/feed_commands.h"
 #import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
-#import "ios/chrome/browser/ui/commands/infobar_commands.h"
 #import "ios/chrome/browser/ui/commands/page_info_commands.h"
 #import "ios/chrome/browser/ui/commands/password_breach_commands.h"
 #import "ios/chrome/browser/ui/commands/password_protection_commands.h"
@@ -71,6 +72,7 @@
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_coordinator.h"
 #import "ios/chrome/browser/ui/follow/first_follow_coordinator.h"
+#import "ios/chrome/browser/ui/follow/follow_iph_coordinator.h"
 #import "ios/chrome/browser/ui/follow/followed_web_channel.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_mediator.h"
@@ -90,6 +92,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_coordinator.h"
+#import "ios/chrome/browser/ui/safe_browsing/safe_browsing_coordinator.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_coordinator.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/ui/text_fragments/text_fragments_coordinator.h"
@@ -185,6 +188,9 @@
 // Coordinator for the First Follow modal.
 @property(nonatomic, strong) FirstFollowCoordinator* firstFollowCoordinator;
 
+// Coordinator for the Follow IPH feature.
+@property(nonatomic, strong) FollowIPHCoordinator* followIPHCoordinator;
+
 // Coordinator in charge of the presenting autofill options above the
 // keyboard.
 @property(nonatomic, strong)
@@ -242,6 +248,9 @@
 
 // Coordinator for displaying Sad Tab.
 @property(nonatomic, strong) SadTabCoordinator* sadTabCoordinator;
+
+// Coordinator for Safe Browsing.
+@property(nonatomic, strong) SafeBrowsingCoordinator* safeBrowsingCoordinator;
 
 // Coordinator for sharing scenarios.
 @property(nonatomic, strong) SharingCoordinator* sharingCoordinator;
@@ -495,6 +504,13 @@
                          browser:self.browser];
   [self.ARQuickLookCoordinator start];
 
+  if (IsWebChannelsEnabled()) {
+    self.followIPHCoordinator = [[FollowIPHCoordinator alloc]
+        initWithBaseViewController:self.viewController
+                           browser:self.browser];
+    [self.followIPHCoordinator start];
+  }
+
   self.formInputAccessoryCoordinator = [[FormInputAccessoryCoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser];
@@ -578,6 +594,11 @@
   self.viewController.infobarModalOverlayContainerViewController =
       self.infobarModalOverlayContainerCoordinator.viewController;
 
+  self.safeBrowsingCoordinator = [[SafeBrowsingCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser];
+  [self.safeBrowsingCoordinator start];
+
   self.textFragmentsCoordinator = [[TextFragmentsCoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser];
@@ -594,6 +615,9 @@
 
   [self.firstFollowCoordinator stop];
   self.firstFollowCoordinator = nil;
+
+  [self.followIPHCoordinator stop];
+  self.followIPHCoordinator = nil;
 
   [self.formInputAccessoryCoordinator stop];
   self.formInputAccessoryCoordinator = nil;
@@ -640,6 +664,9 @@
   [self.sadTabCoordinator stop];
   [self.sadTabCoordinator disconnect];
   self.sadTabCoordinator = nil;
+
+  [self.safeBrowsingCoordinator stop];
+  self.safeBrowsingCoordinator = nil;
 
   [self.sharingCoordinator stop];
   self.sharingCoordinator = nil;
@@ -1242,6 +1269,11 @@
     StoreKitTabHelper::FromWebState(webState)->SetLauncher(
         self.storeKitCoordinator);
   }
+
+  if (FollowTabHelper::FromWebState(webState)) {
+    FollowTabHelper::FromWebState(webState)->set_follow_iph_presenter(
+        self.followIPHCoordinator);
+  }
 }
 
 // Uninstalls delegates for |webState|.
@@ -1260,6 +1292,10 @@
 
   if (StoreKitTabHelper::FromWebState(webState)) {
     StoreKitTabHelper::FromWebState(webState)->SetLauncher(nil);
+  }
+
+  if (FollowTabHelper::FromWebState(webState)) {
+    FollowTabHelper::FromWebState(webState)->set_follow_iph_presenter(nil);
   }
 }
 

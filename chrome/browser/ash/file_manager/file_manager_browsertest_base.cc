@@ -100,7 +100,7 @@
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/test_switches.h"
-#include "chromeos/dbus/concierge/concierge_service.pb.h"
+#include "chromeos/ash/components/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/cros_disks/fake_cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -2295,7 +2295,7 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     }
   }
 
-  if (name == "getActiveTabURL") {
+  if (name == "getLastActiveTabURL") {
     BrowserList* browser_list = BrowserList::GetInstance();
     Browser* browser = browser_list->GetLastActive();
     if (!browser) {
@@ -2304,6 +2304,20 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     content::WebContents* active_web_contents =
         browser->tab_strip_model()->GetActiveWebContents();
     *output = active_web_contents->GetVisibleURL().spec();
+    return;
+  }
+
+  if (name == "expectWindowURL") {
+    const std::string* expected_url = value.FindStringKey("expectedUrl");
+    EXPECT_TRUE(expected_url);
+    for (auto* web_contents : GetAllWebContents()) {
+      const std::string& url = web_contents->GetVisibleURL().spec();
+      if (url == *expected_url) {
+        *output = "true";
+        return;
+      }
+    }
+    *output = "false";
     return;
   }
 

@@ -478,6 +478,7 @@ static_library("test_support") {
     "//content/shell:pak",
     "//content/utility:for_content_tests",
     "//device/base/synchronization",
+    "//google_apis",
     "//gpu/ipc:gl_in_process_context",
     "//ipc:test_support",
     "//media",
@@ -686,9 +687,7 @@ static_library("test_support") {
     ]
   }
 
-  # TODO(crbug.com/1290940): Should Fuchsia use this? If so, the condition can
-  # probably be changed to just `use_ozone`, especially after crbug.com/1293575.
-  if (is_linux || is_chromeos || is_fuchsia) {
+  if (use_ozone) {
     deps += [ "//ui/platform_window/common" ]
   }
 
@@ -2310,6 +2309,8 @@ test("content_unittests") {
     "../browser/sms/webotp_service_unittest.cc",
     "../browser/speculation_rules/prefetch/prefetch_container_unittest.cc",
     "../browser/speculation_rules/prefetch/prefetch_document_manager_unittest.cc",
+    "../browser/speculation_rules/prefetch/prefetch_params_unittest.cc",
+    "../browser/speculation_rules/prefetch/prefetch_proxy_configurator_unittest.cc",
     "../browser/speculation_rules/prefetch/prefetch_service_unittest.cc",
     "../browser/speculation_rules/prefetch/prefetch_type_unittest.cc",
     "../browser/speculation_rules/speculation_host_impl_unittest.cc",
@@ -2429,6 +2430,7 @@ test("content_unittests") {
       "../browser/renderer_host/render_widget_host_view_mac_unittest.mm",
       "../browser/renderer_host/text_input_client_mac_unittest.mm",
       "../browser/sandbox_mac_unittest.mm",
+      "../browser/speech/tts_mac_unittest.mm",
       "../browser/web_contents/web_contents_view_mac_unittest.mm",
       "../browser/web_contents/web_drag_dest_mac_unittest.mm",
       "../browser/web_contents/web_drag_source_mac_unittest.mm",

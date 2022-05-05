@@ -26,10 +26,8 @@ struct PlatformOptions;
 class DataCollectionScheduler;
 class ModelExecutor;
 class ModelProviderFactory;
-class SegmentInfoDatabase;
-class SignalDatabase;
 class SignalHandler;
-class SignalStorageConfig;
+class StorageService;
 class TrainingDataCollector;
 
 // Handles feature processing and model execution.
@@ -47,9 +45,7 @@ class ExecutionService {
       std::unique_ptr<ModelExecutionScheduler> scheduler);
 
   void Initialize(
-      SignalDatabase* signal_database,
-      SegmentInfoDatabase* segment_info_database,
-      SignalStorageConfig* signal_storage_config,
+      StorageService* storage_service,
       SignalHandler* signal_handler,
       base::Clock* clock,
       ModelExecutionManager::SegmentationModelUpdatedCallback callback,
@@ -58,7 +54,7 @@ class ExecutionService {
       ModelProviderFactory* model_provider_factory,
       std::vector<ModelExecutionScheduler::Observer*>&& observers,
       const PlatformOptions& platform_options,
-      PrefService* pref_service);
+      PrefService* local_state);
 
   // Called whenever a new or updated model is available. Must be a valid
   // SegmentInfo with valid metadata and features.
@@ -91,6 +87,9 @@ class ExecutionService {
       optimization_guide::proto::OptimizationTarget segment_id,
       const std::pair<float, ModelExecutionStatus>& result);
 
+  // Refreshes model results for all eligible models.
+  void RefreshModelResults();
+
  private:
   // Training/inference input data generation.
   std::unique_ptr<processing::FeatureListQueryProcessor>
@@ -99,6 +98,7 @@ class ExecutionService {
   // Traing data collection logic.
   std::unique_ptr<TrainingDataCollector> training_data_collector_;
 
+  // Utility to execute model and return result.
   std::unique_ptr<ModelExecutor> model_executor_;
 
   // Scheduler to launch tasks to report training data to the server.

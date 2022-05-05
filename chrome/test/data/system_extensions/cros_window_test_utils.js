@@ -4,7 +4,7 @@
 
 // We assume a single window only and apply cros_window API methods at index 0.
 async function assertSingleWindow() {
-  let windows = await chromeos.windowManagement.windows();
+  let windows = await chromeos.windowManagement.getWindows();
   assert_equals(windows.length, 1,
       `util functions restricted to testing with a single window.`);
 }
@@ -15,7 +15,7 @@ async function assertSingleWindow() {
 async function setFullscreenAndTest(fullscreen) {
   await assertSingleWindow();
   {
-    let [window] = await chromeos.windowManagement.windows();
+    let [window] = await chromeos.windowManagement.getWindows();
     window.setFullscreen(fullscreen);
   }
 
@@ -25,8 +25,9 @@ async function setFullscreenAndTest(fullscreen) {
   }
 
   {
-    let [window] = await chromeos.windowManagement.windows();
-    assert_false(window.isFullscreen, `setFullscreen() fail`);
+    let [window] = await chromeos.windowManagement.getWindows();
+    assert_not_equals(
+        window.windowState, 'fullscreen', `unset fullscreen fail`);
   }
 }
 
@@ -34,13 +35,13 @@ async function setBoundsAndTest(newBounds) {
   await assertSingleWindow();
 
   {
-    let [window] = await chromeos.windowManagement.windows();
+    let [window] = await chromeos.windowManagement.getWindows();
     window.setBounds(newBounds.x, newBounds.y,
         newBounds.width, newBounds.height);
   }
 
   {
-    let [window] = await chromeos.windowManagement.windows();
+    let [window] = await chromeos.windowManagement.getWindows();
     const actualBounds = window.bounds;
     assert_weak_equals(actualBounds, newBounds, `set bounds incorrectly`);
   }
@@ -50,7 +51,7 @@ async function setBoundsAndTest(newBounds) {
 async function maximizeAndTest() {
   await assertSingleWindow();
 
-  let [window] = await chromeos.windowManagement.windows();
+  let [window] = await chromeos.windowManagement.getWindows();
   window.maximize();
   await assertWindowState("maximized");
 }
@@ -59,7 +60,7 @@ async function maximizeAndTest() {
 async function minimizeAndTest() {
   await assertSingleWindow();
 
-  let [window] = await chromeos.windowManagement.windows();
+  let [window] = await chromeos.windowManagement.getWindows();
   window.minimize();
   await assertWindowState("minimized");
 }
@@ -68,12 +69,12 @@ async function focusAndTest() {
   await assertSingleWindow();
 
   {
-    let [window] = await chromeos.windowManagement.windows();
+    let [window] = await chromeos.windowManagement.getWindows();
     window.focus();
   }
 
   {
-    let [window] = await chromeos.windowManagement.windows();
+    let [window] = await chromeos.windowManagement.getWindows();
     assert_true(window.isFocused, `focus() failed to set focus`);
     assert_equals(
         window.visibilityState, 'shown', `focus() should make window visible`);
@@ -85,13 +86,9 @@ async function focusAndTest() {
 async function assertWindowState(state) {
   await assertSingleWindow();
 
-  let [window] = await chromeos.windowManagement.windows();
-  assert_equals(window.isMaximized, state === "maximized",
-      `window should be in the ${state} state`);
-  assert_equals(window.isMinimized, state === "minimized",
-      `window should be in the ${state} state`);
-  assert_equals(window.isFullscreen, state === "fullscreen",
-      `window should be in the ${state} state`);
+  let [window] = await chromeos.windowManagement.getWindows();
+  assert_equals(
+      window.windowState, state, `window should be in ${state} state`);
   assert_equals(
       window.visibilityState, state === 'minimized' ? 'hidden' : 'shown',
       `window should be in the ${state} state`);

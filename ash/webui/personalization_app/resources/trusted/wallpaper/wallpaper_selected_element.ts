@@ -15,13 +15,13 @@ import './styles.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
-import {isNonEmptyArray} from '../../common/utils.js';
+import {getLocalStorageAttribution, isNonEmptyArray} from '../../common/utils.js';
 import {CurrentWallpaper, WallpaperLayout, WallpaperProviderInterface, WallpaperType} from '../personalization_app.mojom-webui.js';
 import {Paths} from '../personalization_router_element.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 import {getWallpaperLayoutEnum, hasHttpScheme, removeHighResolutionSuffix} from '../utils.js';
 
-import {getDailyRefreshCollectionId, setCurrentWallpaperLayout, setDailyRefreshCollectionId, updateDailyRefreshWallpaper} from './wallpaper_controller.js';
+import {getDailyRefreshState, setCurrentWallpaperLayout, setDailyRefreshCollectionId, updateDailyRefreshWallpaper} from './wallpaper_controller.js';
 import {getWallpaperProvider} from './wallpaper_interface_provider.js';
 import {getTemplate} from './wallpaper_selected_element.html.js';
 
@@ -167,7 +167,7 @@ export class WallpaperSelected extends WithPersonalizationStore {
             state.wallpaper.dailyRefresh.id :
             null);
     this.updateFromStore();
-    getDailyRefreshCollectionId(this.wallpaperProvider_, this.getStore());
+    getDailyRefreshState(this.wallpaperProvider_, this.getStore());
   }
 
 
@@ -207,7 +207,7 @@ export class WallpaperSelected extends WithPersonalizationStore {
           title;
     } else {
       // Fallback to cached attribution.
-      const attribution = this.getLocalStorageAttribution(image.key);
+      const attribution = getLocalStorageAttribution(image.key);
       if (isNonEmptyArray(attribution)) {
         const title = attribution[0];
         return dailyRefreshCollectionId ?
@@ -227,7 +227,7 @@ export class WallpaperSelected extends WithPersonalizationStore {
       return image.attribution.slice(1);
     }
     // Fallback to cached attribution.
-    const attribution = this.getLocalStorageAttribution(image.key);
+    const attribution = getLocalStorageAttribution(image.key);
     if (isNonEmptyArray(attribution)) {
       return attribution.slice(1);
     }
@@ -239,7 +239,7 @@ export class WallpaperSelected extends WithPersonalizationStore {
     return !!image &&
         ((image.type === WallpaperType.kCustomized &&
               path === Paths.LocalCollection ||
-          (image.type === WallpaperType.kGooglePhotos &&
+          (image.type === WallpaperType.kOnceGooglePhotos &&
            path === Paths.GooglePhotosCollection)));
   }
 
@@ -353,7 +353,7 @@ export class WallpaperSelected extends WithPersonalizationStore {
           [this.i18n('currentlySet'), ...image.attribution].join(' ');
     }
     // Fallback to cached attribution.
-    const attribution = this.getLocalStorageAttribution(image.key);
+    const attribution = getLocalStorageAttribution(image.key);
     if (isNonEmptyArray(attribution)) {
       return dailyRefreshCollectionId ?
           [
@@ -391,16 +391,6 @@ export class WallpaperSelected extends WithPersonalizationStore {
       }
       window.localStorage['attribution'] = JSON.stringify(attributionMap);
     }
-  }
-
-  getLocalStorageAttribution(key: string): string[] {
-    const attributionMap =
-        JSON.parse((window.localStorage['attribution'] || '{}'));
-    const attribution = attributionMap[key];
-    if (!attribution) {
-      console.warn('Unable to get attribution from local storage.', key);
-    }
-    return attribution;
   }
 
   /**

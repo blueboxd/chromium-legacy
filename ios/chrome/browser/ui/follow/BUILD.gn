@@ -17,6 +17,20 @@ source_set("follow") {
   ]
 }
 
+source_set("follow_iph") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "follow_iph_coordinator.h",
+    "follow_iph_coordinator.mm",
+  ]
+  deps = [
+    "//ios/chrome/browser/follow:tab_helper",
+    "//ios/chrome/browser/main:public",
+    "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+  ]
+}
+
 source_set("first_follow") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -52,26 +66,4 @@ source_set("first_follow_ui") {
     "//ios/chrome/common/ui/util",
     "//ui/base",
   ]
-}
-
-source_set("utils") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "follow_util.h",
-    "follow_util.mm",
-  ]
-  deps = [
-    ":enums",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/ntp:features",
-    "//ios/chrome/browser/signin",
-    "//ios/web/public",
-    "//url",
-  ]
-}
-
-source_set("enums") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [ "follow_action_state.h" ]
-  deps = []
 }

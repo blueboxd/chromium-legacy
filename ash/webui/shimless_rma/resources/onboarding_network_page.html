@@ -10,19 +10,13 @@
   }
 
   .error {
-    /* TODO(joonbug): Update with chrome color */
-    color: red;
+    color: var(--cros-text-color-alert);
     font-weight: 500;
   }
 
   #networkList {
     --cros-icon-color-primary: grey;
     flex: 1;
-  }
-
-  #scroll-container {
-    max-height: 600px;
-    overflow: auto;
   }
 </style>
 
@@ -34,7 +28,7 @@
     <div class="instructions">[[i18n('connectNetworkDescriptionText')]]</div>
   </div>
   <div id="container" slot="right-pane">
-    <div id="scroll-container">
+    <div class="scroll-container">
       <network-list id="networkList" show-technology-badge
           networks="[[networks_]]" on-selected="onNetworkSelected_"
           disabled="[[allButtonsDisabled]]">

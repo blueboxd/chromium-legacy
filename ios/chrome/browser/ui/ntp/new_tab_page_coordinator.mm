@@ -341,11 +341,13 @@ namespace {
   self.viewPresented = NO;
   [self updateVisible];
 
-  // Unfocus omnibox, to prevent it from lingering when it should be dismissed
-  // (for example, when navigating away or when changing feed visibility).
-  id<OmniboxCommands> omniboxCommandHandler =
-      HandlerForProtocol(self.browser->GetCommandDispatcher(), OmniboxCommands);
-  [omniboxCommandHandler cancelOmniboxEdit];
+  if (!IsContentSuggestionsHeaderMigrationEnabled()) {
+    // Unfocus omnibox, to prevent it from lingering when it should be dismissed
+    // (for example, when navigating away or when changing feed visibility).
+    id<OmniboxCommands> omniboxCommandHandler = HandlerForProtocol(
+        self.browser->GetCommandDispatcher(), OmniboxCommands);
+    [omniboxCommandHandler cancelOmniboxEdit];
+  }
 
   SceneState* sceneState =
       SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
@@ -355,7 +357,15 @@ namespace {
   self.feedManagementCoordinator = nil;
   [self.contentSuggestionsCoordinator stop];
   self.contentSuggestionsCoordinator = nil;
+  self.headerSynchronizer = nil;
+  self.headerController = nil;
   self.incognitoViewController = nil;
+  // Remove before nil to ensure View Hierarchy doesn't hold last strong
+  // reference.
+  [self.containedViewController willMoveToParentViewController:nil];
+  [self.containedViewController.view removeFromSuperview];
+  [self.containedViewController removeFromParentViewController];
+  self.containedViewController = nil;
   self.ntpViewController = nil;
   self.feedHeaderViewController = nil;
   self.alertCoordinator = nil;
@@ -372,10 +382,15 @@ namespace {
   self.discoverFeedWrapperViewController = nil;
   self.discoverFeedViewController = nil;
   self.feedMetricsRecorder = nil;
-
-  [self.containedViewController willMoveToParentViewController:nil];
-  [self.containedViewController.view removeFromSuperview];
-  [self.containedViewController removeFromParentViewController];
+  if (IsContentSuggestionsHeaderMigrationEnabled()) {
+    // Unfocus omnibox, to prevent it from lingering when it should be dismissed
+    // (for example, when navigating away or when changing feed visibility).
+    // Do this after the MVC classes are deallocated so no reset animations are
+    // fired in response to this cancel.
+    id<OmniboxCommands> omniboxCommandHandler = HandlerForProtocol(
+        self.browser->GetCommandDispatcher(), OmniboxCommands);
+    [omniboxCommandHandler cancelOmniboxEdit];
+  }
 
   [self.feedExpandedPref setObserver:nil];
   self.feedExpandedPref = nil;
@@ -881,7 +896,8 @@ namespace {
 #pragma mark - NewTabPageContentDelegate
 
 - (void)reloadContentSuggestions {
-  if (IsContentSuggestionsUIViewControllerMigrationEnabled()) {
+  if (IsContentSuggestionsHeaderMigrationEnabled() &&
+      IsContentSuggestionsUIViewControllerMigrationEnabled()) {
     // No need to reload ContentSuggestions since the mediator receives all
     // model state changes and immediately updates the consumer with the new
     // state.

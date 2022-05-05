@@ -320,6 +320,7 @@ chrome.fileManagerPrivate.IOTaskType = {
   DELETE: 'delete',
   EXTRACT: 'extract',
   MOVE: 'move',
+  TRASH: 'trash',
   ZIP: 'zip',
 };
 
@@ -1384,6 +1385,11 @@ chrome.fileManagerPrivate.openURL = function(URL) {};
  *     the invoked function.
  */
 chrome.fileManagerPrivate.openWindow = function(params, callback) {};
+
+/**
+ * Opens the feedback report window.
+ */
+chrome.fileManagerPrivate.sendFeedback = function() {};
 
 /**
  * Starts an I/O task of type |type| on |entries|. Task type specific parameters

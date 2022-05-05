@@ -73,6 +73,7 @@
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/randomized_encoder.h"
+#include "components/autofill/core/browser/suggestions_context.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
@@ -298,7 +299,7 @@ AutofillField* GetBestPossibleCVCFieldForUpload(
 
 // Some autofill types are detected based on values and not based on form
 // features. We may decide that it's an autofill form after submission.
-bool ContainsAutofillableValue(const autofill::FormStructure& form) {
+bool ContainsAutofillableValue(const FormStructure& form) {
   return base::ranges::any_of(form, [](const auto& field) {
     return base::Contains(field->possible_types(), UPI_VPA) ||
            IsUPIVirtualPaymentAddress(field->value);
@@ -413,18 +414,6 @@ BrowserAutofillManager::BrowserAutofillManager(
     AutofillClient* client,
     const std::string& app_locale,
     EnableDownloadManager enable_download_manager)
-    : BrowserAutofillManager(driver,
-                             client,
-                             client->GetPersonalDataManager(),
-                             app_locale,
-                             enable_download_manager) {}
-
-BrowserAutofillManager::BrowserAutofillManager(
-    AutofillDriver* driver,
-    AutofillClient* client,
-    PersonalDataManager* personal_data,
-    const std::string app_locale,
-    EnableDownloadManager enable_download_manager)
     : AutofillManager(driver,
                       client,
                       client->GetChannel(),
@@ -432,7 +421,7 @@ BrowserAutofillManager::BrowserAutofillManager(
       external_delegate_(
           std::make_unique<AutofillExternalDelegate>(this, driver)),
       app_locale_(app_locale),
-      personal_data_(personal_data),
+      personal_data_(client->GetPersonalDataManager()),
       field_filler_(app_locale, client->GetAddressNormalizer()),
       single_field_form_fill_router_(client->GetSingleFieldFormFillRouter()),
       suggestion_generator_(
@@ -1188,10 +1177,9 @@ void BrowserAutofillManager::FillCreditCardForm(int query_id,
                              autofill_field);
 }
 
-void BrowserAutofillManager::FillProfileForm(
-    const autofill::AutofillProfile& profile,
-    const FormData& form,
-    const FormFieldData& field) {
+void BrowserAutofillManager::FillProfileForm(const AutofillProfile& profile,
+                                             const FormData& form,
+                                             const FormFieldData& field) {
   FillOrPreviewProfileForm(mojom::RendererFormDataAction::kFill,
                            /*query_id=*/kNoQueryId, form, field, profile);
 }
@@ -1345,7 +1333,7 @@ void BrowserAutofillManager::DidShowSuggestions(bool has_autofill_suggestions,
   }
 
   if (autofill_field->Type().group() == FieldTypeGroup::kCreditCard &&
-      ::autofill::IsCreditCardFidoAuthenticationEnabled()) {
+      IsCreditCardFidoAuthenticationEnabled()) {
     credit_card_access_manager_->PrepareToFetchCreditCard();
   }
 }
@@ -1538,11 +1526,11 @@ bool BrowserAutofillManager::IsAutofillEnabled() const {
 }
 
 bool BrowserAutofillManager::IsAutofillProfileEnabled() const {
-  return ::autofill::prefs::IsAutofillProfileEnabled(client()->GetPrefs());
+  return prefs::IsAutofillProfileEnabled(client()->GetPrefs());
 }
 
 bool BrowserAutofillManager::IsAutofillCreditCardEnabled() const {
-  return ::autofill::prefs::IsAutofillCreditCardEnabled(client()->GetPrefs());
+  return prefs::IsAutofillCreditCardEnabled(client()->GetPrefs());
 }
 
 const FormData& BrowserAutofillManager::last_query_form() const {
@@ -2041,9 +2029,11 @@ std::vector<Suggestion> BrowserAutofillManager::GetProfileSuggestions(
       if (profile) {
         const std::u16string phone_home_city_and_number =
             profile->GetInfo(PHONE_HOME_CITY_AND_NUMBER, app_locale_);
-        suggestion.value = FieldFiller::GetPhoneNumberValueForInput(
-            autofill_field, suggestion.value, phone_home_city_and_number,
-            field);
+        suggestion.main_text =
+            Suggestion::Text(FieldFiller::GetPhoneNumberValueForInput(
+                                 autofill_field, suggestion.main_text.value,
+                                 phone_home_city_and_number, field),
+                             Suggestion::Text::IsPrimary(true));
       }
     }
   }

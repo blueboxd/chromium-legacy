@@ -9,34 +9,18 @@
 
 #import <memory>
 
-#import "base/files/file_util.h"
-#import "base/strings/utf_string_conversions.h"
-#import "base/task/sequenced_task_runner.h"
 #import "base/task/task_traits.h"
 #import "base/task/thread_pool.h"
-#import "base/test/ios/wait_util.h"
-#import "ios/web/net/cookies/wk_cookie_util.h"
-#import "ios/web/public/download/download_task_observer.h"
-#import "ios/web/public/test/fakes/fake_cookie_store.h"
+#import "base/test/task_environment.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
-#import "ios/web/public/test/web_test.h"
-#import "ios/web/test/fakes/crw_fake_nsurl_session_task.h"
-#import "net/base/net_errors.h"
-#import "testing/gmock/include/gmock/gmock.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #import "testing/platform_test.h"
-#import "third_party/ocmock/OCMock/OCMock.h"
 #import "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-using base::test::ios::kWaitForCookiesTimeout;
-using base::test::ios::kWaitForDownloadTimeout;
-using base::test::ios::kWaitForFileOperationTimeout;
-using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace web {
 
@@ -48,21 +32,10 @@ const char kMimeType[] = "application/pdf";
 const base::FilePath::CharType kTestFileName[] = FILE_PATH_LITERAL("file.test");
 NSString* const kHttpMethod = @"POST";
 
-class MockDownloadTaskObserver : public DownloadTaskObserver {
- public:
-  MOCK_METHOD1(OnDownloadUpdated, void(DownloadTask* task));
-  void OnDownloadDestroyed(DownloadTask* task) override {
-    // Removing observer here works as a test that
-    // DownloadTaskObserver::OnDownloadDestroyed is actually called.
-    // DownloadTask DCHECKs if it is destroyed without observer removal.
-    task->RemoveObserver(this);
-  }
-};
-
 }  //  namespace
 
 // Creates a non-virtual class to use for testing
-class FakeDownloadTaskImpl : public DownloadTaskImpl {
+class FakeDownloadTaskImpl final : public DownloadTaskImpl {
  public:
   FakeDownloadTaskImpl(
       WebState* web_state,
@@ -82,15 +55,8 @@ class FakeDownloadTaskImpl : public DownloadTaskImpl {
                          identifier,
                          task_runner) {}
 
-  NSData* GetResponseData() const override { return response_data_; }
-
-  const base::FilePath& GetResponsePath() const override {
-    return response_path_;
-  }
-
- private:
-  base::FilePath response_path_;
-  __strong NSData* response_data_ = nil;
+  void StartInternal(const base::FilePath& path) final {}
+  void CancelInternal() final {}
 };
 
 // Test fixture for testing DownloadTaskImplTest class.
@@ -106,14 +72,11 @@ class DownloadTaskImplTest : public PlatformTest {
             kMimeType,
             [[NSUUID UUID] UUIDString],
             base::ThreadPool::CreateSequencedTaskRunner(
-                {base::MayBlock(), base::TaskPriority::USER_BLOCKING}))) {
-    task_->AddObserver(&task_observer_);
-  }
+                {base::MayBlock(), base::TaskPriority::USER_BLOCKING}))) {}
 
-  web::WebTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   FakeWebState web_state_;
   std::unique_ptr<FakeDownloadTaskImpl> task_;
-  MockDownloadTaskObserver task_observer_;
 };
 
 // Tests DownloadTaskImpl default state after construction.
@@ -138,7 +101,7 @@ TEST_F(DownloadTaskImplTest, DefaultState) {
 TEST_F(DownloadTaskImplTest, SuccessfulInitialization) {
   // Simulates successful download and tests that Start() and
   // OnDownloadFinished are overloaded correctly
-  task_->Start(base::FilePath(), web::DownloadTask::Destination::kToMemory);
+  task_->Start(base::FilePath());
   EXPECT_EQ(DownloadTask::State::kInProgress, task_->GetState());
 
   // Tests that Cancel() is overloaded

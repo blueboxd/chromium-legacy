@@ -2755,35 +2755,32 @@ Try tapping the mic to ask me anything.
         After repair, who will be using the device?
       </message>
       <message name="IDS_SHIMLESS_RMA_SAME_OWNER" desc="Text shown next to the return to original owner radio button.">
-        Device will go to the same owner
-      </message>
-      <message name="IDS_SHIMLESS_RMA_SAME_OWNER_DESCRIPTION" desc="Detailed description of when to choose return to same owner.">
-        Select this option if the ownership of the device isn't changing. For example, the device is being transferred to a different person within an organization.
+        Device will go to the same user
       </message>
       <message name="IDS_SHIMLESS_RMA_NEW_OWNER" desc="Text shown next to the return to a new owner radio button.">
-        Device will go to a different owner
+        Device will go to a different user or organization
       </message>
       <message name="IDS_SHIMLESS_RMA_NEW_OWNER_DESCRIPTION" desc="Detailed description of when to choose return to a new owner.">
-        Select this option if the device is being restocked or refurbished for distribution to a new customer.
+        This will reset the device to factory settings (Powerwash).
       </message>
-      <message name="IDS_SHIMLESS_RMA_NOT_SURE_OWNER" translateable="false" desc="Text shown next to the radio button for when the technician is not sure whether the device goes to the same owner or a different owner.">
+      <message name="IDS_SHIMLESS_RMA_NOT_SURE_OWNER" desc="Text shown next to the radio button for when the technician is not sure whether the device goes to the same owner or a different owner.">
         Not sure
       </message>
       <!-- Choose write protect disable method page -->
-      <message name="IDS_SHIMLESS_RMA_CHOOSE_WP_DISABLE_METHOD_PAGE_TITLE" translateable="false" desc="Title for the page offering the options for disabling write protect on this device. Disabling write protection allows the new components to be calibrated and the system to be updated with information about them.">
-        Select how you would like to disable write-protect
+      <message name="IDS_SHIMLESS_RMA_CHOOSE_WP_DISABLE_METHOD_PAGE_TITLE" desc="Title for the page offering the options for disabling write protect on this device. Disabling write protection allows the new components to be calibrated and the system to be updated with information about them.">
+        Select how you would like to turn off Write Protect
       </message>
-      <message name="IDS_SHIMLESS_RMA_MANUAL_WP_DISABLE_METHOD_OPTION"  translateable="false" desc="Title for the page offering the options for disabling write protect on this device. Disabling write protection allows the new components to be calibrated and the system to be updated with information about them.">
-        Manually disable write-protect
+      <message name="IDS_SHIMLESS_RMA_MANUAL_WP_DISABLE_METHOD_OPTION" desc="Title for the page offering the options for disabling write protect on this device. Disabling write protection allows the new components to be calibrated and the system to be updated with information about them.">
+        Manually turn off
       </message>
-      <message name="IDS_SHIMLESS_RMA_MANUAL_WP_DISABLE_METHOD_DESCRIPTION" translateable="false" desc="Title for the page offering the options for disabling write protect on this device. Disabling write protection allows the new components to be calibrated and the system to be updated with information about them.">
-        Once you disable write-protect, you can immediately enable it again. You will see instructions for disabling write-protect on this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> on the next screen.
+      <message name="IDS_SHIMLESS_RMA_MANUAL_WP_DISABLE_METHOD_DESCRIPTION" desc="Title for the page offering the options for disabling write protect on this device. Disabling write protection allows the new components to be calibrated and the system to be updated with information about them.">
+        You'll need to take apart the device
       </message>
-      <message name="IDS_SHIMLESS_RMA_RSU_WP_DISABLE_METHOD_OPTION"  translateable="false" desc="Title for the page offering the options for disabling write protect on this device. Disabling write protection allows the new components to be calibrated and the system to be updated with information about them.">
+      <message name="IDS_SHIMLESS_RMA_RSU_WP_DISABLE_METHOD_OPTION" desc="Title for the page offering the options for disabling write protect on this device. Disabling write protection allows the new components to be calibrated and the system to be updated with information about them.">
         Perform RMA Server Unlock (RSU)
       </message>
-      <message name="IDS_SHIMLESS_RMA_RSU_WP_DISABLE_METHOD_DESCRIPTION" translateable="false" desc="Title for the page offering the options for disabling write protect on this device. Disabling write protection allows the new components to be calibrated and the system to be updated with information about them.">
-        This requires an RSU-enabled Security Key, a QR code scanner, and a second device with internet connectivity.
+      <message name="IDS_SHIMLESS_RMA_RSU_WP_DISABLE_METHOD_DESCRIPTION" desc="Title for the page offering the options for disabling write protect on this device. Disabling write protection allows the new components to be calibrated and the system to be updated with information about them.">
+        You'll need an RSU-enabled security key, a QR code scanner, and a second device with an internet connection
       </message>
       <!-- Enter RSU code page -->
       <message name="IDS_SHIMLESS_RMA_RSU_CODE_PAGE_TITLE" desc="Title for the RSU challenge page.">
@@ -2978,16 +2975,16 @@ Try tapping the mic to ask me anything.
         Updating OS version
       </message>
       <!-- Manually disable wp page -->
-      <message name="IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_INSTRUCTIONS" translateable="false" desc="The text instructions for how to manually disable write-protect on the device.">
-        Disable write-protect to continue to the next screen. Learn how to disable write-protect for this device by viewing the instructions at the device manufacturer's support page. Once you disable write-protect, you will need to leave it disabled until the repair process is finished. Please expect a reboot after disabling write protection.
+      <message name="IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_INSTRUCTIONS" desc="The text instructions for how to manually disable write-protect on the device.">
+        Disable write-protect to continue to the next screen. Go to the device manufacturer's support page for instructions.
       </message>
-      <message name="IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_TITLE" translateable="false" desc="The title for the page to manually disable write-protect on the device.">
-        Manually disable write-protect
+      <message name="IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_TITLE" desc="The title for the page to manually disable write-protect on the device.">
+        Turn off Write Protect
       </message>
-      <message name="IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_INSTRUCTIONS_REBOOT" translateable="false" desc="The text instructions that inform the technician that the device will reboot.">
+      <message name="IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_INSTRUCTIONS_REBOOT" desc="The text instructions that inform the technician that the device will reboot.">
         System will restart after verifying Write Protection status
       </message>
-      <message name="IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_TITLE_REBOOT" translateable="false" desc="The title for the page that informs the technician that the device will reboot.">
+      <message name="IDS_SHIMLESS_RMA_MANUALLY_DISABLE_WP_TITLE_REBOOT" desc="The title for the page that informs the technician that the device will reboot.">
         Preparing for restart...
       </message>
       <!-- Restock mainboard page -->
@@ -3009,9 +3006,6 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_SHIMLESS_RMA_MANUALLY_ENABLE_WP_INSTRUCTIONS" translateable="false" desc="The text instructions to manually enable write-protect on the device.">
         Enable write-protect to continue to the next screen. Learn how to enable write-protect for this device by viewing the manufacturer's instructions.
-      </message>
-      <message name="IDS_SHIMLESS_RMA_MANUALLY_ENABLED_WP_MESSAGE" translateable="false" desc="Message to inform user hardware write protection has been enabled and RMA is ready to continue.">
-        Hardware write protection enabled. Click 'Next' to continue.
       </message>
       <!-- Confirm device information page -->
       <message name="IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_TITLE" translateable="false" desc="The title for the page for confirming the device info.">
@@ -3120,22 +3114,18 @@ Try tapping the mic to ask me anything.
         Reboot
       </message>
       <!-- Wipe device page -->
-      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_TITLE" translateable="false" desc="Title for the page where the user chooses whether to erase the data or keep/preserve the data on the device.">
-        Preserve Device Data
+      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_TITLE" desc="Title for the page where the user chooses whether to erase the data or keep/preserve the data on the device.">
+        Device is going to the same user. Erase user data?
       </message>
-      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_REMOVE_DATA_OPTION" translateable="false" desc="Label for the option to wipe/erase the data on the device.">
-        Wipe device
+      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_REMOVE_DATA_OPTION" desc="Label for the option to wipe/erase the data on the device.">
+        Erase all data
       </message>
-      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_REMOVE_DATA_OPTION_DESCRIPTION" translateable="false" desc="Description for the option to wipe/erase the data on the device.">
-        Remove the data
+      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_REMOVE_DATA_OPTION_DESCRIPTION" desc="Description for the option to wipe/erase the data on the device.">
+        This will reset the device to factory settings (Powerwash).
       </message>
-      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_PRESERVE_DATA_OPTION" translateable="false" desc="Label for the option to preserve/save the data on the device.">
-        Don't wipe the device
+      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_PRESERVE_DATA_OPTION" desc="Label for the option to preserve/save the data on the device.">
+        Keep user data
       </message>
-      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_PRESERVE_DATA_OPTION_DESCRIPTION" translateable="false" desc="Description for the option to preserve/save the data on the device.">
-        Preserve the data
-      </message>
-
       <!-- Peripheral Firmware Update -->
       <message name="IDS_FIRMWARE_TITLE_TEXT" desc="The title of the Firmware update app.">
         Firmware updates for external devices
@@ -3288,8 +3278,17 @@ Try tapping the mic to ask me anything.
       <message name="IDS_FEEDBACK_TOOL_DESCRIPTION_LABEL" translateable="false" desc="Label of the text box where users can describe a problem they are having">
         Description
       </message>
+      <message name="IDS_FEEDBACK_TOOL_NO_MATCHED_RESULTS" translateable="false" desc="Label for help content when there are no matched results.">
+        No matched results, see popular help content
+      </message>
       <message name="IDS_FEEDBACK_TOOL_PAGE_TITLE" translateable="false" desc="Label showing the title of the feedback tool before a report has been sent">
         Send feedback
+      </message>
+      <message name="IDS_FEEDBACK_TOOL_POPULAR_HELP_CONTENT" translateable="false" desc="Label for help content when there is no query entered yet.">
+        Popular help content
+      </message>
+      <message name="IDS_FEEDBACK_TOOL_SUGGESTED_HELP_CONTENT" translateable="false" desc="Label for help content when there are matched results.">
+        Suggested help content
       </message>
       <!-- End of Feedback Tool -->
     </messages>

@@ -75,6 +75,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+#include "components/policy/core/common/values_util.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -263,6 +264,11 @@ bool GetLaunchOnLoginPref() {
 // 1. Lacros-chrome is initialized in the web Kiosk session
 // 2. Full restore is responsible for restoring/launching Lacros.
 browser_util::InitialBrowserAction GetInitialBrowserAction() {
+  if (user_manager::UserManager::Get()->IsLoggedInAsGuest()) {
+    return browser_util::InitialBrowserAction(
+        mojom::InitialBrowserAction::kOpenNewTabPageWindow);
+  }
+
   return browser_util::InitialBrowserAction(
       user_manager::UserManager::Get()->IsLoggedInAsWebKioskApp() ||
               ash::full_restore::MaybeCreateFullRestoreServiceForLacros()
@@ -1182,12 +1188,16 @@ void BrowserManager::OnSessionStateChanged() {
 }
 
 void BrowserManager::OnStoreLoaded(policy::CloudPolicyStore* store) {
+  DCHECK(store);
+
   // A new policy got installed for the current user, so we need to pass it to
   // the Lacros browser.
   std::string policy_blob;
-  bool success =
-      store->policy_fetch_response()->SerializeToString(&policy_blob);
-  DCHECK(success);
+  if (store->policy_fetch_response()) {
+    const bool success =
+        store->policy_fetch_response()->SerializeToString(&policy_blob);
+    DCHECK(success);
+  }
   SetDeviceAccountPolicy(policy_blob);
 }
 
@@ -1200,11 +1210,13 @@ void BrowserManager::OnStoreDestruction(policy::CloudPolicyStore* store) {
 }
 
 void BrowserManager::OnComponentPolicyUpdated(
-    const policy::ComponentCloudPolicyServiceObserver::ComponentPolicyMap&
-        serialized_policy) {
-  environment_provider_->SetDeviceAccountComponentPolicy(serialized_policy);
-  if (browser_service_.has_value())
-    browser_service_->service->UpdateComponentPolicy(serialized_policy);
+    const policy::ComponentPolicyMap& component_policy) {
+  environment_provider_->SetDeviceAccountComponentPolicy(
+      policy::CopyComponentPolicyMap(component_policy));
+  if (browser_service_.has_value()) {
+    browser_service_->service->UpdateComponentPolicy(
+        policy::CopyComponentPolicyMap(component_policy));
+  }
 }
 
 void BrowserManager::OnComponentPolicyServiceDestruction(

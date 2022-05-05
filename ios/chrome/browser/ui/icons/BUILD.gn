@@ -30,7 +30,15 @@ source_set("infobar_icons") {
     "infobar_icon.h",
     "infobar_icon.mm",
   ]
-  deps = [ ":symbols" ]
+  frameworks = [ "UIKit.framework" ]
+}
+
+source_set("action_icons") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "action_icon.h",
+    "action_icon.mm",
+  ]
   frameworks = [ "UIKit.framework" ]
 }
 
@@ -44,9 +52,13 @@ source_set("symbols") {
     "//base",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/icons/resources:arrow_clockwise",
+    "//ios/chrome/browser/ui/icons/resources:arrow_triangle_slash_circlepath",
     "//ios/chrome/browser/ui/icons/resources:camera",
     "//ios/chrome/browser/ui/icons/resources:camera_fill",
     "//ios/chrome/browser/ui/icons/resources:incognito",
+    "//ios/chrome/browser/ui/icons/resources:incognito_circle_fill",
+    "//ios/chrome/browser/ui/icons/resources:plus_circle_fill",
+    "//ios/chrome/browser/ui/icons/resources:popup_badge_minus",
     "//ios/chrome/browser/ui/icons/resources:square_number",
     "//ios/chrome/browser/ui/icons/resources:translate",
     "//ui/base",

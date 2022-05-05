@@ -25,6 +25,7 @@
 <translation id="1204296502688602597">تأخیر ساناد</translation>
 <translation id="123124571410524056">احتمالاً درگاهی وجود دارد</translation>
 <translation id="1238612778414822719">‏تأخیر در HTTPS</translation>
+<translation id="1264116747675686718">درحال به‌روزرسانی نسخه سیستم‌عامل</translation>
 <translation id="1264369926465113395">‏مجله دیجیتال جدید Chromebook برای سازندگان محتوا را بررسی کنید</translation>
 <translation id="1270369111467284986">احتمالاً درگاه مهمان وجود دارد</translation>
 <translation id="1290331692326790741">سیگنال ضعیف</translation>
@@ -121,6 +122,7 @@
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: امتحان مجدد</translation>
 <translation id="2161394479394250669">لغو کردن کار چاپ</translation>
 <translation id="2163937499206714165">روشن کردن حالت تاریک</translation>
+<translation id="2177831236093724629">‏<ph name="LINK_BEGIN" />عناصر فاقد صلاحیت<ph name="LINK_END" /> پیدا شد. برای اطمینان از شناسایی شدن همه عناصر واجدشرایط، Chrome OS را به جدیدترین نسخه به‌روزرسانی کنید.</translation>
 <translation id="2180197493692062006">مشکلی پیش آمد. برنامه را دوباره باز کنید.</translation>
 <translation id="2209788852729124853">بازنشانی شمارش‌گرهای ترافیک</translation>
 <translation id="2212733584906323460">حل‌وفصل نام</translation>
@@ -203,6 +205,7 @@
 <translation id="3188257591659621405">فایل‌های من</translation>
 <translation id="3192947282887913208">فایل‌های صوتی</translation>
 <translation id="3199982728237701504">تغذیه‌کننده سند (دورو)</translation>
+<translation id="320091191259649613">اگر بعداز به‌روزرسانی همچنان مشکل را می‌بینید، ممکن است عنصر موردنظر به‌تازگی واجدشرایط شده باشد و هنوز وارد پایگاه داده نشده باشد.</translation>
 <translation id="3226405216343213872">درحال جستجوی اسکنرها</translation>
 <translation id="3246869037381808805">کارهای چاپ قدیمی‌تر از ۱ روز برداشته می‌شوند</translation>
 <translation id="3268178239013324452">انجام نشد - در باز است</translation>
@@ -211,6 +214,7 @@
 <translation id="3291996639387199448">جهت کلید</translation>
 <translation id="3310640316857623290">تأخیر در ساناد به‌میزان قابل‌توجهی از آستانه مجاز بالاتر است</translation>
 <translation id="3328783797891415197">درحال اجرای آزمایش</translation>
+<translation id="3336855445806447827">مطمئن نیستم</translation>
 <translation id="3340011300870565703">باتری هدفون توگوشی سمت راست دستگاه <ph name="BATTERY_PERCENTAGE" />٪ شارژ دارد.</translation>
 <translation id="3368922792935385530">متصل</translation>
 <translation id="3369013195428705271">مطمئن هستید که می‌خواهید همه سابقه‌های چاپ را حذف کنید؟ کارهای چاپ شما که درحال انجام هستند حذف نخواهند شد.</translation>
@@ -225,6 +229,7 @@
 <translation id="3484914941826596830">وقتی سفت‌افزار درحال به‌روزرسانی است، این دستگاه خارجی را جدا نکنید و رایانه را خاموش نکنید. می‌توانید این پنجره را کمینه کنید. این به‌روزرسانی ممکن است چند دقیقه طول بکشد و در این مدت ممکن است دستگاه خارجی‌تان کار نکند.</translation>
 <translation id="3486220673238053218">معنی</translation>
 <translation id="3488065109653206955">به‌طور نسبی فعال شده است</translation>
+<translation id="3517001332549868749">‏به‌روزرسانی ChromeOS</translation>
 <translation id="3527036260304016759">انجام نشد - خطای نامشخص</translation>
 <translation id="3532980081107202182">تقریباً <ph name="MIN_REMAINING" /> دقیقه باقی مانده است</translation>
 <translation id="3557205324756024651">شناسه محلی (اختیاری)</translation>
@@ -316,7 +321,6 @@
 <translation id="4472575034687746823">شروع به کار</translation>
 <translation id="4479639480957787382">اترنت</translation>
 <translation id="4483049906298469269">پینگ کردن دروازه شبکه غیر پیش‌فرض انجام نشد</translation>
-<translation id="4485626319513081846">اگر دستگاه در انبار دوباره موجود می‌شود یا برای توزیع به مشتری جدید مرمت می‌شود، این گزینه را انتخاب کنید.</translation>
 <translation id="4503223151711056411">جهت‌نمای چپ</translation>
 <translation id="4511264077854731334">پورتال</translation>
 <translation id="4521826082652183069">مطابقت نام جایگزین موضوع</translation>
@@ -377,6 +381,7 @@
 <translation id="4985509611418653372">اجرا</translation>
 <translation id="4987769320337599931">دیوار آتش</translation>
 <translation id="4999333166442584738">پنهان کردن گزارش</translation>
+<translation id="5008611843832219958">‏برای داشتن روند تعمیر بهینه، Chrome OS را به جدیدترین نسخه به‌رزرسانی کنید</translation>
 <translation id="500920857929044050">توقف آزمایش</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5019310272469539976">وقتی صفحه‌نمایش بدون فعالیت است، عکس، ساعت، وضعیت آب‌وهوا، و اطلاعات رسانه نمایش داده می‌شود.</translation>
@@ -431,6 +436,7 @@
 <translation id="5493614766091057239"><ph name="VERDICT" />: <ph name="PROBLEMS" /></translation>
 <translation id="5499114900554609492">اسکن کامل نشد</translation>
 <translation id="5502931783115429516">‏Android اجرا نمی‌شود</translation>
+<translation id="5507300744274596613">‏اطمینان از به‌روز بودن Chrome OS</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5578477003638479617">UMTS</translation>
@@ -469,6 +475,7 @@
 <translation id="5939518447894949180">بازنشانی</translation>
 <translation id="594552776027197022">ایجد جفت‌کلید تصادفی</translation>
 <translation id="5972388717451707488">به‌روزرسانی موتور</translation>
+<translation id="5984145644188835034">کاغذدیواری پیش‌فرض</translation>
 <translation id="6034694447310538551">فعال کردن بازنشانی خودکار ماهانه</translation>
 <translation id="6037291330010597344">تغذیه‌کننده سند اسکنر خالی است. اسناد را اضافه کنید و دوباره امتحان کنید.</translation>
 <translation id="6040143037577758943">بستن</translation>
@@ -548,6 +555,7 @@
 <translation id="6692996468359469499">دریافت اطلاعاتی که با انتخابتان مرتبط است</translation>
 <translation id="6704062477274546131">وضوح ساناد</translation>
 <translation id="6723839937902243910">نیرو</translation>
+<translation id="6723847290197874913">نور پس‌زمینه صفحه‌کلید</translation>
 <translation id="672609503628871915">مشاهده تازه‌ها</translation>
 <translation id="6747215703636344499">متوقف شد - خروجی پُر است</translation>
 <translation id="6749473226660745022">Photos</translation>
@@ -569,7 +577,6 @@
 <translation id="6961170852793647506">برای شروع‌، سند را روی اسکنر قرار دهید</translation>
 <translation id="6965382102122355670">قبول</translation>
 <translation id="6977381486153291903">بازبینی سفت‌افزار</translation>
-<translation id="6992266763844448459">اگر مالکیت دستگاه تغییر نمی‌کند، این گزینه را انتخاب کنید. برای مثال، دستگاه به شخص دیگری در همان سازمان انتقال می‌یابد.</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> این دستگاه را مدیریت می‌کند و به همه فعالیت‌های کاربر، ازجمله صفحه‌های وب بازدیدشده، گذرواژه‌ها، و ایمیل دسترسی دارد.</translation>
 <translation id="7040230719604914234">اپراتور</translation>
 <translation id="7041549558901442110">دستگاه متصل نشده است.</translation>
@@ -601,7 +608,6 @@
 <translation id="7297226631177386107">‏نمی‌توان ازطریق دیوار آتش به وب‌سایت‌های HTTPS متصل شد</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
-<translation id="7309920310754476121">دستگاه به مالک دیگری منتقل خواهد شد</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942">‏<ph name="QUERY_TEXT" />؛ <ph name="RESULT_TEXT" />؛ کلیدهای «جستجو» و «فاصله» را فشار دهید تا نتیجه را در «جستجوی Google» ببینید</translation>
 <translation id="7343649194310845056">دستگاه‌های شبکه</translation>
@@ -718,6 +724,7 @@
 <translation id="8655295600908251630">کانال</translation>
 <translation id="8660881923941176839">پوند</translation>
 <translation id="8662671328352114214">پیوستن به شبکه <ph name="TYPE" /></translation>
+<translation id="8671972493856476349">به‌روزرسانی به <ph name="VERSION_NUMBER" /> و بازراه‌اندازی</translation>
 <translation id="8675354002693747642">کلید ازپیش هم‌رسانی‌شده</translation>
 <translation id="8677859815076891398">‏آلبومی وجود ندارد. آلبومی در <ph name="LINK_BEGIN" />Google Photos<ph name="LINK_END" /> ایجاد کنید.</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> برای مدیریت این ویژگی، از کلیدهای پیکان روبه راست یا روبه چپ استفاده کنید.</translation>
@@ -768,7 +775,6 @@
 <translation id="9082718469794970195">استفاده از این ویدیو</translation>
 <translation id="9087578468327036362">گزارش کردن این پرسمان</translation>
 <translation id="9088306295921699330">مصرف فعلی</translation>
-<translation id="9095415590198785865">دستگاه به همان مالک قبلی ارائه خواهد شد</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
 <translation id="910415269708673980">بازخوانی بلیت برای <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9106415115617144481">درحال اسکن کردن صفحه <ph name="PAGE_NUMBER" /></translation>
@@ -782,6 +788,7 @@
 <translation id="917720651393141712">آزمایش کردن</translation>
 <translation id="9204237731135241582">‏نمی‌توان از برنامه‌های Android با دروازه تماس گرفت</translation>
 <translation id="9211490828691860325">همه میزکارها</translation>
+<translation id="922179502584117429">نسخه کنونی <ph name="VERSION_NUMBER" /> قدیمی است</translation>
 <translation id="932327136139879170">منزل</translation>
 <translation id="939519157834106403">SSID</translation>
 <translation id="952992212772159698">فعال نشد</translation>

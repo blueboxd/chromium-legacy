@@ -160,16 +160,12 @@ bool AuthenticatorMechanismSelectorSheetModel::IsManageDevicesButtonVisible()
     const {
   // If any phones are shown then also show a button that goes to the settings
   // page to manage them.
-  return base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport) &&
-         std::any_of(
-             dialog_model()->mechanisms().begin(),
-             dialog_model()->mechanisms().end(),
-             [](const AuthenticatorRequestDialogModel::Mechanism& mechanism)
-                 -> bool {
-               return absl::holds_alternative<
-                   AuthenticatorRequestDialogModel::Mechanism::Phone>(
-                   mechanism.type);
-             });
+  return std::any_of(
+      dialog_model()->mechanisms().begin(), dialog_model()->mechanisms().end(),
+      [](const AuthenticatorRequestDialogModel::Mechanism& mechanism) -> bool {
+        return absl::holds_alternative<
+            AuthenticatorRequestDialogModel::Mechanism::Phone>(mechanism.type);
+      });
 }
 
 void AuthenticatorMechanismSelectorSheetModel::OnManageDevices() {
@@ -573,7 +569,42 @@ AuthenticatorPaaskSheetModel::AuthenticatorPaaskSheetModel(
 AuthenticatorPaaskSheetModel::~AuthenticatorPaaskSheetModel() = default;
 
 bool AuthenticatorPaaskSheetModel::IsBackButtonVisible() const {
-  return true;
+  switch (dialog_model()->experiment_server_link_sheet_) {
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::CONTROL:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_5:
+      return true;
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_2:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_3:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_4:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_6:
+      return false;
+  }
+}
+
+bool AuthenticatorPaaskSheetModel::IsCloseButtonVisible() const {
+  switch (dialog_model()->experiment_server_link_sheet_) {
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::CONTROL:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_2:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_3:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_4:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_5:
+      return false;
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_6:
+      return true;
+  }
+}
+
+bool AuthenticatorPaaskSheetModel::IsCancelButtonVisible() const {
+  switch (dialog_model()->experiment_server_link_sheet_) {
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::CONTROL:
+      return true;
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_2:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_3:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_4:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_5:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_6:
+      return false;
+  }
 }
 
 bool AuthenticatorPaaskSheetModel::IsActivityIndicatorVisible() const {
@@ -587,7 +618,13 @@ const gfx::VectorIcon& AuthenticatorPaaskSheetModel::GetStepIllustration(
 }
 
 std::u16string AuthenticatorPaaskSheetModel::GetStepTitle() const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLE_ACTIVATE_TITLE);
+  switch (dialog_model()->experiment_server_link_title_) {
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkTitle::CONTROL:
+      return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLE_ACTIVATE_TITLE);
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkTitle::
+        UNLOCK_YOUR_PHONE:
+      return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLE_ACTIVATE_TITLE_ALT);
+  }
 }
 
 std::u16string AuthenticatorPaaskSheetModel::GetStepDescription() const {
@@ -621,7 +658,31 @@ std::u16string AuthenticatorPaaskSheetModel::GetStepDescription() const {
 }
 
 ui::MenuModel* AuthenticatorPaaskSheetModel::GetOtherMechanismsMenuModel() {
-  return other_mechanisms_menu_model_.get();
+  switch (dialog_model()->experiment_server_link_sheet_) {
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::CONTROL:
+      return other_mechanisms_menu_model_.get();
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_2:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_3:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_4:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_5:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_6:
+      return nullptr;
+  }
+}
+
+void AuthenticatorPaaskSheetModel::OnBack() {
+  switch (dialog_model()->experiment_server_link_sheet_) {
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::CONTROL:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_2:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_3:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_4:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_6:
+      dialog_model()->StartOver();
+      break;
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_5:
+      dialog_model()->Cancel();
+      break;
+  }
 }
 
 // AuthenticatorAndroidAccessorySheetModel
@@ -1208,9 +1269,7 @@ const gfx::VectorIcon& AuthenticatorQRSheetModel::GetStepIllustration(
 }
 
 std::u16string AuthenticatorQRSheetModel::GetStepTitle() const {
-  return base::FeatureList::IsEnabled(device::kWebAuthPasskeysUIExperiment)
-             ? u"Add a new phone"
-             : l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLEV2_ADD_PHONE);
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLEV2_ADD_PHONE);
 }
 
 std::u16string AuthenticatorQRSheetModel::GetStepDescription() const {

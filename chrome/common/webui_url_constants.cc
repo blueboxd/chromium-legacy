@@ -251,6 +251,10 @@ const char kChromeUIBookmarksSidePanelHost[] =
     "bookmarks-side-panel.top-chrome";
 const char kChromeUIBookmarksSidePanelURL[] =
     "chrome://bookmarks-side-panel.top-chrome/";
+const char kChromeUIHistoryClustersSidePanelHost[] =
+    "history-clusters-side-panel.top-chrome";
+const char kChromeUIHistoryClustersSidePanelURL[] =
+    "chrome://history-clusters-side-panel.top-chrome/";
 const char kChromeUIReadAnythingSidePanelHost[] =
     "read-anything-side-panel.top-chrome";
 const char kChromeUIReadAnythingSidePanelURL[] =
@@ -440,7 +444,7 @@ bool IsSystemWebUIHost(base::StringPiece host) {
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 const char kChromeUIAppDisabledHost[] = "app-disabled";
 const char kChromeUIOSSettingsHost[] = "os-settings";
 const char kChromeUIOSSettingsURL[] = "chrome://os-settings/";

@@ -10114,13 +10114,25 @@
           "ArcEnabled": false
         },
         "prefs": {
-          "arc.enabled": {}
+          "arc.enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "ArcEnabled": true
+        },
+        "prefs": {
+          "arc.enabled": {
+            "value": true
+          }
         }
       }
     ]
   },
   "ArcPolicy": {
-    "reason_for_missing_test": "TODO(crbug.com/1213429) add test case"
+    "reason_for_missing_test": "This policy is not mapped to prefs. It's value is sent to ARC side via mojo."
   },
   "AllowScreenLock": {
     "os": [
@@ -15797,6 +15809,37 @@
       }
     ]
   },
+  "ScreenTimeEnabled": {
+    "os": [
+      "mac"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "policy.screen_time_enabled": {
+            "default_value": true
+          }
+        }
+      },
+      {
+        "policies": { "ScreenTimeEnabled": true },
+        "prefs": {
+          "policy.screen_time_enabled": {
+            "default_value": true
+          }
+        }
+      },
+      {
+        "policies": { "ScreenTimeEnabled": false },
+        "prefs": {
+          "policy.screen_time_enabled": {
+            "value": false
+          }
+        }
+      }
+    ]
+  },
   "ShowFullUrlsInAddressBar": {
     "os": [
       "win",
@@ -18301,4 +18344,3 @@
   ]
 }
 }
-

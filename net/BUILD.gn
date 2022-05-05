@@ -653,7 +653,6 @@ component("net") {
     "http/proxy_client_socket.h",
     "http/proxy_fallback.cc",
     "http/proxy_fallback.h",
-    "http/structured_headers.cc",
     "http/structured_headers.h",
     "http/transport_security_persister.cc",
     "http/transport_security_persister.h",
@@ -1691,8 +1690,8 @@ source_set("net_public_deps") {
     ":uri_template",
     "//base",
     "//crypto",
+    "//net/third_party/quiche",
     "//net/third_party/quiche:net_quic_test_tools_proto",
-    "//net/third_party/quiche:quiche",
     "//net/traffic_annotation",
     "//third_party/boringssl",
     "//url",
@@ -2031,6 +2030,22 @@ bundle_data("test_support_bundle_data") {
               "{{source_root_relative_dir}}/{{source_file_part}}" ]
 }
 
+static_library("gtest_util") {
+  testonly = true
+  sources = [
+    "test/gtest_util.h",
+    "test/scoped_disable_exit_on_dfatal.cc",
+    "test/scoped_disable_exit_on_dfatal.h",
+  ]
+  public_deps = [
+    "//base",
+    "//base/test:test_support",
+    "//net",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
 static_library("test_support") {
   testonly = true
   sources = [
@@ -2142,7 +2157,6 @@ static_library("test_support") {
     "test/embedded_test_server/simple_connection_listener.cc",
     "test/embedded_test_server/simple_connection_listener.h",
     "test/event_waiter.h",
-    "test/gtest_util.h",
     "test/key_util.cc",
     "test/key_util.h",
     "test/net_test_suite.cc",
@@ -2151,8 +2165,6 @@ static_library("test_support") {
     "test/quic_simple_test_server.h",
     "test/revocation_builder.cc",
     "test/revocation_builder.h",
-    "test/scoped_disable_exit_on_dfatal.cc",
-    "test/scoped_disable_exit_on_dfatal.h",
     "test/ssl_test_util.cc",
     "test/ssl_test_util.h",
     "test/test_certificate_data.h",
@@ -2187,6 +2199,7 @@ static_library("test_support") {
   configs += [ "//build/config:precompiled_headers" ]
 
   public_deps = [
+    ":gtest_util",
     "//base",
     "//base/test:test_support",
     "//crypto",
@@ -2559,7 +2572,6 @@ source_set("quic_test_tools") {
     ":test_support",
     "//base",
     "//crypto:test_support",
-    "//net/third_party/quiche:quiche_test_tools",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/boringssl",
@@ -2568,10 +2580,8 @@ source_set("quic_test_tools") {
   ]
   public_deps = [
     ":quic_test_flags_utils",
-    "//net/third_party/quiche:quic_test_tools_core",
+    "//net/third_party/quiche:quiche_test_support",
   ]
-  allow_circular_includes_from =
-      [ "//net/third_party/quiche:quic_test_tools_core" ]
 }
 
 source_set("simple_quic_tools") {
@@ -2599,13 +2609,11 @@ source_set("simple_quic_tools") {
     ":net",
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//net/third_party/quiche:simple_quic_tools_core",
+    "//net/third_party/quiche:quiche_tool_support",
     "//third_party/protobuf:protobuf_lite",
     "//url",
   ]
-  public_deps = [ "//net/third_party/quiche:simple_quic_tools_core" ]
-  allow_circular_includes_from =
-      [ "//net/third_party/quiche:simple_quic_tools_core" ]
+  public_deps = [ "//net/third_party/quiche:quiche_tool_support" ]
 }
 
 if (!is_ios) {
@@ -2617,11 +2625,9 @@ if (!is_ios) {
       ":simple_quic_tools",
       "//base",
       "//build/win:default_exe_manifest",
+      "//net/third_party/quiche:quic_client_core",
       "//url",
     ]
-    public_deps = [ "//net/third_party/quiche:quic_client_core" ]
-    allow_circular_includes_from =
-        [ "//net/third_party/quiche:quic_client_core" ]
   }
   executable("quic_server") {
     sources = [
@@ -2634,12 +2640,10 @@ if (!is_ios) {
       ":simple_quic_tools",
       "//base",
       "//build/win:default_exe_manifest",
+      "//net/third_party/quiche:quic_server_core",
       "//third_party/boringssl",
       "//third_party/protobuf:protobuf_lite",
     ]
-    public_deps = [ "//net/third_party/quiche:quic_server_core" ]
-    allow_circular_includes_from =
-        [ "//net/third_party/quiche:quic_server_core" ]
   }
   executable("crypto_message_printer") {
     sources = [ "tools/quic/crypto_message_printer_bin.cc" ]
@@ -3425,14 +3429,9 @@ bundle_data("net_unittests_bundle_data") {
     "data/verify_signed_data_unittest/rsa-pkcs1-sha256-using-ecdsa-algorithm.pem",
     "data/verify_signed_data_unittest/rsa-pkcs1-sha256-using-id-ea-rsa.pem",
     "data/verify_signed_data_unittest/rsa-pkcs1-sha256.pem",
-    "data/verify_signed_data_unittest/rsa-pss-sha1-salt20-using-pss-key-no-params.pem",
-    "data/verify_signed_data_unittest/rsa-pss-sha1-salt20-using-pss-key-with-null-params.pem",
-    "data/verify_signed_data_unittest/rsa-pss-sha1-salt20.pem",
-    "data/verify_signed_data_unittest/rsa-pss-sha1-wrong-salt.pem",
-    "data/verify_signed_data_unittest/rsa-pss-sha256-mgf1-sha512-salt33.pem",
-    "data/verify_signed_data_unittest/rsa-pss-sha256-salt10-using-pss-key-with-params.pem",
-    "data/verify_signed_data_unittest/rsa-pss-sha256-salt10-using-pss-key-with-wrong-params.pem",
-    "data/verify_signed_data_unittest/rsa-pss-sha256-salt10.pem",
+    "data/verify_signed_data_unittest/rsa-pss-sha256-using-pss-key-with-params.pem",
+    "data/verify_signed_data_unittest/rsa-pss-sha256-wrong-salt.pem",
+    "data/verify_signed_data_unittest/rsa-pss-sha256.pem",
     "data/verify_signed_data_unittest/rsa-using-ec-key.pem",
     "data/verify_signed_data_unittest/rsa2048-pkcs1-sha512.pem",
     "third_party/nist-pkits/certs/AllCertificatesNoPoliciesTest2EE.crt",
@@ -4201,8 +4200,6 @@ test("net_unittests") {
     "http/http_vary_data_unittest.cc",
     "http/mock_allow_http_auth_preferences.cc",
     "http/mock_allow_http_auth_preferences.h",
-    "http/structured_headers_generated_unittest.cc",
-    "http/structured_headers_unittest.cc",
     "http/test_upload_data_stream_not_allow_http1.cc",
     "http/test_upload_data_stream_not_allow_http1.h",
     "http/transport_security_persister_unittest.cc",
@@ -4435,7 +4432,6 @@ test("net_unittests") {
     "//net/dns/public:tests",
     "//net/http:transport_security_state_unittest_data",
     "//net/http:transport_security_state_unittest_data_default",
-    "//net/third_party/quiche:quiche_test_tools",
     "//net/third_party/quiche:quiche_tests",
     "//net/tools/huffman_trie:huffman_trie_generator_sources",
     "//sql",
@@ -4446,8 +4442,6 @@ test("net_unittests") {
     "//url",
     "//url:buildflags",
   ]
-
-  allow_circular_includes_from = [ "//net/third_party/quiche:quiche_tests" ]
 
   if (enable_websockets) {
     deps += [ "//net/server:tests" ]
@@ -4787,7 +4781,6 @@ if (!is_ios) {
     data_deps = [
       # Needed for isolate script to execute.
       "//testing:run_perf_test",
-      "//testing/buildbot/filters:net_perftests_filters",
     ]
     if (enable_websockets) {
       sources += [ "websockets/websocket_frame_perftest.cc" ]

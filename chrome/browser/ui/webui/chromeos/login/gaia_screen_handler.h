@@ -20,7 +20,6 @@
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ash/login/saml/public_saml_url_fetcher.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/chromeos/login/online_login_helper.h"
 #include "chrome/browser/ui/webui/chromeos/login/saml_challenge_key_handler.h"
@@ -119,8 +118,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
     FRAME_STATE_ERROR
   };
 
-  GaiaScreenHandler(
-      CoreOobeView* core_oobe_view,
+  explicit GaiaScreenHandler(
       const scoped_refptr<NetworkStateInformer>& network_state_informer);
 
   GaiaScreenHandler(const GaiaScreenHandler&) = delete;
@@ -327,8 +325,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // Network state informer used to keep signin screen up.
   scoped_refptr<NetworkStateInformer> network_state_informer_;
 
-  CoreOobeView* core_oobe_view_ = nullptr;
-
   // Account to pre-populate with.
   AccountId populated_account_id_;
 
@@ -349,12 +345,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // If true, the sign-in screen will be shown when DNS cache and cookie
   // clean-up finish, and the handler is initialized (i.e. the web UI is ready).
   bool show_when_ready_ = false;
-
-  // Has Gaia page silent load been started for the current sign-in attempt?
-  bool gaia_silent_load_ = false;
-
-  // The active network at the moment when Gaia page was preloaded.
-  std::string gaia_silent_load_network_;
 
   // This flag is set when user authenticated using the Chrome Credentials
   // Passing API (the login could happen via SAML or, with the current

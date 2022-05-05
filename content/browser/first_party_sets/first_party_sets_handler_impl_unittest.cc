@@ -367,14 +367,6 @@ TEST_F(FirstPartySetsHandlerImplDisabledTest, IgnoresValid) {
             FAIL();  // Should not be called.
           }));
 
-  // Set required inputs to be able to receive the merged sets from
-  // FirstPartySetsLoader.
-  const std::string input =
-      "{\"owner\": \"https://example.test\",\"members\": "
-      "[\"https://aaaa.test\"]}";
-  ASSERT_TRUE(base::JSONReader::Read(input));
-  SetPublicFirstPartySetsAndWait(input);
-
   env().RunUntilIdle();
 
   // TODO(shuuran@chromium.org): test site state is cleared.
@@ -397,9 +389,6 @@ TEST_F(FirstPartySetsHandlerImplDisabledTest,
             FAIL();  // Should not be called.
           }));
 
-  SetPublicFirstPartySetsAndWait(R"({"owner": "https://example.test", )"
-                                 R"("members": ["https://member.test"]})");
-
   EXPECT_EQ(
       FirstPartySetsHandlerImpl::GetInstance()->GetSetsIfEnabledAndReady(),
       absl::nullopt);
@@ -412,25 +401,26 @@ class FirstPartySetsHandlerImplEnabledTest
       : FirstPartySetsHandlerImplTest(true) {}
 };
 
-TEST_F(FirstPartySetsHandlerImplEnabledTest, PersistedSetsNotReady) {
-  const std::string input = R"({"owner": "https://foo.test", )"
-                            R"("members": ["https://member2.test"]})";
-  ASSERT_TRUE(base::JSONReader::Read(input));
-  SetPublicFirstPartySetsAndWait(input);
-
-  // Empty `user_data_dir` will fail loading persisted sets.
+TEST_F(FirstPartySetsHandlerImplEnabledTest, EmptyPersistedSetsDir) {
+  // Empty `user_data_dir` will fail to load persisted sets, but that will not
+  // prevent `on_sets_ready` from being invoked.
+  base::test::TestFuture<const FirstPartySetsHandlerImpl::FlattenedSets&>
+      future;
   FirstPartySetsHandlerImpl::GetInstance()->Init(
       /*user_data_dir=*/{},
       /*flag_value=*/"https://example.test,https://member1.test",
-      base::BindLambdaForTesting(
-          [](const FirstPartySetsHandlerImpl::FlattenedSets& got) {
-            FAIL();  // Should not be called.
-          }));
+      future.GetCallback());
 
-  env().RunUntilIdle();
+  EXPECT_THAT(future.Get(),
+              UnorderedElementsAre(Pair(SerializesTo("https://example.test"),
+                                        SerializesTo("https://example.test")),
+                                   Pair(SerializesTo("https://member1.test"),
+                                        SerializesTo("https://example.test"))));
 }
 
 TEST_F(FirstPartySetsHandlerImplEnabledTest, PublicFirstPartySetsNotReady) {
+  FirstPartySetsHandlerImpl::GetInstance()
+      ->SetEmbedderWillProvidePublicSetsForTesting(true);
   ASSERT_TRUE(base::WriteFile(persisted_sets_path_, "{}"));
 
   // Persisted sets are expected to be loaded with the provided path.
@@ -447,6 +437,8 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest, PublicFirstPartySetsNotReady) {
 
 TEST_F(FirstPartySetsHandlerImplEnabledTest,
        Successful_PersistedSetsFileNotExist) {
+  FirstPartySetsHandlerImpl::GetInstance()
+      ->SetEmbedderWillProvidePublicSetsForTesting(true);
   const std::string input = R"({"owner": "https://foo.test", )"
                             R"("members": ["https://member2.test"]})";
   ASSERT_TRUE(base::JSONReader::Read(input));
@@ -479,6 +471,8 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
 }
 
 TEST_F(FirstPartySetsHandlerImplEnabledTest, Successful_PersistedSetsEmpty) {
+  FirstPartySetsHandlerImpl::GetInstance()
+      ->SetEmbedderWillProvidePublicSetsForTesting(true);
   ASSERT_TRUE(base::WriteFile(persisted_sets_path_, "{}"));
 
   const std::string input = R"({"owner": "https://foo.test", )"
@@ -514,6 +508,8 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest, Successful_PersistedSetsEmpty) {
 
 TEST_F(FirstPartySetsHandlerImplEnabledTest,
        GetSetsIfEnabledAndReady_AfterSetsReady) {
+  FirstPartySetsHandlerImpl::GetInstance()
+      ->SetEmbedderWillProvidePublicSetsForTesting(true);
   ASSERT_TRUE(base::WriteFile(persisted_sets_path_, "{}"));
 
   const std::string input = R"({"owner": "https://example.test", )"
@@ -549,6 +545,8 @@ TEST_F(FirstPartySetsHandlerImplEnabledTest,
 
 TEST_F(FirstPartySetsHandlerImplEnabledTest,
        GetSetsIfEnabledAndReady_BeforeSetsReady) {
+  FirstPartySetsHandlerImpl::GetInstance()
+      ->SetEmbedderWillProvidePublicSetsForTesting(true);
   ASSERT_TRUE(base::WriteFile(persisted_sets_path_, "{}"));
 
   // Call GetSetsIfEnabledAndReady before the sets are ready.

@@ -1059,6 +1059,7 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
 
 
 _GENERIC_PYDEPS_FILES = [
+    'android_webview/test/components/run_webview_component_smoketest.pydeps',
     'android_webview/tools/run_cts.pydeps',
     'base/android/jni_generator/jni_generator.pydeps',
     'base/android/jni_generator/jni_registration_generator.pydeps',
@@ -1102,9 +1103,11 @@ _GENERIC_PYDEPS_FILES = [
     'build/android/gyp/jinja_template.pydeps',
     'build/android/gyp/lint.pydeps',
     'build/android/gyp/merge_manifest.pydeps',
+    'build/android/gyp/optimize_resources.pydeps',
     'build/android/gyp/prepare_resources.pydeps',
     'build/android/gyp/process_native_prebuilt.pydeps',
     'build/android/gyp/proguard.pydeps',
+    'build/android/gyp/trace_event_bytecode_rewriter.pydeps',
     'build/android/gyp/turbine.pydeps',
     'build/android/gyp/unused_resources.pydeps',
     'build/android/gyp/validate_static_library_dex_references.pydeps',
@@ -1127,7 +1130,7 @@ _GENERIC_PYDEPS_FILES = [
     'components/module_installer/android/module_desc_java.pydeps',
     'content/public/android/generate_child_service.pydeps',
     'net/tools/testserver/testserver.pydeps',
-    'testing/scripts/run_android_wpt.pydeps',
+    'testing/scripts/run_wpt_tests.pydeps',
     'testing/scripts/run_isolated_script_test.pydeps',
     'testing/merge_scripts/standard_isolated_script_merge.pydeps',
     'testing/merge_scripts/standard_gtest_merge.pydeps',
@@ -1746,6 +1749,8 @@ def CheckNoPragmaOnce(input_api, output_api):
     for f in input_api.AffectedSourceFiles(input_api.FilterSourceFile):
         if not f.LocalPath().endswith('.h'):
             continue
+        if f.LocalPath().endswith('com_imported_mstscax.h'):
+            continue
         contents = input_api.ReadFile(f)
         if pattern.search(contents):
             files.append(f)
@@ -2101,7 +2106,10 @@ def CheckNoAbbreviationInPngFileName(input_api, output_api):
     """
     errors = []
     files_to_check = [r'.*_[a-z]_.*\.png$|.*_[a-z]\.png$']
-    files_to_skip = [r'^native_client_sdk[\\/]']
+    files_to_skip = [r'^native_client_sdk[\\/]',
+                     r'^services[\\/]test[\\/]',
+                     r'^third_party[\\/]blink[\\/]web_tests[\\/]',
+                    ]
     file_filter = lambda f: input_api.FilterSourceFile(
         f, files_to_check=files_to_check, files_to_skip=files_to_skip)
     for f in input_api.AffectedFiles(include_deletes=False,
@@ -4805,6 +4813,7 @@ def CheckForIncludeGuards(input_api, output_api):
         file_with_path = input_api.os_path.normpath(f.LocalPath())
         return (file_with_path.endswith('.h')
                 and not file_with_path.endswith('_message_generator.h')
+                and not file_with_path.endswith('com_imported_mstscax.h')
                 and (not file_with_path.startswith('third_party')
                      or file_with_path.startswith(
                          input_api.os_path.join('third_party', 'blink'))))

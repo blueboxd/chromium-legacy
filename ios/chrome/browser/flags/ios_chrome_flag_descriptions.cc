@@ -104,6 +104,11 @@ extern const char kBubbleRichIPHDescription[] =
     "When enabled, displays a rich description (ex: title, image, etc..) of "
     "the feature presented in the bubble view.";
 
+extern const char kCalendarExperienceKitName[] = "Experience Kit Calendar";
+extern const char kCalendarExperienceKitDescription[] =
+    "When enabled, long pressing on dates will trigger Experience Kit Calendar "
+    "event handling";
+
 const char kContentSuggestionsHeaderMigrationName[] =
     "Content Suggestions header migration";
 const char kContentSuggestionsHeaderMigrationDescription[] =
@@ -160,6 +165,12 @@ const char kDiscoverFeedInNtpName[] = "Enable new content Suggestion Feed";
 const char kDiscoverFeedInNtpDescription[] =
     "When enabled, replaces articles feed with new content Suggestion Feed in "
     "the NTP.";
+
+const char kDisplaySyncErrorsRefactorName[] =
+    "Enable Display Sync Errors refactored code";
+const char kDisplaySyncErrorsRefactorDescription[] =
+    "When enabled, displaying sync errors logic is provided by a Browser Agent "
+    "not BVC.";
 
 const char kDownloadCalendarName[] = "Download Calendar";
 const char kDownloadCalendarDescription[] =
@@ -277,6 +288,9 @@ const char kFullscreenSmoothScrollingName[] = "Fullscreen Smooth Scrolling";
 const char kFullscreenSmoothScrollingDescription[] =
     "When enabled, the web view's insets are updated for scoll events. If "
     "disabled, the the web view's frame are updated.";
+
+const char kHttpsOnlyModeName[] = "HTTPS-Only Mode Setting";
+const char kHttpsOnlyModeDescription[] = "Enables the HTTPS-Only Mode setting";
 
 const char kIncognitoBrandConsistencyForIOSName[] =
     "Enable Incognito brand consistency in iOS.";
@@ -489,6 +503,11 @@ const char kShowAutofillTypePredictionsName[] = "Show Autofill predictions";
 const char kShowAutofillTypePredictionsDescription[] =
     "Annotates web forms with Autofill field type predictions as placeholder "
     "text.";
+
+const char kSmartSortingNewOverflowMenuName[] =
+    "Smart Sorting the new Overflow Menu";
+const char kSmartSortingNewOverflowMenuDescription[] =
+    "Enables smart sorting the new overflow menu carousel by frecency.";
 
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =

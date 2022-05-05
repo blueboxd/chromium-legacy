@@ -127,7 +127,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.CharTypedToRepaintLatency.InsertToPresent" units="ms"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>asvitkine@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -155,7 +155,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.CharTypedToRepaintLatency.ToPaint" units="ms"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>asvitkine@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -858,7 +858,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Omnibox.SearchPrefetch.NavigationURLMatches.NavigationPrefetch"
-    enum="Boolean" expires_after="2022-08-07">
+    enum="Boolean" expires_after="2022-10-30">
   <owner>ryansturm@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -884,7 +884,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Omnibox.SearchPrefetch.PrefetchEligibilityReason.NavigationPrefetch"
-    enum="SearchPrefetchEligibilityReason" expires_after="2022-08-07">
+    enum="SearchPrefetchEligibilityReason" expires_after="2022-10-30">
   <owner>ryansturm@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -910,7 +910,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Omnibox.SearchPrefetch.PrefetchEligibilityReason.SuggestionPrefetch"
-    enum="SearchPrefetchEligibilityReason" expires_after="2022-08-07">
+    enum="SearchPrefetchEligibilityReason" expires_after="2022-10-30">
   <owner>ryansturm@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -932,7 +932,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SearchPrefetch.PrefetchFinalStatus.NavigationPrefetch"
-    enum="SearchPrefetchFinalStatus" expires_after="2022-08-07">
+    enum="SearchPrefetchFinalStatus" expires_after="2022-10-30">
   <owner>ryansturm@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -998,7 +998,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SearchPrefetch.StartTime.NavigationPrefetch"
-    units="ms" expires_after="2022-08-07">
+    units="ms" expires_after="2022-10-30">
   <owner>ryansturm@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -1033,7 +1033,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.SelectedPosition" units="position"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1196,8 +1196,26 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-prerendering@google.com</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
-    Measures the time from navigation start to largest contentful paint. Only
-    recorded for a search query suggestion selected from the omnibox.
+    Measures the time from navigation start to largest contentful paint
+    (https://github.com/w3c/largest-contentful-paint). Only recorded for a
+    search query suggestion selected from the omnibox.
+  </summary>
+</histogram>
+
+<histogram
+    name="Omnibox.SuggestionUsed.Search.NavigationToLargestContentfulPaint2Above2s"
+    units="ms" expires_after="2023-05-01">
+  <owner>spelchat@chromium.org</owner>
+  <owner>chrome-brapp-loading@google.com</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    Measures the time from navigation to the time the first largest contentful
+    paint candidate
+    (https://github.com/w3c/largest-contentful-paint#the-last-candidate) above 2
+    seconds. Only recorded for a search query suggestion selected from the
+    omnibox. Note that this histogram is most useful for use with Chrometto in
+    order to record a high LCP trace as soon as it happens (rather than only
+    once the slow page loads gets discarded).
   </summary>
 </histogram>
 
@@ -1232,7 +1250,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Omnibox.SuggestionUsed.URL.Experimental.NavigationToFirstMeaningfulPaint"
-    units="ms" expires_after="2022-08-28">
+    units="ms" expires_after="2022-10-30">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1360,7 +1378,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.ToggleSuggestionGroupId.Off" enum="SuggestionGroupId"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>mahmadi@google.com</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>

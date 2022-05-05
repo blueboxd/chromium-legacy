@@ -390,58 +390,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Search.ContextualSearchBarNoOverlap.PeekDuration" units="ms"
-    expires_after="M72">
-  <owner>donnd@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    The duration that the panel was peeking before being opened when triggered
-    by a tap that was in a part of the screen where it overlaps the Bar. Logged
-    when the panel is closed after being opened. Implemented for Android.
-  </summary>
-</histogram>
-
-<histogram name="Search.ContextualSearchBarOverlap"
-    enum="ContextualSearchTapSuppression" expires_after="M77">
-  <owner>donnd@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    Whether a Tap was suppressed because the Bar overlapped the selection area.
-    Implemented for Android.
-  </summary>
-</histogram>
-
-<histogram name="Search.ContextualSearchBarOverlap.PeekDuration" units="ms"
-    expires_after="M72">
-  <owner>donnd@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    The duration that the panel was peeking before being opened when triggered
-    by a tap at the bottom of the screen where it overlaps the Bar. Logged when
-    the panel is closed after being opened. Implemented for Android.
-  </summary>
-</histogram>
-
-<histogram name="Search.ContextualSearchBarOverlapSeen"
-    enum="ContextualSearchBarOverlapSeen" expires_after="M72">
-  <owner>donnd@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    Whether the Bar overlapped the selection area and whether the results were
-    seen. Recorded when the UX is hidden. Implemented for Android.
-  </summary>
-</histogram>
-
-<histogram name="Search.ContextualSearchBasePageProtocol"
-    enum="ContextualSearchBasePageProtocol" expires_after="M72">
-  <owner>donnd@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    The protocol of the base page, logged at the time that any Search Term
-    Resolution Response is received.
-  </summary>
-</histogram>
-
 <histogram name="Search.ContextualSearchContextualCardsIntegration.DataShown"
     enum="Boolean" expires_after="never">
 <!-- expires-never: key metric on usefulness of Touch to Search. -->
@@ -451,17 +399,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Whether Contextual Cards data was shown in the Contextual Search Bar.
     Contextual Cards data is included with the search term resolution response.
-    Implemented for Android.
-  </summary>
-</histogram>
-
-<histogram name="Search.ContextualSearchContextualCardsIntegration.ResultsSeen"
-    enum="ContextualSearchResultsSeen" expires_after="M85">
-  <owner>donnd@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    Whether search results were seen as part of a Contextual Search when
-    Contextual Cards data was shown. This indicates that the panel was opened.
     Implemented for Android.
   </summary>
 </histogram>
@@ -744,49 +681,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Search.ContextualSearchPrevious28DayCtr" units="%"
-    expires_after="M72">
-  <owner>donnd@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    The CTR from the previous 28 day period for each user, expressed as a
-    percentage. Logged the first time the panel is closed in each new week.
-    Implemented for Android.
-  </summary>
-</histogram>
-
-<histogram name="Search.ContextualSearchPrevious28DayImpressions" units="views"
-    expires_after="M72">
-  <owner>donnd@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    The number of user impressions of the Bar from the previous 28 day period.
-    Logged the first time the panel is closed in each new week. Implemented for
-    Android.
-  </summary>
-</histogram>
-
-<histogram name="Search.ContextualSearchPreviousWeekCtr" units="%"
-    expires_after="M72">
-  <owner>donnd@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    The CTR from the previous week for each user, expressed as a percentage.
-    Logged the first time the panel is closed in each new week. Implemented for
-    Android.
-  </summary>
-</histogram>
-
-<histogram name="Search.ContextualSearchPreviousWeekImpressions" units="views"
-    expires_after="M72">
-  <owner>donnd@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    The number of user impressions of the Bar from the previous week. Logged the
-    first time the panel is closed in each new week. Implemented for Android.
-  </summary>
-</histogram>
-
 <histogram name="Search.ContextualSearchPrivacyOptInPreferenceStateChange"
     enum="BooleanOptedIn" expires_after="2022-08-28">
   <owner>donnd@chromium.org</owner>
@@ -799,7 +693,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.ContextualSearchPromoCardChoice" enum="BooleanOptedIn"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>donnd@chromium.org</owner>
   <owner>contextual-search-eng@google.com</owner>
   <summary>
@@ -975,16 +869,6 @@ chromium-metrics-reviews@google.com.
     The time from starting a resolving search until the results in the SERP
     start to become viewable. Applies only to prefetched requests. Implemented
     for Android.
-  </summary>
-</histogram>
-
-<histogram name="Search.ContextualSearchResolvedTermWords"
-    enum="ContextualSearchResolvedTermWords" expires_after="M72">
-  <owner>donnd@chromium.org</owner>
-  <owner>twellington@chromium.org</owner>
-  <summary>
-    Whether the search term was single or multi-word, logged at the time that
-    any Search Term Resolution Response is received.
   </summary>
 </histogram>
 
@@ -1358,7 +1242,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Search.QueryTiles.Fetcher.FirstFlowDuration" units="hours"
-    expires_after="2022-08-28">
+    expires_after="2022-10-30">
   <owner>qinmin@chromium.org</owner>
   <owner>chrome-upboarding-eng@google.com</owner>
   <summary>

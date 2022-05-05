@@ -1129,6 +1129,20 @@
           'gtest_tests': 'android_weblayer_x86_pie_oreo_gtests',
         }
       },
+      'android-webview-10-x86-rel-tests': {
+        'mixins': [
+          'has_native_resultdb_integration',
+          '10-x86-emulator',
+          'emulator-4-cores',
+          'linux-xenial-or-bionic',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'webview_trichrome_cts_tests_gtest',
+        },
+        'use_swarming': True,
+      },
     },
   },
   {
@@ -1150,7 +1164,7 @@
         ],
         'os_type': 'android',
         'test_suites': {
-          'gtest_tests': 'webview_cts_tests_gtest',
+          'gtest_tests': 'webview_trichrome_cts_tests_gtest',
         },
         'use_swarming': True,
       },
@@ -1164,7 +1178,7 @@
         ],
         'os_type': 'android',
         'test_suites': {
-          'gtest_tests': 'webview_cts_tests_gtest',
+          'gtest_tests': 'webview_trichrome_cts_tests_gtest',
         },
         'use_swarming': True,
       },
@@ -1191,7 +1205,7 @@
         ],
         'os_type': 'android',
         'test_suites': {
-          'gtest_tests': 'webview_64_cts_tests_gtest',
+          'gtest_tests': 'webview_trichrome_64_cts_tests_gtest',
         }
       },
       'android-annotator-rel': {
@@ -2916,21 +2930,6 @@
           'gtest_tests': 'vr_platform_specific_chromium_gtests',
         },
       },
-      'WebKit Linux layout_ng_disabled Builder': {
-        'mixins': [
-          'linux-bionic',
-        ],
-        'additional_compile_targets': [
-          'blink_tests',
-        ],
-        'swarming': {
-          'hard_timeout': 900,
-        },
-        'test_suites': {
-          'gtest_tests': 'layout_ng_gtests',
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-      },
       'Win 10 Fast Ring': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
@@ -3501,15 +3500,6 @@
         ],
         'test_suites': {
           'isolated_scripts': 'chromium_web_tests_high_dpi_isolated_scripts',
-        },
-      },
-      'linux-blink-v8-sandbox-future-dbg': {
-        'mixins': [
-          'linux-bionic',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_gtests',
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
       'linux-blink-v8-sandbox-future-rel': {
@@ -4816,29 +4806,6 @@
           'android_webview_gpu_telemetry_tests': 'android_webview_gpu_telemetry_tests',
         },
       },
-      'Optional Linux Release (Intel HD 630)': {
-        'os_type': 'linux',
-        'browser_config': 'release',
-        'mixins': [
-          'linux_intel_hd_630_stable',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_fyi_linux_optional_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_optional_linux_telemetry_tests',
-        },
-      },
-      'Optional Linux Release (NVIDIA)': {
-        'os_type': 'linux',
-        'browser_config': 'release',
-        'mixins': [
-          'linux_nvidia_gtx_1660_stable',
-        ],
-        'test_suites': {
-          'gtest_tests': 'gpu_fyi_linux_optional_gtests',
-          'isolated_scripts': 'gpu_test_buildbucket_api_gpu_use_cases',
-          'gpu_telemetry_tests': 'gpu_fyi_optional_linux_telemetry_tests',
-        },
-      },
       'Optional Mac Release (Intel)': {
         'os_type': 'mac',
         'browser_config': 'release',
@@ -5713,18 +5680,6 @@
           # TODO(https://crbug.com/1260120): Cover `rust_native_tests` here.
         },
       },
-      'linux-rust-intree-x64-rel' : {
-        'additional_compile_targets': [
-          'mojo_rust',
-          'mojo_rust_tests',
-          'rust_build_tests',
-          'rust_autocxx_tests',
-        ],
-        'test_suites': {
-          'gtest_tests': 'rust_gtests',
-          'isolated_scripts': 'rust_native_tests',
-        },
-      },
       'linux-rust-x64-dbg' : {
         'additional_compile_targets': [
           'mojo_rust',
@@ -5738,6 +5693,18 @@
         },
       },
       'linux-rust-x64-rel' : {
+        'additional_compile_targets': [
+          'mojo_rust',
+          'mojo_rust_tests',
+          'rust_build_tests',
+          'rust_autocxx_tests',
+        ],
+        'test_suites': {
+          'gtest_tests': 'rust_gtests',
+          'isolated_scripts': 'rust_native_tests',
+        },
+      },
+      'linux-rust-x64-rel-android-toolchain' : {
         'additional_compile_targets': [
           'mojo_rust',
           'mojo_rust_tests',
@@ -6142,22 +6109,6 @@
           ]
         },
       },
-      'win7(32)-updater-tester-dbg': {
-        'mixins': [
-          'win7',
-          'x86-32'
-        ],
-        'test_suites': {
-          'gtest_tests': 'updater_gtests_win',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'integrity': 'high',
-            }
-          ]
-        },
-      },
       'win7(32)-updater-tester-rel': {
         'mixins': [
           'win7',
@@ -6170,38 +6121,6 @@
           'dimension_sets': [
             {
               'integrity': 'high',
-            }
-          ]
-        },
-      },
-      'win7-updater-tester-dbg': {
-        'mixins': [
-          'win7',
-          'x86-64'
-        ],
-        'test_suites': {
-          'gtest_tests': 'updater_gtests_win',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'integrity': 'high',
-            }
-          ]
-        },
-      },
-      'win7-updater-tester-dbg-uac': {
-        'mixins': [
-          'win7',
-          'x86-64',
-        ],
-        'test_suites': {
-          'gtest_tests': 'updater_gtests_win_uac',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'pool': 'chromium.win.uac',
             }
           ]
         },
@@ -6278,14 +6197,6 @@
       'WebRTC Chromium Win10 Tester': {
         'mixins': [
           'chromium-webrtc-rel-win10',
-        ],
-        'test_suites': {
-          'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
-        },
-      },
-      'WebRTC Chromium Win7 Tester': {
-        'mixins': [
-          'chromium-webrtc-rel-7',
         ],
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
@@ -6377,15 +6288,6 @@
         'mixins': [
           'x86-64',
           'win10',
-        ],
-        'test_suites': {
-          'gtest_tests': 'webrtc_chromium_gtests',
-        },
-      },
-      'WebRTC Chromium FYI Win7 Tester': {
-        'mixins': [
-          'x86-64',
-          'win7',
         ],
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_gtests',
@@ -6889,6 +6791,21 @@
           'linux-xenial',
         ],
         'test_suites': {
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
+      'linux_layout_tests_layout_ng_disabled': {
+        'mixins': [
+          'linux-bionic',
+        ],
+        'additional_compile_targets': [
+          'blink_tests',
+        ],
+        'swarming': {
+          'hard_timeout': 900,
+        },
+        'test_suites': {
+          'gtest_tests': 'layout_ng_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },

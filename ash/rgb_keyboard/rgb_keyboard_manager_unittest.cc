@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 #include <memory>
-#include <vector>
 
 #include "ash/constants/ash_features.h"
 #include "ash/ime/ime_controller_impl.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/ash/components/dbus/rgbkbd/fake_rgbkbd_client.h"
 #include "chromeos/ash/components/dbus/rgbkbd/rgbkbd_client.h"
@@ -44,7 +44,7 @@ class RgbKeyboardManagerTest : public testing::Test {
   // ImeControllerImpl must be destroyed after RgbKeyboardManager.
   std::unique_ptr<ImeControllerImpl> ime_controller_;
   std::unique_ptr<RgbKeyboardManager> manager_;
-  FakeRgbkbdClient* client_;
+  raw_ptr<FakeRgbkbdClient> client_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -62,61 +62,61 @@ TEST_F(RgbKeyboardManagerTest, SetStaticRgbValues) {
   const uint8_t expected_b = 3;
 
   manager_->SetStaticBackgroundColor(expected_r, expected_g, expected_b);
-  const std::vector<uint8_t> rgb_values = manager_->recently_sent_rgb();
+  const RgbColor& rgb_values = client_->recently_sent_rgb();
 
-  EXPECT_EQ(expected_r, rgb_values[0]);
-  EXPECT_EQ(expected_g, rgb_values[1]);
-  EXPECT_EQ(expected_b, rgb_values[2]);
+  EXPECT_EQ(expected_r, std::get<0>(rgb_values));
+  EXPECT_EQ(expected_g, std::get<1>(rgb_values));
+  EXPECT_EQ(expected_b, std::get<2>(rgb_values));
 }
 
 TEST_F(RgbKeyboardManagerTest, SetRainbowMode) {
-  EXPECT_FALSE(manager_->is_rainbow_mode_set());
+  EXPECT_FALSE(client_->is_rainbow_mode_set());
 
   manager_->SetRainbowMode();
 
-  EXPECT_TRUE(manager_->is_rainbow_mode_set());
+  EXPECT_TRUE(client_->is_rainbow_mode_set());
 }
 
 TEST_F(RgbKeyboardManagerTest, RainbowModeResetsStatic) {
-  EXPECT_FALSE(manager_->is_rainbow_mode_set());
+  EXPECT_FALSE(client_->is_rainbow_mode_set());
 
   const uint8_t expected_r = 1;
   const uint8_t expected_g = 2;
   const uint8_t expected_b = 3;
 
   manager_->SetStaticBackgroundColor(expected_r, expected_g, expected_b);
-  std::vector<uint8_t> rgb_values = manager_->recently_sent_rgb();
+  const RgbColor& rgb_values = client_->recently_sent_rgb();
 
-  EXPECT_EQ(expected_r, rgb_values[0]);
-  EXPECT_EQ(expected_g, rgb_values[1]);
-  EXPECT_EQ(expected_b, rgb_values[2]);
+  EXPECT_EQ(expected_r, std::get<0>(rgb_values));
+  EXPECT_EQ(expected_g, std::get<1>(rgb_values));
+  EXPECT_EQ(expected_b, std::get<2>(rgb_values));
 
   manager_->SetRainbowMode();
-  EXPECT_TRUE(manager_->is_rainbow_mode_set());
+  EXPECT_TRUE(client_->is_rainbow_mode_set());
 
-  rgb_values = manager_->recently_sent_rgb();
-  EXPECT_EQ(0u, rgb_values[0]);
-  EXPECT_EQ(0u, rgb_values[1]);
-  EXPECT_EQ(0u, rgb_values[2]);
+  const RgbColor& updated_rgb_values = client_->recently_sent_rgb();
+  EXPECT_EQ(0u, std::get<0>(updated_rgb_values));
+  EXPECT_EQ(0u, std::get<1>(updated_rgb_values));
+  EXPECT_EQ(0u, std::get<2>(updated_rgb_values));
 }
 
 TEST_F(RgbKeyboardManagerTest, StaticResetRainbowMode) {
-  EXPECT_FALSE(manager_->is_rainbow_mode_set());
+  EXPECT_FALSE(client_->is_rainbow_mode_set());
   manager_->SetRainbowMode();
-  EXPECT_TRUE(manager_->is_rainbow_mode_set());
+  EXPECT_TRUE(client_->is_rainbow_mode_set());
 
   const uint8_t expected_r = 1;
   const uint8_t expected_g = 2;
   const uint8_t expected_b = 3;
 
   manager_->SetStaticBackgroundColor(expected_r, expected_g, expected_b);
-  const std::vector<uint8_t> rgb_values = manager_->recently_sent_rgb();
+  const RgbColor& rgb_values = client_->recently_sent_rgb();
 
-  EXPECT_EQ(expected_r, rgb_values[0]);
-  EXPECT_EQ(expected_g, rgb_values[1]);
-  EXPECT_EQ(expected_b, rgb_values[2]);
+  EXPECT_FALSE(client_->is_rainbow_mode_set());
 
-  EXPECT_FALSE(manager_->is_rainbow_mode_set());
+  EXPECT_EQ(expected_r, std::get<0>(rgb_values));
+  EXPECT_EQ(expected_g, std::get<1>(rgb_values));
+  EXPECT_EQ(expected_b, std::get<2>(rgb_values));
 }
 
 TEST_F(RgbKeyboardManagerTest, OnCapsLockChanged) {

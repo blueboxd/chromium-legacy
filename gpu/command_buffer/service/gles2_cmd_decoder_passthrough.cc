@@ -412,8 +412,8 @@ PassthroughResources::SharedImageData::SharedImageData(
     SharedImageData&& other) = default;
 PassthroughResources::SharedImageData::~SharedImageData() = default;
 
-PassthroughResources::SharedImageData& PassthroughResources::SharedImageData::
-operator=(SharedImageData&& other) {
+PassthroughResources::SharedImageData&
+PassthroughResources::SharedImageData::operator=(SharedImageData&& other) {
   scoped_access_ = std::move(other.scoped_access_);
   representation_ = std::move(other.representation_);
   return *this;
@@ -1662,6 +1662,11 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.image_ab30 = feature_info_->feature_flags().chromium_image_ab30;
   caps.image_ycbcr_p010 =
       feature_info_->feature_flags().chromium_image_ycbcr_p010;
+  if (feature_info_->workarounds().client_max_texture_size) {
+    caps.max_texture_size =
+        std::min(caps.max_texture_size,
+                 feature_info_->workarounds().client_max_texture_size);
+  }
   caps.max_copy_texture_chromium_size =
       feature_info_->workarounds().max_copy_texture_chromium_size;
   caps.render_buffer_format_bgra8888 =
@@ -1689,7 +1694,11 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.protected_video_swap_chain = surface_->SupportsProtectedVideo();
   caps.gpu_vsync = surface_->SupportsGpuVSync();
 #if BUILDFLAG(IS_WIN)
+  caps.shared_image_d3d =
+      SharedImageBackingFactoryD3D::IsD3DSharedImageSupported(
+          group_->gpu_preferences());
   caps.shared_image_swap_chain =
+      caps.shared_image_d3d &&
       SharedImageBackingFactoryD3D::IsSwapChainSupported();
 #endif  // BUILDFLAG(IS_WIN)
   caps.texture_npot = feature_info_->feature_flags().npot_ok;
@@ -2236,6 +2245,16 @@ error::Error GLES2DecoderPassthroughImpl::PatchGetNumericResults(GLenum pname,
         return error::kInvalidArguments;
       }
       std::copy(std::begin(scissor_), std::end(scissor_), params);
+      break;
+
+    case GL_MAX_TEXTURE_SIZE:
+    case GL_MAX_CUBE_MAP_TEXTURE_SIZE:
+    case GL_MAX_3D_TEXTURE_SIZE:
+      if (feature_info_->workarounds().client_max_texture_size) {
+        *params = std::min(
+            *params, static_cast<T>(
+                         feature_info_->workarounds().client_max_texture_size));
+      }
       break;
 
     default:
@@ -3111,11 +3130,12 @@ bool GLES2DecoderPassthroughImpl::CheckErrorCallbackState() {
   return had_error_;
 }
 
-#define GLES2_CMD_OP(name)                                               \
-  {                                                                      \
-      &GLES2DecoderPassthroughImpl::Handle##name, cmds::name::kArgFlags, \
-      cmds::name::cmd_flags,                                             \
-      sizeof(cmds::name) / sizeof(CommandBufferEntry) - 1,               \
+#define GLES2_CMD_OP(name)                                 \
+  {                                                        \
+      &GLES2DecoderPassthroughImpl::Handle##name,          \
+      cmds::name::kArgFlags,                               \
+      cmds::name::cmd_flags,                               \
+      sizeof(cmds::name) / sizeof(CommandBufferEntry) - 1, \
   }, /* NOLINT */
 
 constexpr GLES2DecoderPassthroughImpl::CommandInfo

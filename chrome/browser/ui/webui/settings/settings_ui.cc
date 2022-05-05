@@ -312,16 +312,17 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("userCannotManuallyEnterPassword", false);
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
-  html_source->AddBoolean(
-      "privacyGuideEnabled",
-      !chrome::ShouldDisplayManagedUi(profile) &&
-          base::FeatureList::IsEnabled(features::kPrivacyGuide));
+  bool privacy_guide_enabled =
+      !chrome::ShouldDisplayManagedUi(profile) && !profile->IsChild() &&
+      !PrivacySandboxServiceFactory::GetForProfile(profile)
+           ->IsPrivacySandboxRestricted() &&
+      base::FeatureList::IsEnabled(features::kPrivacyGuide);
+  html_source->AddBoolean("privacyGuideEnabled", privacy_guide_enabled);
 
   html_source->AddBoolean(
       "privacyGuide2Enabled",
-      !chrome::ShouldDisplayManagedUi(profile) &&
-          // #privacy-guide-2 only has effect if #privacy-guide is enabled too.
-          base::FeatureList::IsEnabled(features::kPrivacyGuide) &&
+      // #privacy-guide-2 only has effect if #privacy-guide is enabled too.
+      privacy_guide_enabled &&
           base::FeatureList::IsEnabled(features::kPrivacyGuide2));
 
   AddSettingsPageUIHandler(std::make_unique<AboutHandler>(profile));
@@ -366,12 +367,12 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
                    profile, chrome::FaviconUrlFormat::kFavicon2));
 
   // Privacy Sandbox
-  bool isPrivacySandboxRestricted =
+  bool is_privacy_sandbox_restricted =
       PrivacySandboxServiceFactory::GetForProfile(profile)
           ->IsPrivacySandboxRestricted();
   html_source->AddBoolean("isPrivacySandboxRestricted",
-                          isPrivacySandboxRestricted);
-  if (!isPrivacySandboxRestricted) {
+                          is_privacy_sandbox_restricted);
+  if (!is_privacy_sandbox_restricted) {
     html_source->AddResourcePath(
         "privacySandbox", IDR_SETTINGS_PRIVACY_SANDBOX_PRIVACY_SANDBOX_HTML);
   }

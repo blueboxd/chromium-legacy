@@ -341,7 +341,19 @@ void AuthenticatorRequestDialogModel::OnOffTheRecordInterstitialAccepted() {
 
 void AuthenticatorRequestDialogModel::ShowCableUsbFallback() {
   DCHECK_EQ(current_step(), Step::kCableActivate);
-  SetCurrentStep(Step::kAndroidAccessory);
+
+  switch (experiment_server_link_sheet_) {
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::CONTROL:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_2:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_5:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_6:
+      SetCurrentStep(Step::kAndroidAccessory);
+      break;
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_3:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_4:
+      Cancel();
+      break;
+  }
 }
 
 void AuthenticatorRequestDialogModel::ShowCable() {
@@ -630,8 +642,18 @@ void AuthenticatorRequestDialogModel::SetCurrentStepForTesting(Step step) {
 }
 
 bool AuthenticatorRequestDialogModel::cable_should_suggest_usb() const {
-  return base::Contains(transport_availability_.available_transports,
-                        AuthenticatorTransport::kAndroidAccessory);
+  switch (experiment_server_link_sheet_) {
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::CONTROL:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_2:
+      return base::Contains(transport_availability_.available_transports,
+                            AuthenticatorTransport::kAndroidAccessory);
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_3:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_4:
+      return true;
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_5:
+    case AuthenticatorRequestDialogModel::ExperimentServerLinkSheet::ARM_6:
+      return false;
+  }
 }
 
 void AuthenticatorRequestDialogModel::CollectPIN(
@@ -949,8 +971,7 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms(
   if (cable_ui_type_) {
     switch (*cable_ui_type_) {
       case AuthenticatorRequestDialogModel::CableUIType::CABLE_V2_2ND_FACTOR:
-        if (base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport) &&
-            base::Contains(transport_availability_.available_transports,
+        if (base::Contains(transport_availability_.available_transports,
                            kCable)) {
           include_add_phone_option = true;
         }
@@ -965,8 +986,6 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms(
         if (base::Contains(transport_availability_.available_transports,
                            kCable)) {
           transports_to_list_if_active.push_back(kCable);
-          DCHECK(is_get_assertion ||
-                 base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport));
           if (!priority_transport) {
             priority_transport = kCable;
           }
@@ -1000,28 +1019,14 @@ void AuthenticatorRequestDialogModel::PopulateMechanisms(
   }
 
   if (include_add_phone_option) {
-    // If there's no other priority mechanism, no phones, and nothing on the
-    // platform authenticator, jump directly to showing a QR code.
-    const bool is_priority =
-        std::none_of(mechanisms_.begin(), mechanisms_.end(),
-                     [](const Mechanism& m) { return m.priority; }) &&
-        paired_phone_names().empty() && is_get_assertion &&
-        transport_availability_.has_empty_allow_list &&
-        !(transport_availability_
-              .has_recognized_platform_authenticator_credential.value_or(
-                  false)) &&
-        base::FeatureList::IsEnabled(device::kWebAuthPasskeysUI);
-
     const std::u16string label =
-        base::FeatureList::IsEnabled(device::kWebAuthPasskeysUIExperiment)
-            ? u"Add a new phone"
-            : l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLEV2_ADD_PHONE);
+        l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLEV2_ADD_PHONE);
     mechanisms_.emplace_back(
         Mechanism::AddPhone(), label, label, &kQrcodeGeneratorIcon,
         base::BindRepeating(
             &AuthenticatorRequestDialogModel::StartGuidedFlowForAddPhone,
             base::Unretained(this), mechanisms_.size()),
-        is_priority);
+        /* is_priority= */ false);
   }
 
   for (const auto transport : transports_to_list_if_active) {

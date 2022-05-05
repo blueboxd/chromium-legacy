@@ -19,24 +19,21 @@ namespace {
 
 RgbKeyboardManager* g_instance = nullptr;
 
-const int kRGBLength = 3;
-
 }  // namespace
 
 RgbKeyboardManager::RgbKeyboardManager(ImeControllerImpl* ime_controller)
-    : recently_sent_rgb_for_testing_(kRGBLength),
-      ime_controller_raw_ptr_(ime_controller) {
-  DCHECK(ime_controller_raw_ptr_);
+    : ime_controller_ptr_(ime_controller) {
+  DCHECK(ime_controller_ptr_);
   DCHECK(!g_instance);
   g_instance = this;
 
-  ime_controller_raw_ptr_->AddObserver(this);
+  ime_controller_ptr_->AddObserver(this);
 
   FetchRgbKeyboardSupport();
 }
 
 RgbKeyboardManager::~RgbKeyboardManager() {
-  ime_controller_raw_ptr_->RemoveObserver(this);
+  ime_controller_ptr_->RemoveObserver(this);
 
   DCHECK_EQ(g_instance, this);
   g_instance = nullptr;
@@ -54,26 +51,18 @@ rgbkbd::RgbKeyboardCapabilities RgbKeyboardManager::GetRgbKeyboardCapabilities()
   return capabilities_;
 }
 
-// TODO(jimmyxgong): This is a stub implementation, replace with real impl.
 void RgbKeyboardManager::SetStaticBackgroundColor(uint8_t r,
                                                   uint8_t g,
                                                   uint8_t b) {
-  // Reset the rainbow mode state.
-  is_rainbow_mode_set_for_testing_ = false;
-
-  recently_sent_rgb_for_testing_[0] = r;
-  recently_sent_rgb_for_testing_[1] = g;
-  recently_sent_rgb_for_testing_[2] = b;
+  DCHECK(RgbkbdClient::Get());
+  // TODO(michaelcheco): Check RGB capabilities before proceeding.
+  RgbkbdClient::Get()->SetStaticBackgroundColor(r, g, b);
 }
 
-// TODO(jimmyxgong): This is a stub implementation, replace with real impl.
 void RgbKeyboardManager::SetRainbowMode() {
-  is_rainbow_mode_set_for_testing_ = true;
-
-  // Reset the stored static rgb values;
-  recently_sent_rgb_for_testing_[0] = 0u;
-  recently_sent_rgb_for_testing_[1] = 0u;
-  recently_sent_rgb_for_testing_[2] = 0u;
+  DCHECK(RgbkbdClient::Get());
+  // TODO(michaelcheco): Check RGB capabilities before proceeding.
+  RgbkbdClient::Get()->SetRainbowMode();
 }
 
 void RgbKeyboardManager::OnCapsLockChanged(bool enabled) {
@@ -98,7 +87,7 @@ void RgbKeyboardManager::OnGetRgbKeyboardCapabilities(
   // Upon login, CapsLock may already be enabled.
   if (IsRgbKeyboardSupported()) {
     RgbkbdClient::Get()->SetCapsLockState(
-        ime_controller_raw_ptr_->IsCapsLockEnabled());
+        ime_controller_ptr_->IsCapsLockEnabled());
   }
 }
 

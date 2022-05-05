@@ -126,6 +126,7 @@ struct PopupView: View {
   }
 
   @ObservedObject var model: PopupModel
+  @ObservedObject var uiConfiguration: PopupUIConfiguration
   private let shouldSelfSize: Bool
   private let appearanceContainerType: UIAppearanceContainer.Type?
 
@@ -137,10 +138,11 @@ struct PopupView: View {
   @State private var selfSizingListHeight: CGFloat? = nil
 
   init(
-    model: PopupModel, shouldSelfSize: Bool = false,
+    model: PopupModel, uiConfiguration: PopupUIConfiguration, shouldSelfSize: Bool = false,
     appearanceContainerType: UIAppearanceContainer.Type? = nil
   ) {
     self.model = model
+    self.uiConfiguration = uiConfiguration
     self.shouldSelfSize = shouldSelfSize
     self.appearanceContainerType = appearanceContainerType
   }
@@ -156,13 +158,15 @@ struct PopupView: View {
           let highlighted = indexPath == model.highlightedMatchIndexPath
           // UI Variation 1 always has separators. Variation 2 doesn't have
           // one on the last row in a section.
+          // If there is only one row or less in a section, no row separators.
           let shouldDisplayCustomSeparator =
-            !highlighted && (matchIndex < section.matches.count - 1 || popupUIVariation == .one)
+            !highlighted && (section.matches.count > 1)
+            && (matchIndex < section.matches.count - 1 || popupUIVariation == .one)
 
           PopupMatchRowView(
             match: match,
             isHighlighted: highlighted,
-            toolbarConfiguration: toolbarConfiguration,
+            toolbarConfiguration: uiConfiguration.toolbarConfiguration,
             selectionHandler: {
               model.delegate?.autocompleteResultConsumer(
                 model, didSelectRow: UInt(matchIndex), inSection: UInt(sectionIndex))
@@ -178,7 +182,7 @@ struct PopupView: View {
           .deleteDisabled(!match.supportsDeletion)
           .listRowInsets(Dimensions.matchListRowInsets)
           .listRowBackground(Color.clear)
-          .accessibilityElement(children: .contain)
+          .accessibilityElement(children: .combine)
           .accessibilityIdentifier(
             OmniboxPopupAccessibilityIdentifierHelper.accessibilityIdentifierForRow(at: indexPath))
         }
@@ -260,8 +264,9 @@ struct PopupView: View {
       if popupUIVariation == .one {
         if index == 0 {
           // Additional space between omnibox and top section.
-          let firstSectionHeader = Color(toolbarConfiguration.backgroundColor).frame(
-            width: geometry.size.width, height: -Dimensions.VariationOne.hiddenTopContentInset)
+          let firstSectionHeader = Color(uiConfiguration.toolbarConfiguration.backgroundColor)
+            .frame(
+              width: geometry.size.width, height: -Dimensions.VariationOne.hiddenTopContentInset)
           if #available(iOS 15.0, *) {
             // Additional padding is added on iOS 15, which needs to be cancelled here.
             firstSectionHeader.padding([.top, .bottom], -6)
@@ -271,12 +276,12 @@ struct PopupView: View {
         } else if index == 1 {
           // Spacing and separator below the top (pedal) section is inserted as
           // a header in the second section.
-          let separatorColor = (colorScheme == .dark) ? Color.grey700 : Color.grey200
+          let separatorColor = Color.separator
           let pedalSectionSeparator =
             separatorColor
             .frame(width: geometry.size.width, height: 0.5)
             .padding(Dimensions.VariationOne.pedalSectionSeparatorPadding)
-            .background(Color(toolbarConfiguration.backgroundColor))
+            .background(Color(uiConfiguration.toolbarConfiguration.backgroundColor))
 
           if #available(iOS 15.0, *) {
             pedalSectionSeparator.padding([.top, .bottom], -6)
@@ -305,8 +310,8 @@ struct PopupView: View {
       leadingSpace = 0
       trailingSpace = 0
     } else {
-      leadingSpace = model.omniboxLeadingSpace
-      trailingSpace = model.omniboxTrailingSpace
+      leadingSpace = uiConfiguration.omniboxLeadingSpace
+      trailingSpace = uiConfiguration.omniboxTrailingSpace
     }
     let inset: CGFloat =
       (popupUIVariation == .one || sizeClass == .compact)
@@ -325,7 +330,7 @@ struct PopupView: View {
     if #available(iOS 15, *) {
       switch popupUIVariation {
       case .one:
-        backgroundColor = Color(toolbarConfiguration.backgroundColor)
+        backgroundColor = Color(uiConfiguration.toolbarConfiguration.backgroundColor)
       case .two:
         backgroundColor = .groupedPrimaryBackground
       }
@@ -338,13 +343,6 @@ struct PopupView: View {
       }
     }
     return backgroundColor.edgesIgnoringSafeArea(.all)
-  }
-
-  /// The toolbar configuration for the current popup view.
-  /// ToolbarConfiguration's background color doesn't actually depend on
-  /// the style any more, as normal vs. incognito is handled via colorsets.
-  var toolbarConfiguration: ToolbarConfiguration {
-    ToolbarConfiguration(style: .NORMAL)
   }
 
   func onAppear() {
@@ -392,7 +390,9 @@ struct PopupView_Previews: PreviewProvider {
     let sample =
       PopupView(
         model: PopupModel(
-          matches: [PopupMatch.previews], headers: ["Suggestions"], delegate: nil)
+          matches: [PopupMatch.previews], headers: ["Suggestions"], delegate: nil),
+        uiConfiguration: PopupUIConfiguration(
+          toolbarConfiguration: ToolbarConfiguration(style: .NORMAL))
       )
 
     sample.environment(\.popupUIVariation, .one)

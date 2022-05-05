@@ -130,7 +130,6 @@ public class ContextualSearchPanelMetrics {
             }
 
             if (mWasContextualCardsDataShown) {
-                ContextualSearchUma.logContextualCardsResultsSeen(mWasSearchContentViewSeen);
                 EngagementSuppression.registerContextualCardsImpression(mWasSearchContentViewSeen);
             }
             ContextualSearchUma.logCardTagSeen(mWasSearchContentViewSeen, mCardTag);
@@ -146,8 +145,6 @@ public class ContextualSearchPanelMetrics {
             if (mResultsSeenExperiments != null) {
                 mResultsSeenExperiments.logResultsSeen(
                         mWasSearchContentViewSeen, mWasActivatedByTap);
-                mResultsSeenExperiments.logPanelViewedDurations(
-                        panelViewDurationMs, mPanelOpenedBeyondPeekDurationMs);
                 if (!isChained) mResultsSeenExperiments = null;
             }
             mPanelOpenedBeyondPeekDurationMs = 0;

@@ -88,6 +88,10 @@ extern const char kBreakpadNoDelayInitialUploadDescription[];
 extern const char kBubbleRichIPHName[];
 extern const char kBubbleRichIPHDescription[];
 
+// Title and description for the flag to enable experience kit calendar events.
+extern const char kCalendarExperienceKitName[];
+extern const char kCalendarExperienceKitDescription[];
+
 // Title and description for the flag that moves the Content Suggestions header
 // to the Discover feed ScrollView.
 extern const char kContentSuggestionsHeaderMigrationName[];
@@ -139,6 +143,11 @@ extern const char kDetectMainThreadFreezeDescription[];
 // Discover feed in the Bling NTP.
 extern const char kDiscoverFeedInNtpName[];
 extern const char kDiscoverFeedInNtpDescription[];
+
+// Title and description for the flag to enable DisplaySyncErrors refactored
+// code.
+extern const char kDisplaySyncErrorsRefactorName[];
+extern const char kDisplaySyncErrorsRefactorDescription[];
 
 // Title and description for the flag to enable Calendar support.
 extern const char kDownloadCalendarName[];
@@ -245,6 +254,10 @@ extern const char kEnableUnicornAccountSupportDescription[];
 // active fullscreen viewport adjustment mode.
 extern const char kFullscreenSmoothScrollingName[];
 extern const char kFullscreenSmoothScrollingDescription[];
+
+// Title and description for the flag to enable HTTPS-Only Mode setting.
+extern const char kHttpsOnlyModeName[];
+extern const char kHttpsOnlyModeDescription[];
 
 // Title and description for the flag to enable dark mode colors while in
 // Incognito mode.
@@ -443,6 +456,11 @@ extern const char kSingleCellContentSuggestionsDescription[];
 // Title and description for the flag to use one NTP for all tabs in a Browser.
 extern const char kSingleNtpName[];
 extern const char kSingleNtpDescription[];
+
+// Title and description for the flag to enable smart sorting the new overflow
+// menu.
+extern const char kSmartSortingNewOverflowMenuName[];
+extern const char kSmartSortingNewOverflowMenuDescription[];
 
 // Title and description for the flag to enable the Start Surface.
 extern const char kStartSurfaceName[];

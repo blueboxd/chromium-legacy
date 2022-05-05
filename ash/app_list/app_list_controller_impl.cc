@@ -1629,6 +1629,9 @@ bool AppListControllerImpl::HasValidProfile() const {
 }
 
 bool AppListControllerImpl::ShouldHideContinueSection() const {
+  if (!features::IsLauncherHideContinueSectionEnabled())
+    return false;
+
   PrefService* prefs = GetLastActiveUserPrefService();
   return prefs->GetBoolean(prefs::kLauncherContinueSectionHidden);
 }
@@ -1638,6 +1641,11 @@ void AppListControllerImpl::SetHideContinueSection(bool hide) {
   prefs->SetBoolean(prefs::kLauncherContinueSectionHidden, hide);
   fullscreen_presenter_->UpdateContinueSectionVisibility();
   bubble_presenter_->UpdateContinueSectionVisibility();
+}
+
+void AppListControllerImpl::CommitTemporarySortOrder() {
+  DCHECK(client_);
+  client_->CommitTemporarySortOrder();
 }
 
 void AppListControllerImpl::GetAppLaunchedMetricParams(
@@ -1791,6 +1799,10 @@ void AppListControllerImpl::OnVisibilityChanged(bool visible,
 
     for (auto& observer : observers_)
       observer.OnAppListVisibilityChanged(real_visibility, display_id);
+
+    // Record whether the continue section is hidden by the user.
+    if (real_visibility)
+      RecordHideContinueSectionMetric();
 
     if (!home_launcher_animation_callback_.is_null())
       home_launcher_animation_callback_.Run(real_visibility);

@@ -5,88 +5,11 @@
 GEN_INCLUDE(['dictation_test_base.js']);
 
 /** UI tests for Dictation. */
-DictationUIE2ETest = class extends DictationE2ETestBase {
-  constructor() {
-    super();
-
-    this.iconType = this.mockAccessibilityPrivate.DictationBubbleIconType;
-    this.hintType = this.mockAccessibilityPrivate.DictationBubbleHintType;
-  }
-
-  /**
-   * Returns true if `targetProps` matches the most recent UI properties. Must
-   * match exactly.
-   * @param {DictationBubbleProperties} targetProps
-   * @return {boolean}
-   */
-  uiPropertiesMatch(targetProps) {
-    /** @type {function(!Array<string>,!Array<string>) : boolean} */
-    const areEqual = (arr1, arr2) => {
-      return arr1.every((val, index) => val === arr2[index]);
-    };
-
-    const actualProps = this.mockAccessibilityPrivate.getDictationBubbleProps();
-    if (!actualProps) {
-      return false;
-    }
-
-    if (Object.keys(actualProps).length !== Object.keys(targetProps).length) {
-      return false;
-    }
-
-    for (const key of Object.keys(targetProps)) {
-      if (Array.isArray(targetProps[key]) && Array.isArray(actualProps[key])) {
-        // For arrays, ensure that we compare the contents of the arrays.
-        if (!areEqual(targetProps[key], actualProps[key])) {
-          return false;
-        }
-      } else if (targetProps[key] !== actualProps[key]) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  /**
-   * Waits for the updateDictationBubble() API to be called with the given
-   * properties.
-   * @param {DictationBubbleProperties} targetProps
-   */
-  async waitForUIProperties(targetProps) {
-    // Poll until the updateDictationBubble() API gets called with
-    // `targetProps`.
-    return new Promise(resolve => {
-      const printErrorMessageTimeoutId = setTimeout(() => {
-        this.printErrorMessage(targetProps);
-      }, DictationUIE2ETest.PRINT_ERROR_MESSAGE_DELAY_MS);
-      const intervalId = setInterval(() => {
-        if (this.uiPropertiesMatch(targetProps)) {
-          clearTimeout(printErrorMessageTimeoutId);
-          clearInterval(intervalId);
-          resolve();
-        }
-      });
-    });
-  }
-
-  /** @param {DictationBubbleProperties} props */
-  printErrorMessage(props) {
-    console.error(`Still waiting for UI properties
-      visible: ${props.visible}
-      icon: ${props.icon}
-      text: ${props.text}
-      hints: ${props.hints}`);
-  }
-};
-
-/** @const {number} */
-DictationUIE2ETest.PRINT_ERROR_MESSAGE_DELAY_MS = 3.5 * 1000;
+DictationUIE2ETest = class extends DictationE2ETestBase {};
 
 SYNC_TEST_F(
     'DictationUIE2ETest', 'ShownWhenSpeechRecognitionStarts', async function() {
-      await this.waitForDictationWithCommandsAndHints();
-      await this.toggleDictationAndStartListening(1);
+      this.toggleDictationOn();
       await this.waitForUIProperties({
         visible: true,
         icon: this.iconType.STANDBY,
@@ -95,8 +18,7 @@ SYNC_TEST_F(
 
 SYNC_TEST_F(
     'DictationUIE2ETest', 'DisplaysInterimSpeechResults', async function() {
-      await this.waitForDictationWithCommandsAndHints();
-      await this.toggleDictationAndStartListening(1);
+      this.toggleDictationOn();
       // Send an interim speech result.
       this.mockSpeechRecognitionPrivate.fireMockOnResultEvent(
           'Testing', /*isFinal=*/ false);
@@ -108,8 +30,7 @@ SYNC_TEST_F(
     });
 
 SYNC_TEST_F('DictationUIE2ETest', 'DisplaysMacroSuccess', async function() {
-  await this.waitForDictationWithCommandsAndHints();
-  await this.toggleDictationAndStartListening(1);
+  this.toggleDictationOn();
   // Perform a command.
   this.mockSpeechRecognitionPrivate.fireMockOnResultEvent(
       this.commandStrings.SELECT_ALL_TEXT, /*isFinal=*/ true);
@@ -123,8 +44,7 @@ SYNC_TEST_F('DictationUIE2ETest', 'DisplaysMacroSuccess', async function() {
 SYNC_TEST_F(
     'DictationUIE2ETest', 'ResetsToStandbyModeAfterFinalSpeechResult',
     async function() {
-      await this.waitForDictationWithCommandsAndHints();
-      await this.toggleDictationAndStartListening(1);
+      this.toggleDictationOn();
       await this.waitForUIProperties({
         visible: true,
         icon: this.iconType.STANDBY,
@@ -148,20 +68,18 @@ SYNC_TEST_F(
 
 SYNC_TEST_F(
     'DictationUIE2ETest', 'HiddenWhenDictationDeactivates', async function() {
-      await this.waitForDictationWithCommandsAndHints();
-      await this.toggleDictationAndStartListening(1);
+      this.toggleDictationOn();
       await this.waitForUIProperties({
         visible: true,
         icon: this.iconType.STANDBY,
       });
-      this.toggleDictationOffFromAccessibilityPrivate();
+      this.toggleDictationOff();
       await this.waitForUIProperties(
           {visible: false, icon: this.iconType.HIDDEN});
     });
 
 SYNC_TEST_F('DictationUIE2ETest', 'StandbyHints', async function() {
-  await this.waitForDictationWithCommandsAndHints();
-  await this.toggleDictationAndStartListening(1);
+  this.toggleDictationOn();
   await this.waitForUIProperties({
     visible: true,
     icon: this.iconType.STANDBY,
@@ -176,8 +94,7 @@ SYNC_TEST_F('DictationUIE2ETest', 'StandbyHints', async function() {
 
 SYNC_TEST_F(
     'DictationUIE2ETest', 'HintsShownWhenTextCommitted', async function() {
-      await this.waitForDictationWithCommandsAndHints();
-      await this.toggleDictationAndStartListening(1);
+      this.toggleDictationOn();
       await this.waitForUIProperties({
         visible: true,
         icon: this.iconType.STANDBY,
@@ -204,8 +121,7 @@ SYNC_TEST_F(
 
 SYNC_TEST_F(
     'DictationUIE2ETest', 'HintsShownAfterTextSelected', async function() {
-      await this.waitForDictationWithCommandsAndHints();
-      await this.toggleDictationAndStartListening(1);
+      this.toggleDictationOn();
       await this.waitForUIProperties({
         visible: true,
         icon: this.iconType.STANDBY,
@@ -233,8 +149,7 @@ SYNC_TEST_F(
 
 SYNC_TEST_F(
     'DictationUIE2ETest', 'HintsShownAfterCommandExecuted', async function() {
-      await this.waitForDictationWithCommandsAndHints();
-      await this.toggleDictationAndStartListening(1);
+      this.toggleDictationOn();
       await this.waitForUIProperties({
         visible: true,
         icon: this.iconType.STANDBY,

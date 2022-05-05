@@ -690,9 +690,16 @@ void NativeWidgetNSWindowBridge::CloseWindowNow() {
 
 void NativeWidgetNSWindowBridge::SetVisibilityState(
     WindowVisibilityState new_state) {
-  // Avoid changing headless mode window visibility state.
-  if (is_headless_mode_window_)
+  // In headless mode the platform window is always hidden, so instead of
+  // changing its visibility state just maintain a local flag to track the
+  // expected visibility state and lie to the upper layer pretending the
+  // window did change its visibility state.
+  if (is_headless_mode_window_) {
+    headless_window_visibility_state_ =
+        new_state != WindowVisibilityState::kHideWindow;
+    host_->OnVisibilityChanged(headless_window_visibility_state_);
     return;
+  }
 
   // During session restore this method gets called from RestoreTabsToBrowser()
   // with new_state = kShowAndActivateWindow. We consume restoration data on our
@@ -780,17 +787,20 @@ void NativeWidgetNSWindowBridge::SetVisibilityState(
   if (new_state == WindowVisibilityState::kShowAndActivateWindow) {
     [window_ makeKeyAndOrderFront:nil];
     [NSApp activateIgnoringOtherApps:YES];
-  } else if (!parent_ && ![window_ isMiniaturized]) {
-    if ([[NSApp mainWindow] screen] == [window_ screen]) {
-      // When the new window is on the same display as the main window, order
-      // the window relative to the main window. Avoid making it the front
-      // window (with e.g. orderFront:), which can cause a space switch.
+  } else if (new_state == WindowVisibilityState::kShowInactive && !parent_ &&
+             ![window_ isMiniaturized]) {
+    if ([[NSApp mainWindow] screen] == [window_ screen] ||
+        ![[NSApp mainWindow] isKeyWindow]) {
+      // When the new window is on the same display as the main window or the
+      // main window is inactive, order the window relative to the main window.
+      // Avoid making it the front window (with e.g. orderFront:), which can
+      // cause a space switch.
       [window_ orderWindow:NSWindowBelow
                 relativeTo:NSApp.mainWindow.windowNumber];
     } else {
-      // When opening a window on another screen, put the window at the front.
-      // When relativeTo: is 0, it won't trigger a space switch.
-      [window_ orderWindow:NSWindowAbove relativeTo:0];
+      // When opening an inactive window on another screen, put the window at
+      // the front and trigger a space switch.
+      [window_ orderFrontKeepWindowKeyState];
     }
   }
 
@@ -1737,6 +1747,15 @@ void NativeWidgetNSWindowBridge::ShowAsModalSheet() {
   } else {
     std::move(begin_sheet_closure).Run();
   }
+}
+
+bool NativeWidgetNSWindowBridge::window_visible() const {
+  // In headless mode the platform window is always hidden, so instead of
+  // returning the actual platform window visibility state tracked by
+  // OnVisibilityChanged() callback, return the expected visibility state
+  // maintained by SetVisibilityState() call.
+  return is_headless_mode_window_ ? headless_window_visibility_state_
+                                  : window_visible_;
 }
 
 }  // namespace remote_cocoa

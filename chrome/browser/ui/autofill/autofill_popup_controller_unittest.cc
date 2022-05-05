@@ -77,7 +77,6 @@ class MockAutofillClient : public autofill::TestAutofillClient {
 class MockAutofillDriver : public ContentAutofillDriver {
  public:
   MockAutofillDriver(content::RenderFrameHost* rfh,
-                     MockAutofillClient* client,
                      ContentAutofillRouter* router)
       : ContentAutofillDriver(rfh, router) {}
 
@@ -93,7 +92,8 @@ class MockBrowserAutofillManager : public BrowserAutofillManager {
   MockBrowserAutofillManager(AutofillDriver* driver, MockAutofillClient* client)
       : BrowserAutofillManager(driver,
                                client,
-                               client->GetPersonalDataManager()) {}
+                               "en-US",
+                               EnableDownloadManager(false)) {}
   MockBrowserAutofillManager(MockBrowserAutofillManager&) = delete;
   MockBrowserAutofillManager& operator=(MockBrowserAutofillManager&) = delete;
   ~MockBrowserAutofillManager() override = default;
@@ -324,8 +324,7 @@ class AutofillPopupControllerAccessibilityUnitTest
   CreateExternalDelegate() override {
     autofill_router_ = std::make_unique<ContentAutofillRouter>();
     autofill_driver_ = std::make_unique<NiceMock<MockAutofillDriver>>(
-        web_contents()->GetMainFrame(), autofill_client_.get(),
-        autofill_router_.get());
+        web_contents()->GetMainFrame(), autofill_router_.get());
     autofill_driver_->set_autofill_manager(
         std::make_unique<MockBrowserAutofillManager>(autofill_driver_.get(),
                                                      autofill_client_.get()));
@@ -534,7 +533,7 @@ TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
   ASSERT_EQ(3, autofill_popup_controller_->GetLineCount());
 
   Suggestion result0 = autofill_popup_controller_->GetSuggestionAt(0);
-  EXPECT_EQ(value1, result0.value);
+  EXPECT_EQ(value1, result0.main_text.value);
   EXPECT_EQ(value1, autofill_popup_controller_->GetSuggestionMainTextAt(0));
   EXPECT_EQ(label1, result0.label);
   EXPECT_EQ(std::u16string(), result0.additional_label);
@@ -542,13 +541,13 @@ TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
   EXPECT_EQ(POPUP_ITEM_ID_DATALIST_ENTRY, result0.frontend_id);
 
   Suggestion result1 = autofill_popup_controller_->GetSuggestionAt(1);
-  EXPECT_EQ(std::u16string(), result1.value);
+  EXPECT_EQ(std::u16string(), result1.main_text.value);
   EXPECT_EQ(std::u16string(), result1.label);
   EXPECT_EQ(std::u16string(), result1.additional_label);
   EXPECT_EQ(POPUP_ITEM_ID_SEPARATOR, result1.frontend_id);
 
   Suggestion result2 = autofill_popup_controller_->GetSuggestionAt(2);
-  EXPECT_EQ(std::u16string(), result2.value);
+  EXPECT_EQ(std::u16string(), result2.main_text.value);
   EXPECT_EQ(std::u16string(), result2.label);
   EXPECT_EQ(std::u16string(), result2.additional_label);
   EXPECT_EQ(1, result2.frontend_id);
@@ -564,12 +563,14 @@ TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
   ASSERT_EQ(4, autofill_popup_controller_->GetLineCount());
 
   // Original one first, followed by new one, then separator.
-  EXPECT_EQ(value1, autofill_popup_controller_->GetSuggestionAt(0).value);
+  EXPECT_EQ(value1,
+            autofill_popup_controller_->GetSuggestionAt(0).main_text.value);
   EXPECT_EQ(value1, autofill_popup_controller_->GetSuggestionMainTextAt(0));
   EXPECT_EQ(label1, autofill_popup_controller_->GetSuggestionAt(0).label);
   EXPECT_EQ(std::u16string(),
             autofill_popup_controller_->GetSuggestionAt(0).additional_label);
-  EXPECT_EQ(value2, autofill_popup_controller_->GetSuggestionAt(1).value);
+  EXPECT_EQ(value2,
+            autofill_popup_controller_->GetSuggestionAt(1).main_text.value);
   EXPECT_EQ(value2, autofill_popup_controller_->GetSuggestionMainTextAt(1));
   EXPECT_EQ(label2, autofill_popup_controller_->GetSuggestionAt(1).label);
   EXPECT_EQ(std::u16string(),
@@ -604,7 +605,8 @@ TEST_F(AutofillPopupControllerUnitTest, PopupsWithOnlyDataLists) {
                                                    data_list_labels);
 
   ASSERT_EQ(1, autofill_popup_controller_->GetLineCount());
-  EXPECT_EQ(value1, autofill_popup_controller_->GetSuggestionAt(0).value);
+  EXPECT_EQ(value1,
+            autofill_popup_controller_->GetSuggestionAt(0).main_text.value);
   EXPECT_EQ(label1, autofill_popup_controller_->GetSuggestionAt(0).label);
   EXPECT_EQ(std::u16string(),
             autofill_popup_controller_->GetSuggestionAt(0).additional_label);

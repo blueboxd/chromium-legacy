@@ -87,14 +87,17 @@ const base::Feature kQuickCommands{"QuickCommands",
 
 #if BUILDFLAG(ENABLE_SIDE_SEARCH)
 // Enables the side search feature for Google Search. Presents recent Google
-// search results in a browser side panel (crbug.com/1242730).
+// search results in a browser side panel.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+// Enable by default as the ChromeOS iteration of Side Search has launched (See
+// crbug.com/1242730).
+const base::Feature kSideSearch{"SideSearch", base::FEATURE_ENABLED_BY_DEFAULT};
+#else
+// Disable by default on remaining desktop platforms until desktop UX has
+// launched (See crbug.com/1279696).
 const base::Feature kSideSearch{"SideSearch",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether the side contents for all tabs in a given window are cleared
-// away when the side panel is closed.
-const base::Feature kSideSearchClearCacheWhenClosed{
-    "SideSearchClearCacheWhenClosed", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 const base::Feature kSideSearchFeedback{"SideSearchFeedback",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -237,8 +240,15 @@ const base::Feature kWebUIDownloadShelf{"WebUIDownloadShelf",
 
 // Enables a web-based tab strip. See https://crbug.com/989131. Note this
 // feature only works when the ENABLE_WEBUI_TAB_STRIP buildflag is enabled.
-const base::Feature kWebUITabStrip{"WebUITabStrip",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kWebUITabStrip {
+  "WebUITabStrip",
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      base::FEATURE_ENABLED_BY_DEFAULT
+};
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+};
+#endif
 
 // The default value of this flag is aligned with platform behavior to handle
 // context menu with touch.
@@ -251,11 +261,6 @@ const base::Feature kWebUITabStripContextMenuAfterTap {
       base::FEATURE_ENABLED_BY_DEFAULT
 #endif
 };
-
-// Enables a WebUI Feedback UI, as opposed to the Chrome App UI. See
-// https://crbug.com/1167223.
-const base::Feature kWebUIFeedback{"WebUIFeedback",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_CHROMEOS)
 const base::Feature kChromeOSTabSearchCaptionButton{

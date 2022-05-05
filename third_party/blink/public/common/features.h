@@ -183,8 +183,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kResourceLoadViaDataPipe;
 BLINK_COMMON_EXPORT extern const base::Feature kServiceWorkerUpdateDelay;
 BLINK_COMMON_EXPORT extern const base::Feature kSpeculationRulesPrefetchProxy;
 BLINK_COMMON_EXPORT extern const base::Feature kStopInBackground;
-BLINK_COMMON_EXPORT extern const base::Feature
-    kFreezeBackgroundTabOnNetworkIdle;
 BLINK_COMMON_EXPORT extern const base::Feature kStorageAccessAPI;
 BLINK_COMMON_EXPORT extern const base::Feature kTextFragmentAnchor;
 BLINK_COMMON_EXPORT extern const base::Feature kCssSelectorFragmentAnchor;
@@ -271,8 +269,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kOffsetParentNewSpecBehavior;
 
 BLINK_COMMON_EXPORT extern const base::Feature
     kCancelFormSubmissionInDefaultHandler;
-
-BLINK_COMMON_EXPORT extern const base::Feature kKeepScriptResourceAlive;
 
 BLINK_COMMON_EXPORT extern const base::Feature
     kAlignFontDisplayAutoTimeoutWithLCPGoal;

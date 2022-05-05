@@ -252,6 +252,7 @@ android_library("java") {
     "//components/embedder_support/android:application_java",
     "//components/embedder_support/android:content_view_java",
     "//components/embedder_support/android:context_menu_java",
+    "//components/embedder_support/android:simple_factory_key_java",
     "//components/embedder_support/android:util_java",
     "//components/embedder_support/android:web_contents_delegate_java",
     "//components/embedder_support/android/metrics:java",
@@ -379,7 +380,6 @@ android_library("test_java") {
     ":java",
     ":test_interfaces_java",
     ":weblayer_test_resources",
-    "//base:base_java",
     "//base:jni_java",
     "//build/android:build_java",
     "//components/android_autofill/browser:java",
@@ -412,7 +412,6 @@ android_library("junit_test_support") {
   testonly = true
   deps = [
     ":java",
-    "//base:base_java",
     "//build/android:build_java",
     "//components/payments/content/android:java",
     "//components/payments/content/android:junit_test_support",
@@ -442,7 +441,6 @@ junit_binary("weblayer_junit_tests") {
   deps = [
     ":java",
     ":junit_test_support",
-    "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
     "//build/android:build_java",

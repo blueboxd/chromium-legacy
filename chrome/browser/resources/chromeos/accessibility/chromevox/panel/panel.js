@@ -495,49 +495,36 @@ export class Panel extends PanelInterface {
             Panel.onClose();
           });
 
-      const roleListMenuMapping = [
-        {menuTitle: 'role_heading', predicate: AutomationPredicate.heading},
-        {menuTitle: 'role_landmark', predicate: AutomationPredicate.landmark},
-        {menuTitle: 'role_link', predicate: AutomationPredicate.link}, {
-          menuTitle: 'panel_menu_form_controls',
-          predicate: AutomationPredicate.formField
-        },
-        {menuTitle: 'role_table', predicate: AutomationPredicate.table}
-      ];
-
-      for (let i = 0; i < roleListMenuMapping.length; ++i) {
-        const menuTitle = roleListMenuMapping[i].menuTitle;
-        const predicate = roleListMenuMapping[i].predicate;
+      for (const menuData of ALL_NODE_MENU_DATA) {
         // Create node menus asynchronously (because it may require
         // searching a long document) unless that's the specific menu the
         // user requested.
-        const async = (menuTitle !== opt_activateMenuTitle);
-        Panel.addNodeMenu(menuTitle, node, predicate, async);
+        const isActivatedMenu = (menuData.titleId === opt_activateMenuTitle);
+        Panel.addNodeMenu(menuData, node, isActivatedMenu);
       }
 
-      if (node && node.standardActions) {
-        for (let i = 0; i < node.standardActions.length; i++) {
-          const standardAction = node.standardActions[i];
-          const actionMsg = Panel.ACTION_TO_MSG_ID[standardAction];
-          if (!actionMsg) {
-            continue;
-          }
-          const actionDesc = Msgs.getMsg(actionMsg);
-          actionsMenu.addMenuItem(
-              actionDesc, '' /* menuItemShortcut */, '' /* menuItemBraille */,
-              '' /* gesture */,
-              node.performStandardAction.bind(node, standardAction));
+      const actions =
+          await BackgroundBridge.PanelBackground.getActionsForCurrentNode();
+      for (const standardAction of actions.standardActions) {
+        const actionMsg = Panel.ACTION_TO_MSG_ID[standardAction];
+        if (!actionMsg) {
+          continue;
         }
+
+        const actionDesc = Msgs.getMsg(actionMsg);
+        actionsMenu.addMenuItem(
+            actionDesc, '' /* menuItemShortcut */, '' /* menuItemBraille */,
+            '' /* gesture */,
+            () => BackgroundBridge.PanelBackground
+                      .performStandardActionOnCurrentNode(standardAction));
       }
 
-      if (node && node.customActions) {
-        for (let i = 0; i < node.customActions.length; i++) {
-          const customAction = node.customActions[i];
-          actionsMenu.addMenuItem(
-              customAction.description, '' /* menuItemShortcut */,
-              '' /* menuItemBraille */, '' /* gesture */,
-              node.performCustomAction.bind(node, customAction.id));
-        }
+      for (const customAction of actions.customActions) {
+        actionsMenu.addMenuItem(
+            customAction.description, '' /* menuItemShortcut */,
+            '' /* menuItemBraille */, '' /* gesture */,
+            () => BackgroundBridge.PanelBackground
+                      .performCustomActionOnCurrentNode(customAction.id));
       }
 
       // Activate either the specified menu or the search menu.
@@ -564,12 +551,12 @@ export class Panel extends PanelInterface {
   }
 
   /** Open incremental search. */
-  static onSearch() {
+  static async onSearch() {
     Panel.setMode(PanelMode.SEARCH);
     Panel.clearMenus();
     Panel.pendingCallback_ = null;
     Panel.updateFromPrefs();
-    ISearchUI.init(Panel.searchInput_);
+    await ISearchUI.init(Panel.searchInput_);
   }
 
   /**
@@ -751,20 +738,22 @@ export class Panel extends PanelInterface {
 
   /**
    * Create a new node menu with the given name and add it to the menu bar.
-   * @param {string} menuMsg The msg id of the new menu to add.
+   * @param {!PanelNodeMenuData} menuData The title/predicate for the new menu.
    * @param {!chrome.automation.AutomationNode} node
-   * @param {AutomationPredicate.Unary} pred
-   * @param {boolean} defer If true, defers populating the menu.
+   * @param {boolean} isActivatedMenu Whether the menu was explicitly activated
+   *     or not. If not, defer population to asynchronous callbacks.
    * @return {PanelMenu} The menu just created.
    */
-  static addNodeMenu(menuMsg, node, pred, defer) {
-    const menu = new PanelNodeMenu(menuMsg, node, pred, defer);
+  static addNodeMenu(menuData, node, isActivatedMenu) {
+    const menu = new PanelNodeMenu(
+        menuData.titleId, node, menuData.predicate,
+        /* defer= */ !isActivatedMenu);
     $('menu-bar').appendChild(menu.menuBarItemElement);
-    menu.menuBarItemElement.addEventListener('mouseover', function() {
+    menu.menuBarItemElement.addEventListener('mouseover', () => {
       Panel.activateMenu(menu, true /* activateFirstItem */);
-    }, false);
+    });
     menu.menuBarItemElement.addEventListener(
-        'mouseup', Panel.onMouseUpOnMenuTitle_.bind(this, menu), false);
+        'mouseup', event => Panel.onMouseUpOnMenuTitle_(menu, event));
     $('menus_background').appendChild(menu.menuContainerElement);
     Panel.menus_.push(menu);
     return menu;
@@ -1057,46 +1046,23 @@ export class Panel extends PanelInterface {
   }
 
   /** @override */
-  closeMenusAndRestoreFocus() {
-    const bkgnd = chrome.extension.getBackgroundPage();
-    bkgnd.chrome.automation.getDesktop(function(desktop) {
-      // Watch for a blur on the panel.
-      const pendingCallback = Panel.pendingCallback_;
-      Panel.pendingCallback_ = null;
-      const onFocus = function(evt) {
-        if (evt.target.docUrl === location.href) {
-          return;
-        }
+  async closeMenusAndRestoreFocus() {
+    const pendingCallback = Panel.pendingCallback_;
+    Panel.pendingCallback_ = null;
 
-        desktop.removeEventListener(
-            chrome.automation.EventType.FOCUS, onFocus, true);
+    // Make sure all menus are cleared to avoid bogus output when we re-open.
+    Panel.clearMenus();
 
-        // Clears focus on the page by focusing the root explicitly. This makes
-        // sure we don't get future focus events as a result of giving this
-        // entire page focus and that would have interfered with with our
-        // desired range.
-        if (evt.target.root) {
-          evt.target.root.focus();
-        }
+    // Make sure we're not in full-screen mode.
+    Panel.setMode(PanelMode.COLLAPSED);
 
-        setTimeout(function() {
-          if (pendingCallback) {
-            pendingCallback();
-          }
-        }, 0);
-      };
+    Panel.activeMenu_ = null;
 
-      desktop.addEventListener(
-          chrome.automation.EventType.FOCUS, onFocus, true);
+    await BackgroundBridge.PanelBackground.waitForPanelCollapse();
 
-      // Make sure all menus are cleared to avoid bogus output when we re-open.
-      Panel.clearMenus();
-
-      // Make sure we're not in full-screen mode.
-      Panel.setMode(PanelMode.COLLAPSED);
-
-      Panel.activeMenu_ = null;
-    });
+    if (pendingCallback) {
+      pendingCallback();
+    }
   }
 
   /** Open the tutorial. */
@@ -1214,9 +1180,6 @@ export class Panel extends PanelInterface {
       Panel.onCloseTutorial();
       chrome.tabs.create({url});
     });
-
-    Panel.observer_ = new Panel.PanelStateObserver();
-    chromeVoxState.addObserver(Panel.observer_);
   }
 
   /**
@@ -1272,27 +1235,15 @@ export class Panel extends PanelInterface {
     }
     Panel.searchMenu.activateItem(0);
   }
-}
 
-/**
- * An observer that reacts to ChromeVox range changes.
- * @implements {ChromeVoxStateObserver}
- */
-Panel.PanelStateObserver = class {
-  constructor() {}
-
-  /**
-   * @param {cursors.Range} range The new range.
-   * @param {boolean=} opt_fromEditing
-   */
-  onCurrentRangeChanged(range, opt_fromEditing) {
+  static onCurrentRangeChanged() {
     if (Panel.mode_ === PanelMode.FULLSCREEN_TUTORIAL) {
       if (Panel.tutorial && Panel.tutorial.restartNudges) {
         Panel.tutorial.restartNudges();
       }
     }
   }
-};
+}
 
 Panel.ACTION_TO_MSG_ID = {
   decrement: 'action_decrement_description',
@@ -1304,15 +1255,8 @@ Panel.ACTION_TO_MSG_ID = {
 };
 
 
-/**
- * @private {string}
- */
+/** @private {string} */
 Panel.lastMenu_ = '';
-
-/**
- * @private {ChromeVoxStateObserver}
- */
-Panel.observer_ = null;
 
 window.addEventListener('load', function() {
   Panel.init();
@@ -1347,3 +1291,7 @@ window.addEventListener('hashchange', function() {
 function $(id) {
   return document.getElementById(id);
 }
+
+BridgeHelper.registerHandler(
+    BridgeTarget.PANEL, BridgeAction.ON_CURRENT_RANGE_CHANGED,
+    () => Panel.onCurrentRangeChanged());

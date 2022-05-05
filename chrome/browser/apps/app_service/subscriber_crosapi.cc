@@ -19,7 +19,6 @@
 #include "chrome/common/chrome_features.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
-#include "components/services/app_service/public/cpp/preferred_app.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 
 namespace {
@@ -89,10 +88,17 @@ void SubscriberCrosapi::InitializePreferredApps(PreferredApps preferred_apps) {
   }
 }
 
+void SubscriberCrosapi::OnPreferredAppsChanged(PreferredAppChangesPtr changes) {
+  if (!subscriber_.is_bound()) {
+    return;
+  }
+  subscriber_->OnPreferredAppsChanged(std::move(changes));
+}
+
 void SubscriberCrosapi::OnApps(std::vector<apps::mojom::AppPtr> deltas,
                                apps::mojom::AppType mojom_app_type,
                                bool should_notify_initialized) {
-  if (base::FeatureList::IsEnabled(AppServiceCrosApiOnAppsWithoutMojom)) {
+  if (base::FeatureList::IsEnabled(kAppServiceCrosApiOnAppsWithoutMojom)) {
     return;
   }
 

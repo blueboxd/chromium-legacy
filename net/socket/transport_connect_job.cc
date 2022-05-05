@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
@@ -118,19 +119,6 @@ std::unique_ptr<TransportConnectJob> TransportConnectJob::Factory::Create(
                                                common_connect_job_params,
                                                params, delegate, net_log);
 }
-
-// TODO(eroman): The use of this constant needs to be re-evaluated. The time
-// needed for TCPClientSocketXXX::Connect() can be arbitrarily long, since
-// the address list may contain many alternatives, and most of those may
-// timeout. Even worse, the per-connect timeout threshold varies greatly
-// between systems (anywhere from 20 seconds to 190 seconds).
-// See comment #12 at http://crbug.com/23364 for specifics.
-const int TransportConnectJob::kTimeoutInSeconds = 240;  // 4 minutes.
-
-// TODO(willchan): Base this off RTT instead of statically setting it. Note we
-// choose a timeout that is different from the backup connect job timer so they
-// don't synchronize.
-const int TransportConnectJob::kIPv6FallbackTimerInMs = 300;
 
 std::unique_ptr<ConnectJob> TransportConnectJob::CreateTransportConnectJob(
     scoped_refptr<TransportSocketParams> transport_client_params,
@@ -267,7 +255,13 @@ void TransportConnectJob::HistogramDuration(
 
 // static
 base::TimeDelta TransportConnectJob::ConnectionTimeout() {
-  return base::Seconds(TransportConnectJob::kTimeoutInSeconds);
+  // TODO(eroman): The use of this constant needs to be re-evaluated. The time
+  // needed for TCPClientSocketXXX::Connect() can be arbitrarily long, since
+  // the address list may contain many alternatives, and most of those may
+  // timeout. Even worse, the per-connect timeout threshold varies greatly
+  // between systems (anywhere from 20 seconds to 190 seconds).
+  // See comment #12 at http://crbug.com/23364 for specifics.
+  return base::Minutes(4);
 }
 
 void TransportConnectJob::OnIOComplete(int result) {
@@ -387,9 +381,27 @@ int TransportConnectJob::DoResolveHostComplete(int result) {
 int TransportConnectJob::DoResolveHostCallbackComplete() {
   const auto& unfiltered_results = *request_->GetEndpointResults();
   bool svcb_optional = IsSvcbOptional(unfiltered_results);
+  std::set<IPEndPoint> ip_endpoints_seen;
   for (const auto& result : unfiltered_results) {
-    if (IsEndpointResultUsable(result, svcb_optional)) {
-      endpoint_results_.push_back(result);
+    if (!IsEndpointResultUsable(result, svcb_optional)) {
+      continue;
+    }
+    // The TCP connect itself does not depend on any metadata, so we can dedup
+    // by IP endpoint. In particular, the fallback A/AAAA route will often use
+    // the same IP endpoints as the HTTPS route. If they do not work for one
+    // route, there is no use in trying a second time.
+    std::vector<IPEndPoint> ip_endpoints;
+    for (const auto& ip_endpoint : result.ip_endpoints) {
+      auto [iter, inserted] = ip_endpoints_seen.insert(ip_endpoint);
+      if (inserted) {
+        ip_endpoints.push_back(ip_endpoint);
+      }
+    }
+    if (!ip_endpoints.empty()) {
+      HostResolverEndpointResult new_result;
+      new_result.ip_endpoints = std::move(ip_endpoints);
+      new_result.metadata = result.metadata;
+      endpoint_results_.push_back(std::move(new_result));
     }
   }
   dns_aliases_ = *request_->GetDnsAliasResults();
@@ -436,8 +448,7 @@ int TransportConnectJob::DoTransportConnect() {
   int rv = transport_socket_->Connect(base::BindOnce(
       &TransportConnectJob::OnIOComplete, base::Unretained(this)));
   if (rv == ERR_IO_PENDING && try_ipv6_connect_with_ipv4_fallback) {
-    fallback_timer_.Start(FROM_HERE, base::Milliseconds(kIPv6FallbackTimerInMs),
-                          this,
+    fallback_timer_.Start(FROM_HERE, kIPv6FallbackTime, this,
                           &TransportConnectJob::OnIPv6FallbackTimerComplete);
   }
   return rv;
@@ -471,11 +482,14 @@ int TransportConnectJob::DoTransportConnectComplete(bool is_fallback,
   } else {
     completed_socket.reset();
 
-    // If there is another endpoint available, try it.
-    current_endpoint_result_++;
-    if (current_endpoint_result_ < endpoint_results_.size()) {
-      next_state_ = STATE_TRANSPORT_CONNECT;
-      result = OK;
+    // Don't try the next route if entering suspend mode.
+    if (result != ERR_NETWORK_IO_SUSPENDED) {
+      // If there is another endpoint available, try it.
+      current_endpoint_result_++;
+      if (current_endpoint_result_ < endpoint_results_.size()) {
+        next_state_ = STATE_TRANSPORT_CONNECT;
+        result = OK;
+      }
     }
   }
 

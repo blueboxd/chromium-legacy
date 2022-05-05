@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_get_inner_html_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_is_visible_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_pointer_lock_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_into_view_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_to_options.h"
@@ -3704,6 +3705,29 @@ static bool LayoutViewCanHaveChildren(Element& element) {
   return false;
 }
 
+// LayoutTable[Row,Section,Cell] all amend their ComputedStyle in response
+// to StyleDidChange. Whenever we recalc the style of an element and find
+// no difference, we still need to do ApplyStyleChanges::kYes to perform the
+// amendment.
+static bool ForceApplyForLegacyLayout(const ComputedStyle& new_style,
+                                      const LayoutObject& layout_object) {
+  // See LayoutTable[Section, Row]::StyleDidChange.
+  if (layout_object.IsLegacyTableRow() ||
+      layout_object.IsLegacyTableSection()) {
+    if (new_style.HasInFlowPosition())
+      return true;
+  }
+  // See LayoutTableCell::StyleDidChange.
+  if (layout_object.IsTableCellLegacy()) {
+    if (layout_object.Parent() &&
+        new_style.GetWritingMode() !=
+            layout_object.Parent()->StyleRef().GetWritingMode()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // This function performs two important tasks:
 //
 //  1. It computes the correct style for the element itself.
@@ -3985,6 +4009,8 @@ StyleRecalcChange Element::RecalcOwnStyle(
       if (layout_style->CompositablePaintAnimationChanged())
         apply_changes = LayoutObject::ApplyStyleChanges::kYes;
     }
+    if (ForceApplyForLegacyLayout(*layout_style, *layout_object))
+      apply_changes = LayoutObject::ApplyStyleChanges::kYes;
     layout_object->SetStyle(layout_style.get(), apply_changes);
   }
   return child_change;
@@ -7847,6 +7873,64 @@ FocusgroupFlags Element::GetFocusgroupFlags() const {
   if (!RuntimeEnabledFeatures::FocusgroupEnabled() || !HasRareData())
     return FocusgroupFlags::kNone;
   return GetElementRareData()->GetFocusgroupFlags();
+}
+
+bool Element::isVisible(IsVisibleOptions* options) const {
+  // Unlock ancestor content-visibility:auto elements. If this element is
+  // offscreen and locked due to content-visibility:auto, this method should not
+  // count that as invisible.
+  DisplayLockUtilities::ScopedForcedUpdate force_locks(
+      this, DisplayLockContext::ForcedPhase::kStyleAndLayoutTree,
+      /*include_self=*/false, /*only_cv_auto=*/true,
+      /*emit_warnings=*/false);
+  GetDocument().UpdateStyleAndLayoutTree();
+
+  if (!GetLayoutObject())
+    return false;
+
+  auto* style = GetComputedStyle();
+  if (!style)
+    return false;
+
+  DCHECK(options);
+  if (options->checkVisibilityCSS() &&
+      style->Visibility() != EVisibility::kVisible) {
+    return false;
+  }
+
+  for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*this)) {
+    // Check for content-visibility:hidden
+    if (&ancestor != this) {
+      if (Element* ancestor_element = DynamicTo<Element>(ancestor)) {
+        if (auto* lock = ancestor_element->GetDisplayLockContext()) {
+          if (lock->IsLocked() &&
+              !lock->IsActivatable(DisplayLockActivationReason::kViewport)) {
+            return false;
+          }
+        }
+      }
+    }
+
+    // Check for opacity:0
+    if (options->checkOpacity()) {
+      if (auto* style = ancestor.GetComputedStyle()) {
+        if (style->Opacity() == 0.f) {
+          return false;
+        }
+      }
+    }
+
+    // Check for inert
+    if (options->checkInert()) {
+      if (HTMLElement* ancestor_element = DynamicTo<HTMLElement>(&ancestor)) {
+        if (ancestor_element->IsInertRoot()) {
+          return false;
+        }
+      }
+    }
+  }
+
+  return true;
 }
 
 }  // namespace blink

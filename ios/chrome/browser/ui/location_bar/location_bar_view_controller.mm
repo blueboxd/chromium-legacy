@@ -16,7 +16,6 @@
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/chrome/browser/ui/commands/infobar_commands.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
@@ -476,9 +475,9 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
           forControlEvents:UIControlEventTouchUpInside];
 
       UIImage* shareImage =
-          UseSymbols() ? DefaultSymbolWithPointSize(@"square.and.arrow.up",
-                                                    kSymbolImagePointSize)
-                       : [UIImage imageNamed:@"location_bar_share"];
+          UseSymbols()
+              ? DefaultSymbolWithPointSize(kShareSymbol, kSymbolImagePointSize)
+              : [UIImage imageNamed:@"location_bar_share"];
       [self.locationBarSteadyView.trailingButton
           setImage:[shareImage imageWithRenderingMode:
                                    UIImageRenderingModeAlwaysTemplate]
@@ -500,10 +499,10 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
                     action:@selector(startVoiceSearch)
           forControlEvents:UIControlEventTouchUpInside];
 
-      UIImage* micImage = UseSymbols()
-                              ? DefaultSymbolWithPointSize(
-                                    kMicrophoneSymbol, kSymbolImagePointSize)
-                              : [UIImage imageNamed:@"location_bar_voice"];
+      UIImage* micImage =
+          UseSymbols() ? DefaultSymbolWithPointSize(kMicrophoneFillSymbol,
+                                                    kSymbolImagePointSize)
+                       : [UIImage imageNamed:@"location_bar_voice"];
       [self.locationBarSteadyView.trailingButton
           setImage:[micImage imageWithRenderingMode:
                                  UIImageRenderingModeAlwaysTemplate]

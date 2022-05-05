@@ -114,6 +114,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="UMA.CleanExitBeacon.ExtendedMonitoringStageDuration"
+    units="ms" expires_after="2022-11-01">
+  <owner>ssid@chromium.org</owner>
+  <owner>wnwen@chromium.org</owner>
+  <summary>
+    The amount of time in ms between the extended and status quo browser crash
+    monitoring stages. The extended monitoring stage may begin in
+    MaybeExtendVariationsSafeMode(), and the status quo stage begins in
+    MetricsService::OnAppEnterForeground(). Emitted when the status quo
+    monitoring stage begins. Recorded by Extended Variations Safe Mode
+    enabled-group clients on Android Chrome.
+  </summary>
+</histogram>
+
 <histogram name="UMA.CleanExitBeacon.MonitoringStage"
     enum="BeaconMonitoringStage" expires_after="2022-10-04">
   <owner>caitlinfischer@google.com</owner>
@@ -761,7 +775,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.StructuredMetrics.EventRecordingState"
-    enum="StructuredMetricsEventRecordingState" expires_after="2022-04-24">
+    enum="StructuredMetricsEventRecordingState" expires_after="2022-11-01">
   <owner>tby@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
@@ -793,7 +807,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.StructuredMetrics.InternalError2"
-    enum="StructuredMetricsInternalError2" expires_after="2022-05-01">
+    enum="StructuredMetricsInternalError2" expires_after="2022-11-01">
   <owner>tby@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
@@ -804,7 +818,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.StructuredMetrics.KeyValidationState"
-    enum="StructuredMetricsKeyValidationState" expires_after="2022-04-24">
+    enum="StructuredMetricsKeyValidationState" expires_after="2022-11-01">
   <owner>tby@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
@@ -816,7 +830,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.StructuredMetrics.NumEventsInUpload" units="count"
-    expires_after="2022-04-24">
+    expires_after="2022-11-01">
   <owner>tby@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
@@ -837,7 +851,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="UMA.TruncatedEvents.UserAction" units="events"
-    expires_after="2022-10-23">
+    expires_after="2022-10-30">
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>

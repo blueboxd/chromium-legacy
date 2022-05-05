@@ -6,6 +6,7 @@
 #define BASE_TEMPLATE_UTIL_H_
 
 #include <stddef.h>
+
 #include <iosfwd>
 #include <iterator>
 #include <type_traits>
@@ -14,10 +15,6 @@
 #include "base/compiler_specific.h"
 
 namespace base {
-
-template <class T> struct is_non_const_reference : std::false_type {};
-template <class T> struct is_non_const_reference<T&> : std::true_type {};
-template <class T> struct is_non_const_reference<const T&> : std::false_type {};
 
 namespace internal {
 
@@ -58,35 +55,6 @@ template <>
 struct priority_tag<0> {};
 
 }  // namespace internal
-
-// base::in_place_t is an implementation of std::in_place_t from
-// C++17. A tag type used to request in-place construction in template vararg
-// constructors.
-
-// Specification:
-// https://en.cppreference.com/w/cpp/utility/in_place
-struct in_place_t {};
-constexpr in_place_t in_place = {};
-
-// base::in_place_type_t is an implementation of std::in_place_type_t from
-// C++17. A tag type used for in-place construction when the type to construct
-// needs to be specified, such as with base::unique_any, designed to be a
-// drop-in replacement.
-
-// Specification:
-// http://en.cppreference.com/w/cpp/utility/in_place
-template <typename T>
-struct in_place_type_t {};
-
-template <typename T>
-struct is_in_place_type_t {
-  static constexpr bool value = false;
-};
-
-template <typename... Ts>
-struct is_in_place_type_t<in_place_type_t<Ts...>> {
-  static constexpr bool value = true;
-};
 
 namespace internal {
 
@@ -145,8 +113,28 @@ constexpr bool is_constant_evaluated() noexcept {
 //
 // Reference: https://wg21.link/readable.traits#2
 template <typename Iter>
-using iter_value_t =
-    typename std::iterator_traits<remove_cvref_t<Iter>>::value_type;
+struct IterValueImpl {
+  using value_type = typename std::iterator_traits<Iter>::value_type;
+};
+
+template <typename T, bool Cond = false>
+struct IterValuePointerImpl {
+  // The `iterator_traits<T*>::value_type` member is not defined if T is not an
+  // object in C++20.
+};
+template <typename T>
+struct IterValuePointerImpl<T*, true> {
+  using value_type = typename std::iterator_traits<T*>::value_type;
+};
+
+template <typename T>
+struct IterValueImpl<T*> {
+  using value_type =
+      typename IterValuePointerImpl<T*, std::is_object_v<T>>::value_type;
+};
+
+template <typename Iter>
+using iter_value_t = typename IterValueImpl<remove_cvref_t<Iter>>::value_type;
 
 // Simplified implementation of C++20's std::iter_reference_t.
 // As opposed to std::iter_reference_t, this implementation does not restrict

@@ -107,7 +107,6 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
       // Choose destination page
       {"chooseDestinationTitleText", IDS_SHIMLESS_RMA_CHOOSE_DESTINATION},
       {"sameOwnerText", IDS_SHIMLESS_RMA_SAME_OWNER},
-      {"sameOwnerDescriptionText", IDS_SHIMLESS_RMA_SAME_OWNER_DESCRIPTION},
       {"newOwnerText", IDS_SHIMLESS_RMA_NEW_OWNER},
       {"newOwnerDescriptionText", IDS_SHIMLESS_RMA_NEW_OWNER_DESCRIPTION},
       {"notSureOwnerText", IDS_SHIMLESS_RMA_NOT_SURE_OWNER},
@@ -127,6 +126,8 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
       // Choose WP disable method page
       {"chooseWpDisableMethodPageTitleText",
        IDS_SHIMLESS_RMA_CHOOSE_WP_DISABLE_METHOD_PAGE_TITLE},
+      {"manualWpDisableMethodDescriptionText",
+       IDS_SHIMLESS_RMA_MANUAL_WP_DISABLE_METHOD_DESCRIPTION},
       {"manualWpDisableMethodOptionText",
        IDS_SHIMLESS_RMA_MANUAL_WP_DISABLE_METHOD_OPTION},
       {"rsuWpDisableMethodOptionText",
@@ -251,8 +252,6 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
       {"manuallyEnableWpTitleText", IDS_SHIMLESS_RMA_MANUALLY_ENABLE_WP_TITLE},
       {"manuallyEnableWpInstructionsText",
        IDS_SHIMLESS_RMA_MANUALLY_ENABLE_WP_INSTRUCTIONS},
-      {"manuallyEnabledWpMessageText",
-       IDS_SHIMLESS_RMA_MANUALLY_ENABLED_WP_MESSAGE},
       // Confirm device information page
       {"confirmDeviceInfoTitle", IDS_SHIMLESS_RMA_CONFIRM_DEVICE_INFO_TITLE},
       {"confirmDeviceInfoInstructions",
@@ -315,8 +314,6 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
        IDS_SHIMLESS_RMA_WIPE_DEVICE_REMOVE_DATA_OPTION_DESCRIPTION},
       {"wipeDevicePreserveDataLabel",
        IDS_SHIMLESS_RMA_WIPE_DEVICE_PRESERVE_DATA_OPTION},
-      {"wipeDevicePreserveDataDescription",
-       IDS_SHIMLESS_RMA_WIPE_DEVICE_PRESERVE_DATA_OPTION_DESCRIPTION},
   };
 
   html_source->AddLocalizedStrings(kLocalizedStrings);
@@ -330,10 +327,6 @@ void AddDevicePlaceholderStrings(content::WebUIDataSource* html_source) {
   html_source->AddString(
       "welcomeTitleText",
       ui::SubstituteChromeOSDeviceType(IDS_SHIMLESS_RMA_LANDING_PAGE_TITLE));
-  html_source->AddString(
-      "manualWpDisableMethodDescriptionText",
-      ui::SubstituteChromeOSDeviceType(
-          IDS_SHIMLESS_RMA_MANUAL_WP_DISABLE_METHOD_DESCRIPTION));
   html_source->AddString(
       "criticalErrorTitleText",
       ui::SubstituteChromeOSDeviceType(IDS_SHIMLESS_RMA_CRITICAL_ERROR_TITLE));

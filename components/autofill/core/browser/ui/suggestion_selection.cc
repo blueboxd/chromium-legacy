@@ -107,10 +107,10 @@ std::vector<Suggestion> GetPrefixMatchedSuggestions(
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
         format_phone = base::FeatureList::IsEnabled(
-            autofill::features::kAutofillUseMobileLabelDisambiguation);
+            features::kAutofillUseMobileLabelDisambiguation);
 #else
         format_phone = base::FeatureList::IsEnabled(
-            autofill::features::kAutofillUseImprovedLabelDisambiguation);
+            features::kAutofillUseImprovedLabelDisambiguation);
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
         if (format_phone) {
@@ -166,7 +166,8 @@ std::vector<Suggestion> GetUniqueSuggestions(
       AutofillProfile* profile_b = matched_profiles[j];
       // Check if profile A is a subset of profile B. If not, continue.
       if (i == j ||
-          !comparator.Compare(suggestions[i].value, suggestions[j].value) ||
+          !comparator.Compare(suggestions[i].main_text.value,
+                              suggestions[j].main_text.value) ||
           !profile_a->IsSubsetOfForFieldSet(comparator, *profile_b, app_locale,
                                             types)) {
         continue;
@@ -290,12 +291,11 @@ void PrepareSuggestions(const std::vector<std::u16string>& labels,
   for (size_t i = 0; i < labels.size(); ++i) {
     std::u16string label = labels[i];
 
-    bool text_inserted =
-        suggestion_text
-            .insert(comparator.NormalizeForComparison(
-                (*suggestions)[i].value + label,
-                autofill::AutofillProfileComparator::DISCARD_WHITESPACE))
-            .second;
+    bool text_inserted = suggestion_text
+                             .insert(comparator.NormalizeForComparison(
+                                 (*suggestions)[i].main_text.value + label,
+                                 AutofillProfileComparator::DISCARD_WHITESPACE))
+                             .second;
 
     if (text_inserted) {
       if (index_to_add_suggestion != i) {
@@ -309,8 +309,9 @@ void PrepareSuggestions(const std::vector<std::u16string>& labels,
       // cases, e.g. when a credit card form contains a zip code field and the
       // user clicks on the zip code, a suggestion's value and the label
       // produced for it may both be a zip code.
-      if (!comparator.Compare((*suggestions)[index_to_add_suggestion].value,
-                              labels[i])) {
+      if (!comparator.Compare(
+              (*suggestions)[index_to_add_suggestion].main_text.value,
+              labels[i])) {
         (*suggestions)[index_to_add_suggestion].label = labels[i];
       }
       ++index_to_add_suggestion;

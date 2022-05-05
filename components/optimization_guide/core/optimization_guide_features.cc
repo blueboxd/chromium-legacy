@@ -168,6 +168,10 @@ const base::Feature
 const base::Feature kOverrideNumThreadsForModelExecution{
     "OverrideNumThreadsForModelExecution", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kOptGuideEnableXNNPACKDelegateWithTFLite{
+    "OptGuideEnableXNNPACKDelegateWithTFLite",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 // The default value here is a bit of a guess.
 // TODO(crbug/1163244): This should be tuned once metrics are available.
 base::TimeDelta PageTextExtractionOutstandingRequestsGracePeriod() {
@@ -413,7 +417,7 @@ base::TimeDelta PredictionModelFetchRetryDelay() {
 
 base::TimeDelta PredictionModelFetchStartupDelay() {
   return base::Milliseconds(GetFieldTrialParamByFeatureAsInt(
-      kOptimizationTargetPrediction, "fetch_startup_delay_ms", 2000));
+      kOptimizationTargetPrediction, "fetch_startup_delay_ms", 10000));
 }
 
 base::TimeDelta PredictionModelFetchInterval() {
@@ -475,6 +479,12 @@ uint64_t MaxSizeForPageContentTextDump() {
 bool ShouldAnnotateTitleInsteadOfPageContent() {
   return base::GetFieldTrialParamByFeatureAsBool(
       kPageContentAnnotations, "annotate_title_instead_of_page_content", true);
+}
+
+bool ShouldPersistSearchMetadataForNonGoogleSearches() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      kPageContentAnnotations,
+      "persist_search_metadata_for_non_google_searches", true);
 }
 
 bool ShouldWriteContentAnnotationsToHistoryService() {
@@ -610,6 +620,10 @@ absl::optional<int> OverrideNumThreadsForOptTarget(
 
   // Cap to the number of CPUs on the device.
   return std::min(num_threads, base::SysInfo::NumberOfProcessors());
+}
+
+bool TFLiteXNNPACKDelegateEnabled() {
+  return base::FeatureList::IsEnabled(kOptGuideEnableXNNPACKDelegateWithTFLite);
 }
 
 }  // namespace features

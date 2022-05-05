@@ -19,7 +19,7 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "webview_cts_tests"
+            "webview_trichrome_cts_tests"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
@@ -77,8 +77,8 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
-        "test": "webview_cts_tests",
-        "test_id_prefix": "ninja://android_webview/test:webview_cts_tests/"
+        "test": "webview_trichrome_cts_tests",
+        "test_id_prefix": "ninja://android_webview/test:webview_trichrome_cts_tests/"
       }
     ]
   },
@@ -95,7 +95,7 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "webview_cts_tests"
+            "webview_trichrome_cts_tests"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
@@ -153,8 +153,8 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
-        "test": "webview_cts_tests",
-        "test_id_prefix": "ninja://android_webview/test:webview_cts_tests/"
+        "test": "webview_trichrome_cts_tests",
+        "test_id_prefix": "ninja://android_webview/test:webview_trichrome_cts_tests/"
       }
     ]
   },
@@ -241,7 +241,7 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "webview_64_cts_tests"
+            "webview_trichrome_64_cts_tests"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
         },
@@ -299,8 +299,8 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
-        "test": "webview_64_cts_tests",
-        "test_id_prefix": "ninja://android_webview/test:webview_64_cts_tests/"
+        "test": "webview_trichrome_64_cts_tests",
+        "test_id_prefix": "ninja://android_webview/test:webview_trichrome_64_cts_tests/"
       }
     ]
   },
@@ -8414,7 +8414,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M101",
-              "revision": "version:101.0.4951.54"
+              "revision": "version:101.0.4951.58"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -8498,7 +8498,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M102",
-              "revision": "version:102.0.5005.35"
+              "revision": "version:102.0.5005.40"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -8918,7 +8918,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M101",
-              "revision": "version:101.0.4951.54"
+              "revision": "version:101.0.4951.58"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -9002,7 +9002,7 @@
             {
               "cipd_package": "chromium/testing/weblayer-x86",
               "location": "weblayer_instrumentation_test_M102",
-              "revision": "version:102.0.5005.35"
+              "revision": "version:102.0.5005.40"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",

@@ -80,12 +80,14 @@
 #import "ios/chrome/browser/ui/overlays/infobar_banner/infobar_banner_features.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
+#import "ios/chrome/browser/ui/sync/utils/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/features.h"
 #include "ios/chrome/browser/web/features.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/components/security_interstitials/https_only_mode/feature.h"
 #include "ios/public/provider/chrome/browser/app_utils/app_utils_api.h"
 #include "ios/web/common/features.h"
 #include "ios/web/common/user_agent.h"
@@ -886,6 +888,20 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableSuggestionsScrollingOnIPadName,
      flag_descriptions::kEnableSuggestionsScrollingOnIPadDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableSuggestionsScrollingOnIPad)},
+    {"experience-kit-calendar", flag_descriptions::kCalendarExperienceKitName,
+     flag_descriptions::kCalendarExperienceKitDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kCalendarExperienceKit)},
+    {"https-only-mode", flag_descriptions::kHttpsOnlyModeName,
+     flag_descriptions::kHttpsOnlyModeDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(security_interstitials::features::kHttpsOnlyMode)},
+    {"display-sync-errors-refactor",
+     flag_descriptions::kDisplaySyncErrorsRefactorName,
+     flag_descriptions::kDisplaySyncErrorsRefactorDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kDisplaySyncErrorsRefactor)},
+    {"smart-sorting-new-overflow-menu",
+     flag_descriptions::kSmartSortingNewOverflowMenuName,
+     flag_descriptions::kSmartSortingNewOverflowMenuDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kSmartSortingNewOverflowMenu)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

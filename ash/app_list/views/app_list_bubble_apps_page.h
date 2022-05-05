@@ -42,6 +42,7 @@ class AppListViewDelegate;
 class ContinueSectionView;
 class PillButton;
 class RecentAppsView;
+class RoundedScrollBar;
 class SearchResultPageDialogController;
 class SearchBoxView;
 class ScrollableAppsGridView;
@@ -114,6 +115,7 @@ class ASH_EXPORT AppListBubbleAppsPage
   // views::View:
   void Layout() override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
+  void OnThemeChanged() override;
 
   // view::ViewObserver:
   void OnViewVisibilityChanged(views::View* observed_view,
@@ -210,6 +212,7 @@ class ASH_EXPORT AppListBubbleAppsPage
 
   AppListViewDelegate* view_delegate_ = nullptr;
   views::ScrollView* scroll_view_ = nullptr;
+  RoundedScrollBar* scroll_bar_ = nullptr;
   PillButton* show_continue_section_button_ = nullptr;
   ContinueSectionView* continue_section_ = nullptr;
   RecentAppsView* recent_apps_ = nullptr;

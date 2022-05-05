@@ -498,8 +498,8 @@ String MenuListSelectType::UpdateTextStyleInternal() {
     cloned_style->SetUnicodeBidi(option_style->GetUnicodeBidi());
     cloned_style->SetTextAlign(option_style->GetTextAlign(true));
     if (auto* inner_layout = inner_element.GetLayoutObject()) {
-      inner_layout->SetModifiedStyleOutsideStyleRecalc(
-          std::move(cloned_style), LayoutObject::ApplyStyleChanges::kYes);
+      inner_layout->SetStyle(std::move(cloned_style),
+                             LayoutObject::ApplyStyleChanges::kYes);
     } else {
       inner_element.SetComputedStyle(std::move(cloned_style));
     }
@@ -1074,7 +1074,8 @@ void ListBoxSelectType::ScrollToOptionTask() {
   // OptionRemoved() makes sure option_to_scroll_to_ doesn't have an option
   // with another owner.
   DCHECK_EQ(option->OwnerSelectElement(), select_);
-  select_->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kScroll);
+  select_->GetDocument().UpdateStyleAndLayoutForNode(
+      select_, DocumentUpdateReason::kScroll);
   if (!select_->GetLayoutObject())
     return;
   PhysicalRect bounds = option->BoundingBoxForScrollIntoView();

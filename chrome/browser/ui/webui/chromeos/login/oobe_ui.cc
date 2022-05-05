@@ -424,12 +424,12 @@ void OobeUI::ConfigureOobeDisplay() {
 
     AddScreenHandler(std::make_unique<DemoPreferencesScreenHandler>());
 
-    AddScreenHandler(std::make_unique<EulaScreenHandler>());
-
     if (ash::features::IsOobeQuickStartEnabled()) {
       AddScreenHandler(std::make_unique<QuickStartScreenHandler>());
     }
   }
+
+  AddScreenHandler(std::make_unique<EulaScreenHandler>());
 
   AddScreenHandler(std::make_unique<NetworkScreenHandler>());
 
@@ -488,8 +488,8 @@ void OobeUI::ConfigureOobeDisplay() {
   auto password_change_handler =
       std::make_unique<ActiveDirectoryPasswordChangeScreenHandler>();
 
-  AddScreenHandler(std::make_unique<GaiaScreenHandler>(
-      core_handler_, network_state_informer_));
+  AddScreenHandler(
+      std::make_unique<GaiaScreenHandler>(network_state_informer_));
 
   AddScreenHandler(std::make_unique<SamlConfirmPasswordHandler>());
 

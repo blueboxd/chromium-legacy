@@ -51,6 +51,7 @@ import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -65,7 +66,6 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorTestingRobot;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
-import org.chromium.chrome.start_surface.R;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeApplicationTestUtils;
@@ -178,7 +178,7 @@ public class StartSurfaceBackButtonTest {
         StartSurfaceTestUtils.launchFirstMVTile(cta, /* currentTabCount = */ 1);
         StartSurfaceTestUtils.pressBack(mActivityTestRule);
 
-        CriteriaHelper.pollUiThread(() -> cta.getLayoutManager().overviewVisible());
+        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.TAB_SWITCHER);
         // Verifies the new Tab is deleted.
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
 
@@ -194,7 +194,7 @@ public class StartSurfaceBackButtonTest {
         StartSurfaceTestUtils.clickTabInCarousel(/* position = */ 1);
         Assert.assertEquals(TabLaunchType.FROM_START_SURFACE,
                 cta.getTabModelSelector().getCurrentTab().getLaunchType());
-        CriteriaHelper.pollUiThread(() -> !cta.getLayoutManager().overviewVisible());
+        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
         StartSurfaceTestUtils.pressBack(mActivityTestRule);
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
         // Verifies the tab isn't auto deleted from the TabModel.
@@ -255,7 +255,7 @@ public class StartSurfaceBackButtonTest {
         onView(allOf(withParent(withId(R.id.tasks_surface_body)),
                        withId(org.chromium.chrome.tab_ui.R.id.tab_list_view)))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(1, click()));
-        CriteriaHelper.pollUiThread(() -> !cta.getLayoutManager().overviewVisible());
+        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
         Assert.assertEquals(TabLaunchType.FROM_START_SURFACE,
                 cta.getTabModelSelector().getCurrentTab().getLaunchType());
         TestThreadUtils.runOnUiThreadBlocking(
@@ -312,7 +312,7 @@ public class StartSurfaceBackButtonTest {
 
         TabUiTestHelper.mergeAllNormalTabsToAGroup(cta);
         StartSurfaceTestUtils.pressHomePageButton(cta);
-        CriteriaHelper.pollUiThread(() -> cta.getLayoutManager().overviewVisible());
+        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.TAB_SWITCHER);
 
         StartSurfaceTestUtils.clickFirstTabInCarousel();
         onViewWaiting(allOf(
@@ -513,8 +513,7 @@ public class StartSurfaceBackButtonTest {
     @Feature({"StartSurface"})
     // clang-format off
     @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS})
-    @DisableIf.
-        Build(sdk_is_less_than = Build.VERSION_CODES.N, message = "Flaky, see crbug.com/1246457")
+    @DisabledTest(message = "https://crbug.com/1246457")
     public void testSwipeBackOnStartSurfaceHomePage() throws ExecutionException {
         // clang-format on
         // TODO(https://crbug.com/1093632): Requires 2 back press/gesture events now. Make this
@@ -534,7 +533,7 @@ public class StartSurfaceBackButtonTest {
     @MediumTest
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS})
-    @DisabledTest(message = "https://crbug.com/1281915")
+    @DisabledTest(message = "https://crbug.com/1246457")
     public void testSwipeBackOnTabOfLaunchTypeStartSurface() throws ExecutionException {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         if (!mImmediateReturn) StartSurfaceTestUtils.pressHomePageButton(cta);
@@ -601,7 +600,7 @@ public class StartSurfaceBackButtonTest {
         Assert.assertTrue(InstrumentationRegistry.getInstrumentation().invokeContextMenuAction(
                 mActivityTestRule.getActivity(),
                 ContextMenuManager.ContextMenuItemId.OPEN_IN_INCOGNITO_TAB, 0));
-        CriteriaHelper.pollUiThread(() -> !cta.getLayoutManager().overviewVisible());
+        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
         // Verifies a new incognito tab is created.
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, incognitoTabs);
     }

@@ -2794,7 +2794,7 @@ void RenderFrameHostImpl::InitializePolicyContainerHost(
     return;
   }
 
-  auto policies = std::make_unique<PolicyContainerPolicies>();
+  PolicyContainerPolicies policies;
 
   // Main frames created by the browser are treated as belonging the `local`
   // address space, so that they can make requests to any address space
@@ -2812,7 +2812,7 @@ void RenderFrameHostImpl::InitializePolicyContainerHost(
   // TODO(https://crbug.com/1194421): Address the prerendering case.
   if (is_main_frame() && !renderer_initiated_creation_of_main_frame &&
       lifecycle_state_ != LifecycleStateImpl::kPrerendering) {
-    policies->ip_address_space = network::mojom::IPAddressSpace::kLocal;
+    policies.ip_address_space = network::mojom::IPAddressSpace::kLocal;
   }
 
   SetPolicyContainerHost(
@@ -6601,7 +6601,7 @@ void RenderFrameHostImpl::DidChangeIframeAttributes(
     return;
 
   child->set_csp_attribute(std::move(parsed_csp_attribute));
-  child->set_anonymous(anonymous);
+  child->SetAnonymous(anonymous);
 }
 
 void RenderFrameHostImpl::DidChangeFramePolicy(
@@ -12808,6 +12808,7 @@ void RenderFrameHostImpl::UpdateIsAdSubframe(bool is_ad_subframe) {
   browsing_context_state_->SetIsAdSubframe(is_ad_subframe);
 }
 
+#if BUILDFLAG(IS_ANDROID)
 std::pair<blink::mojom::AuthenticatorStatus, bool>
 RenderFrameHostImpl::PerformGetAssertionWebAuthSecurityChecks(
     const std::string& relying_party_id,
@@ -12865,7 +12866,6 @@ RenderFrameHostImpl::PerformMakeCredentialWebAuthSecurityChecks(
   return blink::mojom::AuthenticatorStatus::SUCCESS;
 }
 
-#if BUILDFLAG(IS_ANDROID)
 void RenderFrameHostImpl::WebAuthnConditionalUiRequestPending(
     const std::vector<device::DiscoverableCredentialMetadata>& credentials,
     base::OnceCallback<void(const std::vector<uint8_t>& id)> callback) {

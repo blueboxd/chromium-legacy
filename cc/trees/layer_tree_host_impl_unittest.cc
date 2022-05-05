@@ -83,7 +83,6 @@
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/common/surfaces/region_capture_bounds.h"
-#include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/fake_output_surface.h"
@@ -11284,11 +11283,6 @@ TEST_F(LayerTreeHostImplTestDrawAndTestDamage, FrameIncludesDamageRect) {
   DrawFrameAndTestDamage(no_damage, child);
 }
 
-class GLRendererWithSetupQuadForAntialiasing : public viz::GLRenderer {
- public:
-  using viz::GLRenderer::ShouldAntialiasQuad;
-};
-
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
   // Due to precision issues (especially on Android), sometimes far
   // away quads can end up thinking they need AA.
@@ -11340,16 +11334,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
   ASSERT_LE(1u, frame.render_passes[0]->quad_list.size());
   const viz::DrawQuad* quad = frame.render_passes[0]->quad_list.front();
 
-  bool clipped = false, force_aa = false;
-  gfx::QuadF device_layer_quad = MathUtil::MapQuad(
+  bool clipped = false;
+  MathUtil::MapQuad(
       quad->shared_quad_state->quad_to_target_transform,
       gfx::QuadF(gfx::RectF(quad->shared_quad_state->visible_quad_layer_rect)),
       &clipped);
   EXPECT_FALSE(clipped);
-  bool antialiased =
-      GLRendererWithSetupQuadForAntialiasing::ShouldAntialiasQuad(
-          device_layer_quad, clipped, force_aa);
-  EXPECT_FALSE(antialiased);
 
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
@@ -18340,4 +18330,62 @@ TEST_F(LayerTreeHostImplTest, CollectRegionCaptureBounds) {
             collected_bounds.bounds().find(kFourthId)->second);
 }
 
+// Check if picturelayer's ScrollInteractionInProgress() return true even when
+// BrowserControl is consuming ScrollUpdate.
+TEST_P(LayerTreeHostImplBrowserControlsTest,
+       BrowserControlsScrollInteractionInProgress) {
+  gfx::Size inner_size = gfx::Size(100, 100);
+  gfx::Size outer_size = gfx::Size(100, 100);
+  gfx::Size content_size = gfx::Size(100, 200);
+  SetupBrowserControlsAndScrollLayerWithVirtualViewport(inner_size, outer_size,
+                                                        content_size);
+
+  LayerTreeImpl* active_tree = host_impl_->active_tree();
+
+  // Create a content layer beneath the outer viewport scroll layer.
+  scoped_refptr<FakeRasterSource> raster_source(
+      FakeRasterSource::CreateFilled(content_size));
+
+  auto* picture_layer =
+      AddLayer<FakePictureLayerImpl>(host_impl_->active_tree(), raster_source);
+  CopyProperties(OuterViewportScrollLayer(), picture_layer);
+  picture_layer->SetBounds(content_size);
+  picture_layer->SetDrawsContent(true);
+  picture_layer->SetNeedsPushProperties();
+  active_tree->PushPageScaleFromMainThread(1.0f, 1.0f, 2.0f);
+  DrawFrame();
+
+  EXPECT_EQ(ScrollThread::SCROLL_ON_IMPL_THREAD,
+            GetInputHandler()
+                .ScrollBegin(BeginState(gfx::Point(), gfx::Vector2dF(0, 50),
+                                        ui::ScrollInputType::kTouchscreen)
+                                 .get(),
+                             ui::ScrollInputType::kTouchscreen)
+                .thread);
+  // shownratio == 1
+  EXPECT_EQ(1, host_impl_->active_tree()->CurrentTopControlsShownRatio());
+  EXPECT_EQ(picture_layer->ScrollInteractionInProgress(), false);
+
+  // 0 < shownratio <1
+  GetInputHandler().ScrollUpdate(UpdateState(gfx::Point(),
+                                             gfx::Vector2dF(0, 25),
+                                             ui::ScrollInputType::kTouchscreen)
+                                     .get());
+  EXPECT_GT(host_impl_->active_tree()->CurrentTopControlsShownRatio(), 0);
+  EXPECT_LT(host_impl_->active_tree()->CurrentTopControlsShownRatio(), 1);
+  EXPECT_EQ(picture_layer->ScrollInteractionInProgress(), true);
+
+  GetInputHandler().ScrollUpdate(UpdateState(gfx::Point(),
+                                             gfx::Vector2dF(0, 30),
+                                             ui::ScrollInputType::kTouchscreen)
+                                     .get());
+  // now shownratio == 0
+  EXPECT_EQ(0, host_impl_->active_tree()->CurrentTopControlsShownRatio());
+  EXPECT_EQ(picture_layer->ScrollInteractionInProgress(), true);
+
+  GetInputHandler().ScrollEnd();
+  // scroll end, shownratio == 0
+  EXPECT_EQ(0, host_impl_->active_tree()->CurrentTopControlsShownRatio());
+  EXPECT_EQ(picture_layer->ScrollInteractionInProgress(), false);
+}
 }  // namespace cc

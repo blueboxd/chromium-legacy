@@ -16,26 +16,26 @@
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-using base::TimeTicks;
-
 namespace autofill {
 
-class AutofillClient;
-class AutofillDriver;
+class TestAutofillClient;
+class TestAutofillDriver;
 class FormStructure;
 class TestPersonalDataManager;
 
 class TestBrowserAutofillManager : public BrowserAutofillManager {
  public:
-  TestBrowserAutofillManager(AutofillDriver* driver,
-                             AutofillClient* client,
-                             TestPersonalDataManager* personal_data);
+  TestBrowserAutofillManager(TestAutofillDriver* driver,
+                             TestAutofillClient* client);
 
   TestBrowserAutofillManager(const TestBrowserAutofillManager&) = delete;
   TestBrowserAutofillManager& operator=(const TestBrowserAutofillManager&) =
       delete;
 
   ~TestBrowserAutofillManager() override;
+
+  TestAutofillClient* client() { return client_; }
+  TestAutofillDriver* driver() { return driver_; }
 
   // BrowserAutofillManager overrides.
   bool IsAutofillProfileEnabled() const override;
@@ -60,8 +60,7 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
 
   void AddSeenForm(
       const FormData& form,
-      const std::vector<
-          std::vector<std::pair<PredictionSource, ServerFieldType>>>&
+      const std::vector<std::vector<std::pair<PatternSource, ServerFieldType>>>&
           heuristic_types,
       const std::vector<ServerFieldType>& server_types);
 
@@ -85,7 +84,9 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
   using BrowserAutofillManager::pending_form_data;
 
  private:
-  raw_ptr<TestPersonalDataManager> personal_data_;  // Weak reference.
+  TestAutofillClient* client_;
+  TestAutofillDriver* driver_;
+
   bool autofill_profile_enabled_ = true;
   bool autofill_credit_card_enabled_ = true;
   bool call_parent_upload_form_data_ = false;

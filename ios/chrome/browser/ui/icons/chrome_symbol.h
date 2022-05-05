@@ -10,17 +10,26 @@
 // Custom symbol names.
 extern NSString* const kArrowClockWiseSymbol;
 extern NSString* const kIncognitoSymbol;
+extern NSString* const kIncognitoCircleFillSymbol;
 extern NSString* const kSquareNumberSymbol;
 extern NSString* const kTranslateSymbol;
 extern NSString* const kCameraSymbol;
 extern NSString* const kCameraFillSymbol;
-
+extern NSString* const kPlusCircleFillSymbol;
+extern NSString* const kArrowTriangleSlashCirclePathSymbol;
+extern NSString* const kPopupBadgeMinusSymbol;
 // Default symbol names.
 extern NSString* const kCreditCardSymbol;
+extern NSString* const kMicrophoneFillSymbol;
 extern NSString* const kMicrophoneSymbol;
 extern NSString* const kEllipsisCircleFillSymbol;
 extern NSString* const kPinSymbol;
 extern NSString* const kGearShapeSymbol;
+extern NSString* const kShareSymbol;
+extern NSString* const kXMarkSymbol;
+extern NSString* const kPlusSymbol;
+extern NSString* const kSearchSymbol;
+extern NSString* const kCheckmarkSymbol;
 
 // Returns a SF symbol named |symbolName| configured with the given
 // |configuration|.

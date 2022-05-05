@@ -16,12 +16,12 @@
 namespace ash {
 
 class DesksTemplatesEventHandler;
-class DesksTemplatesItemView;
 class DeskTemplate;
 class PillButton;
+class SavedDeskItemView;
 
 // A view that acts as the content view of the desks templates widget. Displays
-// each desk template as a DesksTemplatesItemView.
+// each saved desk as a SavedDeskItemView.
 class DesksTemplatesGridView : public views::View, public aura::WindowObserver {
  public:
   METADATA_HEADER(DesksTemplatesGridView);
@@ -36,7 +36,7 @@ class DesksTemplatesGridView : public views::View, public aura::WindowObserver {
   static std::unique_ptr<views::Widget> CreateDesksTemplatesGridWidget(
       aura::Window* root);
 
-  const std::vector<DesksTemplatesItemView*>& grid_items() const {
+  const std::vector<SavedDeskItemView*>& grid_items() const {
     return grid_items_;
   }
 
@@ -61,19 +61,12 @@ class DesksTemplatesGridView : public views::View, public aura::WindowObserver {
   // shuffle `grid_items_` to their final positions.
   void DeleteTemplates(const std::vector<std::string>& uuids);
 
-  // Returns the grid item view if there is a template name is being modified,
-  // otherwise returns `nullptr`.
-  DesksTemplatesItemView* GridItemBeingModified();
-
-  // Returns whether the given `point_in_screen` intersects with the feedback
-  // button.
-  bool IntersectsWithFeedbackButton(const gfx::Point& point_in_screen);
-
-  // Returns whether the given `point_in_screen` intersect with any grid item.
-  bool IntersectsWithGridItem(const gfx::Point& point_in_screen);
+  // Returns true if a template name is being modified using an item view's
+  // `SavedDeskNameView` in this grid.
+  bool IsTemplateNameBeingModified() const;
 
   // Returns the item view associated with `uuid`.
-  DesksTemplatesItemView* GetItemForUUID(const base::GUID& uuid);
+  SavedDeskItemView* GetItemForUUID(const base::GUID& uuid);
 
   // views::View:
   void Layout() override;
@@ -95,7 +88,7 @@ class DesksTemplatesGridView : public views::View, public aura::WindowObserver {
   // Calculates the bounds for each grid item within the templates grid. The
   // indices of the returned vector directly correlate to those of `grid_items_`
   // (i.e. the Rect at index 1 of the returned vector should be applied to the
-  // `DesksTemplatesItemView` found at index 1 of `grid_items_`).
+  // `SavedDeskItemView` found at index 1 of `grid_items_`).
   std::vector<gfx::Rect> CalculateGridItemPositions() const;
 
   // Calculates the bounds to be applied to the feedback button based off of the
@@ -106,15 +99,14 @@ class DesksTemplatesGridView : public views::View, public aura::WindowObserver {
   // their calculated position. `new_grid_items` contains a list of the
   // newly-created desk template items and will be animated differently than
   // the existing views that are being shifted around.
-  void AnimateGridItems(
-      const std::vector<DesksTemplatesItemView*>& new_grid_items);
+  void AnimateGridItems(const std::vector<SavedDeskItemView*>& new_grid_items);
 
   // Called when the feedback button is pressed. Shows the feedback dialog with
   // desks templates information.
   void OnFeedbackButtonPressed();
 
   // The views representing templates. They're owned by views hierarchy.
-  std::vector<DesksTemplatesItemView*> grid_items_;
+  std::vector<SavedDeskItemView*> grid_items_;
 
   // Owned by views hierarchy. Temporary button to help users give feedback.
   // TODO(crbug.com/1289880): Remove this button when it is no longer needed.

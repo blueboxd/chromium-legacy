@@ -298,6 +298,7 @@ VISIT_PROTO_FIELDS(const sync_pb::ClientConfigParams& proto) {
   VISIT(tabs_datatype_enabled);
   VISIT(cookie_jar_mismatch);
   VISIT(single_client);
+  VISIT_REP(devices_fcm_registration_tokens);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::ClientStatus& proto) {
@@ -314,6 +315,7 @@ VISIT_PROTO_FIELDS(const sync_pb::ClientToServerMessage& proto) {
   VISIT(sync_problem_detected);
   VISIT(debug_info);
   VISIT(client_status);
+  VISIT(invalidator_client_id);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::ClientToServerResponse& proto) {
@@ -331,6 +333,7 @@ VISIT_PROTO_FIELDS(const sync_pb::ClientToServerResponse::Error& proto) {
   VISIT_ENUM(error_type);
   VISIT(error_description);
   VISIT_ENUM(action);
+  VISIT_REP(error_data_type_ids);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::CommitMessage& proto) {
@@ -338,6 +341,7 @@ VISIT_PROTO_FIELDS(const sync_pb::CommitMessage& proto) {
   VISIT(cache_guid);
   VISIT_REP(extensions_activity);
   VISIT(config_params);
+  VISIT_REP(client_contexts);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::CommitResponse& proto) {
@@ -363,14 +367,12 @@ VISIT_PROTO_FIELDS(const sync_pb::DataTypeProgressMarker& proto) {
   VISIT_BYTES(token);
   VISIT(notification_hint);
   VISIT(get_update_triggers);
+  VISIT(gc_directive);
 }
 
-VISIT_PROTO_FIELDS(const sync_pb::DatatypeAssociationStats& proto) {
-  VISIT(data_type_id);
-  VISIT(download_wait_time_us);
-  VISIT(download_time_us);
-  VISIT_REP(high_priority_type_configured_before);
-  VISIT_REP(same_priority_type_configured_before);
+VISIT_PROTO_FIELDS(const sync_pb::GarbageCollectionDirective& proto) {
+  VISIT(version_watermark);
+  VISIT(age_watermark_in_days);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::DebugEventInfo& proto) {
@@ -378,7 +380,6 @@ VISIT_PROTO_FIELDS(const sync_pb::DebugEventInfo& proto) {
   VISIT(sync_cycle_completed_event_info);
   VISIT(nudging_datatype);
   VISIT_REP(datatypes_notified_from_server);
-  VISIT(datatype_association_stats);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::DebugInfo& proto) {
@@ -444,7 +445,6 @@ VISIT_PROTO_FIELDS(const sync_pb::DictionarySpecifics& proto) {
 
 VISIT_PROTO_FIELDS(const sync_pb::EncryptedData& proto) {
   VISIT(key_name);
-  // TODO(akalin): Shouldn't blob be of type bytes instead of string?
   VISIT_BYTES(blob);
 }
 
@@ -548,6 +548,7 @@ VISIT_PROTO_FIELDS(const sync_pb::GetUpdatesMessage& proto) {
   VISIT(need_encryption_key);
   VISIT(create_mobile_bookmarks_folder);
   VISIT_ENUM(get_updates_origin);
+  VISIT(is_retry);
   VISIT_REP(client_contexts);
 }
 
@@ -599,6 +600,8 @@ VISIT_PROTO_FIELDS(const sync_pb::ModelTypeState& proto) {
   VISIT(type_context);
   VISIT(encryption_key_name);
   VISIT(initial_sync_done);
+  VISIT(cache_guid);
+  VISIT(authenticated_account_id);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::NavigationRedirect& proto) {
@@ -923,9 +926,7 @@ VISIT_PROTO_FIELDS(const sync_pb::SyncEntity& proto) {
   VISIT(name);
   VISIT(non_unique_name);
   VISIT(server_defined_unique_tag);
-  VISIT(position_in_parent);
   VISIT(unique_position);
-  VISIT(insert_after_item_id);
   VISIT(deleted);
   VISIT(originator_cache_guid);
   VISIT(originator_client_item_id);

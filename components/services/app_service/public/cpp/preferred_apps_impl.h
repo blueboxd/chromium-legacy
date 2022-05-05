@@ -14,6 +14,10 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
+#include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/intent.h"
+#include "components/services/app_service/public/cpp/intent_filter.h"
+#include "components/services/app_service/public/cpp/preferred_app.h"
 #include "components/services/app_service/public/cpp/preferred_apps_list.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -34,22 +38,24 @@ class PreferredAppsImpl {
 
     virtual void InitializePreferredAppsForAllSubscribers() = 0;
 
-    virtual void OnPreferredAppsChanged(
-        apps::mojom::PreferredAppChangesPtr changes) {}
+    virtual void OnPreferredAppsChanged(PreferredAppChangesPtr changes) = 0;
 
     virtual void OnPreferredAppSet(
         const std::string& app_id,
-        apps::mojom::IntentFilterPtr intent_filter,
-        apps::mojom::IntentPtr intent,
-        apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) {}
+        IntentFilterPtr intent_filter,
+        IntentPtr intent,
+        ReplacedAppPreferences replaced_app_preferences) = 0;
 
     virtual void OnSupportedLinksPreferenceChanged(const std::string& app_id,
                                                    bool open_in_app) = 0;
 
-    // Returns publisher for `app_type`, or nullptr if there is no publisher for
-    // `app_type`.
-    virtual apps::mojom::Publisher* GetMojomPublisher(
-        apps::mojom::AppType app_type);
+    virtual void OnSupportedLinksPreferenceChanged(AppType app_type,
+                                                   const std::string& app_id,
+                                                   bool open_in_app) = 0;
+
+    // Returns true if there is a publisher for `app_type`. Otherwise, returns
+    // false.
+    virtual bool HasPublisher(AppType app_type) = 0;
   };
 
   PreferredAppsImpl(

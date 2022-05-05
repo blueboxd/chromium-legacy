@@ -35,6 +35,11 @@ DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kInteractionSequenceBrowserUtilTestId2);
 DEFINE_LOCAL_CUSTOM_ELEMENT_EVENT_TYPE(kInteractionTestUtilCustomEventType);
 DEFINE_LOCAL_CUSTOM_ELEMENT_EVENT_TYPE(kInteractionTestUtilCustomEventType2);
 
+constexpr char kEmptyDocumentURL[] = "/empty.html";
+constexpr char kDocumentWithTitle1URL[] = "/title1.html";
+constexpr char kDocumentWithTitle2URL[] = "/title2.html";
+constexpr char kDocumentWithLinksURL[] = "/links.html";
+
 }  // namespace
 
 class InteractionSequenceBrowserUtilTest : public InProcessBrowserTest {
@@ -141,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::CompletedCallback, completed);
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::AbortedCallback, aborted);
 
-  const GURL url = embedded_test_server()->GetURL("/empty.html");
+  const GURL url = embedded_test_server()->GetURL(kEmptyDocumentURL);
 
   auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
       browser(), kInteractionSequenceBrowserUtilTestId);
@@ -178,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest, LoadPage) {
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::CompletedCallback, completed);
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::AbortedCallback, aborted);
 
-  const GURL url = embedded_test_server()->GetURL("/empty.html");
+  const GURL url = embedded_test_server()->GetURL(kEmptyDocumentURL);
 
   auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
       browser(), kInteractionSequenceBrowserUtilTestId);
@@ -214,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest, IsPageLoaded) {
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::CompletedCallback, completed);
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::AbortedCallback, aborted);
 
-  const GURL url = embedded_test_server()->GetURL("/empty.html");
+  const GURL url = embedded_test_server()->GetURL(kEmptyDocumentURL);
 
   auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
       browser(), kInteractionSequenceBrowserUtilTestId);
@@ -263,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::CompletedCallback, completed);
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::AbortedCallback, aborted);
 
-  const GURL url = embedded_test_server()->GetURL("/empty.html");
+  const GURL url = embedded_test_server()->GetURL(kEmptyDocumentURL);
 
   auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
       browser(), kInteractionSequenceBrowserUtilTestId);
@@ -304,8 +309,8 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::AbortedCallback, aborted);
 
   // Do two navigations, then go back, then forward again.
-  const GURL url = embedded_test_server()->GetURL("/title1.html");
-  const GURL url2 = embedded_test_server()->GetURL("/title2.html");
+  const GURL url = embedded_test_server()->GetURL(kDocumentWithTitle1URL);
+  const GURL url2 = embedded_test_server()->GetURL(kDocumentWithTitle2URL);
 
   auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
       browser(), kInteractionSequenceBrowserUtilTestId);
@@ -725,11 +730,358 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
 }
 
 IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
+                       SendEventOnStateChangeOnAlreadyExists) {
+  UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::CompletedCallback, completed);
+  UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::AbortedCallback, aborted);
+
+  auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
+      browser(), kInteractionSequenceBrowserUtilTestId);
+  const GURL url = embedded_test_server()->GetURL(kDocumentWithLinksURL);
+  util->LoadPage(url);
+  const InteractionSequenceBrowserUtil::DeepQuery kQuery = {"a#title1"};
+
+  auto sequence =
+      ui::InteractionSequence::Builder()
+          .SetCompletedCallback(completed.Get())
+          .SetAbortedCallback(aborted.Get())
+          .SetContext(browser()->window()->GetElementContext())
+          .AddStep(ui::InteractionSequence::StepBuilder()
+                       .SetType(ui::InteractionSequence::StepType::kShown)
+                       .SetElementID(kInteractionSequenceBrowserUtilTestId)
+                       .SetStartCallback(base::BindLambdaForTesting(
+                           [&](ui::InteractionSequence* sequence,
+                               ui::TrackedElement* element) {
+                             InteractionSequenceBrowserUtil::StateChange
+                                 state_change;
+                             state_change.type =
+                                 InteractionSequenceBrowserUtil::StateChange::
+                                     Type::kExists;
+                             state_change.where = kQuery;
+                             state_change.event =
+                                 kInteractionTestUtilCustomEventType;
+                             util->SendEventOnStateChange(state_change);
+                           }))
+                       .Build())
+          .AddStep(ui::InteractionSequence::StepBuilder()
+                       .SetType(ui::InteractionSequence::StepType::kCustomEvent,
+                                kInteractionTestUtilCustomEventType)
+                       .SetElementID(kInteractionSequenceBrowserUtilTestId)
+                       .SetStartCallback(base::BindLambdaForTesting(
+                           [&](ui::InteractionSequence* sequence,
+                               ui::TrackedElement* element) {
+                             EXPECT_TRUE(util->Exists(kQuery));
+                           }))
+                       .Build())
+          .Build();
+
+  EXPECT_CALL_IN_SCOPE(completed, Run, sequence->RunSynchronouslyForTesting());
+}
+
+IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
+                       SendEventOnStateChangeOnExistsAfterDelay) {
+  UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::CompletedCallback, completed);
+  UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::AbortedCallback, aborted);
+
+  auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
+      browser(), kInteractionSequenceBrowserUtilTestId);
+  const GURL url = embedded_test_server()->GetURL(kDocumentWithLinksURL);
+  util->LoadPage(url);
+  const InteractionSequenceBrowserUtil::DeepQuery kQuery = {"ul#foo"};
+
+  auto sequence =
+      ui::InteractionSequence::Builder()
+          .SetCompletedCallback(completed.Get())
+          .SetAbortedCallback(aborted.Get())
+          .SetContext(browser()->window()->GetElementContext())
+          .AddStep(ui::InteractionSequence::StepBuilder()
+                       .SetType(ui::InteractionSequence::StepType::kShown)
+                       .SetElementID(kInteractionSequenceBrowserUtilTestId)
+                       .SetStartCallback(base::BindLambdaForTesting(
+                           [&](ui::InteractionSequence* sequence,
+                               ui::TrackedElement* element) {
+                             util->Evaluate(
+                                 R"(function () {
+                                      setTimeout(
+                                        function() {
+                                          let el = document.createElement('ul');
+                                          el.id = 'foo';
+                                          document.body.appendChild(el);
+                                        },
+                                        300);
+                                    })");
+                             InteractionSequenceBrowserUtil::StateChange
+                                 state_change;
+                             state_change.type =
+                                 InteractionSequenceBrowserUtil::StateChange::
+                                     Type::kExists;
+                             state_change.where = kQuery;
+                             state_change.event =
+                                 kInteractionTestUtilCustomEventType;
+                             util->SendEventOnStateChange(state_change);
+                             EXPECT_FALSE(util->Exists(kQuery));
+                           }))
+                       .Build())
+          .AddStep(ui::InteractionSequence::StepBuilder()
+                       .SetType(ui::InteractionSequence::StepType::kCustomEvent,
+                                kInteractionTestUtilCustomEventType)
+                       .SetElementID(kInteractionSequenceBrowserUtilTestId)
+                       .SetStartCallback(base::BindLambdaForTesting(
+                           [&](ui::InteractionSequence* sequence,
+                               ui::TrackedElement* element) {
+                             EXPECT_TRUE(util->Exists(kQuery));
+                           }))
+                       .Build())
+          .Build();
+
+  EXPECT_CALL_IN_SCOPE(completed, Run, sequence->RunSynchronouslyForTesting());
+}
+
+IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
+                       StateChangeExistsTimeoutSendsEvent) {
+  UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::CompletedCallback, completed);
+  UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::AbortedCallback, aborted);
+
+  auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
+      browser(), kInteractionSequenceBrowserUtilTestId);
+  const GURL url = embedded_test_server()->GetURL(kDocumentWithLinksURL);
+  util->LoadPage(url);
+  const InteractionSequenceBrowserUtil::DeepQuery kQuery = {"ul#foo"};
+
+  auto sequence =
+      ui::InteractionSequence::Builder()
+          .SetCompletedCallback(completed.Get())
+          .SetAbortedCallback(aborted.Get())
+          .SetContext(browser()->window()->GetElementContext())
+          .AddStep(ui::InteractionSequence::StepBuilder()
+                       .SetType(ui::InteractionSequence::StepType::kShown)
+                       .SetElementID(kInteractionSequenceBrowserUtilTestId)
+                       .SetStartCallback(base::BindLambdaForTesting(
+                           [&](ui::InteractionSequence* sequence,
+                               ui::TrackedElement* element) {
+                             util->Evaluate(
+                                 R"(function () {
+                                      setTimeout(
+                                        function() {
+                                          let el = document.createElement('ul');
+                                          el.id = 'foo';
+                                          document.body.appendChild(el);
+                                        },
+                                        1000);
+                                    })");
+                             InteractionSequenceBrowserUtil::StateChange
+                                 state_change;
+                             state_change.type =
+                                 InteractionSequenceBrowserUtil::StateChange::
+                                     Type::kExists;
+                             state_change.where = kQuery;
+                             state_change.event =
+                                 kInteractionTestUtilCustomEventType;
+                             state_change.timeout = base::Milliseconds(300);
+                             state_change.timeout_event =
+                                 kInteractionTestUtilCustomEventType2;
+                             util->SendEventOnStateChange(state_change);
+                           }))
+                       .Build())
+          .AddStep(ui::InteractionSequence::StepBuilder()
+                       .SetType(ui::InteractionSequence::StepType::kCustomEvent,
+                                kInteractionTestUtilCustomEventType2)
+                       .SetElementID(kInteractionSequenceBrowserUtilTestId)
+                       .Build())
+          .Build();
+
+  EXPECT_CALL_IN_SCOPE(completed, Run, sequence->RunSynchronouslyForTesting());
+}
+
+IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
+                       SendEventOnStateChangeOnAlreadyExistsAndConditionTrue) {
+  UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::CompletedCallback, completed);
+  UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::AbortedCallback, aborted);
+
+  auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
+      browser(), kInteractionSequenceBrowserUtilTestId);
+  const GURL url = embedded_test_server()->GetURL(kDocumentWithLinksURL);
+  util->LoadPage(url);
+  const InteractionSequenceBrowserUtil::DeepQuery kQuery = {"a#title1"};
+  const char kTestCondition[] = "el => (el.innerText == 'Go to title1')";
+
+  auto sequence =
+      ui::InteractionSequence::Builder()
+          .SetCompletedCallback(completed.Get())
+          .SetAbortedCallback(aborted.Get())
+          .SetContext(browser()->window()->GetElementContext())
+          .AddStep(ui::InteractionSequence::StepBuilder()
+                       .SetType(ui::InteractionSequence::StepType::kShown)
+                       .SetElementID(kInteractionSequenceBrowserUtilTestId)
+                       .SetStartCallback(base::BindLambdaForTesting(
+                           [&](ui::InteractionSequence* sequence,
+                               ui::TrackedElement* element) {
+                             InteractionSequenceBrowserUtil::StateChange
+                                 state_change;
+                             state_change.type =
+                                 InteractionSequenceBrowserUtil::StateChange::
+                                     Type::kExistsAndConditionTrue;
+                             state_change.test_function = kTestCondition;
+                             state_change.where = kQuery;
+                             state_change.event =
+                                 kInteractionTestUtilCustomEventType;
+                             util->SendEventOnStateChange(state_change);
+                           }))
+                       .Build())
+          .AddStep(
+              ui::InteractionSequence::StepBuilder()
+                  .SetType(ui::InteractionSequence::StepType::kCustomEvent,
+                           kInteractionTestUtilCustomEventType)
+                  .SetElementID(kInteractionSequenceBrowserUtilTestId)
+                  .SetStartCallback(base::BindLambdaForTesting(
+                      [&](ui::InteractionSequence* sequence,
+                          ui::TrackedElement* element) {
+                        EXPECT_TRUE(
+                            util->EvaluateAt(kQuery, kTestCondition).GetBool());
+                      }))
+                  .Build())
+          .Build();
+
+  EXPECT_CALL_IN_SCOPE(completed, Run, sequence->RunSynchronouslyForTesting());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    InteractionSequenceBrowserUtilTest,
+    SendEventOnStateChangeOnExistsAndConditionTrueAfterDelay) {
+  UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::CompletedCallback, completed);
+  UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::AbortedCallback, aborted);
+
+  auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
+      browser(), kInteractionSequenceBrowserUtilTestId);
+  const GURL url = embedded_test_server()->GetURL(kDocumentWithLinksURL);
+  util->LoadPage(url);
+  const InteractionSequenceBrowserUtil::DeepQuery kQuery = {"h1#foo"};
+  const char kTestCondition[] = "el => (el.innerText == 'bar')";
+
+  auto sequence =
+      ui::InteractionSequence::Builder()
+          .SetCompletedCallback(completed.Get())
+          .SetAbortedCallback(aborted.Get())
+          .SetContext(browser()->window()->GetElementContext())
+          .AddStep(ui::InteractionSequence::StepBuilder()
+                       .SetType(ui::InteractionSequence::StepType::kShown)
+                       .SetElementID(kInteractionSequenceBrowserUtilTestId)
+                       .SetStartCallback(base::BindLambdaForTesting(
+                           [&](ui::InteractionSequence* sequence,
+                               ui::TrackedElement* element) {
+                             util->Evaluate(
+                                 R"(function () {
+                                      setTimeout(
+                                        function() {
+                                          let el = document.createElement('h1');
+                                          el.id = 'foo';
+                                          document.body.appendChild(el);
+                                          setTimeout(
+                                            function() {
+                                              let el = document.querySelector(
+                                                  'h1#foo');
+                                              el.innerText = 'bar';
+                                            },
+                                            100);
+                                        },
+                                        300);
+                                    })");
+                             InteractionSequenceBrowserUtil::StateChange
+                                 state_change;
+                             state_change.type =
+                                 InteractionSequenceBrowserUtil::StateChange::
+                                     Type::kExistsAndConditionTrue;
+                             state_change.where = kQuery;
+                             state_change.test_function = kTestCondition;
+                             state_change.event =
+                                 kInteractionTestUtilCustomEventType;
+                             util->SendEventOnStateChange(state_change);
+                             EXPECT_FALSE(util->Exists(kQuery));
+                           }))
+                       .Build())
+          .AddStep(
+              ui::InteractionSequence::StepBuilder()
+                  .SetType(ui::InteractionSequence::StepType::kCustomEvent,
+                           kInteractionTestUtilCustomEventType)
+                  .SetElementID(kInteractionSequenceBrowserUtilTestId)
+                  .SetStartCallback(base::BindLambdaForTesting(
+                      [&](ui::InteractionSequence* sequence,
+                          ui::TrackedElement* element) {
+                        EXPECT_TRUE(
+                            util->EvaluateAt(kQuery, kTestCondition).GetBool());
+                      }))
+                  .Build())
+          .Build();
+
+  EXPECT_CALL_IN_SCOPE(completed, Run, sequence->RunSynchronouslyForTesting());
+}
+
+IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
+                       StateChangeExistsAndConditionTrueTimeoutSendsEvent) {
+  UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::CompletedCallback, completed);
+  UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::AbortedCallback, aborted);
+
+  auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
+      browser(), kInteractionSequenceBrowserUtilTestId);
+  const GURL url = embedded_test_server()->GetURL(kDocumentWithLinksURL);
+  util->LoadPage(url);
+  const InteractionSequenceBrowserUtil::DeepQuery kQuery = {"h1#foo"};
+  const char kTestCondition[] = "el => (el.innerText == 'bar')";
+
+  auto sequence =
+      ui::InteractionSequence::Builder()
+          .SetCompletedCallback(completed.Get())
+          .SetAbortedCallback(aborted.Get())
+          .SetContext(browser()->window()->GetElementContext())
+          .AddStep(ui::InteractionSequence::StepBuilder()
+                       .SetType(ui::InteractionSequence::StepType::kShown)
+                       .SetElementID(kInteractionSequenceBrowserUtilTestId)
+                       .SetStartCallback(base::BindLambdaForTesting(
+                           [&](ui::InteractionSequence* sequence,
+                               ui::TrackedElement* element) {
+                             util->Evaluate(
+                                 R"(function () {
+                                      let el = document.createElement('h1');
+                                      el.id = 'foo';
+                                      document.body.appendChild(el);
+                                      setTimeout(
+                                          function() {
+                                            let el = document.querySelector(
+                                                'h1#foo');
+                                            el.innerText = 'bar';
+                                          },
+                                          1000);
+                                    })");
+                             InteractionSequenceBrowserUtil::StateChange
+                                 state_change;
+                             state_change.type =
+                                 InteractionSequenceBrowserUtil::StateChange::
+                                     Type::kExistsAndConditionTrue;
+                             state_change.where = kQuery;
+                             state_change.test_function = kTestCondition;
+                             state_change.event =
+                                 kInteractionTestUtilCustomEventType;
+                             state_change.timeout = base::Milliseconds(300);
+                             state_change.timeout_event =
+                                 kInteractionTestUtilCustomEventType2;
+                             util->SendEventOnStateChange(state_change);
+                           }))
+                       .Build())
+          .AddStep(ui::InteractionSequence::StepBuilder()
+                       .SetType(ui::InteractionSequence::StepType::kCustomEvent,
+                                kInteractionTestUtilCustomEventType2)
+                       .SetElementID(kInteractionSequenceBrowserUtilTestId)
+                       .Build())
+          .Build();
+
+  EXPECT_CALL_IN_SCOPE(completed, Run, sequence->RunSynchronouslyForTesting());
+}
+
+IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
                        NavigatePageFromScriptCreatesNewElement) {
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::CompletedCallback, completed);
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::AbortedCallback, aborted);
 
-  const GURL url = embedded_test_server()->GetURL("/empty.html");
+  const GURL url = embedded_test_server()->GetURL(kEmptyDocumentURL);
 
   auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
       browser(), kInteractionSequenceBrowserUtilTestId);
@@ -833,7 +1185,7 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
 
 IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
                        OpenPageInNewTabInactive) {
-  const GURL url = embedded_test_server()->GetURL("/empty.html");
+  const GURL url = embedded_test_server()->GetURL(kEmptyDocumentURL);
 
   auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
       browser(), kInteractionSequenceBrowserUtilTestId);
@@ -847,7 +1199,7 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
 
 IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
                        OpenPageInNewTabActive) {
-  const GURL url = embedded_test_server()->GetURL("/empty.html");
+  const GURL url = embedded_test_server()->GetURL(kEmptyDocumentURL);
 
   auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
       browser(), kInteractionSequenceBrowserUtilTestId);
@@ -864,7 +1216,7 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::CompletedCallback, completed);
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::AbortedCallback, aborted);
 
-  const GURL url = embedded_test_server()->GetURL("/empty.html");
+  const GURL url = embedded_test_server()->GetURL(kEmptyDocumentURL);
 
   auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
       browser(), kInteractionSequenceBrowserUtilTestId);
@@ -901,7 +1253,7 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::CompletedCallback, completed);
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::AbortedCallback, aborted);
 
-  const GURL url = embedded_test_server()->GetURL("/empty.html");
+  const GURL url = embedded_test_server()->GetURL(kEmptyDocumentURL);
   Browser* const browser2 = CreateBrowser(browser()->profile());
 
   auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
@@ -956,7 +1308,7 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::CompletedCallback, completed);
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::AbortedCallback, aborted);
 
-  const GURL url = embedded_test_server()->GetURL("/empty.html");
+  const GURL url = embedded_test_server()->GetURL(kEmptyDocumentURL);
   Browser* browser2 = nullptr;
 
   auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
@@ -1012,7 +1364,7 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::CompletedCallback, completed);
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::AbortedCallback, aborted);
 
-  const GURL url = embedded_test_server()->GetURL("/empty.html");
+  const GURL url = embedded_test_server()->GetURL(kEmptyDocumentURL);
 
   auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
       browser(), kInteractionSequenceBrowserUtilTestId);
@@ -1212,6 +1564,40 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
 }
 
 IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
+                       EvaluateAtNotExistElement) {
+  UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::CompletedCallback, completed);
+  UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::AbortedCallback, aborted);
+
+  const InteractionSequenceBrowserUtil::DeepQuery kQuery{
+      "settings-ui", "settings-main#main", "not-exists-element"};
+
+  auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
+      browser(), kInteractionSequenceBrowserUtilTestId);
+  util->LoadPage(GURL("chrome://settings"));
+
+  auto sequence =
+      ui::InteractionSequence::Builder()
+          .SetCompletedCallback(completed.Get())
+          .SetAbortedCallback(aborted.Get())
+          .SetContext(browser()->window()->GetElementContext())
+          .AddStep(ui::InteractionSequence::StepBuilder()
+                       .SetType(ui::InteractionSequence::StepType::kShown)
+                       .SetElementID(kInteractionSequenceBrowserUtilTestId)
+                       .SetStartCallback(base::BindLambdaForTesting(
+                           [&](ui::InteractionSequence* sequence,
+                               ui::TrackedElement* element) {
+                             const auto result =
+                                 util->EvaluateAt(kQuery, "(el, err) => !!el");
+                             EXPECT_TRUE(result.is_bool());
+                             EXPECT_FALSE(result.GetBool());
+                           }))
+                       .Build())
+          .Build();
+
+  EXPECT_CALL_IN_SCOPE(completed, Run, sequence->RunSynchronouslyForTesting());
+}
+
+IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
                        ExistsInStandardPage) {
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::CompletedCallback, completed);
   UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::AbortedCallback, aborted);
@@ -1230,7 +1616,7 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
 
   auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
       browser(), kInteractionSequenceBrowserUtilTestId);
-  const GURL url = embedded_test_server()->GetURL("/links.html");
+  const GURL url = embedded_test_server()->GetURL(kDocumentWithLinksURL);
   util->LoadPage(url);
 
   auto sequence =
@@ -1278,7 +1664,7 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
   const InteractionSequenceBrowserUtil::DeepQuery kQuery{"#ref"};
   auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
       browser(), kInteractionSequenceBrowserUtilTestId);
-  const GURL url = embedded_test_server()->GetURL("/links.html");
+  const GURL url = embedded_test_server()->GetURL(kDocumentWithLinksURL);
   util->LoadPage(url);
 
   auto sequence =
@@ -1318,7 +1704,7 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
   const InteractionSequenceBrowserUtil::DeepQuery kQuery{"#ref"};
   auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
       browser(), kInteractionSequenceBrowserUtilTestId);
-  const GURL url = embedded_test_server()->GetURL("/links.html");
+  const GURL url = embedded_test_server()->GetURL(kDocumentWithLinksURL);
   util->LoadPage(url);
 
   auto sequence =
@@ -1364,7 +1750,7 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
   const InteractionSequenceBrowserUtil::DeepQuery kQuery2{"#ref", "p#pp"};
   auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
       browser(), kInteractionSequenceBrowserUtilTestId);
-  const GURL url = embedded_test_server()->GetURL("/links.html");
+  const GURL url = embedded_test_server()->GetURL(kDocumentWithLinksURL);
   util->LoadPage(url);
 
   auto sequence =
@@ -1441,7 +1827,7 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
 
   auto util = InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
       browser(), kInteractionSequenceBrowserUtilTestId);
-  const GURL url = embedded_test_server()->GetURL("/title1.html");
+  const GURL url = embedded_test_server()->GetURL(kDocumentWithTitle1URL);
   util->LoadPage(url);
 
   auto sequence =
@@ -1461,6 +1847,55 @@ IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
                                 element, std::string(), "3600270"));
                       }))
                   .Build())
+          .Build();
+
+  EXPECT_CALL_IN_SCOPE(completed, Run, sequence->RunSynchronouslyForTesting());
+}
+
+// This is a regression test for the case where we open a new tab in a way that
+// causes it not to have a URL; previously, it would not create an element
+// because navigating_away_from_ was empty.
+IN_PROC_BROWSER_TEST_F(InteractionSequenceBrowserUtilTest,
+                       CreatesElementForPageWithBlankURL) {
+  DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kExistingTabElementId);
+  DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kNewTabElementId);
+
+  UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::CompletedCallback, completed);
+  UNCALLED_MOCK_CALLBACK(ui::InteractionSequence::AbortedCallback, aborted);
+
+  std::unique_ptr<InteractionSequenceBrowserUtil> existing_tab =
+      InteractionSequenceBrowserUtil::ForExistingTabInBrowser(
+          browser(), kExistingTabElementId);
+  std::unique_ptr<InteractionSequenceBrowserUtil> new_tab;
+
+  auto sequence =
+      ui::InteractionSequence::Builder()
+          .SetContext(browser()->window()->GetElementContext())
+          .SetCompletedCallback(completed.Get())
+          .SetAbortedCallback(aborted.Get())
+          // Get the first tab and inject code to pop up a second window.
+          // Because the second window is created using a javascript: URL, it
+          // will not report a valid URL.
+          .AddStep(
+              ui::InteractionSequence::StepBuilder()
+                  .SetType(ui::InteractionSequence::StepType::kShown)
+                  .SetElementID(kExistingTabElementId)
+                  .SetStartCallback(base::BindLambdaForTesting(
+                      [&](ui::InteractionSequence*, ui::TrackedElement*) {
+                        new_tab =
+                            InteractionSequenceBrowserUtil::ForNextTabInBrowser(
+                                browser(), kNewTabElementId);
+                        // Cause a tab to come into being and do some stuff.
+                        existing_tab->Evaluate(
+                            "() => window.open('javascript:window.foo=1')");
+                      }))
+                  .Build())
+          // Verify that the element for the second tab is still created,
+          // despite it not having a URL.
+          .AddStep(ui::InteractionSequence::StepBuilder()
+                       .SetType(ui::InteractionSequence::StepType::kShown)
+                       .SetElementID(kNewTabElementId)
+                       .Build())
           .Build();
 
   EXPECT_CALL_IN_SCOPE(completed, Run, sequence->RunSynchronouslyForTesting());
